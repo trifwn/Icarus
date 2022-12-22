@@ -10,3 +10,4 @@ Rudder/[0123456789]*
 Wing/[0123456789]*
 foil
 gnvp
+__pycache__/
