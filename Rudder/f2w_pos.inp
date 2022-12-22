@@ -1,0 +1,41 @@
+0.        ! TEANGLE (deg)
+1.        ! UINF
+51        ! NTIMEM
+0.050     ! DT1
+0.050     ! DT2
+0.025     ! EPS1
+0.025     ! EPS2
+ 1.00     ! EPSCOE
+3         ! NWS
+0.015     ! CCC1
+0.015     ! CCC2
+20.       ! CCGON1
+20.       ! CCGON2
+1         ! IMOVE
+ 0.000    ! A0
+ 0.000    ! AMPL
+ 0.000    ! APHASE
+ 0.000    ! AKF
+0.25      ! XC
+1         ! ITEFLAP
+ 0.9      ! XEXT
+ 0.       ! YEXT
+
+7         ! NTEWT
+7         ! NTEST
+
+1         ! IBOUNDL ---> DO NOT CHANGE
+50        ! NTIME_bl
+0         ! IYNEXTERN
+
+3.46e+05  ! Reynolds
+
+0.03      ! Mach     Number
+
+0.1    1  ! TRANSLO
+0.1    2  ! TRANSLO
+9.        ! AMPLUP_tr
+9.        ! AMPLLO_tr
+ 
+0         ! ITSEPAR (1: 2 wake calculation) ---> DO NOT CHANGE  
+1         ! ISTEADY (1: steady calculation) ---> DO NOT CHANGE

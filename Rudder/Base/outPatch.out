@@ -1,0 +1,46 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2206                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _8993af73-20221106 OPENFOAM=2206 patch=221104 version=2206
+Arch   : "LSB;label=32;scalar=64"
+Exec   : autoPatch -overwrite 45
+Date   : Dec 21 2022
+Time   : 19:54:26
+Host   : hydra
+PID    : 950475
+I/O    : uncollated
+Case   : /home/tryfonas/data/Uni/Semester9/Flight_Dynamics/Software/hermes/Rudder/Base
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+--> FOAM Warning : 
+    From static Foam::IOstreamOption::compressionType Foam::IOstreamOption::compressionEnum(const Foam::word&, compressionType)
+    in file db/IOstreams/IOstreams/IOstreamOption.C at line 115
+    Unknown compression specifier 'uncompressed', using compression off
+Create polyMesh for time = 0
+
+Mesh read in = 0.02 s
+
+
+Feature:45
+minCos :0.707107
+
+Assigned 249 faces to patch auto0
+
+Assigned 63744 faces to patch auto1
+
+Assigned 63744 faces to patch auto2
+
+Assigned 249 faces to patch auto3
+
+End
+

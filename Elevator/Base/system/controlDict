@@ -1,0 +1,137 @@
+/*----------------------------------------------------------------------------------*\
+|                                                                                    | 
+|    ANSA_VERSION: 22.1.0                                                            | 
+|                                                                                    | 
+|    file created by  A N S A  Mon Feb 28 15:04:06 2022                              | 
+|                                                                                    | 
+|    Output from: /home/dvlastos/TzimiNiki/Untitled.ansa                             | 
+|                                                                                    | 
+\*----------------------------------------------------------------------------------*/
+
+
+
+FoamFile
+{
+	version 2.0;
+	format binary;
+	class dictionary;
+	location "";
+	object controlDict;
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+libs
+(
+
+);
+
+application simpleFoam;
+
+startFrom latestTime;
+
+startTime	0.;
+
+stopAt endTime;
+
+endTime	5000.;
+
+deltaT 	1.;
+
+writeControl timeStep;
+
+writeInterval	1.;
+
+purgeWrite	5;
+
+writeFormat	binary;
+
+writePrecision	6;
+
+writeCompression	uncompressed;
+
+timeFormat	general;
+
+timePrecision	6;
+
+graphFormat	raw;
+
+runTimeModifiable	yes;
+
+functions {
+	residuals
+	{
+		libs ( "libutilityFunctionObjects.so" );
+		type residuals;
+		 enabled true;
+		log true;
+		writeControl timeStep;
+		writeInterval 1;
+		fields
+		(
+			p
+			U
+			k
+			omega
+			nut
+		);
+	}
+	force_coefs
+	{
+		type forceCoeffs;
+		libs ( "libforces.so" );
+		writeControl timeStep;
+		writeInterval 1;
+		patches
+		(
+			Airfoil
+		);
+		log true;
+		UName U;
+		rho rhoInf;
+		pRef 0.;
+		rhoInf 1;
+		CofR  (0. 0. 0.);
+		liftDir (-0.10452 0.99452 0.);
+		dragDir (0.99452 0.10452 0.);
+		pitchAxis (0. 0. 1.);
+		magUInf 10.;
+		lRef 1.;
+		Aref 1.;
+	}
+	pressureCoeff
+	{
+		type	pressure;
+		libs ("libfieldFunctionObjects.so");
+		mode	staticCoeff;
+		calcTotal	yes;
+		calcCoeff	yes;
+		U	U;
+		UInf (9.94521 1.045284 0);
+		rho rhoInf;
+		rhoInf	1;
+		pRef	0;
+		pInf	0;
+		result	staticCoeff;
+		enabled	true;
+		log		true;
+		writeControl	timeStep;
+		writeInterval	1;
+	}
+	#includeFunc wallShearStress;
+	
+	yPlus1
+	{
+    		type            yPlus;
+		libs ("libfieldFunctionObjects.so");
+	}
+	
+	vorticity1
+	{
+		// Mandatory entries (unmodifiable)
+    		type        vorticity;
+    		libs        (fieldFunctionObjects);
+		//Optional
+		region 	    SideHigh;
+	}
+}

@@ -1,0 +1,71 @@
+INPUT FILE FOR THE RIGHT PART OF A WING 
+0
+IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]
+3          23012
+
+IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]
+0          0          1
+
+NFILFL     NFILDS     NFILWG      [corresponding file names]
+  Rwing.FL   Rwing.DS   Rwing.WG  
+
+XOO        YOO        ZOO
+0.         0.         0.
+
+PITCH      CONE       WNGANG[azimuthal angle]
+-2.        0.         0.0
+
+IEXKS      NFILKS      AKSI(1)    AKSI(NNC)
+1                      0.         1.         
+
+IEXRC      NFILRC      RC  (1)    RC  (NNC)
+1                      0.0        1.00            
+
+IEXCH      NFILCH      FCCH(1)    FCCH(2)    FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)
+4                      0.180      -0.07      0.         0.         0.  
+
+IEXTW      NFILTW      FCTW(1)    FCTW(2)    FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)
+4                      0.         0.         0.         0.         0.         0.         
+
+IEXXO      NFILXO      FCXO(1)    FCXO(2)    FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)
+4                      0.         0.   	     0.         0.         0.         0.
+
+IEXZO      NFILZO      FCZO(1)    FCZO(2)    FCZO(3)    FCZO(4)    FCZO(5)    FCZO(6)
+4                      0.         0.0	     0.         0.         0.         0.
+
+IEXXS      NFILXS      FCXS(1)    FCXS(2)    FCXS(3)    FCXS(4)    FCXS(5)    FCXS(6)
+4                      0.         0.         0.         0.         0.         0.
+
+IEXRT      NFILRT      FCRT(1)    FCRT(2)    FCRT(3)    FCRT(4)    FCRT(5)    FCRT(6)
+4                      0.         0.         0.         0.         0.         0.
+
+
+C  INDEXFL    index of the airfoil (e.g. 4412 for NACA 4-digits airfoil)
+C  NFILxx     xx = KS, RC, CH, TH, XO, ZO, RT input file names for the
+C                                             corresponding distributions
+C  IEXxx      parameter defining the type of interpolation
+C         I)  in s. DISTRB
+C             xx distributions (xx=KS for AKSI(.), xx=RC for RC(.))
+C             =1 for linear interpolation
+C             =2 for sinusoinal interpolation
+C             =3 for double sinusoidal interpolation
+C             =5 for reading the disribution of xx from file
+C                (NNB(xx=KS)/NCW(xx=RC) must be equal to NUPO)
+C        II)  in s. CATAN
+C             xx distributions (xx=CH for CH(.), xx=TW for TW(.),
+C                xx=XO for XO(.), xx=ZO for ZO(.), xx=RT for RT(.))
+C             =4 for polynomial interpolation
+C             =5 for reading the disributions of xx and DxxDR from file
+C                (NCW must be equal to NUPO)
+C             =6 for reading the disributions of xx and DxxDR from file
+C                and interpolate both according RC(.)
+C             =7 for reading the disribution ONLY of xx from file and
+C                calculate DxxDR using 2nd order finite differences
+C                schemes. (NCW must be equal to NUPO)
+C             =8 for reading the disribution ONLY of xx from file,
+C                interpolate according RC(.) and  calculate DxxDR using
+C                2nd order finite differences shemes according RC(.)
+C  NUPOxx     number of data pairs for the distributions:
+C             AKSI(.), RC(.), CH(.), TW(.), XO(.), ZO(.), RT(.)
+C             NUPOxx is read from the 2nd line of file  NFILxx
+C

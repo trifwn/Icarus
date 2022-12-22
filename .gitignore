@@ -1,0 +1,12 @@
+3D/gnvp
+Elevator/m*
+Rudder/m*
+Wing/m*
+Elevator/foil
+Rudder/foil
+Wing/foil
+Elevator/[0123456789]*
+Rudder/[0123456789]*
+Wing/[0123456789]*
+foil
+gnvp
