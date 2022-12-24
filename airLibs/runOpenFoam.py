@@ -75,11 +75,13 @@ def makeCLCD(anglesAll):
         else:
             folder = 'm'+str(angle)[::-1].strip('-').zfill(6)[::-1] 
         if folder in folders:
-            angleSucc.append(angle)   
-            Time,Cd,Cdf,Cdr,Cl,Clf,Clr,CmPitch,CmRoll,CmYaw,Cs,Csf,Csr=[float(i) for i in getCoeffs(angle).split('\t')]
-            cd.append(Cd)
-            cl.append(Cl)
-            cm.append(CmPitch)   
+            data = getCoeffs(angle)
+            if data is not None:
+                Time,Cd,Cdf,Cdr,Cl,Clf,Clr,CmPitch,CmRoll,CmYaw,Cs,Csf,Csr=[float(i) for i in data.split('\t')]
+                angleSucc.append(angle)   
+                cd.append(Cd)
+                cl.append(Cl)
+                cm.append(CmPitch)   
     return np.vstack([angleSucc,cl,cd,cm]).T
 
 def getCoeffs(angle):
@@ -89,9 +91,14 @@ def getCoeffs(angle):
         folder = 'm'+str(angle)[::-1].strip('-').zfill(6)[::-1] +'/'    
     parentDir  = os.getcwd()
     os.chdir(folder)
-    os.chdir('postProcessing/force_coefs/0')
-    filen = 'coefficient.dat'
-    with open(filen, 'r',newline='\n') as file:
-        data = file.readlines()
-    os.chdir(parentDir)
+    folders = next(os.walk('.'))[1]
+    if 'postProcessing' in folders:
+        os.chdir('postProcessing/force_coefs/0')
+        filen = 'coefficient.dat'
+        with open(filen, 'r',newline='\n') as file:
+            data = file.readlines()
+        os.chdir(parentDir)
+    else:
+        os.chdir(parentDir)
+        return None
     return data[-1]

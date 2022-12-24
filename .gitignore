@@ -11,3 +11,9 @@ Wing/[0123456789]*
 foil
 gnvp
 __pycache__/
+.vscode/
+airLibs/__pycache__/
+Wing/Base/naca*
+Elevator/foil
+Rudder/foil
+Wing/foil
