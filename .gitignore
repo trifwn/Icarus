@@ -17,3 +17,4 @@ Wing/Base/naca*
 Elevator/foil
 Rudder/foil
 Wing/foil
+.mypy_cache

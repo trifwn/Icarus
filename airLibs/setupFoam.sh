@@ -17,9 +17,9 @@ cp -r $airfoilFile Base/
 cd Base/
 pwd
 
-# $struct $airfoilFile < struct.input > struct.out
-# plot3dToFoam -noBlank  $airfoilFile.p3d > plot3dToFoam.out
-# autoPatch 45 > outPatch.out
-# rm -rf 1/
-# autoPatch -overwrite 45 > outPatch.out
+$struct $airfoilFile < struct.input > struct.out
+plot3dToFoam -noBlank  $airfoilFile.p3d > plot3dToFoam.out
+autoPatch 45 > outPatch.out
+rm -rf 1/
+autoPatch -overwrite 45 > outPatch.out
 cp boundaryTemplate constant/polyMesh/boundary

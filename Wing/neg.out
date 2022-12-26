@@ -329,7 +329,6 @@ ZERO_bl: Inverse mode at  67 Hk =   2.600
  iter. =             3
  iter. =             4
  iter. =             5
- iter. =             6
  station =            68
  iter. =             1
 ZERO_bl: Inverse mode at  68 Hk =   2.600
@@ -2292,41 +2291,41 @@ ZERO_bl: Inverse mode at  33 Hk =   2.600
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0170   71
- RMSBL  =   0.154431736133977     
+ RMSBL  =   0.156459028162760     
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0182   71
- RMSBL  =   5.955879289526076E-002
+ RMSBL  =   6.131507615774966E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0189   71
- RMSBL  =   2.947594703755876E-002
+ RMSBL  =   3.356986884876537E-002
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0185   71
- RMSBL  =   2.472724740793246E-003
+ RMSBL  =   3.861461065371390E-003
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0185   71
- RMSBL  =   1.238849504533071E-004
+ RMSBL  =   1.180544701647237E-004
  Num. of Iteration =             6
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0185   71
- RMSBL  =   6.217027218011509E-006
+ RMSBL  =   6.446180104858815E-006
  GON=   30.7292320291513     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04501 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04504 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02273 COSBS= 0.97294 SINBS= 0.23106 GWNES=  0.00000
+ ALENS= 0.02274 COSBS= 0.97294 SINBS= 0.23106 GWNES=  0.00000
  
  
  
@@ -2347,21 +2346,21 @@ ZERO_bl: Inverse mode at  33 Hk =   2.600
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0185   71
- RMSBL  =   1.235775486006742E-004
+ RMSBL  =   1.246972088558362E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0185   71
- RMSBL  =   9.377429432692765E-006
+ RMSBL  =   9.532462796760315E-006
  GON=   30.7292320291513     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04501 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04503 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02273 COSBS= 0.97294 SINBS= 0.23106 GWNES=  0.00000
+ ALENS= 0.02274 COSBS= 0.97294 SINBS= 0.23106 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3929,31 +3928,31 @@ m0.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0185   71
- RMSBL  =   0.133321884388885     
+ RMSBL  =   0.135836374484192     
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
-      Stagnation location at S =  1.0205   72
- RMSBL  =   1.729866231750839E-002
+      Stagnation location at S =  1.0206   72
+ RMSBL  =   1.858400301170994E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0203   72
- RMSBL  =   2.428631298282620E-004
+ RMSBL  =   2.456090086619293E-004
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0203   72
- RMSBL  =   2.402880905266988E-006
+ RMSBL  =   2.307784408968356E-006
  GON=   30.6220888208944     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04493 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04495 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02270 COSBS= 0.97337 SINBS= 0.22924 GWNES=  0.00000
+ ALENS= 0.02271 COSBS= 0.97337 SINBS= 0.22924 GWNES=  0.00000
  
  
  
@@ -3974,26 +3973,26 @@ m0.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0203   72
- RMSBL  =   5.181171245874964E-003
+ RMSBL  =   5.191356132108446E-003
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
-      Stagnation location at S =  1.0204   72
- RMSBL  =   1.056395894066085E-004
+      Stagnation location at S =  1.0205   72
+ RMSBL  =   1.050638331745271E-004
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
-      Stagnation location at S =  1.0204   72
- RMSBL  =   3.223897606843353E-006
+      Stagnation location at S =  1.0205   72
+ RMSBL  =   3.197252752969724E-006
  GON=   30.6220888208944     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04493 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04495 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02270 COSBS= 0.97337 SINBS= 0.22924 GWNES=  0.00000
+ ALENS= 0.02271 COSBS= 0.97337 SINBS= 0.22924 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5560,27 +5559,27 @@ m1.0000/
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
-      Stagnation location at S =  1.0204   72
- RMSBL  =   7.699066789858194E-002
+      Stagnation location at S =  1.0205   72
+ RMSBL  =   7.685311050324976E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0223   72
- RMSBL  =   1.655571955253859E-002
+ RMSBL  =   1.610022769396443E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0223   72
- RMSBL  =   7.035948992071533E-005
+ RMSBL  =   6.822527942530479E-005
  GON=   30.5146130212233     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04486 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04488 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02268 COSBS= 0.97380 SINBS= 0.22741 GWNES=  0.00000
+ ALENS= 0.02269 COSBS= 0.97380 SINBS= 0.22741 GWNES=  0.00000
  
  
  
@@ -5601,19 +5600,19 @@ m1.0000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0223   72
- RMSBL  =   1.289450225203647E-004
+ RMSBL  =   1.298416552648510E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0223   72
- RMSBL  =   9.051859564014264E-006
+ RMSBL  =   9.156025864647540E-006
  GON=   30.5146130212233     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04485 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04488 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
  ALENS= 0.02268 COSBS= 0.97380 SINBS= 0.22741 GWNES=  0.00000
  
@@ -7183,26 +7182,26 @@ m1.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0223   72
- RMSBL  =   7.650458655008568E-002
+ RMSBL  =   7.660023573709503E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0241   73
- RMSBL  =   5.882420825507662E-003
+ RMSBL  =   5.876883384869574E-003
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0240   73
- RMSBL  =   4.582466242387516E-005
+ RMSBL  =   4.676630990549576E-005
  GON=   30.4067714602690     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04479 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04481 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02265 COSBS= 0.97422 SINBS= 0.22558 GWNES=  0.00000
+ ALENS= 0.02266 COSBS= 0.97422 SINBS= 0.22558 GWNES=  0.00000
  
  
  
@@ -7223,26 +7222,26 @@ m1.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0240   73
- RMSBL  =   2.933877567132944E-003
+ RMSBL  =   2.939693463073809E-003
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0241   73
- RMSBL  =   1.382959968989101E-004
+ RMSBL  =   1.365007328679966E-004
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0241   73
- RMSBL  =   6.771627823132991E-006
+ RMSBL  =   6.584108258386200E-006
  GON=   30.4067714602690     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04478 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04480 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02265 COSBS= 0.97422 SINBS= 0.22558 GWNES=  0.00000
+ ALENS= 0.02266 COSBS= 0.97422 SINBS= 0.22558 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -8810,36 +8809,36 @@ m2.0000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0241   73
- RMSBL  =   0.159523498796979     
+ RMSBL  =   0.156349531085262     
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0260   73
- RMSBL  =   8.262216137025884E-002
+ RMSBL  =   8.097342972025090E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0260   73
- RMSBL  =   3.329467841176703E-002
+ RMSBL  =   3.199704072782630E-002
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0259   73
- RMSBL  =   2.461881793699883E-004
+ RMSBL  =   2.489315544108502E-004
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0259   73
- RMSBL  =   4.191085367950994E-006
+ RMSBL  =   3.828598524061184E-006
  GON=   30.2985301820917     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04472 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04474 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02263 COSBS= 0.97465 SINBS= 0.22374 GWNES=  0.00000
+ ALENS= 0.02264 COSBS= 0.97465 SINBS= 0.22374 GWNES=  0.00000
  
  
  
@@ -8860,21 +8859,21 @@ m2.0000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0259   73
- RMSBL  =   1.391543111106603E-004
+ RMSBL  =   1.400090580238356E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0259   73
- RMSBL  =   9.122695931917408E-006
+ RMSBL  =   9.201464489956760E-006
  GON=   30.2985301820917     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04472 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04474 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02263 COSBS= 0.97465 SINBS= 0.22374 GWNES=  0.00000
+ ALENS= 0.02264 COSBS= 0.97465 SINBS= 0.22374 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -10442,26 +10441,26 @@ m2.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0259   73
- RMSBL  =   7.271585873313362E-002
+ RMSBL  =   7.274856773173945E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0277   73
- RMSBL  =   2.275472955053448E-003
+ RMSBL  =   2.388977954902759E-003
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0277   73
- RMSBL  =   5.691809681187575E-005
+ RMSBL  =   6.556024801587230E-005
  GON=   30.1898544356836     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04466 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04468 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02261 COSBS= 0.97507 SINBS= 0.22189 GWNES=  0.00000
+ ALENS= 0.02262 COSBS= 0.97507 SINBS= 0.22189 GWNES=  0.00000
  
  
  
@@ -10482,21 +10481,21 @@ m2.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0277   73
- RMSBL  =   1.448687305531940E-004
+ RMSBL  =   1.456940565859794E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0277   73
- RMSBL  =   9.419071687337779E-006
+ RMSBL  =   9.502944914916342E-006
  GON=   30.1898544356836     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04466 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04468 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02261 COSBS= 0.97507 SINBS= 0.22189 GWNES=  0.00000
+ ALENS= 0.02262 COSBS= 0.97507 SINBS= 0.22189 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -12064,31 +12063,31 @@ m3.0000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0277   73
- RMSBL  =   7.619635871968355E-002
+ RMSBL  =   7.637876045272407E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   9.193699123739784E-003
+ RMSBL  =   9.404041782207596E-003
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   5.374189465007484E-004
+ RMSBL  =   6.059384695361607E-004
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   1.310671951625546E-005
+ RMSBL  =   1.242115883340013E-005
  GON=   30.0807086651354     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04461 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04463 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02260 COSBS= 0.97549 SINBS= 0.22003 GWNES=  0.00000
+ ALENS= 0.02261 COSBS= 0.97549 SINBS= 0.22003 GWNES=  0.00000
  
  
  
@@ -12109,26 +12108,26 @@ m3.0000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   2.735004203152970E-003
+ RMSBL  =   2.747204050346423E-003
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   2.560777519913364E-004
+ RMSBL  =   2.510470651054905E-004
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   2.477957266787137E-005
+ RMSBL  =   2.375644641252706E-005
  GON=   30.0807086651354     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04461 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04463 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02260 COSBS= 0.97549 SINBS= 0.22003 GWNES=  0.00000
+ ALENS= 0.02261 COSBS= 0.97549 SINBS= 0.22003 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -13696,46 +13695,51 @@ m3.5000/
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0295   74
- RMSBL  =   0.370531334184745     
+ RMSBL  =   0.358682653551642     
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0315   74
- RMSBL  =   0.202435624330794     
+ RMSBL  =   0.195670507581634     
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0315   74
- RMSBL  =   0.100334033694711     
+ RMSBL  =   9.762876395380410E-002
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
  Side 2 forced transition at S =  0.8006   39
       Stagnation location at S =  1.0315   74
- RMSBL  =   4.885543250792362E-002
+ RMSBL  =   4.791782424310249E-002
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8107   40
+ Side 2  free  transition at S =  0.8144   40
       Stagnation location at S =  1.0314   74
- RMSBL  =   2.115903082248775E-002
+ RMSBL  =   3.438819057280409E-002
  Num. of Iteration =             6
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8090   40
+ Side 2  free  transition at S =  0.8103   40
       Stagnation location at S =  1.0314   74
- RMSBL  =   2.205326729901675E-003
+ RMSBL  =   4.034196864696735E-003
  Num. of Iteration =             7
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8096   40
+ Side 2  free  transition at S =  0.8115   40
       Stagnation location at S =  1.0314   74
- RMSBL  =   3.740072675718099E-005
+ RMSBL  =   1.257749591925566E-004
+ Num. of Iteration =             8
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8115   40
+      Stagnation location at S =  1.0314   74
+ RMSBL  =   5.742515668533250E-007
  GON=   29.9710564990638     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04458 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04459 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02259 COSBS= 0.97591 SINBS= 0.21816 GWNES=  0.00000
+ ALENS= 0.02260 COSBS= 0.97591 SINBS= 0.21816 GWNES=  0.00000
  
  
  
@@ -13754,23 +13758,23 @@ m3.5000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8097   40
+ Side 2  free  transition at S =  0.8115   40
       Stagnation location at S =  1.0314   74
- RMSBL  =   1.589991241785723E-004
+ RMSBL  =   1.599241592009141E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8097   40
+ Side 2  free  transition at S =  0.8115   40
       Stagnation location at S =  1.0314   74
- RMSBL  =   1.175979790446307E-005
+ RMSBL  =   1.221998347352407E-005
  GON=   29.9710564990638     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04457 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04459 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02259 COSBS= 0.97591 SINBS= 0.21816 GWNES=  0.00000
+ ALENS= 0.02260 COSBS= 0.97591 SINBS= 0.21816 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -15336,33 +15340,33 @@ m4.0000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8097   40
+ Side 2  free  transition at S =  0.8115   40
       Stagnation location at S =  1.0314   74
- RMSBL  =   8.700055267979784E-002
+ RMSBL  =   8.928552394043747E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8347   42
+ Side 2  free  transition at S =  0.8357   42
       Stagnation location at S =  1.0332   74
- RMSBL  =   1.900094628911249E-002
+ RMSBL  =   2.318968030095944E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8353   42
+ Side 2  free  transition at S =  0.8370   42
       Stagnation location at S =  1.0332   74
- RMSBL  =   2.383365855246971E-003
+ RMSBL  =   2.877268273814160E-003
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8360   42
+ Side 2  free  transition at S =  0.8378   42
       Stagnation location at S =  1.0332   74
- RMSBL  =   3.868687191821544E-005
+ RMSBL  =   5.867489982836147E-005
  GON=   29.8608607394024     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04455 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04457 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02259 COSBS= 0.97633 SINBS= 0.21629 GWNES=  0.00000
+ ALENS= 0.02260 COSBS= 0.97633 SINBS= 0.21629 GWNES=  0.00000
  
  
  
@@ -15381,23 +15385,23 @@ m4.0000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8360   42
+ Side 2  free  transition at S =  0.8378   42
       Stagnation location at S =  1.0332   74
- RMSBL  =   1.685335887563033E-004
+ RMSBL  =   1.690641362677061E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8360   42
+ Side 2  free  transition at S =  0.8378   42
       Stagnation location at S =  1.0332   74
- RMSBL  =   1.241583649777113E-005
+ RMSBL  =   1.225959250104831E-005
  GON=   29.8608607394024     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04455 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
+ ALENW= 0.04457 COSBW= 0.99921 SINBW= 0.03969 GWNEW=  0.00000
  
- ALENS= 0.02259 COSBS= 0.97633 SINBS= 0.21629 GWNES=  0.00000
+ ALENS= 0.02260 COSBS= 0.97633 SINBS= 0.21629 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -16963,38 +16967,38 @@ m4.5000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8360   42
+ Side 2  free  transition at S =  0.8378   42
       Stagnation location at S =  1.0332   74
- RMSBL  =   9.325248072346287E-002
+ RMSBL  =   9.371059428210715E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8581   43
+ Side 2  free  transition at S =  0.8594   43
       Stagnation location at S =  1.0352   75
- RMSBL  =   4.712736797322815E-002
+ RMSBL  =   5.319041035920506E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8575   43
+ Side 2  free  transition at S =  0.8587   43
       Stagnation location at S =  1.0351   75
- RMSBL  =   5.498889608783703E-003
+ RMSBL  =   6.722412354677776E-003
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8584   43
+ Side 2  free  transition at S =  0.8598   43
       Stagnation location at S =  1.0350   75
- RMSBL  =   2.944776616778469E-004
+ RMSBL  =   3.906250468437357E-004
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8585   43
+ Side 2  free  transition at S =  0.8599   43
       Stagnation location at S =  1.0350   75
- RMSBL  =   1.279580163046506E-006
+ RMSBL  =   2.296715589085099E-006
  GON=   16.7912714978908     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04449 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
- ALENS= 0.02256 COSBS= 0.99995 SINBS= -.01010 GWNES=  0.00000
+ ALENS= 0.02257 COSBS= 0.99995 SINBS= -.01010 GWNES=  0.00000
  
  
  
@@ -17013,26 +17017,26 @@ m4.5000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8585   43
+ Side 2  free  transition at S =  0.8599   43
       Stagnation location at S =  1.0350   75
- RMSBL  =   4.005189024913636E-003
+ RMSBL  =   4.004734887290111E-003
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8585   43
+ Side 2  free  transition at S =  0.8599   43
       Stagnation location at S =  1.0351   75
- RMSBL  =   1.228025963380521E-004
+ RMSBL  =   1.226894277219688E-004
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8585   43
+ Side 2  free  transition at S =  0.8599   43
       Stagnation location at S =  1.0351   75
- RMSBL  =   4.959884481305099E-006
+ RMSBL  =   5.028528903354912E-006
  GON=   16.7912714978908     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04446 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04448 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
  ALENS= 0.02256 COSBS= 0.99995 SINBS= -.01010 GWNES=  0.00000
  
@@ -18600,38 +18604,38 @@ m5.0000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8585   43
+ Side 2  free  transition at S =  0.8599   43
       Stagnation location at S =  1.0351   75
- RMSBL  =   0.113841699411530     
+ RMSBL  =   0.118172798183951     
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8657   44
+ Side 2  free  transition at S =  0.8671   44
       Stagnation location at S =  1.0371   75
- RMSBL  =   5.301660818075545E-002
+ RMSBL  =   5.460787923993076E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8770   45
+ Side 2  free  transition at S =  0.8780   45
       Stagnation location at S =  1.0370   75
- RMSBL  =   1.977361372880419E-002
+ RMSBL  =   2.225416370288385E-002
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8768   45
+ Side 2  free  transition at S =  0.8782   45
       Stagnation location at S =  1.0370   75
- RMSBL  =   9.378189669144007E-004
+ RMSBL  =   8.858220479128136E-004
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8769   45
+ Side 2  free  transition at S =  0.8783   45
       Stagnation location at S =  1.0370   75
- RMSBL  =   1.064303920944023E-005
+ RMSBL  =   1.007915891909443E-005
  GON=   16.7630859955191     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04448 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
- ALENS= 0.02257 COSBS= 0.99994 SINBS= -.01059 GWNES=  0.00000
+ ALENS= 0.02258 COSBS= 0.99994 SINBS= -.01059 GWNES=  0.00000
  
  
  
@@ -18650,21 +18654,21 @@ m5.0000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8769   45
+ Side 2  free  transition at S =  0.8783   45
       Stagnation location at S =  1.0370   75
- RMSBL  =   4.489446944062918E-004
+ RMSBL  =   4.517181122771484E-004
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8769   45
+ Side 2  free  transition at S =  0.8783   45
       Stagnation location at S =  1.0370   75
- RMSBL  =   2.256422013266378E-005
+ RMSBL  =   2.290932606589071E-005
  GON=   16.7630859955191     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04446 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
  ALENS= 0.02257 COSBS= 0.99994 SINBS= -.01059 GWNES=  0.00000
  
@@ -20232,6494 +20236,78 @@ m5.5000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8770   45
+ Side 2  free  transition at S =  0.8783   45
       Stagnation location at S =  1.0370   75
- RMSBL  =   8.672275492531741E-002
- Num. of Iteration =             2
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8914   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   4.865307654034401E-002
- Num. of Iteration =             3
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8915   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.544353069420443E-002
- Num. of Iteration =             4
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.121344701742039E-002
- Num. of Iteration =             5
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.678380879066459E-002
- Num. of Iteration =             6
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.659977921757170E-002
- Num. of Iteration =             7
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   3.550307304178643E-002
- Num. of Iteration =             8
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   6.928886064495252E-002
- Num. of Iteration =             9
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   0.501001010610442     
- RMSBL increasing 
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- IERROR =            1
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- TEANGLE (deg)=   19.7231303662231     
- DXYNOD(1)=  3.964355388378922E-002
- DXYNOD(N)= -0.314395458077469     
- CHORD =   0.999583770923067     
- TR =  0.200000000000000     
- TR2 =  0.800603891799591     
- TR =  0.200000000000000     
- TR2 =   1.25155872391128     
- 
- *******************
-  NTIME=            1
- *******************
- 
- xxxxxxxxxxxxxxxxxxx
- ANGLE=  -5.25000000000000     
- xxxxxxxxxxxxxxxxxxx
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- 
- -------------------
-  ITERAT=            2
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            2
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            3
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            4
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            5
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            6
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            7
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            8
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            9
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           10
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           11
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           12
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           13
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           14
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           15
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           16
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           17
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           18
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           19
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           20
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           21
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           22
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           23
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           24
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           25
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           26
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           27
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           28
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           29
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           30
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           31
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           32
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           33
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           34
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           35
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           36
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           37
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           38
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           39
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           40
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           41
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           42
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           43
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           44
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           45
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           46
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           47
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           48
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           49
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           50
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03940 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           51
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- Num. of Iteration =             1
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8770   45
-      Stagnation location at S =  1.0370   75
- RMSBL  =   4.331222630537877E-002
- Num. of Iteration =             2
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8850   46
-      Stagnation location at S =  1.0379   75
- RMSBL  =   1.219386041968521E-002
- Num. of Iteration =             3
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8845   46
-      Stagnation location at S =  1.0380   75
- RMSBL  =   2.349942951172751E-004
- Num. of Iteration =             4
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8845   46
-      Stagnation location at S =  1.0380   75
- RMSBL  =   4.089272862564600E-006
- GON=   16.7489943347660     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02258 COSBS= 0.99994 SINBS= -.01083 GWNES=  0.00000
- 
- 
- 
- 
- -------------------
-  ITERAT=            2
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- Num. of Iteration =             1
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8845   46
-      Stagnation location at S =  1.0380   75
- RMSBL  =   4.391355636042718E-004
- Num. of Iteration =             2
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8845   46
-      Stagnation location at S =  1.0380   75
- RMSBL  =   2.677682123661259E-005
- GON=   16.7489943347660     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.04446 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02257 COSBS= 0.99994 SINBS= -.01083 GWNES=  0.00000
- 
- 
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- IERROR =            0
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- TEANGLE (deg)=   19.7231303662231     
- DXYNOD(1)=  3.964355388378922E-002
- DXYNOD(N)= -0.314395458077469     
- CHORD =   0.999583770923067     
- TR =  0.200000000000000     
- TR2 =  0.800603891799591     
- TR =  0.200000000000000     
- TR2 =   1.25155872391128     
- 
- *******************
-  NTIME=            1
- *******************
- 
- xxxxxxxxxxxxxxxxxxx
- ANGLE=  -5.50000000000000     
- xxxxxxxxxxxxxxxxxxx
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- 
- -------------------
-  ITERAT=            2
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            2
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            3
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            4
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            5
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            6
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            7
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            8
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            9
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           10
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           11
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           12
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           13
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           14
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           15
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           16
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           17
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           18
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           19
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           20
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           21
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           22
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           23
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           24
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           25
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           26
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           27
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           28
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           29
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           30
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           31
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           32
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           33
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           34
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           35
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           36
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           37
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           38
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           39
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           40
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           41
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           42
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           43
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           44
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           45
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           46
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           47
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           48
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           49
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           50
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           51
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- Num. of Iteration =             1
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8845   46
-      Stagnation location at S =  1.0380   75
- RMSBL  =   5.030945680030588E-002
- Num. of Iteration =             2
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8922   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.474505205078233E-002
- Num. of Iteration =             3
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.292913864738623E-002
- Num. of Iteration =             4
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   2.773014217252442E-002
- Num. of Iteration =             5
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   1.976031523022167E-002
- Num. of Iteration =             6
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   76
- RMSBL  =   4.510008358614766E-002
- Num. of Iteration =             7
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   6.344433742614092E-002
- Num. of Iteration =             8
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   0.398749509738146     
- RMSBL increasing 
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- IERROR =            1
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- TEANGLE (deg)=   19.7231303662231     
- DXYNOD(1)=  3.964355388378922E-002
- DXYNOD(N)= -0.314395458077469     
- CHORD =   0.999583770923067     
- TR =  0.200000000000000     
- TR2 =  0.800603891799591     
- TR =  0.200000000000000     
- TR2 =   1.25155872391128     
- 
- *******************
-  NTIME=            1
- *******************
- 
- xxxxxxxxxxxxxxxxxxx
- ANGLE=  -5.37500000000000     
- xxxxxxxxxxxxxxxxxxx
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- 
- -------------------
-  ITERAT=            2
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            2
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            3
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            4
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            5
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            6
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            7
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            8
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            9
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           10
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           11
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           12
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           13
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           14
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           15
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           16
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           17
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           18
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           19
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           20
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           21
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           22
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           23
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           24
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           25
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           26
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           27
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           28
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           29
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           30
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           31
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           32
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           33
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           34
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           35
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           36
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           37
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           38
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           39
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           40
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           41
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           42
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           43
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           44
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           45
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           46
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           47
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           48
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           49
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           50
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           51
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- Num. of Iteration =             1
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8845   46
-      Stagnation location at S =  1.0380   75
- RMSBL  =   2.510576089192163E-002
- Num. of Iteration =             2
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8886   46
-      Stagnation location at S =  1.0384   75
- RMSBL  =   1.275440515824657E-003
- Num. of Iteration =             3
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8885   46
-      Stagnation location at S =  1.0384   75
- RMSBL  =   2.415528952756062E-005
- GON=   16.7419473597818     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02258 COSBS= 0.99994 SINBS= -.01096 GWNES=  0.00000
- 
- 
- 
- 
- -------------------
-  ITERAT=            2
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- Num. of Iteration =             1
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8885   46
-      Stagnation location at S =  1.0384   75
- RMSBL  =   4.469461813293267E-004
- Num. of Iteration =             2
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8885   46
-      Stagnation location at S =  1.0384   75
- RMSBL  =   2.172177334723522E-005
- GON=   16.7419473597818     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.04446 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02257 COSBS= 0.99994 SINBS= -.01096 GWNES=  0.00000
- 
- 
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- IERROR =            0
- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- TEANGLE (deg)=   19.7231303662231     
- DXYNOD(1)=  3.964355388378922E-002
- DXYNOD(N)= -0.314395458077469     
- CHORD =   0.999583770923067     
- TR =  0.200000000000000     
- TR2 =  0.800603891799591     
- TR =  0.200000000000000     
- TR2 =   1.25155872391128     
- 
- *******************
-  NTIME=            1
- *******************
- 
- xxxxxxxxxxxxxxxxxxx
- ANGLE=  -5.50000000000000     
- xxxxxxxxxxxxxxxxxxx
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- 
- -------------------
-  ITERAT=            2
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            2
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            3
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            4
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            5
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            6
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            7
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            8
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=            9
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           10
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           11
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           12
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           13
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           14
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           15
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           16
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           17
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           18
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           19
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           20
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           21
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           22
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           23
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           24
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           25
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           26
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           27
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           28
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           29
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           30
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           31
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           32
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           33
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           34
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           35
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           36
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           37
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           38
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           39
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           40
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           41
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           42
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           43
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           44
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           45
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           46
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           47
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           48
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           49
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           50
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- GON=   20.0000000000000     
- EPSILON=  2.500000000000000E-002
- 
- 
-  IBLCONV=   0
- 
- ALENW= 0.03939 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
- 
- ALENS= 0.02162 COSBS= 0.99895 SINBS= 0.04589 GWNES=  0.00000
- 
- 
- 
- *******************
-  NTIME=           51
- *******************
- 
- 
- 
- -------------------
-  ITERAT=            1
- -------------------
- 
-  XS   =   1.00000 YS  = 0.00156 XSREAL = 1.00000
-  DTHM =   0.00000 DT  = 0.05000
-  EPS  =   0.02500
- 
- 
-  ISEPAR =   0
-  NS     =  140
- 
- Num. of Iteration =             1
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8886   46
-      Stagnation location at S =  1.0384   75
- RMSBL  =   3.399349829911636E-002
+ RMSBL  =   8.792142890387306E-002
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
  Side 2  free  transition at S =  0.8921   46
-      Stagnation location at S =  1.0388   75
- RMSBL  =   2.379480610530351E-002
+      Stagnation location at S =  1.0389   76
+ RMSBL  =   5.135158923987736E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   1.036212686989882E-003
+ Side 2  free  transition at S =  0.8925   46
+      Stagnation location at S =  1.0389   76
+ RMSBL  =   3.120126394364260E-002
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
+ Side 2  free  transition at S =  0.8929   46
       Stagnation location at S =  1.0389   75
- RMSBL  =   4.901920760303201E-004
+ RMSBL  =   5.508369240262500E-002
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
+ Side 2  free  transition at S =  0.8929   46
       Stagnation location at S =  1.0389   75
- RMSBL  =   2.717151236033967E-004
+ RMSBL  =   9.306517333458947E-002
  Num. of Iteration =             6
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   1.507272466472031E-004
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   8.467487663579822E-002
  Num. of Iteration =             7
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   8.347736512884194E-005
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   4.924168579914808E-002
+ Num. of Iteration =             8
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   1.379082255460929E-002
+ Num. of Iteration =             9
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   2.035771283598000E-003
+ Num. of Iteration =            10
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   7.958062114306585E-004
+ Num. of Iteration =            11
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   3.412836562376380E-004
+ Num. of Iteration =            12
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   1.472746810351793E-004
+ Num. of Iteration =            13
+ Side 1 forced transition at S =  1.2516  100
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   6.369622641982894E-005
  GON=   16.7348990672193     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04449 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
- ALENS= 0.02258 COSBS= 0.99994 SINBS= -.01108 GWNES=  0.00000
+ ALENS= 0.02259 COSBS= 0.99994 SINBS= -.01108 GWNES=  0.00000
  
  
  
@@ -26738,58 +20326,43 @@ m5.5000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   4.102126305785780E-003
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   2.991758254890844E-003
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   2.408702497012808E-003
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   1.327049269705827E-003
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   1.451862190733980E-003
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   6.184177169087846E-004
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   8.920017602188050E-004
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   2.900789039891733E-004
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   5.526841814010986E-004
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   1.366431227767039E-004
  Num. of Iteration =             6
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   3.442093178935814E-004
- Num. of Iteration =             7
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   2.150476046814903E-004
- Num. of Iteration =             8
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   1.346146941160921E-004
- Num. of Iteration =             9
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =   8.436771686580103E-005
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =   6.448631860490271E-005
  GON=   16.7348990672193     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04447 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04449 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
- ALENS= 0.02258 COSBS= 0.99994 SINBS= -.01108 GWNES=  0.00000
+ ALENS= 0.02259 COSBS= 0.99994 SINBS= -.01108 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -28355,66 +21928,61 @@ m6.0000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8918   46
-      Stagnation location at S =  1.0389   75
- RMSBL  =    4.68905447085136     
+ Side 2  free  transition at S =  0.8929   46
+      Stagnation location at S =  1.0388   75
+ RMSBL  =    3.09297396186869     
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.8921   46
+ Side 2  free  transition at S =  0.8933   46
       Stagnation location at S =  1.0411   76
- RMSBL  =   8.958140592819937E-002
+ RMSBL  =   9.705776511819038E-002
  Num. of Iteration =             3
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9018   47
-      Stagnation location at S =  1.0409   76
- RMSBL  =   6.446746339656198E-002
+ Side 2  free  transition at S =  0.9029   47
+      Stagnation location at S =  1.0408   76
+ RMSBL  =   6.674226186429136E-002
  Num. of Iteration =             4
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9010   47
+ Side 2  free  transition at S =  0.9019   47
       Stagnation location at S =  1.0410   76
- RMSBL  =   8.902118559643515E-002
+ RMSBL  =   9.035647835314174E-002
  Num. of Iteration =             5
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9006   47
-      Stagnation location at S =  1.0410   76
- RMSBL  =   0.108619758968958     
+ Side 2  free  transition at S =  0.9014   47
+      Stagnation location at S =  1.0411   76
+ RMSBL  =   0.110958585557462     
  Num. of Iteration =             6
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9012   47
+ Side 2  free  transition at S =  0.9018   47
       Stagnation location at S =  1.0410   76
- RMSBL  =   9.861233518685852E-002
+ RMSBL  =   0.109003142092157     
  Num. of Iteration =             7
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9020   47
+ Side 2  free  transition at S =  0.9027   47
       Stagnation location at S =  1.0410   76
- RMSBL  =   8.510062101341079E-002
+ RMSBL  =   2.146711679213029E-002
  Num. of Iteration =             8
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9026   47
+ Side 2  free  transition at S =  0.9043   48
       Stagnation location at S =  1.0409   76
- RMSBL  =   1.319821593318336E-002
+ RMSBL  =   8.332241476062098E-003
  Num. of Iteration =             9
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9035   48
+ Side 2  free  transition at S =  0.9051   48
       Stagnation location at S =  1.0409   76
- RMSBL  =   3.965080032340557E-003
+ RMSBL  =   4.904652835797405E-004
  Num. of Iteration =            10
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9039   48
+ Side 2  free  transition at S =  0.9052   48
       Stagnation location at S =  1.0409   76
- RMSBL  =   2.112029463797098E-004
- Num. of Iteration =            11
- Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9040   48
-      Stagnation location at S =  1.0409   76
- RMSBL  =   4.162733929085042E-006
+ RMSBL  =   8.439155308473400E-006
  GON=   16.7066841815346     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04450 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04452 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
  ALENS= 0.02261 COSBS= 0.99993 SINBS= -.01157 GWNES=  0.00000
  
@@ -28435,23 +22003,23 @@ m6.0000/
  
  Num. of Iteration =             1
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9040   48
+ Side 2  free  transition at S =  0.9052   48
       Stagnation location at S =  1.0409   76
- RMSBL  =   5.672713450425670E-003
+ RMSBL  =   5.666507674306455E-003
  Num. of Iteration =             2
  Side 1 forced transition at S =  1.2516  100
- Side 2  free  transition at S =  0.9040   48
+ Side 2  free  transition at S =  0.9052   48
       Stagnation location at S =  1.0410   76
- RMSBL  =   7.893097024850181E-005
+ RMSBL  =   7.907332287449506E-005
  GON=   16.7066841815346     
  EPSILON=  2.500000000000000E-002
  
  
   IBLCONV=   0
  
- ALENW= 0.04450 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
+ ALENW= 0.04451 COSBW= 0.95440 SINBW= -.29854 GWNEW=  0.00000
  
- ALENS= 0.02260 COSBS= 0.99993 SINBS= -.01157 GWNES=  0.00000
+ ALENS= 0.02261 COSBS= 0.99993 SINBS= -.01157 GWNES=  0.00000
  
  
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

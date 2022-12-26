@@ -42,7 +42,7 @@ writeControl timeStep;
 
 writeInterval	1.;
 
-purgeWrite	3;
+purgeWrite	5;
 
 writeFormat	binary;
 
@@ -73,7 +73,6 @@ functions {
 			U
 			k
 			omega
-			vorticity
 			nut
 		);
 	}
@@ -89,12 +88,13 @@ functions {
 		);
 		log true;
 		UName U;
+
 		rho rhoInf;
 		pRef 0.;
 		rhoInf 1;
 		CofR  (0. 0. 0.);
-		liftDir (-0.34899 0.999390 0.);
-		dragDir (0.999390 0.34899 0.);
+		liftDir (-0.10452 0.99452 0.);
+		dragDir (0.99452 0.10452 0.);
 		pitchAxis (0. 0. 1.);
 		magUInf 1.;
 		lRef 1.;
@@ -108,7 +108,7 @@ functions {
 		calcTotal	yes;
 		calcCoeff	yes;
 		U	U;
-		UInf (9.99390 -0.34899 0);
+		UInf (0.99452 0.10452 0.);
 		rho rhoInf;
 		rhoInf	1;
 		pRef	0;
@@ -129,7 +129,10 @@ functions {
 	
 	vorticity1
 	{
+		// Mandatory entries (unmodifiable)
     		type        vorticity;
-    		libs        ("libfieldFunctionObjects.so");
+    		libs        (fieldFunctionObjects);
+		//Optional
+		region 	    SideHigh;
 	}
 }
