@@ -1,12 +1,9 @@
-# To add a new cell, type ''
-# To add a new markdown cell, type ' '
-
 import numpy as np
-import os, sys
+import os
+import sys
 import matplotlib.pyplot as plt
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
-from xfoil.test import naca0012
 
 from pathlib import Path
 from airLibs import airfoil as af
@@ -48,13 +45,15 @@ angles = np.linspace(AoAmin, AoAmax, NoAoA)
 Reynolds = np.logspace(np.log10(Remin), np.log10(Remax), 20, base=10)
 Mach = np.linspace(Machmax, Machmin, 10)
 
+Reyn = Remax
+MACH = Machmax
+
 
 CASE = "Wing"
 os.chdir(CASE)
 casedir = os.getcwd()
-plotting = True
 cleaning = False
-calcF2W = False
+calcF2W = True
 calcOpenFoam = False
 calcXFoil = False
 
@@ -74,30 +73,22 @@ airfoil = airfile[4:]
 n_points = 100
 pts = af.saveAirfoil(["s", airfile, airfoil, 0, n_points])
 x, y = pts.T
-plt.plot(x[: n_points - 20], y[: n_points - 20], "r")
-plt.plot(x[n_points:-20], y[n_points:-20], "b")
+plt.plot(x[: n_points], y[: n_points], "r")
+plt.plot(x[n_points:], y[n_points:], "b")
 
 # plt.plot(x,y)
 plt.axis("scaled")
 
 
-# # Setup Case
+# # Foil2Wake
 
 
 Ncrit = 9
 ftrip_low = {"pos": 0.1, "neg": 0.2}
 ftrip_up = {"pos": 0.1, "neg": 0.2}
 
-angles = np.linspace(-6, 15, 43)
-Reyn = 346153  # np.logspace(3,6,20)
-MACH = 0.03
-
-
-# # Foil2Wake
-
-
-if cleaning == True:
-    f2w.deleteResults()
+# if cleaning == True:
+#     f2w.deleteResults()
 if calcF2W == True:
     clcd = f2w.runFw2(Reyn, MACH, ftrip_low, ftrip_up, angles, airfile)
 clcdcmFW = f2w.makeCLCD(Reyn, MACH, angles)
@@ -108,31 +99,22 @@ clcdcmFW = f2w.makeCLCD(Reyn, MACH, angles)
 
 xf = XFoil()
 xf.Re = Reyn
-xf.max_iter = 40
+xf.max_iter = 100
 xf.print = False
 xpts, ypts = pts.T
 naca0008 = XFAirfoil(x=xpts, y=ypts)
 xf.airfoil = naca0008
-aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(-6, 15, 0.5)
-clcdcmXF = np.array([aXF, clXF, cdXF, cmXF]).T
+aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, 0.5)
+# clcdcmXF = np.array([aXF, clXF, cdXF, cmXF]).T
 
 
 # # OpenFoam
 
 
 os.chdir(casedir)
-a = clcdcmFW[:, 0]
+maxITER = 10500
 if calcOpenFoam == True:
     of.makeMesh(airfile)
-    of.setupOpenFoam(Reyn, MACH, angles, silent=True)
-    of.runFoam(a)
-clcdcmOF = of.makeCLCD(angles)
-
-
-# # Plotting
-
-
-f2w = [clcdcmFW, "rx", "Foil2Wake"]
-openF = [clcdcmOF, "kx", "OpenFoam"]
-Xfoil = [clcdcmXF, "bx", "XFoil"]
-aplt.plotAeorCoeffs([f2w, openF, Xfoil])
+    of.setupOpenFoam(Reyn, MACH, angles, silent=True, maxITER=maxITER)
+    of.runFoam(angles)
+# clcdcmOF = of.makeCLCD(angles)
