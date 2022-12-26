@@ -3,12 +3,15 @@ from airfoils import Airfoil
 import numpy as np
 import urllib.request
 import matplotlib.pyplot as plt
-import os,sys,getopt
+import os
+import sys
+import getopt
 
 # # Airfoil
 # ##### 0 = Read from python module
 # ##### 1 = Read from airfoiltools.com
 # ##### 2 = load from file
+
 
 class AirfoilS(Airfoil):
     def __init__(self, upper, lower):
@@ -50,7 +53,7 @@ def saveAirfoil(argv):
     options = argv
     if options == []:
         print("No options defined try -h")
-        return 0 
+        return 0
     elif options[0] == '-h':
         print('options: \n-s Save to file\n Usage: python airfoil.py -s file naca mode\
                 \n\nnaca = 4 or 5 digit NACA\nmode: 0-> Load from lib, 1-> Load from File, 2-> Load from Web')
@@ -62,24 +65,27 @@ def saveAirfoil(argv):
         mode = int(options[3])
         n_points = int(options[4])
     f = AirfoilS.NACA(Airfoiln, n_points=n_points)
-    
-    # # Save to file
-    if save == True:
-        if mode == 0:
+
+    # # Return and Save to file
+    if mode == 0:
         # # Load from Lib
-            pt0 = f.selig
+        pt0 = f.selig
+        if save == True:
             np.savetxt(filen, pt0.T)
-        elif mode == 1:
+    elif mode == 1:
         # # Load from the file mode 1
-            pt1 = np.loadtxt(filen)
+        pt1 = np.loadtxt(filen)
+        if save == True:
             np.savetxt(filen, pt1)
-            return pt1
-        elif mode == 2:
+        return pt1
+    elif mode == 2:
         # # Fetch from the web mode 2
-            pt2 = f.selig2
+        pt2 = f.selig2
+        if save == True:
             np.savetxt(filen, pt2.T)
-            return pt2.T
+        return pt2.T
     return pt0.T
 
+
 if __name__ == "__main__":
-   saveAirfoil(sys.argv[1:])
+    saveAirfoil(sys.argv[1:])
