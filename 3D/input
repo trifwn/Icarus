@@ -1,18 +1,12 @@
 dfile.yours
-0
 1
 1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-
- 
-
-
-
+3600   ! NTIMER
+10000  ! NTIMEHYB
+3525   ! ITERWAK
+3525   ! ITERVEL
+1.
+10.
+50.
+50.
+50.

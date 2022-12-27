@@ -1,4 +1,3 @@
-from cmath import nan
 import os
 import numpy as np
 from time import sleep
