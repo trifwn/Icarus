@@ -22,7 +22,7 @@ def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
             ang = ang * np.pi / 180
             cwd = os.getcwd()
 
-            shutil.copytree("../Base/0/", cwd + "/0/", dirs_exist_ok=True)
+            shutil.copytree("../../Base/0/", cwd + "/0/", dirs_exist_ok=True)
             filen = "0/U"
             with open(filen, "r", newline="\n") as file:
                 data = file.readlines()
@@ -30,7 +30,7 @@ def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
             with open(filen, "w") as file:
                 file.writelines(data)
 
-            shutil.copytree("../Base/constant/", cwd +
+            shutil.copytree("../../Base/constant/", cwd +
                             "/constant/", dirs_exist_ok=True)
             filen = "constant/transportProperties"
             with open(filen, "r", newline="\n") as file:
@@ -40,7 +40,7 @@ def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
             with open(filen, "w") as file:
                 file.writelines(data)
 
-            shutil.copytree("../Base/system/", cwd +
+            shutil.copytree("../../Base/system/", cwd +
                             "/system/", dirs_exist_ok=True)
             filen = "system/controlDict"
             with open(filen, "r", newline="\n") as file:
@@ -65,8 +65,11 @@ def runFoamAngle(angle):
     else:
         folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
     parentDir = os.getcwd()
+    folders = next(os.walk('.'))[1]
+    if folder[:-1] not in folders:
+        os.system(f"mkdir -p {folder}")
     os.chdir(folder)
-    os.system("../../airLibs/runFoam.sh")
+    os.system("../../../airLibs/runFoam.sh")
     os.chdir(parentDir)
     print(f'{angle} deg: Simulation Over')
 
@@ -138,6 +141,19 @@ def getCoeffs(angle):
         return None
     return data[-1]
 
+
+def cleanOpenFoam():
+    caseDir = os.getcwd()
+    for item in next(os.walk('.'))[1]:
+        if item.startswith('m') or item.startswith(('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')):
+            os.chdir(item)
+            times = next(os.walk("."))[1]
+            times = [int(times[j]) for j in range(len(times))
+                     if times[j].isdigit()]
+            times = sorted(times)
+            for delFol in times[1:-1]:
+                os.system(f"rm -r {delFol}")
+            os.chdir(caseDir)
 
 # def reorderFoamResults(anglesAll):
 #     folders = next(os.walk("."))[1]

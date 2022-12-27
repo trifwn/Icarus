@@ -18,5 +18,5 @@ def runXFoil(Reyn, MACH, angles, airfoil, ftrip_low=1, ftrip_up=1):
     xf.airfoil = naca0008
     AoAmin = min(angles)
     AoAmax = max(angles)
-    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, 0.5)
+    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, 0.25)
     return np.array([aXF, clXF, cdXF, cmXF]).T

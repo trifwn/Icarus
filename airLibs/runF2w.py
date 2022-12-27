@@ -2,6 +2,7 @@ from cmath import nan
 import os
 import numpy as np
 from time import sleep
+import shutil
 
 
 def anglesSep(anglesALL):
@@ -19,39 +20,24 @@ def anglesSep(anglesALL):
     return nangles, pangles
 
 
-def makeCLCD(Reynolds, Mach, anglesALL):
-    nangles, pangles = anglesSep(anglesALL)
+def makeCLCD(Reynolds, Mach):
     folders = next(os.walk('.'))[1]
     print('OK')
     with open('output_bat', 'w') as file:
-        folder = 'm'+str(nangles[-1])[::-1].strip('-').zfill(6)[::-1] + '/'
+        folder = folders[0]
         file.writelines('cd '+folder+'\n../write_out\n')
-        for ang in nangles[::]:
-            folder = 'm'+str(ang)[::-1].strip('-').zfill(6)[::-1] + '/'
-            if folder[:-1] in folders:
-                if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
-                    file.writelines('cd ../'+folder+'\n../write_out\n')
-        for ang in pangles:
-            folder = str(ang)[::-1].zfill(7)[::-1] + '/'
-            if folder[:-1] in folders:
-                if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
-                    file.writelines('cd ../'+folder+'\n../write_out\n')
+        for folder in folders[1:]:
+            if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
+                file.writelines('cd ../'+folder+'\n../write_out\n')
 
         # Write Cat command
         file.writelines('cd ..\n')
         file.writelines('echo "Reynolds: '+str(Reynolds) +
                         '\\nMach: ' + str(Mach) + '" > clcd.out\n')
         file.writelines('cat ')
-        for ang in nangles[::-1]:
-            folder = 'm'+str(ang)[::-1].strip('-').zfill(6)[::-1] + '/'
-            if folder[:-1] in folders:
-                if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
-                    file.writelines(folder+'clcd.out ')
-        for ang in pangles:
-            folder = str(ang)[::-1].zfill(7)[::-1] + '/'
-            if folder[:-1] in folders:
-                if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
-                    file.writelines(folder+'clcd.out ')
+        for folder in folders[::-1]:
+            if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
+                file.writelines(folder+'/clcd.out ')
         file.writelines('>> clcd.out')
     os.system('./output_bat')
 
@@ -140,3 +126,12 @@ def removeResults(angles):
             os.system(
                 'rm -f AERLOAD.OUT AIRFOIL.OUT BDLAYER.OUT COEFPRE.OUT SEPWAKE.OUT TREWAKE.OUT clcd.out SOLOUTI.INI')
             os.chdir(parentDir)
+
+
+def setupF2W():
+    filesNeeded = ['design.inp', 'design_neg.inp', 'design_pos.inp',
+                   'f2w.inp', 'f2w_neg.inp', 'f2w_pos.inp', 'io.files', 'write_out']
+    for item in filesNeeded:
+        shutil.copy(f'../Base/{item}', '.')
+    if 'foil' not in next(os.walk('.'))[2]:
+        os.system('ln -sv ../../foil foil')

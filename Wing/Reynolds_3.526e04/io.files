@@ -1,0 +1,15 @@
+***** input files  *****
+design.inp
+f2w.inp
+naca4415
+--
+---
+***** OUTPUT FILES *****
+AIRFOIL.OUT
+TREWAKE.OUT
+SEPWAKE.OUT
+COEFPRE.OUT
+AERLOAD.OUT
+BDLAYER.OUT
+SOLOUTI.INI
+SOLOUTI.TMP

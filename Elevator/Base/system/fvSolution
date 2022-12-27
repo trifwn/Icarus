@@ -68,6 +68,7 @@ SIMPLE
         omega           1e-7;
         epsilon         1e-7;
         nuTilda         1e-7;
+	vorticity	1e-7;
     }
 }
 

@@ -2,16 +2,12 @@ import numpy as np
 import os
 import sys
 import matplotlib.pyplot as plt
-from xfoil import XFoil
-from xfoil.model import Airfoil as XFAirfoil
 
-from pathlib import Path
 from airLibs import airfoil as af
 from airLibs import runF2w as f2w
 from airLibs import plotting as aplt
 from airLibs import runOpenFoam as of
-
-from subprocess import call
+from airLibs import runXFoil as xf
 
 
 # # Reynolds And Mach and AoA
@@ -52,7 +48,7 @@ MACH = Machmax
 CASE = "Wing"
 os.chdir(CASE)
 casedir = os.getcwd()
-cleaning = False
+cleaning = True
 calcF2W = True
 calcOpenFoam = False
 calcXFoil = False
@@ -87,8 +83,8 @@ Ncrit = 9
 ftrip_low = {"pos": 0.1, "neg": 0.2}
 ftrip_up = {"pos": 0.1, "neg": 0.2}
 
-# if cleaning == True:
-#     f2w.deleteResults()
+if cleaning == True:
+    f2w.removeResults(angles)
 if calcF2W == True:
     clcd = f2w.runFw2(Reyn, MACH, ftrip_low, ftrip_up, angles, airfile)
 clcdcmFW = f2w.makeCLCD(Reyn, MACH, angles)
@@ -97,15 +93,7 @@ clcdcmFW = f2w.makeCLCD(Reyn, MACH, angles)
 # # Xfoil
 
 
-xf = XFoil()
-xf.Re = Reyn
-xf.max_iter = 100
-xf.print = False
-xpts, ypts = pts.T
-naca0008 = XFAirfoil(x=xpts, y=ypts)
-xf.airfoil = naca0008
-aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, 0.5)
-# clcdcmXF = np.array([aXF, clXF, cdXF, cmXF]).T
+clcdcmXF = xf.runXFoil(Reyn, MACH, angles, airfoil)
 
 
 # # OpenFoam
@@ -117,4 +105,4 @@ if calcOpenFoam == True:
     of.makeMesh(airfile)
     of.setupOpenFoam(Reyn, MACH, angles, silent=True, maxITER=maxITER)
     of.runFoam(angles)
-# clcdcmOF = of.makeCLCD(angles)
+clcdcmOF = of.makeCLCD(angles)
