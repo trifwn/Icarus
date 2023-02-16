@@ -3,9 +3,9 @@
                                                                 <blank>
 Three lines follow where text can be included as HEADER of the main OUTPUT file
 <------------------  maximum line length  ------------------------------------->
-HERMES V ANALYSIS
---- 
-    
+RADIALLY SYMMETRIC FLOW AROUND A 3-BLADED WIND TURBINE
+--- Test case for GENUVP Version 3
+    GCS, pitching, sheared inflow, 3-bodies=blades
                                                                 <blank>
 Give the names of the OUTPUT files
 <---------->
@@ -36,7 +36,7 @@ b. The TIME parameters
 200         NTIMER     number of the last time step to be performed
 0.01        DT         time step
 0           IDT        if IDT=1 then DT is the number of steps per rotation
-1.          OMEGAT     the rotation speed for the definition of the PERIOD
+0.          OMEGAT     the rotation speed for the definition of the PERIOD
 2           NMETHT     =1 for Euler =2 for Adams Bashford time integrat. scheme
 0           NEMTIP     =0,1. The latter means that tip-emission takes place
 0           NTIMET     time step that tip-emission begins
@@ -47,8 +47,8 @@ b. The TIME parameters
 c. The SOLUTION parameters
 
 0           IMAT       =0 AS is calculated, =1 AS is read from disk
-300         ITERM      maximum number of potential iterations
-0.8         RELAXS     relaxation factor for the singularity distributions
+1000        ITERM      maximum number of potential iterations
+0.9         RELAXS     relaxation factor for the singularity distributions
 0.01        EPSDS      convergence tolerance of the potential calculations
 
 d. The MOVEMENT parameters

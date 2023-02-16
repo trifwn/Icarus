@@ -1,28 +1,28 @@
 INPUT FILE FOR THE LEFT  PART OF A WING 
 0
 IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]
-1          4415
+1          0008
 
 IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]
 0          0          0
 
 NFILFL     NFILDS     NFILWG      [corresponding file names]
-Rwing.FL   Rwing.DS   Rwing.WG
+Rtail.FL   Rtail.DS   Rtail.WG
 
 XOO        YOO        ZOO
-0.0        0.0        0.0
+0.54        0.0        0.0
 
 PITCH      CONE       WNGANG[azimuthal angle]
-2.8        0.0        0.0
+0.0        0.0        0.0
 
 IEXKS      NFILKS      AKSI(1)    AKSI(NNC)
 1                      0.         1.         
 
 IEXRC      NFILRC      RC  (1)    RC  (NNC)
-1                      0.         1.13
+1                      0.         0.169
 
 IEXCH      NFILCH      FCCH(1)    FCCH(2)    FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)
-4                      0.159       -0.07699   0.         0.         0.         0.
+4                      0.13       -0.59172   0.         0.         0.         0.
 
 IEXTW      NFILTW      FCTW(1)    FCTW(2)    FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)
 4                      0.         0.         0.         0.         0.         0.         
