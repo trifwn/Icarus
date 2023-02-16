@@ -1,4 +1,6 @@
-cd 0.00000
+cd 2.75000
+../write_out
+cd ../0.00000
 ../write_out
 cd ../0.25000
 ../write_out
@@ -20,18 +22,16 @@ cd ../2.25000
 ../write_out
 cd ../2.50000
 ../write_out
-cd ../2.75000
-../write_out
-cd ../3.00000
-../write_out
-cd ../3.25000
-../write_out
 cd ../m0.0000
 ../write_out
 cd ../m0.2500
 ../write_out
 cd ../m0.5000
 ../write_out
+cd ../3.00000
+../write_out
+cd ../3.25000
+../write_out
 cd ..
 echo "Reynolds: 35256.41025641026\nMach: 0.08816009873931058" > clcd.out
-cat m0.5000/clcd.out m0.2500/clcd.out m0.0000/clcd.out 3.25000/clcd.out 3.00000/clcd.out 2.75000/clcd.out 2.50000/clcd.out 2.25000/clcd.out 2.00000/clcd.out 1.75000/clcd.out 1.50000/clcd.out 1.25000/clcd.out 1.00000/clcd.out 0.75000/clcd.out 0.50000/clcd.out 0.25000/clcd.out 0.00000/clcd.out >> clcd.out
+cat 3.25000/clcd.out 3.00000/clcd.out m0.5000/clcd.out m0.2500/clcd.out m0.0000/clcd.out 2.50000/clcd.out 2.25000/clcd.out 2.00000/clcd.out 1.75000/clcd.out 1.50000/clcd.out 1.25000/clcd.out 1.00000/clcd.out 0.75000/clcd.out 0.50000/clcd.out 0.25000/clcd.out 0.00000/clcd.out 2.75000/clcd.out >> clcd.out

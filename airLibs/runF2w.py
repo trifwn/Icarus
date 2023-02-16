@@ -101,6 +101,7 @@ def runFw2(Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):
         # RUN Files
         os.system('cp design_'+name+'.inp design.inp')
         os.system('cp f2w_'+name+'.inp f2w.inp')
+        print(f'Running {angles}')
         os.system('./foil > '+name+'.out')
         os.system('rm -r TMP.dir/')
     os.system('rm -r SOLOUTI*')

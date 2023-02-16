@@ -25,15 +25,15 @@ Give the general data in FREE format
 a. The BASIC parameters
 
 1           NSYMF      =1,2,3 (no-symm, axi-symm, Y-symm)
-5           NBODT      number of bodies
-2           NBLADE     number of blades
+2           NBODT      number of bodies
+1           NBLADE     number of blades
 0           IABSREF    = 0 for GCS =1 for RCS
 1           IAXISRF    =1,2,3 gives the axis of rotation if IABSREF=1
 0.          OMEGAR     is the rotation speed of the RCS
 
 b. The TIME parameters
                                                                 <blank>
-500         NTIMER     number of the last time step to be performed
+200         NTIMER     number of the last time step to be performed
 0.01        DT         time step
 0           IDT        if IDT=1 then DT is the number of steps per rotation
 1.          OMEGAT     the rotation speed for the definition of the PERIOD
@@ -47,19 +47,19 @@ b. The TIME parameters
 c. The SOLUTION parameters
 
 0           IMAT       =0 AS is calculated, =1 AS is read from disk
-50          ITERM      maximum number of potential iterations
+100         ITERM      maximum number of potential iterations
 1.0         RELAXS     relaxation factor for the singularity distributions
 0.01        EPSDS      convergence tolerance of the potential calculations
 
 d. The MOVEMENT parameters
 
-5           NLEVELT    number of movement levels  ( 15 if tail rotor is considered ) 
+4           NLEVELT    number of movement levels  ( 15 if tail rotor is considered ) 
 
 e. The FLOW parameters
                                                                 <blank>
-46.000      UINF(1)    the velocity at infinity
- 0.000      UINF(2)    .
- 0.000      UINF(3)    .
+-19.787164932467636       UINF(1)    the velocity at infinity
+0.0       UINF(2)    .
+-2.9100006761722708       UINF(3)    .
  0.000      UREF       the reference velocity
 1.          ADIML      the length scale used for the non-dimentionalisation
 1.          ADIMT      the  time  scale used for the non-dimentionalisation
@@ -118,7 +118,7 @@ j. The MANAGEMENT parameters
 i. The FLUID parameters
 
 1.225       AIRDEN     Fluid density
-0.0000156   VISCO      Kinematic viscosity
+1.56e-05   VISCO      Kinematic viscosity
                                                                  <blank>
 k. The APPLICATION parameters
 

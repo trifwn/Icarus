@@ -5,7 +5,7 @@ import numpy as np
 
 
 def makeMesh(airfoilFile):
-    call(["/bin/bash", "-i", "-c", "../airLibs/setupFoam.sh -f " + airfoilFile])
+    call(["/bin/bash", "-c", "../../airLibs/setupFoam.sh -f " + airfoilFile])
 
 
 def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
@@ -69,6 +69,7 @@ def runFoamAngle(angle):
     if folder[:-1] not in folders:
         os.system(f"mkdir -p {folder}")
     os.chdir(folder)
+    print(os.getcwd())
     os.system("../../../airLibs/runFoam.sh")
     os.chdir(parentDir)
     print(f'{angle} deg: Simulation Over')

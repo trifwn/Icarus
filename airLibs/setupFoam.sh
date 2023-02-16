@@ -1,6 +1,6 @@
 #!/bin/bash
 source /usr/lib/openfoam/openfoam2206/etc/bashrc
-
+echo "Making Mesh"
 struct='/home/tryfonas/Applications/structAirfoilMesher/x64/Release/structAirfoilMesher'
 
 while getopts f:a:r: flag

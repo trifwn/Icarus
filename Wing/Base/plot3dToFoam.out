@@ -1,0 +1,48 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2206                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _8993af73-20221106 OPENFOAM=2206 patch=221104 version=2206
+Arch   : "LSB;label=32;scalar=64"
+Exec   : plot3dToFoam -noBlank naca4415.p3d
+Date   : Dec 28 2022
+Time   : 22:09:22
+Host   : hydra
+PID    : 1010957
+I/O    : uncollated
+Case   : /home/tryfonas/data/Uni/Semester9/Flight_Dynamics/Software/hermes/Wing/Base
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+--> FOAM Warning : 
+    From static Foam::IOstreamOption::compressionType Foam::IOstreamOption::compressionEnum(const Foam::word&, compressionType)
+    in file db/IOstreams/IOstreams/IOstreamOption.C at line 115
+    Unknown compression specifier 'uncompressed', using compression off
+Reading 1 blocks
+block 0 nx:250 ny:257 nz:2
+Reading block points
+block 0:
+Reading 128500 x coordinates...
+Reading 128500 y coordinates...
+Reading 128500 z coordinates...
+Looking at cell 0 0 0 to determine orientation.
+Right-handed block.
+
+Merged points within 1e-15 distance. Merged from 128500 down to 127986 points.
+Creating cells
+Creating boundary patches
+--> FOAM Warning : 
+    From Foam::polyMesh::polyMesh(const Foam::IOobject&, Foam::pointField&&, const Foam::cellShapeList&, const Foam::faceListList&, const Foam::wordList&, const Foam::wordList&, const Foam::word&, const Foam::word&, const Foam::wordList&, bool)
+    in file meshes/polyMesh/polyMeshFromShapeMesh.C at line 646
+    Found 127986 undefined faces in mesh; adding to default patch defaultFaces
+Writing polyMesh
+End
+

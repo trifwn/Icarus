@@ -3,9 +3,7 @@ from airfoils import Airfoil
 import numpy as np
 import urllib.request
 import matplotlib.pyplot as plt
-import os
 import sys
-import getopt
 
 # # Airfoil
 # ##### 0 = Read from python module
@@ -17,7 +15,7 @@ class AirfoilS(Airfoil):
     def __init__(self, upper, lower):
         super().__init__(upper, lower)
         self.airfoil2Selig()
-        self.getFromWeb()
+        # self.getFromWeb()
 
     @classmethod
     def NACA(self, naca, n_points=200):
@@ -89,3 +87,4 @@ def saveAirfoil(argv):
 
 if __name__ == "__main__":
     saveAirfoil(sys.argv[1:])
+    # saveAirfoil('-s','naca3123','3123','0')

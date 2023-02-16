@@ -1,37 +1,37 @@
-INPUT FILE FOR THE RIGHT PART OF A WING 
+INPUT FILE FOR THE LEFT  PART OF A WING
 0
 IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]
-3          23012
+1          4415
 
 IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]
 0          0          1
 
-NFILFL     NFILDS     NFILWG      [corresponding file names]
-  Rwing.FL   Rwing.DS   Rwing.WG  
+NFILFL     NFILDS     NFILWG
+Rwing.FL   Rwing.DS   Rwing.WG
 
 XOO        YOO        ZOO
-0.         0.         0.
+0.0        0.0        0.0
 
 PITCH      CONE       WNGANG[azimuthal angle]
--2.        0.         0.0
+2.8        0.0        0.0
 
 IEXKS      NFILKS      AKSI(1)    AKSI(NNC)
 1                      0.         1.         
 
 IEXRC      NFILRC      RC  (1)    RC  (NNC)
-1                      0.0        1.00            
+1                      0.         1.13
 
 IEXCH      NFILCH      FCCH(1)    FCCH(2)    FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)
-4                      0.180      -0.07      0.         0.         0.  
-
+4                      0.159      -0.07699   0.         0.         0.         0.
+####       katanomi xordis apo mikro se megalo me vima gt alliws skaei
 IEXTW      NFILTW      FCTW(1)    FCTW(2)    FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)
-4                      0.         0.         0.         0.         0.         0.         
+4                      0.         0.         0.         0.         0.         0.
 
 IEXXO      NFILXO      FCXO(1)    FCXO(2)    FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)
-4                      0.         0.   	     0.         0.         0.         0.
+4                      0.         0.         0.         0.         0.         0.
 
 IEXZO      NFILZO      FCZO(1)    FCZO(2)    FCZO(3)    FCZO(4)    FCZO(5)    FCZO(6)
-4                      0.         0.0	     0.         0.         0.         0.
+4                      0.         0.         0.         0.         0.         0.
 
 IEXXS      NFILXS      FCXS(1)    FCXS(2)    FCXS(3)    FCXS(4)    FCXS(5)    FCXS(6)
 4                      0.         0.         0.         0.         0.         0.
