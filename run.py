@@ -3,6 +3,7 @@
 # %%
 import numpy as np
 import os
+import time
 from airLibs import setupGNVP as gnvp
 # %% [markdown]
 # # Parameters
@@ -16,22 +17,23 @@ print(masterDir)
 
 os.chdir("3D")
 os.system("rm res.dat")
+os.system("rm gnvp.out")
 string = "TTIME PSIB TFORC(1) TFORC(2) TFORC(3) TAMOM(1) TAMOM(2) TAMOM(3) TFORC2D(1) TFORC2D(2) TFORC2D(3) TAMOM2D(1) TAMOM2D(2) TAMOM2D(3) TFORCDS2D(1)  TFORCDS2D(2)  TFORCDS2D(3)  TAMOMDS2D(1)  TAMOMDS2D(2) TAMOMDS2D(3)"
 os.system(f"echo '{string}' > res.dat")
 os.chdir(masterDir)
 
 for i, angle in enumerate(angles):
     # %%
-
+    print(f"Running ANGLE {angle}")
     airfoils = ["4415"]
     cldata = 'MMMM'
 
     params = {
         "nBods": 2,  # len(Surfaces)
         "nBlades": 1,  # len(NACA)
-        "maxiter": 200,
+        "maxiter": 100,
         "timestep": 0.01,
-        "Uinf": [20 * np.sin(angle), 0.0, 20 * np.cos(angle)],
+        "Uinf": [- 20 * np.sin(angle), 0.0, 20 * np.cos(angle)],
         "rho": 1.225,
         "visc": 0.0000156,
     }
@@ -113,11 +115,11 @@ for i, angle in enumerate(angles):
     # %%
 
     # %%
-    gnvp.runGNVP(airMovement, bodies, params, airfoils)
-    gnvp.removeResults()
+    gnvp.runGNVP(airMovement, bodies, params, airfoils, '3D')
+    gnvp.removeResults('3D')
 
     os.chdir("3D")
-    os.system("./gnvp < input")
-    os.sleep(0.1)
+    os.system("./gnvp < input >> gnvp.out")
+    time.sleep(0.1)
     os.system(f"cat LOADS_aer.dat >>  res.dat")
     os.chdir(masterDir)

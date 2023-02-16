@@ -30,7 +30,7 @@ FoamFile
         nFaces          63744;
         startFace       127488;
     }
-    SideLow
+    SifeLow
     {
         type            empty;
         nFaces          63744;

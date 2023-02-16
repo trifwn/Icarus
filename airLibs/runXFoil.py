@@ -19,7 +19,7 @@ def anglesSep(anglesALL):
     return nangles, pangles
 
 
-def runXFoil(Reyn, MACH, angles, airfoil, ftrip_low=1, ftrip_up=1, Ncrit=9):
+def runXFoil(Reyn, MACH, angles, airfoil, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9, step=0.5):
     n_points = 100
     pts = af.saveAirfoil([[], [], airfoil, 0, n_points])
     xf = XFoil()
@@ -35,7 +35,7 @@ def runXFoil(Reyn, MACH, angles, airfoil, ftrip_low=1, ftrip_up=1, Ncrit=9):
     xf.airfoil = naca0008
     AoAmin = min(angles)
     AoAmax = max(angles)
-    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, 0.25)
+    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, step)
     return np.array([aXF, clXF, cdXF, cmXF]).T
 
 

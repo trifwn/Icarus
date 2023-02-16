@@ -4,7 +4,7 @@ IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]
 1          4415
 
 IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]
-0          0          1
+0          0          0
 
 NFILFL     NFILDS     NFILWG
 Rwing.FL   Rwing.DS   Rwing.WG
@@ -22,7 +22,7 @@ IEXRC      NFILRC      RC  (1)    RC  (NNC)
 1                      0.         1.13
 
 IEXCH      NFILCH      FCCH(1)    FCCH(2)    FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)
-4                      0.159      -0.07699   0.         0.         0.         0.
+4                      0.159       -0.07699   0.         0.         0.         0.
 ####       katanomi xordis apo mikro se megalo me vima gt alliws skaei
 IEXTW      NFILTW      FCTW(1)    FCTW(2)    FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)
 4                      0.         0.         0.         0.         0.         0.

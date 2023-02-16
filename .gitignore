@@ -1,7 +1,7 @@
 __pycache__/
 .mypy_cache/
 .vscode/
-airLibs/__pycache__/
+airLibs/__pycache__
 
 Rudder/Reynolds*/[0123456789]*
 Rudder/Reynolds*/foil
@@ -33,3 +33,5 @@ test.ipynb
 3D/ing*
 3D/refstate*
 3D/LOADS*
+
+*.pyc

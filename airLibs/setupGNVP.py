@@ -2,9 +2,29 @@ import os
 import numpy as np
 
 
-def runGNVP(airMovement, bodies, params, airfoils):
+def ff(num):
+    return np.format_float_scientific(num, sign=False, precision=2).zfill(5)
+
+
+def ff2(num):
+    if num >= 0:
+        return "{:2.5f}".format(num)
+    else:
+        return "{:2.4f}".format(num)
+
+
+def ff3(num):
+    if num >= 10:
+        return "{:2.5f}".format(num)
+    elif num >= 0:
+        return "{:2.6f}".format(num)
+    else:
+        return "{:2.5f}".format(num)
+
+
+def runGNVP(airMovement, bodies, params, airfoils, AeroData, Reynolds, angles, CASE):
     masterDir = os.getcwd()
-    os.chdir("3D")
+    os.chdir(CASE)
     # INPUT
     fname = "input"
     with open(fname, "r") as file:
@@ -111,16 +131,18 @@ def runGNVP(airMovement, bodies, params, airfoils):
             step = round((bod["Root_chord"] - bod["Tip_chord"]) / (bod["y_end"]-bod["y_0"]),
                          ndigits=5)
             data[3] = f'1          {bod["NACA"]}\n'
+            data[6] = f'0          0          0\n'
             data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
             data[12] = f'{bod["x_0"]}        {bod["y_0"]}        {bod["z_0"]}\n'
             data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
             data[18] = f'1                      0.         1.         \n'  # KSI
             data[21] = f'1                      0.         {bod["y_end"]}\n'
-            data[24] = f'4                      {bod["Root_chord"]}      {-step}   0.         0.         0.         0.\n'
+            data[24] = f'4                      {bod["Root_chord"]}       {-step}   0.         0.         0.         0.\n'
         else:
             step = round((bod["Root_chord"] - bod["Tip_chord"]) / (bod["y_end"]-bod["y_0"]),
                          ndigits=5)
             data[3] = f'1          {bod["NACA"]}\n'
+            data[6] = f'0          0          0\n'
             data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
             data[12] = f'{bod["x_0"]}        {-bod["y_end"]}        {bod["z_0"]}\n'
             data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
@@ -132,24 +154,55 @@ def runGNVP(airMovement, bodies, params, airfoils):
             file.writelines(data)
 
     # CLD FILES
-    for airfoil in airfoils:
+    for airfoil, clcdData in zip(airfoils, AeroData):
         fname = f"{airfoil}.cld"
         with open(fname, "r") as file:
             data = file.readlines()
-            #
-            #
-            #
-            with open(fname, "w") as file:
-                file.writelines(data)
+
+        data[4] = f'{len(clcdData)}  ! Mach numbers for which CL-CD are given\n'
+        for i in range(0, len(clcdData)):
+            data[5+i] = f'{i/len(clcdData)}\n'
+        data[5+len(clcdData)] = '! Reyn numbers for which CL-CD are given\n'
+        for i in range(0, len(clcdData)):
+            data[6+len(clcdData)+i] = f'{ff(Reynolds[i])}\n'
+        data[6+2*len(clcdData)] = '\n'
+
+        anglenum = len(angles[:-2])
+
+        for radpos in 0, 1:
+            if radpos == 0:
+                data[7+2*len(clcdData)] = '-10.       ! Radial Position\n'
+            else:
+                data[7+2*len(clcdData) + radpos*(anglenum+4)
+                     ] = '10.       ! Radial Position\n'
+            data[8+2*len(clcdData) + radpos*(anglenum+4)
+                 ] = f'{anglenum}         ! Number of Angles / Airfoil NACA {airfoil}\n'
+            data[9+2*len(clcdData) + radpos*(anglenum+4)
+                 ] = f'   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n'
+
+            for i, ang in enumerate(angles[:-2]):
+                string = ''
+                for reyndict in clcdData:
+                    try:
+                        a = ff2(reyndict[str(ang)][0]) + "  " + ff2(
+                            reyndict[str(ang)][1]) + "  "+ff2(reyndict[str(ang)][2]) + "  "
+                        string = string + a
+                    except:
+                        string = string + string[-8:] + "  "
+                data[10+2*len(clcdData) + radpos*(anglenum+4) +
+                     i] = f"{ff3(ang)}   {string}\n"
+
+        with open(fname, "w") as file:
+            file.writelines(data)
 
     # RUN GNVP
     # os.system(\n'./gnvp < input\n')
     os.chdir(masterDir)
 
 
-def removeResults():
+def removeResults(CASE):
     masterDir = os.getcwd()
-    os.chdir("3D")
+    os.chdir(CASE)
     os.system('rm  strip*')
     os.system('rm  x*')
     os.system('rm YOURS*')

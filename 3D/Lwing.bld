@@ -4,7 +4,7 @@ IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]
 1          4415
 
 IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]
-0          0          1
+0          0          0
 
 NFILFL     NFILDS     NFILWG
 Lwing.FL   Lwing.DS   Lwing.WG

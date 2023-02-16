@@ -25,8 +25,8 @@ Give the general data in FREE format
 a. The BASIC parameters
 
 1           NSYMF      =1,2,3 (no-symm, axi-symm, Y-symm)
-2           NBODT      number of bodies
-1           NBLADE     number of blades
+5           NBODT      number of bodies
+2           NBLADE     number of blades
 0           IABSREF    = 0 for GCS =1 for RCS
 1           IAXISRF    =1,2,3 gives the axis of rotation if IABSREF=1
 0.          OMEGAR     is the rotation speed of the RCS
@@ -47,8 +47,8 @@ b. The TIME parameters
 c. The SOLUTION parameters
 
 0           IMAT       =0 AS is calculated, =1 AS is read from disk
-100         ITERM      maximum number of potential iterations
-1.0         RELAXS     relaxation factor for the singularity distributions
+300         ITERM      maximum number of potential iterations
+0.8         RELAXS     relaxation factor for the singularity distributions
 0.01        EPSDS      convergence tolerance of the potential calculations
 
 d. The MOVEMENT parameters
@@ -57,9 +57,9 @@ d. The MOVEMENT parameters
 
 e. The FLOW parameters
                                                                 <blank>
--19.787164932467636       UINF(1)    the velocity at infinity
+20.0       UINF(1)    the velocity at infinity
 0.0       UINF(2)    .
--2.9100006761722708       UINF(3)    .
+0.0       UINF(3)    .
  0.000      UREF       the reference velocity
 1.          ADIML      the length scale used for the non-dimentionalisation
 1.          ADIMT      the  time  scale used for the non-dimentionalisation
