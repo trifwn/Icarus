@@ -154,46 +154,46 @@ def runGNVP(airMovement, bodies, params, airfoils, AeroData, Reynolds, angles, C
             file.writelines(data)
 
     # CLD FILES
-    for airfoil, clcdData in zip(airfoils, AeroData):
-        fname = f"{airfoil}.cld"
-        with open(fname, "r") as file:
-            data = file.readlines()
+    # for airfoil, clcdData in zip(airfoils, AeroData):
+    #     fname = f"{airfoil}.cld"
+    #     with open(fname, "r") as file:
+    #         data = file.readlines()
 
-        data[4] = f'{len(clcdData)}  ! Mach numbers for which CL-CD are given\n'
-        for i in range(0, len(clcdData)):
-            data[5+i] = f'{i/len(clcdData)}\n'
-        data[5+len(clcdData)] = '! Reyn numbers for which CL-CD are given\n'
-        for i in range(0, len(clcdData)):
-            data[6+len(clcdData)+i] = f'{ff(Reynolds[i])}\n'
-        data[6+2*len(clcdData)] = '\n'
+    #     data[4] = f'{len(clcdData)}  ! Mach numbers for which CL-CD are given\n'
+    #     for i in range(0, len(clcdData)):
+    #         data[5+i] = f'{i/len(clcdData)}\n'
+    #     data[5+len(clcdData)] = '! Reyn numbers for which CL-CD are given\n'
+    #     for i in range(0, len(clcdData)):
+    #         data[6+len(clcdData)+i] = f'{ff(Reynolds[i])}\n'
+    #     data[6+2*len(clcdData)] = '\n'
 
-        anglenum = len(angles[:-2])
+    #     anglenum = len(angles[:-2])
 
-        for radpos in 0, 1:
-            if radpos == 0:
-                data[7+2*len(clcdData)] = '-10.       ! Radial Position\n'
-            else:
-                data[7+2*len(clcdData) + radpos*(anglenum+4)
-                     ] = '10.       ! Radial Position\n'
-            data[8+2*len(clcdData) + radpos*(anglenum+4)
-                 ] = f'{anglenum}         ! Number of Angles / Airfoil NACA {airfoil}\n'
-            data[9+2*len(clcdData) + radpos*(anglenum+4)
-                 ] = f'   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n'
+    #     for radpos in 0, 1:
+    #         if radpos == 0:
+    #             data[7+2*len(clcdData)] = '-10.       ! Radial Position\n'
+    #         else:
+    #             data[7+2*len(clcdData) + radpos*(anglenum+4)
+    #                  ] = '10.       ! Radial Position\n'
+    #         data[8+2*len(clcdData) + radpos*(anglenum+4)
+    #              ] = f'{anglenum}         ! Number of Angles / Airfoil NACA {airfoil}\n'
+    #         data[9+2*len(clcdData) + radpos*(anglenum+4)
+    #              ] = f'   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n'
 
-            for i, ang in enumerate(angles[:-2]):
-                string = ''
-                for reyndict in clcdData:
-                    try:
-                        a = ff2(reyndict[str(ang)][0]) + "  " + ff2(
-                            reyndict[str(ang)][1]) + "  "+ff2(reyndict[str(ang)][2]) + "  "
-                        string = string + a
-                    except:
-                        string = string + string[-8:] + "  "
-                data[10+2*len(clcdData) + radpos*(anglenum+4) +
-                     i] = f"{ff3(ang)}   {string}\n"
+    #         for i, ang in enumerate(angles[:-2]):
+    #             string = ''
+    #             for reyndict in clcdData:
+    #                 try:
+    #                     a = ff2(reyndict[str(ang)][0]) + "  " + ff2(
+    #                         reyndict[str(ang)][1]) + "  "+ff2(reyndict[str(ang)][2]) + "  "
+    #                     string = string + a
+    #                 except:
+    #                     string = string + string[-8:] + "  "
+    #             data[10+2*len(clcdData) + radpos*(anglenum+4) +
+    #                  i] = f"{ff3(ang)}   {string}\n"
 
-        with open(fname, "w") as file:
-            file.writelines(data)
+    #     with open(fname, "w") as file:
+    #         file.writelines(data)
 
     # RUN GNVP
     # os.system(\n'./gnvp < input\n')

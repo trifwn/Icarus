@@ -35,3 +35,12 @@ test.ipynb
 3D/LOADS*
 
 *.pyc
+Control/slprj/sl_proj.tmw
+Control/slprj/modeladvisor/Pitch_Damper/ModelAdvisorData
+Control/slprj/sim/varcache/AutoPilot/checksumOfCache.mat
+Control/slprj/sim/varcache/AutoPilot/varInfo.mat
+Control/slprj/sim/varcache/AutoPilot/tmwinternal/simulink_cache.xml
+Control/slprj/sim/varcache/Pitch_Damper/checksumOfCache.mat
+Control/slprj/sim/varcache/Pitch_Damper/varInfo.mat
+Control/slprj/sim/varcache/Pitch_Damper/tmwinternal/simulink_cache.xml
+3D/gnvp.out

@@ -28,7 +28,7 @@ def runXFoil(Reyn, MACH, angles, airfoil, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9, 
     # print(MACH)
     # xf.M = MACH
     xf.xtr = (ftrip_low, ftrip_up)
-    xf.max_iter = 400
+    xf.max_iter = 1000
     xf.print = False
     xpts, ypts = pts.T
     naca0008 = XFAirfoil(x=xpts, y=ypts)

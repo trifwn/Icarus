@@ -33,7 +33,7 @@ a. The BASIC parameters
 
 b. The TIME parameters
                                                                 <blank>
-200         NTIMER     number of the last time step to be performed
+100         NTIMER     number of the last time step to be performed
 0.01        DT         time step
 0           IDT        if IDT=1 then DT is the number of steps per rotation
 0.          OMEGAT     the rotation speed for the definition of the PERIOD
@@ -47,7 +47,7 @@ b. The TIME parameters
 c. The SOLUTION parameters
 
 0           IMAT       =0 AS is calculated, =1 AS is read from disk
-1000        ITERM      maximum number of potential iterations
+200        ITERM      maximum number of potential iterations
 0.9         RELAXS     relaxation factor for the singularity distributions
 0.01        EPSDS      convergence tolerance of the potential calculations
 
@@ -57,9 +57,9 @@ d. The MOVEMENT parameters
 
 e. The FLOW parameters
                                                                 <blank>
-20.0       UINF(1)    the velocity at infinity
+19.972590695091476       UINF(1)    the velocity at infinity
 0.0       UINF(2)    .
-0.0       UINF(3)    .
+1.0467191248588765       UINF(3)    .
  0.000      UREF       the reference velocity
 1.          ADIML      the length scale used for the non-dimentionalisation
 1.          ADIMT      the  time  scale used for the non-dimentionalisation
