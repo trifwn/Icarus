@@ -1,6 +1,6 @@
 # AircraftAnalysis
 
-Code and Tools to analyze the performence of Hermes V aircraft
+Code and Tools to analyze the performence of low speed aircraft using different computational methods and codes.
 
 ## The project is under Work
 
