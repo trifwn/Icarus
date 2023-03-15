@@ -15,9 +15,9 @@
 
  ############################################################################################
 
- Successfully loaded airfoil file naca4415
+ Successfully loaded airfoil file naca0008
   Number of points:         199
-  Setting default project name: naca4415
+  Setting default project name: naca0008
   Blunt trailing edge: O-grid topology is recommended.
 
  Main program commands:
@@ -36,7 +36,7 @@
   Basic settings:
   NSRF  Number of points on surface:    250
   LESP  Leading edge point spacing:   4.00000E-03
-  TESP  Trailing edge point spacing:   6.20265E-04
+  TESP  Trailing edge point spacing:   2.61898E-04
   RADI  Farfield radius:   15.0000
   NWKE  Points along the wake for C-grid:     50
   
@@ -52,7 +52,7 @@
   Basic settings:
   NSRF  Number of points on surface:    250
   LESP  Leading edge point spacing:   4.00000E-03
-  TESP  Trailing edge point spacing:   6.20265E-04
+  TESP  Trailing edge point spacing:   2.61898E-04
   RADI  Farfield radius:   15.0000
   NWKE  Points along the wake for C-grid:     50
   
@@ -68,7 +68,7 @@
   Basic settings:
   NSRF  Number of points on surface:    250
   LESP  Leading edge point spacing:   4.00000E-03
-  TESP  Trailing edge point spacing:   6.20265E-04
+  TESP  Trailing edge point spacing:   2.61898E-04
   RADI  Farfield radius:   15.0000
   NWKE  Points along the wake for C-grid:     50
   
@@ -76,7 +76,7 @@
   EXIT  Leave airfoil surface grid options menu
 
  Input > 
- Current trailing edge point spacing:     6.2026501306143209E-004
+ Current trailing edge point spacing:     2.6189804227417834E-004
 
  New value > 
  Airfoil surface grid options for hyperbolic solver:
@@ -138,7 +138,7 @@
  Volume grid options for hyperbolic solver:
 
   Basic settings:
-  NAME  Project name:  naca4415
+  NAME  Project name:  naca0008
   JMAX  Number of points in normal direction:    100
   SLVR  Solver (hyperbolic or elliptic):  HYPR
   TOPO  Grid topology (O-GRID or C-GRID):  OGRD
@@ -163,7 +163,7 @@
  Volume grid options for hyperbolic solver:
 
   Basic settings:
-  NAME  Project name:  naca4415
+  NAME  Project name:  naca0008
   JMAX  Number of points in normal direction:    257
   SLVR  Solver (hyperbolic or elliptic):  HYPR
   TOPO  Grid topology (O-GRID or C-GRID):  OGRD
@@ -189,7 +189,7 @@
  Volume grid options for hyperbolic solver:
 
   Basic settings:
-  NAME  Project name:  naca4415
+  NAME  Project name:  naca0008
   JMAX  Number of points in normal direction:    257
   SLVR  Solver (hyperbolic or elliptic):  HYPR
   TOPO  Grid topology (O-GRID or C-GRID):  OGRD
@@ -214,7 +214,7 @@
  Volume grid options for hyperbolic solver:
 
   Basic settings:
-  NAME  Project name:  naca4415
+  NAME  Project name:  naca0008
   JMAX  Number of points in normal direction:    257
   SLVR  Solver (hyperbolic or elliptic):  HYPR
   TOPO  Grid topology (O-GRID or C-GRID):  OGRD
@@ -239,7 +239,7 @@
  Volume grid options for hyperbolic solver:
 
   Basic settings:
-  NAME  Project name:  naca4415
+  NAME  Project name:  naca0008
   JMAX  Number of points in normal direction:    257
   SLVR  Solver (hyperbolic or elliptic):  HYPR
   TOPO  Grid topology (O-GRID or C-GRID):  OGRD
@@ -936,28 +936,28 @@
 
                      Grid quality information                     
  -----------------------------------------------------------------
- Max skew angle (deg):   26.41422
-   x, y:    0.91712   0.19476
-   i, j:      46    152
- Max growth in xi-direction:    0.20676
-   x, y:    1.00310   0.00101
-   i, j:     242     63
- Max growth in eta-direction:    0.04747
-   x, y:    0.80853   0.31126
-   i, j:      61    161
+ Max skew angle (deg):   30.21033
+   x, y:    1.00261   0.00013
+   i, j:     243     58
+ Max growth in xi-direction:    0.30312
+   x, y:    1.00179   0.00077
+   i, j:     244     54
+ Max growth in eta-direction:    0.04750
+   x, y:    0.74208   0.29787
+   i, j:      63    163
 
  -------------------
  Plot3D output      
  -------------------
- Writing grid to file naca4415.p3d ...
+ Writing grid to file naca0008.p3d ...
 
- Writing boundary conditions file naca4415.nmf ...
- Writing grid quality information to file naca4415_stats.p3d ...
+ Writing boundary conditions file naca0008.nmf ...
+ Writing grid quality information to file naca0008_stats.p3d ...
 
  -------------------
  VTK output         
  -------------------
- Writing grid to file naca4415.vtk ...
+ Writing grid to file naca0008.vtk ...
 
 
  Main program commands:

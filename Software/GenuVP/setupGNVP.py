@@ -183,7 +183,7 @@ def cldFiles(airfoils, AeroData, Reynolds, angles):
                         )
                         string = string + a
                     except KeyError:
-                        string = string + string[-8:] + "  "
+                        string = string + string[-27:] + "  "
                 data[
                     10 + 2 * len(clcdData) + radpos * (anglenum + 4) + i
                 ] = f"{ff3(ang)}   {string}\n"
@@ -249,7 +249,10 @@ def makeInput(airMovement, bodies, params, airfoils, AeroData, Reynolds, angles,
     bldFiles(bodies)
     # CLD FILES
     cldFiles(airfoils, AeroData, Reynolds, angles)
-
+    print(next(os.walk('.')))
+    if 'gnvp' not in next(os.walk('.'))[2]:
+        print("ok")
+        os.system('ln -sv ../../gnvp gnvp')
     os.chdir(masterDir)
 
 
@@ -265,7 +268,7 @@ def batchRun(airMovement, bodies, params, airfoils, AeroData, Reynolds, angleCL,
     for angle in angles:
         print(f"Running Angles {angle}")
         os.chdir(CASE)
-        runGNVP()
+        # runGNVP()
         os.chdir(masterDir)
         params = {
             "nBods": len(bodies),  # len(Surfaces)

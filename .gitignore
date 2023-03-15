@@ -29,3 +29,5 @@ Control/slprj*
 **/*.nmf
 **/*.out
 **/*.vtk
+
+test.ipynb

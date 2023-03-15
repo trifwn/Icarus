@@ -1,6 +1,7 @@
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 
@@ -20,7 +21,7 @@ def anglesSep(anglesALL):
 
 
 def runXFoil(
-    Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9
+    Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9
 ):
 
     xf = XFoil()
@@ -37,10 +38,10 @@ def runXFoil(
     return np.array([aXF, clXF, cdXF, cmXF]).T
 
 
-def batchRUN(Reynolds, MACH, AoAmin, AoAmax, AoAstep, airfoil):
+def batchRUN(Reynolds, MACH, AoAmin, AoAmax, AoAstep, pts):
     Data = []
     for Re in Reynolds:
-        clcdcmXF = runXFoil(Re, MACH, AoAmin, AoAmax, AoAstep, airfoil)
+        clcdcmXF = runXFoil(Re, MACH, AoAmin, AoAmax, AoAstep, pts)
         Data.append(clcdcmXF)
 
     Redicts = []
@@ -50,6 +51,39 @@ def batchRUN(Reynolds, MACH, AoAmin, AoAmax, AoAstep, airfoil):
             tempDict[str(bathchAng[0])] = bathchAng[1:4]
         Redicts.append(tempDict)
     return Redicts
+
+
+def saveXfoil(airfoils, polars, Reynolds):
+    masterDir = os.getcwd()
+    os.chdir(masterDir)
+    for airfoil, clcdData in zip(airfoils, polars):
+        os.chdir(masterDir)
+        os.chdir(f"Airfoils/NACA{airfoil}")
+        airfoilPath = os.getcwd()
+
+        for i, ReynDat in enumerate(clcdData):
+            os.chdir(airfoilPath)
+
+            reyndir = f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}"
+            os.system(f"mkdir -p {reyndir}")
+            os.chdir(reyndir)
+            cwd = os.getcwd()
+
+            for angle in ReynDat.keys():
+                os.chdir(cwd)
+                if float(angle) >= 0:
+                    folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+                else:
+                    folder = "m" + \
+                        str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
+                os.system(f"mkdir -p {folder}")
+                os.chdir(folder)
+                fname = 'clcd.xfoil'
+                with open(fname, 'w') as file:
+                    pols = angle
+                    for i in ReynDat[angle]:
+                        pols = pols + "\t" + str(i)
+                    file.writelines(pols)
 
 
 def plotBatch(data, Reynolds):

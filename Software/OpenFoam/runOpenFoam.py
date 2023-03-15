@@ -2,10 +2,11 @@ from subprocess import call
 import os
 import shutil
 import numpy as np
+from Software import runofLoc, setofLoc
 
 
 def makeMesh(airfoilFile):
-    call(["/bin/bash", "-c", "../../../Software/OpenFoam/setupFoam.sh -f " + airfoilFile])
+    call(["/bin/bash", "-c", f"{setofLoc} -f " + airfoilFile])
 
 
 def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
@@ -21,7 +22,8 @@ def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
             os.chdir(f"{parentdir}/{folder}")
             ang = ang * np.pi / 180
             cwd = os.getcwd()
-            shutil.copytree("../../../Base/0/", cwd + "/0/", dirs_exist_ok=True)
+            shutil.copytree("../../../Base/0/", cwd +
+                            "/0/", dirs_exist_ok=True)
             filen = "0/U"
             with open(filen, "r", newline="\n") as file:
                 data = file.readlines()
@@ -68,7 +70,7 @@ def runFoamAngle(angle):
         os.system(f"mkdir -p {folder}")
     os.chdir(folder)
     print(os.getcwd())
-    os.system("../../../../Software/OpenFoam/runFoam.sh")
+    os.system(f"{runofLoc}")
     os.chdir(parentDir)
     print(f'{angle} deg: Simulation Over')
 

@@ -7,13 +7,13 @@
 \*---------------------------------------------------------------------------*/
 Build  : _8993af73-20221106 OPENFOAM=2206 patch=221104 version=2206
 Arch   : "LSB;label=32;scalar=64"
-Exec   : plot3dToFoam -noBlank naca4415.p3d
-Date   : Dec 28 2022
-Time   : 22:09:22
+Exec   : plot3dToFoam -noBlank naca0008.p3d
+Date   : Mar 15 2023
+Time   : 20:52:25
 Host   : hydra
-PID    : 1010957
+PID    : 604486
 I/O    : uncollated
-Case   : /home/tryfonas/data/Uni/Semester9/Flight_Dynamics/Software/hermes/Wing/Base
+Case   : /home/tryfonas/data/Uni/Semester9/Flight_Dynamics/Software/hermes/Airfoils/Base
 nProcs : 1
 trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
 fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
