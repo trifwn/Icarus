@@ -1,6 +1,6 @@
 # AircraftAnalysis
 
-Code and Tools to analyze the performence of low speed aircraft using different computational methods and codes.
+Code and Tools to analyze the performence of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC). This software is developed for it to be used as part of a more general optimization workflow. 
 
 ## The project is under Work
 
