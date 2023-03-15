@@ -1,7 +1,6 @@
-__pycache__/
-.mypy_cache/
-.vscode/
-*/__pycache__
+*.mypy_cache/
+*.vscode/
+*__pycache__
 
 **/Reynolds*/[0123456789]*
 **/Reynolds*/foil
@@ -25,10 +24,6 @@ gnvp
 test.ipynb
 
 *.pyc
-Control/slprj
-*/gnvp.out
+Control/slprj*
 
-Control/slprj/*
 *.tmp
-test*
-run*
