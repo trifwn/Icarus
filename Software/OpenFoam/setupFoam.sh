@@ -13,8 +13,8 @@ do
 done
 pwd
 echo $airfoilFile
-cp -r $airfoilFile ../Base/
-cd ../Base/
+cp -r $airfoilFile ../../Base/
+cd ../../Base/
 pwd
 
 $struct $airfoilFile < struct.input > struct.out

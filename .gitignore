@@ -21,8 +21,11 @@
 
 foil
 gnvp
-*.out
 *.pyc
 Control/slprj*
 
-*.tmp
+**/*.tmp
+**/*.p3d
+**/*.nmf
+**/*.out
+**/*.vtk

@@ -5,7 +5,7 @@ import numpy as np
 
 
 def makeMesh(airfoilFile):
-    call(["/bin/bash", "-c", "../../airLibs/setupFoam.sh -f " + airfoilFile])
+    call(["/bin/bash", "-c", "../../../Software/OpenFoam/setupFoam.sh -f " + airfoilFile])
 
 
 def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
@@ -21,16 +21,14 @@ def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
             os.chdir(f"{parentdir}/{folder}")
             ang = ang * np.pi / 180
             cwd = os.getcwd()
-
-            shutil.copytree("../../Base/0/", cwd + "/0/", dirs_exist_ok=True)
+            shutil.copytree("../../../Base/0/", cwd + "/0/", dirs_exist_ok=True)
             filen = "0/U"
             with open(filen, "r", newline="\n") as file:
                 data = file.readlines()
             data[26] = f"internalField uniform ( {np.cos(ang)} {np.sin(ang)} 0. );\n"
             with open(filen, "w") as file:
                 file.writelines(data)
-
-            shutil.copytree("../../Base/constant/", cwd +
+            shutil.copytree("../../../Base/constant/", cwd +
                             "/constant/", dirs_exist_ok=True)
             filen = "constant/transportProperties"
             with open(filen, "r", newline="\n") as file:
@@ -40,7 +38,7 @@ def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
             with open(filen, "w") as file:
                 file.writelines(data)
 
-            shutil.copytree("../../Base/system/", cwd +
+            shutil.copytree("../../../Base/system/", cwd +
                             "/system/", dirs_exist_ok=True)
             filen = "system/controlDict"
             with open(filen, "r", newline="\n") as file:
@@ -70,7 +68,7 @@ def runFoamAngle(angle):
         os.system(f"mkdir -p {folder}")
     os.chdir(folder)
     print(os.getcwd())
-    os.system("../../../airLibs/runFoam.sh")
+    os.system("../../../../Software/OpenFoam/runFoam.sh")
     os.chdir(parentDir)
     print(f'{angle} deg: Simulation Over')
 
