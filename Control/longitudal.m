@@ -18,9 +18,9 @@ System_longitudal = ss(A_longitudal,B_longitudal,C_longitudal,D_longitudal);
 
 
 %% Short Period APPROXIMATION
-A_sp = A_longitudal(2:4,2:4);
-B_sp = B_longitudal(2:4);
-C_sp = [0 1 0];
+A_sp = A_longitudal(2:3,2:3);
+B_sp = B_longitudal(2:3);
+C_sp = [0 1 ];
 D_sp = 0;
 
 %%% System Decomposition 

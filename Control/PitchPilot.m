@@ -2,7 +2,6 @@
 
 % Define the system
 [sys_full , sys_sp] = longitudal();
-
 % EIGEN VALUE DECOMPOSITION
 [V_sp,Lamda_sp] = eig(sys_sp.A);
 
@@ -50,11 +49,11 @@ s = 1i*om; % Complex variable
 Kol = abs( ((s+lambda)*(s-p1des)*(s-p2des))/(s-z1) );
 Kcl = (Kol/(1+Kq*Kol));
 Kcontq = -abs( Kol / (Kq*Kplant*Kact*lambda) );
-Kcontq =  -0.1 %Kcontq/2;
+Kcontq =  -0.063; %Kcontq/2;
 
 Gcontq = tf(Kcontq,1);
 %% CONTROLLER - Auto-Pilot
-Kcont8 = 0.437;%Kerdos tou controller
+Kcont8 = 1.32; %Kerdos tou controller
 Kd = 0.5;
 Td = Kd/Kcont8;
 Gcont8 = Kcont8*tf([Td 1],[0 1]);
@@ -87,6 +86,8 @@ PAP_CL = feedback(Gap,Gg);
  CAP = om_s^2/na;
  CAP_new = om_s_new^2/na;
 
+ sim('AutoPilot1',30) 
+
 %% PLOT FIGURES
 % Auto-pilot Root Locus
 figure()
@@ -101,9 +102,9 @@ pl13 = scatter(0,0,area,'X','LineWidth',3);
 hold on
 pl14 = scatter(-1/Td,0,area,'O','LineWidth',3);
 hold on
-rlocusplot(PAP_CL,0:0.1:5) 
-hold on 
-rlocusplot(PAP_OL,0:0.1:5) 
+rlocusplot(PAP_CL,0:0.1:50) 
+% hold on 
+% rlocusplot(PAP_OL,0:0.1:5) 
 
 title('Pitch Auto-pilot - Root Locus','interpreter','latex')
 

@@ -6,11 +6,11 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
-from airLibs import airfoil as af
-from airLibs import runF2w as f2w
-from airLibs import plotting as aplt
-from airLibs import runOpenFoam as of
-from airLibs import runXFoil as xf
+from Airfoils import airfoil as af
+from Software.Foil2Wake import runF2w as f2w
+from Visualization import plotting as aplt
+from Software.OpenFoam import runOpenFoam as of
+from Software.Xfoil import runXFoil as xf
 
 
 # %%

@@ -1,46 +1,33 @@
 __pycache__/
 .mypy_cache/
 .vscode/
-airLibs/__pycache__
+*/__pycache__
 
-Rudder/Reynolds*/[0123456789]*
-Rudder/Reynolds*/foil
-Rudder/Reynolds*/m*
-Rudder/Base/constant/polyMesh/
+**/Reynolds*/[0123456789]*
+**/Reynolds*/foil
+**/Reynolds*/m*
+**/Base/constant/polyMesh/
 
-Elevator/Reynolds*/[0123456789]*
-Elevator/Reynolds*/foil
-Elevator/Reynolds*/m*
-Elevator/Base/constant/polyMesh/
+*strip*
+*xg*
+*xw*
+*xb*
+YOURS*
+ing*
+refstate*
+LOADS*
 
-Wing/Reynolds*/[0123456789]*
-Wing/Reynolds*/foil
-Wing/Reynolds*/m*
-Wing/Base/constant/polyMesh/
-Wing/Base/constant/polyMesh/boundary
-Wing/Base/constant/polyMesh/points
+3D/Base
 
-Wing/3D
-
-3D/gnvp
 foil
 gnvp
 test.ipynb
 
-3D/strip*
-3D/x*
-3D/YOURS*
-3D/ing*
-3D/refstate*
-3D/LOADS*
-
 *.pyc
-Control/slprj/sl_proj.tmw
-Control/slprj/modeladvisor/Pitch_Damper/ModelAdvisorData
-Control/slprj/sim/varcache/AutoPilot/checksumOfCache.mat
-Control/slprj/sim/varcache/AutoPilot/varInfo.mat
-Control/slprj/sim/varcache/AutoPilot/tmwinternal/simulink_cache.xml
-Control/slprj/sim/varcache/Pitch_Damper/checksumOfCache.mat
-Control/slprj/sim/varcache/Pitch_Damper/varInfo.mat
-Control/slprj/sim/varcache/Pitch_Damper/tmwinternal/simulink_cache.xml
-3D/gnvp.out
+Control/slprj
+*/gnvp.out
+
+Control/slprj/*
+*.tmp
+test*
+run*

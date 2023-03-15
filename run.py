@@ -1,8 +1,10 @@
+
+
 import numpy as np
 import os
 import time
-from airLibs import setupGNVP as gnvp
-from airLibs import runXFoil as xf
+from Visualization import setupGNVP as gnvp
+from Software.Xfoil import runXFoil as xf
 
 
 def ms2mach(ms):
@@ -16,7 +18,7 @@ def Re(v, c, n):
 masterDir = os.getcwd()
 print(masterDir)
 
-CASE = '3D/'
+CASE = 'Wing/3D/'
 os.chdir(CASE)
 os.system("rm res.dat")
 os.system("rm gnvp.out")
@@ -50,7 +52,7 @@ Mach = np.linspace(Machmax, Machmin, 10)
 Reyn = Remax
 MACH = Machmax
 
-airfoils = ["4415", "0008"]
+airfoils = ["4415"]  # ["4415", "0008"]
 cldata = []
 
 for airfoil in airfoils:
@@ -127,83 +129,83 @@ for i, angle in enumerate(angles):
         "Tip_chord": 0.072
     })
 
-    bodies.append({
-        'NB': 3,
-        "NACA": '0008',
-        "name": "Ltail",
-        'bld': 'Ltail.bld',
-        'cld':  '0008.cld',
-        'NNB': 12,
-        'NCWB': 12,
-        'is_right': False,
-        "x_0": 0.54,
-        "z_0": 0.,
-        "y_0": 0.,
-        "pitch": 0.,
-        "cone": 0.,
-        "wngang": 0.,
-        "x_end": 0.,
-        "z_end": 0.,
-        "y_end": 0.169,
-        "Root_chord": 0.130,
-        "Tip_chord": 0.03
-    })
-    bodies.append({
-        'NB': 4,
-        "NACA": '0008',
-        "name": "Rtail",
-        'bld': 'Rtail.bld',
-        'cld':  '0008.cld',
-        'NNB': 12,
-        'NCWB': 12,
-        'is_right': True,
-        "x_0": 0.54,
-        "z_0": 0.,
-        "y_0": 0.,
-        "pitch": 0.,
-        "cone": 0.,
-        "wngang": 0.,
-        "x_end": 0.,
-        "z_end": 0.,
-        "y_end": 0.169,
-        "Root_chord": 0.130,
-        "Tip_chord": 0.03
-    })
+    # bodies.append({
+    #     'NB': 3,
+    #     "NACA": '0008',
+    #     "name": "Ltail",
+    #     'bld': 'Ltail.bld',
+    #     'cld':  '0008.cld',
+    #     'NNB': 12,
+    #     'NCWB': 12,
+    #     'is_right': False,
+    #     "x_0": 0.54,
+    #     "z_0": 0.,
+    #     "y_0": 0.,
+    #     "pitch": 0.,
+    #     "cone": 0.,
+    #     "wngang": 0.,
+    #     "x_end": 0.,
+    #     "z_end": 0.,
+    #     "y_end": 0.169,
+    #     "Root_chord": 0.130,
+    #     "Tip_chord": 0.03
+    # })
+    # bodies.append({
+    #     'NB': 4,
+    #     "NACA": '0008',
+    #     "name": "Rtail",
+    #     'bld': 'Rtail.bld',
+    #     'cld':  '0008.cld',
+    #     'NNB': 12,
+    #     'NCWB': 12,
+    #     'is_right': True,
+    #     "x_0": 0.54,
+    #     "z_0": 0.,
+    #     "y_0": 0.,
+    #     "pitch": 0.,
+    #     "cone": 0.,
+    #     "wngang": 0.,
+    #     "x_end": 0.,
+    #     "z_end": 0.,
+    #     "y_end": 0.169,
+    #     "Root_chord": 0.130,
+    #     "Tip_chord": 0.03
+    # })
 
-    bodies.append({
-        'NB': 5,
-        "NACA": '0008',
-        "name": "rudder",
-        'bld': 'rudder.bld',
-        'cld':  '0008.cld',
-        'NNB': 50,
-        'NCWB': 50,
-        'is_right': True,
-        "x_0": 0.54,
-        "z_0": 0.1,
-        "y_0": 0.,
-        "pitch": 0.,
-        "cone": 0.,
-        "wngang": 90.,
-        "x_end": 0.,
-        "z_end": 0.,
-        "y_end": 0.169,
-        "Root_chord": 0.130,
-        "Tip_chord": 0.03
-    })
+    # bodies.append({
+    #     'NB': 5,
+    #     "NACA": '0008',
+    #     "name": "rudder",
+    #     'bld': 'rudder.bld',
+    #     'cld':  '0008.cld',
+    #     'NNB': 50,
+    #     'NCWB': 50,
+    #     'is_right': True,
+    #     "x_0": 0.54,
+    #     "z_0": 0.1,
+    #     "y_0": 0.,
+    #     "pitch": 0.,
+    #     "cone": 0.,
+    #     "wngang": 90.,
+    #     "x_end": 0.,
+    #     "z_end": 0.,
+    #     "y_end": 0.169,
+    #     "Root_chord": 0.130,
+    #     "Tip_chord": 0.03
+    # })
 
     params = {
         "nBods": len(bodies),  # len(Surfaces)
         "nBlades": len(airfoils),  # len(NACA)
-        "maxiter": 100,
-        "timestep": 0.01,
+        "maxiter": 20,
+        "timestep": 1.,
         "Uinf": [20. * np.cos(angle*np.pi/180), 0.0, 20. * np.sin(angle*np.pi/180)],
         "rho": 1.225,
         "visc": 0.0000156,
     }
     print(
         f"Velocity is {[20. * np.cos(angle*np.pi/180), 0.0, 20. * np.sin(angle*np.pi/180)]}")
-    gnvp.runGNVP(airMovement, bodies, params, airfoils,
+    gnvp.makeInput(airMovement, bodies, params, airfoils,
                  cldata, Reynolds, angles, CASE)
     gnvp.removeResults(CASE)
 
