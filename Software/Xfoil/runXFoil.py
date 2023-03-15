@@ -1,6 +1,5 @@
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
-from ...Airfoils import airfoil as af
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -21,10 +20,9 @@ def anglesSep(anglesALL):
 
 
 def runXFoil(
-    Reyn, MACH, AoAmin, AoAmax, AoAstep, airfoil, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9
+    Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9
 ):
-    n_points = 100
-    pts = af.saveAirfoil([[], [], airfoil, 0, n_points])
+
     xf = XFoil()
     xf.Re = Reyn
     xf.n_crit = Ncrit
@@ -64,9 +62,7 @@ def plotBatch(data, Reynolds):
     plt.legend()
 
 
-def returnCPs(Reyn, MACH, angles, airfoil, ftrip_low=1, ftrip_up=1, Ncrit=9):
-    n_points = 100
-    pts = af.saveAirfoil([[], [], airfoil, 0, n_points])
+def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     xf = XFoil()
     xf.Re = Reyn
     print(MACH)

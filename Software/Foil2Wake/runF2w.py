@@ -51,7 +51,7 @@ def makeCLCD(Reynolds, Mach):
     return clcd
 
 
-def runFw2(Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):
+def runF2W(Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):
     nangles, pangles = anglesSep(anglesALL)
     for angles, name in [[pangles, 'pos'], [nangles, 'neg']]:
         NoA = len(angles)
@@ -132,6 +132,6 @@ def setupF2W():
     filesNeeded = ['design.inp', 'design_neg.inp', 'design_pos.inp',
                    'f2w.inp', 'f2w_neg.inp', 'f2w_pos.inp', 'io.files', 'write_out']
     for item in filesNeeded:
-        shutil.copy(f'../Base/{item}', '.')
+        shutil.copy(f'../../Base/{item}', '.')
     if 'foil' not in next(os.walk('.'))[2]:
-        os.system('ln -sv ../../foil foil')
+        os.system('ln -sv ../../../foil foil')
