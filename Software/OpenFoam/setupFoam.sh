@@ -1,5 +1,5 @@
 #!/bin/bash
-source /usr/lib/openfoam/openfoam2206/etc/bashrc
+source /usr/lib/openfoam/openfoam/etc/bashrc
 echo "Making Mesh"
 struct='/opt/structAirfoilMesher/x64/Release/structAirfoilMesher'
 

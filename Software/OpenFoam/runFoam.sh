@@ -1,4 +1,4 @@
 #!/bin/bash
-source /usr/lib/openfoam/openfoam2206/etc/bashrc
+source /usr/lib/openfoam/openfoam/etc/bashrc
 
 simpleFoam >> log

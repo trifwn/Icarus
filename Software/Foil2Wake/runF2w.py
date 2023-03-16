@@ -65,6 +65,7 @@ def makeCLCD2(CASEDIR, HOMEDIR):
         for folder in folders[1:]:
             if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
                 file.writelines('cd ../'+folder+'\n../write_out\n')
+    os.system("chmod +x output_bat")
     os.system('./output_bat')
     folders = next(os.walk('.'))[1]
     a = []

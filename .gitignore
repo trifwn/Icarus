@@ -29,6 +29,8 @@ Control/slprj*
 **/*.nmf
 **/*.out
 **/*.vtk
+*.err
+*.out
 
 test.ipynb
 Database/Mock
