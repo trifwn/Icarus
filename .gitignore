@@ -31,4 +31,6 @@ Control/slprj*
 **/*.vtk
 
 test.ipynb
-Database
+Database/Mock
+Database/2D
+Database/3D
