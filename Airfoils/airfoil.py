@@ -72,7 +72,11 @@ class AirfoilData(Airfoil):
         self.currReyn = np.format_float_scientific(
             Reyn, sign=False, precision=3)
         self.Reynolds.append(self.currReyn)
-        self.Polars[self.currReyn] = {}
+        if self.currReyn in self.Polars.keys():
+            pass
+        else:
+            self.Polars[self.currReyn] = {}
+
         try:
             self.REYNDIR = f"{self.AFDIR}/Reynolds_{np.format_float_scientific(Reyn,sign=False,precision=3).replace('+', '')}"
             os.system(f"mkdir -p {self.REYNDIR}")

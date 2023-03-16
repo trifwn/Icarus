@@ -2,6 +2,7 @@ from subprocess import call
 import os
 import shutil
 import numpy as np
+import pandas as pd
 from Software import runOFscript, setupOFscript
 
 
@@ -88,7 +89,8 @@ def runFoam(CASEDIR, HOMEDIR, anglesAll):
     os.chdir(HOMEDIR)
 
 
-def makeCLCD(anglesAll):
+def makeCLCD(CASEDIR, HOMEDIR, anglesAll):
+    os.chdir(CASEDIR)
     cd = []
     cl = []
     cm = []
@@ -121,7 +123,11 @@ def makeCLCD(anglesAll):
                 cd.append(Cd)
                 cl.append(Cl)
                 cm.append(CmPitch)
-    return np.vstack([angleSucc, cl, cd, cm]).T
+    df = pd.DataFrame(np.vstack([angleSucc, cl, cd, cm]).T,
+                      columns=["AoA", 'CL', "CD", "CM"])
+    df = df.sort_values("AoA")
+    os.chdir(HOMEDIR)
+    return df
 
 
 def getCoeffs(angle):
