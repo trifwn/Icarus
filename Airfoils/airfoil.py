@@ -22,6 +22,7 @@ class AirfoilData(Airfoil):
     @classmethod
     def NACA(self, naca, n_points=200):
         self.name = naca
+        self.fname = f"naca{naca}"
         self.n_points = n_points
         if len(naca) == 4:
             return self.NACA4(naca, n_points)
@@ -90,17 +91,18 @@ class AirfoilData(Airfoil):
         # plt.plot(x,y)
         plt.axis("scaled")
 
-    def runSolver(self, solver, args):
-        solver(*args)
+    def runSolver(self, solver, args, kwargs={}):
+        solver(*args, **kwargs)
 
-    def setupSolver(self, setupsolver, args):
-        setupsolver(*args)
+    def setupSolver(self, setupsolver, args, kwargs={}):
+        print(*kwargs)
+        setupsolver(*args, **kwargs)
 
-    def cleanRes(self, cleanFun, args):
-        cleanFun(*args)
-    
-    def makePolars(self,makePolFun,args):
-        makePolFun(*args)
+    def cleanRes(self, cleanFun, args, kwargs={}):
+        cleanFun(*args, **kwargs)
+
+    def makePolars(self, makePolFun, args, kwargs={}):
+        makePolFun(*args, **kwargs)
 
 
 def saveAirfoil(argv):

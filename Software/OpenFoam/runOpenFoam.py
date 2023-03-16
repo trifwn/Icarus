@@ -2,82 +2,90 @@ from subprocess import call
 import os
 import shutil
 import numpy as np
-from Software import runofLoc, setofLoc
+from Software import runOFscript, setupOFscript
 
 
-def makeMesh(airfoilFile):
-    call(["/bin/bash", "-c", f"{setofLoc} -f " + airfoilFile])
+def makeMesh(airfoilFile, airfoilName, OFBASE, HOMEDIR):
+    os.chdir(OFBASE)
+    call(
+        ["/bin/bash", "-c", f"{setupOFscript} -n {airfoilName} -p {airfoilFile}"])
+    os.chdir(HOMEDIR)
 
 
-def setupOpenFoam(Reynolds, Mach, anglesALL, silent=False, maxITER=5000):
-    folders = next(os.walk("."))[1]
-    parentdir = os.getcwd()
-    # makeMesh()
+def setupOpenFoam(OFBASE, CASEDIR, HOMEDIR, airfoilFile,
+                  airfoilname, Reynolds, Mach, anglesALL,
+                  silent=False, maxITER=5000):
+    os.chdir(CASEDIR)
+    print(maxITER)
+    makeMesh(airfoilFile, airfoilname, OFBASE, HOMEDIR)
     for ang in anglesALL:
         if ang >= 0:
             folder = str(ang)[::-1].zfill(7)[::-1] + "/"
         else:
             folder = "m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "/"
-        if folder[:-1] in folders:
-            os.chdir(f"{parentdir}/{folder}")
-            ang = ang * np.pi / 180
-            cwd = os.getcwd()
-            shutil.copytree("../../../Base/0/", cwd +
-                            "/0/", dirs_exist_ok=True)
-            filen = "0/U"
-            with open(filen, "r", newline="\n") as file:
-                data = file.readlines()
-            data[26] = f"internalField uniform ( {np.cos(ang)} {np.sin(ang)} 0. );\n"
-            with open(filen, "w") as file:
-                file.writelines(data)
-            shutil.copytree("../../../Base/constant/", cwd +
-                            "/constant/", dirs_exist_ok=True)
-            filen = "constant/transportProperties"
-            with open(filen, "r", newline="\n") as file:
-                data = file.readlines()
-            data[20] = f"nu              [0 2 -1 0 0 0 0] \
-                {np.format_float_scientific(1/Reynolds,sign=False,precision=3)};\n"
-            with open(filen, "w") as file:
-                file.writelines(data)
+        ANGLEDIR = f"{CASEDIR}/{folder}"
+        os.system(f"mkdir -p {ANGLEDIR}")
+        os.chdir(ANGLEDIR)
+        ang = ang * np.pi / 180
 
-            shutil.copytree("../../../Base/system/", cwd +
-                            "/system/", dirs_exist_ok=True)
-            filen = "system/controlDict"
-            with open(filen, "r", newline="\n") as file:
-                data = file.readlines()
-            data[36] = f"endTime {maxITER}.;\n"
-            data[94] = f"\t\tCofR  (0.25 0. 0.);\n"
-            data[95] = f"\t\tliftDir ({-np.sin(ang)} {np.cos(ang)} {0.});\n"
-            data[96] = f"\t\tdragDir ({np.cos(ang)} {np.sin(ang)} {0.});\n"
-            data[97] = f"\t\tpitchAxis (0. 0. 1.);\n"
-            data[98] = "\t\tmagUInf 1.;\n"
-            data[110] = f"\t\tUInf ({np.cos(ang)} {np.sin(ang)} {0.});\n"
-            with open(filen, "w") as file:
-                file.writelines(data)
-            if silent is False:
-                print(f"{cwd} Ready to Run")
-    os.chdir(f"{parentdir}")
+        # MAKE 0/ FOLDER
+        shutil.copytree(f"{OFBASE}/0/", ANGLEDIR +
+                        "/0/", dirs_exist_ok=True)
+        filen = f"{ANGLEDIR}/0/U"
+        with open(filen, "r", newline="\n") as file:
+            data = file.readlines()
+        data[26] = f"internalField uniform ( {np.cos(ang)} {np.sin(ang)} 0. );\n"
+        with open(filen, "w") as file:
+            file.writelines(data)
+
+        # MAKE constant/ FOLDER
+        shutil.copytree(f"{OFBASE}/constant/", ANGLEDIR +
+                        "/constant/", dirs_exist_ok=True)
+        filen = f"{ANGLEDIR}/constant/transportProperties"
+        with open(filen, "r", newline="\n") as file:
+            data = file.readlines()
+        data[20] = f"nu              [0 2 -1 0 0 0 0] \
+            {np.format_float_scientific(1/Reynolds,sign=False,precision=3)};\n"
+        with open(filen, "w") as file:
+            file.writelines(data)
+
+        # MAKE system/ FOLDER
+        shutil.copytree(f"{OFBASE}/system/", ANGLEDIR +
+                        "/system/", dirs_exist_ok=True)
+        filen = f"{ANGLEDIR}/system/controlDict"
+        with open(filen, "r", newline="\n") as file:
+            data = file.readlines()
+        data[36] = f"endTime {maxITER}.;\n"
+        data[94] = f"\t\tCofR  (0.25 0. 0.);\n"
+        data[95] = f"\t\tliftDir ({-np.sin(ang)} {np.cos(ang)} {0.});\n"
+        data[96] = f"\t\tdragDir ({np.cos(ang)} {np.sin(ang)} {0.});\n"
+        data[97] = f"\t\tpitchAxis (0. 0. 1.);\n"
+        data[98] = "\t\tmagUInf 1.;\n"
+        data[110] = f"\t\tUInf ({np.cos(ang)} {np.sin(ang)} {0.});\n"
+        with open(filen, "w") as file:
+            file.writelines(data)
+        if silent is False:
+            print(f"{ANGLEDIR} Ready to Run")
+    os.chdir(HOMEDIR)
 
 
-def runFoamAngle(angle):
+def runFoamAngle(CASEDIR, angle):
     if angle >= 0:
         folder = str(angle)[::-1].zfill(7)[::-1] + "/"
     else:
         folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
-    parentDir = os.getcwd()
-    folders = next(os.walk('.'))[1]
-    if folder[:-1] not in folders:
-        os.system(f"mkdir -p {folder}")
-    os.chdir(folder)
-    print(os.getcwd())
-    os.system(f"{runofLoc}")
-    os.chdir(parentDir)
-    print(f'{angle} deg: Simulation Over')
+
+    ANGLEDIR = f"{CASEDIR}/{folder}"
+    os.chdir(ANGLEDIR)
+    print(f'{angle} deg: Simulation Starting')
+    os.system(f"{runOFscript}")
+    os.chdir(CASEDIR)
 
 
-def runFoam(anglesAll):
+def runFoam(CASEDIR, HOMEDIR, anglesAll):
     for angle in anglesAll:
-        runFoamAngle(angle)
+        runFoamAngle(CASEDIR, angle)
+    os.chdir(HOMEDIR)
 
 
 def makeCLCD(anglesAll):
@@ -143,8 +151,8 @@ def getCoeffs(angle):
     return data[-1]
 
 
-def cleanOpenFoam():
-    caseDir = os.getcwd()
+def cleanOpenFoam(HOMEDIR, CASEDIR):
+    os.chdir(CASEDIR)
     for item in next(os.walk('.'))[1]:
         if item.startswith('m') or item.startswith(('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')):
             os.chdir(item)
@@ -154,7 +162,8 @@ def cleanOpenFoam():
             times = sorted(times)
             for delFol in times[1:-1]:
                 os.system(f"rm -r {delFol}")
-            os.chdir(caseDir)
+            os.chdir(CASEDIR)
+    os.chdir(HOMEDIR)
 
 # def reorderFoamResults(anglesAll):
 #     folders = next(os.walk("."))[1]
