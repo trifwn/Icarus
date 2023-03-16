@@ -39,9 +39,10 @@ def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
             if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
                 file.writelines(folder+'/clcd.out ')
         file.writelines('>> clcd.f2w')
+    os.system("chmod +x output_bat")
     os.system('./output_bat')
 
-    with open('clcd.out', 'r') as file:
+    with open('clcd.f2w', 'r') as file:
         data = file.readlines()
     data = data[2:]
     nums = []

@@ -91,7 +91,7 @@ class AirfoilData(Airfoil):
         plt.axis("scaled")
 
     def runSolver(self, solver, args):
-        solver(*args)
+         solver(*args)
 
     def setupSolver(self, setupsolver, args):
         setupsolver(*args)
