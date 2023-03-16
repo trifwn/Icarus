@@ -17,11 +17,13 @@ class AirfoilData(Airfoil):
         super().__init__(upper, lower)
         self.airfoil2Selig()
         self.Reynolds = []
+        self.Polars = {}
         # self.getFromWeb()
 
     @classmethod
     def NACA(self, naca, n_points=200):
         self.name = naca
+        self.fname = f"naca{naca}"
         self.n_points = n_points
         if len(naca) == 4:
             return self.NACA4(naca, n_points)
@@ -67,8 +69,14 @@ class AirfoilData(Airfoil):
             self.saveFile()
 
     def reynCASE(self, Reyn):
-        self.Reynolds.append(np.format_float_scientific(
-            Reyn, sign=False, precision=3))
+        self.currReyn = np.format_float_scientific(
+            Reyn, sign=False, precision=3)
+        self.Reynolds.append(self.currReyn)
+        if self.currReyn in self.Polars.keys():
+            pass
+        else:
+            self.Polars[self.currReyn] = {}
+
         try:
             self.REYNDIR = f"{self.AFDIR}/Reynolds_{np.format_float_scientific(Reyn,sign=False,precision=3).replace('+', '')}"
             os.system(f"mkdir -p {self.REYNDIR}")
@@ -90,17 +98,18 @@ class AirfoilData(Airfoil):
         # plt.plot(x,y)
         plt.axis("scaled")
 
-    def runSolver(self, solver, args):
-         solver(*args)
+    def runSolver(self, solver, args, kwargs={}):
+        solver(*args, **kwargs)
 
-    def setupSolver(self, setupsolver, args):
-        setupsolver(*args)
+    def setupSolver(self, setupsolver, args, kwargs={}):
+        setupsolver(*args, **kwargs)
 
-    def cleanRes(self, cleanFun, args):
-        cleanFun(*args)
-    
-    def makePolars(self,makePolFun,args):
-        makePolFun(*args)
+    def cleanRes(self, cleanFun, args, kwargs={}):
+        cleanFun(*args, **kwargs)
+
+    def makePolars(self, makePolFun, solverName, args, kwargs={}):
+        polarsdf = makePolFun(*args, **kwargs)
+        self.Polars[self.currReyn][solverName] = polarsdf
 
 
 def saveAirfoil(argv):
