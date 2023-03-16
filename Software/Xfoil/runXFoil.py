@@ -3,6 +3,7 @@ from xfoil.model import Airfoil as XFAirfoil
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def anglesSep(anglesALL):
@@ -32,8 +33,8 @@ def runXFoil(
     xf.max_iter = 100
     xf.print = False
     xpts, ypts = pts.T
-    naca0008 = XFAirfoil(x=xpts, y=ypts)
-    xf.airfoil = naca0008
+    naca = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = naca
     aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
     return np.array([aXF, clXF, cdXF, cmXF]).T
 
@@ -125,3 +126,31 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
         x, y, cp = xf.get_cp_distribution()
         cpsn.append(cp)
     return [cpsn, nangles], [cps, pangles], x
+
+
+def runAndSave(CASEDIR,HOMEDIR,Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9):
+    xf = XFoil()
+    xf.Re = Reyn
+    xf.n_crit = Ncrit
+    # xf.M = MACH
+    xf.xtr = (ftrip_low, ftrip_up)
+    xf.max_iter = 100
+    xf.print = False
+    xpts, ypts = pts.T
+    naca = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = naca
+    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
+    Res =  np.array([aXF, clXF, cdXF, cmXF]).T
+    formatting_function = np.vectorize(lambda f: format(f, '6.5E'))
+    Res_format = formatting_function(Res) 
+    df = pd.DataFrame(Res_format, columns = ['AoA','CL','CD','Cm'])
+    os.chdir(CASEDIR)
+    df.to_csv('clcd.xf', index=False)
+    os.chdir(HOMEDIR)
+    df = df.sort_values("AoA")
+    return df
+
+  
+    
+
+
