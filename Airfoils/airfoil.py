@@ -51,7 +51,7 @@ class AirfoilData(Airfoil):
         # y[-1]= 0
         self.selig2 = np.vstack((x, y))
 
-    def initDB(self, HOMEDIR, DBDIR):
+    def accessDB(self, HOMEDIR, DBDIR):
         os.chdir(DBDIR)
         AFDIR = f"NACA{self.name}"
         os.system(f"mkdir -p {AFDIR}")

@@ -17,7 +17,6 @@ def setupOpenFoam(OFBASE, CASEDIR, HOMEDIR, airfoilFile,
                   airfoilname, Reynolds, Mach, anglesALL,
                   silent=False, maxITER=5000):
     os.chdir(CASEDIR)
-    print(maxITER)
     makeMesh(airfoilFile, airfoilname, OFBASE, HOMEDIR)
     for ang in anglesALL:
         if ang >= 0:
@@ -126,6 +125,7 @@ def makeCLCD(CASEDIR, HOMEDIR, anglesAll):
     df = pd.DataFrame(np.vstack([angleSucc, cl, cd, cm]).T,
                       columns=["AoA", 'CL', "CD", "CM"])
     df = df.sort_values("AoA")
+    df.to_csv('clcd.of', index=False)
     os.chdir(HOMEDIR)
     return df
 
