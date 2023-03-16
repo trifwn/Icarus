@@ -2,6 +2,7 @@ import os
 import numpy as np
 from time import sleep
 import shutil
+import pandas as pd
 
 
 def anglesSep(anglesALL):
@@ -51,6 +52,29 @@ def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
     clcd = np.array(nums)
     os.chdir(HOMEDIR)
     return clcd
+
+
+def makeCLCD2(CASEDIR, HOMEDIR):
+    os.chdir(CASEDIR)
+    folders = next(os.walk('.'))[1]
+    print('Making Polars')
+    with open('output_bat', 'w') as file:
+        folder = folders[0]
+        file.writelines('cd '+folder+'\n../write_out\n')
+        for folder in folders[1:]:
+            if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
+                file.writelines('cd ../'+folder+'\n../write_out\n')
+    os.system('./output_bat')
+    folders = next(os.walk('.'))[1]
+    a = []
+    for folder in folders[1:]:
+        if 'clcd.out' in next(os.walk(folder))[2]:
+            a.append(np.loadtxt(f'{folder}/clcd.out'))
+    df = pd.DataFrame(a, columns=["AoA", 'CL', "CD", "CM"])
+    df = df.sort_values("AoA")
+    df.to_csv('clcd.f2w', index=False)
+    os.chdir(HOMEDIR)
+    return df
 
 
 def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):

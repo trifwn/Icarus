@@ -17,6 +17,7 @@ class AirfoilData(Airfoil):
         super().__init__(upper, lower)
         self.airfoil2Selig()
         self.Reynolds = []
+        self.Polars = {}
         # self.getFromWeb()
 
     @classmethod
@@ -68,8 +69,10 @@ class AirfoilData(Airfoil):
             self.saveFile()
 
     def reynCASE(self, Reyn):
-        self.Reynolds.append(np.format_float_scientific(
-            Reyn, sign=False, precision=3))
+        self.currReyn = np.format_float_scientific(
+            Reyn, sign=False, precision=3)
+        self.Reynolds.append(self.currReyn)
+        self.Polars[self.currReyn] = {}
         try:
             self.REYNDIR = f"{self.AFDIR}/Reynolds_{np.format_float_scientific(Reyn,sign=False,precision=3).replace('+', '')}"
             os.system(f"mkdir -p {self.REYNDIR}")
@@ -95,14 +98,14 @@ class AirfoilData(Airfoil):
         solver(*args, **kwargs)
 
     def setupSolver(self, setupsolver, args, kwargs={}):
-        print(*kwargs)
         setupsolver(*args, **kwargs)
 
     def cleanRes(self, cleanFun, args, kwargs={}):
         cleanFun(*args, **kwargs)
 
-    def makePolars(self, makePolFun, args, kwargs={}):
-        makePolFun(*args, **kwargs)
+    def makePolars(self, makePolFun, solverName, args, kwargs={}):
+        polarsdf = makePolFun(*args, **kwargs)
+        self.Polars[self.currReyn][solverName] = polarsdf
 
 
 def saveAirfoil(argv):
