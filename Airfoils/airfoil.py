@@ -3,6 +3,7 @@ from airfoils import Airfoil
 import numpy as np
 import urllib.request
 import matplotlib.pyplot as plt
+import os
 import sys
 
 # # Airfoil
@@ -11,23 +12,25 @@ import sys
 # ##### 2 = load from file
 
 
-class AirfoilS(Airfoil):
+class AirfoilData(Airfoil):
     def __init__(self, upper, lower):
         super().__init__(upper, lower)
         self.airfoil2Selig()
+        self.Reynolds = []
         # self.getFromWeb()
 
     @classmethod
     def NACA(self, naca, n_points=200):
         self.name = naca
+        self.n_points = n_points
         if len(naca) == 4:
             return self.NACA4(naca, n_points)
         else:
             print("ERROR NOT 4 DIGITS")
 
     def airfoil2Selig(self):
-        x_points = np.hstack((self._x_upper[::-1], self._x_lower)).T
-        y_points = np.hstack((self._y_upper[::-1], self._y_lower)).T
+        x_points = np.hstack((self._x_upper[::-1], self._x_lower[1:])).T
+        y_points = np.hstack((self._y_upper[::-1], self._y_lower[1:])).T
         # y_points[0]=0
         # y_points[-1]=0
         self.selig = np.vstack((x_points, y_points))
@@ -46,6 +49,59 @@ class AirfoilS(Airfoil):
         # y[-1]= 0
         self.selig2 = np.vstack((x, y))
 
+    def initDB(self, HOMEDIR, DBDIR):
+        os.chdir(DBDIR)
+        AFDIR = f"NACA{self.name}"
+        os.system(f"mkdir -p {AFDIR}")
+        os.chdir(AFDIR)
+        self.AFDIR = os.getcwd()
+        self.HOMEDIR = HOMEDIR
+        self.DBDIR = DBDIR
+        os.chdir(HOMEDIR)
+        exists = False
+        for i in os.listdir(self.AFDIR):
+            if i.startswith("naca"):
+                self.airfile = f"{self.AFDIR}/{i}"
+                exists = True
+        if True:
+            self.saveFile()
+
+    def reynCASE(self, Reyn):
+        self.Reynolds.append(np.format_float_scientific(
+            Reyn, sign=False, precision=3))
+        try:
+            self.REYNDIR = f"{self.AFDIR}/Reynolds_{np.format_float_scientific(Reyn,sign=False,precision=3).replace('+', '')}"
+            os.system(f"mkdir -p {self.REYNDIR}")
+            os.system(f"cp {self.airfile} {self.REYNDIR}")
+        except AttributeError:
+            print("DATABASE is not initialized!")
+
+    def saveFile(self):
+        self.airfile = f"{self.AFDIR}/naca{self.name}"
+        pt0 = self.selig
+        np.savetxt(self.airfile, pt0.T)
+
+    def plotAirfoil(self):
+        pts = self.selig
+        x, y = pts
+        plt.plot(x[: self.n_points], y[: self.n_points], "r")
+        plt.plot(x[self.n_points:], y[self.n_points:], "b")
+
+        # plt.plot(x,y)
+        plt.axis("scaled")
+
+    def runSolver(self, solver, args):
+        solver(*args)
+
+    def setupSolver(self, setupsolver, args):
+        setupsolver(*args)
+
+    def cleanRes(self, cleanFun, args):
+        cleanFun(*args)
+    
+    def makePolars(self,makePolFun,args):
+        makePolFun(*args)
+
 
 def saveAirfoil(argv):
     options = argv
@@ -62,7 +118,7 @@ def saveAirfoil(argv):
         Airfoiln = str(options[2])
         mode = int(options[3])
         n_points = int(options[4])
-    f = AirfoilS.NACA(Airfoiln, n_points=n_points)
+    f = AirfoilData.NACA(Airfoiln, n_points=n_points)
 
     # # Return and Save to file
     if mode == 0:

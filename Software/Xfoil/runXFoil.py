@@ -58,7 +58,7 @@ def saveXfoil(airfoils, polars, Reynolds):
     os.chdir(masterDir)
     for airfoil, clcdData in zip(airfoils, polars):
         os.chdir(masterDir)
-        os.chdir(f"Airfoils/NACA{airfoil}")
+        os.chdir(f"Database/2D/NACA{airfoil}")
         airfoilPath = os.getcwd()
 
         for i, ReynDat in enumerate(clcdData):

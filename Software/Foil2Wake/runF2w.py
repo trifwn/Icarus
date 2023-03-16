@@ -19,9 +19,10 @@ def anglesSep(anglesALL):
     return nangles, pangles
 
 
-def makeCLCD(Reynolds, Mach):
+def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
+    os.chdir(CASEDIR)
     folders = next(os.walk('.'))[1]
-    print('OK')
+    print('Making Polars')
     with open('output_bat', 'w') as file:
         folder = folders[0]
         file.writelines('cd '+folder+'\n../write_out\n')
@@ -37,7 +38,7 @@ def makeCLCD(Reynolds, Mach):
         for folder in folders[::-1]:
             if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
                 file.writelines(folder+'/clcd.out ')
-        file.writelines('>> clcd.out')
+        file.writelines('>> clcd.f2w')
     os.system('./output_bat')
 
     with open('clcd.out', 'r') as file:
@@ -48,10 +49,12 @@ def makeCLCD(Reynolds, Mach):
         n = item.split()
         nums.append([float(i) for i in n])
     clcd = np.array(nums)
+    os.chdir(HOMEDIR)
     return clcd
 
 
-def runF2W(Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):
+def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):
+    os.chdir(CASEDIR)
     nangles, pangles = anglesSep(anglesALL)
     for angles, name in [[pangles, 'pos'], [nangles, 'neg']]:
         NoA = len(angles)
@@ -107,10 +110,12 @@ def runF2W(Reynolds, Mach, ftripL, ftripU, anglesALL, airfile):
     os.system('rm -r SOLOUTI*')
     sleep(1)
     # return makeCLCD(Reynolds,Mach)
+    os.chdir(HOMEDIR)
     return 0
 
 
-def removeResults(angles):
+def removeResults(CASEDIR, HOMEDIR, angles):
+    os.chdir(CASEDIR)
     os.system('rm  SOLOUTI*')
     os.system('rm  *.out')
     os.system('rm PAKETO')
@@ -126,12 +131,13 @@ def removeResults(angles):
             os.system(
                 'rm -f AERLOAD.OUT AIRFOIL.OUT BDLAYER.OUT COEFPRE.OUT SEPWAKE.OUT TREWAKE.OUT clcd.out SOLOUTI.INI')
             os.chdir(parentDir)
+    os.chdir(HOMEDIR)
 
 
-def setupF2W():
+def setupF2W(F2WBASE, HOMEDIR, CASEDIR):
     filesNeeded = ['design.inp', 'design_neg.inp', 'design_pos.inp',
                    'f2w.inp', 'f2w_neg.inp', 'f2w_pos.inp', 'io.files', 'write_out']
     for item in filesNeeded:
-        shutil.copy(f'../../Base/{item}', '.')
-    if 'foil' not in next(os.walk('.'))[2]:
-        os.system('ln -sv ../../../foil foil')
+        shutil.copy(f'{F2WBASE}/{item}', f'{CASEDIR}/')
+    if 'foil' not in next(os.walk(f'{CASEDIR}/'))[2]:
+        os.system(f'ln -sv {HOMEDIR}/foil {CASEDIR}/foil')
