@@ -65,6 +65,14 @@ class Airplane():
             os.system(f"mkdir -p {self.ANGLEDIR}")
         except AttributeError:
             print("DATABASE is not initialized!")
+            
+    def batchangles(self, angles):
+        for angle in angles:
+            self.angles.append(angle)
+            if angle in self.Polars.keys():
+                pass
+            else:
+                self.Polars[angle] = {}
 
     def runSolver(self, solver, args, kwargs={}):
         solver(*args, **kwargs)

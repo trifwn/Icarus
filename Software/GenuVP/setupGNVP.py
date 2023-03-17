@@ -245,14 +245,14 @@ def bldFiles(bodies):
             file.writelines(data)
 
 
-def makeInput(CASEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils, AeroData, solver):
-    os.chdir(CASEDIR)
+def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils, AeroData, solver):
+    os.chdir(ANGLEDIR)
 
     # COPY FROM BASE
     filesNeeded = ['dfile.yours', 'hermes.geo', 'hyb.inf',
                    'input', 'name.cld', 'Lwing.bld']
     for item in filesNeeded:
-        shutil.copy(f'{GENUBASE}/{item}', f'{CASEDIR}/')
+        shutil.copy(f'{GENUBASE}/{item}', f'{ANGLEDIR}/')
 
     # EMPTY BLD FILES
     for body in bodies:
@@ -274,7 +274,7 @@ def makeInput(CASEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils,
     # CLD FILES
     cldFiles(AeroData, airfoils, solver)
     if 'gnvp' not in next(os.walk('.'))[2]:
-        os.system(f'ln -sv {HOMEDIR}/gnvp {CASEDIR}/gnvp')
+        os.system(f'ln -sv {HOMEDIR}/gnvp {ANGLEDIR}/gnvp')
     os.chdir(HOMEDIR)
 
 
@@ -285,27 +285,29 @@ def runGNVP(HOMEDIR, ANGLEDIR):
     os.chdir(HOMEDIR)
 
 
-def batchRun(airMovement, bodies, params, airfoils, AeroData, angles, CASE):
-    masterDir = os.getcwd()
-    makeInput(airMovement, bodies, params, airfoils,
-              AeroData, CASE)
+def batchRun(CASEDIR, HOMEDIR, GENUBASE, airMovement, bodies,
+             params, airfoils, AeroData, solver, angles):
+
     for angle in angles:
         print(f"Running Angles {angle}")
-        os.chdir(CASE)
-        runGNVP()
-        os.chdir(masterDir)
-        params = {
-            "nBods": len(bodies),  # len(Surfaces)
-            "nBlades": len(airfoils),  # len(NACA)
-            "maxiter": 20,
-            "timestep": 1.,
-            "Uinf": [20. * np.cos(angle*np.pi/180), 0.0, 20. * np.sin(angle*np.pi/180)],
-            "rho": 1.225,
-            "visc": 0.0000156,
-        }
-        os.chdir(CASE)
+        if angle >= 0:
+            folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+        else:
+            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
+
+        ANGLEDIR = f"{CASEDIR}/{folder}"
+        os.system(f"mkdir -p {ANGLEDIR}")
+
+        params["Uinf"] = [
+            20. * np.cos(angle*np.pi/180), 0.0, 20. * np.sin(angle*np.pi/180)]
+
+        makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement,
+                  bodies, params, airfoils, AeroData, solver)
+        runGNVP(HOMEDIR, ANGLEDIR)
+
+        os.chdir(ANGLEDIR)
         dfile(params)
-    os.chdir(masterDir)
+        os.chdir(HOMEDIR)
 
 
 def getData(CASE, angles, Q, S, MAC):
