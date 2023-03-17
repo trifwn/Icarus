@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import shutil
 
 
 def ff(num):
@@ -139,57 +140,67 @@ def geofile(airMovement, bodies):
         file.writelines(data)
 
 
-def cldFiles(airfoils, AeroData, Reynolds, angles):
-    for airfoil, clcdData in zip(airfoils, AeroData):
-        fname = f"{airfoil}.cld"
+def cldFiles(AeroData, airfoils, solver):
+    for airfoil in airfoils:
+        print(airfoil)
+        fname = f"{airfoil[4:]}.cld"
+        polars = AeroData[airfoil]
+
+        # GET FILE
         with open(fname, "r") as file:
             data = file.readlines()
 
-        data[4] = f"{len(clcdData)}  ! Mach numbers for which CL-CD are given\n"
-        for i in range(0, len(clcdData)):
-            data[5 + i] = f"{i/len(clcdData)}\n"
-        data[5 + len(clcdData)] = "! Reyn numbers for which CL-CD are given\n"
-        for i in range(0, len(clcdData)):
-            data[6 + len(clcdData) + i] = f"{ff(Reynolds[i])}\n"
-        data[6 + 2 * len(clcdData)] = "\n"
+        # WRITE MACH NUMBERS !! ITS NOT GOING TO BE USED !!
+        data[4] = f"{len(polars)}  ! Mach numbers for which CL-CD are given\n"
+        for i in range(0, len(polars)):
+            data[5 + i] = f"0.08\n"
 
-        anglenum = len(angles[:-2])
+        # WRITE REYNOLDS NUMBERS !! ITS GOING TO BE USED !!
+        data[5 + len(polars)] = "! Reyn numbers for which CL-CD are given\n"
+        for i, Reyn in enumerate(list(polars.keys())):
+            data[6 + len(polars) + i] = f"{Reyn.zfill(5)}\n"
+        data[6 + 2 * len(polars)] = "\n"
+        data = data[:6 + 2 * len(polars) + 1]
 
+        # GET 2D AIRFOIL POLARS IN ONE TABLE
+        keys = list(polars.keys())
+        df = polars[keys[0]][solver].astype(
+            'float32').dropna(axis=0, how="all")
+        for reyn in keys[1:]:
+            df2 = polars[reyn][solver].astype(
+                'float32').dropna(axis=0, how="all")
+            df = pd.merge(df, df2, on="AoA", how='outer')
+
+        # SORT BY AoA
+        df = df.sort_values("AoA")
+
+        # FILL NaN Values By neighbors
+        df = filltable(df)
+
+        # Get Angles
+        angles = df["AoA"].values
+        anglenum = len(angles)
+
+        # FILL FILE
         for radpos in 0, 1:
             if radpos == 0:
-                data[7 + 2 * len(clcdData)] = "-10.       ! Radial Position\n"
+                data.append("-10.       ! Radial Position\n")
             else:
-                data[
-                    7 + 2 * len(clcdData) + radpos * (anglenum + 4)
-                ] = "10.       ! Radial Position\n"
-            data[
-                8 + 2 * len(clcdData) + radpos * (anglenum + 4)
-            ] = f"{anglenum}         ! Number of Angles / Airfoil NACA {airfoil}\n"
-            data[
-                9 + 2 * len(clcdData) + radpos * (anglenum + 4)
-            ] = f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n"
-
-            for i, ang in enumerate(angles[:-2]):
+                data.append("10.       ! Radial Position\n")
+            data.append(
+                f"{anglenum}         ! Number of Angles / Airfoil NACA {airfoil}\n")
+            data.append(
+                f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n")
+            for i, ang in enumerate(angles):
                 string = ""
-                for reyndict in clcdData:
-                    try:
-                        a = (
-                            ff2(reyndict[str(ang)][0])
-                            + "  "
-                            + ff2(reyndict[str(ang)][1])
-                            + "  "
-                            + ff2(reyndict[str(ang)][2])
-                            + "  "
-                        )
-                        string = string + a
-                    except KeyError:
-                        string = string + string[-27:] + "  "
-                data[
-                    10 + 2 * len(clcdData) + radpos * (anglenum + 4) + i
-                ] = f"{ff3(ang)}   {string}\n"
-
+                nums = df.loc[df["AoA"] == 5].to_numpy().squeeze()
+                for num in nums:
+                    string = string + ff2(num) + "  "
+                data.append(f"{ff3(ang)}   {string}\n")
+            data.append("\n")
         with open(fname, "w") as file:
             file.writelines(data)
+    return df
 
 
 def bldFiles(bodies):
@@ -234,10 +245,23 @@ def bldFiles(bodies):
             file.writelines(data)
 
 
-def makeInput(airMovement, bodies, params, airfoils, AeroData, Reynolds, angles, CASE):
-    masterDir = os.getcwd()
-    os.chdir(CASE)
-    print(os.listdir())
+def makeInput(CASEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils, AeroData, solver):
+    os.chdir(CASEDIR)
+
+    # COPY FROM BASE
+    filesNeeded = ['dfile.yours', 'hermes.geo', 'hyb.inf',
+                   'input', 'name.cld', 'Lwing.bld']
+    for item in filesNeeded:
+        shutil.copy(f'{GENUBASE}/{item}', f'{CASEDIR}/')
+
+    # EMPTY BLD FILES
+    for body in bodies:
+        os.system(f'cp Lwing.bld {body["name"]}.bld')
+
+    # EMPTY CLD FILES
+    for airfoil in airfoils:
+        os.system(f'cp name.cld {airfoil[4:]}.cld')
+    os.system("rm name.cld")
 
     # Input File
     inputF()
@@ -248,27 +272,27 @@ def makeInput(airMovement, bodies, params, airfoils, AeroData, Reynolds, angles,
     # BLD FILES
     bldFiles(bodies)
     # CLD FILES
-    cldFiles(airfoils, AeroData, Reynolds, angles)
-    print(next(os.walk('.')))
+    cldFiles(AeroData, airfoils, solver)
     if 'gnvp' not in next(os.walk('.'))[2]:
-        print("ok")
-        os.system('ln -sv ../../gnvp gnvp')
-    os.chdir(masterDir)
+        os.system(f'ln -sv {HOMEDIR}/gnvp {CASEDIR}/gnvp')
+    os.chdir(HOMEDIR)
 
 
-def runGNVP():
+def runGNVP(HOMEDIR, ANGLEDIR):
+    os.chdir(ANGLEDIR)
     os.system("./gnvp < input > gnvp.out")
-    os.system(f"cat LOADS_aer.dat >>  res.dat")
+    # os.system(f"cat LOADS_aer.dat >>  res.dat")
+    os.chdir(HOMEDIR)
 
 
-def batchRun(airMovement, bodies, params, airfoils, AeroData, Reynolds, angleCL, angles, CASE):
+def batchRun(airMovement, bodies, params, airfoils, AeroData, angles, CASE):
     masterDir = os.getcwd()
     makeInput(airMovement, bodies, params, airfoils,
-              AeroData, Reynolds, angleCL, CASE)
+              AeroData, CASE)
     for angle in angles:
         print(f"Running Angles {angle}")
         os.chdir(CASE)
-        # runGNVP()
+        runGNVP()
         os.chdir(masterDir)
         params = {
             "nBods": len(bodies),  # len(Surfaces)
@@ -305,12 +329,39 @@ def getData(CASE, angles, Q, S, MAC):
     return genu
 
 
-def removeResults(CASE):
-    masterDir = os.getcwd()
-    os.chdir(CASE)
+def removeResults(ANGLEDIR, HOMEDIR):
+    os.chdir(ANGLEDIR)
     os.system("rm  strip*")
     os.system("rm  x*")
     os.system("rm YOURS*")
     os.system("rm refstate*")
     # os.system('rm ing.WG')
-    os.chdir(masterDir)
+    os.chdir(HOMEDIR)
+
+
+def filltable(df):
+    """Fill Nan Values of Panda Dataframe Row by Row
+    substituting first backward and then forward
+
+    Args:
+        df (pandas.DataFrame): Dataframe with NaN values
+    """
+    CLs = []
+    CDs = []
+    CMs = []
+    for item in list(df.keys()):
+        if item.startswith("CL"):
+            CLs.append(item)
+        if item.startswith("CD"):
+            CDs.append(item)
+        if item.startswith("Cm") or item.startswith("CM"):
+            CMs.append(item)
+    for cols in [CLs, CDs, CMs]:
+        df[cols] = df[cols].interpolate(method='linear',
+                                        limit_direction='backward',
+                                        axis=1)
+        df[cols] = df[cols].interpolate(method='linear',
+                                        limit_direction='forward',
+                                        axis=1)
+
+    return df
