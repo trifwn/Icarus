@@ -3,13 +3,17 @@ import os
 
 
 class Airplane():
-    def __init__(self, airfoils, WingAngle, HasWing=True, HasElevator=True, HasRudder=True):
+    def __init__(self, airfoils, WindAngle, Q, S, MAC, HasWing=True, HasElevator=True, HasRudder=True):
         self.Polars = {}
         self.angles = []
 
         self.bodies = []
         self.airfoils = airfoils
         self.airMovement = self.airMov()
+
+        self.Q = Q
+        self.S = S
+        self.MAC = MAC
 
         if HasWing == True:
             self.bodies.append(self.WingL())
@@ -20,7 +24,7 @@ class Airplane():
         if HasRudder == True:
             self.bodies.append(self.Rudder())
 
-        self.params = self.setParams(WingAngle)
+        self.params = self.setParams(WindAngle)
 
         if (HasWing == True) and (HasRudder == False) and (HasRudder == False):
             self.CASENAME = "Wing"
@@ -65,7 +69,7 @@ class Airplane():
             os.system(f"mkdir -p {self.ANGLEDIR}")
         except AttributeError:
             print("DATABASE is not initialized!")
-            
+
     def batchangles(self, angles):
         for angle in angles:
             self.angles.append(angle)
@@ -98,13 +102,13 @@ class Airplane():
         }
         return airMovement
 
-    def setParams(self, WingAngle):
+    def setParams(self, WindAngle):
         params = {
             "nBods": len(self.bodies),  # len(Surfaces)
             "nBlades": len(self.airfoils),  # len(NACA)
             "maxiter": 50,
             "timestep": 10,
-            "Uinf": [20. * np.cos(WingAngle*np.pi/180), 0.0, 20. * np.sin(WingAngle*np.pi/180)],
+            "Uinf": [20. * np.cos(WindAngle*np.pi/180), 0.0, 20. * np.sin(WindAngle*np.pi/180)],
             "rho": 1.225,
             "visc": 0.0000156,
         }

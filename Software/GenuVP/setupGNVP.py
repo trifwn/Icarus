@@ -308,27 +308,32 @@ def batchRun(CASEDIR, HOMEDIR, GENUBASE, airMovement, bodies,
         os.chdir(ANGLEDIR)
         dfile(params)
         os.chdir(HOMEDIR)
+    makePolar(CASEDIR,HOMEDIR)
+    # savePlane()
 
 
-def getData(CASE, angles, Q, S, MAC):
-    # os.chdir(CASE)
-    genu = pd.read_csv(f'{CASE}/res.dat', delim_whitespace=True)
-    genu.pop('TTIME')
-    genu.pop("PSIB")
-    genu["angle"] = angles
+def makePolar(CASEDIR, HOMEDIR):
+    os.chdir(CASEDIR)
+    folders = next(os.walk('.'))[1]
+    print('Making Polars')
+    pols = []
+    for folder in folders:
+        os.chdir(f"{CASEDIR}/{folder}")
+        files = next(os.walk('.'))[2]
+        if "LOADS_aer.dat" in files:
+            if folder.startswith("m"):
+                a = [- float(folder[1:]), *np.loadtxt("LOADS_aer.dat")]
+            else:
+                a = [float(folder), *np.loadtxt("LOADS_aer.dat")]
+            pols.append(a)
+        os.chdir(f"{CASEDIR}")
+    df = pd.DataFrame(pols, columns=cols)
+    df.pop('TTIME')
+    df.pop("PSIB")
 
-    genu["CD_Pot"] = - genu["TFORC(1)"]*np.sin(angles*np.pi/180) / (Q*S)
-    genu["CD_2D"] = -genu["TFORC2D(1)"]*np.sin(angles*np.pi/180) / (Q*S)
-    genu["CD_ONERA"] = -genu["TFORCDS2D(1)"]*np.sin(angles*np.pi/180) * (Q*S)
-
-    genu["CL_Pot"] = genu["TFORC(3)"]*np.cos(angles*np.pi/180) / (Q*S)
-    genu["CL_2D"] = genu["TFORC2D(3)"]*np.cos(angles*np.pi/180) / (Q*S)
-    genu["CL_ONERA"] = genu["TFORCDS2D(3)"]*np.cos(angles*np.pi/180) / (Q*S)
-
-    genu["Cm_Pot"] = genu["TAMOM(2)"] / (Q*S*MAC)
-    genu["Cm_2D"] = genu["TAMOM2D(2)"] / (Q*S*MAC)
-    genu["Cm_ONERA"] = genu["TAMOMDS2D(2)"] / (Q*S*MAC)
-    return genu
+    df = df.sort_values("AoA")
+    df.to_csv('clcd.genu', index=False)
+    os.chdir(HOMEDIR)
 
 
 def removeResults(ANGLEDIR, HOMEDIR):
@@ -367,3 +372,26 @@ def filltable(df):
                                         axis=1)
 
     return df
+
+
+cols = ["AoA",
+        "TTIME",
+        "PSIB",
+        "TFORC(1)",
+        "TFORC(2)",
+        "TFORC(3)",
+        "TAMOM(1)",
+        "TAMOM(2)",
+        "TAMOM(3)",
+        "TFORC2D(1)",
+        "TFORC2D(2)",
+        "TFORC2D(3)",
+        "TAMOM2D(1)",
+        "TAMOM2D(2)",
+        "TAMOM2D(3)",
+        "TFORCDS2D(1)",
+        "TFORCDS2D(2)",
+        "TFORCDS2D(3)",
+        "TAMOMDS2D(1)",
+        "TAMOMDS2D(2)",
+        "TAMOMDS2D(3)"]
