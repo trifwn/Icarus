@@ -219,7 +219,7 @@ def bldFiles(bodies):
         data[12] = f'{bod["x_0"]}        {bod["y_0"]}        {bod["z_0"]}\n'
         data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
         data[18] = f"1                      0.         1.         \n"  # KSI
-        data[21] = f'1                      0.         {bod["y_end"]}\n'
+        data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
         data[
             24
         ] = f'4                      {bod["Root_chord"]}       {-step}   0.         0.         0.         0.\n'

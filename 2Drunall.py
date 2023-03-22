@@ -12,9 +12,12 @@ from Database import BASEFOIL2W, BASEOPENFOAM, DB2D
 
 HOMEDIR = os.getcwd()
 
-## Reynolds And Mach and AoA
+# Reynolds And Mach and AoA
+
+
 def ms2mach(ms):
     return ms / 340.29
+
 
 def Re(v, c, n):
     return (v * c) / n
@@ -35,7 +38,7 @@ AoAmin = -6
 NoAoA = (AoAmax - AoAmin) * 2 + 1
 
 angles = np.linspace(AoAmin, AoAmax, NoAoA)
-Reynolds = np.logspace(np.log10(Remin), np.log10(Remax), 10, base=10)
+Reynolds = np.logspace(np.log10(Remin), np.log10(Remax), 5, base=10)
 Mach = np.linspace(Machmax, Machmin, 10)
 
 MACH = Machmax
@@ -48,13 +51,15 @@ calcXFoil = True
 # LOOP
 airfoils = ["4415", "0008"]
 for airfoil in airfoils:
-    print(f"Running airfoil {airfoil}")
+    print(f"\nRunning airfoil {airfoil}\n")
     # # Get Airfoil
     airf = af.AirfoilData.NACA(airfoil, n_points=200)
     airf.accessDB(HOMEDIR, DB2D)
     # airf.plotAirfoil()
     for Reyn in Reynolds:
-        print(f"\t{Reyn}")
+        print(
+            f"#################################### {Reyn} ######################################")
+
         # Setup Case Dirs
         airf.reynCASE(Reyn)
 
@@ -62,7 +67,7 @@ for airfoil in airfoils:
         ftrip_low = {"pos": 0.1, "neg": 0.2}
         ftrip_up = {"pos": 0.2, "neg": 0.1}
         Ncrit = 9
-        print("\t\tRunning Foil2Wake")
+        print("------- Running Foil2Wake -------")
         if cleaning == True:
             airf.cleanRes(f2w.removeResults, [
                           airf.REYNDIR, airf.HOMEDIR, angles])
@@ -76,7 +81,7 @@ for airfoil in airfoils:
                         airf.REYNDIR, airf.HOMEDIR])
 
         # # Xfoil
-        print("\t\t Running Xfoil")
+        print("-------  Running Xfoil ------- ")
         if calcXFoil == True:
             xfargs = [airf.REYNDIR, HOMEDIR, Reyn, MACH,
                       min(angles), max(angles), 0.5, airf.selig.T]
@@ -85,7 +90,7 @@ for airfoil in airfoils:
         # # OpenFoam
         os.chdir(airf.REYNDIR)
         maxITER = 800
-        print("\t\tRunning OpenFoam")
+        print("------- Running OpenFoam ------- ")
         if cleaning == True:
             airf.cleanRes(of.cleanOpenFoam, [HOMEDIR, airf.REYNDIR])
         if calcOpenFoam == True:
@@ -97,5 +102,6 @@ for airfoil in airfoils:
             airf.runSolver(of.runFoam, [airf.REYNDIR, airf.HOMEDIR, angles])
         airf.makePolars(of.makeCLCD, "OpenFoam", [
                         airf.REYNDIR, airf.HOMEDIR, angles])
-
+print("########################################################################")
 print("Program Terminated")
+print("########################################################################")
