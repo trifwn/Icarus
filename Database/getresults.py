@@ -10,7 +10,7 @@ class Database_2D():
         self.HOMEDIR = HOMEDIR
         self.Data = {}
         self.scan()
-        self.airfoils = {}
+        self.airfoils = self.getAirfoils()
 
     def scan(self):
         os.chdir(DB2D)
@@ -46,11 +46,12 @@ class Database_2D():
         return reynDict
 
     def getAirfoils(self):
-        for airfoil in list(self.Data.keys()):
-            self.airfoils[airfoil] = af.AirfoilData.NACA(
-                airfoil[4:], n_points=200)
+        airfoils = {}
+        for airf in list(self.Data.keys()):
+            airfoils[airf] = af.AirfoilData.NACA(
+                airf[4:], n_points=200)
 
-        return self.airfoils
+        return airfoils
 
     def getReynolds(self, airfoil):
         try:

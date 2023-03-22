@@ -142,7 +142,6 @@ def geofile(airMovement, bodies):
 
 def cldFiles(AeroData, airfoils, solver):
     for airfoil in airfoils:
-        print(airfoil)
         fname = f"{airfoil[4:]}.cld"
         polars = AeroData[airfoil]
 
@@ -204,42 +203,26 @@ def cldFiles(AeroData, airfoils, solver):
 
 
 def bldFiles(bodies):
-    for i, bod in enumerate(bodies):
+    for bod in bodies:
         fname = bod["bld"]
         with open(fname, "r") as file:
             data = file.readlines()
-        if bod["is_right"] == True:
-            step = round(
-                (bod["Root_chord"] - bod["Tip_chord"]) /
-                (bod["y_end"] - bod["y_0"]),
-                ndigits=5,
-            )
-            data[3] = f'1          {bod["NACA"]}\n'
-            data[6] = f"0          0          0\n"
-            data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
-            data[12] = f'{bod["x_0"]}        {bod["y_0"]}        {bod["z_0"]}\n'
-            data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
-            data[18] = f"1                      0.         1.         \n"  # KSI
-            data[21] = f'1                      0.         {bod["y_end"]}\n'
-            data[
-                24
-            ] = f'4                      {bod["Root_chord"]}       {-step}   0.         0.         0.         0.\n'
-        else:
-            step = round(
-                (bod["Root_chord"] - bod["Tip_chord"]) /
-                (bod["y_end"] - bod["y_0"]),
-                ndigits=5,
-            )
-            data[3] = f'1          {bod["NACA"]}\n'
-            data[6] = f"0          0          0\n"
-            data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
-            data[12] = f'{bod["x_0"]}        {-bod["y_end"]}        {bod["z_0"]}\n'
-            data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
-            data[18] = f"1                      0.         1.         \n"  # KSI
-            data[21] = f'1                      0.         {bod["y_end"]}\n'
-            data[
-                24
-            ] = f'4                      {bod["Tip_chord"]}      {step}    0.         0.         0.         0.\n'
+
+        step = round(
+            (bod["Root_chord"] - bod["Tip_chord"]) /
+            (bod["y_end"] - bod["y_0"]),
+            ndigits=5,
+        )
+        data[3] = f'1          {bod["NACA"]}\n'
+        data[6] = f"0          0          0\n"
+        data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
+        data[12] = f'{bod["x_0"]}        {bod["y_0"]}        {bod["z_0"]}\n'
+        data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
+        data[18] = f"1                      0.         1.         \n"  # KSI
+        data[21] = f'1                      0.         {bod["y_end"]}\n'
+        data[
+            24
+        ] = f'4                      {bod["Root_chord"]}       {-step}   0.         0.         0.         0.\n'
 
         with open(fname, "w") as file:
             file.writelines(data)
@@ -256,7 +239,8 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils
 
     # EMPTY BLD FILES
     for body in bodies:
-        os.system(f'cp Lwing.bld {body["name"]}.bld')
+        if body["name"] != 'Lwing':
+            os.system(f'cp Lwing.bld {body["name"]}.bld')
 
     # EMPTY CLD FILES
     for airfoil in airfoils:
@@ -275,74 +259,6 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils
     cldFiles(AeroData, airfoils, solver)
     if 'gnvp' not in next(os.walk('.'))[2]:
         os.system(f'ln -sv {HOMEDIR}/gnvp {ANGLEDIR}/gnvp')
-    os.chdir(HOMEDIR)
-
-
-def runGNVP(HOMEDIR, ANGLEDIR):
-    os.chdir(ANGLEDIR)
-    os.system("./gnvp < input > gnvp.out")
-    # os.system(f"cat LOADS_aer.dat >>  res.dat")
-    os.chdir(HOMEDIR)
-
-
-def batchRun(CASEDIR, HOMEDIR, GENUBASE, airMovement, bodies,
-             params, airfoils, AeroData, solver, angles):
-
-    for angle in angles:
-        print(f"Running Angles {angle}")
-        if angle >= 0:
-            folder = str(angle)[::-1].zfill(7)[::-1] + "/"
-        else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
-
-        ANGLEDIR = f"{CASEDIR}/{folder}"
-        os.system(f"mkdir -p {ANGLEDIR}")
-
-        params["Uinf"] = [
-            20. * np.cos(angle*np.pi/180), 0.0, 20. * np.sin(angle*np.pi/180)]
-
-        makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement,
-                  bodies, params, airfoils, AeroData, solver)
-        runGNVP(HOMEDIR, ANGLEDIR)
-
-        os.chdir(ANGLEDIR)
-        dfile(params)
-        os.chdir(HOMEDIR)
-    makePolar(CASEDIR,HOMEDIR)
-    # savePlane()
-
-
-def makePolar(CASEDIR, HOMEDIR):
-    os.chdir(CASEDIR)
-    folders = next(os.walk('.'))[1]
-    print('Making Polars')
-    pols = []
-    for folder in folders:
-        os.chdir(f"{CASEDIR}/{folder}")
-        files = next(os.walk('.'))[2]
-        if "LOADS_aer.dat" in files:
-            if folder.startswith("m"):
-                a = [- float(folder[1:]), *np.loadtxt("LOADS_aer.dat")]
-            else:
-                a = [float(folder), *np.loadtxt("LOADS_aer.dat")]
-            pols.append(a)
-        os.chdir(f"{CASEDIR}")
-    df = pd.DataFrame(pols, columns=cols)
-    df.pop('TTIME')
-    df.pop("PSIB")
-
-    df = df.sort_values("AoA")
-    df.to_csv('clcd.genu', index=False)
-    os.chdir(HOMEDIR)
-
-
-def removeResults(ANGLEDIR, HOMEDIR):
-    os.chdir(ANGLEDIR)
-    os.system("rm  strip*")
-    os.system("rm  x*")
-    os.system("rm YOURS*")
-    os.system("rm refstate*")
-    # os.system('rm ing.WG')
     os.chdir(HOMEDIR)
 
 
@@ -374,6 +290,30 @@ def filltable(df):
     return df
 
 
+def makePolar(CASEDIR, HOMEDIR):
+    os.chdir(CASEDIR)
+    folders = next(os.walk('.'))[1]
+    print('Making Polars')
+    pols = []
+    for folder in folders:
+        os.chdir(f"{CASEDIR}/{folder}")
+        files = next(os.walk('.'))[2]
+        if "LOADS_aer.dat" in files:
+            if folder.startswith("m"):
+                a = [- float(folder[1:]), *np.loadtxt("LOADS_aer.dat")]
+            else:
+                a = [float(folder), *np.loadtxt("LOADS_aer.dat")]
+            pols.append(a)
+        os.chdir(f"{CASEDIR}")
+    df = pd.DataFrame(pols, columns=cols)
+    df.pop('TTIME')
+    df.pop("PSIB")
+
+    df = df.sort_values("AoA")
+    df.to_csv('clcd.genu', index=False)
+    os.chdir(HOMEDIR)
+
+
 cols = ["AoA",
         "TTIME",
         "PSIB",
@@ -395,3 +335,13 @@ cols = ["AoA",
         "TAMOMDS2D(1)",
         "TAMOMDS2D(2)",
         "TAMOMDS2D(3)"]
+
+
+def removeResults(ANGLEDIR, HOMEDIR):
+    os.chdir(ANGLEDIR)
+    os.system("rm  strip*")
+    os.system("rm  x*")
+    os.system("rm YOURS*")
+    os.system("rm refstate*")
+    # os.system('rm ing.WG')
+    os.chdir(HOMEDIR)

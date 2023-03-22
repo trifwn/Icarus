@@ -8,12 +8,20 @@ class Wing:
 
         self.N = 10
         self.M = 10
+
         self.name = name
-        self.Gamma = dihAngle * np.pi/180
-        self.isSymmetric = isSymmetric
-        self.span = span
         self.airfoil = airfoil
         self.Origin = Origin
+        self.Orientation = Orientation
+        self.isSymmetric = isSymmetric
+        self.span = span
+        self.sweepOffset = sweepOffset
+        self.dihAngle = dihAngle
+        self.chordFun = chordFun
+        self.chord = chord
+        self.spanFun = spanFun
+
+        self.Gamma = dihAngle * np.pi/180
 
         # ORIENTATION
         self.pitch, self.yaw, self.roll = Orientation * np.pi/180
@@ -52,6 +60,36 @@ class Wing:
         # Create Surfaces
         self.createSurfaces()
 
+    def splitSymmetric(self):
+        if self.isSymmetric == True:
+            left = Wing(name=f"L{self.name}",
+                        airfoil=self.airfoil,
+                        Origin=[self.Origin[0], -
+                                self.Dspan[-1], self.Origin[2]],
+                        Orientation=self.Orientation,
+                        isSymmetric=False,
+                        span=self.span/2,
+                        sweepOffset=self.sweepOffset,
+                        dihAngle=self.dihAngle,
+                        chordFun=self.chordFun,
+                        chord=self.chord[::-1],
+                        spanFun=self.spanFun)
+
+            right = Wing(name=f"R{self.name}",
+                         airfoil=self.airfoil,
+                         Origin=self.Origin,
+                         Orientation=self.Orientation,
+                         isSymmetric=False,
+                         span=self.span/2,
+                         sweepOffset=self.sweepOffset,
+                         dihAngle=self.dihAngle,
+                         chordFun=self.chordFun,
+                         chord=self.chord,
+                         spanFun=self.spanFun)
+            return left, right
+        else:
+            print("Cannot Split Body it is not symmetric")
+
     def createSurfaces(self):
         surfaces = []
         symSurfaces = []
@@ -78,7 +116,7 @@ class Wing:
         self.surfaces = surfaces
         self.allSurfaces = [*surfaces, *symSurfaces]
 
-    def plotWing(self, fig=None, ax = None):
+    def plotWing(self, fig=None, ax=None):
         if fig == None:
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
@@ -86,8 +124,6 @@ class Wing:
             ax.set_xlabel('x')
             ax.set_ylabel('y')
             ax.set_zlabel('z')
-            ax.axis('scaled')
-            ax.view_init(30, 150)
 
         for surf in self.allSurfaces:
             s1 = np.matmul(self.Rmat, surf.startStrip())
@@ -105,7 +141,8 @@ class Wing:
                     ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
                     if self.isSymmetric == True:
                         ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
-
+        ax.axis('scaled')
+        ax.view_init(30, 150)
 
     def grid2panels(self, grid):
         panels = np.empty((self.N-1, self.M-1, 4, 3))
