@@ -8,6 +8,7 @@ class Airplane():
 
         self.CASENAME = name
         self.surfaces = surfaces
+        self.masses = []
 
         toRemove = []
         for i, surface in enumerate(surfaces):
@@ -23,6 +24,46 @@ class Airplane():
         self.Polars = {}
         self.angles = []
         self.bodies = []
+        self.masses = []
+        self.Inertia = []
+
+        for surface in self.surfaces:
+            mass = (surface.mass, surface.CG)
+            mom = (surface.I)
+            self.Inertia.append(mom)
+            self.masses.append(mass)
+
+        self.CG = self.findCG()
+        self.I = self.findInertia(self.CG)
+
+    def findCG(self):
+        x_cm = 0
+        y_cm = 0
+        z_cm = 0
+        self.M = 0
+        for m, r in self.masses:
+            self.M += m
+            x_cm += m * r[0]
+            y_cm += m * r[1]
+            z_cm += m * r[2]
+        return np.array((x_cm, y_cm, z_cm)) / self.M
+
+    def findInertia(self, point):
+        I_xx = 0
+        I_yy = 0
+        I_zz = 0
+        self.M = 0
+        for I in self.Inertia:
+            I_xx += I[0]
+            I_yy += I[1]
+            I_zz += I[2]
+
+        for m, r_bod in self.masses:
+            r = point - r_bod
+            I_xx += m * (r[1]**2 + r[2]**2)
+            I_yy += m * (r[0]**2 + r[2]**2)
+            I_zz += m * (r[0]**2 + r[1]**2)
+        return np.array((I_xx, I_yy, I_zz))
 
     def getAirfoils(self):
         airfoils = []
