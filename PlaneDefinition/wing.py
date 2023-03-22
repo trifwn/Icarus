@@ -4,10 +4,10 @@ from .surface import Surface
 
 
 class Wing:
-    def __init__(self, name, airfoil, Origin, Orientation, isSymmetric, span, sweepOffset, dihAngle, chordFun, chord, spanFun):
+    def __init__(self, name, airfoil, Origin, Orientation, isSymmetric, span, sweepOffset, dihAngle, chordFun, chord, spanFun , N , M):
 
-        self.N = 10
-        self.M = 10
+        self.N = N
+        self.M = M
 
         self.name = name
         self.airfoil = airfoil
