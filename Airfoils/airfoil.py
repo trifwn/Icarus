@@ -1,10 +1,13 @@
 
 from airfoils import Airfoil
+import airfoils as airfoils
+
 import numpy as np
 import urllib.request
 import matplotlib.pyplot as plt
 import os
 import sys
+import re
 
 # # Airfoil
 # ##### 0 = Read from python module
@@ -13,22 +16,31 @@ import sys
 
 
 class AirfoilData(Airfoil):
-    def __init__(self, upper, lower):
+    def __init__(self, upper, lower, naca, n_points):
         super().__init__(upper, lower)
+        self.name = naca
+        self.fname = f"naca{naca}"
+        self.n_points = n_points
         self.airfoil2Selig()
         self.Reynolds = []
         self.Polars = {}
         # self.getFromWeb()
 
     @classmethod
-    def NACA(self, naca, n_points=200):
-        self.name = naca
-        self.fname = f"naca{naca}"
-        self.n_points = n_points
-        if len(naca) == 4:
-            return self.NACA4(naca, n_points)
+    def NACA(cls, naca, n_points=200):
+
+        re_4digits = re.compile(r"^\d{4}$")
+
+        if re_4digits.match(naca):
+            p = float(naca[0])/10
+            m = float(naca[1])/100
+            xx = float(naca[2:4])/100
         else:
-            print("ERROR NOT 4 DIGITS")
+            raise airfoils.NACADefintionError(
+                "Identifier not recognised as valid NACA 4 definition")
+
+        upper, lower = airfoils.gen_NACA4_airfoil(p, m, xx, n_points)
+        return cls(upper, lower, naca, n_points)
 
     def airfoil2Selig(self):
         x_points = np.hstack((self._x_upper[::-1], self._x_lower[1:])).T
