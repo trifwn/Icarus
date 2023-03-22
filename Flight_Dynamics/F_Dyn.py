@@ -19,23 +19,21 @@ def Trim(Plane,rho,Wing_Area,Cm_curve,CL_curve,Aoa_vector,Weight):
     U_cruise = Weight/(0.5*rho*Wing_Area*CL_Trim)
 
     return U_cruise,AoA_Trim
-
-
-
-
     
 def Perturbations_Analysis(Plane,U_cruise,AoA_Trim,Velocity_incr,AngVelocity_incr):
     # Axis with Capital Letter means body-fitted, axis with lower case means Stream-Wise
     # The Axis notation will help during the integration of dynamic aanalysis woth GenuVP or any 3D Aerodynamics Solver
     
     # Dictionary of Longitudinal Perturbations
-    Long_dict = {"Body Movements": ["q",AngVelocity_incr,-AngVelocity_incr," Angular Velocity, Y axis"],
-      "Wind Movements": [['u',U_cruise+Velocity_incr,U_cruise-Velocity_incr," Linear Velocity, x axis"],['w',Velocity_incr,-Velocity_incr," Linear Velocity, z axis"]]
+    Long_dict = {"Body_Movements": ["q",AngVelocity_incr,-AngVelocity_incr," Angular Velocity, Y axis"],
+                 "Wind_Movements": [['u',U_cruise+Velocity_incr,U_cruise-Velocity_incr," Linear Velocity, x axis"],
+                                    ['w',Velocity_incr,-Velocity_incr," Linear Velocity, z axis"]]
       }
     
     # Dictionary of Lateral Perturbations
-    Lat_dict = {"Body Movements":[["p",AngVelocity_incr,-AngVelocity_incr," Angular Velocity, X axis"],["r",AngVelocity_incr,-AngVelocity_incr," Angular Velocity, Z axis"]],
-        "Wind Movements": "Wind Movements": ['v',Velocity_incr,-Velocity_incr," Linear Velocity, y axis"]
+    Lat_dict = {"Body_Movements":[["p",AngVelocity_incr,-AngVelocity_incr," Angular Velocity, X axis"],
+                                  ["r",AngVelocity_incr,-AngVelocity_incr," Angular Velocity, Z axis"]],
+                "Wind_Movements": ['v',Velocity_incr,-Velocity_incr," Linear Velocity, y axis"]
     }
     return Long_dict,Lat_dict
 
@@ -85,7 +83,7 @@ def State_Space_Generation(AoA_trim,U_cruise,Mass,Ix,Iy,Iz,Ixz,Long_res_dict,Lat
     Long_Mat[2,2] = Mq/Iy + ((Zq+Mass*U_cruise)*Mw_dot)/(Iy*(Mass-Zw_dot))
     Long_Mat[2,3] = (Mass*9.81*np.sin(theta)*Mw_dot)/(Iy*(Mass-Zw_dot))
 
-    Long_Mar[3,2] = 1
+    Long_Mat[3,2] = 1
 
     # Lateral Motion
 
@@ -116,7 +114,7 @@ def State_Space_Generation(AoA_trim,U_cruise,Mass,Ix,Iy,Iz,Ixz,Long_res_dict,Lat
     Lat_Mat[2,1] = (Iz*Np+Ixz*Lp)/(Ix*Iz-Ixz**2)
     Lat_Mat[2,2] = (Iz*Nr+Ixz*Lr)/(Ix*Iz-Ixz**2)
 
-    Long_Mar[3,1] = 1
+    Lat_Mat[3,1] = 1
 
     return Long_Mat,Lat_Mat
      
