@@ -72,7 +72,7 @@ def makeCLCD2(CASEDIR, HOMEDIR):
     for folder in folders[1:]:
         if 'clcd.out' in next(os.walk(folder))[2]:
             a.append(np.loadtxt(f'{folder}/clcd.out'))
-    df = pd.DataFrame(a, columns=["AoA", 'CL', "CD", "CM"])
+    df = pd.DataFrame(a, columns=["AoA", 'CL', "CD", "Cm"])
     df = df.sort_values("AoA")
     df.to_csv('clcd.f2w', index=False)
     os.chdir(HOMEDIR)

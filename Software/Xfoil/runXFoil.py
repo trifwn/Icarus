@@ -128,7 +128,9 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     return [cpsn, nangles], [cps, pangles], x
 
 
-def runAndSave(CASEDIR,HOMEDIR,Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9):
+def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9):
+    os.chdir(CASEDIR)
+
     xf = XFoil()
     xf.Re = Reyn
     xf.n_crit = Ncrit
@@ -140,17 +142,10 @@ def runAndSave(CASEDIR,HOMEDIR,Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_l
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
     aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
-    Res =  np.array([aXF, clXF, cdXF, cmXF]).T
-    formatting_function = np.vectorize(lambda f: format(f, '6.5E'))
-    Res_format = formatting_function(Res) 
-    df = pd.DataFrame(Res_format, columns = ['AoA','CL','CD','Cm'])
-    os.chdir(CASEDIR)
-    df.to_csv('clcd.xf', index=False)
-    os.chdir(HOMEDIR)
+
+    Res = np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
+    df = pd.DataFrame(Res, columns=['AoA', 'CL', 'CD', 'Cm'])
     df = df.sort_values("AoA")
+    df.to_csv('clcd.xfoil', index=False)
+    os.chdir(HOMEDIR)
     return df
-
-  
-    
-
-

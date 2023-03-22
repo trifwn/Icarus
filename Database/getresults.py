@@ -40,7 +40,7 @@ class Database_2D():
                     name = "Foil2Wake"
                 elif solver == 'of':
                     name = "OpenFoam"
-                elif solver == 'xf':
+                elif solver == 'xfoil':
                     name = "Xfoil"
                 reynDict[name] = pd.read_csv(file)
         return reynDict
