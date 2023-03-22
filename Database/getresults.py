@@ -2,6 +2,7 @@ import numpy as np
 from . import DB2D, DB3D
 import os
 import pandas as pd
+from Airfoils import airfoil as af
 
 
 class Database_2D():
@@ -9,6 +10,7 @@ class Database_2D():
         self.HOMEDIR = HOMEDIR
         self.Data = {}
         self.scan()
+        self.airfoils = {}
 
     def scan(self):
         os.chdir(DB2D)
@@ -44,7 +46,11 @@ class Database_2D():
         return reynDict
 
     def getAirfoils(self):
-        return list(self.Data.keys())
+        for airfoil in list(self.Data.keys()):
+            self.airfoils[airfoil] = af.AirfoilData.NACA(
+                airfoil[4:], n_points=200)
+
+        return self.airfoils
 
     def getReynolds(self, airfoil):
         try:
