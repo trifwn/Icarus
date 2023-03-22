@@ -4,7 +4,7 @@ from .surface import Surface
 
 
 class Wing:
-    def __init__(self, name, airfoil, Origin, Orientation, isSymmetric, span, sweepOffset, dihAngle, chordFun, chord, spanFun , N , M):
+    def __init__(self, name, airfoil, Origin, Orientation, isSymmetric, span, sweepOffset, dihAngle, chordFun, chord, spanFun, N, M, mass=1):
 
         self.N = N
         self.M = M
@@ -20,6 +20,7 @@ class Wing:
         self.chordFun = chordFun
         self.chord = chord
         self.spanFun = spanFun
+        self.mass = mass
 
         self.Gamma = dihAngle * np.pi/180
 
@@ -73,7 +74,10 @@ class Wing:
                         dihAngle=self.dihAngle,
                         chordFun=self.chordFun,
                         chord=self.chord[::-1],
-                        spanFun=self.spanFun)
+                        spanFun=self.spanFun,
+                        N=self.N,
+                        M=self.M,
+                        mass=self.mass)
 
             right = Wing(name=f"R{self.name}",
                          airfoil=self.airfoil,
@@ -85,7 +89,10 @@ class Wing:
                          dihAngle=self.dihAngle,
                          chordFun=self.chordFun,
                          chord=self.chord,
-                         spanFun=self.spanFun)
+                         spanFun=self.spanFun,
+                         N=self.N,
+                         M=self.M,
+                         mass=self.mass)
             return left, right
         else:
             print("Cannot Split Body it is not symmetric")
@@ -185,6 +192,8 @@ class Wing:
                 zs[i, j] = self.Origin[2] + self.Ddihedr[j] + self.Dchord[j] * \
                     self.airfoil.camber_line(
                         i/(self.M-1))  # camber_line y_upper
+
+            # ROTATE ACCORDING TO RMAT
             xs[i, :], ys[i, :], zs[i, :] = np.matmul(
                 self.Rmat, [xs[i, :], ys[i, :], zs[i, :]])
 
@@ -198,9 +207,139 @@ class Wing:
         self.grid_upper = np.array((xs_upper, ys_upper, zs_upper)).T
         self.grid_lower = np.array((xs_lower, ys_lower, zs_lower)).T
 
+        # FIND WING AREA
+        self.Area = 0
+        self.Area_c = 0
+        for i in np.arange(0, self.N-1):
+            self.Area_c += 2*(self.grid_upper[i+1, 0, 1] -
+                              self.grid_upper[i, 0, 1]) * self.Dchord[i]
+            for j in np.arange(0, self.M-1):
+                AB = (self.grid_upper[i+1, j, :] - self.grid_upper[i, j, :])
+                AD = (self.grid_upper[i, j+1, :] - self.grid_upper[i, j, :])
+                Area_up = np.linalg.norm(np.cross(AB, AD))
+
+                AB = (self.grid_lower[i+1, j, :] - self.grid_lower[i, j, :])
+                AD = (self.grid_lower[i, j+1, :] - self.grid_lower[i, j, :])
+                Area_low = np.linalg.norm(np.cross(AB, AD))
+
+                self.Area += Area_up + Area_low
+
+        # Find Wing Volume
+        self.VolumeDist = np.empty((self.N-1, self.M-1))
+        self.VolumeDist2 = np.empty((self.N-1, self.M-1))
+
+        for i in np.arange(0, self.N-1):
+            for j in np.arange(0, self.M-1):
+                AB = (self.grid_upper[i+1, j, :] - self.grid_upper[i, j, :])
+                AD = (self.grid_upper[i, j, :] - self.grid_lower[i, j, :])
+                Area_front = np.linalg.norm(np.cross(AB, AD))
+
+                AB = (self.grid_upper[i+1, j+1, :] -
+                      self.grid_upper[i, j+1, :])
+                AD = (self.grid_upper[i, j+1, :] - self.grid_lower[i, j+1, :])
+                Area_back = np.linalg.norm(np.cross(AB, AD))
+
+                dx = self.grid_upper[i, j+1, 0] - self.grid_upper[i, j, 0]
+
+                self.VolumeDist[i, j] = 0.5*(Area_front + Area_back)*dx
+
+                b1 = (self.grid_upper[i+1, j, 2] - self.grid_lower[i, j, 2])
+                b2 = (self.grid_upper[i+1, j+1, 2] -
+                      self.grid_lower[i+1, j+1, 2])
+
+                h = (self.grid_upper[i, j+1, 0] - self.grid_upper[i, j, 0])
+                L = self.grid_upper[i+1, j, 1] - self.grid_upper[i, j, 1]
+                self.VolumeDist2[i, j] = 0.5*(b1 + b2) * h * L
+
+        self.Volume = np.sum(self.VolumeDist)
+        self.Volume2 = np.sum(self.VolumeDist2)
+
+        self.centerMass()
+
         self.panels = self.grid2panels(self.grid)
         self.panels_lower = self.grid2panels(self.grid_lower)
         self.panels_upper = self.grid2panels(self.grid_upper)
+
+    def centerMass(self):
+        x_cm = 0
+        y_cm = 0
+        z_cm = 0
+        for i in np.arange(0, self.N-1):
+            for j in np.arange(0, self.M-1):
+                x_upp = (self.grid_upper[i, j+1, 0] +
+                         self.grid_upper[i, j, 0])/2
+                x_low = (self.grid_lower[i, j+1, 0] +
+                         self.grid_lower[i, j, 0])/2
+                x = (x_upp + x_low)/2
+
+                if self.isSymmetric == True:
+                    y = 0
+                else:
+                    y_upp = (self.grid_upper[i+1, j, 1] +
+                             self.grid_upper[i, j, 1])/2
+                    y_low = (self.grid_lower[i+1, j, 1] +
+                             self.grid_lower[i, j, 1])/2
+                    y = (y_upp + y_low)/2
+
+                z_upp1 = (self.grid_upper[i+1, j, 2] +
+                          self.grid_upper[i+1, j, 2])/2
+                z_upp2 = (self.grid_upper[i+1, j, 2] +
+                          self.grid_upper[i+1, j, 2])/2
+                z_upp = (z_upp1 + z_upp2)/2
+
+                z_low1 = (self.grid_lower[i+1, j, 2] +
+                          self.grid_lower[i+1, j, 2])/2
+                z_low2 = (self.grid_lower[i+1, j, 2] +
+                          self.grid_lower[i+1, j, 2])/2
+                z_low = (z_low1 + z_low2)/2
+                z = (z_upp + z_low)/2
+
+                x_cm += self.VolumeDist[i, j] * x
+                y_cm += self.VolumeDist[i, j] * y
+                z_cm += self.VolumeDist[i, j] * z
+
+        self.CM = np.array((x_cm, y_cm, z_cm)) / self.Volume
+
+    def inertia(self, mass):
+        I_xx = 0
+        I_yy = 0
+        I_zz = 0
+        for i in np.arange(0, self.N-1):
+            for j in np.arange(0, self.M-1):
+                x_upp = (self.grid_upper[i, j+1, 0] +
+                         self.grid_upper[i, j, 0])/2
+                x_low = (self.grid_lower[i, j+1, 0] +
+                         self.grid_lower[i, j, 0])/2
+                x = (x_upp + x_low)/2
+
+                if self.isSymmetric == True:
+                    y = 0
+                else:
+                    y_upp = (self.grid_upper[i+1, j, 1] +
+                             self.grid_upper[i, j, 1])/2
+                    y_low = (self.grid_lower[i+1, j, 1] +
+                             self.grid_lower[i, j, 1])/2
+                    y = (y_upp + y_low)/2
+
+                z_upp1 = (self.grid_upper[i+1, j, 2] +
+                          self.grid_upper[i+1, j, 2])/2
+                z_upp2 = (self.grid_upper[i+1, j, 2] +
+                          self.grid_upper[i+1, j, 2])/2
+                z_upp = (z_upp1 + z_upp2)/2
+
+                z_low1 = (self.grid_lower[i+1, j, 2] +
+                          self.grid_lower[i+1, j, 2])/2
+                z_low2 = (self.grid_lower[i+1, j, 2] +
+                          self.grid_lower[i+1, j, 2])/2
+                z_low = (z_low1 + z_low2)/2
+                z = (z_upp + z_low)/2
+
+                I_xx += self.VolumeDist[i, j] * (y**2 + z**2)
+                I_yy += self.VolumeDist[i, j] * (x**2 + z**2)
+                I_zz += self.VolumeDist[i, j] * (x**2 + y**2)
+
+                # I_xy = self.VolumeDist[i, j] * z**2
+        self.I = np.array((I_xx, I_yy, I_zz)) / self.Volume
 
 
 def linSpan(sp, Ni):
