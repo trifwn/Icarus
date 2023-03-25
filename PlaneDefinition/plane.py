@@ -1,17 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import jsonpickle
 
 
 class Airplane():
     def __init__(self, name, surfaces):
 
-        self.CASENAME = name
+        self.name = name
         self.surfaces = surfaces
         self.masses = []
 
         toRemove = []
         for i, surface in enumerate(surfaces):
+            if surface.name == "mainWing":
+                # self.mainWing = surface
+                self.S = surface.S
+                self.MAC = surface.MAC
+
             if surface.isSymmetric == True:
                 toRemove.append(i)
                 l, r = surface.splitSymmetric()
@@ -74,7 +80,7 @@ class Airplane():
 
     def accessDB(self, HOMEDIR, DBDIR):
         os.chdir(DBDIR)
-        CASEDIR = self.CASENAME
+        CASEDIR = self.name
         os.system(f"mkdir -p {CASEDIR}")
         os.chdir(CASEDIR)
         self.CASEDIR = os.getcwd()
@@ -89,12 +95,17 @@ class Airplane():
         for surface in self.surfaces:
             surface.plotWing(fig, ax)
 
-        ax.set_title(self.CASENAME)
+        ax.set_title(self.name)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
         ax.axis('scaled')
         ax.view_init(30, 150)
+
+    def defineSim(self, U, dens):
+        self.U = U
+        self.dens = dens
+        self.Q = 0.5 * dens * U**2
 
     def angleCASE(self, angle):
         self.currAngle = angle
@@ -136,5 +147,11 @@ class Airplane():
         polarsdf = makePolFun(*args, **kwargs)
         self.Polars = polarsdf
 
-    def savePlane(self):
-        print("SAVE not Implemented Yet")
+    def toJSON(self):
+        return jsonpickle.encode(self)
+
+    def save(self):
+        os.chdir(self.CASEDIR)
+        with open(f'{self.name}.json', 'w') as f:
+            f.write(self.toJSON())
+        os.chdir(self.HOMEDIR)

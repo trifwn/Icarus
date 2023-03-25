@@ -3,12 +3,14 @@ from . import DB2D, DB3D
 import os
 import pandas as pd
 from Airfoils import airfoil as af
+import jsonpickle
 
 
 class Database_2D():
     def __init__(self, HOMEDIR):
         self.HOMEDIR = HOMEDIR
         self.Data = {}
+        self.Planes = {}
         self.scan()
         self.airfoils = self.getAirfoils()
 
@@ -72,6 +74,12 @@ class Database_3D():
         for folder in folders:
             os.chdir(folder)
             self.Data[folder] = pd.read_csv(f"{DB3D}/{folder}/clcd.genu")
+            files = next(os.walk('.'))[2]
+            for file in files:
+                if file.endswith(".json"):
+                    with open(f"{file}", 'r') as f:
+                        json_obj = f.read()
+                        self.Planes[folder] = jsonpickle.decode(json_obj)
             os.chdir(DB3D)
         os.chdir(self.HOMEDIR)
 
@@ -84,24 +92,26 @@ class Database_3D():
         except KeyError:
             print("Plane Doesn't exist! You should compute it first!")
 
-    def makeDimensionless(self, plane, Q, S, MAC):
+    def makeDimensionless(self, plane):
+        pln = self.Planes["pln"]
 
-        self.Data[plane]["CD_Pot"] = - \
-            self.Data[plane]["TFORC(1)"]*np.sin(self.Data[plane]
-                                                ["AoA"]*np.pi/180) / (Q*S)
+        self.Data[plane]["CD_Pot"] = - self.Data[plane]["TFORC(1)"]*np.sin(
+            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
         self.Data[plane]["CD_2D"] = -self.Data[plane]["TFORC2D(1)"]*np.sin(
-            self.Data[plane]["AoA"]*np.pi/180) / (Q*S)
+            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
         self.Data[plane]["CD_ONERA"] = -self.Data[plane]["TFORCDS2D(1)"]*np.sin(
-            self.Data[plane]["AoA"]*np.pi/180) * (Q*S)
+            self.Data[plane]["AoA"]*np.pi/180) * (pln.Q*pln.S)
 
         self.Data[plane]["CL_Pot"] = self.Data[plane]["TFORC(3)"]*np.cos(
-            self.Data[plane]["AoA"]*np.pi/180) / (Q*S)
+            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
         self.Data[plane]["CL_2D"] = self.Data[plane]["TFORC2D(3)"]*np.cos(
-            self.Data[plane]["AoA"]*np.pi/180) / (Q*S)
+            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
         self.Data[plane]["CL_ONERA"] = self.Data[plane]["TFORCDS2D(3)"]*np.cos(
-            self.Data[plane]["AoA"]*np.pi/180) / (Q*S)
+            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
 
-        self.Data[plane]["Cm_Pot"] = self.Data[plane]["TAMOM(2)"] / (Q*S*MAC)
-        self.Data[plane]["Cm_2D"] = self.Data[plane]["TAMOM2D(2)"] / (Q*S*MAC)
+        self.Data[plane]["Cm_Pot"] = self.Data[plane]["TAMOM(2)"] / (
+            pln.Q*pln.S*pln.MAC)
+        self.Data[plane]["Cm_2D"] = self.Data[plane]["TAMOM2D(2)"] / (
+            pln.Q*pln.S*pln.MAC)
         self.Data[plane]["Cm_ONERA"] = self.Data[plane]["TAMOMDS2D(2)"] / (
-            Q*S*MAC)
+            pln.Q*pln.S*pln.MAC)

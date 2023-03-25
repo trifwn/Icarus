@@ -18,9 +18,9 @@ def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles):
     bodies = []
     airMovement = airMov()
 
-    plane.savePlane()
+    plane.save()
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, 20, 20))
+        bodies.append(makeSurfaceDict(surface, i))
 
     for angle in angles:
         print(f"Running Angles {angle}")
@@ -65,7 +65,7 @@ def setParams(nBodies, nAirfoils, Uinf, WindAngle):
     return params
 
 
-def makeSurfaceDict(surf, idx, Ni, Nj):
+def makeSurfaceDict(surf, idx):
     s = {
         'NB': idx,
         "NACA": 4415,
