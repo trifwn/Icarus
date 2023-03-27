@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def Perturbations_Analysis(Plane, U_cruise, AoA_Trim, Velocity_incr, AngVelocity_incr):
     # Axis with Capital Letter means body-fitted, axis with lower case means Stream-Wise
     # The Axis notation will help during the integration of dynamic aanalysis woth GenuVP or any 3D Aerodynamics Solver

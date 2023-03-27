@@ -92,6 +92,18 @@ class Database_3D():
     def getPlanes(self):
         return list(self.Planes.keys())
 
+    def importXFLRpolar(self,FILENAME):
+        # import csv into pandas Dataframe and skip first 7 rows
+        df = pd.read_csv(FILENAME, skiprows=7,
+                         delim_whitespace=True, on_bad_lines="skip")
+        # rename columns
+        df.rename(columns={'alpha': 'AoA'}, inplace=True)
+
+        # convert to float
+        df = df.astype(float)
+        self.Data["XFLR"] = df
+        return df
+
     def getPolar(self, plane, mode):
         try:
             cols = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]

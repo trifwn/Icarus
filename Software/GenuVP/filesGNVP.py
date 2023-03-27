@@ -59,7 +59,7 @@ def dfile(params):
     data[36] = f'{params["timestep"]}        DT         time step\n'
     data[
         55
-    ] = "4           NLEVELT    number of movement levels  ( 15 if tail rotor is considered ) \n"
+    ] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
     data[59] = f'{ff2(params["Uinf"][0])}       UINF(1)    the velocity at infinity\n'
     data[60] = f'{ff2(params["Uinf"][1])}       UINF(2)    .\n'
     data[61] = f'{ff2(params["Uinf"][2])}       UINF(3)    .\n'
@@ -73,71 +73,85 @@ def dfile(params):
         file.writelines(data)
 
 
-def geofile(airMovement, bodies):
+def geofile(movements, bodies):
     fname = "hermes.geo"
-    with open(fname, "r") as file:
-        data = file.readlines()
+    # with open(fname, "r") as file:
+    #     data = file.readlines()
+    data = []
+    data.append("READ THE FLOW AND GEOMETRICAL DATA FOR EVERY SOLID BODY\n")
+    data.append("               <blank>\n")
 
     for i, bod in enumerate(bodies):
-        data[2 + 103 * i + 1] = f'Body Number   NB = {bod["NB"]}\n'
-        data[2 + 103 * i + 3] = "2           NLIFT\n"
-        data[2 + 103 * i + 6] = f'{bod["NNB"]}          NNBB\n'
-        data[2 + 103 * i + 7] = f'{bod["NCWB"]}          NCWB\n'
-        data[2 + 103 * i + 17] = "4           LEVEL  the level of movement\n"
-        # PITCH CONTROL
-        data[2 + 103 * i + 22] = "1           IMOVEAB  type of movement\n"
-        data[2 + 103 * i + 24] = f"-0.000001   TMOVEAB  -1  1st time step\n"
-        data[2 + 103 * i + 25] = f"10.         TMOVEAB  -2  2nd time step\n"
-        data[2 + 103 * i + 26] = f"0.          TMOVEAB  -3  3d  time step\n"
-        data[2 + 103 * i + 27] = f"0.          TMOVEAB  -4  4th time step!---->omega\n"
-        data[
-            2 + 103 * i + 28
-        ] = f'{airMovement["alpha_s"]}          AMOVEAB  -1  1st value of amplitude\n'
-        data[
-            2 + 103 * i + 29
-        ] = f'{airMovement["alpha_s"]}          AMOVEAB  -2  2nd value of amplitude\n'
-        data[2 + 103 * i + 30] = f"0.          AMOVEAB  -3  3d  value of amplitude\n"
-        data[
-            2 + 103 * i + 31
-        ] = f"0.          AMOVEAB  -4  4th value of amplitude!---->phase\n"
+        data.append("               <blank>\n")
+        NB = bod["NB"]
+        geoBodyHeader(data, bod, NB)
+        data.append(
+            f"{len(movements)-1}           LEVEL  the level of movement\n")
+        data.append("               <blank>\n")
+        data.append("Give  data for every level\n")
+        # PITCH, ROLL, YAW, Movements to CG with angular velocity
+        for j, mov in enumerate(movements[i]):
+            geoBodyMovements(data, mov, len(movements) - 2 - j, NB)
 
-        # ROLL CONTROL
-        data[2 + 103 * i + 47] = f"1           IMOVEAB  type of movement\n"
-        data[2 + 103 * i + 49] = f"-0.000001   TMOVEAB  -1  1st time step\n"
-        data[2 + 103 * i + 50] = f"10.         TMOVEAB  -2  2nd time step\n"
-        data[2 + 103 * i + 51] = f"0.          TMOVEAB  -3  3d  time step\n"
-        data[2 + 103 * i + 52] = f"0.          TMOVEAB  -4  4th time step\n"
-        data[
-            2 + 103 * i + 53
-        ] = f'{airMovement["phi_s"]}         AMOVEAB  -1  1st value of amplitude\n'
-        data[
-            2 + 103 * i + 54
-        ] = f'{airMovement["phi_e"]}         AMOVEAB  -2  2nd value of amplitude\n'
-        data[2 + 103 * i + 55] = f"0.          AMOVEAB  -3  3d  value of amplitude\n"
-        data[2 + 103 * i + 56] = f"0.          AMOVEAB  -4  4th value of amplitude\n"
-
-        # YAW CONTROL
-        data[2 + 103 * i + 72] = f"1           IMOVEAB  type of movement\n"
-        data[2 + 103 * i + 74] = f"-0.000001   TMOVEAB  -1  1st time step\n"
-        data[2 + 103 * i + 75] = f"10.         TMOVEAB  -2  2nd time step\n"
-        data[2 + 103 * i + 76] = f"0.          TMOVEAB  -3  3d  time step\n"
-        data[2 + 103 * i + 77] = f"0.          TMOVEAB  -4  4th time step\n"
-        data[
-            2 + 103 * i + 78
-        ] = f'{airMovement["beta_s"]}          AMOVEAB  -1  1st value of amplitude  (Initial MR phase + 0)\n'
-        data[
-            2 + 103 * i + 79
-        ] = f'{airMovement["beta_e"]}          AMOVEAB  -2  2nd value of amplitude\n'
-        data[2 + 103 * i + 80] = f"0.          AMOVEAB  -3  3d  value of amplitude\n"
-        data[2 + 103 * i + 81] = f"0.          AMOVEAB  -4  4th value of amplitude\n"
-
-        data[
-            2 + 103 * i + 99
-        ] = f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n'
-        data[2 + 103 * i + 102] = f'{bod["bld"]}\n'
-
+        data.append(
+            "-----<end of movement data>----------------------------------------------------\n")
+        data.append("               <blank>\n")
+        data.append("Cl, Cd data / IYNVCR(.)=0 then Cl=1., Cd=0.\n")
+        data.append("1           IYNVCR(1)\n")
+        data.append(f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n')
+        data.append("               <blank>\n")
+        data.append("Give the file name for the geometrical distributions\n")
+        data.append(f'{bod["bld"]}\n')
+    data.append("               <blank>\n")
     with open(fname, "w") as file:
         file.writelines(data)
+
+
+def geoBodyHeader(data, body, NB):
+    data.append(f'Body Number   NB = {NB}\n')
+    data.append("               <blank>\n")
+    data.append("2           NLIFT\n")
+    data.append("0           IYNELSTB   \n")
+    data.append("1           NBAER2ELST \n")
+    data.append(f'{body["NNB"]}          NNBB\n')
+    data.append(f'{body["NCWB"]}          NCWB\n')
+    data.append("2           ISUBSCB\n")
+    data.append("2\n")
+    data.append("3           NLEVELSB\n")
+    data.append("1           IYNTIPS \n")
+    data.append("0           IYNLES  \n")
+    data.append("0           NELES   \n")
+    data.append("0           IYNCONTW\n")
+    data.append("3           IDIRMOB  direction for the torque calculation\n")
+    data.append("               <blank>\n")
+
+
+def geoBodyMovements(data, mov, i, NB):
+    data.append(f"NB={NB}, lev={i}  ( {mov.name} )\n")
+    data.append(f"Rotation\n")
+    data.append(f"{int(mov.Rtype)}           IMOVEAB  type of movement\n")
+    data.append(f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
+    data.append(f"{ff3(mov.Rt1)}    TMOVEAB  -1  1st time step\n")
+    data.append(f"{ff3(mov.Rt2)}    TMOVEAB  -2  2nd time step\n")
+    data.append(f"0.          TMOVEAB  -3  3d  time step\n")
+    data.append(f"0.          TMOVEAB  -4  4th time step!---->omega\n")
+    data.append(f"{ff3(mov.Ra1)}    AMOVEAB  -1  1st value of amplitude\n")
+    data.append(f"{ff3(mov.Ra2)}    AMOVEAB  -2  2nd value of amplitude\n")
+    data.append(f"0.          AMOVEAB  -3  3d  value of amplitude\n")
+    data.append(f"0.          AMOVEAB  -4  4th value of amplitude!---->phase\n")
+    data.append(f"            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
+    data.append(f"Translation\n")
+    data.append(f"{int(mov.Ttype)}           IMOVEUB  type of movement\n")
+    data.append(f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
+    data.append(f"{ff3(mov.Tt1)}    TMOVEUB  -1  1st time step\n")
+    data.append(f"{ff3(mov.Tt2)}    TMOVEUB  -2  2nd time step\n")
+    data.append(f"0.          TMOVEUB  -3  3d  time step\n")
+    data.append(f"0.          TMOVEUB  -4  4th time step\n")
+    data.append(f"{ff3(mov.Ta1)}    AMOVEUB  -1  1st value of amplitude\n")
+    data.append(f"{ff3(mov.Ta2)}    AMOVEUB  -2  2nd value of amplitude\n")
+    data.append(f"0.          AMOVEUB  -3  3d  value of amplitude\n")
+    data.append(f"0.          AMOVEUB  -4  4th value of amplitude\n")
+    data.append(f"            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
 def cldFiles(AeroData, airfoils, solver):
@@ -230,7 +244,7 @@ def bldFiles(bodies):
             file.writelines(data)
 
 
-def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils, AeroData, solver):
+def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, AeroData, solver):
     os.chdir(ANGLEDIR)
 
     # COPY FROM BASE
@@ -254,7 +268,7 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement, bodies, params, airfoils
     # DFILE
     dfile(params)
     # HERMES.GEO
-    geofile(airMovement, bodies)
+    geofile(movements, bodies)
     # BLD FILES
     bldFiles(bodies)
     # CLD FILES

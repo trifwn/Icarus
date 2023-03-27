@@ -5,11 +5,21 @@ import jsonpickle
 
 
 class Airplane():
-    def __init__(self, name, surfaces):
+    def __init__(self, name, surfaces, disturbances=None, orientation=None):
 
         self.name = name
         self.surfaces = surfaces
         self.masses = []
+
+        if disturbances is None:
+            self.disturbances = []
+        else:
+            self.disturbances = disturbances
+
+        if orientation is None:
+            self.orientation = [0., 0., 0.]
+        else:
+            self.orientation = orientation
 
         toRemove = []
         for i, surface in enumerate(surfaces):

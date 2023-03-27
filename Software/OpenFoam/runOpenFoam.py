@@ -3,7 +3,7 @@ import os
 import shutil
 import numpy as np
 import pandas as pd
-from Software import runOFscript, setupOFscript
+from Software import runOFscript, setupOFscript, logOFscript
 
 
 def makeMesh(airfoilFile, airfoilName, OFBASE, HOMEDIR):
@@ -169,6 +169,14 @@ def cleanOpenFoam(HOMEDIR, CASEDIR):
             for delFol in times[1:-1]:
                 os.system(f"rm -r {delFol}")
             os.chdir(CASEDIR)
+    os.chdir(HOMEDIR)
+
+
+def getConvergence(HOMEDIR, CASEDIR):
+    os.chdir(CASEDIR)
+    call(["/bin/bash", "-c", f"{logOFscript}"])
+    os.chdir("logs")
+
     os.chdir(HOMEDIR)
 
 # def reorderFoamResults(anglesAll):
