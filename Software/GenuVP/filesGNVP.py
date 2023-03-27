@@ -168,6 +168,8 @@ def cldFiles(AeroData, airfoils, solver):
         for reyn in keys[1:]:
             df2 = polars[reyn][solver].astype(
                 'float32').dropna(axis=0, how="all")
+            df.rename(columns={
+                      "CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"}, inplace=True)
             df = pd.merge(df, df2, on="AoA", how='outer')
 
         # SORT BY AoA
@@ -192,10 +194,10 @@ def cldFiles(AeroData, airfoils, solver):
                 f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n")
             for i, ang in enumerate(angles):
                 string = ""
-                nums = df.loc[df["AoA"] == 5].to_numpy().squeeze()
+                nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
                 for num in nums:
                     string = string + ff2(num) + "  "
-                data.append(f"{ff3(ang)}   {string}\n")
+                data.append(f"{string}\n")
             data.append("\n")
         with open(fname, "w") as file:
             file.writelines(data)
@@ -222,7 +224,7 @@ def bldFiles(bodies):
         data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
         data[
             24
-        ] = f'4                      {bod["Root_chord"]}       {-step}   0.         0.         0.         0.\n'
+        ] = f'4                      {bod["Root_chord"]}        {-step}   0.         0.         0.         0.\n'
 
         with open(fname, "w") as file:
             file.writelines(data)
@@ -279,14 +281,13 @@ def filltable(df):
             CDs.append(item)
         if item.startswith("Cm") or item.startswith("CM"):
             CMs.append(item)
-    for cols in [CLs, CDs, CMs]:
-        df[cols] = df[cols].interpolate(method='linear',
-                                        limit_direction='backward',
-                                        axis=1)
-        df[cols] = df[cols].interpolate(method='linear',
-                                        limit_direction='forward',
-                                        axis=1)
-
+    for colums in [CLs, CDs, CMs]:
+        df[colums] = df[colums].interpolate(method='linear',
+                                            limit_direction='backward',
+                                            axis=1)
+        df[colums] = df[colums].interpolate(method='linear',
+                                            limit_direction='forward',
+                                            axis=1)
     return df
 
 

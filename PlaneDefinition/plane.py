@@ -13,10 +13,11 @@ class Airplane():
 
         toRemove = []
         for i, surface in enumerate(surfaces):
-            if surface.name == "mainWing":
+            if surface.name == "wing":
                 # self.mainWing = surface
                 self.S = surface.S
                 self.MAC = surface.MAC
+                self.AR = surface.AR
 
             if surface.isSymmetric == True:
                 toRemove.append(i)

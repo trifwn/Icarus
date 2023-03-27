@@ -11,13 +11,14 @@ def GNVPexe(HOMEDIR, ANGLEDIR):
     os.chdir(HOMEDIR)
 
 
-def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles):
+def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
     CASEDIR = plane.CASEDIR
     HOMEDIR = plane.HOMEDIR
     airfoils = plane.airfoils
     bodies = []
     airMovement = airMov()
 
+    plane.defineSim(Uinf, dens)
     plane.save()
     for i, surface in enumerate(plane.surfaces):
         bodies.append(makeSurfaceDict(surface, i))
@@ -32,7 +33,7 @@ def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles):
         ANGLEDIR = f"{CASEDIR}/{folder}"
         os.system(f"mkdir -p {ANGLEDIR}")
 
-        params = setParams(len(bodies), len(airfoils), Uinf, angle)
+        params = setParams(len(bodies), len(airfoils), Uinf, angle, dens)
 
         fgnvp.makeInput(ANGLEDIR, HOMEDIR, GENUBASE, airMovement,
                         bodies, params, airfoils, polars, solver)
@@ -52,14 +53,14 @@ def airMov():
     return airMovement
 
 
-def setParams(nBodies, nAirfoils, Uinf, WindAngle):
+def setParams(nBodies, nAirfoils, Uinf, WindAngle, dens):
     params = {
         "nBods": nBodies,
         "nBlades": nAirfoils,
         "maxiter": 50,
         "timestep": 10,
         "Uinf": [Uinf * np.cos(WindAngle*np.pi/180), 0.0, Uinf * np.sin(WindAngle*np.pi/180)],
-        "rho": 1.225,
+        "rho": dens,
         "visc": 0.0000156,
     }
     return params

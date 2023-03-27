@@ -5,6 +5,7 @@ from .surface import Surface
 
 class Wing:
     def __init__(self, name, airfoil, Origin, Orientation, isSymmetric, span, sweepOffset, dihAngle, chordFun, chord, spanFun, N, M, mass=1):
+        """Wing Class"""
 
         self.N = N
         self.M = M
@@ -61,6 +62,9 @@ class Wing:
         # Create Surfaces
         self.createSurfaces()
 
+        # Find Chords MAC-SMC
+        self.meanChords()
+
         # Calculate Areas
         self.findArea()
 
@@ -74,6 +78,7 @@ class Wing:
         self.inertia(self.mass, self.CG)
 
     def splitSymmetric(self):
+        """Split Symmetric Wing into two Wings"""
         if self.isSymmetric == True:
             left = Wing(name=f"L{self.name}",
                         airfoil=self.airfoil,
@@ -110,6 +115,7 @@ class Wing:
             print("Cannot Split Body it is not symmetric")
 
     def createSurfaces(self):
+        """Create Surfaces given the Grid and Airfoil"""
         surfaces = []
         symSurfaces = []
         startPoint = [
@@ -136,6 +142,7 @@ class Wing:
         self.allSurfaces = [*surfaces, *symSurfaces]
 
     def plotWing(self, fig=None, ax=None):
+        """Plot Wing in 3D"""
         if fig == None:
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
@@ -169,6 +176,7 @@ class Wing:
         ax.view_init(30, 150)
 
     def grid2panels(self, grid):
+        """Convert Grid to Panels"""
         panels = np.empty((self.N-1, self.M-1, 4, 3))
         for i in np.arange(0, self.N-1):
             for j in np.arange(0, self.M-1):
@@ -179,6 +187,7 @@ class Wing:
         return panels
 
     def createGrid(self):
+        """Create Grid for Wing"""
         xs = np.empty((self.M, self.N))
         xs_upper = np.empty((self.M, self.N))
         xs_lower = np.empty((self.M, self.N))
@@ -236,13 +245,38 @@ class Wing:
         self.panels_lower = self.grid2panels(self.grid_lower)
         self.panels_upper = self.grid2panels(self.grid_upper)
 
-    def findArea(self):
-        # FIND WING AREA
-        self.Area = 0
-        self.Area_c = 0
+    def meanChords(self):
+        "Finds the Mean Aerodynamic Chord (MAC) of the wing."
+        num = 0
+        denum = 0
         for i in np.arange(0, self.N-1):
-            self.Area_c += 2*(self.grid_upper[i+1, 0, 1] -
-                              self.grid_upper[i, 0, 1]) * \
+            num += ((self.Dchord[i] + self.Dchord[i+1])/2)**2 *\
+                (self.Dspan[i+1] - self.Dspan[i])
+            denum += (self.Dchord[i] + self.Dchord[i+1])/2 *\
+                (self.Dspan[i+1] - self.Dspan[i])
+        self.MAC = num/denum
+
+        # Finds Standard Mean Chord
+        num = 0
+        denum = 0
+        for i in np.arange(0, self.N-1):
+            num += (self.Dchord[i] + self.Dchord[i+1])/2 *\
+                (self.Dspan[i+1] - self.Dspan[i])
+            denum += (self.Dspan[i+1] - self.Dspan[i])
+        self.SMC = num/denum
+
+    def findAspectRatio(self):
+        """Finds the Aspect Ratio of the wing."""
+        self.AR = (self.span ** 2)/self.Area
+
+    def findArea(self):
+        "Finds the area of the wing."
+
+        self.Area = 0
+        self.S = 0
+        for i in np.arange(0, self.N-1):
+            self.S += 2*(self.grid_upper[i+1, 0, 1] -
+                         self.grid_upper[i, 0, 1]) * \
                 (self.Dchord[i] + self.Dchord[i+1])/2
 
         g_up = self.grid_upper
@@ -267,11 +301,13 @@ class Wing:
 
                 self.Area += Area_up + Area_low
 
-        if self.isSymmetric == True:
-            self.Area *= 2
+        # Find Aspect Ratio
+        self.findAspectRatio()
 
     def findVolume(self):
-        # Find Wing Volume for every Panel and cumulatice
+        """Finds the volume of the wing. This is done by finding the volume of the wing
+        as the sum of a series of panels."""
+
         self.VolumeDist = np.empty((self.N-1, self.M-1))
         self.VolumeDist2 = np.empty((self.N-1, self.M-1))
 
@@ -279,28 +315,42 @@ class Wing:
         g_low = self.grid_lower
         self.AreasB = np.zeros((self.N-1))
         self.AreasF = np.zeros((self.N-1))
+
+        # We divide the wing into a set of lower and upper panels that form
+        # a tetrahedron. We then find the volume of each tetrahedron and sum.
+        # This is equivalent to finding the area of the front and back faces of
+        # the tetrahedron taking the average and multiplying by the height.
+        # We then have to subtract the volume of the trianglular prism that is
+        # formed by the slanted edges of the tetrahedron.
         for i in np.arange(0, self.N-1):
             for j in np.arange(0, self.M-1):
+
+                # Area of the front face
                 AB1 = (g_up[i+1, j, :] - g_up[i, j, :])
                 AB2 = (g_low[i+1, j, :] - g_low[i, j, :])
 
                 AD1 = (g_up[i, j, :] - g_low[i, j, :])
                 AD2 = (g_up[i+1, j, :] - g_low[i+1, j, :])
-                Area_front = np.linalg.norm(np.cross((AB1+AB2)/2, (AD1+AD2)/2))
+                Area_front_v = (np.cross((AB1+AB2)/2, (AD1+AD2)/2))
+                Area_front = np.linalg.norm(Area_front_v)
 
+                # Area of the back face
                 AB1 = (g_up[i+1, j+1, :] - g_up[i, j+1, :])
                 AB2 = (g_low[i+1, j+1, :] - g_low[i, j+1, :])
 
                 AD1 = (g_up[i, j+1, :] - g_low[i, j+1, :])
                 AD2 = (g_up[i+1, j+1, :] - g_low[i+1, j+1, :])
-                Area_back = np.linalg.norm(np.cross((AB1+AB2)/2, (AD1+AD2)/2))
+                Area_back_v = (np.cross((AB1+AB2)/2, (AD1+AD2)/2))
+                Area_back = np.linalg.norm(Area_back_v)
 
+                # Height of the tetrahedron
                 dx1 = g_up[i, j+1, 0] - g_up[i, j, 0]
                 dx2 = g_up[i+1, j+1, 0] - g_up[i+1, j, 0]
                 dx3 = g_low[i, j+1, 0] - g_low[i, j, 0]
                 dx4 = g_low[i+1, j+1, 0] - g_low[i+1, j, 0]
                 dx = (dx1 + dx2 + dx3 + dx4)/4
 
+                # Volume of the tetrahedron
                 self.VolumeDist[i, j] = 0.5 * (Area_front + Area_back) * dx
 
         self.Volume = np.sum(self.VolumeDist)
@@ -308,6 +358,9 @@ class Wing:
             self.Volume = self.Volume * 2
 
     def centerMass(self):
+        """Finds the center of mass of the wing.
+        This is done by summing the volume of each panel 
+        and dividing by the total volume."""
         x_cm = 0
         y_cm = 0
         z_cm = 0
@@ -349,6 +402,7 @@ class Wing:
         self.CG = np.array((x_cm, y_cm, z_cm)) / self.Volume
 
     def inertia(self, mass, cog):
+        """Finds the inertia of the wing."""
         I_xx = 0
         I_yy = 0
         I_zz = 0
@@ -393,12 +447,15 @@ class Wing:
 
 
 def linSpan(sp, Ni):
+    """Returns a linearly spaced span array."""
     return np.linspace(0, sp, Ni).round(12)
 
 
 def uniformChord(Ni, ch=1):
+    """Returns a uniform chord array."""
     return ch * np.ones(Ni)
 
 
 def linearChord(Ni, ch1, ch2):
+    """Returns a linearly spaced chord array."""
     return np.linspace(ch1, ch2, Ni).round(12)

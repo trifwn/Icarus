@@ -135,13 +135,16 @@ def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip
     xf.Re = Reyn
     xf.n_crit = Ncrit
     # xf.M = MACH
-    xf.xtr = (ftrip_low, ftrip_up)
     xf.max_iter = 100
     xf.print = False
     xpts, ypts = pts.T
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
+    
+    xf.xtr = (ftrip_low, ftrip_up)
     aXF1, clXF1, cdXF1, cmXF1, _ = xf.aseq(0, AoAmax, AoAstep)
+
+    xf.xtr = (ftrip_up, ftrip_low)
     aXF2, clXF2, cdXF2, cmXF2, _ = xf.aseq(0, AoAmin, -AoAstep)
 
     aXF = np.hstack((aXF1, aXF2[1:]))

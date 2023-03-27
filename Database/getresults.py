@@ -10,7 +10,6 @@ class Database_2D():
     def __init__(self, HOMEDIR):
         self.HOMEDIR = HOMEDIR
         self.Data = {}
-        self.Planes = {}
         self.scan()
         self.airfoils = self.getAirfoils()
 
@@ -65,15 +64,18 @@ class Database_2D():
 class Database_3D():
     def __init__(self, HOMEDIR):
         self.HOMEDIR = HOMEDIR
+        self.rawData = {}
         self.Data = {}
+        self.Planes = {}
         self.scan()
+        self.makeData()
 
     def scan(self):
         os.chdir(DB3D)
         folders = next(os.walk('.'))[1]
         for folder in folders:
             os.chdir(folder)
-            self.Data[folder] = pd.read_csv(f"{DB3D}/{folder}/clcd.genu")
+            self.rawData[folder] = pd.read_csv(f"{DB3D}/{folder}/clcd.genu")
             files = next(os.walk('.'))[2]
             for file in files:
                 if file.endswith(".json"):
@@ -84,7 +86,7 @@ class Database_3D():
         os.chdir(self.HOMEDIR)
 
     def getPlanes(self):
-        return list(self.Data.keys())
+        return list(self.Planes.keys())
 
     def getPolar(self, Plane):
         try:
@@ -92,26 +94,32 @@ class Database_3D():
         except KeyError:
             print("Plane Doesn't exist! You should compute it first!")
 
-    def makeDimensionless(self, plane):
-        pln = self.Planes["pln"]
+    def makeData(self):
+        beta = 0
+        for plane in list(self.Planes.keys()):
+            self.Data[plane] = {}
+            pln = self.Planes[plane]
 
-        self.Data[plane]["CD_Pot"] = - self.Data[plane]["TFORC(1)"]*np.sin(
-            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
-        self.Data[plane]["CD_2D"] = -self.Data[plane]["TFORC2D(1)"]*np.sin(
-            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
-        self.Data[plane]["CD_ONERA"] = -self.Data[plane]["TFORCDS2D(1)"]*np.sin(
-            self.Data[plane]["AoA"]*np.pi/180) * (pln.Q*pln.S)
+            self.Data[plane]["AoA"] = self.rawData[plane]["AoA"]
+            AoA = self.rawData[plane]["AoA"] * np.pi/180
+            for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
+                Fx = self.rawData[plane][f"TFORC{enc}(1)"]
+                Fy = self.rawData[plane][f"TFORC{enc}(2)"]
+                Fz = self.rawData[plane][f"TFORC{enc}(3)"]
 
-        self.Data[plane]["CL_Pot"] = self.Data[plane]["TFORC(3)"]*np.cos(
-            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
-        self.Data[plane]["CL_2D"] = self.Data[plane]["TFORC2D(3)"]*np.cos(
-            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
-        self.Data[plane]["CL_ONERA"] = self.Data[plane]["TFORCDS2D(3)"]*np.cos(
-            self.Data[plane]["AoA"]*np.pi/180) / (pln.Q*pln.S)
+                Mx = self.rawData[plane][f"TAMOM{enc}(1)"]
+                My = self.rawData[plane][f"TAMOM{enc}(2)"]
+                Mz = self.rawData[plane][f"TAMOM{enc}(3)"]
 
-        self.Data[plane]["Cm_Pot"] = self.Data[plane]["TAMOM(2)"] / (
-            pln.Q*pln.S*pln.MAC)
-        self.Data[plane]["Cm_2D"] = self.Data[plane]["TAMOM2D(2)"] / (
-            pln.Q*pln.S*pln.MAC)
-        self.Data[plane]["Cm_ONERA"] = self.Data[plane]["TAMOMDS2D(2)"] / (
-            pln.Q*pln.S*pln.MAC)
+                Fx_new = Fx * np.cos(-AoA) - Fz * np.sin(-AoA)
+                Fy_new = Fy
+                Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
+
+                My_new = My - \
+                    Fx_new * pln.CG[2] + \
+                    Fy_new * pln.CG[1] + \
+                    Fz_new * pln.CG[0]
+
+                self.Data[plane][f"CL_{name}"] = Fz_new / (pln.Q*pln.S)
+                self.Data[plane][f"CD_{name}"] = Fx_new / (pln.Q*pln.S)
+                self.Data[plane][f"Cm_{name}"] = My_new / (pln.Q*pln.S*pln.MAC)
