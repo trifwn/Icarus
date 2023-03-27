@@ -34,9 +34,12 @@ class Airplane():
         self.masses = []
         self.Inertia = []
 
+        self.M = 0
         for surface in self.surfaces:
             mass = (surface.mass, surface.CG)
             mom = (surface.I)
+
+            self.M += surface.mass
             self.Inertia.append(mom)
             self.masses.append(mass)
 

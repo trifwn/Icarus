@@ -75,29 +75,36 @@ class Database_3D():
         folders = next(os.walk('.'))[1]
         for folder in folders:
             os.chdir(folder)
-            self.rawData[folder] = pd.read_csv(f"{DB3D}/{folder}/clcd.genu")
-            files = next(os.walk('.'))[2]
-            for file in files:
-                if file.endswith(".json"):
-                    with open(f"{file}", 'r') as f:
-                        json_obj = f.read()
-                        self.Planes[folder] = jsonpickle.decode(json_obj)
+            try:
+                self.rawData[folder] = pd.read_csv(
+                    f"{DB3D}/{folder}/clcd.genu")
+                files = next(os.walk('.'))[2]
+                for file in files:
+                    if file.endswith(".json"):
+                        with open(f"{file}", 'r') as f:
+                            json_obj = f.read()
+                            self.Planes[folder] = jsonpickle.decode(json_obj)
+            except FileNotFoundError:
+                print(f"Plane {folder} doesn't contain polars!")
             os.chdir(DB3D)
         os.chdir(self.HOMEDIR)
 
     def getPlanes(self):
         return list(self.Planes.keys())
 
-    def getPolar(self, Plane):
+    def getPolar(self, plane, mode):
         try:
-            return self.Data[str(Plane)]
+            cols = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
+            return self.Data[plane][cols].rename(columns={f"CL_{mode}": "CL",
+                                                          f"CD_{mode}": "CD",
+                                                          f"Cm_{mode}": "Cm"})
         except KeyError:
-            print("Plane Doesn't exist! You should compute it first!")
+            print("Polar Doesn't exist! You should compute it first!")
 
     def makeData(self):
         beta = 0
         for plane in list(self.Planes.keys()):
-            self.Data[plane] = {}
+            self.Data[plane] = pd.DataFrame()
             pln = self.Planes[plane]
 
             self.Data[plane]["AoA"] = self.rawData[plane]["AoA"]

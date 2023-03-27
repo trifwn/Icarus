@@ -1,29 +1,4 @@
 import numpy as np
-import pandas as pd
-
-
-def rad2deg(x):
-    return(x*180/np.pi)
-
-
-def deg2rad(x):
-    return(x*np.pi/180)
-
-
-def Trim(Plane, rho, Wing_Area, Cm_curve, CL_curve, Aoa_vector, Weight):
-    # Index of interest in the Polar Dataframe
-    Trim_ind = np.argmin(np.abs(Cm_curve))
-
-    # How accurate is the trim
-    print(f"Cm thst should be zero is {Cm_curve[Trim_ind] }")
-
-    # Trim - related Aerodynamic Parameters of interest
-    AoA_Trim = Aoa_vector[Trim_ind]
-    CL_Trim = CL_curve[Trim_ind]
-    U_cruise = Weight/(0.5*rho*Wing_Area*CL_Trim)
-
-    return U_cruise, AoA_Trim
-
 
 def Perturbations_Analysis(Plane, U_cruise, AoA_Trim, Velocity_incr, AngVelocity_incr):
     # Axis with Capital Letter means body-fitted, axis with lower case means Stream-Wise
