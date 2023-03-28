@@ -27,9 +27,9 @@ def runGNVPangles(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
     for angle in angles:
         print(f"Running Angles {angle}")
         if angle >= 0:
-            folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+            folder = str(angle)[::-1].zfill(7)[::-1] + "_AoA/"
         else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
+            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "_AoA/"
 
         CASEDIR = f"{PLANEDIR}/{folder}"
         os.system(f"mkdir -p {CASEDIR}")
@@ -55,17 +55,18 @@ def runGNVPpertr(plane, GENUBASE, polars, solver, Uinf, angle):
                            plane.orientation, [dst])
 
         print(f"Running Case {dst.var}")
-
-        if dst.isPositive:
-            folder = "p" + str(dst.amplitude)[::-1].zfill(6)[::-1] + "/"
+        # if make distubance folder
+        if dst.var == "Trim":
+            folder = "Trim/"
+        elif dst.isPositive:
+            folder = "p" + \
+                str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}/"
         else:
             folder = "m" + \
-                str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + "/"
+                str(dst.amplitude)[
+                    ::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}/"
 
-        CASEDIR = f"{PLANEDIR}/Dynamics/{dst.var}//"
-        os.system(f"mkdir -p {CASEDIR}")
-
-        CASEDIR = f"{PLANEDIR}/Dynamics/{dst.var}/{folder}/"
+        CASEDIR = f"{PLANEDIR}/Dynamics/{folder}/"
         os.system(f"mkdir -p {CASEDIR}")
 
         params = setParams(len(bodies), len(airfoils),
@@ -74,11 +75,14 @@ def runGNVPpertr(plane, GENUBASE, polars, solver, Uinf, angle):
         fgnvp.makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
                         bodies, params, airfoils, polars, solver)
         GNVPexe(HOMEDIR, CASEDIR)
-        break
 
 
 def makePolar(CASEDIR, HOMEDIR):
     return fgnvp.makePolar(CASEDIR, HOMEDIR)
+
+
+def logResults(DYNDIR, HOMEDIR):
+    return fgnvp.logPertrub(DYNDIR, HOMEDIR)
 
 
 def airMov(surfaces, CG, orientation, disturbances):

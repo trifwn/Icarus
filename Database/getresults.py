@@ -3,7 +3,10 @@ from . import DB2D, DB3D
 import os
 import pandas as pd
 from Airfoils import airfoil as af
+
 import jsonpickle
+import jsonpickle.ext.pandas as jsonpickle_pd
+jsonpickle_pd.register_handlers()
 
 
 class Database_2D():
@@ -80,7 +83,7 @@ class Database_3D():
                     f"{DB3D}/{folder}/clcd.genu")
                 files = next(os.walk('.'))[2]
                 for file in files:
-                    if file.endswith(".json"):
+                    if file.endswith(".json") and not file.startswith("dyn"):
                         with open(f"{file}", 'r') as f:
                             json_obj = f.read()
                             self.Planes[folder] = jsonpickle.decode(json_obj)
@@ -92,7 +95,7 @@ class Database_3D():
     def getPlanes(self):
         return list(self.Planes.keys())
 
-    def importXFLRpolar(self,FILENAME):
+    def importXFLRpolar(self, FILENAME):
         # import csv into pandas Dataframe and skip first 7 rows
         df = pd.read_csv(FILENAME, skiprows=7,
                          delim_whitespace=True, on_bad_lines="skip")

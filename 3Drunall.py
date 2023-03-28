@@ -14,6 +14,9 @@ from Visualization import plotting as aplt
 
 from Airfoils import airfoil as af
 
+import time
+
+start_time = time.time()
 HOMEDIR = os.getcwd()
 
 db = Database_2D(HOMEDIR)
@@ -125,3 +128,5 @@ if petrubationAnalysis == True:
     dyn.accessDB(HOMEDIR)
     dyn.runAnalysis(gnvp.runGNVPpertr, genuBatchArgs)
 dyn.save()
+
+print("PROGRAM EXECUTION TOOK --- %s seconds ---" % (time.time() - start_time))

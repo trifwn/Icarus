@@ -165,6 +165,8 @@ class dyn_plane():
         self.disturbances[variable] = dst(variable, amplitude)
 
     def allPerturb(self, epsilon, scheme):
+        self.scheme = scheme
+        self.epsilons = {}
         self.disturbances = [*self.longitudalPerturb(epsilon, scheme),
                              *self.lateralPerturb(epsilon, scheme)]
         self.disturbances.append(dst(None, 0))
@@ -178,6 +180,7 @@ class dyn_plane():
         """
         disturbances = []
         for var in ["u", "w", "q", "theta"]:
+            self.epsilons[var] = epsilon
             if scheme == "Central":
                 disturbances.append(dst(var, epsilon))
                 disturbances.append(dst(var, -epsilon))
@@ -199,6 +202,7 @@ class dyn_plane():
         """
         disturbances = []
         for var in ["v", "p", "r", "phi"]:
+            self.epsilons[var] = epsilon
             if scheme == "Central":
                 disturbances.append(dst(var, epsilon))
                 disturbances.append(dst(var, -epsilon))
@@ -250,6 +254,146 @@ class dyn_plane():
 
     def runAnalysis(self, solver, args, kwargs={}):
         solver(*args, **kwargs)
+
+    def logResults(self, makePolFun, args, kwargs={}):
+        petrubdf = makePolFun(*args, **kwargs)
+        self.pertubResults = petrubdf
+
+    def longitudalStability(self):
+        """This Function Requires the results from perturbation analysis
+        For the Longitudinal Motion, in addition to the state space variables an analysis with respect to the derivative of w perturbation is needed.
+        These derivatives are in this function are added externally and called Xw_dot,Zw_dot,Mw_dot. Depending on the Aerodynamics Solver, 
+        these w_dot derivatives can either be computed like the rest derivatives, or require an approximation concerning the downwash velocity 
+        that the main wing induces on the tail wing
+        """
+        pertr = self.pertubResults
+        eps = self.epsilons
+        Mass = self.pln.M
+        U = self.trim["U"]   # TRIM
+        theta = self.trim["AoA"] * np.pi / 180   # TRIM
+        G = - 9.81
+        Ix, Iy, Iz = self.pln.I
+        X = {}
+        Z = {}
+        M = {}
+        pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
+        trimState = pertr[pertr["Type"] == "Trim"]
+        mode = "2D"
+        for var in ["u", "w", "q", "theta"]:
+            if self.scheme == "Central":
+                front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
+                back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+            elif self.scheme == "Forward":
+                front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
+                back = trimState
+            elif self.scheme == "Backward":
+                front = trimState
+                back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+            Xf = float(front[f"TFORC{mode}(1)"].to_numpy())
+            Xb = float(back[f"TFORC{mode}(1)"].to_numpy())
+            X[var] = (Xf - Xb)/(2*eps[var])
+
+            Zf = float(front[f"TFORC{mode}(3)"].to_numpy())
+            Zb = float(back[f"TFORC{mode}(3)"].to_numpy())
+            Z[var] = (Zf - Zb)/(2*eps[var])
+
+            Mf = float(front[f"TAMOM{mode}(2)"].to_numpy())
+            Mb = float(back[f"TAMOM{mode}(2)"].to_numpy())
+            M[var] = (Mf - Mb)/(2*eps[var])
+
+        xu = X["u"]/Mass + (X["theta"]*Z['u'])/(Mass*(Mass-Z["theta"]))
+        xw = X["w"]/Mass + (X["theta"]*Z['w'])/(Mass*(Mass-Z["theta"]))
+        xq = X["q"]/Mass + (X["theta"]*(Z['q']+Mass*U)) / \
+            (Mass*(Mass-Z["theta"]))
+        xth = -G*np.cos(theta) - (X["theta"]*G *
+                                  np.sin(theta))/((Mass-Z["theta"]))
+
+        zu = Z['u']/(Mass-Z["theta"])
+        zw = Z['w']/(Mass-Z["theta"])
+        zq = (Z['q']+Mass*U)/(Mass-Z["theta"])
+        zth = -(Mass*G*np.sin(theta))/(Mass-Z["theta"])
+
+        mu = M['u']/Iy + Z['u']*M["theta"]/(Iy*(Mass-Z["theta"]))
+        mw = M['w']/Iy + Z['w']*M["theta"]/(Iy*(Mass-Z["theta"]))
+        mq = M['q']/Iy + ((Z['q']+Mass*U)*M["theta"])/(Iy*(Mass-Z["theta"]))
+        mth = (Mass*G*np.sin(theta)*M["theta"])/(Iy*(Mass-Z["theta"]))
+
+        self.AstarLong = np.array([[X["u"], X["w"], X["q"], X["theta"]],
+                                   [Z['u'], Z['w'], Z['q'], Z['theta']],
+                                   [M['u'], M['w'], M['q'], M['theta']],
+                                   [0, 1, 0, 0]])
+
+        self.Along = np.array([[xu, xw, xq, xth],
+                               [zu, zw, zq, zth],
+                               [mu, mw, mq, mth],
+                               [0, 1, 0, 0]])
+
+    def lateralStability(self):
+        """This Function Requires the results from perturbation analysis
+        """
+        pertr = self.pertubResults
+        eps = self.epsilons
+        Mass = self.pln.M
+        U = self.trim["U"]
+        theta = self.trim["AoA"] * np.pi / 180
+        G = - 9.81
+        Ix, Iy, Iz = self.pln.I
+        Ixz = 0  # self.pln.Ixz
+        Y = {}
+        L = {}
+        N = {}
+        pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
+        trimState = pertr[pertr["Type"] == "Trim"]
+        mode = "2D"
+        for var in ["v", "p", "r", "phi"]:
+            if self.scheme == "Central":
+                back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+                front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
+                de = 2 * eps[var]
+            elif self.scheme == "Forward":
+                back = trimState
+                front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
+                de = eps[var]
+            elif self.scheme == "Backward":
+                back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+                front = trimState
+                de = eps[var]
+            Yf = float(front[f"TFORC{mode}(2)"].to_numpy())
+            Yb = float(back[f"TFORC{mode}(2)"].to_numpy())
+            Y[var] = (Yf - Yb)/de
+
+            Lf = float(front[f"TAMOM{mode}(1)"].to_numpy())
+            Lb = float(back[f"TAMOM{mode}(1)"].to_numpy())
+            L[var] = (Lf - Lb)/de
+
+            Nf = float(front[f"TAMOM{mode}(3)"].to_numpy())
+            Nb = float(back[f"TAMOM{mode}(3)"].to_numpy())
+            N[var] = (Nf - Nb)/de
+
+        yv = Y['v']/Mass
+        yp = (Y['p']-Mass*U * np.cos(theta))/Mass
+        yr = (Y['r']-Mass*U * np.cos(theta))/Mass
+        yphi = -G*np.cos(theta)
+
+        lv = (Iz*L['v']+Ixz*N['v'])/(Ix*Iz-Ixz**2)
+        lp = (Iz*L['p']+Ixz*N['p'])/(Ix*Iz-Ixz**2)
+        lr = (Iz*L['p']+Ixz*N['p'])/(Ix*Iz-Ixz**2)
+        lphi = 0
+
+        nv = (Ix*N['v']+Ixz*L['v'])/(Ix*Iz-Ixz**2)
+        n_p = (Iz*N['p']+Ixz*L['p'])/(Ix*Iz-Ixz**2)
+        nr = (Iz*N['r']+Ixz*L['r'])/(Ix*Iz-Ixz**2)
+        nph = 0
+
+        self.AstarLat = np.array([[Y['v'], Y['p'], Y['r'], Y['phi']],
+                                  [L['v'], L['p'], L['r'], L['phi']],
+                                  [N['v'], N['p'], N['r'], N['phi']],
+                                  [0, 1, 0, 0]])
+
+        self.Alat = np.array([[yv, yp, yr, yphi],
+                              [lv, lp, lr, lphi],
+                              [nv, n_p, nr, nph],
+                              [0, 1, 0, 0]])
 
     # def approxAeroDerivatives(self):
     #     """Finds the Stability Derivatives using approximations

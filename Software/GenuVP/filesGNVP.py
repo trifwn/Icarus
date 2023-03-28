@@ -91,7 +91,7 @@ def geofile(movements, bodies):
         data.append("Give  data for every level\n")
         # PITCH, ROLL, YAW, Movements to CG with angular velocity
         for j, mov in enumerate(movements[i]):
-            geoBodyMovements(data, mov, len(movements[i])  - j, NB)
+            geoBodyMovements(data, mov, len(movements[i]) - j, NB)
 
         data.append(
             "-----<end of movement data>----------------------------------------------------\n")
@@ -327,8 +327,37 @@ def makePolar(CASEDIR, HOMEDIR):
     df.pop('TTIME')
     df.pop("PSIB")
 
-    df = df.sort_values("AoA")
+    df = df.sort_values("AoA").reset_index(drop=True)
     df.to_csv('clcd.genu', index=False)
+    os.chdir(HOMEDIR)
+    return df
+
+
+def logPertrub(DYNDIR, HOMEDIR):
+    os.chdir(DYNDIR)
+    folders = next(os.walk('.'))[1]
+    print('Logging Pertrubations')
+    pols = []
+    for folder in folders:
+        os.chdir(f"{DYNDIR}//{folder}")
+        files = next(os.walk('.'))[2]
+        if "LOADS_aer.dat" in files:
+            if folder == "Trim":
+                a = [0, str(folder),
+                     *np.loadtxt("LOADS_aer.dat")]
+            elif folder.startswith("m"):
+                a = [- float(folder[1:7]), str(folder[8:]),
+                     *np.loadtxt("LOADS_aer.dat")]
+            else:
+                a = [float(folder[1:7]), str(folder[8:]),
+                     *np.loadtxt("LOADS_aer.dat")]
+            pols.append(a)
+            os.chdir(f"{DYNDIR}/{folder}")
+        os.chdir(f"{DYNDIR}")
+    df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
+    df.pop('TTIME')
+    df.pop("PSIB")
+    df.to_csv('pertrubations.genu', index=False)
     os.chdir(HOMEDIR)
     return df
 
