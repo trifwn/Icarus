@@ -4,6 +4,11 @@ import numpy as np
 class disturbance():
     def __init__(self, variable, amplitude):
         self.amplitude = amplitude
+        if amplitude > 0:
+            self.isPositive = True
+        else:
+            self.isPositive = False
+
         if variable == "u":
             self.axis = 1
             self.type = "Derivative"  # Linear Only get Derivative
@@ -14,7 +19,7 @@ class disturbance():
             self.isRotational = False
         elif variable == "q":
             self.axis = 2
-            self.type = "Derivatice"  # Linear Only get Derivative
+            self.type = "Derivative"  # Linear Only get Derivative
             self.isRotational = True
         elif variable == "theta":
             self.axis = 2
@@ -37,10 +42,17 @@ class disturbance():
             self.axis = 1
             self.type = "Value"  # LINEAR
             self.isRotational = True
+        elif variable == None:
+            self.axis = None
+            self.type = None
+            self.amplitude = None
+            self.name = "Trim"
+            self.var = "Trim"
         else:
             raise ValueError("Invalid disturbance variable")
-
-        self.name = f"{variable} disturbance"
+        if variable is not None:
+            self.name = f"{variable} disturbance"
+            self.var = variable
 
     def __str__(self):
-        return f"Disturbance {self.name} of type {self.type} and amplitude {self.amplitude}."
+        return f"{self.name}: \n\tType:\t\t{self.type}\n\tAmplitude:\t{self.amplitude}."

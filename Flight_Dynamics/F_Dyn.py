@@ -1,24 +1,6 @@
 import numpy as np
 
 
-def Perturbations_Analysis(Plane, U_cruise, AoA_Trim, Velocity_incr, AngVelocity_incr):
-    # Axis with Capital Letter means body-fitted, axis with lower case means Stream-Wise
-    # The Axis notation will help during the integration of dynamic aanalysis woth GenuVP or any 3D Aerodynamics Solver
-
-    # Dictionary of Longitudinal Perturbations
-    Long_dict = {"Body_Movements": ["q", AngVelocity_incr, -AngVelocity_incr, " Angular Velocity, Y axis"],
-                 "Wind_Movements": [['u', U_cruise+Velocity_incr, U_cruise-Velocity_incr, " Linear Velocity, x axis"],
-                                    ['w', Velocity_incr, -Velocity_incr, " Linear Velocity, z axis"]]
-                 }
-
-    # Dictionary of Lateral Perturbations
-    Lat_dict = {"Body_Movements": [["p", AngVelocity_incr, -AngVelocity_incr, " Angular Velocity, X axis"],
-                                   ["r", AngVelocity_incr, -AngVelocity_incr, " Angular Velocity, Z axis"]],
-                "Wind_Movements": ['v', Velocity_incr, -Velocity_incr, " Linear Velocity, y axis"]
-                }
-    return Long_dict, Lat_dict
-
-
 def State_Space_Generation(AoA_trim, U_cruise, Mass, Ix, Iy, Iz, Ixz, Long_res_dict, Lat_res_dict, Velocity_incr, AngVelocity_incr, Xw_dot, Zw_dot, Mw_dot, Trim, theta_value):
     # Trim position
     if Trim == True:

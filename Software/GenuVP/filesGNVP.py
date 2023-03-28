@@ -86,19 +86,20 @@ def geofile(movements, bodies):
         NB = bod["NB"]
         geoBodyHeader(data, bod, NB)
         data.append(
-            f"{len(movements)-1}           LEVEL  the level of movement\n")
+            f"{len(movements[i])+1}           LEVEL  the level of movement\n")
         data.append("               <blank>\n")
         data.append("Give  data for every level\n")
         # PITCH, ROLL, YAW, Movements to CG with angular velocity
         for j, mov in enumerate(movements[i]):
-            geoBodyMovements(data, mov, len(movements) - 2 - j, NB)
+            geoBodyMovements(data, mov, len(movements[i])  - j, NB)
 
         data.append(
             "-----<end of movement data>----------------------------------------------------\n")
         data.append("               <blank>\n")
         data.append("Cl, Cd data / IYNVCR(.)=0 then Cl=1., Cd=0.\n")
         data.append("1           IYNVCR(1)\n")
-        data.append(f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n')
+        data.append(
+            f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n')
         data.append("               <blank>\n")
         data.append("Give the file name for the geometrical distributions\n")
         data.append(f'{bod["bld"]}\n')
@@ -130,7 +131,8 @@ def geoBodyMovements(data, mov, i, NB):
     data.append(f"NB={NB}, lev={i}  ( {mov.name} )\n")
     data.append(f"Rotation\n")
     data.append(f"{int(mov.Rtype)}           IMOVEAB  type of movement\n")
-    data.append(f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
+    data.append(
+        f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
     data.append(f"{ff3(mov.Rt1)}    TMOVEAB  -1  1st time step\n")
     data.append(f"{ff3(mov.Rt2)}    TMOVEAB  -2  2nd time step\n")
     data.append(f"0.          TMOVEAB  -3  3d  time step\n")
@@ -142,7 +144,8 @@ def geoBodyMovements(data, mov, i, NB):
     data.append(f"            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
     data.append(f"Translation\n")
     data.append(f"{int(mov.Ttype)}           IMOVEUB  type of movement\n")
-    data.append(f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
+    data.append(
+        f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
     data.append(f"{ff3(mov.Tt1)}    TMOVEUB  -1  1st time step\n")
     data.append(f"{ff3(mov.Tt2)}    TMOVEUB  -2  2nd time step\n")
     data.append(f"0.          TMOVEUB  -3  3d  time step\n")
@@ -327,6 +330,7 @@ def makePolar(CASEDIR, HOMEDIR):
     df = df.sort_values("AoA")
     df.to_csv('clcd.genu', index=False)
     os.chdir(HOMEDIR)
+    return df
 
 
 cols = ["AoA",

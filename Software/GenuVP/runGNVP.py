@@ -11,8 +11,8 @@ def GNVPexe(HOMEDIR, ANGLEDIR):
     os.chdir(HOMEDIR)
 
 
-def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
-    CASEDIR = plane.CASEDIR
+def runGNVPangles(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
+    PLANEDIR = plane.CASEDIR
     HOMEDIR = plane.HOMEDIR
     airfoils = plane.airfoils
     bodies = []
@@ -20,7 +20,7 @@ def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
                        plane.orientation, plane.disturbances)
 
     plane.defineSim(Uinf, dens)
-    plane.save()
+
     for i, surface in enumerate(plane.surfaces):
         bodies.append(makeSurfaceDict(surface, i))
 
@@ -31,15 +31,54 @@ def runGNVP(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
         else:
             folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
 
-        ANGLEDIR = f"{CASEDIR}/{folder}"
-        os.system(f"mkdir -p {ANGLEDIR}")
+        CASEDIR = f"{PLANEDIR}/{folder}"
+        os.system(f"mkdir -p {CASEDIR}")
 
         params = setParams(len(bodies), len(airfoils), Uinf, angle, dens)
 
-        fgnvp.makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements,
+        fgnvp.makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
                         bodies, params, airfoils, polars, solver)
-        GNVPexe(HOMEDIR, ANGLEDIR)
-    fgnvp.makePolar(CASEDIR, HOMEDIR)
+        GNVPexe(HOMEDIR, CASEDIR)
+
+
+def runGNVPpertr(plane, GENUBASE, polars, solver, Uinf, angle):
+    PLANEDIR = plane.CASEDIR
+    HOMEDIR = plane.HOMEDIR
+    airfoils = plane.airfoils
+    bodies = []
+
+    for i, surface in enumerate(plane.surfaces):
+        bodies.append(makeSurfaceDict(surface, i))
+
+    for dst in plane.disturbances:
+        movements = airMov(plane.surfaces, plane.CG,
+                           plane.orientation, [dst])
+
+        print(f"Running Case {dst.var}")
+
+        if dst.isPositive:
+            folder = "p" + str(dst.amplitude)[::-1].zfill(6)[::-1] + "/"
+        else:
+            folder = "m" + \
+                str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + "/"
+
+        CASEDIR = f"{PLANEDIR}/Dynamics/{dst.var}//"
+        os.system(f"mkdir -p {CASEDIR}")
+
+        CASEDIR = f"{PLANEDIR}/Dynamics/{dst.var}/{folder}/"
+        os.system(f"mkdir -p {CASEDIR}")
+
+        params = setParams(len(bodies), len(airfoils),
+                           Uinf, angle, dens=plane.dens)
+
+        fgnvp.makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
+                        bodies, params, airfoils, polars, solver)
+        GNVPexe(HOMEDIR, CASEDIR)
+        break
+
+
+def makePolar(CASEDIR, HOMEDIR):
+    return fgnvp.makePolar(CASEDIR, HOMEDIR)
 
 
 def airMov(surfaces, CG, orientation, disturbances):
@@ -67,7 +106,8 @@ def airMov(surfaces, CG, orientation, disturbances):
             sequence.append(obj)
 
         for disturbance in disturbances:
-            sequence.append(distrubance2movement(disturbance))
+            if disturbance.type is not None:
+                sequence.append(distrubance2movement(disturbance))
 
         movement.append(sequence)
     return movement
@@ -111,7 +151,6 @@ def makeSurfaceDict(surf, idx):
 
 
 def distrubance2movement(disturbance):
-
     if disturbance.type == "Derivative":
         t1 = -1
         t2 = 0
@@ -126,7 +165,7 @@ def distrubance2movement(disturbance):
         distType = 1
 
     empty = {
-        "type": 0,
+        "type": 1,
         "axis": disturbance.axis,
         "t1": -1,
         "t2": 0,
@@ -137,8 +176,8 @@ def distrubance2movement(disturbance):
     dist = {
         "type": distType,
         "axis": disturbance.axis,
-        "a1": t1,
-        "a2": t2,
+        "t1": t1,
+        "t2": t2,
         "a1": a1,
         "a2": a2,
     }

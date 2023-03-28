@@ -1,3 +1,4 @@
+from Flight_Dynamics.dyn_plane import dyn_plane as dp
 import numpy as np
 import os
 
@@ -17,7 +18,7 @@ HOMEDIR = os.getcwd()
 
 db = Database_2D(HOMEDIR)
 airfoils = db.getAirfoils()
-polars = db.Data
+polars2D = db.Data
 
 # Get Plane
 Origin = np.array([0., 0., 0.])
@@ -77,7 +78,7 @@ rudder = wg(name="rudder",
             mass=0.04)
 
 liftingSurfaces = [mainWing, elevator, rudder]
-ap = Plane("Plane_f2w", liftingSurfaces)
+ap = Plane("Plane", liftingSurfaces)
 ap.accessDB(HOMEDIR, DB3D)
 # ap.visAirplane()
 
@@ -85,8 +86,9 @@ ap.accessDB(HOMEDIR, DB3D)
 cleaning = False
 calcGenu = True
 calcBatchGenu = True
+petrubationAnalysis = True
 
-# ## Batch Run
+# AoA Run
 
 AoAmax = 10
 AoAmin = -6
@@ -95,7 +97,31 @@ angles = np.linspace(AoAmin, AoAmax, NoAoA)
 
 Uinf = 20
 
-ap.batchangles(angles)
 if calcBatchGenu == True:
-    genuBatchArgs = [ap, BASEGNVP, polars, "Foil2Wake", Uinf, angles]
-    ap.runSolver(gnvp.runGNVP, genuBatchArgs)
+    genuBatchArgs = [ap, BASEGNVP, polars2D, "Xfoil", Uinf, angles]
+    ap.runSolver(gnvp.runGNVPangles, genuBatchArgs)
+genuPolarArgs = [ap.CASEDIR, HOMEDIR]
+ap.makePolars(gnvp.makePolar, genuPolarArgs)
+ap.save()
+ap.defineSim(Uinf, 1.225)
+
+# Dynamics
+
+# Define and Trim Plane
+
+ap.M = 3  # HAS TO BE DEFINED SINCE I HAVE NOT ADDED MASSED
+dyn = dp(ap, polars2D)
+
+
+# Pertrubations
+dyn.allPerturb(1e-2, "Central")
+print("#######################################################")
+dyn.get_pertrub()
+print("#######################################################")
+
+if petrubationAnalysis == True:
+    genuBatchArgs = [dyn, BASEGNVP, polars2D,
+                     "Xfoil", dyn.trim['U'], dyn.trim['AoA']]
+    dyn.accessDB(HOMEDIR)
+    dyn.runAnalysis(gnvp.runGNVPpertr, genuBatchArgs)
+dyn.save()

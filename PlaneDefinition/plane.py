@@ -38,8 +38,6 @@ class Airplane():
             self.surfaces) if i not in toRemove]
 
         self.airfoils = self.getAirfoils()
-        self.Polars = {}
-        self.angles = []
         self.bodies = []
         self.masses = []
         self.Inertia = []
@@ -121,33 +119,6 @@ class Airplane():
         self.dens = dens
         self.Q = 0.5 * dens * U**2
 
-    def angleCASE(self, angle):
-        self.currAngle = angle
-        self.angles.append(self.currAngle)
-        if self.currAngle in self.Polars.keys():
-            pass
-        else:
-            self.Polars[self.currAngle] = {}
-
-        if angle >= 0:
-            folder = str(angle)[::-1].zfill(7)[::-1] + "/"
-        else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
-
-        try:
-            self.ANGLEDIR = f"{self.CASEDIR}/{folder}"
-            os.system(f"mkdir -p {self.ANGLEDIR}")
-        except AttributeError:
-            print("DATABASE is not initialized!")
-
-    def batchangles(self, angles):
-        for angle in angles:
-            self.angles.append(angle)
-            if angle in self.Polars.keys():
-                pass
-            else:
-                self.Polars[angle] = {}
-
     def runSolver(self, solver, args, kwargs={}):
         solver(*args, **kwargs)
 
@@ -157,7 +128,7 @@ class Airplane():
     def cleanRes(self, cleanFun, args, kwargs={}):
         cleanFun(*args, **kwargs)
 
-    def makePolars(self, makePolFun, solverName, args, kwargs={}):
+    def makePolars(self, makePolFun, args, kwargs={}):
         polarsdf = makePolFun(*args, **kwargs)
         self.Polars = polarsdf
 
