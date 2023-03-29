@@ -140,7 +140,7 @@ def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip
     xpts, ypts = pts.T
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
-    
+
     xf.xtr = (ftrip_low, ftrip_up)
     aXF1, clXF1, cdXF1, cmXF1, _ = xf.aseq(0, AoAmax, AoAstep)
 
@@ -153,7 +153,7 @@ def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip
     cmXF = np.hstack((cmXF1, cmXF2[1:]))
 
     Res = np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
-    df = pd.DataFrame(Res, columns=['AoA', 'CL', 'CD', 'Cm'])
+    df = pd.DataFrame(Res, columns=['AoA', 'CL', 'CD', 'Cm']).dropna(thresh=2)
     df = df.sort_values("AoA")
     df.to_csv('clcd.xfoil', index=False)
     os.chdir(HOMEDIR)

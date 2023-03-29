@@ -22,7 +22,7 @@ class AirfoilData(Airfoil):
         self.fname = f"naca{naca}"
         self.n_points = n_points
         self.airfoil2Selig()
-        self.Reynolds = []
+        self.Reynolds = []  
         self.Polars = {}
         # self.getFromWeb()
 
@@ -41,7 +41,7 @@ class AirfoilData(Airfoil):
 
         upper, lower = airfoils.gen_NACA4_airfoil(p, m, xx, n_points)
         return cls(upper, lower, naca, n_points)
-
+        
     def airfoil2Selig(self):
         x_points = np.hstack((self._x_upper[::-1], self._x_lower[1:])).T
         y_points = np.hstack((self._y_upper[::-1], self._y_lower[1:])).T

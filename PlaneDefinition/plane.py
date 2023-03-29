@@ -56,6 +56,12 @@ class Airplane():
         self.CG = self.findCG()
         self.I = self.findInertia(self.CG)
 
+    def addMasses(self, masses):
+        for mass in masses:
+            self.masses.append(mass)
+        self.CG = self.findCG()
+        self.I = self.findInertia(self.CG)
+
     def findCG(self):
         x_cm = 0
         y_cm = 0
@@ -72,7 +78,6 @@ class Airplane():
         I_xx = 0
         I_yy = 0
         I_zz = 0
-        self.M = 0
         for I in self.Inertia:
             I_xx += I[0]
             I_yy += I[1]

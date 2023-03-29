@@ -45,7 +45,7 @@ MACH = Machmax
 
 cleaning = False
 calcF2W = True
-calcOpenFoam = True
+calcOpenFoam = False
 calcXFoil = True
 
 # LOOP
@@ -77,8 +77,8 @@ for airfoil in airfoils:
             airf.setupSolver(
                 f2w.setupF2W, [BASEFOIL2W, airf.HOMEDIR, airf.REYNDIR])
             airf.runSolver(f2w.runF2W, f2wargs)
-        airf.makePolars(f2w.makeCLCD2, "Foil2Wake", [
-                        airf.REYNDIR, airf.HOMEDIR])
+        # airf.makePolars(f2w.makeCLCD2, "Foil2Wake", [
+            # airf.REYNDIR, airf.HOMEDIR])
 
         # # Xfoil
         print("-------  Running Xfoil ------- ")
