@@ -103,8 +103,8 @@ def airMov(surfaces, CG, orientation, disturbances):
                 "axis": axis,
                 "t1": -0.0001,
                 "t2": 10.0,
-                "a1": CG[axis-1],
-                "a2": CG[axis-1],
+                "a1": -CG[axis-1],
+                "a2": -CG[axis-1],
             }
             obj = Movement(name, Rotation, Translation)
             sequence.append(obj)
@@ -133,7 +133,7 @@ def setParams(nBodies, nAirfoils, Uinf, WindAngle, dens):
 def makeSurfaceDict(surf, idx):
     s = {
         'NB': idx,
-        "NACA": 4415,
+        "NACA": surf.airfoil.name,
         "name": surf.name,
         'bld': f'{surf.name}.bld',
         'cld': f'{surf.airfoil.name}.cld',

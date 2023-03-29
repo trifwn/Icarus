@@ -221,6 +221,13 @@ def cldFiles(AeroData, airfoils, solver):
     return df
 
 
+def ff4(num):
+    if num >= 0:
+        return "{:2.4f}".format(num)
+    else:
+        return "{:2.3f}".format(num)
+
+
 def bldFiles(bodies):
     for bod in bodies:
         fname = bod["bld"]
@@ -235,13 +242,12 @@ def bldFiles(bodies):
         data[3] = f'1          {bod["NACA"]}\n'
         data[6] = f"0          0          0\n"
         data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
-        data[12] = f'{bod["x_0"]}        {bod["y_0"]}        {bod["z_0"]}\n'
-        data[15] = f'{bod["pitch"]}        {bod["cone"]}        {bod["wngang"]}\n'
+        data[12] = f'{ff4(bod["x_0"])}     {ff4(bod["y_0"])}     {ff4(bod["z_0"])}\n'
+        data[15] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
         data[18] = f"1                      0.         1.         \n"  # KSI
         data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
-        data[
-            24
-        ] = f'4                      {bod["Root_chord"]}        {-step}   0.         0.         0.         0.\n'
+        data[24] = \
+            f'4                      {ff4(bod["Root_chord"])}     {ff4(-step)}     0.         0.         0.         0.\n'
 
         with open(fname, "w") as file:
             file.writelines(data)
@@ -318,9 +324,13 @@ def makePolar(CASEDIR, HOMEDIR):
         files = next(os.walk('.'))[2]
         if "LOADS_aer.dat" in files:
             if folder.startswith("m"):
-                a = [- float(folder[1:]), *np.loadtxt("LOADS_aer.dat")]
+                name = float(
+                    ''.join(c for c in folder if (c.isdigit() or c == '.')))
+                a = [- name, *np.loadtxt("LOADS_aer.dat")]
             else:
-                a = [float(folder), *np.loadtxt("LOADS_aer.dat")]
+                name = float(
+                    ''.join(c for c in folder if (c.isdigit() or c == '.')))
+                a = [name, *np.loadtxt("LOADS_aer.dat")]
             pols.append(a)
         os.chdir(f"{CASEDIR}")
     df = pd.DataFrame(pols, columns=cols)

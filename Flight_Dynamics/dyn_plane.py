@@ -23,6 +23,7 @@ class dyn_plane():
             else:
                 self.rawpolars = pln.Polars
                 self.polars3D = self.formatPolars()
+                self.polars3D.plot("AoA", "Cm")
         else:
             self.polars3D = polars3D
 
@@ -57,10 +58,10 @@ class dyn_plane():
             Fy_new = Fy
             Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
 
-            My_new = My - \
-                Fx_new * self.pln.CG[2] + \
-                Fy_new * self.pln.CG[1] + \
-                Fz_new * self.pln.CG[0]
+            My_new = My  # - \
+            # Fx_new * self.pln.CG[2] + \
+            # Fy_new * self.pln.CG[1] + \
+            # Fz_new * self.pln.CG[0]
 
             Data[f"CL_{name}"] = Fz_new / (self.pln.Q*self.pln.S)
             Data[f"CD_{name}"] = Fx_new / (self.pln.Q*self.pln.S)
@@ -301,22 +302,26 @@ class dyn_plane():
             Mb = float(back[f"TAMOM{mode}(2)"].to_numpy())
             M[var] = (Mf - Mb)/(2*eps[var])
 
-        xu = X["u"]/Mass + (X["theta"]*Z['u'])/(Mass*(Mass-Z["theta"]))
-        xw = X["w"]/Mass + (X["theta"]*Z['w'])/(Mass*(Mass-Z["theta"]))
-        xq = X["q"]/Mass + (X["theta"]*(Z['q']+Mass*U)) / \
-            (Mass*(Mass-Z["theta"]))
-        xth = -G*np.cos(theta) - (X["theta"]*G *
-                                  np.sin(theta))/((Mass-Z["theta"]))
+        X["w_dot"] = 0
+        Z["w_dot"] = 0
 
-        zu = Z['u']/(Mass-Z["theta"])
-        zw = Z['w']/(Mass-Z["theta"])
-        zq = (Z['q']+Mass*U)/(Mass-Z["theta"])
-        zth = -(Mass*G*np.sin(theta))/(Mass-Z["theta"])
+        xu = X["u"]/Mass + (X["w_dot"] * Z["u"])/(Mass*(Mass-Z["w_dot"]))
+        xw = X["w"]/Mass + (X["w_dot"] * Z["w"])/(Mass*(Mass-Z["w_dot"]))
+        # X["q"]/Mass + (X["w_dot"] * (Z["q"]+Mass*U*np.sin(theta))/(Mass*(Mass-Z["w_dot"]))
+        xq = 0
+        xth = -G*np.cos(theta) - (X["w_dot"]*G *
+                                  np.sin(theta))/((Mass-Z["w_dot"]))
 
-        mu = M['u']/Iy + Z['u']*M["theta"]/(Iy*(Mass-Z["theta"]))
-        mw = M['w']/Iy + Z['w']*M["theta"]/(Iy*(Mass-Z["theta"]))
-        mq = M['q']/Iy + ((Z['q']+Mass*U)*M["theta"])/(Iy*(Mass-Z["theta"]))
-        mth = (Mass*G*np.sin(theta)*M["theta"])/(Iy*(Mass-Z["theta"]))
+        zu = Z['u']/(Mass-Z["w_dot"])
+        zw = Z['w']/(Mass-Z["w_dot"])
+        zq = (Z['q']+Mass*U*np.sin(theta))/(Mass-Z["w_dot"])
+        zth = -(Mass*G*np.sin(theta))/(Mass-Z["w_dot"])
+
+        mu = M['u']/Iy + Z['u']*M["w_dot"]/(Iy*(Mass-Z["w_dot"]))
+        mw = M['w']/Iy + Z['w']*M["w_dot"]/(Iy*(Mass-Z["w_dot"]))
+        mq = M['q']/Iy + ((Z['q']+Mass*U*np.sin(theta)) *
+                          M["w_dot"])/(Iy*(Mass-Z["w_dot"]))
+        mth = (Mass*G*np.sin(theta)*M["w_dot"])/(Iy*(Mass-Z["w_dot"]))
 
         self.AstarLong = np.array([[X["u"], X["w"], X["q"], X["theta"]],
                                    [Z['u'], Z['w'], Z['q'], Z['theta']],
@@ -338,7 +343,7 @@ class dyn_plane():
         theta = self.trim["AoA"] * np.pi / 180
         G = - 9.81
         Ix, Iy, Iz = self.pln.I
-        Ixz = 0  # self.pln.Ixz
+        Ixz = self.pln.Ixz  # self.pln.Ixz
         Y = {}
         L = {}
         N = {}
@@ -371,18 +376,18 @@ class dyn_plane():
             N[var] = (Nf - Nb)/de
 
         yv = Y['v']/Mass
-        yp = (Y['p']-Mass*U * np.cos(theta))/Mass
-        yr = (Y['r']-Mass*U * np.cos(theta))/Mass
+        yp = (Y['p'] + Mass*U * np.sin(theta))/Mass
+        yr = (Y['r'] - Mass*U * np.cos(theta))/Mass
         yphi = -G*np.cos(theta)
 
         lv = (Iz*L['v']+Ixz*N['v'])/(Ix*Iz-Ixz**2)
         lp = (Iz*L['p']+Ixz*N['p'])/(Ix*Iz-Ixz**2)
-        lr = (Iz*L['p']+Ixz*N['p'])/(Ix*Iz-Ixz**2)
+        lr = (Iz*L['r']+Ixz*N['r'])/(Ix*Iz-Ixz**2)
         lphi = 0
 
         nv = (Ix*N['v']+Ixz*L['v'])/(Ix*Iz-Ixz**2)
-        n_p = (Iz*N['p']+Ixz*L['p'])/(Ix*Iz-Ixz**2)
-        nr = (Iz*N['r']+Ixz*L['r'])/(Ix*Iz-Ixz**2)
+        n_p = (Ix*N['p']+Ixz*L['p'])/(Ix*Iz-Ixz**2)
+        nr = (Ix*N['r']+Ixz*L['r'])/(Ix*Iz-Ixz**2)
         nph = 0
 
         self.AstarLat = np.array([[Y['v'], Y['p'], Y['r'], Y['phi']],
