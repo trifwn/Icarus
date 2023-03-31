@@ -70,6 +70,7 @@ class Database_3D():
         self.rawData = {}
         self.Data = {}
         self.Planes = {}
+        self.Convergence = {}
         self.scan()
         self.makeData()
 
@@ -77,6 +78,7 @@ class Database_3D():
         os.chdir(DB3D)
         folders = next(os.walk('.'))[1]
         for folder in folders:
+            self.Convergence[folder] = {}
             os.chdir(folder)
             try:
                 self.rawData[folder] = pd.read_csv(
@@ -89,6 +91,41 @@ class Database_3D():
                             self.Planes[folder] = jsonpickle.decode(json_obj)
             except FileNotFoundError:
                 print(f"Plane {folder} doesn't contain polars!")
+
+            try:
+                cases = next(os.walk('.'))[1]
+                for case in cases:
+                    os.chdir(case)
+                    files = next(os.walk('.'))[2]
+                    runExists = False
+                    for file in files:
+                        if file == "LOADS_aer.dat":
+                            self.Convergence[folder][case] = pd.read_csv(
+                                file, delim_whitespace=True, header=None,
+                                names=cols)
+                            runExists = True
+                            break
+                    if runExists:
+                        for file in files:
+                            if (file == "gnvp.out") and runExists:
+                                with open(file, 'r') as f:
+                                    a = f.readlines()
+                                time = []
+                                error = []
+                                errorm = []
+                                for line in a:
+                                    if line.startswith(" STEP"):
+                                        a = line.split()
+                                        time.append(int(a[1]))
+                                        error.append(float(a[3]))
+                                        errorm.append(float(a[7]))
+                                self.Convergence[folder][case]["ERROR"] = error
+                                self.Convergence[folder][case]["ERRORM"] = errorm
+
+                    os.chdir('../')
+            except FileNotFoundError:
+                print("Convergence data not found!")
+
             os.chdir(DB3D)
         os.chdir(self.HOMEDIR)
 
@@ -145,3 +182,25 @@ class Database_3D():
                 self.Data[plane][f"CL_{name}"] = Fz_new / (pln.Q*pln.S)
                 self.Data[plane][f"CD_{name}"] = Fx_new / (pln.Q*pln.S)
                 self.Data[plane][f"Cm_{name}"] = My_new / (pln.Q*pln.S*pln.MAC)
+
+
+cols = ["TTIME",
+        "PSIB",
+        "TFORC(1)",
+        "TFORC(2)",
+        "TFORC(3)",
+        "TAMOM(1)",
+        "TAMOM(2)",
+        "TAMOM(3)",
+        "TFORC2D(1)",
+        "TFORC2D(2)",
+        "TFORC2D(3)",
+        "TAMOM2D(1)",
+        "TAMOM2D(2)",
+        "TAMOM2D(3)",
+        "TFORCDS2D(1)",
+        "TFORCDS2D(2)",
+        "TFORCDS2D(3)",
+        "TAMOMDS2D(1)",
+        "TAMOMDS2D(2)",
+        "TAMOMDS2D(3)"]

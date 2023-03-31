@@ -407,6 +407,9 @@ class Wing:
         I_yy = 0
         I_zz = 0
         I_xz = 0
+        I_xy = 0
+        I_yz = 0
+
         for i in np.arange(0, self.N-1):
             for j in np.arange(0, self.M-1):
                 x_upp = (self.grid_upper[i, j+1, 0] +
@@ -442,11 +445,17 @@ class Wing:
                 I_xx += self.VolumeDist[i, j] * (yd + zd)
                 I_yy += self.VolumeDist[i, j] * (xd + zd)
                 I_zz += self.VolumeDist[i, j] * (xd + yd)
-                I_xz += self.VolumeDist[i, j] * (yd)
 
-                # I_xy = self.VolumeDist[i, j] * z**2
-        self.I = np.array((I_xx, I_yy, I_zz)) * (mass / self.Volume)
-        self.Ixz = I_xz * (mass / self.Volume)
+                xd = np.sqrt(xd)
+                yd = np.sqrt(yd)
+                zd = np.sqrt(zd)
+
+                I_xz += self.VolumeDist[i, j] * (xd * zd)
+                I_xy += self.VolumeDist[i, j] * (xd * yd)
+                I_yz += self.VolumeDist[i, j] * (yd * zd)
+
+        self.I = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)
+                          ) * (mass / self.Volume)
 
 
 def linSpan(sp, Ni):

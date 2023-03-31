@@ -11,7 +11,7 @@ def GNVPexe(HOMEDIR, ANGLEDIR):
     os.chdir(HOMEDIR)
 
 
-def runGNVPangles(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
+def runGNVPangles(plane, GENUBASE, polars, solver2D, maxiter, timestep, Uinf, angles, dens=1.225):
     PLANEDIR = plane.CASEDIR
     HOMEDIR = plane.HOMEDIR
     airfoils = plane.airfoils
@@ -34,14 +34,15 @@ def runGNVPangles(plane, GENUBASE, polars, solver, Uinf, angles, dens=1.225):
         CASEDIR = f"{PLANEDIR}/{folder}"
         os.system(f"mkdir -p {CASEDIR}")
 
-        params = setParams(len(bodies), len(airfoils), Uinf, angle, dens)
+        params = setParams(len(bodies), len(airfoils), maxiter, timestep,
+                           Uinf, angle, dens)
 
         fgnvp.makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
-                        bodies, params, airfoils, polars, solver)
+                        bodies, params, airfoils, polars, solver2D)
         GNVPexe(HOMEDIR, CASEDIR)
 
 
-def runGNVPpertr(plane, GENUBASE, polars, solver, Uinf, angle):
+def runGNVPpertr(plane, GENUBASE, polars, solver2D, maxiter, timestep, Uinf, angle):
     PLANEDIR = plane.CASEDIR
     HOMEDIR = plane.HOMEDIR
     airfoils = plane.airfoils
@@ -69,11 +70,45 @@ def runGNVPpertr(plane, GENUBASE, polars, solver, Uinf, angle):
         CASEDIR = f"{PLANEDIR}/Dynamics/{folder}/"
         os.system(f"mkdir -p {CASEDIR}")
 
-        params = setParams(len(bodies), len(airfoils),
+        params = setParams(len(bodies), len(airfoils), maxiter, timestep,
                            Uinf, angle, dens=plane.dens)
 
         fgnvp.makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
-                        bodies, params, airfoils, polars, solver)
+                        bodies, params, airfoils, polars, solver2D)
+        GNVPexe(HOMEDIR, CASEDIR)
+
+
+def runGNVPsensitivity(plane, var, GENUBASE, polars, solver2D, maxiter, timestep, Uinf, angle):
+    PLANEDIR = plane.CASEDIR
+    HOMEDIR = plane.HOMEDIR
+    airfoils = plane.airfoils
+    bodies = []
+
+    for i, surface in enumerate(plane.surfaces):
+        bodies.append(makeSurfaceDict(surface, i))
+
+    for dst in plane.sensitivity[var]:
+        movements = airMov(plane.surfaces, plane.CG,
+                           plane.orientation, [dst])
+
+        print(f"Running Case {dst.var} - {dst.amplitude}")
+        # if make distubance folder
+        if dst.isPositive:
+            folder = "p" + \
+                str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}/"
+        else:
+            folder = "m" + \
+                str(dst.amplitude)[
+                    ::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}/"
+
+        CASEDIR = f"{PLANEDIR}/Sensitivity_{dst.var}/{folder}/"
+        os.system(f"mkdir -p {CASEDIR}")
+
+        params = setParams(len(bodies), len(airfoils), maxiter, timestep,
+                           Uinf, angle, dens=plane.dens)
+
+        fgnvp.makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
+                        bodies, params, airfoils, polars, solver2D)
         GNVPexe(HOMEDIR, CASEDIR)
 
 
@@ -117,12 +152,12 @@ def airMov(surfaces, CG, orientation, disturbances):
     return movement
 
 
-def setParams(nBodies, nAirfoils, Uinf, WindAngle, dens):
+def setParams(nBodies, nAirfoils, maxiter, timestep, Uinf, WindAngle, dens):
     params = {
         "nBods": nBodies,
         "nBlades": nAirfoils,
-        "maxiter": 50,
-        "timestep": 10,
+        "maxiter": maxiter,
+        "timestep": timestep,
         "Uinf": [Uinf * np.cos(WindAngle*np.pi/180), 0.0, Uinf * np.sin(WindAngle*np.pi/180)],
         "rho": dens,
         "visc": 0.0000156,

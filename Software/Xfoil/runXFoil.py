@@ -1,9 +1,10 @@
+import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-import pandas as pd
 
 
 def anglesSep(anglesALL):
@@ -128,7 +129,7 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     return [cpsn, nangles], [cps, pangles], x
 
 
-def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9):
+def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9):
     os.chdir(CASEDIR)
 
     xf = XFoil()
@@ -141,18 +142,66 @@ def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
 
-    xf.xtr = (ftrip_low, ftrip_up)
-    aXF1, clXF1, cdXF1, cmXF1, _ = xf.aseq(0, AoAmax, AoAstep)
+    if AoAmin * AoAmax < 0:
+        max_tr = max(ftrip_low, ftrip_up)
+        slope_up = (ftrip_up - max_tr) / (AoAmax)
+        slope_low = (ftrip_low - max_tr) / (AoAmax)
 
-    xf.xtr = (ftrip_up, ftrip_low)
-    aXF2, clXF2, cdXF2, cmXF2, _ = xf.aseq(0, AoAmin, -AoAstep)
+        aXF1 = []
+        clXF1 = []
+        cdXF1 = []
+        cmXF1 = []
+        flag = 0
+        for angle in np.arange(0, AoAmax+0.5, 0.5):
+            f_up = max_tr + slope_up * angle
+            f_low = max_tr + slope_low * angle
+            xf.xtr = (f_up, f_low)
 
-    aXF = np.hstack((aXF1, aXF2[1:]))
-    clXF = np.hstack((clXF1, clXF2[1:]))
-    cdXF = np.hstack((cdXF1, cdXF2[1:]))
-    cmXF = np.hstack((cmXF1, cmXF2[1:]))
+            cl, cd, cm, _ = xf.a(angle)
+            if np.isnan(cl):
+                flag += 1
+            if flag > 2:
+                break
+            aXF1 = np.hstack((aXF1, angle))
+            clXF1 = np.hstack((clXF1, cl))
+            cdXF1 = np.hstack((cdXF1, cd))
+            cmXF1 = np.hstack((cmXF1, cm))
 
-    Res = np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
+        xf.reset_bls()
+
+        slope_up = (ftrip_low - max_tr) / (AoAmax)
+        slope_low = (ftrip_up - max_tr) / (AoAmax)
+
+        aXF2 = []
+        clXF2 = []
+        cdXF2 = []
+        cmXF2 = []
+        flag = 0
+        for angle in np.arange(AoAmin, 0.5, 0.5)[::-1]:
+            f_up = max_tr - slope_up * angle
+            f_low = max_tr - slope_low * angle
+            xf.xtr = (f_up, f_low)
+
+            cl, cd, cm, _ = xf.a(angle)
+            if np.isnan(cl):
+                flag += 1
+            if flag > 2:
+                break
+
+            aXF2 = np.hstack((aXF2, angle))
+            clXF2 = np.hstack((clXF2, cl))
+            cdXF2 = np.hstack((cdXF2, cd))
+            cmXF2 = np.hstack((cmXF2, cm))
+
+        aXF = np.hstack((aXF1, aXF2[1:]))
+        clXF = np.hstack((clXF1, clXF2[1:]))
+        cdXF = np.hstack((cdXF1, cdXF2[1:]))
+        cmXF = np.hstack((cmXF1, cmXF2[1:]))
+    else:
+        xf.xtr = (ftrip_low, ftrip_up)
+        aXF, clXF, cdXF, cmXF, _ = xf.aseq(AoAmin, AoAmax, AoAstep)
+
+    Res = np.vstack((aXF, clXF, cdXF, cmXF)).T
     df = pd.DataFrame(Res, columns=['AoA', 'CL', 'CD', 'Cm']).dropna(thresh=2)
     df = df.sort_values("AoA")
     df.to_csv('clcd.xfoil', index=False)

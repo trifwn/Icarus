@@ -323,14 +323,13 @@ def makePolar(CASEDIR, HOMEDIR):
         os.chdir(f"{CASEDIR}/{folder}")
         files = next(os.walk('.'))[2]
         if "LOADS_aer.dat" in files:
+            name = float(
+                ''.join(c for c in folder if (c.isdigit() or c == '.')))
+            dat = np.loadtxt("LOADS_aer.dat")[-1]
             if folder.startswith("m"):
-                name = float(
-                    ''.join(c for c in folder if (c.isdigit() or c == '.')))
-                a = [- name, *np.loadtxt("LOADS_aer.dat")]
+                a = [- name, *dat]
             else:
-                name = float(
-                    ''.join(c for c in folder if (c.isdigit() or c == '.')))
-                a = [name, *np.loadtxt("LOADS_aer.dat")]
+                a = [name, *dat]
             pols.append(a)
         os.chdir(f"{CASEDIR}")
     df = pd.DataFrame(pols, columns=cols)
@@ -352,16 +351,27 @@ def logPertrub(DYNDIR, HOMEDIR):
         os.chdir(f"{DYNDIR}//{folder}")
         files = next(os.walk('.'))[2]
         if "LOADS_aer.dat" in files:
+            dat = np.loadtxt("LOADS_aer.dat")[-1]
             if folder == "Trim":
-                a = [0, str(folder),
-                     *np.loadtxt("LOADS_aer.dat")]
-            elif folder.startswith("m"):
-                a = [- float(folder[1:7]), str(folder[8:]),
-                     *np.loadtxt("LOADS_aer.dat")]
-            else:
-                a = [float(folder[1:7]), str(folder[8:]),
-                     *np.loadtxt("LOADS_aer.dat")]
-            pols.append(a)
+                a = [0, str(folder), *dat]
+                continue
+
+            # RECONSTRUCT NAME
+            value = ''
+            name = ''
+            flag = False
+            for c in folder[1:]:
+                if (c != '_') and (not flag):
+                    value += c
+                elif (c == '_'):
+                    flag = True
+                else:
+                    name += c
+            value = float(value)
+            if folder.startswith("m"):
+                value = - value
+
+            pols.append([value, name,  *dat])
             os.chdir(f"{DYNDIR}/{folder}")
         os.chdir(f"{DYNDIR}")
     df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])

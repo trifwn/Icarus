@@ -62,11 +62,14 @@ def makeCLCD2(CASEDIR, HOMEDIR):
     folders = next(os.walk('.'))[1]
     print('Making Polars')
     with open('output_bat', 'w') as file:
-        folder = folders[0]
-        file.writelines('cd '+folder+'\n../write_out\n')
+        n = 0
         for folder in folders[1:]:
             if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
-                file.writelines('cd ../'+folder+'\n../write_out\n')
+                if n == 0:
+                    file.writelines('cd '+folder+'\n../write_out\n')
+                    n += 1
+                else:
+                    file.writelines('cd ../'+folder+'\n../write_out\n')
     os.system("chmod +x output_bat")
     os.system('./output_bat')
     folders = next(os.walk('.'))[1]

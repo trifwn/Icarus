@@ -78,17 +78,28 @@ class Airplane():
         I_xx = 0
         I_yy = 0
         I_zz = 0
+        I_xz = 0
+        I_xy = 0
+        I_yz = 0
+
         for I in self.Inertia:
             I_xx += I[0]
             I_yy += I[1]
             I_zz += I[2]
+            I_xz += I[3]
+            I_xy += I[4]
+            I_yz += I[5]
 
         for m, r_bod in self.masses:
             r = point - r_bod
             I_xx += m * (r[1]**2 + r[2]**2)
             I_yy += m * (r[0]**2 + r[2]**2)
             I_zz += m * (r[0]**2 + r[1]**2)
-        return np.array((I_xx, I_yy, I_zz))
+            I_xz += m * (r[0] * r[2])
+            I_xy += m * (r[0] * r[1])
+            I_yz += m * (r[1] * r[2])
+
+        return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz))
 
     def getAirfoils(self):
         airfoils = []

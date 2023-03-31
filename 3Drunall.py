@@ -8,10 +8,11 @@ from PlaneDefinition.plane import Airplane as Plane
 from PlaneDefinition.wing import Wing as wg
 import PlaneDefinition.wing as wing
 
+from Flight_Dynamics.disturbances import disturbance as disturb
+
 from Database.getresults import Database_2D
 from Database import DB3D, BASEGNVP
 import time
-
 
 start_time = time.time()
 HOMEDIR = os.getcwd()
@@ -98,60 +99,70 @@ cleaning = False
 calcGenu = True
 calcBatchGenu = True
 petrubationAnalysis = True
+sensitivityAnalysis = True
 
 # ## AoA Run
 AoAmax = 10
 AoAmin = -6
 NoAoA = (AoAmax - AoAmin) + 1
 angles = np.linspace(AoAmin, AoAmax, NoAoA)
+
 Uinf = 20
+maxiter = 50
+timestep = 1
 
 if calcBatchGenu == True:
-    genuBatchArgs = [ap, BASEGNVP, polars2D, "Xfoil", Uinf, angles]
+    polars_time = time.time()
+    genuBatchArgs = [ap, BASEGNVP, polars2D, "Xfoil",
+                     maxiter, timestep, Uinf, angles]
     ap.runSolver(gnvp.runGNVPangles, genuBatchArgs)
+    print("Polars took : --- %s seconds ---" %
+          (time.time() - polars_time))
 genuPolarArgs = [ap.CASEDIR, HOMEDIR]
-ap.makePolars(gnvp.makePolar, genuPolarArgs)
 ap.defineSim(Uinf, 1.225)
+ap.makePolars(gnvp.makePolar, genuPolarArgs)
 ap.save()
 
-
 # # Dynamics
-
-
 # ### Define and Trim Plane
 dyn = dp(ap, polars2D)
-dyn.trim
 
 # ### Pertrubations
-dyn.allPerturb(5e-2, "Central")
+dyn.allPerturb("Central")
 dyn.get_pertrub()
 
 if petrubationAnalysis == True:
-    genuBatchArgs = [dyn, BASEGNVP, polars2D,
-                     "Xfoil", dyn.trim['U'], dyn.trim['AoA']]
+    pert_time = time.time()
+    genuBatchArgs = [dyn, BASEGNVP, polars2D, "Xfoil",
+                     maxiter, timestep,
+                     dyn.trim['U'], dyn.trim['AoA']]
     dyn.accessDB(HOMEDIR)
     dyn.runAnalysis(gnvp.runGNVPpertr, genuBatchArgs)
+    print("Pertrubations took : --- %s seconds ---" %
+          (time.time() - pert_time))
+
 genuLogArgs = [dyn.DynDir, HOMEDIR]
 dyn.logResults(gnvp.logResults, genuLogArgs)
 dyn.save()
 
-dyn.scheme = "Central"
-dyn.longitudalStability()
-dyn.lateralStability()
-dyn.save()
+# SENSITIVITY ANALYSIS
+if sensitivityAnalysis == True:
+    sens_time = time.time()
+    for var in ['u', 'w', 'q', 'theta', 'v', 'p', 'r', 'phi']:
+        space = np.logspace(np.log10(0.00001), np.log10(1), 10, base=10)
+        space = [*-space, *space]
 
-print(dyn.Along)
-# [xu, xw, xq, xth]
-# [zu, zw, zq, zth]
-# [mu, mw, mq, mth]
-# [0,  1 , 0 ,  0 ]
+        dyn.sensitivityAnalysis(var, space)
+        genuBatchArgs = [dyn, var, BASEGNVP, polars2D, "Xfoil",
+                         maxiter, timestep,
+                         dyn.trim['U'], dyn.trim['AoA']]
+        dyn.runAnalysis(gnvp.runGNVPsensitivity, genuBatchArgs)
+        dyn.sensResults[var] = gnvp.logResults(
+            f"{dyn.CASEDIR}/Sensitivity_{var}", HOMEDIR)
+    print("Sensitivity Analysis took : --- %s seconds ---" %
+          (time.time() - sens_time))
 
-# dyn.AstarLong
-print(dyn.Alat)
-# [yv, yp , yr, yphi]
-# [lv, lp , lr, lphi]
-# [nv, n_p, nr, nph ]
-# [0 , 1  , 0 , 0   ]
-# dyn.AstarLat
 
-print("PROGRAM EXECUTION TOOK --- %s seconds ---" % (time.time() - start_time))
+# print time it took
+print("PROGRAM TERMINATED")
+print("Execution took : --- %s seconds ---" % (time.time() - start_time))

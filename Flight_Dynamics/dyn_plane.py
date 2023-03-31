@@ -21,9 +21,7 @@ class dyn_plane():
             if pln.Polars.empty:
                 print("No polars found in the airplane object or Specified")
             else:
-                self.rawpolars = pln.Polars
-                self.polars3D = self.formatPolars()
-                self.polars3D.plot("AoA", "Cm")
+                self.polars3D = self.formatPolars(pln.Polars)
         else:
             self.polars3D = polars3D
 
@@ -31,6 +29,8 @@ class dyn_plane():
         self.trim = self.trimState()
         self.defineSim(self.dens)
         self.disturbances = []
+        self.sensitivity = {}
+        self.sensResults = {}
 
     def get_polars3D(self):
         return self.polars3D
@@ -39,40 +39,54 @@ class dyn_plane():
         self.polars3D = polars3D
         self.trim = self.trimState()
 
-    def formatPolars(self, preferred="2D"):
-        beta = 0
+    def formatPolars(self, rawPolars):
+        forces = self.rotateForces(rawPolars, rawPolars["AoA"])
+        return self.makeAeroCoeffs(forces)
+
+    def rotateForces(self, rawpolars, alpha):
         Data = pd.DataFrame()
+        AoA = alpha * np.pi/180
 
-        Data["AoA"] = self.rawpolars["AoA"]
-        AoA = Data["AoA"] * np.pi/180
         for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-            Fx = self.rawpolars[f"TFORC{enc}(1)"]
-            Fy = self.rawpolars[f"TFORC{enc}(2)"]
-            Fz = self.rawpolars[f"TFORC{enc}(3)"]
+            Fx = rawpolars[f"TFORC{enc}(1)"]
+            Fy = rawpolars[f"TFORC{enc}(2)"]
+            Fz = rawpolars[f"TFORC{enc}(3)"]
 
-            Mx = self.rawpolars[f"TAMOM{enc}(1)"]
-            My = self.rawpolars[f"TAMOM{enc}(2)"]
-            Mz = self.rawpolars[f"TAMOM{enc}(3)"]
+            Mx = rawpolars[f"TAMOM{enc}(1)"]
+            My = rawpolars[f"TAMOM{enc}(2)"]
+            Mz = rawpolars[f"TAMOM{enc}(3)"]
 
             Fx_new = Fx * np.cos(-AoA) - Fz * np.sin(-AoA)
             Fy_new = Fy
             Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
 
-            My_new = My  # - \
-            # Fx_new * self.pln.CG[2] + \
-            # Fy_new * self.pln.CG[1] + \
-            # Fz_new * self.pln.CG[0]
+            Mx_new = Mx * np.cos(-AoA) - Mz * np.sin(-AoA)
+            My_new = My
+            Mz_new = Mx * np.sin(-AoA) + Mz * np.cos(-AoA)
 
-            Data[f"CL_{name}"] = Fz_new / (self.pln.Q*self.pln.S)
-            Data[f"CD_{name}"] = Fx_new / (self.pln.Q*self.pln.S)
-            Data[f"Cm_{name}"] = My_new / (self.pln.Q*self.pln.S*self.pln.MAC)
-        print(f"Using {preferred} polar for dynamic analysis")
-        Data[f"CL"] = Data[f"CL_{preferred}"]
-        Data[f"CD"] = Data[f"CD_{preferred}"]
-        Data[f"Cm"] = Data[f"Cm_{preferred}"]
+            Data[f"Fx_{name}"] = Fx_new
+            Data[f"Fy_{name}"] = Fx_new
+            Data[f"Fz_{name}"] = Fz_new
+            Data[f"L_{name}"] = Mx_new
+            Data[f"M_{name}"] = My_new
+            Data[f"N_{name}"] = Mz_new
+
+        Data["AoA"] = alpha
 
         # Reindex the dataframe sort by AoA
         return Data.sort_values(by="AoA").reset_index(drop=True)
+
+    def makeAeroCoeffs(self, Forces, preferred="2D"):
+        print(f"Using {preferred} polar for dynamic analysis")
+        Data = pd.DataFrame()
+
+        Data[f"CL"] = Forces[f"Fz_{preferred}"] / (self.pln.Q*self.pln.S)
+        Data[f"CD"] = Forces[f"Fx_{preferred}"] / (self.pln.Q*self.pln.S)
+        Data[f"Cm"] = Forces[f"M_{preferred}"] / \
+            (self.pln.Q*self.pln.S*self.pln.MAC)
+        Data["AoA"] = Forces["AoA"]
+
+        return Data
 
     def __getattr__(self, name):
         """Function to return an attribute of the airplane object (self.pln)
@@ -117,10 +131,10 @@ class dyn_plane():
         trimLoc2 = trimLoc1
         if self.polars3D["Cm"][trimLoc1] < 0:
             while self.polars3D["Cm"][trimLoc2] < 0:
-                trimLoc2 += 1
+                trimLoc2 -= 1
         else:
             while self.polars3D["Cm"][trimLoc2] > 0:
-                trimLoc2 -= 1
+                trimLoc2 += 1
 
         # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
         dCm = self.polars3D["Cm"][trimLoc2] - self.polars3D["Cm"][trimLoc1]
@@ -150,7 +164,7 @@ class dyn_plane():
         dens = self.pln.dens
         W = self.pln.M * 9.81
         U_cruise = np.sqrt(W / (0.5 * dens * CL_trim * S))
-
+        print(f"Trim velocity is {U_cruise} m/s")
         trim = {
             "U": U_cruise,
             "AoA": AoA_trim,
@@ -165,14 +179,20 @@ class dyn_plane():
         """
         self.disturbances[variable] = dst(variable, amplitude)
 
-    def allPerturb(self, epsilon, scheme):
+    def allPerturb(self, scheme, epsilon=None):
         self.scheme = scheme
         self.epsilons = {}
-        self.disturbances = [*self.longitudalPerturb(epsilon, scheme),
-                             *self.lateralPerturb(epsilon, scheme)]
+
+        self.disturbances = [*self.longitudalPerturb(scheme, epsilon),
+                             *self.lateralPerturb(scheme, epsilon)]
         self.disturbances.append(dst(None, 0))
 
-    def longitudalPerturb(self, epsilon, scheme):
+    def sensitivityAnalysis(self, var, space):
+        self.sensitivity[var] = []
+        for e in space:
+            self.sensitivity[var].append(dst(var, e))
+
+    def longitudalPerturb(self, scheme, epsilon):
         """Function to add all longitudinal perturbations
         needed to compute the aero derivatives
         Inputs:
@@ -180,21 +200,29 @@ class dyn_plane():
         - amplitude: amplitude of the perturbation
         """
         disturbances = []
+        if epsilon is None:
+            del (epsilon)
+            epsilon = {"u": 0.1,
+                       "w": 0.1,
+                       "q": 0.01,
+                       "theta": 0.1  # /self.trim["U"]
+                       }
+
         for var in ["u", "w", "q", "theta"]:
-            self.epsilons[var] = epsilon
+            self.epsilons[var] = epsilon[var]
             if scheme == "Central":
-                disturbances.append(dst(var, epsilon))
-                disturbances.append(dst(var, -epsilon))
+                disturbances.append(dst(var, epsilon[var]))
+                disturbances.append(dst(var, -epsilon[var]))
             elif scheme == "Forward":
-                disturbances.append(dst(var, epsilon))
+                disturbances.append(dst(var, epsilon[var]))
             elif scheme == "Backward":
-                disturbances.append(dst(var, -epsilon))
+                disturbances.append(dst(var, -epsilon[var]))
             else:
                 raise ValueError(
                     "Scheme must be 'Central', 'Forward' or 'Backward'")
         return disturbances
 
-    def lateralPerturb(self, epsilon, scheme):
+    def lateralPerturb(self, scheme, epsilon):
         """Function to add all lateral perturbations 
         needed to compute the aero derivatives
         Inputs:
@@ -202,15 +230,23 @@ class dyn_plane():
         - amplitude: amplitude of the perturbation
         """
         disturbances = []
+        if epsilon is None:
+            del (epsilon)
+            epsilon = {"v": 0.1,
+                       "p": 0.01,
+                       "r": 0.01,
+                       "phi": 0.01
+                       }
+
         for var in ["v", "p", "r", "phi"]:
-            self.epsilons[var] = epsilon
+            self.epsilons[var] = epsilon[var]
             if scheme == "Central":
-                disturbances.append(dst(var, epsilon))
-                disturbances.append(dst(var, -epsilon))
+                disturbances.append(dst(var, epsilon[var]))
+                disturbances.append(dst(var, -epsilon[var]))
             elif scheme == "Forward":
-                disturbances.append(dst(var, epsilon))
+                disturbances.append(dst(var, epsilon[var]))
             elif scheme == "Backward":
-                disturbances.append(dst(var, -epsilon))
+                disturbances.append(dst(var, -epsilon[var]))
             else:
                 raise ValueError(
                     "Scheme must be 'Central', 'Forward' or 'Backward'")
@@ -269,69 +305,96 @@ class dyn_plane():
         """
         pertr = self.pertubResults
         eps = self.epsilons
-        Mass = self.pln.M
+        m = self.pln.M
         U = self.trim["U"]   # TRIM
         theta = self.trim["AoA"] * np.pi / 180   # TRIM
+        Ue = np.abs(U * np.cos(theta))
+        We = np.abs(U * np.sin(theta))
+
         G = - 9.81
-        Ix, Iy, Iz = self.pln.I
+        Ix, Iy, Iz, Ixz, Ixy, Iyz = self.pln.I
         X = {}
         Z = {}
         M = {}
         pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
         trimState = pertr[pertr["Type"] == "Trim"]
+        print(trimState)
         mode = "2D"
         for var in ["u", "w", "q", "theta"]:
             if self.scheme == "Central":
                 front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
                 back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+                de = 2 * eps[var]
             elif self.scheme == "Forward":
                 front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
                 back = trimState
+                de = eps[var]
             elif self.scheme == "Backward":
                 front = trimState
                 back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
-            Xf = float(front[f"TFORC{mode}(1)"].to_numpy())
-            Xb = float(back[f"TFORC{mode}(1)"].to_numpy())
-            X[var] = (Xf - Xb)/(2*eps[var])
+                de = eps[var]
 
-            Zf = float(front[f"TFORC{mode}(3)"].to_numpy())
-            Zb = float(back[f"TFORC{mode}(3)"].to_numpy())
-            Z[var] = (Zf - Zb)/(2*eps[var])
+            back = self.rotateForces(back, theta)
+            front = self.rotateForces(front, theta)
 
-            Mf = float(front[f"TAMOM{mode}(2)"].to_numpy())
-            Mb = float(back[f"TAMOM{mode}(2)"].to_numpy())
-            M[var] = (Mf - Mb)/(2*eps[var])
+            Xf = float(front[f"Fx_{mode}"].to_numpy())
+            Xb = float(back[f"Fx_{mode}"].to_numpy())
+            X[var] = (Xf - Xb)/de
+
+            Zf = float(front[f"Fz_{mode}"].to_numpy())
+            Zb = float(back[f"Fz_{mode}"].to_numpy())
+            Z[var] = (Zf - Zb)/de
+
+            Mf = float(front[f"M_{mode}"].to_numpy())
+            Mb = float(back[f"M_{mode}"].to_numpy())
+            M[var] = (Mf - Mb)/de
 
         X["w_dot"] = 0
         Z["w_dot"] = 0
+        M["w_dot"] = 0
 
-        xu = X["u"]/Mass + (X["w_dot"] * Z["u"])/(Mass*(Mass-Z["w_dot"]))
-        xw = X["w"]/Mass + (X["w_dot"] * Z["w"])/(Mass*(Mass-Z["w_dot"]))
-        # X["q"]/Mass + (X["w_dot"] * (Z["q"]+Mass*U*np.sin(theta))/(Mass*(Mass-Z["w_dot"]))
-        xq = 0
-        xth = -G*np.cos(theta) - (X["w_dot"]*G *
-                                  np.sin(theta))/((Mass-Z["w_dot"]))
+        xu = X["u"]/m  # + (X["w_dot"] * Z["u"])/(M*(M-Z["w_dot"]))
+        xw = X["w"]/m  # + (X["w_dot"] * Z["w"])/(M*(M-Z["w_dot"]))
+        xq = (X['q'] - m * We)/(m)
+        xth = -G*np.cos(theta)
+        # xq += (X["w_dot"] * (Z["q"] + M * Ue))/(M*(M-Z["w_dot"]))
+        # xth += - (X["w_dot"]*G * np.sin(theta))/((M-Z["w_dot"]))
 
-        zu = Z['u']/(Mass-Z["w_dot"])
-        zw = Z['w']/(Mass-Z["w_dot"])
-        zq = (Z['q']+Mass*U*np.sin(theta))/(Mass-Z["w_dot"])
-        zth = -(Mass*G*np.sin(theta))/(Mass-Z["w_dot"])
+        zu = Z['u']/(m-Z["w_dot"])
+        zw = Z['w']/(m-Z["w_dot"])
+        zq = (Z['q']+m*Ue)/(m-Z["w_dot"])
+        zth = -(m*G*np.sin(theta))/(m-Z["w_dot"])
 
-        mu = M['u']/Iy + Z['u']*M["w_dot"]/(Iy*(Mass-Z["w_dot"]))
-        mw = M['w']/Iy + Z['w']*M["w_dot"]/(Iy*(Mass-Z["w_dot"]))
-        mq = M['q']/Iy + ((Z['q']+Mass*U*np.sin(theta)) *
-                          M["w_dot"])/(Iy*(Mass-Z["w_dot"]))
-        mth = (Mass*G*np.sin(theta)*M["w_dot"])/(Iy*(Mass-Z["w_dot"]))
+        mu = M['u']/Iy + Z['u']*M["w_dot"]/(Iy*(m-Z["w_dot"]))
+        mw = M['w']/Iy + Z['w']*M["w_dot"]/(Iy*(m-Z["w_dot"]))
+        mq = M['q']/Iy + ((Z['q']+m*Ue) *
+                          M["w_dot"])/(Iy*(m-Z["w_dot"]))
+        mth = (m*G*np.sin(theta)*M["w_dot"])/(Iy*(m-Z["w_dot"]))
 
         self.AstarLong = np.array([[X["u"], X["w"], X["q"], X["theta"]],
                                    [Z['u'], Z['w'], Z['q'], Z['theta']],
                                    [M['u'], M['w'], M['q'], M['theta']],
-                                   [0, 1, 0, 0]])
+                                   [0, 0, 1, 0]])
 
         self.Along = np.array([[xu, xw, xq, xth],
                                [zu, zw, zq, zth],
                                [mu, mw, mq, mth],
-                               [0, 1, 0, 0]])
+                               [0, 0, 1, 0]])
+
+        print("Longitudal Derivatives")
+        print(f"Xu=\t{X['u']}\t\tCxu=\t{xu/(self.Q*self.S)}")
+        print(f"Xw=\t{X['w']}\t\tCxa=\t{xth/(self.Q*self.S)}")
+        # print(f"Xtheta=\t{1/(U*np.sin(theta)) *X['theta']}")
+
+        print(f"Zu=\t{Z['u']}\t\tCzu=\t{zu/(self.Q*self.S)}")
+        print(f"Zw=\t{Z['w']}\t\tCLa=\t{zth/(self.Q*self.S)}")
+        # print(f"Ztheta=\t{1/(U*np.sin(theta)) *Z['theta']}")
+        print(f"Zq=\t{Z['q']}\t\tCLq=\t{zq/(self.Q*self.S)}")
+
+        print(f"Mu=\t{M['u']}\t\tCmu=\t{mu/(self.Q*self.S*self.MAC)}")
+        print(f"Mw=\t{M['w']}\t\tCma=\t{mth/(self.Q*self.S*self.MAC)}")
+        # print(f"Mtheta=\t{1/(U*np.sin(theta)) *M['theta']}")
+        print(f"Mq=\t{M['q']}\t\tCmq=\t{mq/(self.Q*self.S*self.MAC)}\n")
 
     def lateralStability(self):
         """This Function Requires the results from perturbation analysis
@@ -342,8 +405,7 @@ class dyn_plane():
         U = self.trim["U"]
         theta = self.trim["AoA"] * np.pi / 180
         G = - 9.81
-        Ix, Iy, Iz = self.pln.I
-        Ixz = self.pln.Ixz  # self.pln.Ixz
+        Ix, Iy, Iz, Ixz, Ixy, Iyz = self.pln.I
         Y = {}
         L = {}
         N = {}
@@ -363,16 +425,20 @@ class dyn_plane():
                 back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
                 front = trimState
                 de = eps[var]
-            Yf = float(front[f"TFORC{mode}(2)"].to_numpy())
-            Yb = float(back[f"TFORC{mode}(2)"].to_numpy())
+
+            back = self.rotateForces(back, theta)
+            front = self.rotateForces(front, theta)
+
+            Yf = float(front[f"Fy_{mode}"].to_numpy())
+            Yb = float(back[f"Fy_{mode}"].to_numpy())
             Y[var] = (Yf - Yb)/de
 
-            Lf = float(front[f"TAMOM{mode}(1)"].to_numpy())
-            Lb = float(back[f"TAMOM{mode}(1)"].to_numpy())
+            Lf = float(front[f"L_{mode}"].to_numpy())
+            Lb = float(back[f"L_{mode}"].to_numpy())
             L[var] = (Lf - Lb)/de
 
-            Nf = float(front[f"TAMOM{mode}(3)"].to_numpy())
-            Nb = float(back[f"TAMOM{mode}(3)"].to_numpy())
+            Nf = float(front[f"N_{mode}"].to_numpy())
+            Nb = float(back[f"N_{mode}"].to_numpy())
             N[var] = (Nf - Nb)/de
 
         yv = Y['v']/Mass
@@ -399,6 +465,17 @@ class dyn_plane():
                               [lv, lp, lr, lphi],
                               [nv, n_p, nr, nph],
                               [0, 1, 0, 0]])
+
+        print("Lateral Derivatives")
+        print(f"Yv=\t{Y['v']}")
+        print(f"Yp=\t{Y['p']}")
+        print(f"Yr=\t{Y['r']}")
+        print(f"Lv=\t{L['v']}")
+        print(f"Lp=\t{L['p']}")
+        print(f"Lr=\t{L['r']}")
+        print(f"Nv=\t{N['v']}")
+        print(f"Np=\t{N['p']}")
+        print(f"Nr=\t{N['r']}")
 
     # def approxAeroDerivatives(self):
     #     """Finds the Stability Derivatives using approximations
