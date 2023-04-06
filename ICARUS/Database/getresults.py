@@ -2,7 +2,7 @@ import numpy as np
 from . import DB2D, DB3D
 import os
 import pandas as pd
-from Airfoils import airfoil as af
+from ICARUS.Airfoils import airfoil as af
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd

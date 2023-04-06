@@ -2,12 +2,12 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-from Airfoils import airfoil as af
+from ICARUS.Airfoils import airfoil as af
 
-from Software.Foil2Wake import runF2w as f2w
-from Software.OpenFoam import runOpenFoam as of
-from Software.Xfoil import runXFoil as xf
-from Database import BASEFOIL2W, BASEOPENFOAM, DB2D
+from ICARUS.Software.Foil2Wake import runF2w as f2w
+from ICARUS.Software.OpenFoam import runOpenFoam as of
+from ICARUS.Software.Xfoil import runXFoil as xf
+from ICARUS.Database import BASEFOIL2W, BASEOPENFOAM, DB2D
 
 
 HOMEDIR = os.getcwd()

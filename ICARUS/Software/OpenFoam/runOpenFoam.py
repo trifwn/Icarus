@@ -3,7 +3,7 @@ import os
 import shutil
 import numpy as np
 import pandas as pd
-from Software import runOFscript, setupOFscript, logOFscript
+from ICARUS.Software import runOFscript, setupOFscript, logOFscript
 
 
 def makeMesh(airfoilFile, airfoilName, OFBASE, HOMEDIR):

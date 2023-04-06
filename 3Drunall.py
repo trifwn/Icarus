@@ -1,18 +1,18 @@
-from Flight_Dynamics.dyn_plane import dyn_plane as dp
 import numpy as np
+import time
 import os
 
-from Software.GenuVP import runGNVP as gnvp
+from ICARUS.Software.GenuVP3 import runGNVP as gnvp
 
-from PlaneDefinition.plane import Airplane as Plane
-from PlaneDefinition.wing import Wing as wg
-import PlaneDefinition.wing as wing
+from ICARUS.PlaneDefinition.plane import Airplane as Plane
+from ICARUS.PlaneDefinition.wing import Wing as wg
+import ICARUS.PlaneDefinition.wing as wing
 
-from Flight_Dynamics.disturbances import disturbance as disturb
+from ICARUS.Flight_Dynamics.dyn_plane import dyn_plane as dp
+from ICARUS.Flight_Dynamics.disturbances import disturbance as disturb
 
-from Database.getresults import Database_2D
-from Database import DB3D, BASEGNVP
-import time
+from ICARUS.Database.getresults import Database_2D
+from ICARUS.Database import DB3D, BASEGNVP
 
 start_time = time.time()
 HOMEDIR = os.getcwd()
