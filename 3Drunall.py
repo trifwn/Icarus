@@ -11,7 +11,7 @@ import ICARUS.PlaneDefinition.wing as wing
 from ICARUS.Flight_Dynamics.dyn_plane import dyn_plane as dp
 from ICARUS.Flight_Dynamics.disturbances import disturbance as disturb
 
-from ICARUS.Database.getresults import Database_2D
+from ICARUS.Database.Database_3D import Database_2D
 from ICARUS.Database import DB3D, BASEGNVP
 
 start_time = time.time()

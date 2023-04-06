@@ -290,7 +290,7 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
     # CLD FILES
     cldFiles(AeroData, airfoils, solver)
     if 'gnvp' not in next(os.walk('.'))[2]:
-        os.system(f'ln -sv {HOMEDIR}/gnvp {ANGLEDIR}/gnvp')
+        os.system(f'ln -sv {HOMEDIR}/ICARUS/gnvp {ANGLEDIR}/gnvp')
     os.chdir(HOMEDIR)
 
 

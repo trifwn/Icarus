@@ -5,13 +5,14 @@
 
 ICARUS/foil
 ICARUS/gnvp
+
 *.pyc
 Control/slprj*
 
 *.err
 *.out
+test*.ipynb
 
-test.ipynb
 ICARUS/Database/Mock
 ICARUS/Database/2D
 ICARUS/Database/3D

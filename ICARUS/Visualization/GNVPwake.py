@@ -4,7 +4,7 @@ import numpy as np
 
 def GNVPwake(plane, case, maxiter):
 
-    fname = f"Database/3D/{plane.name}/{case}/YOURS.WAK"
+    fname = f"{plane.CASEDIR}/{case}/YOURS.WAK"
     with open(fname, "r") as file:
         data = file.readlines()
     a = []

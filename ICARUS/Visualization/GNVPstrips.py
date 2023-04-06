@@ -4,7 +4,6 @@ import os
 
 
 def GNVPstrips(pln, CASE, HOMEDIR):
-    print(pln.CASEDIR)
     files = os.listdir(f"{pln.CASEDIR}/{CASE}")
     stripDat = []
     for file in files:
