@@ -65,7 +65,7 @@ class dyn_plane():
             Mz_new = Mx * np.sin(-AoA) + Mz * np.cos(-AoA)
 
             Data[f"Fx_{name}"] = Fx_new
-            Data[f"Fy_{name}"] = Fx_new
+            Data[f"Fy_{name}"] = Fy_new
             Data[f"Fz_{name}"] = Fz_new
             Data[f"L_{name}"] = Mx_new
             Data[f"M_{name}"] = My_new
@@ -87,6 +87,18 @@ class dyn_plane():
         Data["AoA"] = Forces["AoA"]
 
         return Data
+
+    def yRotationSB(self, angle):
+        """Returns the rotation matrix for a rotation around the y axis
+        The convention for stability axes is with the x-axis pointing forward.
+        So it is x and z are opposite of the general coordinate system."""
+        return np.array([[np.cos(angle), 0, -np.sin(angle)],
+                         [0, 1, 0],
+                         [np.sin(angle), 0, np.cos(angle)]])
+
+    def rotate(self, vector, R):
+        """Returns the rotated vector"""
+        return np.dot(R, vector)
 
     def __getattr__(self, name):
         """Function to return an attribute of the airplane object (self.pln)
@@ -202,10 +214,10 @@ class dyn_plane():
         disturbances = []
         if epsilon is None:
             del (epsilon)
-            epsilon = {"u": 0.1,
-                       "w": 0.1,
-                       "q": 0.01,
-                       "theta": 0.1  # /self.trim["U"]
+            epsilon = {"u": 0.01,
+                       "w": 0.01,
+                       "q": 0.25,
+                       "theta": 0.01  # /self.trim["U"]
                        }
 
         for var in ["u", "w", "q", "theta"]:
@@ -223,7 +235,7 @@ class dyn_plane():
         return disturbances
 
     def lateralPerturb(self, scheme, epsilon):
-        """Function to add all lateral perturbations 
+        """Function to add all lateral perturbations
         needed to compute the aero derivatives
         Inputs:
         - variable: string with the variable to perturb
@@ -232,9 +244,9 @@ class dyn_plane():
         disturbances = []
         if epsilon is None:
             del (epsilon)
-            epsilon = {"v": 0.1,
-                       "p": 0.01,
-                       "r": 0.01,
+            epsilon = {"v": 0.01,
+                       "p": 0.25,
+                       "r": 0.25,
                        "phi": 0.01
                        }
 
@@ -296,11 +308,11 @@ class dyn_plane():
         petrubdf = makePolFun(*args, **kwargs)
         self.pertubResults = petrubdf
 
-    def longitudalStability(self):
+    def longitudalStability(self, mode="2D"):
         """This Function Requires the results from perturbation analysis
         For the Longitudinal Motion, in addition to the state space variables an analysis with respect to the derivative of w perturbation is needed.
-        These derivatives are in this function are added externally and called Xw_dot,Zw_dot,Mw_dot. Depending on the Aerodynamics Solver, 
-        these w_dot derivatives can either be computed like the rest derivatives, or require an approximation concerning the downwash velocity 
+        These derivatives are in this function are added externally and called Xw_dot,Zw_dot,Mw_dot. Depending on the Aerodynamics Solver,
+        these w_dot derivatives can either be computed like the rest derivatives, or require an approximation concerning the downwash velocity
         that the main wing induces on the tail wing
         """
         pertr = self.pertubResults
@@ -312,15 +324,16 @@ class dyn_plane():
         We = np.abs(U * np.sin(theta))
 
         G = - 9.81
+        R_mat = self.yRotationSB(theta)
         Ix, Iy, Iz, Ixz, Ixy, Iyz = self.pln.I
+
         X = {}
         Z = {}
         M = {}
         pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
         trimState = pertr[pertr["Type"] == "Trim"]
-        print(trimState)
-        mode = "2D"
-        for var in ["u", "w", "q", "theta"]:
+
+        for var in ["u",  "q", "w", "theta"]:
             if self.scheme == "Central":
                 front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
                 back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
@@ -334,9 +347,13 @@ class dyn_plane():
                 back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
                 de = eps[var]
 
-            back = self.rotateForces(back, theta)
-            front = self.rotateForces(front, theta)
+            if var == 'theta':
+                de *= - np.pi / 180
+            elif var == 'q':
+                de *= - np.pi / 180
 
+            back = self.rotateForces(back, self.trim["AoA"])
+            front = self.rotateForces(front, self.trim["AoA"])
             Xf = float(front[f"Fx_{mode}"].to_numpy())
             Xb = float(back[f"Fx_{mode}"].to_numpy())
             X[var] = (Xf - Xb)/de
@@ -348,28 +365,30 @@ class dyn_plane():
             Mf = float(front[f"M_{mode}"].to_numpy())
             Mb = float(back[f"M_{mode}"].to_numpy())
             M[var] = (Mf - Mb)/de
+            print(var, Mf, Mb)
 
         X["w_dot"] = 0
         Z["w_dot"] = 0
         M["w_dot"] = 0
 
-        xu = X["u"]/m  # + (X["w_dot"] * Z["u"])/(M*(M-Z["w_dot"]))
-        xw = X["w"]/m  # + (X["w_dot"] * Z["w"])/(M*(M-Z["w_dot"]))
+        xu = X["u"]/m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
+        xw = X["w"]/m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
         xq = (X['q'] - m * We)/(m)
-        xth = -G*np.cos(theta)
-        # xq += (X["w_dot"] * (Z["q"] + M * Ue))/(M*(M-Z["w_dot"]))
-        # xth += - (X["w_dot"]*G * np.sin(theta))/((M-Z["w_dot"]))
+        xth = G*np.cos(theta)
+
+        # xq += (X["w_dot"] * (Z["q"] + m * Ue))/(m*(m-Z["w_dot"]))
+        # xth += - (X["w_dot"]*G * np.sin(theta))/((m-Z["w_dot"]))
 
         zu = Z['u']/(m-Z["w_dot"])
         zw = Z['w']/(m-Z["w_dot"])
         zq = (Z['q']+m*Ue)/(m-Z["w_dot"])
-        zth = -(m*G*np.sin(theta))/(m-Z["w_dot"])
+        zth = (m*G*np.sin(theta))/(m-Z["w_dot"])
 
         mu = M['u']/Iy + Z['u']*M["w_dot"]/(Iy*(m-Z["w_dot"]))
         mw = M['w']/Iy + Z['w']*M["w_dot"]/(Iy*(m-Z["w_dot"]))
         mq = M['q']/Iy + ((Z['q']+m*Ue) *
                           M["w_dot"])/(Iy*(m-Z["w_dot"]))
-        mth = (m*G*np.sin(theta)*M["w_dot"])/(Iy*(m-Z["w_dot"]))
+        mth = - (m*G*np.sin(theta)*M["w_dot"])/(Iy*(m-Z["w_dot"]))
 
         self.AstarLong = np.array([[X["u"], X["w"], X["q"], X["theta"]],
                                    [Z['u'], Z['w'], Z['q'], Z['theta']],
@@ -384,19 +403,21 @@ class dyn_plane():
         print("Longitudal Derivatives")
         print(f"Xu=\t{X['u']}\t\tCxu=\t{xu/(self.Q*self.S)}")
         print(f"Xw=\t{X['w']}\t\tCxa=\t{xth/(self.Q*self.S)}")
-        # print(f"Xtheta=\t{1/(U*np.sin(theta)) *X['theta']}")
+        # print(
+        # f"Xth/Ue=\t{X['theta']/(U*np.cos(theta))}")
 
         print(f"Zu=\t{Z['u']}\t\tCzu=\t{zu/(self.Q*self.S)}")
-        print(f"Zw=\t{Z['w']}\t\tCLa=\t{zth/(self.Q*self.S)}")
-        # print(f"Ztheta=\t{1/(U*np.sin(theta)) *Z['theta']}")
-        print(f"Zq=\t{Z['q']}\t\tCLq=\t{zq/(self.Q*self.S)}")
+        print(f"Zw=\t{Z['w']}\t\tCLa=\t{Z['theta']/(self.Q*self.S)}")
+        # print(f"Zth/Ue=\t{Z['theta']/(U*np.cos(theta))}")
+        print(f"Zq=\t{Z['q']}\t\tCLq=\t{Z['q']/(self.Q*self.S)}")
 
-        print(f"Mu=\t{M['u']}\t\tCmu=\t{mu/(self.Q*self.S*self.MAC)}")
-        print(f"Mw=\t{M['w']}\t\tCma=\t{mth/(self.Q*self.S*self.MAC)}")
-        # print(f"Mtheta=\t{1/(U*np.sin(theta)) *M['theta']}")
-        print(f"Mq=\t{M['q']}\t\tCmq=\t{mq/(self.Q*self.S*self.MAC)}\n")
+        print(f"Mu=\t{M['u']}\t\tCmu=\t{M['u']/(self.Q*self.S*self.MAC)}")
+        print(
+            f"Mw=\t{M['w']}\t\tCma=\t{M['theta']/(self.Q*self.S*self.MAC)}")
+        # print(f"Mth/Ue=\t{M['theta']/(U*np.cos(theta))}")
+        print(f"Mq=\t{M['q']}\t\tCmq=\t{M['q']/(self.Q*self.S*self.MAC)}\n")
 
-    def lateralStability(self):
+    def lateralStability(self, mode="2D"):
         """This Function Requires the results from perturbation analysis
         """
         pertr = self.pertubResults
@@ -405,13 +426,15 @@ class dyn_plane():
         U = self.trim["U"]
         theta = self.trim["AoA"] * np.pi / 180
         G = - 9.81
+
+        R_mat = self.yRotationSB(theta)
         Ix, Iy, Iz, Ixz, Ixy, Iyz = self.pln.I
+
         Y = {}
         L = {}
         N = {}
         pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
         trimState = pertr[pertr["Type"] == "Trim"]
-        mode = "2D"
         for var in ["v", "p", "r", "phi"]:
             if self.scheme == "Central":
                 back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
@@ -426,8 +449,11 @@ class dyn_plane():
                 front = trimState
                 de = eps[var]
 
-            back = self.rotateForces(back, theta)
-            front = self.rotateForces(front, theta)
+            if var != 'v':
+                de *= np.pi / 180
+
+            back = self.rotateForces(back, self.trim['AoA'])
+            front = self.rotateForces(front, self.trim['AoA'])
 
             Yf = float(front[f"Fy_{mode}"].to_numpy())
             Yb = float(back[f"Fy_{mode}"].to_numpy())
@@ -476,53 +502,3 @@ class dyn_plane():
         print(f"Nv=\t{N['v']}")
         print(f"Np=\t{N['p']}")
         print(f"Nr=\t{N['r']}")
-
-    # def approxAeroDerivatives(self):
-    #     """Finds the Stability Derivatives using approximations
-    #     GENERATED BY COPILOT
-    #     """
-    #     S = self.pln.S
-    #     dens = self.pln.dens
-    #     W = self.pln.M * 9.81
-    #     U = self.trim["U"]
-    #     AoA = self.trim["AoA"]
-    #     CL = self.polars3D["CL"][np.argmin(np.abs(self.polars3D["AoA"] - AoA))]
-    #     CD = self.polars3D["CD"][np.argmin(np.abs(self.polars3D["AoA"] - AoA))]
-    #     Cm = self.polars3D["Cm"][np.argmin(np.abs(self.polars3D["AoA"] - AoA))]
-    #     CY = self.polars3D["CY"][np.argmin(np.abs(self.polars3D["AoA"] - AoA))]
-    #     Cl = self.polars3D["Cl"][np.argmin(np.abs(self.polars3D["AoA"] - AoA))]
-    #     Cn = self.polars3D["Cn"][np.argmin(np.abs(self.polars3D["AoA"] - AoA))]
-
-    #     # Static Stability Derivatives
-    #     X_u = -dens * U * S * CD / W
-    #     X_w = -dens * U * S * CL / W
-    #     X_q = 0
-    #     X_de = 0
-
-    #     Z_u = -dens * U * S * CL / W
-    #     Z_w = -dens * U * S * CD / W
-    #     Z_q = 0
-    #     Z_de = 0
-
-    #     M_u = -dens * U * S * self.pln.c * Cm / W
-    #     M_w = 0
-    #     M_q = -dens * U * S * self.pln.c * Cm / W
-    #     M_de = 0
-
-    #     Y_v = 0
-    #     Y_p = 0
-    #     Y_r = 0
-    #     Y_da = 0
-    #     Y_dr = 0
-
-    #     L_v = 0
-    #     L_p = -dens * U * S * self.pln.b * Cl / W
-    #     L_r = 0
-    #     L_da = 0
-    #     L_dr = 0
-
-    #     N_v = 0
-    #     N_p = 0
-    #     N_r = -dens * U * S * self.pln.b * Cn / W
-    #     N_da = 0
-    #     N_dr = 0

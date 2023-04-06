@@ -96,7 +96,6 @@ ap.accessDB(HOMEDIR, DB3D)
 ap.addMasses(addedMasses)
 
 cleaning = False
-calcGenu = True
 calcBatchGenu = True
 petrubationAnalysis = True
 sensitivityAnalysis = True

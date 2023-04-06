@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-colors = ['r', 'k', 'b', 'g', 'c', 'm', 'y', 'r', 'k', 'b', 'g']
-markers = ['x', 'o', '.', "*"]
+from . import colors, markers
 
 
 def plotAirfoil(data, airfoil, solvers='All', size=(10, 10), AoA_bounds=None):
@@ -203,8 +202,8 @@ def plotAirplanes(data, airplanes, solvers=['All'], size=(10, 10)):
                     cl = polar[f"CL_{solver}"]
                     cd = polar[f"CD_{solver}"]
                     cm = polar[f"Cm_{solver}"]
-                    c = colors[j]
-                    m = markers[i]
+                    c = colors[i]
+                    m = markers[j]
                     style = f"{c}{m}--"
 
                     label = f"{airplane} - {solver}"
@@ -227,8 +226,8 @@ def plotAirplanes(data, airplanes, solvers=['All'], size=(10, 10)):
             ax.axvline(x=0, color='k')
             ax.grid()
 
-    axs[1, 0].legend(bbox_to_anchor=(-0.1, -0.25),  ncol=3,
-                     fancybox=True, loc='lower left')
+    axs[1, 0].legend()  # (bbox_to_anchor=(-0.1, -0.25),  ncol=3,
+    # fancybox=True, loc='lower left')
 
 
 def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True, size=(10, 10)):
@@ -305,7 +304,7 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
                 errorM = runHist[f"ERRORM"].astype(float)
 
                 if plotError == True:
-                    it2 = it[1:].values
+                    it = it[1:].values
                     fx = np.abs(fx[1:].values - fx[:-1].values)
                     fy = np.abs(fy[1:].values - fy[:-1].values)
                     fz = np.abs(fz[:-1].values - fz[1:].values)
@@ -321,19 +320,19 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
                 m = markers[j]
                 style = f"{c}{m}--"
 
-                label = f"{plane} - {solver} - {ang}"
-                axs[0, 0].plot(it2, fx, style, label=label,
+                label = f"{plane} - {solver} - {ang_num}"
+                axs[0, 0].plot(it, fx, style, label=label,
                                markersize=2.0, linewidth=1)
-                axs[0, 1].plot(it2, fy, style, label=label,
+                axs[0, 1].plot(it, fy, style, label=label,
                                markersize=2.0, linewidth=1)
-                axs[0, 2].plot(it2, fz, style, label=label,
+                axs[0, 2].plot(it, fz, style, label=label,
                                markersize=2.0, linewidth=1)
 
-                axs[1, 0].plot(it2, mx, style, label=label,
+                axs[1, 0].plot(it, mx, style, label=label,
                                markersize=2.0, linewidth=1)
-                axs[1, 1].plot(it2, my, style, label=label,
+                axs[1, 1].plot(it, my, style, label=label,
                                markersize=2.0, linewidth=1)
-                axs[1, 2].plot(it2, mz, style, label=label,
+                axs[1, 2].plot(it, mz, style, label=label,
                                markersize=2.0, linewidth=1)
 
                 axs[2, 0].plot(it, error, style, label=label,

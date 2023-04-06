@@ -24,18 +24,25 @@ class Airplane():
             self.orientation = orientation
 
         toRemove = []
+        gotWing = False
         for i, surface in enumerate(surfaces):
             if surface.name == "wing":
                 # self.mainWing = surface
                 self.S = surface.S
                 self.MAC = surface.MAC
                 self.AR = surface.AR
+                gotWing = True
 
             if surface.isSymmetric == True:
                 toRemove.append(i)
                 l, r = surface.splitSymmetric()
                 surfaces.append(l)
                 surfaces.append(r)
+        if gotWing == False:
+            self.S = surfaces[0].S
+            self.MAC = surfaces[0].MAC
+            self.AR = surfaces[0].AR
+
         self.surfaces = [j for i, j in enumerate(
             self.surfaces) if i not in toRemove]
 
@@ -118,19 +125,34 @@ class Airplane():
         self.DBDIR = DBDIR
         os.chdir(HOMEDIR)
 
-    def visAirplane(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(projection='3d')
+    def visAirplane(self, fig=None, ax=None, movement=None):
+        if fig == None:
+            fig = plt.figure()
+            ax = fig.add_subplot(projection='3d')
+            ax.set_title(self.name)
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_zlabel('z')
+            ax.view_init(30, 150)
+            ax.axis('scaled')
+
+        if movement is None:
+            mov = np.zeros(3)
+        else:
+            mov = movement
 
         for surface in self.surfaces:
-            surface.plotWing(fig, ax)
-
-        ax.set_title(self.name)
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        ax.set_zlabel('z')
-        ax.axis('scaled')
-        ax.view_init(30, 150)
+            surface.plotWing(fig, ax, mov)
+        # Add plot for masses
+        for m, r in self.masses:
+            ax.scatter(r[0] + mov[0],
+                       r[1] + mov[1],
+                       r[2] + mov[2],
+                       marker='o', s=m*50., color='r')
+        ax.scatter(self.CG[0] + mov[0],
+                   self.CG[1] + mov[1],
+                   self.CG[2] + mov[2],
+                   marker='o', s=50., color='b')
 
     def defineSim(self, U, dens):
         self.U = U

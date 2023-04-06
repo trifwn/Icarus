@@ -2,38 +2,18 @@
 *.vscode/
 *__pycache__
 
-**/Reynolds*/[0123456789]*
-**/Reynolds*/foil
-**/Reynolds*/m*
-**/Base/constant/polyMesh/
 
-*strip*
-*xg*
-*xw*
-*xb*
-*YOURS*
-*refstate*
-*LOADS*
-*gnvp.out
-
-3D/Base
-
-foil
-gnvp
+ICARUS/foil
+ICARUS/gnvp
 *.pyc
 Control/slprj*
 
-**/*.tmp
-**/*.p3d
-**/*.nmf
-**/*.out
-**/*.vtk
 *.err
 *.out
 
 test.ipynb
-Database/Mock
-Database/2D
-Database/3D
+ICARUS/Database/Mock
+ICARUS/Database/2D
+ICARUS/Database/3D
 
-XFLR5/
+ICARUS/XFLR5/

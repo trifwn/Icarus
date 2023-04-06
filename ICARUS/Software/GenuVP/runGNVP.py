@@ -55,7 +55,7 @@ def runGNVPpertr(plane, GENUBASE, polars, solver2D, maxiter, timestep, Uinf, ang
         movements = airMov(plane.surfaces, plane.CG,
                            plane.orientation, [dst])
 
-        print(f"Running Case {dst.var}")
+        print(f"Running Case {dst.var} - {dst.amplitude}")
         # if make distubance folder
         if dst.var == "Trim":
             folder = "Trim/"
@@ -128,19 +128,20 @@ def airMov(surfaces, CG, orientation, disturbances):
             Rotation = {
                 "type": 1,
                 "axis": axis,
-                "t1": -0.0001,
-                "t2": 10.0,
+                "t1": -0.1,
+                "t2": 0.,
                 "a1": orientation[axis-1],
                 "a2": orientation[axis-1],
             }
             Translation = {
                 "type": 1,
                 "axis": axis,
-                "t1": -0.0001,
-                "t2": 10.0,
+                "t1": -0.1,
+                "t2": 0.,
                 "a1": -CG[axis-1],
                 "a2": -CG[axis-1],
             }
+
             obj = Movement(name, Rotation, Translation)
             sequence.append(obj)
 
@@ -174,17 +175,18 @@ def makeSurfaceDict(surf, idx):
         'cld': f'{surf.airfoil.name}.cld',
         'NNB': surf.N,
         'NCWB': surf.M,
-        "x_0": surf.Origin[0],
+        "x_0": surf.Origin[0] + surf.chord[0]/4,
         "y_0": surf.Origin[1],
         "z_0": surf.Origin[2],
         "pitch": surf.Orientation[0],
         "cone": surf.Orientation[1],
         "wngang": surf.Orientation[2],
-        "x_end": surf.Origin[0] + surf.xoff[-1],
-        "y_end": surf.Origin[1] + surf.Dspan[-1],
+        "x_end": surf.Origin[0] - surf.xoff[-1] + surf.chord[-1]/4,
+        "y_end": surf.Origin[1] + surf.span,
         "z_end": surf.Origin[2] + surf.Ddihedr[-1],
         "Root_chord": surf.chord[0],
-        "Tip_chord": surf.chord[-1]
+        "Tip_chord": surf.chord[-1],
+        "Offset": surf.xoff[-1]
     }
     return s
 
@@ -197,7 +199,7 @@ def distrubance2movement(disturbance):
         a2 = disturbance.amplitude
         distType = 8
     elif disturbance.type == "Value":
-        t1 = -0.0001
+        t1 = -1
         t2 = 0.
         a1 = disturbance.amplitude
         a2 = disturbance.amplitude

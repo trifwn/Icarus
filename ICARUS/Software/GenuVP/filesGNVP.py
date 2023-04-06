@@ -237,7 +237,12 @@ def bldFiles(bodies):
         step = round(
             (bod["Root_chord"] - bod["Tip_chord"]) /
             (bod["y_end"] - bod["y_0"]),
-            ndigits=5,
+            ndigits=5
+        )
+        offset = round(
+            bod['Offset'] /
+            (bod["y_end"] - bod["y_0"]),
+            ndigits=5
         )
         data[3] = f'1          {bod["NACA"]}\n'
         data[6] = f"0          0          0\n"
@@ -248,6 +253,8 @@ def bldFiles(bodies):
         data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
         data[24] = \
             f'4                      {ff4(bod["Root_chord"])}     {ff4(-step)}     0.         0.         0.         0.\n'
+        data[30] = \
+            f'4                      {ff4(0.)}     {ff4((-1/4)*step + offset )}     0.         0.         0.         0.\n'
 
         with open(fname, "w") as file:
             file.writelines(data)
@@ -353,7 +360,7 @@ def logPertrub(DYNDIR, HOMEDIR):
         if "LOADS_aer.dat" in files:
             dat = np.loadtxt("LOADS_aer.dat")[-1]
             if folder == "Trim":
-                a = [0, str(folder), *dat]
+                pols.append([0, str(folder), *dat])
                 continue
 
             # RECONSTRUCT NAME

@@ -70,6 +70,7 @@ class Database_3D():
         self.rawData = {}
         self.Data = {}
         self.Planes = {}
+        self.dynPlanes = {}
         self.Convergence = {}
         self.scan()
         self.makeData()
@@ -89,6 +90,12 @@ class Database_3D():
                         with open(f"{file}", 'r') as f:
                             json_obj = f.read()
                             self.Planes[folder] = jsonpickle.decode(json_obj)
+                    if file.endswith(".json") and file.startswith("dyn"):
+                        with open(f"{file}", 'r') as f:
+                            json_obj = f.read()
+                            self.dynPlanes[folder] = jsonpickle.decode(
+                                json_obj)
+
             except FileNotFoundError:
                 print(f"Plane {folder} doesn't contain polars!")
 
@@ -101,26 +108,30 @@ class Database_3D():
                     for file in files:
                         if file == "LOADS_aer.dat":
                             self.Convergence[folder][case] = pd.read_csv(
-                                file, delim_whitespace=True, header=None,
+                                file, delim_whitespace=True,
                                 names=cols)
                             runExists = True
                             break
-                    if runExists:
-                        for file in files:
-                            if (file == "gnvp.out") and runExists:
-                                with open(file, 'r') as f:
-                                    a = f.readlines()
-                                time = []
-                                error = []
-                                errorm = []
-                                for line in a:
-                                    if line.startswith(" STEP"):
-                                        a = line.split()
-                                        time.append(int(a[1]))
-                                        error.append(float(a[3]))
-                                        errorm.append(float(a[7]))
-                                self.Convergence[folder][case]["ERROR"] = error
-                                self.Convergence[folder][case]["ERRORM"] = errorm
+                    # if runExists:
+                    #     for file in files:
+                    #         if (file == "gnvp.out") and runExists:
+                    #             with open(file, 'r') as f:
+                    #                 a = f.readlines()
+                    #             time = []
+                    #             error = []
+                    #             errorm = []
+                    #             for line in a:
+                    #                 if line.startswith(" STEP"):
+                    #                     a = line.split()
+                    #                     time.append(int(a[1]))
+                    #                     error.append(float(a[3]))
+                    #                     errorm.append(float(a[7]))
+                    #             try:
+                    #                 self.Convergence[folder][case]["ERROR"] = error
+                    #                 self.Convergence[folder][case]["ERRORM"] = errorm
+                    #             except ValueError:
+                    #                 print(
+                    #                     f"Some Run Had Problems! {folder} {case}")
 
                     os.chdir('../')
             except FileNotFoundError:
@@ -154,7 +165,6 @@ class Database_3D():
             print("Polar Doesn't exist! You should compute it first!")
 
     def makeData(self):
-        beta = 0
         for plane in list(self.Planes.keys()):
             self.Data[plane] = pd.DataFrame()
             pln = self.Planes[plane]
@@ -174,10 +184,7 @@ class Database_3D():
                 Fy_new = Fy
                 Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
 
-                My_new = My - \
-                    Fx_new * pln.CG[2] + \
-                    Fy_new * pln.CG[1] + \
-                    Fz_new * pln.CG[0]
+                My_new = My
 
                 self.Data[plane][f"CL_{name}"] = Fz_new / (pln.Q*pln.S)
                 self.Data[plane][f"CD_{name}"] = Fx_new / (pln.Q*pln.S)

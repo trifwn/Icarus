@@ -141,9 +141,9 @@ class Wing:
         self.surfaces = surfaces
         self.allSurfaces = [*surfaces, *symSurfaces]
 
-    def plotWing(self, fig=None, ax=None):
+    def plotWing(self, fig=None, ax=None, movement=None):
         """Plot Wing in 3D"""
-        if fig == None:
+        if fig is None:
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
             ax.set_title(self.name)
@@ -151,13 +151,16 @@ class Wing:
             ax.set_ylabel('y')
             ax.set_zlabel('z')
 
+        if movement is None:
+            movement = np.zeros(3)
+
         for surf in self.allSurfaces:
             s1 = np.matmul(self.Rmat, surf.startStrip())
             s2 = np.matmul(self.Rmat, surf.endStrip())
             for item in [s1, s2]:
-                item[0, :] += self.Origin[0]
-                item[1, :] += self.Origin[1]
-                item[2, :] += self.Origin[2]
+                item[0, :] += self.Origin[0] + movement[0]
+                item[1, :] += self.Origin[1] + movement[1]
+                item[2, :] += self.Origin[2] + movement[2]
 
             ax.plot(*s1, '-', color='red')
             ax.plot(*s2, '-', color='blue')
@@ -166,9 +169,12 @@ class Wing:
             for j in np.arange(0, self.M-1):
                 for item in [self.panels_lower, self.panels_upper]:
                     p1, p3, p4, p2 = item[i, j, :, :]
-                    xs = np.reshape([p1[0], p2[0], p3[0], p4[0]], (2, 2))
-                    ys = np.reshape([p1[1], p2[1], p3[1], p4[1]], (2, 2))
-                    zs = np.reshape([p1[2], p2[2], p3[2], p4[2]], (2, 2))
+                    xs = np.reshape(
+                        [p1[0], p2[0], p3[0], p4[0]], (2, 2)) + movement[0]
+                    ys = np.reshape(
+                        [p1[1], p2[1], p3[1], p4[1]], (2, 2)) + movement[1]
+                    zs = np.reshape(
+                        [p1[2], p2[2], p3[2], p4[2]], (2, 2)) + movement[2]
                     ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
                     if self.isSymmetric == True:
                         ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
