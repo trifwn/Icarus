@@ -23,26 +23,26 @@ def plotAirfoilReynolds(data, airfoil, reyn, solvers='All', size=(10, 10)):
     axs[1, 1].set_xlabel('Cd')
 
     if solvers == ['All']:
-        solvers = ["Xfoil", "Foil2Wake", "OpenFoam"]
+        solvers = ["Xfoil", "Foil2Wake", "OpenFoam", 'XFLR']
 
-        for j, solver in enumerate(solvers):
-            try:
-                polar = data[airfoil][reyn][solver]
-                aoa, cl, cd, cm = polar.T.values
-                c = colors[j]
-                m = markers[j]
-                style = f"{c}{m}-"
-                label = f"{airfoil}: {reyn} - {solver}"
-                axs[0, 1].plot(aoa, cd, style, label=label,
-                               markersize=3, linewidth=1)
-                axs[1, 0].plot(aoa, cl, style, label=label,
-                               markersize=3, linewidth=1)
-                axs[1, 1].plot(cd, cl, style, label=label,
-                               markersize=3, linewidth=1)
-                axs[0, 0].plot(aoa, cm, style, label=label,
-                               markersize=3, linewidth=1)
-            except KeyError as solver:
-                print(f"Run Doesn't Exist: {airfoil},{reyn},{solver}")
+    for j, solver in enumerate(solvers):
+        try:
+            polar = data[airfoil][solver][reyn]
+            aoa, cl, cd, cm = polar.T.values
+            c = colors[j]
+            m = markers[j]
+            style = f"{c}{m}-"
+            label = f"{airfoil}: {reyn} - {solver}"
+            axs[0, 1].plot(aoa, cd, style, label=label,
+                           markersize=3, linewidth=1)
+            axs[1, 0].plot(aoa, cl, style, label=label,
+                           markersize=3, linewidth=1)
+            axs[1, 1].plot(cd, cl, style, label=label,
+                           markersize=3, linewidth=1)
+            axs[0, 0].plot(aoa, cm, style, label=label,
+                           markersize=3, linewidth=1)
+        except KeyError as solver:
+            print(f"Run Doesn't Exist: {airfoil},{reyn},{solver}")
 
     fig.tight_layout()
 

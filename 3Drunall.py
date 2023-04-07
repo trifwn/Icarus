@@ -11,7 +11,7 @@ import ICARUS.PlaneDefinition.wing as wing
 from ICARUS.Flight_Dynamics.dyn_plane import dyn_plane as dp
 from ICARUS.Flight_Dynamics.disturbances import disturbance as disturb
 
-from ICARUS.Database.Database_3D import Database_2D
+from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database import DB3D, BASEGNVP
 
 start_time = time.time()
@@ -20,6 +20,7 @@ HOMEDIR = os.getcwd()
 # # Airfoil Data
 db = Database_2D(HOMEDIR)
 airfoils = db.getAirfoils()
+db.addXFLRPolars(f"{HOMEDIR}/ICARUS/XFLR5/")
 polars2D = db.Data
 
 
@@ -41,7 +42,7 @@ mainWing = wg(name="wing",
               chord=[0.159, 0.072],
               spanFun=wing.linSpan,
               N=20,
-              M=13,
+              M=5,
               mass=0.670)
 # mainWing.plotWing()
 
@@ -60,7 +61,7 @@ elevator = wg(name="tail",
               chord=[0.130, 0.03],
               spanFun=wing.linSpan,
               N=15,
-              M=8,
+              M=5,
               mass=0.06)
 # elevator.plotWing()
 
@@ -79,7 +80,7 @@ rudder = wg(name="rudder",
             chord=[0.2, 0.1],
             spanFun=wing.linSpan,
             N=15,
-            M=8,
+            M=5,
             mass=0.04)
 # rudder.plotWing()
 
@@ -89,7 +90,7 @@ addedMasses = [
     (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
     (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
 ]
-ap = Plane("Hermes", liftingSurfaces)
+ap = Plane("HermesXFLRpolars", liftingSurfaces)
 # ap.visAirplane()
 
 ap.accessDB(HOMEDIR, DB3D)
@@ -101,8 +102,8 @@ petrubationAnalysis = True
 sensitivityAnalysis = True
 
 # ## AoA Run
-AoAmax = 10
 AoAmin = -6
+AoAmax = 10
 NoAoA = (AoAmax - AoAmin) + 1
 angles = np.linspace(AoAmin, AoAmax, NoAoA)
 
@@ -112,7 +113,7 @@ timestep = 1
 
 if calcBatchGenu == True:
     polars_time = time.time()
-    genuBatchArgs = [ap, BASEGNVP, polars2D, "Xfoil",
+    genuBatchArgs = [ap, BASEGNVP, polars2D, "XFLR",
                      maxiter, timestep, Uinf, angles]
     ap.runSolver(gnvp.runGNVPangles, genuBatchArgs)
     print("Polars took : --- %s seconds ---" %
@@ -132,7 +133,7 @@ dyn.get_pertrub()
 
 if petrubationAnalysis == True:
     pert_time = time.time()
-    genuBatchArgs = [dyn, BASEGNVP, polars2D, "Xfoil",
+    genuBatchArgs = [dyn, BASEGNVP, polars2D, "XFLR",
                      maxiter, timestep,
                      dyn.trim['U'], dyn.trim['AoA']]
     dyn.accessDB(HOMEDIR)
@@ -152,7 +153,7 @@ if sensitivityAnalysis == True:
         space = [*-space, *space]
 
         dyn.sensitivityAnalysis(var, space)
-        genuBatchArgs = [dyn, var, BASEGNVP, polars2D, "Xfoil",
+        genuBatchArgs = [dyn, var, BASEGNVP, polars2D, "XFLR",
                          maxiter, timestep,
                          dyn.trim['U'], dyn.trim['AoA']]
         dyn.runAnalysis(gnvp.runGNVPsensitivity, genuBatchArgs)

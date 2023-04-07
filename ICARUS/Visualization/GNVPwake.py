@@ -36,6 +36,8 @@ def GNVPwake(plane, case, maxiter):
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
+    fig.tight_layout()
+
     ax.set_title(f"{plane.name} WAKE")
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -46,11 +48,12 @@ def GNVPwake(plane, case, maxiter):
 
     plane.visAirplane(fig, ax, movement=- plane.CG)
     ax.view_init(50, 150)
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
-    ax.set_zlim(-1, 1)
 
-    # ax.axis('scaled')
+    ax.axis('scaled')
+    ax.set_xlim3d(-1, 1)
+    ax.set_ylim3d(-1, 1)
+    ax.set_zlim3d(-1, 1)
+
 
 
 def ang2case(angle):

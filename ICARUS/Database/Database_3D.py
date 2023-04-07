@@ -72,11 +72,20 @@ class Database_3D():
                                         error.append(float(a[2]))
                                         errorm.append(float(a[6]))
                                 try:
+                                    foo = len(
+                                        self.Convergence[folder][case]['TTIME'])
+                                    if foo > len(time):
+                                        self.Convergence[folder][case] = \
+                                            self.Convergence[folder][case].tail(
+                                                len(time))
+                                    else:
+                                        error = error[-foo:]
+                                        errorm = errorm[-foo:]
                                     self.Convergence[folder][case]["ERROR"] = error
                                     self.Convergence[folder][case]["ERRORM"] = errorm
-                                except ValueError:
+                                except ValueError as e:
                                     print(
-                                        f"Some Run Had Problems! {folder} {case}")
+                                        f"Some Run Had Problems! {folder} {case}\n{e}")
 
                     os.chdir('../')
             except FileNotFoundError:

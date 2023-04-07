@@ -23,20 +23,22 @@ def plotAirfoilPolars(data, airfoil, solvers='All', size=(10, 10), AoA_bounds=No
     axs[1, 1].set_xlabel('Cd')
 
     if solvers == ['All']:
-        solvers = ["Xfoil", "Foil2Wake", "OpenFoam"]
+        solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
-    for i, reynolds in enumerate(list(data[airfoil])):
-        for j, solver in enumerate(solvers):
+    for i, solver in enumerate(data[airfoil].keys()):
+        if solver not in solvers:
+            continue
+        for j, reynolds in enumerate(data[airfoil][solver].keys()):
             try:
-                polar = data[airfoil][reynolds][solver]
+                polar = data[airfoil][solver][reynolds]
                 if AoA_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar = polar.loc[(polar['AoA'] >= AoA_bounds[0]) &
                                       (polar['AoA'] <= AoA_bounds[1])]
 
                 aoa, cl, cd, cm = polar.T.values
-                c = colors[i]
-                m = markers[j]
+                c = colors[j]
+                m = markers[i]
                 style = f"{c}{m}-"
                 label = f"{airfoil}: {reynolds} - {solver}"
                 axs[0, 1].plot(aoa, cd, style, label=label,

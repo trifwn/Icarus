@@ -9,7 +9,7 @@ def plotAirplanePolars(data, airplanes, solvers=['All'], size=(10, 10)):
     fig, axs = plt.subplots(2, 2, figsize=size)
     if len(airplanes) == 1:
         fig.suptitle(
-            f'{airplanes} Aero Coefficients', fontsize=16)
+            f'{airplanes[0]} Aero Coefficients', fontsize=16)
     else:
         fig.suptitle(
             f'Airplanes Aero Coefficients', fontsize=16)

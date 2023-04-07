@@ -49,8 +49,8 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
     i = -1
     j = -1
     toomuchData = False
-    for ang in list(cases.keys()):
-        num = - float(
+    for ang in cases.keys():
+        num = float(
             ''.join(c for c in ang if (c.isdigit() or c == '.')))
         if ang.startswith('m'):
             ang_num = -num
@@ -63,29 +63,28 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
             j = 0
         else:
             continue
-
         for solver in solvers:
             try:
                 it = runHist["TTIME"].astype(float)
-                it = it/it[0]
+                it = it/it.iloc[0]
 
-                fx = runHist[f"TFORC{solver}(1)"].astype(float)
-                fy = runHist[f"TFORC{solver}(2)"].astype(float)
-                fz = runHist[f"TFORC{solver}(3)"].astype(float)
-                mx = runHist[f"TAMOM{solver}(1)"].astype(float)
-                my = runHist[f"TAMOM{solver}(2)"].astype(float)
-                mz = runHist[f"TAMOM{solver}(2)"].astype(float)
+                fx = np.abs(runHist[f"TFORC{solver}(1)"].astype(float))
+                fy = np.abs(runHist[f"TFORC{solver}(2)"].astype(float))
+                fz = np.abs(runHist[f"TFORC{solver}(3)"].astype(float))
+                mx = np.abs(runHist[f"TAMOM{solver}(1)"].astype(float))
+                my = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
+                mz = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
                 error = runHist[f"ERROR"].astype(float)
                 errorM = runHist[f"ERRORM"].astype(float)
-
                 if plotError == True:
-                    it = it[1:].values
-                    fx = np.abs(fx[1:].values - fx[:-1].values)
-                    fy = np.abs(fy[1:].values - fy[:-1].values)
-                    fz = np.abs(fz[:-1].values - fz[1:].values)
-                    mx = np.abs(mx[:-1].values - mx[1:].values)
-                    my = np.abs(my[:-1].values - my[1:].values)
-                    mz = np.abs(mz[:-1].values - mz[1:].values)
+                    it2 = it
+                    it = it.iloc[1:].values
+                    fx = np.abs(fx.iloc[1:].values - fx.iloc[:-1].values)
+                    fy = np.abs(fy.iloc[1:].values - fy.iloc[:-1].values)
+                    fz = np.abs(fz.iloc[1:].values - fz.iloc[:-1].values)
+                    mx = np.abs(mx.iloc[1:].values - mx.iloc[:-1].values)
+                    my = np.abs(my.iloc[1:].values - my.iloc[:-1].values)
+                    mz = np.abs(mz.iloc[1:].values - mz.iloc[:-1].values)
 
                 j += 1
                 if (i > len(colors) - 1):
@@ -110,12 +109,12 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
                 axs[1, 2].plot(it, mz, style, label=label,
                                markersize=2.0, linewidth=1)
 
-                axs[2, 0].plot(it, error, style, label=label,
+                axs[2, 0].plot(it2, error, style, label=label,
                                markersize=2.0, linewidth=1)
-                axs[2, 1].plot(it, errorM, style, label=label,
+                axs[2, 1].plot(it2, errorM, style, label=label,
                                markersize=2.0, linewidth=1)
-            except KeyError as solver:
-                print(f"Run Doesn't Exist: {plane},{solver},{ang}")
+            except KeyError as e:
+                print(f"Run Doesn't Exist: {plane},{e},{ang}")
     if toomuchData == True:
         print(f"Too much data to plot, only plotting {len(colors)} cases")
 

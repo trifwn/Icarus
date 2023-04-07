@@ -160,7 +160,7 @@ def geoBodyMovements(data, mov, i, NB):
 def cldFiles(AeroData, airfoils, solver):
     for airfoil in airfoils:
         fname = f"{airfoil[4:]}.cld"
-        polars = AeroData[airfoil]
+        polars = AeroData[airfoil][solver]
 
         # GET FILE
         with open(fname, "r") as file:
@@ -180,10 +180,10 @@ def cldFiles(AeroData, airfoils, solver):
 
         # GET 2D AIRFOIL POLARS IN ONE TABLE
         keys = list(polars.keys())
-        df = polars[keys[0]][solver].astype(
+        df = polars[keys[0]].astype(
             'float32').dropna(axis=0, how="all")
         for reyn in keys[1:]:
-            df2 = polars[reyn][solver].astype(
+            df2 = polars[reyn].astype(
                 'float32').dropna(axis=0, how="all")
             df.rename(columns={
                       "CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"}, inplace=True)
