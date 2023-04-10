@@ -6,7 +6,7 @@ from . import filesGNVP as fgnvp
 
 def GNVPexe(HOMEDIR, ANGLEDIR):
     os.chdir(ANGLEDIR)
-    os.system("./gnvp < input > gnvp.out")
+    os.system("./gnvp3 < input > gnvp.out")
     # os.system(f"cat LOADS_aer.dat >>  res.dat")
     os.chdir(HOMEDIR)
 

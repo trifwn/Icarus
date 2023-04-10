@@ -2,7 +2,7 @@ import numpy as np
 import time
 import os
 
-from ICARUS.Software.GenuVP3 import runGNVP as gnvp
+from ICARUS.Software.GenuVP3 import runGNVP as gnvp3
 
 from ICARUS.PlaneDefinition.plane import Airplane as Plane
 from ICARUS.PlaneDefinition.wing import Wing as wg
@@ -12,7 +12,7 @@ from ICARUS.Flight_Dynamics.dyn_plane import dyn_plane as dp
 from ICARUS.Flight_Dynamics.disturbances import disturbance as disturb
 
 from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database import DB3D, BASEGNVP
+from ICARUS.Database import DB3D, BASEGNVP3
 
 start_time = time.time()
 HOMEDIR = os.getcwd()
@@ -90,79 +90,79 @@ addedMasses = [
     (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
     (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
 ]
-ap = Plane("HermesXFLRpolars", liftingSurfaces)
-# ap.visAirplane()
+for ls in liftingSurfaces:
+    ap = Plane(ls.name, [ls])
+    # ap.visAirplane()
 
-ap.accessDB(HOMEDIR, DB3D)
-ap.addMasses(addedMasses)
+    ap.accessDB(HOMEDIR, DB3D)
+    ap.addMasses(addedMasses)
 
-cleaning = False
-calcBatchGenu = True
-petrubationAnalysis = True
-sensitivityAnalysis = True
+    cleaning = False
+    calcBatchGenu = True
+    petrubationAnalysis = True
+    sensitivityAnalysis = True
 
-# ## AoA Run
-AoAmin = -6
-AoAmax = 10
-NoAoA = (AoAmax - AoAmin) + 1
-angles = np.linspace(AoAmin, AoAmax, NoAoA)
+    # ## AoA Run
+    AoAmin = -6
+    AoAmax = 10
+    NoAoA = (AoAmax - AoAmin) + 1
+    angles = np.linspace(AoAmin, AoAmax, NoAoA)
 
-Uinf = 20
-maxiter = 50
-timestep = 1
+    Uinf = 20
+    maxiter = 50
+    timestep = 1
 
-if calcBatchGenu == True:
-    polars_time = time.time()
-    genuBatchArgs = [ap, BASEGNVP, polars2D, "XFLR",
-                     maxiter, timestep, Uinf, angles]
-    ap.runSolver(gnvp.runGNVPangles, genuBatchArgs)
-    print("Polars took : --- %s seconds ---" %
-          (time.time() - polars_time))
-genuPolarArgs = [ap.CASEDIR, HOMEDIR]
-ap.defineSim(Uinf, 1.225)
-ap.makePolars(gnvp.makePolar, genuPolarArgs)
-ap.save()
+    if calcBatchGenu == True:
+        polars_time = time.time()
+        genuBatchArgs = [ap, BASEGNVP3, polars2D, "XFLR",
+                         maxiter, timestep, Uinf, angles]
+        ap.runSolver(gnvp3.runGNVPangles, genuBatchArgs)
+        print("Polars took : --- %s seconds ---" %
+              (time.time() - polars_time))
+    genuPolarArgs = [ap.CASEDIR, HOMEDIR]
+    ap.defineSim(Uinf, 1.225)
+    ap.makePolars(gnvp3.makePolar, genuPolarArgs)
+    ap.save()
 
-# # Dynamics
-# ### Define and Trim Plane
-dyn = dp(ap, polars2D)
+    # # Dynamics
+    # ### Define and Trim Plane
+    dyn = dp(ap, polars2D)
 
-# ### Pertrubations
-dyn.allPerturb("Central")
-dyn.get_pertrub()
+    # ### Pertrubations
+    dyn.allPerturb("Central")
+    dyn.get_pertrub()
 
-if petrubationAnalysis == True:
-    pert_time = time.time()
-    genuBatchArgs = [dyn, BASEGNVP, polars2D, "XFLR",
-                     maxiter, timestep,
-                     dyn.trim['U'], dyn.trim['AoA']]
-    dyn.accessDB(HOMEDIR)
-    dyn.runAnalysis(gnvp.runGNVPpertr, genuBatchArgs)
-    print("Pertrubations took : --- %s seconds ---" %
-          (time.time() - pert_time))
-
-genuLogArgs = [dyn.DynDir, HOMEDIR]
-dyn.logResults(gnvp.logResults, genuLogArgs)
-dyn.save()
-
-# SENSITIVITY ANALYSIS
-if sensitivityAnalysis == True:
-    sens_time = time.time()
-    for var in ['u', 'w', 'q', 'theta', 'v', 'p', 'r', 'phi']:
-        space = np.logspace(np.log10(0.00001), np.log10(1), 10, base=10)
-        space = [*-space, *space]
-
-        dyn.sensitivityAnalysis(var, space)
-        genuBatchArgs = [dyn, var, BASEGNVP, polars2D, "XFLR",
+    if petrubationAnalysis == True:
+        pert_time = time.time()
+        genuBatchArgs = [dyn, BASEGNVP3, polars2D, "XFLR",
                          maxiter, timestep,
                          dyn.trim['U'], dyn.trim['AoA']]
-        dyn.runAnalysis(gnvp.runGNVPsensitivity, genuBatchArgs)
-        dyn.sensResults[var] = gnvp.logResults(
-            f"{dyn.CASEDIR}/Sensitivity_{var}", HOMEDIR)
-    print("Sensitivity Analysis took : --- %s seconds ---" %
-          (time.time() - sens_time))
+        dyn.accessDB(HOMEDIR)
+        dyn.runAnalysis(gnvp3.runGNVPpertr, genuBatchArgs)
+        print("Pertrubations took : --- %s seconds ---" %
+              (time.time() - pert_time))
 
+    genuLogArgs = [dyn.DynDir, HOMEDIR]
+    dyn.logResults(gnvp3.logResults, genuLogArgs)
+    dyn.save()
 
-# print time it took
-print("PROGRAM TERMINATED")
-print("Execution took : --- %s seconds ---" % (time.time() - start_time))
+    # SENSITIVITY ANALYSIS
+    if sensitivityAnalysis == True:
+        sens_time = time.time()
+        for var in ['u', 'w', 'q', 'theta', 'v', 'p', 'r', 'phi']:
+            space = np.logspace(np.log10(0.00001), np.log10(1), 10, base=10)
+            space = [*-space, *space]
+
+            dyn.sensitivityAnalysis(var, space)
+            genuBatchArgs = [dyn, var, BASEGNVP3, polars2D, "XFLR",
+                             maxiter, timestep,
+                             dyn.trim['U'], dyn.trim['AoA']]
+            dyn.runAnalysis(gnvp3.runGNVPsensitivity, genuBatchArgs)
+            dyn.sensResults[var] = gnvp3.logResults(
+                f"{dyn.CASEDIR}/Sensitivity_{var}", HOMEDIR)
+        print("Sensitivity Analysis took : --- %s seconds ---" %
+              (time.time() - sens_time))
+
+    # print time it took
+    print("PROGRAM TERMINATED")
+    print("Execution took : --- %s seconds ---" % (time.time() - start_time))

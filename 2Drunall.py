@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from ICARUS.Airfoils import airfoil as af
 
-from ICARUS.Software.Foil2Wake import runF2w as f2w
+from ICARUS.Software.Foil2Wake_Section import runF2w as f2w
 from ICARUS.Software.OpenFoam import runOpenFoam as of
 from ICARUS.Software.Xfoil import runXFoil as xf
 from ICARUS.Database import BASEFOIL2W, BASEOPENFOAM, DB2D

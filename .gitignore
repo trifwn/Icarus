@@ -1,10 +1,17 @@
+# ENVIROMENT
 *.mypy_cache/
 *.vscode/
 *__pycache__
 
+# PACKAGING
+*.egg
+*.egg-info
+dist
+build
+eggs
 
-ICARUS/foil
-ICARUS/gnvp
+ICARUS/foil*
+ICARUS/gnvp*
 
 *.pyc
 Control/slprj*
