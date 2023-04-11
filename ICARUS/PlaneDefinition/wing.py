@@ -87,7 +87,7 @@ class Wing:
                         Orientation=self.Orientation,
                         isSymmetric=False,
                         span=self.span/2,
-                        sweepOffset=-self.sweepOffset,
+                        sweepOffset= -self.sweepOffset,
                         dihAngle=self.dihAngle,
                         chordFun=self.chordFun,
                         chord=self.chord[::-1],
@@ -182,9 +182,6 @@ class Wing:
                     ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
                     if self.isSymmetric == True:
                         ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
-
-        # if pltshow == True:
-        #     plt.show()
 
     def grid2panels(self, grid):
         """Convert Grid to Panels"""

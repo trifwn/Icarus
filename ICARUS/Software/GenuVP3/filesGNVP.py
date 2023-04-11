@@ -253,7 +253,7 @@ def bldFiles(bodies):
         data[24] = \
             f'4                      {ff4(bod["Root_chord"])}     {ff4(-step)}     0.         0.         0.         0.\n'
         data[30] = \
-            f'4                      {ff4(0.)}     {ff4((-1/4)*step + offset )}     0.         0.         0.         0.\n'
+            f'4                      {ff4(0.)}     {ff4( offset )}     0.         0.         0.         0.\n'
 
         with open(fname, "w") as file:
             file.writelines(data)

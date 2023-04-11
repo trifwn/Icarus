@@ -27,7 +27,7 @@ polars2D = db.Data
 # # Get Plane
 Origin = np.array([0., 0., 0.])
 
-wingPos = np.array([0.159/2, 0.0, 0.0])
+wingPos = np.array([0.0, 0.0, 0.0])
 wingOrientation = np.array([2.8, 0.0, 0.0])
 
 mainWing = wg(name="wing2",
@@ -46,7 +46,7 @@ mainWing = wg(name="wing2",
               mass=0.670)
 # mainWing.plotWing()
 
-elevatorPos = np.array([0.54 + 0.13/2, 0., 0.])
+elevatorPos = np.array([0.54, 0., 0.])
 elevatorOrientantion = np.array([0., 0., 0.])
 
 elevator = wg(name="tail",
@@ -65,7 +65,7 @@ elevator = wg(name="tail",
               mass=0.06)
 # elevator.plotWing()
 
-rudderPos = np.array([0.47 + 0.2/2, 0., 0.01])
+rudderPos = np.array([0.47, 0., 0.01])
 rudderOrientantion = np.array([0.0, 0.0, 90.0])
 
 rudder = wg(name="rudder",
@@ -108,7 +108,9 @@ NoAoA = (AoAmax - AoAmin) + 1
 angles = np.linspace(AoAmin, AoAmax, NoAoA)
 
 Uinf = 20
-maxiter = 50
+ap.defineSim(Uinf, 1.225)
+ap.save()
+maxiter = 20
 timestep = 1
 
 if calcBatchGenu == True:
@@ -119,7 +121,6 @@ if calcBatchGenu == True:
     print("Polars took : --- %s seconds ---" %
           (time.time() - polars_time))
 genuPolarArgs = [ap.CASEDIR, HOMEDIR]
-ap.defineSim(Uinf, 1.225)
 ap.makePolars(gnvp3.makePolar, genuPolarArgs)
 ap.save()
 

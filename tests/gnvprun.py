@@ -12,10 +12,15 @@ def gnvprun():
     from tests.planes import ap, db, HOMEDIR
 
     polars2D = db.Data
-    AoAmin = -6
-    AoAmax = 10
+    AoAmin = -3
+    AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
     angles = np.linspace(AoAmin, AoAmax, NoAoA)
+    ang = []
+    for a in angles:
+        if a != 0:
+            ang.append(a)
+    angles = ang
     Uinf = 20
     maxiter = 20
     timestep = 10

@@ -10,9 +10,6 @@ def GNVPwake(plane, case):
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
     ax.set_title(f"{plane.name} WAKE")
     ax.set_ylabel('y')
     ax.set_zlabel('z')
@@ -24,3 +21,4 @@ def GNVPwake(plane, case):
     ax.scatter(C1[:, 0], C1[:, 1], C1[:, 2], color='g', s=5.)  # GRID
 
     plane.visAirplane(fig, ax, movement=- np.array(plane.CG))
+    plt.show()

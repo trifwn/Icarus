@@ -181,7 +181,7 @@ def makeSurfaceDict(surf, idx, CG):
         "pitch": surf.Orientation[0],
         "cone": surf.Orientation[1],
         "wngang": surf.Orientation[2],
-        "x_end": surf.Origin[0] - surf.xoff[-1],
+        "x_end": surf.Origin[0] + surf.xoff[-1],
         "y_end": surf.Origin[1] + surf.span,
         "z_end": surf.Origin[2] + surf.Ddihedr[-1],
         "Root_chord": surf.chord[0],

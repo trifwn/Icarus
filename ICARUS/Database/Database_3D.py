@@ -42,6 +42,7 @@ class Database_3D():
                                 json_obj)
             except FileNotFoundError:
                 print(f"Plane {folder} doesn't contain polars!")
+                files = next(os.walk('.'))[2]
                 for file in files:
                     if file.endswith(".json"):
                         with open(f"{file}", 'r') as f:
@@ -53,6 +54,8 @@ class Database_3D():
                             genuPolarArgs = [plane.CASEDIR, plane.HOMEDIR]
                             plane.makePolars(gnvp3.makePolar, genuPolarArgs)
                             self.Planes[folder] = plane
+                            self.rawData[folder] = pd.read_csv(
+                                f"{DB3D}/{folder}/clcd.genu")
                         except e:
                             print('Failed to create Polars! Got Error:')
                             print(e)
@@ -153,7 +156,7 @@ class Database_3D():
                 Fy_new = Fy
                 Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
 
-                My_new = My
+                My_new = My 
                 try:
                     Q = pln.Q
                     S = pln.S
