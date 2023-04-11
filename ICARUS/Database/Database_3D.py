@@ -40,9 +40,22 @@ class Database_3D():
                             json_obj = f.read()
                             self.dynPlanes[folder] = jsonpickle.decode(
                                 json_obj)
-
             except FileNotFoundError:
                 print(f"Plane {folder} doesn't contain polars!")
+                for file in files:
+                    if file.endswith(".json"):
+                        with open(f"{file}", 'r') as f:
+                            json_obj = f.read()
+                            plane = jsonpickle.decode(json_obj)
+                        print('Plane object exists. Trying to create Polars...')
+                        try:
+                            from ICARUS.Software.GenuVP3 import runGNVP as gnvp3
+                            genuPolarArgs = [plane.CASEDIR, plane.HOMEDIR]
+                            plane.makePolars(gnvp3.makePolar, genuPolarArgs)
+                            self.Planes[folder] = plane
+                        except e:
+                            print('Failed to create Polars! Got Error:')
+                            print(e)
 
             try:
                 cases = next(os.walk('.'))[1]
@@ -97,17 +110,20 @@ class Database_3D():
     def getPlanes(self):
         return list(self.Planes.keys())
 
-    def importXFLRpolar(self, FILENAME):
-        # import csv into pandas Dataframe and skip first 7 rows
-        df = pd.read_csv(FILENAME, skiprows=7,
-                         delim_whitespace=True, on_bad_lines="skip")
-        # rename columns
-        df.rename(columns={'alpha': 'AoA'}, inplace=True)
+    def importXFLRpolar(self, FILENAME, name):
+        if f"XFLR_{name}" not in self.Data.keys():
+            # import csv into pandas Dataframe and skip first 7 rows
+            df = pd.read_csv(FILENAME, skiprows=7,
+                             delim_whitespace=True, on_bad_lines="skip")
+            # rename columns
+            df.rename(columns={'alpha': 'AoA'}, inplace=True)
 
-        # convert to float
-        df = df.astype(float)
-        self.Data["XFLR"] = df
-        return df
+            # convert to float
+            df = df.astype(float)
+            self.Data[f"XFLR_{name}"] = df
+            return df
+        else:
+            print("Polar Already Exists!")
 
     def getPolar(self, plane, mode):
         try:
@@ -122,7 +138,6 @@ class Database_3D():
         for plane in list(self.Planes.keys()):
             self.Data[plane] = pd.DataFrame()
             pln = self.Planes[plane]
-
             self.Data[plane]["AoA"] = self.rawData[plane]["AoA"]
             AoA = self.rawData[plane]["AoA"] * np.pi/180
             for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
@@ -171,3 +186,12 @@ cols = ["TTIME",
         "TAMOMDS2D(1)",
         "TAMOMDS2D(2)",
         "TAMOMDS2D(3)"]
+
+
+def ang2case(angle):
+    if angle >= 0:
+        folder = str(angle)[::-1].zfill(7)[::-1] + "_AoA"
+    else:
+        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "_AoA"
+
+    return folder

@@ -37,7 +37,7 @@ def plotAirplanePolars(data, airplanes, solvers=['All'], size=(10, 10)):
             try:
                 polar = data[airplane]
                 aoa = polar["AoA"]
-                if airplane == "XFLR":
+                if airplane.startswith("XFLR"):
                     cl = polar[f"CL"]
                     cd = polar[f"CD"]
                     cm = polar[f"Cm"]
@@ -77,3 +77,4 @@ def plotAirplanePolars(data, airplanes, solvers=['All'], size=(10, 10)):
 
     axs[1, 0].legend()  # (bbox_to_anchor=(-0.1, -0.25),  ncol=3,
     # fancybox=True, loc='lower left')
+    plt.show()

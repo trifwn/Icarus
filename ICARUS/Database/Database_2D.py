@@ -80,10 +80,12 @@ class Database_2D():
         except KeyError:
             print("Airfoil Doesn't exist! You should compute it first!")
 
-    def addXFLRPolars(self, XFLRdir):
+    def addXFLRPolars(self, HOMEDIR, XFLRdir):
         os.chdir(XFLRdir)
         files = next(os.walk('.'))[1]
         for airfoil in files:
+            if airfoil not in self.Data.keys():
+                self.Data[airfoil] = {}
             if airfoil.startswith("NACA"):
                 os.chdir(airfoil)
                 dat = next(os.walk('.'))[2]
@@ -109,6 +111,7 @@ class Database_2D():
                             reyn, sign=False, precision=3).replace('+', '')
                         self.Data[airfoil]['XFLR'][reyn] = dat
                 os.chdir(XFLRdir)
+        os.chdir(HOMEDIR)
 
 
 xfoilcols = [

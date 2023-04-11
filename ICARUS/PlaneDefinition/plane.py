@@ -27,7 +27,7 @@ class Airplane():
         gotWing = False
         for i, surface in enumerate(surfaces):
             if surface.name == "wing":
-                # self.mainWing = surface
+                self.mainWing = surface
                 self.S = surface.S
                 self.MAC = surface.MAC
                 self.AR = surface.AR
@@ -39,6 +39,7 @@ class Airplane():
                 surfaces.append(l)
                 surfaces.append(r)
         if gotWing == False:
+            self.mainWing = surfaces[0]
             self.S = surfaces[0].S
             self.MAC = surfaces[0].MAC
             self.AR = surfaces[0].AR

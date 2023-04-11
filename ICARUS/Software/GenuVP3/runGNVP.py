@@ -22,7 +22,7 @@ def runGNVPangles(plane, GENUBASE, polars, solver2D, maxiter, timestep, Uinf, an
     plane.defineSim(Uinf, dens)
 
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(makeSurfaceDict(surface, i, plane.CG))
 
     for angle in angles:
         print(f"Running Angles {angle}")
@@ -49,7 +49,7 @@ def runGNVPpertr(plane, GENUBASE, polars, solver2D, maxiter, timestep, Uinf, ang
     bodies = []
 
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(makeSurfaceDict(surface, i, plane.CG))
 
     for dst in plane.disturbances:
         movements = airMov(plane.surfaces, plane.CG,
@@ -85,7 +85,7 @@ def runGNVPsensitivity(plane, var, GENUBASE, polars, solver2D, maxiter, timestep
     bodies = []
 
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(makeSurfaceDict(surface, i, plane.CG))
 
     for dst in plane.sensitivity[var]:
         movements = airMov(plane.surfaces, plane.CG,
@@ -166,22 +166,22 @@ def setParams(nBodies, nAirfoils, maxiter, timestep, Uinf, WindAngle, dens):
     return params
 
 
-def makeSurfaceDict(surf, idx):
+def makeSurfaceDict(surf, idx, CG):
     s = {
         'NB': idx,
         "NACA": surf.airfoil.name,
         "name": surf.name,
         'bld': f'{surf.name}.bld',
         'cld': f'{surf.airfoil.name}.cld',
-        'NNB': surf.N,
-        'NCWB': surf.M,
-        "x_0": surf.Origin[0] + surf.chord[0]/4,
+        'NNB': surf.M,
+        'NCWB': surf.N,
+        "x_0": surf.Origin[0],
         "y_0": surf.Origin[1],
         "z_0": surf.Origin[2],
         "pitch": surf.Orientation[0],
         "cone": surf.Orientation[1],
         "wngang": surf.Orientation[2],
-        "x_end": surf.Origin[0] - surf.xoff[-1] + surf.chord[-1]/4,
+        "x_end": surf.Origin[0] - surf.xoff[-1],
         "y_end": surf.Origin[1] + surf.span,
         "z_end": surf.Origin[2] + surf.Ddihedr[-1],
         "Root_chord": surf.chord[0],

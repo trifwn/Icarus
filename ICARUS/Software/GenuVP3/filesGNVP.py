@@ -59,7 +59,7 @@ def dfile(params):
     data[36] = f'{params["timestep"]}        DT         time step\n'
     data[
         55
-    ] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
+    ] = "5           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
     data[59] = f'{ff2(params["Uinf"][0])}       UINF(1)    the velocity at infinity\n'
     data[60] = f'{ff2(params["Uinf"][1])}       UINF(2)    .\n'
     data[61] = f'{ff2(params["Uinf"][2])}       UINF(3)    .\n'
@@ -191,7 +191,6 @@ def cldFiles(AeroData, airfoils, solver):
 
         # SORT BY AoA
         df = df.sort_values("AoA")
-
         # FILL NaN Values By neighbors
         df = filltable(df)
 
@@ -265,15 +264,15 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
 
     # COPY FROM BASE
     filesNeeded = ['dfile.yours', 'hermes.geo', 'hyb.inf',
-                   'input', 'name.cld', 'Lwing.bld']
+                   'input', 'name.cld', 'wing.bld']
     for item in filesNeeded:
         shutil.copy(f'{GENUBASE}/{item}', f'{ANGLEDIR}/')
 
     # EMPTY BLD FILES
     for body in bodies:
-        if body["name"] != 'Lwing':
-            os.system(f'cp Lwing.bld {body["name"]}.bld')
-
+        os.system(f'cp wing.bld {body["name"]}.bld')
+    if "wing" not in [bod["name"] for bod in bodies]:
+        os.system("rm wing.bld")
     # EMPTY CLD FILES
     for airfoil in airfoils:
         os.system(f'cp name.cld {airfoil[4:]}.cld')

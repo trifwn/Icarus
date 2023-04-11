@@ -76,8 +76,8 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
                 mz = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
                 error = runHist[f"ERROR"].astype(float)
                 errorM = runHist[f"ERRORM"].astype(float)
+                it2 = it
                 if plotError == True:
-                    it2 = it
                     it = it.iloc[1:].values
                     fx = np.abs(fx.iloc[1:].values - fx.iloc[:-1].values)
                     fy = np.abs(fy.iloc[1:].values - fy.iloc[:-1].values)

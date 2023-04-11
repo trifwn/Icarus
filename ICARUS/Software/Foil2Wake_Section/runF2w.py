@@ -103,7 +103,7 @@ def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile)
         os.system('cp design_'+name+'.inp design.inp')
         os.system('cp f2w_'+name+'.inp f2w.inp')
         print(f'Running {angles}')
-        os.system('./foil > '+name+'.out')
+        os.system('./foil_section > '+name+'.out')
         os.system('rm -r TMP.dir/')
     os.system('rm -r SOLOUTI*')
     sleep(1)
@@ -138,4 +138,4 @@ def setupF2W(F2WBASE, HOMEDIR, CASEDIR):
     for item in filesNeeded:
         shutil.copy(f'{F2WBASE}/{item}', f'{CASEDIR}/')
     if 'foil' not in next(os.walk(f'{CASEDIR}/'))[2]:
-        os.system(f'ln -sv {HOMEDIR}/foil {CASEDIR}/foil')
+        os.system(f'ln -sv {HOMEDIR}/foil_section {CASEDIR}/foil_section')

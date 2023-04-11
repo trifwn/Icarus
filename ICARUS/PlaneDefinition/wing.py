@@ -82,12 +82,12 @@ class Wing:
         if self.isSymmetric == True:
             left = Wing(name=f"L{self.name}",
                         airfoil=self.airfoil,
-                        Origin=[self.Origin[0], self.Origin[1] -
+                        Origin=[self.Origin[0] + self.sweepOffset, self.Origin[1] -
                                 self.span/2, self.Origin[2]],
                         Orientation=self.Orientation,
                         isSymmetric=False,
                         span=self.span/2,
-                        sweepOffset=self.sweepOffset,
+                        sweepOffset=-self.sweepOffset,
                         dihAngle=self.dihAngle,
                         chordFun=self.chordFun,
                         chord=self.chord[::-1],
@@ -143,6 +143,7 @@ class Wing:
 
     def plotWing(self, fig=None, ax=None, movement=None):
         """Plot Wing in 3D"""
+        pltshow = False
         if fig is None:
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
@@ -150,6 +151,9 @@ class Wing:
             ax.set_xlabel('x')
             ax.set_ylabel('y')
             ax.set_zlabel('z')
+            ax.axis('scaled')
+            ax.view_init(30, 150)
+            pltshow = True
 
         if movement is None:
             movement = np.zeros(3)
@@ -178,8 +182,9 @@ class Wing:
                     ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
                     if self.isSymmetric == True:
                         ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
-        ax.axis('scaled')
-        ax.view_init(30, 150)
+
+        # if pltshow == True:
+        #     plt.show()
 
     def grid2panels(self, grid):
         """Convert Grid to Panels"""
@@ -280,9 +285,11 @@ class Wing:
 
         self.Area = 0
         self.S = 0
+        rm1 = np.linalg.inv(self.Rmat)
         for i in np.arange(0, self.N-1):
-            self.S += 2*(self.grid_upper[i+1, 0, 1] -
-                         self.grid_upper[i, 0, 1]) * \
+            _, y1, _ = np.matmul(rm1, self.grid_upper[i+1, 0, :])
+            _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
+            self.S += 2*(y1 - y2) * \
                 (self.Dchord[i] + self.Dchord[i+1])/2
 
         g_up = self.grid_upper
