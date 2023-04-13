@@ -1,5 +1,5 @@
 import numpy as np
 
 
-def checkRuns(plane):
+def checkRuns(CASEDIR, angles):
     pass

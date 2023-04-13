@@ -12,7 +12,7 @@ class TestAdd(unittest.TestCase):
         S_act = 4,
         MAC_act = 0.8,
         AREA_act = 4.0608,
-        CG_act = np.array([0.36283954, 0., 0.])
+        CG_act = np.array([0.163, 0., 0.])
         I_act = np.array([2.082, 0.017, 2.099, 0., 0.139, 0.])
 
         S, MAC, AREA, CG, I = testwing.geom()
@@ -24,7 +24,7 @@ class TestAdd(unittest.TestCase):
         np.testing.assert_almost_equal(I, I_act, decimal=3)
 
     def test2_gnvp_run(self):
-        gnvprun()
+        gnvprun("Parallel")
         # pass
 
     def test3_airPolars(self):
@@ -56,7 +56,6 @@ class TestAdd(unittest.TestCase):
 
     def test4_gnvpGeom(self):
         gridAP, gridGNVP = gnvpGeom()
-
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
 

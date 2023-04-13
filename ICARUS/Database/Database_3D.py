@@ -50,9 +50,9 @@ class Database_3D():
                             plane = jsonpickle.decode(json_obj)
                         print('Plane object exists. Trying to create Polars...')
                         try:
-                            from ICARUS.Software.GenuVP3 import runGNVP as gnvp3
+                            from ICARUS.Software.GenuVP3.interface import makePolar
                             genuPolarArgs = [plane.CASEDIR, plane.HOMEDIR]
-                            plane.makePolars(gnvp3.makePolar, genuPolarArgs)
+                            plane.makePolars(makePolar, genuPolarArgs)
                             self.Planes[folder] = plane
                             self.rawData[folder] = pd.read_csv(
                                 f"{DB3D}/{folder}/clcd.genu")
@@ -152,11 +152,11 @@ class Database_3D():
                 My = self.rawData[plane][f"TAMOM{enc}(2)"]
                 Mz = self.rawData[plane][f"TAMOM{enc}(3)"]
 
-                Fx_new = Fx * np.cos(-AoA) - Fz * np.sin(-AoA)
+                Fx_new = Fx * np.cos(AoA) + Fz * np.sin(AoA)
                 Fy_new = Fy
-                Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
+                Fz_new = -Fx * np.sin(AoA) + Fz * np.cos(AoA)
 
-                My_new = My 
+                My_new = My
                 try:
                     Q = pln.Q
                     S = pln.S
@@ -197,4 +197,17 @@ def ang2case(angle):
     else:
         folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "_AoA"
 
+    return folder
+
+
+def dst2case(dst):
+    if dst.var == "Trim":
+        folder = "Trim/"
+    elif dst.isPositive:
+        folder = "p" + \
+            str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}/"
+    else:
+        folder = "m" + \
+            str(dst.amplitude)[
+                ::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}/"
     return folder

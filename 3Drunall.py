@@ -2,7 +2,7 @@ import numpy as np
 import time
 import os
 
-from ICARUS.Software.GenuVP3 import runGNVP as gnvp3
+from ICARUS.Software.GenuVP3 import angles as gnvp3
 
 from ICARUS.PlaneDefinition.plane import Airplane as Plane
 from ICARUS.PlaneDefinition.wing import Wing as wg
@@ -27,7 +27,7 @@ polars2D = db.Data
 # # Get Plane
 Origin = np.array([0., 0., 0.])
 
-wingPos = np.array([0.0, 0.0, 0.0])
+wingPos = np.array([0.0 - 0.159/4, 0.0, 0.0])
 wingOrientation = np.array([2.8, 0.0, 0.0])
 
 mainWing = wg(name="wing2",
@@ -41,12 +41,12 @@ mainWing = wg(name="wing2",
               chordFun=wing.linearChord,
               chord=[0.159, 0.072],
               spanFun=wing.linSpan,
-              N=20,
+              N=30,
               M=5,
               mass=0.670)
 # mainWing.plotWing()
 
-elevatorPos = np.array([0.54, 0., 0.])
+elevatorPos = np.array([0.54 - 0.130/4, 0., 0.])
 elevatorOrientantion = np.array([0., 0., 0.])
 
 elevator = wg(name="tail",
@@ -65,7 +65,7 @@ elevator = wg(name="tail",
               mass=0.06)
 # elevator.plotWing()
 
-rudderPos = np.array([0.47, 0., 0.01])
+rudderPos = np.array([0.47 - 0.159/4, 0., 0.01])
 rudderOrientantion = np.array([0.0, 0.0, 90.0])
 
 rudder = wg(name="rudder",
@@ -90,7 +90,7 @@ addedMasses = [
     (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
     (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
 ]
-ap = Plane('Hermes', liftingSurfaces)
+ap = Plane('Hermes_MRes', liftingSurfaces)
 ap.visAirplane()
 
 ap.accessDB(HOMEDIR, DB3D)
@@ -110,15 +110,15 @@ angles = np.linspace(AoAmin, AoAmax, NoAoA)
 Uinf = 20
 ap.defineSim(Uinf, 1.225)
 ap.save()
-maxiter = 20
-timestep = 1
+maxiter = 100
+timestep = 0.1
 
 if calcBatchGenu == True:
     polars_time = time.time()
     genuBatchArgs = [ap, BASEGNVP3, polars2D, "XFLR",
                      maxiter, timestep, Uinf, angles]
-    ap.runSolver(gnvp3.runGNVPangles, genuBatchArgs)
-    print("Polars took : --- %s seconds ---" %
+    ap.runSolver(gnvp3.runGNVPanglesParallel, genuBatchArgs)
+    print("Polars took : --- %s seconds --- in Parallel Mode" %
           (time.time() - polars_time))
 genuPolarArgs = [ap.CASEDIR, HOMEDIR]
 ap.makePolars(gnvp3.makePolar, genuPolarArgs)
