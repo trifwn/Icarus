@@ -1,6 +1,6 @@
 import os
 
-from .interface import runGNVPcase
+from .filesInterface import runGNVPcase
 from .utils import setParams, airMov, makeSurfaceDict
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 
@@ -48,7 +48,6 @@ def runGNVPpertrParallel(plane, polars, solver2D, maxiter, timestep, Uinf, angle
     bodies = []
     for i, surface in enumerate(plane.surfaces):
         bodies.append(makeSurfaceDict(surface, i, plane.CG))
-
     disturbances = plane.disturbances
     with Pool(12) as pool:
         args_list = [(plane.pln, polars, solver2D, maxiter, timestep,

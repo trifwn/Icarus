@@ -50,7 +50,7 @@ class Database_3D():
                             plane = jsonpickle.decode(json_obj)
                         print('Plane object exists. Trying to create Polars...')
                         try:
-                            from ICARUS.Software.GenuVP3.interface import makePolar
+                            from ICARUS.Software.GenuVP3.filesInterface import makePolar
                             genuPolarArgs = [plane.CASEDIR, plane.HOMEDIR]
                             plane.makePolars(makePolar, genuPolarArgs)
                             self.Planes[folder] = plane

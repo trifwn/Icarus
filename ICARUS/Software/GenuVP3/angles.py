@@ -1,6 +1,6 @@
 import os
 
-from .interface import runGNVPcase
+from .filesInterface import runGNVPcase
 from .utils import setParams, airMov, makeSurfaceDict
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 

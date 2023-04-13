@@ -1,6 +1,6 @@
-from ICARUS.PlaneDefinition.wing import Wing as wg
-import ICARUS.PlaneDefinition.wing as wing
-from ICARUS.PlaneDefinition.plane import Airplane as Plane
+from ICARUS.Vehicle.wing import Wing as wg
+import ICARUS.Vehicle.wing as wing
+from ICARUS.Vehicle.plane import Airplane as Plane
 
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database import DB3D

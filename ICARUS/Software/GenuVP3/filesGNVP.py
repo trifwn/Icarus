@@ -3,25 +3,7 @@ import numpy as np
 import pandas as pd
 import shutil
 
-
-def ff(num):
-    return np.format_float_scientific(num, sign=False, precision=2).zfill(5)
-
-
-def ff2(num):
-    if num >= 0:
-        return "{:2.5f}".format(num)
-    else:
-        return "{:2.4f}".format(num)
-
-
-def ff3(num):
-    if num >= 10:
-        return "{:2.5f}".format(num)
-    elif num >= 0:
-        return "{:2.6f}".format(num)
-    else:
-        return "{:2.5f}".format(num)
+from ICARUS.Core.formatting import ff, ff2, ff3, ff4
 
 
 def inputF():
@@ -220,13 +202,6 @@ def cldFiles(AeroData, airfoils, solver):
     return df
 
 
-def ff4(num):
-    if num >= 0:
-        return "{:2.4f}".format(num)
-    else:
-        return "{:2.3f}".format(num)
-
-
 def bldFiles(bodies):
     for bod in bodies:
         fname = bod["bld"]
@@ -318,97 +293,6 @@ def filltable(df):
                                             limit_direction='forward',
                                             axis=1)
     return df
-
-
-def makePolar(CASEDIR, HOMEDIR):
-    os.chdir(CASEDIR)
-    folders = next(os.walk('.'))[1]
-    print('Making Polars')
-    pols = []
-    for folder in folders:
-        os.chdir(f"{CASEDIR}/{folder}")
-        files = next(os.walk('.'))[2]
-        if "LOADS_aer.dat" in files:
-            name = float(
-                ''.join(c for c in folder if (c.isdigit() or c == '.')))
-            dat = np.loadtxt("LOADS_aer.dat")[-1]
-            if folder.startswith("m"):
-                a = [- name, *dat]
-            else:
-                a = [name, *dat]
-            pols.append(a)
-        os.chdir(f"{CASEDIR}")
-    df = pd.DataFrame(pols, columns=cols)
-    df.pop('TTIME')
-    df.pop("PSIB")
-
-    df = df.sort_values("AoA").reset_index(drop=True)
-    df.to_csv('clcd.genu', index=False)
-    os.chdir(HOMEDIR)
-    return df
-
-
-def logPertrub(DYNDIR, HOMEDIR):
-    os.chdir(DYNDIR)
-    folders = next(os.walk('.'))[1]
-    print('Logging Pertrubations')
-    pols = []
-    for folder in folders:
-        os.chdir(f"{DYNDIR}//{folder}")
-        files = next(os.walk('.'))[2]
-        if "LOADS_aer.dat" in files:
-            dat = np.loadtxt("LOADS_aer.dat")[-1]
-            if folder == "Trim":
-                pols.append([0, str(folder), *dat])
-                continue
-
-            # RECONSTRUCT NAME
-            value = ''
-            name = ''
-            flag = False
-            for c in folder[1:]:
-                if (c != '_') and (not flag):
-                    value += c
-                elif (c == '_'):
-                    flag = True
-                else:
-                    name += c
-            value = float(value)
-            if folder.startswith("m"):
-                value = - value
-
-            pols.append([value, name,  *dat])
-            os.chdir(f"{DYNDIR}/{folder}")
-        os.chdir(f"{DYNDIR}")
-    df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
-    df.pop('TTIME')
-    df.pop("PSIB")
-    df.to_csv('pertrubations.genu', index=False)
-    os.chdir(HOMEDIR)
-    return df
-
-
-cols = ["AoA",
-        "TTIME",
-        "PSIB",
-        "TFORC(1)",
-        "TFORC(2)",
-        "TFORC(3)",
-        "TAMOM(1)",
-        "TAMOM(2)",
-        "TAMOM(3)",
-        "TFORC2D(1)",
-        "TFORC2D(2)",
-        "TFORC2D(3)",
-        "TAMOM2D(1)",
-        "TAMOM2D(2)",
-        "TAMOM2D(3)",
-        "TFORCDS2D(1)",
-        "TFORCDS2D(2)",
-        "TFORCDS2D(3)",
-        "TAMOMDS2D(1)",
-        "TAMOMDS2D(2)",
-        "TAMOMDS2D(3)"]
 
 
 def removeResults(ANGLEDIR, HOMEDIR):

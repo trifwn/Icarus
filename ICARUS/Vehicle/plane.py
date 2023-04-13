@@ -160,16 +160,13 @@ class Airplane():
         self.dens = dens
         self.Q = 0.5 * dens * U**2
 
-    def runSolver(self, solver, args, kwargs={}):
+    def runAnalysis(self, solver, args, kwargs={}):
         solver(*args, **kwargs)
-
-    def setupSolver(self, setupsolver, args, kwargs={}):
-        setupsolver(*args, **kwargs)
 
     def cleanRes(self, cleanFun, args, kwargs={}):
         cleanFun(*args, **kwargs)
 
-    def makePolars(self, makePolFun, args, kwargs={}):
+    def setPolars(self, makePolFun, args, kwargs={}):
         polarsdf = makePolFun(*args, **kwargs)
         self.Polars = polarsdf
 
@@ -181,3 +178,10 @@ class Airplane():
         with open(f'{self.name}.json', 'w') as f:
             f.write(self.toJSON())
         os.chdir(self.HOMEDIR)
+
+    def __str__(self):
+        str = f"Dynamic Plane Object for {self.name}\n"
+        str += f"Surfaces:\n"
+        for surfaces in self.pln.surfaces:
+            str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
+        return str

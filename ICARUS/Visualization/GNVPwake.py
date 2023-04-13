@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ICARUS.Software.GenuVP3.getWakeData import getWakeData
+from ICARUS.Software.GenuVP3.postProcess.getWakeData import getWakeData
 
 
 def GNVPwake(plane, case):
