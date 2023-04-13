@@ -56,9 +56,9 @@ def trimState(plane):
         f"Interpolated values are: AoA = {AoA_trim} , Cm = {Cm_trim}, Cl = {CL_trim}")
 
     # Find the trim velocity
-    S = plane.pln.S
-    dens = plane.pln.dens
-    W = plane.pln.M * 9.81
+    S = plane.S
+    dens = plane.dens
+    W = plane.M * 9.81
     U_cruise = np.sqrt(W / (0.5 * dens * CL_trim * S))
     print(f"Trim velocity is {U_cruise} m/s")
     trim = {

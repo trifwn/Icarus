@@ -161,12 +161,11 @@ class Database_3D():
                     Q = pln.Q
                     S = pln.S
                     MAC = pln.MAC
+                    self.Data[plane][f"CL_{name}"] = Fz_new / (Q*S)
+                    self.Data[plane][f"CD_{name}"] = Fx_new / (Q*S)
+                    self.Data[plane][f"Cm_{name}"] = My_new / (Q*S*MAC)
                 except AttributeError:
                     print("Plane doesn't have Q, S or MAC!")
-
-                self.Data[plane][f"CL_{name}"] = Fz_new / (Q*S)
-                self.Data[plane][f"CD_{name}"] = Fx_new / (Q*S)
-                self.Data[plane][f"Cm_{name}"] = My_new / (Q*S*MAC)
 
 
 cols = ["TTIME",

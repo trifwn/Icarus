@@ -40,7 +40,7 @@ class disturbance():
             self.isRotational = True
         elif variable == "phi":
             self.axis = 1
-            self.type = "Value"  # Rotational 
+            self.type = "Value"  # Rotational
             self.isRotational = True
         elif variable == None:
             self.axis = None
@@ -55,4 +55,4 @@ class disturbance():
             self.var = variable
 
     def __str__(self):
-        return f"{self.name}: \n\tType:\t\t{self.type}\n\tAmplitude:\t{self.amplitude}."
+        return f"{self.name}:\tType:\t{self.type} and \tAmplitude:\t{self.amplitude}."

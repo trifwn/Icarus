@@ -17,7 +17,7 @@ class dyn_Airplane(Airplane):
                 - pln: Airplane class
                 - polars3D: DataFrame with the polars of the airplane
         """
-        self.pln = pln
+        self.__dict__.update(pln.__dict__)
         self.name = f"dyn_{pln.name}"
         if polars3D is None:
             if pln.Polars.empty:
@@ -49,11 +49,11 @@ class dyn_Airplane(Airplane):
     def makeAeroCoeffs(self, Forces):
         Data = pd.DataFrame()
 
-        Data[f"CL"] = Forces[f"Fz"] / (self.pln.Q*self.pln.S)
-        Data[f"CD"] = Forces[f"Fx"] / (self.pln.Q*self.pln.S)
-        Data[f"Cm"] = Forces[f"M"] / (self.pln.Q*self.pln.S*self.pln.MAC)
-        Data[f"Cn"] = Forces[f"N"] / (self.pln.Q*self.pln.S*self.pln.MAC)
-        Data[f"Cl"] = Forces[f"L"] / (self.pln.Q*self.pln.S*self.pln.MAC)
+        Data[f"CL"] = Forces[f"Fz"] / (self.Q*self.S)
+        Data[f"CD"] = Forces[f"Fx"] / (self.Q*self.S)
+        Data[f"Cm"] = Forces[f"M"] / (self.Q*self.S*self.MAC)
+        Data[f"Cn"] = Forces[f"N"] / (self.Q*self.S*self.MAC)
+        Data[f"Cl"] = Forces[f"L"] / (self.Q*self.S*self.MAC)
         Data["AoA"] = Forces["AoA"]
         return Data
 
@@ -72,8 +72,8 @@ class dyn_Airplane(Airplane):
 
     def accessDynamics(self, HOMEDIR):
         self.HOMEDIR = HOMEDIR
-        self.DBDIR = self.pln.DBDIR
-        self.CASEDIR = self.pln.CASEDIR
+        self.DBDIR = self.DBDIR
+        self.CASEDIR = self.CASEDIR
 
         os.chdir(self.CASEDIR)
         os.system(f"mkdir -p Dynamics")
@@ -95,26 +95,9 @@ class dyn_Airplane(Airplane):
         self.pertubResults = petrubdf
 
     def __str__(self):
-        str = f"Dynamic AirPlane Object for {self.pln.name}\n"
+        str = f"Dynamic AirPlane Object for {self.name}\n"
         str += f"Trimmed at: {self.trim['U']} m/s, {self.trim['AoA']} deg\n"
         str += f"Surfaces:\n"
-        for surfaces in self.pln.surfaces:
+        for surfaces in self.surfaces:
             str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
         return str
-
-    def __getattr__(self, name):
-        """Function to return an attribute of the airplane object (self.pln)
-        if its name is not in the dynamic plane object (self)
-        """
-        if name in self.__dict__:
-            return self.__dict__[name]
-        else:
-            flag = False
-            try:
-                return self.pln.__dict__[name]
-            except KeyError:
-                flag = True
-            finally:
-                if flag == True:
-                    raise AttributeError(
-                        f"'dyn_plane' or 'plane' object has no attribute '{name}'")
