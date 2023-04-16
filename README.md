@@ -61,6 +61,7 @@ Early Stages not much there.
 
 ## Tasks To-Do
 
+- MAKE DATABASE USE STRUCT DATA
 - Relative Velocity is opposite to the freestream. Disturbance in u should be negative for positive increase
 - Make visualization charts more readable by splitting into files
 - Make setup.py file and requirements.txt

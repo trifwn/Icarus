@@ -3,8 +3,11 @@ import pandas as pd
 
 from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 from ICARUS.Vehicle.plane import Airplane
+from ICARUS.Core.Struct import Struct
 
 from .pertrubations import longitudalPerturb, lateralPerturb
+from .Stability.longitudalFD import longitudalStability
+from .Stability.lateralFD import lateralStability
 from .disturbances import disturbance as dst
 from .trim import trimState
 
@@ -94,6 +97,12 @@ class dyn_Airplane(Airplane):
         petrubdf = makePolFun(*args, **kwargs)
         self.pertubResults = petrubdf
 
+    def stabilityFD(self, scheme='Central'):
+        self.scheme = scheme
+        X, Z, M = longitudalStability(self, '2D')
+        Y, L, N = lateralStability(self, 'Potential')
+        self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
+
     def __str__(self):
         str = f"Dynamic AirPlane Object for {self.name}\n"
         str += f"Trimmed at: {self.trim['U']} m/s, {self.trim['AoA']} deg\n"
@@ -101,3 +110,38 @@ class dyn_Airplane(Airplane):
         for surfaces in self.surfaces:
             str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
         return str
+
+
+class StabilityDerivativesDS(Struct):
+    def __init__(self, X, Y, Z, L, M, N):
+        self.X = X
+        self.Y = Y
+        self.Z = Z
+        self.L = L
+        self.M = M
+        self.N = N
+
+    def __str__(self):
+        string = f"Dimensional Stability Derivatives:\n"
+        string += "\nLongitudal Derivatives\n"
+        string += f"Xu=\t{self.X['u']}\n"
+        string += f"Xw=\t{self.X['w']}\n"
+        string += f"Zu=\t{self.Z['u']}\n"
+        string += f"Zw=\t{self.Z['w']}\n"
+        string += f"Zq=\t{self.Z['q']}\n"
+        string += f"Mu=\t{self.M['u']}\n"
+        string += f"Mw=\t{self.M['w']}\n"
+        string += f"Mq=\t{self.M['q']}\n"
+
+        string += "\nLateral Derivatives\n"
+        string += f"Yv=\t{self.Y['v']}\n"
+        string += f"Yp=\t{self.Y['p']}\n"
+        string += f"Yr=\t{self.Y['r']}\n"
+        string += f"Lv=\t{self.L['v']}\n"
+        string += f"Lp=\t{self.L['p']}\n"
+        string += f"Lr=\t{self.L['r']}\n"
+        string += f"Nv=\t{self.N['v']}\n"
+        string += f"Np=\t{self.N['p']}\n"
+        string += f"Nr=\t{self.N['r']}"
+
+        return string

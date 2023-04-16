@@ -7,12 +7,12 @@ def lateralStability(plane, mode="2D"):
     """
     pertr = plane.pertubResults
     eps = plane.epsilons
-    Mass = plane.pln.M
+    Mass = plane.M
     U = plane.trim["U"]
     theta = plane.trim["AoA"] * np.pi / 180
     G = - 9.81
 
-    Ix, Iy, Iz, Ixz, Ixy, Iyz = plane.pln.I
+    Ix, Iy, Iz, Ixz, Ixy, Iyz = plane.I
 
     Y = {}
     L = {}
@@ -76,13 +76,14 @@ def lateralStability(plane, mode="2D"):
                            [nv, n_p, nr, nph],
                            [0, 1, 0, 0]])
 
-    print("Lateral Derivatives")
-    print(f"Yv=\t{Y['v']}")
-    print(f"Yp=\t{Y['p']}")
-    print(f"Yr=\t{Y['r']}")
-    print(f"Lv=\t{L['v']}")
-    print(f"Lp=\t{L['p']}")
-    print(f"Lr=\t{L['r']}")
-    print(f"Nv=\t{N['v']}")
-    print(f"Np=\t{N['p']}")
-    print(f"Nr=\t{N['r']}")
+    return Y, L , N
+    # print("Lateral Derivatives")
+    # print(f"Yv=\t{Y['v']}")
+    # print(f"Yp=\t{Y['p']}")
+    # print(f"Yr=\t{Y['r']}")
+    # print(f"Lv=\t{L['v']}")
+    # print(f"Lp=\t{L['p']}")
+    # print(f"Lr=\t{L['r']}")
+    # print(f"Nv=\t{N['v']}")
+    # print(f"Np=\t{N['p']}")
+    # print(f"Nr=\t{N['r']}")

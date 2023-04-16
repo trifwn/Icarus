@@ -37,7 +37,7 @@ def runGNVPpertr(plane, polars, solver2D, maxiter, timestep, Uinf, angle):
         bodies.append(makeSurfaceDict(surface, i, plane.CG))
 
     for dst in plane.disturbances:
-        msg = GNVPdstCase(plane.pln, polars, solver2D, maxiter, timestep,
+        msg = GNVPdstCase(plane, polars, solver2D, maxiter, timestep,
                           Uinf, angle, bodies, dst, "Dynamics")
         print(msg)
 
@@ -50,7 +50,7 @@ def runGNVPpertrParallel(plane, polars, solver2D, maxiter, timestep, Uinf, angle
         bodies.append(makeSurfaceDict(surface, i, plane.CG))
     disturbances = plane.disturbances
     with Pool(12) as pool:
-        args_list = [(plane.pln, polars, solver2D, maxiter, timestep,
+        args_list = [(plane, polars, solver2D, maxiter, timestep,
                       Uinf, angle, bodies, dst, "Dynamics") for dst in disturbances]
 
         res = pool.starmap(GNVPdstCase, args_list)

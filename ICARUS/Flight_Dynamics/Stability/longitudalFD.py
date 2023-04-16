@@ -12,14 +12,14 @@ def longitudalStability(plane, mode="2D"):
 
     pertr = plane.pertubResults
     eps = plane.epsilons
-    m = plane.pln.M
+    m = plane.M
     U = plane.trim["U"]   # TRIM
     theta = plane.trim["AoA"] * np.pi / 180   # TRIM
     Ue = np.abs(U * np.cos(theta))
     We = np.abs(U * np.sin(theta))
 
     G = - 9.81
-    Ix, Iy, Iz, Ixz, Ixy, Iyz = plane.pln.I
+    Ix, Iy, Iz, Ixz, Ixy, Iyz = plane.I
 
     X = {}
     Z = {}
@@ -93,19 +93,4 @@ def longitudalStability(plane, mode="2D"):
                             [mu, mw, mq, mth],
                             [0, 0, 1, 0]])
 
-    print("Longitudal Derivatives")
-    print(f"Xu=\t{X['u']}\t\tCxu=\t{xu/(plane.Q*plane.S)}")
-    print(f"Xw=\t{X['w']}\t\tCxa=\t{xth/(plane.Q*plane.S)}")
-    # print(
-    # f"Xth/Ue=\t{X['theta']/(U*np.cos(theta))}")
-
-    print(f"Zu=\t{Z['u']}\t\tCzu=\t{zu/(plane.Q*plane.S)}")
-    print(f"Zw=\t{Z['w']}\t\tCLa=\t{Z['theta']/(plane.Q*plane.S)}")
-    # print(f"Zth/Ue=\t{Z['theta']/(U*np.cos(theta))}")
-    print(f"Zq=\t{Z['q']}\t\tCLq=\t{Z['q']/(plane.Q*plane.S)}")
-
-    print(f"Mu=\t{M['u']}\t\tCmu=\t{M['u']/(plane.Q*plane.S*plane.MAC)}")
-    print(
-        f"Mw=\t{M['w']}\t\tCma=\t{M['theta']/(plane.Q*plane.S*plane.MAC)}")
-    # print(f"Mth/Ue=\t{M['theta']/(U*np.cos(theta))}")
-    print(f"Mq=\t{M['q']}\t\tCmq=\t{M['q']/(plane.Q*plane.S*plane.MAC)}\n")
+    return X, Z, M

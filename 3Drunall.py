@@ -128,7 +128,7 @@ ap.save()
 # Dynamics
 try:
     # ### Define and Trim Plane
-    dyn = dp(ap, polars2D)
+    dyn = dp(ap)
 
     # ### Pertrubations
     dyn.allPerturb("Central")
@@ -139,6 +139,7 @@ try:
         GNVP3PertrArgs = [dyn, polars2D, "XFLR", maxiter, timestep,
                           dyn.trim['U'], dyn.trim['AoA']]
         dyn.accessDynamics(HOMEDIR)
+        print("Running Pertrubations")
         dyn.runAnalysis(runGNVPpertrParallel, GNVP3PertrArgs)
         print("Pertrubations took : --- %s seconds ---" %
               (time.time() - pert_time))
@@ -165,7 +166,7 @@ try:
         print("Sensitivity Analysis took : --- %s seconds ---" %
               (time.time() - sens_time))
         dyn.save()
-except:
+except KeyError:
     print('Plane could not be trimmed')
 
 # print time it took
