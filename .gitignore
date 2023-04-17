@@ -23,5 +23,4 @@ test*.ipynb
 ICARUS/Database/Mock
 ICARUS/Database/2D
 ICARUS/Database/3D
-
-ICARUS/XFLR5/
+ICARUS/Database/XFLR5

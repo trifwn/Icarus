@@ -136,6 +136,9 @@ class Airplane():
             ax.set_zlabel('z')
             ax.view_init(30, 150)
             ax.axis('scaled')
+            ax.set_xlim(-1, 1)
+            ax.set_ylim(-1, 1)
+            ax.set_zlim(-1, 1)
 
         if movement is None:
             mov = np.zeros(3)
