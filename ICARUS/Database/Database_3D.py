@@ -34,15 +34,16 @@ class Database_3D():
                         with open(f"{file}", 'r') as f:
                             json_obj = f.read()
                             try:
-                                self.Planes[folder] = jsonpickle.decode(
-                                    json_obj)
-                            except:
-                                print(f"Error {file}")
+                                self.Planes[folder] = jsonpickle.decode(json_obj)
+                            except Exception as e:
+                                print(f"Error loading Plane {file} , got error {e}")
                     if file.endswith(".json") and file.startswith("dyn"):
                         with open(f"{file}", 'r') as f:
                             json_obj = f.read()
-                            self.dynPlanes[folder] = jsonpickle.decode(
-                                json_obj)
+                            try:
+                                self.dynPlanes[folder] = jsonpickle.decode(json_obj)
+                            except Exception as e:
+                                print(f"Error loading Dynamic Plane {file}, got error {e}")
             except FileNotFoundError:
                 print(f"Plane {folder} doesn't contain polars!")
                 files = next(os.walk('.'))[2]
@@ -94,9 +95,7 @@ class Database_3D():
                                     foo = len(
                                         self.Convergence[folder][case]['TTIME'])
                                     if foo > len(time):
-                                        self.Convergence[folder][case] = \
-                                            self.Convergence[folder][case].tail(
-                                                len(time))
+                                        self.Convergence[folder][case] = self.Convergence[folder][case].tail(len(time))
                                     else:
                                         error = error[-foo:]
                                         errorm = errorm[-foo:]
@@ -183,7 +182,6 @@ def ang2case(angle):
         folder = str(angle)[::-1].zfill(7)[::-1] + "_AoA"
     else:
         folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "_AoA"
-
     return folder
 
 
@@ -195,6 +193,5 @@ def dst2case(dst):
             str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}/"
     else:
         folder = "m" + \
-            str(dst.amplitude)[
-                ::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}/"
+            str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}/"
     return folder
