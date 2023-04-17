@@ -3,7 +3,7 @@ import pandas as pd
 
 from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Core.Struct import Struct
+from ICARUS.Core.struct import Struct
 
 from .pertrubations import longitudalPerturb, lateralPerturb
 from .Stability.longitudalFD import longitudalStability

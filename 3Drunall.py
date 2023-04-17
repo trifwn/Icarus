@@ -11,6 +11,7 @@ from ICARUS.Software.GenuVP3.angles import runGNVPangles, runGNVPanglesParallel
 from ICARUS.Software.GenuVP3.pertrubations import runGNVPpertr, runGNVPpertrParallel
 from ICARUS.Software.GenuVP3.pertrubations import runGNVPsensitivity, runGNVPsensitivityParallel
 from ICARUS.Software.GenuVP3.filesInterface import makePolar, pertrResults
+from ICARUS.Software.XFLR5.polars import readPolars2D
 
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database import DB3D
@@ -21,7 +22,7 @@ HOMEDIR = os.getcwd()
 # # Airfoil Data
 db = Database_2D(HOMEDIR)
 airfoils = db.getAirfoils()
-db.addXFLRPolars(HOMEDIR, f"{HOMEDIR}/ICARUS/XFLR5/")
+readPolars2D(db, HOMEDIR, f"{HOMEDIR}/ICARUS/Database/XFLR5/")
 polars2D = db.Data
 
 
@@ -91,7 +92,7 @@ addedMasses = [
     (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
     (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
 ]
-ap = Plane('Hermes', liftingSurfaces)
+ap = Plane('HermesTTT', liftingSurfaces)
 ap.visAirplane()
 
 ap.accessDB(HOMEDIR, DB3D)
@@ -109,7 +110,7 @@ angles = np.linspace(AoAmin, AoAmax, NoAoA)
 
 Uinf = 20
 ap.defineSim(Uinf, 1.225)
-maxiter = 100
+maxiter = 2
 timestep = 0.1
 ap.save()
 
@@ -154,7 +155,7 @@ try:
         for var in ['u', 'w', 'q', 'theta', 'v', 'p', 'r', 'phi']:
             space = np.logspace(np.log10(0.00001), np.log10(1), 10, base=10)
             space = [*-space, *space]
-            maxiter = 20
+            maxiter = 2
             timestep = 5e-2
             dyn.sensitivityAnalysis(var, space)
             GNVP3SensArgs = [dyn, var, polars2D, "Xfoil",
