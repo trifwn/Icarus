@@ -3,6 +3,8 @@ from . import DB2D, DB3D
 import os
 import pandas as pd
 
+from ICARUS.Core.struct import Struct
+
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 jsonpickle_pd.register_handlers()
@@ -11,11 +13,11 @@ jsonpickle_pd.register_handlers()
 class Database_3D():
     def __init__(self, HOMEDIR):
         self.HOMEDIR = HOMEDIR
-        self.rawData = {}
-        self.Data = {}
-        self.Planes = {}
-        self.dynPlanes = {}
-        self.Convergence = {}
+        self.rawData = Struct()
+        self.Data = Struct()
+        self.Planes = Struct()
+        self.dynPlanes = Struct()
+        self.Convergence = Struct()
         self.scan()
         self.makeData()
 
@@ -23,7 +25,7 @@ class Database_3D():
         os.chdir(DB3D)
         folders = next(os.walk('.'))[1]
         for folder in folders:
-            self.Convergence[folder] = {}
+            self.Convergence[folder] = Struct()
             os.chdir(folder)
             try:
                 self.rawData[folder] = pd.read_csv(

@@ -2,37 +2,38 @@ from . import DB2D
 import os
 import pandas as pd
 from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Core.struct import Struct
 
 
 class Database_2D():
     def __init__(self, HOMEDIR):
         self.HOMEDIR = HOMEDIR
-        self.Data = {}
+        self.Data = Struct()
         self.scan()
         self.airfoils = self.getAirfoils()
 
     def scan(self):
         os.chdir(DB2D)
         folders = next(os.walk('.'))[1]
-        Data = {}
+        Data = Struct()
         for folder in folders:
             os.chdir(folder)
             Data[folder] = self.scanReynolds()
             os.chdir(DB2D)
 
-        self.Data = {}
+        self.Data = Struct()
         for i in Data.keys():
             if i not in self.Data.keys():
-                self.Data[i] = {}
+                self.Data[i] = Struct()
             for j in Data[i].keys():
                 for k in Data[i][j].keys():
                     if k not in self.Data[i].keys():
-                        self.Data[i][k] = {}
+                        self.Data[i][k] = Struct()
                     self.Data[i][k][j] = Data[i][j][k]
         os.chdir(self.HOMEDIR)
 
     def scanReynolds(self):
-        airfoilDict = {}
+        airfoilDict = Struct()
         folders = next(os.walk('.'))[1]
         for folder in folders:
             os.chdir(folder)
@@ -41,7 +42,7 @@ class Database_2D():
         return airfoilDict
 
     def scanSolvers(self):
-        reynDict = {}
+        reynDict = Struct()
         files = next(os.walk('.'))[2]
         for file in files:
             if file.startswith('clcd'):
@@ -56,7 +57,7 @@ class Database_2D():
         return reynDict
 
     def getAirfoils(self):
-        airfoils = {}
+        airfoils = Struct()
         for airf in list(self.Data.keys()):
             airfoils[airf] = AirfoilD.NACA(
                 airf[4:], n_points=200)
