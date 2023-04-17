@@ -1,60 +1,55 @@
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
-import pandas as pd
-import os
+from ICARUS.Software.GenuVP3.postProcess.getStripData import getStripData
 
+def GNVPstrips3D(pln, case, NBs, category = 'Wind'):
 
-def GNVPstrips(pln, CASE, HOMEDIR):
-    files = os.listdir(f"{pln.CASEDIR}/{CASE}")
-    stripDat = []
-    for file in files:
-        if file.startswith('strip'):
-            with open(f"{pln.CASEDIR}/{CASE}/{file}", 'r') as file:
-                data = file.readlines()
-            data = [float(item) for item in data[-1].split()]
-            stripDat.append(data)
-    data = pd.DataFrame(stripDat, columns=stripColumns)
+    stripDat, data = getStripData(pln, case, NBs)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.set_title(f"{pln.name} {category} Data")
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    ax.view_init(30, 150)
+    ax.axis('scaled')
+    ax.set_xlim(-pln.span/2, pln.span/2)
+    ax.set_ylim(-pln.span/2, pln.span/2)
+    ax.set_zlim(-pln.span/2, pln.span/2)
+    maxValue = data[category].max()
+    minValue = data[category].min()
 
-    os.chdir(HOMEDIR)
-    return data
+    norm = mpl.colors.Normalize(vmin=minValue, vmax=maxValue)
+    cmap = mpl.cm.viridis
+    
+    for i,wg in enumerate(pln.surfaces):
+        i = i+1
+        if i not in NBs:
+            continue
+        for j,surf in enumerate(wg.allStrips):
+            stripD = data[(data['Body']== i) & (data['Strip']== j+1)]
+            stripD = float(stripD[category].values)
+            color = cmap(norm(stripD))
+            surf.plotStrip(fig,ax,None,color)
+    cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
+    plt.show()
+    return stripDat
 
+def GNVPstrips2D(pln, case, NB, category = 'Wind'):
+    
+    if type(NB) is not int:
+        print("Only one body can be selected for 2D plots")
+        return 0
+    
+    stripDat, data = getStripData(pln, case, [NB])
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.set_title(f"{pln.name} {pln.surfaces[NB].name} {category} Data")
+    ax.set_xlabel('Spanwise')
+    ax.set_ylabel(category)
 
-stripColumns = [
-    "TTIME",
-    "RNONDIM",
-    "PSIB",
-    "FALFAM",
-    "FALFAGEM",
-    "AMACHS(IST)", "AMACH0S(IST)",
-    "VELAVEL(IST)", "VELAVELG(IST)",
+    ax.plot(data[category])
 
-    "CLIFTSGN(IST)", "CDRAGSGN(IST)",
-    "CNTGN(3, IST)", "CNTGN(1, IST)",
-    "CMOMSGN(IST)",
-
-    "CLIFTS2D(IST)", "CDRAGS2D(IST)",
-    "CNT2D(3, IST)", "CNT2D(1, IST)",
-    "CMOMS2D(IST)",
-
-    "CLIFTSDS2D(IST)", "CDRAGSDS2D(IST)",
-    "CNTDS2D(3, IST)", "CNTDS2D(1, IST)",
-    "CMOMSDS2D(IST)",
-
-    "FSTRGNL(3, IST) / ALSPAN(IST)",
-    "FSTRGNL(1, IST) / ALSPAN(IST)",
-    "AMSTRGNL(IST) / ALSPAN(IST)",
-
-    "FSTR2DL(3, IST) / ALSPAN(IST)",
-    "FSTR2DL(1, IST) / ALSPAN(IST)",
-    "AMSTR2DL(IST) / ALSPAN(IST)",
-
-    "FSTRDS2DL(3, IST) / ALSPAN(IST)",
-    "FSTRDS2DL(1, IST) / ALSPAN(IST)",
-    "AMSTRDS2DL(IST) / ALSPAN(IST)",
-
-    "VELINDL(1, IST)",
-    "VELINDL(2, IST)",
-    "VELINDL(3, IST)",
-
-    "FALFA1M",
-    "CIRCtmp(IST)"
-]
+    
+    return stripDat

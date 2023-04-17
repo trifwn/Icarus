@@ -62,13 +62,11 @@ Early Stages not much there.
 ## Tasks To-Do
 
 - MAKE DATABASE USE STRUCT DATA
-- Relative Velocity is opposite to the freestream. Disturbance in u should be negative for positive increase
-- Make visualization charts more readable by splitting into files
-- Make setup.py file and requirements.txt
+- Make requirements.txt
 - Make Mission Class
 - Make Load Visualization
 - Make low fidelity approximations
 - Create master module to manage simulations that is aware of the different software needed to generate them
-- Add GUI
-- Have the grid/meshing run on julia
 - Find alternative to matplotlib for visualization (3d graphics are slows)
+- Have the grid/meshing run on julia
+- Add GUI

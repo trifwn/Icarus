@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .surface import Surface
+from .strip import Strip
 
 
 class Wing:
@@ -60,7 +60,7 @@ class Wing:
         self.createGrid()
 
         # Create Surfaces
-        self.createSurfaces()
+        self.createStrips()
 
         # Find Chords MAC-SMC
         self.meanChords()
@@ -114,32 +114,36 @@ class Wing:
         else:
             print("Cannot Split Body it is not symmetric")
 
-    def createSurfaces(self):
-        """Create Surfaces given the Grid and Airfoil"""
-        surfaces = []
-        symSurfaces = []
-        startPoint = [
-            self.xoff[0],
-            self.Dspan[0],
-            self.Ddihedr[0],
-        ]
-        endPoint = [
-            self.xoff[-1],
-            self.Dspan[-1],
-            self.Ddihedr[-1],
-        ]
+    def createStrips(self):
+        """Create Strips given the Grid and Airfoil"""
+        strips = []
+        symStrips = []
+        for i in np.arange(0,self.N-1):
+            startPoint = np.array([
+                self.xoff[i] ,
+                self.Dspan[i] ,
+                self.Ddihedr[i] ,
+            ])
+            startPoint = np.matmul(self.Rmat, startPoint) + self.Origin
+            
+            endPoint = np.array([
+                self.xoff[i+1],
+                self.Dspan[i+1],
+                self.Ddihedr[i+1],
+            ])
+            endPoint = np.matmul(self.Rmat, endPoint) + self.Origin
 
-        if self.isSymmetric == True:
-            surf = Surface(startPoint, endPoint, self.airfoil,
-                           self.Dchord[0], self.Dchord[-1])
-            surfaces.append(surf)
-            symSurfaces.append(Surface(*surf.returnSymmetric()))
-        else:
-            surf = Surface(startPoint, endPoint, self.airfoil,
-                           self.Dchord[0], self.Dchord[-1])
-            surfaces.append(surf)
-        self.surfaces = surfaces
-        self.allSurfaces = [*surfaces, *symSurfaces]
+            if self.isSymmetric == True:
+                surf = Strip(startPoint, endPoint, self.airfoil,
+                            self.Dchord[i], self.Dchord[i+1] )
+                strips.append(surf)
+                symStrips.append(Strip(*surf.returnSymmetric()))
+            else:
+                surf = Strip(startPoint, endPoint, self.airfoil,
+                            self.Dchord[i], self.Dchord[i+1])
+                strips.append(surf)
+        self.strips = strips
+        self.allStrips = [*strips, *symStrips]
 
     def plotWing(self, fig=None, ax=None, movement=None):
         """Plot Wing in 3D"""
@@ -158,16 +162,8 @@ class Wing:
         if movement is None:
             movement = np.zeros(3)
 
-        for surf in self.allSurfaces:
-            s1 = np.matmul(self.Rmat, surf.startStrip())
-            s2 = np.matmul(self.Rmat, surf.endStrip())
-            for item in [s1, s2]:
-                item[0, :] += self.Origin[0] + movement[0]
-                item[1, :] += self.Origin[1] + movement[1]
-                item[2, :] += self.Origin[2] + movement[2]
-
-            ax.plot(*s1, '-', color='red')
-            ax.plot(*s2, '-', color='blue')
+        # for strip in self.allStrips:
+        #     strip.plotStrip(fig, ax, movement)
 
         for i in np.arange(0, self.N-1):
             for j in np.arange(0, self.M-1):

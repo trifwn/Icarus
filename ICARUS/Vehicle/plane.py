@@ -31,6 +31,7 @@ class Airplane():
                 self.S = surface.S
                 self.MAC = surface.MAC
                 self.AR = surface.AR
+                self.span = surface.span
                 gotWing = True
 
             if surface.isSymmetric == True:
@@ -43,6 +44,7 @@ class Airplane():
             self.S = surfaces[0].S
             self.MAC = surfaces[0].MAC
             self.AR = surfaces[0].AR
+            self.span = surfaces[0].span
 
         self.surfaces = [j for i, j in enumerate(
             self.surfaces) if i not in toRemove]
@@ -185,6 +187,6 @@ class Airplane():
     def __str__(self):
         str = f"Dynamic Plane Object for {self.name}\n"
         str += f"Surfaces:\n"
-        for surfaces in self.pln.surfaces:
-            str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
+        for i,surfaces in enumerate(self.surfaces):
+            str += f"\t{surfaces.name} NB={i} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
         return str

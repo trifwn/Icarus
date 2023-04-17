@@ -1,4 +1,4 @@
-from ICARUS.Core.Struct import Struct
+from ICARUS.Core.struct import Struct
 import numpy as np
 import matplotlib.pyplot as plt
 

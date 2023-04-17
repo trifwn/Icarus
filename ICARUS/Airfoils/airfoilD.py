@@ -26,7 +26,6 @@ class AirfoilD(af.Airfoil):
 
     @classmethod
     def NACA(cls, naca, n_points=200):
-
         re_4digits = re.compile(r"^\d{4}$")
 
         if re_4digits.match(naca):
@@ -38,7 +37,25 @@ class AirfoilD(af.Airfoil):
                 "Identifier not recognised as valid NACA 4 definition")
 
         upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
-        return cls(upper, lower, naca, n_points)
+        self = cls(upper, lower, naca, n_points)
+        self.p = p 
+        self.m = m
+        self.xx = xx
+                
+        return self
+    
+    def camber_line_NACA4(self,points):
+        p = self.p
+        m = self.m
+        xx = self.xx
+        
+        res = np.zeros_like(points)
+        for i,x in enumerate(points):
+            if x < p:
+                res[i] = m/p**2 * (2*p*x - x**2)
+            else:
+                res[i] = m/(1-p)**2 * ((1-2*p) + 2*p*x - x**2)
+        return res
 
     def airfoil2Selig(self):
         x_points = np.hstack((self._x_upper[::-1], self._x_lower[1:])).T

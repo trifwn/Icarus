@@ -57,7 +57,7 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
         else:
             ang_num = num
 
-        if ang_num in angles or angles == ["All"]:
+        if ang_num in angles or angles is ["All"]:
             runHist = cases[ang]
             i += 1
             j = 0
