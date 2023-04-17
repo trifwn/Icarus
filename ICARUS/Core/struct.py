@@ -68,3 +68,10 @@ class Struct(dict):
 
     def fromkeys(self, *args, **kwargs):
         return self.__dict__.fromkeys(*args, **kwargs)
+    
+    def __getstate__(self):
+        out = self.__dict__.copy()
+        return out
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
