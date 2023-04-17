@@ -1,8 +1,7 @@
 from . import DB2D
 import os
 import pandas as pd
-import numpy as np
-from ICARUS.Airfoils import airfoil as af
+from ICARUS.Airfoils.airfoilD import AirfoilD
 
 
 class Database_2D():
@@ -59,24 +58,23 @@ class Database_2D():
     def getAirfoils(self):
         airfoils = {}
         for airf in list(self.Data.keys()):
-            airfoils[airf] = af.AirfoilData.NACA(
+            airfoils[airf] = AirfoilD.NACA(
                 airf[4:], n_points=200)
 
         return airfoils
 
-    def getSolver(self, airfoil):
+    def getSolver(self, airf):
         try:
-            return list(self.Data[str(airfoil)].keys())
+            return list(self.Data[str(airf)].keys())
         except KeyError:
             print("Airfoil Doesn't exist! You should compute it first!")
 
-    def getReynolds(self, airfoil):
+    def getReynolds(self, airf):
         try:
             reynolds = []
-            for solver in self.Data[str(airfoil)].keys():
-                for reyn in self.Data[str(airfoil)][solver].keys():
+            for solver in self.Data[str(airf)].keys():
+                for reyn in self.Data[str(airf)][solver].keys():
                     reynolds.append(reyn)
             return reynolds
         except KeyError:
             print("Airfoil Doesn't exist! You should compute it first!")
-

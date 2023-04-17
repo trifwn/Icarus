@@ -140,9 +140,9 @@ def geoBodyMovements(data, mov, i, NB):
 
 
 def cldFiles(AeroData, airfoils, solver):
-    for airfoil in airfoils:
-        fname = f"{airfoil[4:]}.cld"
-        polars = AeroData[airfoil][solver]
+    for airf in airfoils:
+        fname = f"{airf[4:]}.cld"
+        polars = AeroData[airf][solver]
 
         # GET FILE
         with open(fname, "r") as file:
@@ -187,7 +187,7 @@ def cldFiles(AeroData, airfoils, solver):
             else:
                 data.append("10.       ! Radial Position\n")
             data.append(
-                f"{anglenum}         ! Number of Angles / Airfoil NACA {airfoil}\n")
+                f"{anglenum}         ! Number of Angles / Airfoil NACA {airf}\n")
             data.append(
                 f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n")
             for i, ang in enumerate(angles):
@@ -249,8 +249,8 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
     if "wing" not in [bod["name"] for bod in bodies]:
         os.system("rm wing.bld")
     # EMPTY CLD FILES
-    for airfoil in airfoils:
-        os.system(f'cp name.cld {airfoil[4:]}.cld')
+    for airf in airfoils:
+        os.system(f'cp name.cld {airf[4:]}.cld')
     os.system("rm name.cld")
 
     # Input File

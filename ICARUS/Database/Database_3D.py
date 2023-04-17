@@ -2,7 +2,6 @@ import numpy as np
 from . import DB2D, DB3D
 import os
 import pandas as pd
-from ICARUS.Airfoils import airfoil as af
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -34,7 +33,11 @@ class Database_3D():
                     if file.endswith(".json") and not file.startswith("dyn"):
                         with open(f"{file}", 'r') as f:
                             json_obj = f.read()
-                            self.Planes[folder] = jsonpickle.decode(json_obj)
+                            try:
+                                self.Planes[folder] = jsonpickle.decode(
+                                    json_obj)
+                            except:
+                                print(f"Error {file}")
                     if file.endswith(".json") and file.startswith("dyn"):
                         with open(f"{file}", 'r') as f:
                             json_obj = f.read()
@@ -112,7 +115,6 @@ class Database_3D():
 
     def getPlanes(self):
         return list(self.Planes.keys())
-
 
     def getPolar(self, plane, mode):
         try:

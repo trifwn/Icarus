@@ -1,8 +1,7 @@
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 
-from ICARUS.Airfoils import airfoil as af
+from ICARUS.Airfoils.airfoilD import AirfoilD
 
 from ICARUS.Software.F2Wsection import runF2w as f2w
 from ICARUS.Software.OpenFoam import runOpenFoam as of
@@ -50,10 +49,10 @@ calcXFoil = False
 
 # LOOP
 airfoils = ["4415", "0008"]
-for airfoil in airfoils:
-    print(f"\nRunning airfoil {airfoil}\n")
+for airf in airfoils:
+    print(f"\nRunning airfoil {airf}\n")
     # # Get Airfoil
-    airf = af.AirfoilData.NACA(airfoil, n_points=200)
+    airf = AirfoilD.NACA(airf, n_points=200)
     airf.accessDB(HOMEDIR, DB2D)
     # airf.plotAirfoil()
     for Reyn in Reynolds:

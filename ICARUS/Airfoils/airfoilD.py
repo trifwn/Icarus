@@ -1,12 +1,10 @@
 
-from airfoils import Airfoil
-import airfoils as airfoils
+import airfoils as af
 
 import numpy as np
 import urllib.request
 import matplotlib.pyplot as plt
 import os
-import sys
 import re
 
 # # Airfoil
@@ -15,14 +13,14 @@ import re
 # ##### 2 = load from file
 
 
-class AirfoilData(Airfoil):
+class AirfoilD(af.Airfoil):
     def __init__(self, upper, lower, naca, n_points):
         super().__init__(upper, lower)
         self.name = naca
         self.fname = f"naca{naca}"
         self.n_points = n_points
         self.airfoil2Selig()
-        self.Reynolds = []  
+        self.Reynolds = []
         self.Polars = {}
         # self.getFromWeb()
 
@@ -36,12 +34,12 @@ class AirfoilData(Airfoil):
             m = float(naca[1])/100
             xx = float(naca[2:4])/100
         else:
-            raise airfoils.NACADefintionError(
+            raise af.NACADefintionError(
                 "Identifier not recognised as valid NACA 4 definition")
 
-        upper, lower = airfoils.gen_NACA4_airfoil(p, m, xx, n_points)
+        upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
         return cls(upper, lower, naca, n_points)
-        
+
     def airfoil2Selig(self):
         x_points = np.hstack((self._x_upper[::-1], self._x_lower[1:])).T
         y_points = np.hstack((self._y_upper[::-1], self._y_lower[1:])).T
@@ -78,7 +76,7 @@ class AirfoilData(Airfoil):
                 self.airfile = f"{self.AFDIR}/{i}"
                 exists = True
         if True:
-            self.saveFile()
+            self.save()
 
     def reynCASE(self, Reyn):
         self.currReyn = np.format_float_scientific(
@@ -96,7 +94,7 @@ class AirfoilData(Airfoil):
         except AttributeError:
             print("DATABASE is not initialized!")
 
-    def saveFile(self):
+    def save(self):
         self.airfile = f"{self.AFDIR}/naca{self.name}"
         pt0 = self.selig
         np.savetxt(self.airfile, pt0.T)
@@ -106,8 +104,6 @@ class AirfoilData(Airfoil):
         x, y = pts
         plt.plot(x[: self.n_points], y[: self.n_points], "r")
         plt.plot(x[self.n_points:], y[self.n_points:], "b")
-
-        # plt.plot(x,y)
         plt.axis("scaled")
 
     def runSolver(self, solver, args, kwargs={}):
@@ -122,46 +118,3 @@ class AirfoilData(Airfoil):
     def makePolars(self, makePolFun, solverName, args, kwargs={}):
         polarsdf = makePolFun(*args, **kwargs)
         self.Polars[self.currReyn][solverName] = polarsdf
-
-
-def saveAirfoil(argv):
-    options = argv
-    if options == []:
-        print("No options defined try -h")
-        return 0
-    elif options[0] == '-h':
-        print('options: \n-s Save to file\n Usage: python airfoil.py -s file naca mode\
-                \n\nnaca = 4 or 5 digit NACA\nmode: 0-> Load from lib, 1-> Load from File, 2-> Load from Web')
-        return 0
-    else:
-        save = 's' in options[0]
-        filen = str(options[1])
-        Airfoiln = str(options[2])
-        mode = int(options[3])
-        n_points = int(options[4])
-    f = AirfoilData.NACA(Airfoiln, n_points=n_points)
-
-    # # Return and Save to file
-    if mode == 0:
-        # # Load from Lib
-        pt0 = f.selig
-        if save == True:
-            np.savetxt(filen, pt0.T)
-    elif mode == 1:
-        # # Load from the file mode 1
-        pt1 = np.loadtxt(filen)
-        if save == True:
-            np.savetxt(filen, pt1)
-        return pt1
-    elif mode == 2:
-        # # Fetch from the web mode 2
-        pt2 = f.selig2
-        if save == True:
-            np.savetxt(filen, pt2.T)
-        return pt2.T
-    return pt0.T
-
-
-if __name__ == "__main__":
-    saveAirfoil(sys.argv[1:])
-    # saveAirfoil('-s','naca3123','3123','0')

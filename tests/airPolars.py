@@ -1,6 +1,6 @@
 import os
 from ICARUS.Database.Database_3D import Database_3D
-
+from ICARUS.Software.XFLR5.polars import readPolars3D
 from tests.planes import ap as ap
 
 
@@ -11,7 +11,7 @@ def airPolars(plot=False):
     db = Database_3D(HOMEDIR)
     planenames = [ap.name]
 
-    db.importXFLRpolar(f"{HOMEDIR}/ICARUS/XFLR5/bmark.txt", 'bmark')
+    readPolars3D(db, f"{HOMEDIR}/ICARUS/Database/XFLR5/bmark.txt", 'bmark')
     planenames.append(f"XFLR_bmark")
     if plot:
         from ICARUS.Visualization.airplanePolars import plotAirplanePolars

@@ -58,9 +58,9 @@ def batchRUN(Reynolds, MACH, AoAmin, AoAmax, AoAstep, pts):
 def saveXfoil(airfoils, polars, Reynolds):
     masterDir = os.getcwd()
     os.chdir(masterDir)
-    for airfoil, clcdData in zip(airfoils, polars):
+    for airf, clcdData in zip(airfoils, polars):
         os.chdir(masterDir)
-        os.chdir(f"Database/2D/NACA{airfoil}")
+        os.chdir(f"Database/2D/NACA{airf}")
         airfoilPath = os.getcwd()
 
         for i, ReynDat in enumerate(clcdData):
@@ -108,8 +108,8 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     xf.max_iter = 400
     xf.print = False
     xpts, ypts = pts.T
-    naca0008 = XFAirfoil(x=xpts, y=ypts)
-    xf.airfoil = naca0008
+    airf = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = airf
     AoAmin = min(angles)
     AoAmax = max(angles)
 
