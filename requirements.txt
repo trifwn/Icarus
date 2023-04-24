@@ -1,6 +1,0 @@
-airfoils
-jsonpickle
-matplotlib
-numpy
-pandas
-setuptools

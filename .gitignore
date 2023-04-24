@@ -1,7 +1,10 @@
 # ENVIROMENT
 *.mypy_cache/
 *.vscode/
+venv/
+setup.cfg
 *__pycache__
+3d_Party/
 
 # PACKAGING
 *.egg

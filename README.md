@@ -59,6 +59,30 @@ Early Stages not much there.
 
 ---
 
+## Building and Installing the Python Module
+-----------------------------------------
+If you want you can create a venv enviroment first:
+```
+python -m venv venv
+.\venv\Scripts\activate # Windows
+./venv/bin/activate # Linux
+```
+
+To install the package run:
+```bash
+pip install .
+```
+
+On Windows to install the xfoil package, you may have to force the system to use MinGW.
+If the installation fails change the comments on  `pyproject.toml` at the root of the repo to:
+
+```
+    "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
+    #"xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
+```
+
+---
+
 ## Tasks To-Do
 
 - MAKE DATABASE USE STRUCT DATA

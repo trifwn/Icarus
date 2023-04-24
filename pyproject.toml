@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm","scikit-build", "cmake"]
+build-backend = "setuptools.build_meta"
+
+[build]
+compiler = "mingw32"
+
+[project]
+name = "ICARUS"
+authors = [
+    {name = "Tryfonas Themas", email = "tryfonthem@gmail.com"},
+]
+description = "ICARUS AIRPLANE DESIGN"
+readme = "README.md"
+requires-python = ">=3"
+dependencies = [
+    "pip",
+    "cmake",
+    "airfoils",
+    "jsonpickle",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "setuptools",
+    "ipykernel",
+    "ipython",
+    #"xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
+    "xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
+]
+dynamic = ["version"]
+
