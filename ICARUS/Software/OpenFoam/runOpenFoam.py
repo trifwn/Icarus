@@ -20,18 +20,19 @@ def setupOpenFoam(OFBASE, CASEDIR, HOMEDIR, airfoilFile,
     makeMesh(airfoilFile, airfoilname, OFBASE, HOMEDIR)
     for ang in anglesALL:
         if ang >= 0:
-            folder = str(ang)[::-1].zfill(7)[::-1] + "/"
+            folder = str(ang)[::-1].zfill(7)[::-1]
         else:
-            folder = "m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "/"
-        ANGLEDIR = f"{CASEDIR}/{folder}"
-        os.system(f"mkdir -p {ANGLEDIR}")
+            folder = "m" + str(ang)[::-1].strip("-").zfill(6)[::-1] 
+        ANGLEDIR = os.path.join(CASEDIR,folder)
+        os.makedirs(ANGLEDIR,exist_ok=True)
         os.chdir(ANGLEDIR)
         ang = ang * np.pi / 180
 
         # MAKE 0/ FOLDER
-        shutil.copytree(f"{OFBASE}/0/", ANGLEDIR +
-                        "/0/", dirs_exist_ok=True)
-        filen = f"{ANGLEDIR}/0/U"
+        src = os.path.join(OFBASE, "0")
+        dst = os.path.join(ANGLEDIR, "0")
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+        filen = os.path.joint(ANGLEDIR,"0","U")
         with open(filen, "r", newline="\n") as file:
             data = file.readlines()
         data[26] = f"internalField uniform ( {np.cos(ang)} {np.sin(ang)} 0. );\n"
@@ -39,20 +40,22 @@ def setupOpenFoam(OFBASE, CASEDIR, HOMEDIR, airfoilFile,
             file.writelines(data)
 
         # MAKE constant/ FOLDER
-        shutil.copytree(f"{OFBASE}/constant/", ANGLEDIR +
-                        "/constant/", dirs_exist_ok=True)
-        filen = f"{ANGLEDIR}/constant/transportProperties"
+        src = os.path.join(OFBASE, "constant")
+        dst = os.path.join(ANGLEDIR, "constant")
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+        filen = os.path.join(ANGLEDIR,"constant","transportProperties")
         with open(filen, "r", newline="\n") as file:
             data = file.readlines()
-        data[20] = f"nu              [0 2 -1 0 0 0 0] \
-            {np.format_float_scientific(1/Reynolds,sign=False,precision=3)};\n"
+        data[20] = f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1/Reynolds,sign=False,precision=3)};\n"
         with open(filen, "w") as file:
             file.writelines(data)
 
         # MAKE system/ FOLDER
-        shutil.copytree(f"{OFBASE}/system/", ANGLEDIR +
-                        "/system/", dirs_exist_ok=True)
-        filen = f"{ANGLEDIR}/system/controlDict"
+        src = os.path.join(OFBASE, "system")
+        dst = os.path.join(ANGLEDIR, "system")
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+
+        filen = os.path.join(ANGLEDIR,"system","controlDict")
         with open(filen, "r", newline="\n") as file:
             data = file.readlines()
         data[36] = f"endTime {maxITER}.;\n"
@@ -71,14 +74,14 @@ def setupOpenFoam(OFBASE, CASEDIR, HOMEDIR, airfoilFile,
 
 def runFoamAngle(CASEDIR, angle):
     if angle >= 0:
-        folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+        folder = str(angle)[::-1].zfill(7)[::-1] 
     else:
-        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
+        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
 
-    ANGLEDIR = f"{CASEDIR}/{folder}"
+    ANGLEDIR = os.path.join(CASEDIR,folder)
     os.chdir(ANGLEDIR)
     print(f'{angle} deg: Simulation Starting')
-    os.system(f"{runOFscript}")
+    call(["/bin/bash", "-c", f"{runOFscript}"])
     os.chdir(CASEDIR)
 
 
@@ -132,16 +135,16 @@ def makeCLCD(CASEDIR, HOMEDIR, anglesAll):
 
 def getCoeffs(angle):
     if angle >= 0:
-        folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+        folder = str(angle)[::-1].zfill(7)[::-1] 
     else:
-        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
+        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] 
     parentDir = os.getcwd()
     folders = next(os.walk("."))[1]
     if folder[:-1] in folders:
         os.chdir(folder)
         folders = next(os.walk("."))[1]
     if "postProcessing" in folders:
-        os.chdir("postProcessing/force_coefs/")
+        os.chdir(os.path.join("postProcessing","force_coefs"))
         times = next(os.walk("."))[1]
         times = [int(times[j]) for j in range(len(times))
                  if times[j].isdigit()]
@@ -167,7 +170,7 @@ def cleanOpenFoam(HOMEDIR, CASEDIR):
                      if times[j].isdigit()]
             times = sorted(times)
             for delFol in times[1:-1]:
-                os.system(f"rm -r {delFol}")
+                os.rmdir(delFol)
             os.chdir(CASEDIR)
     os.chdir(HOMEDIR)
 
@@ -189,7 +192,7 @@ def getConvergence(HOMEDIR, CASEDIR):
 #             folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
 #         if folder in folders:
 #             os.chdir(folder)
-#             os.chdir('postProcessing/force_coefs')
+#             os.chdir(os.path.join('postProcessing',force_coefs'))
 #             times = next(os.walk("."))[1]
 #             times = [int(times[j]) for j in range(len(times))
 #                      if times[j].isdigit()]

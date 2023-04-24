@@ -1,11 +1,18 @@
 import os
+import subprocess
 from .filesGNVP import makeInput
 from .postProcess.forces import forces2polars, forces2pertrubRes
 
 
 def GNVPexe(HOMEDIR, ANGLEDIR):
     os.chdir(ANGLEDIR)
-    os.system("./gnvp3 < input > gnvp.out")
+
+    fin = open("input", "w")
+    fout = open("gnvp.out", "w")
+    subprocess.call('gnvp3', stdin= fin, stdout = fout)
+    fin.close()
+    fout.close()
+    
     os.chdir(HOMEDIR)
 
 

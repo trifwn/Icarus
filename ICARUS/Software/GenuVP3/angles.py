@@ -13,8 +13,8 @@ def GNVPangleCase(plane, polars, solver2D, maxiter, timestep, Uinf, angle, dens,
     airfoils = plane.airfoils
     print(f"Running Angles {angle}")
     folder = ang2case(angle)
-    CASEDIR = f"{PLANEDIR}/{folder}"
-    os.system(f"mkdir -p {CASEDIR}")
+    CASEDIR = os.path.join(PLANEDIR,folder)
+    os.makedirs(CASEDIR,exist_ok=True)
     params = setParams(len(bodies), len(airfoils), maxiter,
                        timestep, Uinf, angle, dens)
     runGNVPcase(CASEDIR, HOMEDIR, GENUBASE, movements,

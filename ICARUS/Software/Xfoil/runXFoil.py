@@ -60,25 +60,25 @@ def saveXfoil(airfoils, polars, Reynolds):
     os.chdir(masterDir)
     for airf, clcdData in zip(airfoils, polars):
         os.chdir(masterDir)
-        os.chdir(f"Database/2D/NACA{airf}")
+        os.chdir(os.path.join("Database","2D",f"NACA{airf}"))
         airfoilPath = os.getcwd()
 
         for i, ReynDat in enumerate(clcdData):
             os.chdir(airfoilPath)
 
             reyndir = f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}"
-            os.system(f"mkdir -p {reyndir}")
+            os.makedirs(reyndir,exist_ok=True)
             os.chdir(reyndir)
             cwd = os.getcwd()
 
             for angle in ReynDat.keys():
                 os.chdir(cwd)
                 if float(angle) >= 0:
-                    folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+                    folder = str(angle)[::-1].zfill(7)[::-1] 
                 else:
                     folder = "m" + \
-                        str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
-                os.system(f"mkdir -p {folder}")
+                        str(angle)[::-1].strip("-").zfill(6)[::-1] 
+                os.makedirs(folder,exist_ok=True)
                 os.chdir(folder)
                 fname = 'clcd.xfoil'
                 with open(fname, 'w') as file:

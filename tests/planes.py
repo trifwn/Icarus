@@ -11,7 +11,8 @@ import os
 
 HOMEDIR = os.getcwd()
 db = Database_2D(HOMEDIR)
-readPolars2D(db, HOMEDIR, f"{HOMEDIR}/ICARUS/Database/XFLR5/")
+XFLRDIR = os.path.join(HOMEDIR, "ICARUS", "Database", "XFLR5")
+readPolars2D(db, HOMEDIR, XFLRDIR)
 airfoils = db.getAirfoils()
 
 Origin = np.array([0., 0., 0.])

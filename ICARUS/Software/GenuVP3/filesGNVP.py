@@ -241,17 +241,18 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
     filesNeeded = ['dfile.yours', 'hermes.geo', 'hyb.inf',
                    'input', 'name.cld', 'wing.bld']
     for item in filesNeeded:
-        shutil.copy(f'{GENUBASE}/{item}', f'{ANGLEDIR}/')
+        itemLOC = os.path.join(GENUBASE, item)
+        shutil.copy(itemLOC, ANGLEDIR)
 
     # EMPTY BLD FILES
     for body in bodies:
-        os.system(f'cp wing.bld {body["name"]}.bld')
+        shutil.copy('wing.bld', f'{body["name"]}.bld')
     if "wing" not in [bod["name"] for bod in bodies]:
-        os.system("rm wing.bld")
+        os.remove('wing.bld')
     # EMPTY CLD FILES
     for airf in airfoils:
-        os.system(f'cp name.cld {airf[4:]}.cld')
-    os.system("rm name.cld")
+        shutil.copy('name.cld', f'{airf[4:]}.cld')
+    os.remove("name.cld")
 
     # Input File
     inputF()
@@ -264,7 +265,9 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
     # CLD FILES
     cldFiles(AeroData, airfoils, solver)
     if 'gnvp3' not in next(os.walk('.'))[2]:
-        os.system(f'ln -sv {HOMEDIR}/ICARUS/gnvp3 {ANGLEDIR}/gnvp3')
+        src = os.path.join(HOMEDIR, 'ICARUS', 'gnvp3')
+        dst = os.path.join(ANGLEDIR, 'gnvp3')
+        os.symlink(src, dst)
     os.chdir(HOMEDIR)
 
 
@@ -297,9 +300,8 @@ def filltable(df):
 
 def removeResults(ANGLEDIR, HOMEDIR):
     os.chdir(ANGLEDIR)
-    os.system("rm  strip*")
-    os.system("rm  x*")
-    os.system("rm YOURS*")
-    os.system("rm refstate*")
-    # os.system('rm ing.WG')
+    os.remove("strip*")
+    os.remove("x*")
+    os.remove("YOURS*")
+    os.remove("refstate*")
     os.chdir(HOMEDIR)

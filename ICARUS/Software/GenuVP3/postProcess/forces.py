@@ -9,7 +9,7 @@ def forces2polars(CASEDIR, HOMEDIR):
     print('Making Polars')
     pols = []
     for folder in folders:
-        os.chdir(f"{CASEDIR}/{folder}")
+        os.chdir(os.path.join(CASEDIR,folder))
         files = next(os.walk('.'))[2]
         if "LOADS_aer.dat" in files:
             name = float(
@@ -37,7 +37,7 @@ def forces2pertrubRes(DYNDIR, HOMEDIR):
     print('Logging Pertrubations')
     pols = []
     for folder in folders:
-        os.chdir(f"{DYNDIR}//{folder}")
+        os.chdir(os.path.join(DYNDIR,folder))
         files = next(os.walk('.'))[2]
         if "LOADS_aer.dat" in files:
             dat = np.loadtxt("LOADS_aer.dat")[-1]
@@ -61,7 +61,7 @@ def forces2pertrubRes(DYNDIR, HOMEDIR):
                 value = - value
 
             pols.append([value, name,  *dat])
-            os.chdir(f"{DYNDIR}/{folder}")
+            os.chdir(os.path.join(DYNDIR,folder))
         os.chdir(f"{DYNDIR}")
     df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
     df.pop('TTIME')

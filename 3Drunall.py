@@ -22,7 +22,8 @@ HOMEDIR = os.getcwd()
 # # Airfoil Data
 db = Database_2D(HOMEDIR)
 airfoils = db.getAirfoils()
-readPolars2D(db, HOMEDIR, f"{HOMEDIR}/ICARUS/Database/XFLR5/")
+XFLR5DIR = os.path.join(HOMEDIR, "ICARUS", "Database", "XFLR5")
+readPolars2D(db, HOMEDIR, XFLR5DIR)
 polars2D = db.Data
 
 
@@ -162,8 +163,8 @@ try:
                              maxiter, timestep,
                              dyn.trim['U'], dyn.trim['AoA']]
             dyn.runAnalysis(runGNVPsensitivityParallel, GNVP3SensArgs)
-            dyn.sensResults[var] = pertrResults(
-                f"{dyn.CASEDIR}/Sensitivity_{var}", HOMEDIR)
+            sensDir = os.path.join(dyn.CASEDIR, f"Sensitivity_{var}")
+            dyn.sensResults[var] = pertrResults(sensDir, HOMEDIR)
         print("Sensitivity Analysis took : --- %s seconds ---" %
               (time.time() - sens_time))
         dyn.save()

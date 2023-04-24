@@ -121,7 +121,7 @@ class Airplane():
     def accessDB(self, HOMEDIR, DBDIR):
         os.chdir(DBDIR)
         CASEDIR = self.name
-        os.system(f"mkdir -p {CASEDIR}")
+        os.makedirs(CASEDIR,exist_ok=True)
         os.chdir(CASEDIR)
         self.CASEDIR = os.getcwd()
         self.HOMEDIR = HOMEDIR

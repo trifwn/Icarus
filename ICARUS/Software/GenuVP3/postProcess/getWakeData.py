@@ -1,9 +1,10 @@
 import numpy as np
+import os
 from .getMaxiter import getMaxiter
 
 
 def getWakeData(plane, case):
-    fname = f"{plane.CASEDIR}/{case}/YOURS.WAK"
+    fname = os.path.join(plane.CASEDIR, case, "YOURS.WAK")
     with open(fname, "r") as file:
         data = file.readlines()
     a = []

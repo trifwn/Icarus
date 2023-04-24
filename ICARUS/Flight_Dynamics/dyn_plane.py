@@ -79,7 +79,7 @@ class dyn_Airplane(Airplane):
         self.CASEDIR = self.CASEDIR
 
         os.chdir(self.CASEDIR)
-        os.system(f"mkdir -p Dynamics")
+        os.makedirs("Dynamics",exist_ok=True)
         os.chdir("Dynamics")
         self.DynDir = os.getcwd()
         os.chdir(HOMEDIR)

@@ -2,11 +2,12 @@ import pandas as pd
 import os
 
 def getStripData(pln, case, NBs):
-    files = os.listdir(f"{pln.CASEDIR}/{case}")
+    files = os.listdir(os.path.join(pln.CASEDIR,case))
     stripDat = []
     for file in files:
         if file.startswith('strip'):
-            with open(f"{pln.CASEDIR}/{case}/{file}", 'r') as f:
+            filename = os.path.join(pln.CASEDIR,case,file)
+            with open(filename, 'r') as f:
                 data = f.readlines()
             data = [float(item) for item in data[-1].split()]
             file = file[6:]

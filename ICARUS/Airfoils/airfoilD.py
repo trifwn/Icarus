@@ -5,6 +5,7 @@ import numpy as np
 import urllib.request
 import matplotlib.pyplot as plt
 import os
+import shutil
 import re
 
 # # Airfoil
@@ -81,7 +82,7 @@ class AirfoilD(af.Airfoil):
     def accessDB(self, HOMEDIR, DBDIR):
         os.chdir(DBDIR)
         AFDIR = f"NACA{self.name}"
-        os.system(f"mkdir -p {AFDIR}")
+        os.makedirs(AFDIR,exist_ok=True)
         os.chdir(AFDIR)
         self.AFDIR = os.getcwd()
         self.HOMEDIR = HOMEDIR
@@ -90,14 +91,14 @@ class AirfoilD(af.Airfoil):
         exists = False
         for i in os.listdir(self.AFDIR):
             if i.startswith("naca"):
-                self.airfile = f"{self.AFDIR}/{i}"
+                self.airfile = os.path.join(self.AFDIR,i)
                 exists = True
         if True:
             self.save()
 
     def reynCASE(self, Reyn):
-        self.currReyn = np.format_float_scientific(
-            Reyn, sign=False, precision=3)
+        Reyn = np.format_float_scientific(Reyn, sign=False, precision=3)
+        self.currReyn = Reyn
         self.Reynolds.append(self.currReyn)
         if self.currReyn in self.Polars.keys():
             pass
@@ -105,14 +106,14 @@ class AirfoilD(af.Airfoil):
             self.Polars[self.currReyn] = {}
 
         try:
-            self.REYNDIR = f"{self.AFDIR}/Reynolds_{np.format_float_scientific(Reyn,sign=False,precision=3).replace('+', '')}"
-            os.system(f"mkdir -p {self.REYNDIR}")
-            os.system(f"cp {self.airfile} {self.REYNDIR}")
+            self.REYNDIR = os.path.join(self.AFDIR, f"Reynolds_{Reyn.replace('+', '')}")
+            os.makedirs(self.REYNDIR,exist_ok=True)
+            shutil.copy(self.airfile, self.REYNDIR)
         except AttributeError:
             print("DATABASE is not initialized!")
 
     def save(self):
-        self.airfile = f"{self.AFDIR}/naca{self.name}"
+        self.airfile = os.path.join(self.AFDIR,f"naca{self.name}")
         pt0 = self.selig
         np.savetxt(self.airfile, pt0.T)
 

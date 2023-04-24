@@ -11,7 +11,7 @@ def plotCP(angle):
         anglef = 'm'+str(angle)[::-1].strip('-').zfill(6)[::-1]
     else:
         anglef = str(angle)[::-1].zfill(7)[::-1]
-    fname = f'{anglef}/{fname}'
+    fname = os.path.join(anglef,fname)
     data = np.loadtxt(fname).T
     c = data[0]
     p1 = data[1]
@@ -30,7 +30,7 @@ def plotMultipleCPs(angles):
             anglef = 'm'+str(angle)[::-1].strip('-').zfill(6)[::-1]
         else:
             anglef = str(angle)[::-1].zfill(7)[::-1]
-        floc = f'{anglef}/{fname}'
+        floc = os.path.join(anglef,fname)
         data = np.loadtxt(floc).T
         c = data[0]
         p1 = data[1]

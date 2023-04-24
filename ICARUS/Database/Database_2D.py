@@ -13,7 +13,11 @@ class Database_2D():
         self.airfoils = self.getAirfoils()
 
     def scan(self):
-        os.chdir(DB2D)
+        try:
+            os.chdir(DB2D)
+        except FileNotFoundError:
+            print(f'Database not found! Initializing Database at {DB2D}')
+            os.makedirs(DB2D,exist_ok=True)
         folders = next(os.walk('.'))[1]
         Data = Struct()
         for folder in folders:
@@ -38,7 +42,7 @@ class Database_2D():
         for folder in folders:
             os.chdir(folder)
             airfoilDict[folder[9:]] = self.scanSolvers()
-            os.chdir('../')
+            os.chdir('..')
         return airfoilDict
 
     def scanSolvers(self):

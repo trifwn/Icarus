@@ -1,7 +1,10 @@
 import os
 
+APPHOME = os.path.abspath("ICARUS")
+
 f2wLoc = os.path.abspath("")
 genuLoc = os.path.abspath("")
-runOFscript = os.path.abspath("./ICARUS/Software/OpenFoam/runFoam.sh")
-setupOFscript = os.path.abspath("./ICARUS/Software/OpenFoam/setupFoam.sh")
-logOFscript = os.path.abspath("./ICARUS/Software/OpenFoam/logFoam.sh")
+
+runOFscript = os.path.join(APPHOME, "Software", "OpenFoam", "runFoam.sh")
+setupOFscript = os.path.join(APPHOME, "Software", "OpenFoam", "setupFoam.sh")
+logOFscript = os.path.join(APPHOME, "Software", "OpenFoam", "logFoam.sh")

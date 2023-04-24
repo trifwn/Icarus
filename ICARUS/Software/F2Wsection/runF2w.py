@@ -1,11 +1,10 @@
-import os
-import numpy as np
 from time import sleep
-import shutil
 import pandas as pd
+import numpy as np
 
 from . import filesF2w as ff2w
 
+import os, stat, shutil, subprocess
 
 def anglesSep(anglesALL):
     pangles = []
@@ -42,8 +41,9 @@ def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
             if 'AERLOAD.OUT' in next(os.walk(folder))[2]:
                 file.writelines(folder+'/clcd.out ')
         file.writelines('>> clcd.f2w')
-    os.system("chmod +x output_bat")
-    os.system('./output_bat')
+    st = os.stat('output_bat')
+    os.chmod("output_bat", st.st_mode | stat.S_IEXEC)
+    subprocess.call('output_bat')
 
     with open('clcd.f2w', 'r') as file:
         data = file.readlines()
@@ -70,13 +70,16 @@ def makeCLCD2(CASEDIR, HOMEDIR):
                     n += 1
                 else:
                     file.writelines('cd ../'+folder+'\n../write_out\n')
-    os.system("chmod +x output_bat")
-    os.system('./output_bat')
+    st = os.stat('output_bat')
+    os.chmod("output_bat", st.st_mode | stat.S_IEXEC)
+    subprocess.call('output_bat')
+
     folders = next(os.walk('.'))[1]
     a = []
     for folder in folders[1:]:
         if 'clcd.out' in next(os.walk(folder))[2]:
-            a.append(np.loadtxt(f'{folder}/clcd.out'))
+            fileLOC = os.path.joint(folder,'clcd.out')
+            a.append(np.loadtxt(fileLOC))
     df = pd.DataFrame(a, columns=["AoA", 'CL', "CD", "Cm"])
     df = df.sort_values("AoA")
     df.to_csv('clcd.f2w', index=False)
@@ -100,12 +103,13 @@ def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile)
         ff2w.f2winp(Reynolds, Mach, ftripL, ftripU, name)
 
         # RUN Files
-        os.system('cp design_'+name+'.inp design.inp')
-        os.system('cp f2w_'+name+'.inp f2w.inp')
+        shutil.copy(f'design_{name}.inp', 'design.inp')
+        shutil.copy(f'f2w_{name}.inp', 'f2w.inp')
         print(f'Running {angles}')
-        os.system('./foil_section > '+name+'.out')
-        os.system('rm -r TMP.dir/')
-    os.system('rm -r SOLOUTI*')
+        f = open(f'{name}.out', "w")
+        subprocess.call('foil_section', stdout= f, stderr= f)
+        os.rmdir('TMP.dir')
+    os.remove('SOLOUTI*')
     sleep(1)
     # return makeCLCD(Reynolds,Mach)
     os.chdir(HOMEDIR)
@@ -114,20 +118,19 @@ def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile)
 
 def removeResults(CASEDIR, HOMEDIR, angles):
     os.chdir(CASEDIR)
-    os.system('rm  SOLOUTI*')
-    os.system('rm  *.out')
-    os.system('rm PAKETO')
+    os.remove('SOLOUTI*')
+    os.remove('*.out')
+    os.remove('PAKETO')
     parentDir = os.getcwd()
     folders = next(os.walk("."))[1]
     for angle in angles:
         if angle >= 0:
-            folder = str(angle)[::-1].zfill(7)[::-1] + "/"
+            folder = str(angle)[::-1].zfill(7)[::-1] 
         else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "/"
+            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] 
         if folder[:-1] in folders:
             os.chdir(folder)
-            os.system(
-                'rm -f AERLOAD.OUT AIRFOIL.OUT BDLAYER.OUT COEFPRE.OUT SEPWAKE.OUT TREWAKE.OUT clcd.out SOLOUTI.INI')
+            os.remove('AERLOAD.OUT AIRFOIL.OUT BDLAYER.OUT COEFPRE.OUT SEPWAKE.OUT TREWAKE.OUT clcd.out SOLOUTI.INI')
             os.chdir(parentDir)
     os.chdir(HOMEDIR)
 
@@ -136,6 +139,10 @@ def setupF2W(F2WBASE, HOMEDIR, CASEDIR):
     filesNeeded = ['design.inp', 'design_neg.inp', 'design_pos.inp',
                    'f2w.inp', 'f2w_neg.inp', 'f2w_pos.inp', 'io.files', 'write_out']
     for item in filesNeeded:
-        shutil.copy(f'{F2WBASE}/{item}', f'{CASEDIR}/')
-    if 'foil' not in next(os.walk(f'{CASEDIR}/'))[2]:
-        os.system(f'ln -sv {HOMEDIR}/foil_section {CASEDIR}/foil_section')
+        src = os.path.join(F2WBASE, item)
+        dst = os.path.join(CASEDIR, item)
+        shutil.copy(src, dst)
+    if 'foil' not in next(os.walk(CASEDIR))[2]:
+        src = os.path.join(HOMEDIR, 'ICARUS', 'foil_section')
+        dst = os.path.join(CASEDIR, 'foil_section')
+        os.symlink(src, dst)

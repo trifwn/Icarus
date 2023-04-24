@@ -28,8 +28,8 @@ class Database_3D():
             self.Convergence[folder] = Struct()
             os.chdir(folder)
             try:
-                self.rawData[folder] = pd.read_csv(
-                    f"{DB3D}/{folder}/clcd.genu")
+                clcdLOC = os.path.join(DB3D, folder, 'clcd.genu')
+                self.rawData[folder] = pd.read_csv(clcdLOC)
                 files = next(os.walk('.'))[2]
                 for file in files:
                     if file.endswith(".json") and not file.startswith("dyn"):
@@ -60,8 +60,8 @@ class Database_3D():
                             genuPolarArgs = [plane.CASEDIR, plane.HOMEDIR]
                             plane.makePolars(makePolar, genuPolarArgs)
                             self.Planes[folder] = plane
-                            self.rawData[folder] = pd.read_csv(
-                                f"{DB3D}/{folder}/clcd.genu")
+                            clcdLOC = os.path.join(DB3D, folder, 'clcd.genu')
+                            self.rawData[folder] = pd.read_csv(clcdLOC)
                         except e:
                             print('Failed to create Polars! Got Error:')
                             print(e)
@@ -107,7 +107,7 @@ class Database_3D():
                                     print(
                                         f"Some Run Had Problems! {folder} {case}\n{e}")
 
-                    os.chdir('../')
+                    os.chdir('..')
             except FileNotFoundError:
                 print("Convergence data not found!")
 
@@ -189,11 +189,11 @@ def ang2case(angle):
 
 def dst2case(dst):
     if dst.var == "Trim":
-        folder = "Trim/"
+        folder = "Trim"
     elif dst.isPositive:
         folder = "p" + \
-            str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}/"
+            str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
     else:
         folder = "m" + \
-            str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}/"
+            str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
     return folder

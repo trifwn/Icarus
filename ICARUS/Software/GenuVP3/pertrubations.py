@@ -20,8 +20,8 @@ def GNVPdstCase(plane, polars, solver2D, maxiter, timestep, Uinf, angle, bodies,
 
     # if make distubance folder
     folder = dst2case(dst)
-    CASEDIR = f"{PLANEDIR}/{analysis}/{folder}/"
-    os.system(f"mkdir -p {CASEDIR}")
+    CASEDIR = os.path.join(PLANEDIR, analysis, folder)
+    os.makedirs(CASEDIR,exist_ok=True)
 
     params = setParams(len(bodies), len(airfoils), maxiter, timestep,
                        Uinf, angle, dens)
