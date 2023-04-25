@@ -75,3 +75,7 @@ class Struct(dict):
 
     def __setstate__(self, state):
         self.__dict__.update(state)
+
+    def convertFromDict(self, dict):
+        for key in dict.keys():
+            self.__dict__[key] = dict[key]
