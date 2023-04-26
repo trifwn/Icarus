@@ -3,44 +3,51 @@ from ICARUS.Workers.analysis import Analysis
 from ICARUS.Software.GenuVP3.angles import runGNVPanglesParallel, runGNVPangles
 from ICARUS.Software.GenuVP3.pertrubations import runGNVPpertrParallel, runGNVPpertr
 from ICARUS.Software.GenuVP3.filesInterface import GNVPexe
+from ICARUS.Database.db import DB
 
 
+def get_gnvp3(db: DB):
+    gnvp3 = Solver(name = 'gnvp3',solverType = '3D', fidelity = 2, db = db)
+
+    # # Define GNVP3 Analyses
+    options = {
+        'HOMEDIR': 'Home Directory',
+        "CASEDIR": 'Case Directory',
+    }
+    rerun = Analysis('gnvp3','rerun', GNVPexe, options)  
+
+    options = {
+        "plane":        "Plane Object",
+        "environment":  "Environment",
+        "db":           "Database",
+        "solver2D":     "2D Solver",
+        "maxiter":      "Max Iterations",
+        "timestep":     "Timestep",
+        "Uinf":         "Velocity Magnitude",
+        "angles":       "Angle to run",
+    }
+
+    anglesSerial = Analysis('gnvp3','Angles_Serial', runGNVPangles, options) 
+    anglesParallel = anglesSerial << {'name': 'Angles_Parallel', 'execute': runGNVPanglesParallel}
+    pertrubationSerial = anglesSerial << {'name': 'Pertrubation_Serial', 'execute': runGNVPpertr}
+    pertrubationParallel = anglesSerial << {'name': 'Pertrubation_Parallel', 'execute': runGNVPpertrParallel}
+
+    gnvp3.addAnalyses([
+        rerun,
+        anglesSerial,
+        anglesParallel,
+        pertrubationSerial,
+        pertrubationParallel
+        ])
+    
+    return gnvp3
+
+
+# # EXAMPLE USAGE
 # ## Define Solver
-gnvp3 = Solver(name = 'gnvp3',solverType = '3D', fidelity = 2)
-
-# # Define GNVP3 Analyses
-options = {
-    'HOMEDIR': 'Home Directory',
-    "CASEDIR": 'Case Directory',
-}
-rerun = Analysis('gnvp3','rerun', GNVPexe, options)  
-
-options = {
-    "plane":        "Plane Object",
-    "environment":  "Environment",
-    "foildb":       "2D Database",
-    "solver2D":     "2D Solver",
-    "maxiter":      "Max Iterations",
-    "timestep":     "Timestep",
-    "Uinf":         "Velocity Magnitude",
-    "angles":       "Angle to run",
-}
-
-anglesSerial = Analysis('gnvp3','Angles_Serial', runGNVPangles, options) 
-anglesParallel = anglesSerial << {'name': 'Angles_Parallel', 'execute': runGNVPanglesParallel}
-pertrubationSerial = anglesSerial << {'name': 'Pertrubation_Serial', 'execute': runGNVPpertr}
-pertrubationParallel = anglesSerial << {'name': 'Pertrubation_Parallel', 'execute': runGNVPpertrParallel}
-
-gnvp3.addAnalyses([
-    rerun,
-    anglesSerial,
-    anglesParallel,
-    pertrubationSerial,
-    pertrubationParallel
-    ])
-
-
-# EXAMPLE USAGE
+# db = DB()
+# db.loadData()
+# gnvp3 = get_gnvp3(db)
 # analysis = gnvp3.getAvailableAnalyses()[0]
 # gnvp3.setAnalysis(analysis)
 # options = gnvp3.getOptions(analysis)

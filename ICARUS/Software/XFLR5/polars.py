@@ -3,7 +3,8 @@ import numpy as np
 import os
 
 
-def readPolars2D(db, HOMEDIR, XFLRdir):
+def readPolars2D(db, XFLRdir):
+    HOMEDIR = db.HOMEDIR
     os.chdir(XFLRdir)
     files = next(os.walk('.'))[1]
     for airf in files:

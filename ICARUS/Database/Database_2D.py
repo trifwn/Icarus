@@ -8,6 +8,7 @@ import os
 class Database_2D():
     def __init__(self):
         self.HOMEDIR = APPHOME
+        self.DATADIR = DB2D
         self.Data = Struct()
         
     def loadData(self):
@@ -85,3 +86,6 @@ class Database_2D():
             return reynolds
         except KeyError:
             print("Airfoil Doesn't exist! You should compute it first!")
+
+    def __str__(self):
+        return f"Foil Database"

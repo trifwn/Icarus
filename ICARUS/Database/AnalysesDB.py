@@ -5,6 +5,7 @@ import os
 class AnalysesDB():
     def __init__(self):
         self.HOMEDIR = APPHOME
+        self.DATADIR = ANALYSESDB
         self.Data = Struct()
 
     def loadData(self):

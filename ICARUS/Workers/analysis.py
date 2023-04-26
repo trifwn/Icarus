@@ -4,7 +4,10 @@ from tabulate import tabulate
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
+import jsonpickle.ext.numpy as jsonpickle_numpy
 jsonpickle_pd.register_handlers()
+jsonpickle_numpy.register_handlers()
+
 
 class Analysis():
     def __init__(self,solverName, name, runFunc ,options):
@@ -76,6 +79,12 @@ class Analysis():
         optiondict = {k:v.description for k,v in self.options.items()}
         return self.__class__(self.solverName,self.name, self.execute, optiondict)
     
+    def __getstate__(self):
+        return self.solverName, self.name, self.execute, self.options
+    
+    def __setstate__(self, state):
+        self.solverName, self.name, self.execute, self.options = state
+    
     def toJSON(self):
         return jsonpickle.encode(self)
     
@@ -87,3 +96,5 @@ class Analysis():
         s = self.__copy__()
         s.__dict__.update(other)
         return s
+    
+    

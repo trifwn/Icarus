@@ -7,10 +7,12 @@ from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.Database_3D import ang2case
 
 
-def GNVPangleCase(plane, foildb, solver2D, maxiter, timestep, Uinf, angle, dens, movements, bodies):
-    HOMEDIR = plane.HOMEDIR
-    PLANEDIR = plane.CASEDIR
+def GNVPangleCase(plane, db, solver2D, maxiter, timestep, Uinf, angle, dens, movements, bodies):
+    HOMEDIR = db.HOMEDIR
+    PLANEDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
     airfoils = plane.airfoils
+    foilsDB = db.foilsDB
+
     print(f"Running Angles {angle}")
     folder = ang2case(angle)
     CASEDIR = os.path.join(PLANEDIR,folder)
@@ -18,12 +20,12 @@ def GNVPangleCase(plane, foildb, solver2D, maxiter, timestep, Uinf, angle, dens,
     params = setParams(len(bodies), len(airfoils), maxiter,
                        timestep, Uinf, angle, dens)
     runGNVPcase(CASEDIR, HOMEDIR, GENUBASE, movements,
-                bodies, params, airfoils, foildb.Data, solver2D)
+                bodies, params, airfoils, foilsDB.Data, solver2D)
 
     return f"Angle {angle} Done"
 
 
-def runGNVPangles(plane, foildb, solver2D, maxiter, timestep, Uinf, angles, environment):
+def runGNVPangles(plane, db, solver2D, maxiter, timestep, Uinf, angles, environment):
     dens = environment.AirDensity
     plane.defineSim(Uinf, dens)
     movements = airMov(plane.surfaces, plane.CG,
@@ -34,12 +36,12 @@ def runGNVPangles(plane, foildb, solver2D, maxiter, timestep, Uinf, angles, envi
 
     print("Running Angles in Sequential Mode")
     for angle in angles:
-        msg = GNVPangleCase(plane, foildb.Data, solver2D, maxiter, timestep,
+        msg = GNVPangleCase(plane, db, solver2D, maxiter, timestep,
                             Uinf, angle, dens, movements, bodies)
         print(msg)
 
 
-def runGNVPanglesParallel(plane, foildb, solver2D, maxiter, timestep, Uinf, angles, environment):
+def runGNVPanglesParallel(plane, db, solver2D, maxiter, timestep, Uinf, angles, environment):
     dens = environment.AirDensity    
     from multiprocessing import Pool
     plane.defineSim(Uinf, dens)
@@ -52,7 +54,7 @@ def runGNVPanglesParallel(plane, foildb, solver2D, maxiter, timestep, Uinf, angl
 
     print("Running Angles in Parallel Mode")
     with Pool(12) as pool:
-        args_list = [(plane, foildb.Data, solver2D, maxiter, timestep,
+        args_list = [(plane, db, solver2D, maxiter, timestep,
                       Uinf, angle, dens, movements, bodies) for angle in angles]
         res = pool.starmap(GNVPangleCase, args_list)
 

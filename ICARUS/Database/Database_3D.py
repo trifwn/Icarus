@@ -13,6 +13,7 @@ jsonpickle_pd.register_handlers()
 class Database_3D():
     def __init__(self):
         self.HOMEDIR = APPHOME
+        self.DATADIR = DB3D
         self.rawData = Struct()
         self.Data = Struct()
         self.Planes = Struct()
@@ -59,7 +60,7 @@ class Database_3D():
                         print('Plane object exists. Trying to create Polars...')
                         try:
                             from ICARUS.Software.GenuVP3.filesInterface import makePolar
-                            genuPolarArgs = [plane.CASEDIR, plane.HOMEDIR]
+                            genuPolarArgs = [plane.CASEDIR, self.HOMEDIR]
                             plane.makePolars(makePolar, genuPolarArgs)
                             self.Planes[folder] = plane
                             clcdLOC = os.path.join(DB3D, folder, 'clcd.genu')
@@ -157,7 +158,9 @@ class Database_3D():
                     self.Data[plane][f"Cm_{name}"] = My_new / (Q*S*MAC)
                 except AttributeError:
                     print("Plane doesn't have Q, S or MAC!")
-
+    
+    def __str__(self):
+        return f"Vehicle Database"
 
 cols = ["TTIME",
         "PSIB",

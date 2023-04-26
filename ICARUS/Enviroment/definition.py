@@ -37,12 +37,12 @@ class Environment():
     def __str__(self):
         return f"Environment: {self.name}"
 
-    def __repr__(self):
-        str = f"Environment: {self.name}"
-        str += f"\n\tGravity: {self.Gravity}"
-        str += f"\n\tDensity: {self.AirDensity}"
-        str += f"\n\tViscosity: {self.AirKinematicViscosity}"
-        str += f"\n\tTemperature: {self.Temperature}"
-        return str
+    # def __str__(self):
+    #     str = f"Environment: {self.name}"
+    #     str += f"\n\tGravity: {self.Gravity}"
+    #     str += f"\n\tDensity: {self.AirDensity}"
+    #     str += f"\n\tViscosity: {self.AirKinematicViscosity}"
+    #     str += f"\n\tTemperature: {self.Temperature}"
+    #     return str
 
 EARTH = Environment("Earth")

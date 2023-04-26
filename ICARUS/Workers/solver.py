@@ -1,11 +1,11 @@
 import collections
 from .analysis import Analysis
-from ICARUS.Database.Database_3D import Database_3D
+from ICARUS.Database.db import DB
 import os
 
 
 class Solver():
-    def __init__(self,name : str, solverType : str, fidelity : int, db : Database_3D) -> None:
+    def __init__(self,name : str, solverType : str, fidelity : int, db : DB) -> None:
         self.name = name
         self.type = solverType
         self.db = db
@@ -27,11 +27,11 @@ class Solver():
                 continue
             self.availableAnalyses[analysis.name] = analysis
         
-    def setAnalysis(self, analysis : Analysis):
+    def setAnalysis(self, analysis : str):
         self.mode = analysis
         
     def getAnalysis(self) -> Analysis:
-        return self.mode
+        return  self.availableAnalyses[self.mode]
     
     def printOptions(self):
         if self.mode is not None:
@@ -54,7 +54,7 @@ class Solver():
             _ = self.getAvailableAnalyses(verbose=True)
             
     def __str__(self) -> str:
-        string = f'Solver {self.name}:\n' 
+        string = f'{self.type} Solver {self.name}:\n' 
         string += 'Available Analyses Are: \n'
         string+= '------------------- \n'
         for i,key in enumerate(self.availableAnalyses.keys()):
@@ -81,7 +81,8 @@ class Solver():
         print(f'Running Solver {self.name}:\n\tAnalysis {analysis.name}...')
         
         def saveAnalysis(analysis : Analysis):
-            fname = os.path.join(self.db.AnalysesDir,f'{analysis.name}.json')
+            folder = self.db.analysesDB.DATADIR
+            fname = os.path.join(folder, f'{analysis.name}.json')
             with open(fname, 'w') as f:
                 f.write(analysis.toJSON())
             

@@ -10,6 +10,7 @@ class Airplane():
     def __init__(self, name, surfaces, disturbances=None, orientation=None):
 
         self.name = name
+        self.CASEDIR = name
         self.surfaces = surfaces
         self.masses = []
 
@@ -118,15 +119,15 @@ class Airplane():
                 airfoils.append(f"NACA{surface.airfoil.name}")
         return airfoils
 
-    def accessDB(self, HOMEDIR, DBDIR):
-        os.chdir(DBDIR)
-        CASEDIR = self.name
-        os.makedirs(CASEDIR,exist_ok=True)
-        os.chdir(CASEDIR)
-        self.CASEDIR = os.getcwd()
-        self.HOMEDIR = HOMEDIR
-        self.DBDIR = DBDIR
-        os.chdir(HOMEDIR)
+    # def accessDB(self, HOMEDIR, DBDIR):
+    #     os.chdir(DBDIR)
+    #     CASEDIR = self.name
+    #     os.makedirs(CASEDIR,exist_ok=True)
+    #     os.chdir(CASEDIR)
+    #     self.CASEDIR = os.getcwd()
+    #     self.HOMEDIR = HOMEDIR
+    #     self.DBDIR = DBDIR
+    #     os.chdir(HOMEDIR)
 
     def visAirplane(self, fig=None, ax=None, movement=None):
         if fig == None:
@@ -179,17 +180,16 @@ class Airplane():
         return jsonpickle.encode(self)
 
     def save(self):
-        os.chdir(self.CASEDIR)
-        with open(f'{self.name}.json', 'w') as f:
+        fname = os.path.join(self.CASEDIR, f'{self.name}.json')
+        with open(fname, 'w') as f:
             f.write(self.toJSON())
-        os.chdir(self.HOMEDIR)
 
-    def __repr__(self):
-        str = f"Plane Object for {self.name}\n"
-        str += f"Surfaces:\n"
-        for i,surfaces in enumerate(self.surfaces):
-            str += f"\t{surfaces.name} NB={i} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
-        return str
+    # def __str__(self):
+    #     str = f"Plane Object for {self.name}\n"
+    #     str += f"Surfaces:\n"
+    #     for i,surfaces in enumerate(self.surfaces):
+    #         str += f"\t{surfaces.name} NB={i} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
+    #     return str
     
     def __str__(self):
         str = f"Plane Object: {self.name}"
