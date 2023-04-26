@@ -1,14 +1,16 @@
-from . import DB2D
-import os
-import pandas as pd
 from ICARUS.Airfoils.airfoilD import AirfoilD
 from ICARUS.Core.struct import Struct
+from . import DB2D, APPHOME
+import pandas as pd
+import os
 
 
 class Database_2D():
-    def __init__(self, HOMEDIR):
-        self.HOMEDIR = HOMEDIR
+    def __init__(self):
+        self.HOMEDIR = APPHOME
         self.Data = Struct()
+        
+    def loadData(self):
         self.scan()
         self.airfoils = self.getAirfoils()
 

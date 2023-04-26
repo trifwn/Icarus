@@ -2,6 +2,10 @@ from ICARUS.Core.struct import Struct
 from .options import Option
 from tabulate import tabulate
 
+import jsonpickle
+import jsonpickle.ext.pandas as jsonpickle_pd
+jsonpickle_pd.register_handlers()
+
 class Analysis():
     def __init__(self,solverName, name, runFunc ,options):
         self.solverName = solverName
@@ -71,6 +75,9 @@ class Analysis():
     def __copy__(self):
         optiondict = {k:v.description for k,v in self.options.items()}
         return self.__class__(self.solverName,self.name, self.execute, optiondict)
+    
+    def toJSON(self):
+        return jsonpickle.encode(self)
     
     def __lshift__(self, other):
         """ overloading operator << """

@@ -1,5 +1,5 @@
 import numpy as np
-from . import DB2D, DB3D
+from . import DB3D,APPHOME
 import os
 import pandas as pd
 
@@ -11,13 +11,15 @@ jsonpickle_pd.register_handlers()
 
 
 class Database_3D():
-    def __init__(self, HOMEDIR):
-        self.HOMEDIR = HOMEDIR
+    def __init__(self):
+        self.HOMEDIR = APPHOME
         self.rawData = Struct()
         self.Data = Struct()
         self.Planes = Struct()
         self.dynPlanes = Struct()
         self.Convergence = Struct()
+    
+    def loadData(self):
         self.scan()
         self.makeData()
 

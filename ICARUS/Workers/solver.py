@@ -1,9 +1,14 @@
 import collections
+from .analysis import Analysis
+from ICARUS.Database.Database_3D import Database_3D
+import os
+
 
 class Solver():
-    def __init__(self,name,solverType,fidelity) -> None:
+    def __init__(self,name : str, solverType : str, fidelity : int, db : Database_3D) -> None:
         self.name = name
         self.type = solverType
+        self.db = db
         try:
             assert type(fidelity) == int, "Fidelity must be an integer"
         except AssertionError:
@@ -22,10 +27,10 @@ class Solver():
                 continue
             self.availableAnalyses[analysis.name] = analysis
         
-    def setAnalysis(self,analysis):
+    def setAnalysis(self, analysis : Analysis):
         self.mode = analysis
         
-    def getAnalysis(self):
+    def getAnalysis(self) -> Analysis:
         return self.mode
     
     def printOptions(self):
@@ -34,7 +39,7 @@ class Solver():
         else:
             print('Analysis hase not been Selected')
     
-    def getOptions(self,verbose = False):
+    def getOptions(self,verbose : bool = False):
         if self.mode is not None:
             return self.availableAnalyses[self.mode].getOptions(verbose)
         else:
@@ -48,7 +53,7 @@ class Solver():
             print('Analysis hase not been Selected')
             _ = self.getAvailableAnalyses(verbose=True)
             
-    def __str__(self):
+    def __str__(self) -> str:
         string = f'Solver {self.name}:\n' 
         string += 'Available Analyses Are: \n'
         string+= '------------------- \n'
@@ -56,12 +61,12 @@ class Solver():
             string+= f"{i}) {key} \n"
         return string
     
-    def getAvailableAnalyses(self, verbose = False):
+    def getAvailableAnalyses(self, verbose: bool = False):
         if verbose:
             print(self)
         return list(self.availableAnalyses.keys())
             
-    def run(self,analysis = None):
+    def run(self,analysis : Analysis = None):
         if analysis is None:
             if self.mode is None:
                 print("Analysis not selected or provided")
@@ -74,10 +79,17 @@ class Solver():
                 print("Analysis not available")
                 return -1
         print(f'Running Solver {self.name}:\n\tAnalysis {analysis.name}...')
+        
+        def saveAnalysis(analysis : Analysis):
+            fname = os.path.join(self.db.AnalysesDir,f'{analysis.name}.json')
+            with open(fname, 'w') as f:
+                f.write(analysis.toJSON())
+            
+        saveAnalysis(analysis)
         res = analysis()
         return res
     
-    def getResults(self,analysis):
+    def getResults(self, analysis: str):
         if analysis in self.availableAnalyses.keys():
             if self.availableAnalyses[analysis].checkRun():
                 res = None

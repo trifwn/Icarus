@@ -23,4 +23,7 @@ Control/slprj*
 *.out
 test*.ipynb
 
-Data/
+Data/2D
+Data/3D
+Data/Mock
+Data/XFLR5

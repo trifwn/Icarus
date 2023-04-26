@@ -18,7 +18,7 @@ rerun = Analysis('gnvp3','rerun', GNVPexe, options)
 options = {
     "plane":        "Plane Object",
     "environment":  "Environment",
-    "polars":       "2D Polars Name",
+    "foildb":       "2D Database",
     "solver2D":     "2D Solver",
     "maxiter":      "Max Iterations",
     "timestep":     "Timestep",

@@ -25,7 +25,7 @@ def pertrResults(DYNDIR, HOMEDIR):
     return forces2pertrubRes(DYNDIR, HOMEDIR)
 
 
-def runGNVPcase(CASEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, polars, solver2D):
+def runGNVPcase(CASEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, foildb, solver2D):
     makeInput(CASEDIR, HOMEDIR, GENUBASE, movements,
-              bodies, params, airfoils, polars, solver2D)
+              bodies, params, airfoils, foildb, solver2D)
     GNVPexe(HOMEDIR, CASEDIR)

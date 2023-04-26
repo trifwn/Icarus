@@ -12,4 +12,5 @@ BASEGNVP3 = os.path.join(APPHOME, "Data", "Mock", "BaseGNVP3")
 ### DATABASES ###
 DB2D = os.path.join(APPHOME, "Data", "2D")
 DB3D = os.path.join(APPHOME, "Data", "3D")
+ANALYSESDB = os.path.join(APPHOME, "Data", "Analyses")
 XFLRDB = os.path.join(APPHOME, "Data", "XFLR")
