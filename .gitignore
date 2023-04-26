@@ -23,4 +23,4 @@ Control/slprj*
 *.out
 test*.ipynb
 
-ICARUS/Data
+Data/
