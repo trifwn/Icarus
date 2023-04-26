@@ -184,9 +184,13 @@ class Airplane():
             f.write(self.toJSON())
         os.chdir(self.HOMEDIR)
 
-    def __str__(self):
-        str = f"Dynamic Plane Object for {self.name}\n"
+    def __repr__(self):
+        str = f"Plane Object for {self.name}\n"
         str += f"Surfaces:\n"
         for i,surfaces in enumerate(self.surfaces):
             str += f"\t{surfaces.name} NB={i} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
+        return str
+    
+    def __str__(self):
+        str = f"Plane Object: {self.name}"
         return str

@@ -23,9 +23,9 @@ def GNVPangleCase(plane, polars, solver2D, maxiter, timestep, Uinf, angle, dens,
     return f"Angle {angle} Done"
 
 
-def runGNVPangles(plane, polars, solver2D, maxiter, timestep, Uinf, angles, dens=1.225):
+def runGNVPangles(plane, polars, solver2D, maxiter, timestep, Uinf, angles, environment):
+    dens = environment.AirDensity
     plane.defineSim(Uinf, dens)
-
     movements = airMov(plane.surfaces, plane.CG,
                        plane.orientation, plane.disturbances)
     bodies = []
@@ -39,9 +39,9 @@ def runGNVPangles(plane, polars, solver2D, maxiter, timestep, Uinf, angles, dens
         print(msg)
 
 
-def runGNVPanglesParallel(plane, polars, solver2D, maxiter, timestep, Uinf, angles, dens=1.225):
+def runGNVPanglesParallel(plane, polars, solver2D, maxiter, timestep, Uinf, angles, environment):
+    dens = environment.AirDensity    
     from multiprocessing import Pool
-
     plane.defineSim(Uinf, dens)
 
     movements = airMov(plane.surfaces, plane.CG,

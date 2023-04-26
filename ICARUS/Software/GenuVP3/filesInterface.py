@@ -7,13 +7,14 @@ from .postProcess.forces import forces2polars, forces2pertrubRes
 def GNVPexe(HOMEDIR, ANGLEDIR):
     os.chdir(ANGLEDIR)
 
-    fin = open("input", "w")
+    fin = open("input", "r")
     fout = open("gnvp.out", "w")
-    subprocess.call('gnvp3', stdin= fin, stdout = fout)
+    res = subprocess.check_call([os.path.join(ANGLEDIR,'gnvp3')], stdin= fin, stdout = fout)
     fin.close()
     fout.close()
     
     os.chdir(HOMEDIR)
+    return res
 
 
 def makePolar(CASEDIR, HOMEDIR):

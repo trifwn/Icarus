@@ -1,7 +1,8 @@
 import numpy as np
 
 class Environment():
-    def __init__(self):
+    def __init__(self,name):
+        self.name = name
         self.Gravity = 9.81
         self.AirDensity = 1.225
         self.AirDynamicViscosity = 1.7894e-5
@@ -33,3 +34,15 @@ class Environment():
     def getMachSpeed(self,gamma, AirGasConstant, temperature):
         return np.sqrt(gamma * AirGasConstant * temperature)
     
+    def __str__(self):
+        return f"Environment: {self.name}"
+
+    def __repr__(self):
+        str = f"Environment: {self.name}"
+        str += f"\n\tGravity: {self.Gravity}"
+        str += f"\n\tDensity: {self.AirDensity}"
+        str += f"\n\tViscosity: {self.AirKinematicViscosity}"
+        str += f"\n\tTemperature: {self.Temperature}"
+        return str
+
+EARTH = Environment("Earth")

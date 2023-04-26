@@ -43,7 +43,7 @@ def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
         file.writelines('>> clcd.f2w')
     st = os.stat('output_bat')
     os.chmod("output_bat", st.st_mode | stat.S_IEXEC)
-    subprocess.call('output_bat')
+    subprocess.call([os.path.join(CASEDIR,'output_bat')])
 
     with open('clcd.f2w', 'r') as file:
         data = file.readlines()
@@ -72,7 +72,7 @@ def makeCLCD2(CASEDIR, HOMEDIR):
                     file.writelines('cd ../'+folder+'\n../write_out\n')
     st = os.stat('output_bat')
     os.chmod("output_bat", st.st_mode | stat.S_IEXEC)
-    subprocess.call('output_bat')
+    subprocess.call([os.path.join(CASEDIR,'output_bat')])
 
     folders = next(os.walk('.'))[1]
     a = []
@@ -107,7 +107,7 @@ def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile)
         shutil.copy(f'f2w_{name}.inp', 'f2w.inp')
         print(f'Running {angles}')
         f = open(f'{name}.out', "w")
-        subprocess.call('foil_section', stdout= f, stderr= f)
+        subprocess.call([os.path.join(CASEDIR,'foil_section')], stdout= f, stderr= f)
         os.rmdir('TMP.dir')
     os.remove('SOLOUTI*')
     sleep(1)

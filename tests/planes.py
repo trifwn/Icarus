@@ -4,15 +4,14 @@ from ICARUS.Vehicle.plane import Airplane as Plane
 
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Software.XFLR5.polars import readPolars2D
-from ICARUS.Database import DB3D
+from ICARUS.Database import DB3D,XFLRDB
 
 import numpy as np
 import os
 
 HOMEDIR = os.getcwd()
 db = Database_2D(HOMEDIR)
-XFLRDIR = os.path.join(HOMEDIR, "ICARUS", "Database", "XFLR5")
-readPolars2D(db, HOMEDIR, XFLRDIR)
+readPolars2D(db, HOMEDIR, XFLRDB)
 airfoils = db.getAirfoils()
 
 Origin = np.array([0., 0., 0.])

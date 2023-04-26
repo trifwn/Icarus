@@ -14,7 +14,7 @@ from ICARUS.Software.GenuVP3.filesInterface import makePolar, pertrResults
 from ICARUS.Software.XFLR5.polars import readPolars2D
 
 from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database import DB3D
+from ICARUS.Database import DB3D,XFLRDB
 
 start_time = time.time()
 HOMEDIR = os.getcwd()
@@ -22,8 +22,7 @@ HOMEDIR = os.getcwd()
 # # Airfoil Data
 db = Database_2D(HOMEDIR)
 airfoils = db.getAirfoils()
-XFLR5DIR = os.path.join(HOMEDIR, "ICARUS", "Database", "XFLR5")
-readPolars2D(db, HOMEDIR, XFLR5DIR)
+readPolars2D(db, HOMEDIR, XFLRDB)
 polars2D = db.Data
 
 

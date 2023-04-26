@@ -23,7 +23,4 @@ Control/slprj*
 *.out
 test*.ipynb
 
-ICARUS/Database/Mock
-ICARUS/Database/2D
-ICARUS/Database/3D
-ICARUS/Database/XFLR5
+ICARUS/Data
