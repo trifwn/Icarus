@@ -83,6 +83,10 @@ class Struct:
                 value = Struct(value)
             self._data[key] = value
 
+    def __invert__(self):
+        # This allows us to invert the dictionary using the ~ operator
+        return self.invert_nested_dict()
+    
     def invert_nested_dict(self):
         def _invert_nested_dict(dd, depth):
             new_dict = {}

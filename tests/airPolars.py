@@ -8,9 +8,10 @@ def airPolars(plot=False):
     print('Testing Airplane Polars...')
     HOMEDIR = os.getcwd()
 
-    db = Database_3D(HOMEDIR)
+    db = Database_3D()
+    db.loadData()
     planenames = [ap.name]
-    BMARKLOC = os.path.join(HOMEDIR, 'ICARUS', 'Database', 'XFLR5', 'bmark.txt')
+    BMARKLOC = os.path.join(HOMEDIR, 'Data', 'XFLR5', 'bmark.txt')
     readPolars3D(db, BMARKLOC, 'bmark')
     planenames.append(f"XFLR_bmark")
     if plot:

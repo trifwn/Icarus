@@ -4,7 +4,7 @@ import os
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 jsonpickle_pd.register_handlers()
-
+from ICARUS.Database import DB3D
 
 class Airplane():
     def __init__(self, name, surfaces, disturbances=None, orientation=None):
@@ -180,7 +180,7 @@ class Airplane():
         return jsonpickle.encode(self)
 
     def save(self):
-        fname = os.path.join(self.CASEDIR, f'{self.name}.json')
+        fname = os.path.join(DB3D,self.CASEDIR, f'{self.name}.json')
         with open(fname, 'w') as f:
             f.write(self.toJSON())
 

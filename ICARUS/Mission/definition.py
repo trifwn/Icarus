@@ -1,13 +1,13 @@
 from ICARUS.Core.struct import Struct
 
 class Mission():
-    def __init__(self,segments,fitness,constrains) -> None:
+    def __init__(self,segments,fitness,constraints) -> None:
         self.missionSegments = Struct()
         for segment in segments:
             self.addSegment(segment)
         pass
         self.fitness = fitness
-        self.constrains = constrains
+        self.constrains = constraints
 
     def addSegment(self,segment):
         self.missionSegments[segment.name] = segment

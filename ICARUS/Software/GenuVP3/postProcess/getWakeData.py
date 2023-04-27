@@ -1,10 +1,10 @@
 import numpy as np
 import os
 from .getMaxiter import getMaxiter
-
+from ICARUS.Database import DB3D
 
 def getWakeData(plane, case):
-    fname = os.path.join(plane.CASEDIR, case, "YOURS.WAK")
+    fname = os.path.join(DB3D ,plane.CASEDIR, case, "YOURS.WAK")
     with open(fname, "r") as file:
         data = file.readlines()
     a = []

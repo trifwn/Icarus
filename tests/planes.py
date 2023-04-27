@@ -3,15 +3,17 @@ import ICARUS.Vehicle.wing as wing
 from ICARUS.Vehicle.plane import Airplane as Plane
 
 from ICARUS.Database.Database_2D import Database_2D
+from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import readPolars2D
 from ICARUS.Database import DB3D,XFLRDB
 
 import numpy as np
 import os
 
-HOMEDIR = os.getcwd()
-db = Database_2D(HOMEDIR)
-readPolars2D(db, HOMEDIR, XFLRDB)
+dbMASTER = DB()
+dbMASTER.loadData()
+db = dbMASTER.foilsDB
+readPolars2D(db, XFLRDB)
 airfoils = db.getAirfoils()
 
 Origin = np.array([0., 0., 0.])
@@ -34,4 +36,4 @@ Simplewing = wg(name="bmark",
                 mass=1)
 ap = Plane(Simplewing.name, [Simplewing])
 ap.CG = [0.337, 0, 0]
-ap.accessDB(HOMEDIR, DB3D)
+# ap.accessDB(HOMEDIR, DB3D)

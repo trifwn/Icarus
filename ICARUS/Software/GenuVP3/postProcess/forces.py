@@ -5,6 +5,7 @@ import os
 
 def forces2polars(CASEDIR, HOMEDIR):
     os.chdir(CASEDIR)
+
     folders = next(os.walk('.'))[1]
     print('Making Polars')
     pols = []
