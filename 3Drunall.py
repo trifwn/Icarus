@@ -1,174 +1,130 @@
-from ICARUS.Flight_Dynamics.dyn_plane import dyn_Airplane as dp
 import numpy as np
 import time
-import os
+import os 
 
-from ICARUS.Vehicle.plane import Airplane as Plane
-from ICARUS.Vehicle.wing import Wing as wg
-import ICARUS.Vehicle.wing as wing
-
-from ICARUS.Software.GenuVP3.angles import runGNVPangles, runGNVPanglesParallel
-from ICARUS.Software.GenuVP3.pertrubations import runGNVPpertr, runGNVPpertrParallel
-from ICARUS.Software.GenuVP3.pertrubations import runGNVPsensitivity, runGNVPsensitivityParallel
-from ICARUS.Software.GenuVP3.filesInterface import makePolar, pertrResults
+# # MODULES
 from ICARUS.Software.XFLR5.polars import readPolars2D
-
-from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database import DB3D,XFLRDB
+from ICARUS.Database.db import DB
+from ICARUS.Database import XFLRDB
 
 start_time = time.time()
 HOMEDIR = os.getcwd()
 
-# # Airfoil Data
-db = Database_2D(HOMEDIR)
-airfoils = db.getAirfoils()
-readPolars2D(db, HOMEDIR, XFLRDB)
-polars2D = db.Data
+# # DB CONNECTION
+db = DB()
+foildb = db.foilsDB
+foildb.loadData()
+readPolars2D(foildb,XFLRDB)
+airfoils = foildb.getAirfoils()
 
 
 # # Get Plane
-Origin = np.array([0., 0., 0.])
+from Data.Planes.hermes import hermes
+ap = hermes(airfoils ,"Hemes_HRes")
 
-wingPos = np.array([0.0 - 0.159/4, 0.0, 0.0])
-wingOrientation = np.array([2.8, 0.0, 0.0])
+# # Import Enviroment
+from ICARUS.Enviroment.definition import EARTH
+print(EARTH)
 
-mainWing = wg(name="wing",
-              airfoil=airfoils['NACA4415'],
-              Origin=Origin + wingPos,
-              Orientation=wingOrientation,
-              isSymmetric=True,
-              span=2 * 1.130,
-              sweepOffset=0,
-              dihAngle=0,
-              chordFun=wing.linearChord,
-              chord=[0.159, 0.072],
-              spanFun=wing.linSpan,
-              N=30,
-              M=5,
-              mass=0.670)
-# mainWing.plotWing()
-
-elevatorPos = np.array([0.54 - 0.130/4, 0., 0.])
-elevatorOrientantion = np.array([0., 0., 0.])
-
-elevator = wg(name="tail",
-              airfoil=airfoils['NACA0008'],
-              Origin=Origin + elevatorPos,
-              Orientation=elevatorOrientantion,
-              isSymmetric=True,
-              span=2 * 0.169,
-              sweepOffset=0,
-              dihAngle=0,
-              chordFun=wing.linearChord,
-              chord=[0.130, 0.03],
-              spanFun=wing.linSpan,
-              N=15,
-              M=5,
-              mass=0.06)
-# elevator.plotWing()
-
-rudderPos = np.array([0.47 - 0.159/4, 0., 0.01])
-rudderOrientantion = np.array([0.0, 0.0, 90.0])
-
-rudder = wg(name="rudder",
-            airfoil=airfoils['NACA0008'],
-            Origin=Origin + rudderPos,
-            Orientation=rudderOrientantion,
-            isSymmetric=False,
-            span=0.160,
-            sweepOffset=0.1,
-            dihAngle=0,
-            chordFun=wing.linearChord,
-            chord=[0.2, 0.1],
-            spanFun=wing.linSpan,
-            N=15,
-            M=5,
-            mass=0.04)
-# rudder.plotWing()
-
-liftingSurfaces = [mainWing, elevator, rudder]
-addedMasses = [
-    (0.500, np.array([-0.40, 0.0, 0.0])),  # Motor
-    (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
-    (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
-]
-ap = Plane('HermesTTT', liftingSurfaces)
-ap.visAirplane()
-
-ap.accessDB(HOMEDIR, DB3D)
-ap.addMasses(addedMasses)
-
-calcPolarsGNVP3 = True
-petrubationAnalysis = True
-sensitivityAnalysis = False
+# # Get Solver
+from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
+gnvp3 = get_gnvp3(db)
+print(gnvp3)
 
 # ## AoA Run
+analysis = gnvp3.getAvailableAnalyses()[2] # ANGLES PARALLEL
+print(f"Selecting Analysis: {analysis}")
+gnvp3.setAnalysis(analysis)
+options = gnvp3.getOptions(analysis)
+
 AoAmin = -6
-AoAmax = 10
+AoAmax = 8
 NoAoA = (AoAmax - AoAmin) + 1
 angles = np.linspace(AoAmin, AoAmax, NoAoA)
-
 Uinf = 20
-ap.defineSim(Uinf, 1.225)
-maxiter = 2
-timestep = 0.1
+ap.defineSim(Uinf, EARTH.AirDensity)
+
+options.plane.value         = ap
+options.environment.value   = EARTH
+options.db.value            = db
+options.solver2D.value      = 'Xfoil'
+options.maxiter.value       = 200
+options.timestep.value      = 5e-3
+options.Uinf.value          = Uinf
+options.angles.value        = angles
+
+gnvp3.printOptions()
+
+gnvp3.run()
+polars_time = time.time()
+print("Polars took : --- %s seconds --- in Parallel Mode" %
+       (time.time() - polars_time))
 ap.save()
 
-if calcPolarsGNVP3 == True:
-    polars_time = time.time()
-    GNVP3BatchArgs = [ap, polars2D, "XFLR",
-                      maxiter, timestep, Uinf, angles]
-    ap.runAnalysis(runGNVPanglesParallel, GNVP3BatchArgs)
+results = gnvp3.getAvailableRetrieval()[0] # ANGLES PARALLEL
+print(f"Selecting Retrieval: {results}")
+gnvp3.setRetrivalMethod(results)
+options = gnvp3.getRetrievalOptions(results)
 
-    print("Polars took : --- %s seconds --- in Parallel Mode" %
-          (time.time() - polars_time))
-GNVP3PolarArgs = [ap.CASEDIR, HOMEDIR]
-ap.setPolars(makePolar, GNVP3PolarArgs)
-ap.save()
+options.HOMEDIR.value = db.analysesDB.HOMEDIR
+options.CASEDIR.value = os.path.join(db.vehiclesDB.DATADIR, ap.CASEDIR)
+gnvp3.printRetrievalOptions()
+polars = gnvp3.getResults()
 
-# Dynamics
+# # Dynamics
+
+# ### Define and Trim Plane
+from ICARUS.Flight_Dynamics.dyn_plane import dyn_Airplane as dp
 try:
-    # ### Define and Trim Plane
-    dyn = dp(ap)
+    dyn = dp(ap,polars)
+except:
+    import sys
+    sys.exit("Plane could not be trimmed")
 
-    # ### Pertrubations
-    dyn.allPerturb("Central")
-    dyn.get_pertrub()
+# ### Pertrubations
+dyn.allPerturb("Central")
+dyn.get_pertrub()
 
-    if petrubationAnalysis == True:
-        pert_time = time.time()
-        GNVP3PertrArgs = [dyn, polars2D, "XFLR", maxiter, timestep,
-                          dyn.trim['U'], dyn.trim['AoA']]
-        dyn.accessDynamics(HOMEDIR)
-        print("Running Pertrubations")
-        dyn.runAnalysis(runGNVPpertrParallel, GNVP3PertrArgs)
-        print("Pertrubations took : --- %s seconds ---" %
-              (time.time() - pert_time))
+# Define Analysis for Pertrubations
+analysis = gnvp3.getAvailableAnalyses()[4] # Pertrubations PARALLEL
+print(f"Selecting Analysis: {analysis}")
+gnvp3.setAnalysis(analysis)
+options = gnvp3.getOptions(analysis)
 
-    GNVP3LogArgs = [dyn.DynDir, HOMEDIR]
-    dyn.setPertResults(pertrResults, GNVP3LogArgs)
-    dyn.save()
+# Set Options
+dyn.defineSim(dyn.trim['U'], EARTH.AirDensity)
+options.plane.value         = dyn
+options.environment.value   = EARTH
+options.db.value            = db
+options.solver2D.value      = 'Xfoil'
+options.maxiter.value       = 200
+options.timestep.value      = 5e-3
+options.Uinf.value          = dyn.trim['U']
+options.angles.value        = dyn.trim['AoA']
 
-    # SENSITIVITY ANALYSIS
-    if sensitivityAnalysis == True:
-        sens_time = time.time()
-        for var in ['u', 'w', 'q', 'theta', 'v', 'p', 'r', 'phi']:
-            space = np.logspace(np.log10(0.00001), np.log10(1), 10, base=10)
-            space = [*-space, *space]
-            maxiter = 2
-            timestep = 5e-2
-            dyn.sensitivityAnalysis(var, space)
-            GNVP3SensArgs = [dyn, var, polars2D, "Xfoil",
-                             maxiter, timestep,
-                             dyn.trim['U'], dyn.trim['AoA']]
-            dyn.runAnalysis(runGNVPsensitivityParallel, GNVP3SensArgs)
-            sensDir = os.path.join(dyn.CASEDIR, f"Sensitivity_{var}")
-            dyn.sensResults[var] = pertrResults(sensDir, HOMEDIR)
-        print("Sensitivity Analysis took : --- %s seconds ---" %
-              (time.time() - sens_time))
-        dyn.save()
-except KeyError:
-    print('Plane could not be trimmed')
+# Run Analysis
+gnvp3.printOptions()
+
+pert_time = time.time()
+print("Running Pertrubations")
+gnvp3.run()
+print("Pertrubations took : --- %s seconds ---" %
+        (time.time() - pert_time))
+dyn.save()
+
+# Get Results
+results = gnvp3.getAvailableRetrieval()[1] # Pertr
+print(f"Selecting Retrieval: {results}")
+gnvp3.setRetrivalMethod(results)
+options = gnvp3.getRetrievalOptions(results)
+
+
+options.HOMEDIR.value = db.analysesDB.HOMEDIR
+options.DYNDIR.value = os.path.join(db.vehiclesDB.DATADIR, ap.CASEDIR, "Dynamics")
+gnvp3.printRetrievalOptions()
+polars = gnvp3.getResults()
+
+## Sensitivity ANALYSIS
 
 # print time it took
 print("PROGRAM TERMINATED")

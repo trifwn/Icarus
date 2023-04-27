@@ -15,6 +15,7 @@ class Solver():
             print("Fidelity must be an integer")
         self.fidelity = fidelity
         self.availableAnalyses = {}
+        self.resRetrivalMethods = {}
         self.mode = None
         
     def addAnalyses(self,analyses):
@@ -26,13 +27,16 @@ class Solver():
                 print(f"Analysis {analysis.name} is not compatible with solver {self.name} but with {analysis.solverName}")
                 continue
             self.availableAnalyses[analysis.name] = analysis
-        
+           
     def setAnalysis(self, analysis : str):
         self.mode = analysis
         
     def getAnalysis(self) -> Analysis:
-        return  self.availableAnalyses[self.mode]
-    
+        try:
+            return  self.availableAnalyses[self.mode]
+        except:
+            print(f'Analysis {self.mode} not available')
+       
     def printOptions(self):
         if self.mode is not None:
             print(self.availableAnalyses[self.mode])
@@ -53,20 +57,56 @@ class Solver():
             print('Analysis hase not been Selected')
             _ = self.getAvailableAnalyses(verbose=True)
             
-    def __str__(self) -> str:
-        string = f'{self.type} Solver {self.name}:\n' 
-        string += 'Available Analyses Are: \n'
-        string+= '------------------- \n'
-        for i,key in enumerate(self.availableAnalyses.keys()):
-            string+= f"{i}) {key} \n"
-        return string
-    
     def getAvailableAnalyses(self, verbose: bool = False):
         if verbose:
             print(self)
         return list(self.availableAnalyses.keys())
             
-    def run(self,analysis : Analysis = None):
+    def addResRetrival(self,methods):
+        for method in methods:
+            if method.name in self.resRetrivalMethods.keys():
+                print(f"Method {method.name} already exists")
+                continue
+            if method.solverName != self.name:
+                print(f"Method {method.name} is not compatible with solver {self.name} but with {method.solverName}")
+                continue
+            self.resRetrivalMethods[method.name] = method
+            
+    def setRetrivalMethod(self, method : str):
+        self.Resmode = method
+    
+    def getRetrivalMethod(self):
+        try:
+            return  self.resRetrivalMethods[self.Resmode]
+        except:
+            print(f'Results Retrival Method {self.Resmode} not available')
+            
+    def printRetrievalOptions(self):
+        if self.mode is not None:
+            print(self.resRetrivalMethods[self.Resmode])
+        else:
+            print('Analysis hase not been Selected')
+    
+    def getRetrievalOptions(self,verbose : bool = False):
+        if self.Resmode is not None:
+            return self.resRetrivalMethods[self.Resmode].getOptions(verbose)
+        else:
+            print('Analysis hase not been Selected')
+            _ = self.getAvailableRetrieval(verbose=True)
+    
+    def setRetrievalOptions(self, options):
+        if self.Resmode is not None:
+            return self.resRetrivalMethods[self.Resmode].setOptions(options)
+        else:
+            print('Analysis hase not been Selected')
+            _ = self.getAvailableRetrieval(verbose=True)
+                   
+    def getAvailableRetrieval(self, verbose: bool = False):
+        if verbose:
+            print(self)
+        return list(self.resRetrivalMethods.keys())
+            
+    def run(self,analysis : str = None):
         if analysis is None:
             if self.mode is None:
                 print("Analysis not selected or provided")
@@ -90,14 +130,34 @@ class Solver():
         res = analysis()
         return res
     
-    def getResults(self, analysis: str):
-        if analysis in self.availableAnalyses.keys():
-            if self.availableAnalyses[analysis].checkRun():
-                res = None
-                return res
+    def getResults(self, method: str = None):
+        if method is None:
+            if self.Resmode is None:
+                print("Analysis not selected or provided")
+                return -1
+            method = self.resRetrivalMethods[self.Resmode]
         else:
-            print("Analysis not available")
-            return None
+            if method in self.resRetrivalMethods.keys():
+                method = self.resRetrivalMethods[method]
+            else:
+                print("method not available")
+                return -1
+        print(f'Getting Results')
+        
+        res = method()
+        return res
+        
+    def __str__(self) -> str:
+        string = f'{self.type} Solver {self.name}:\n' 
+        string += 'Available Analyses Are: \n'
+        string+= '------------------- \n'
+        for i,key in enumerate(self.availableAnalyses.keys()):
+            string+= f"{i}) {key} \n"
+        string += '\nAvailable Results: \n'
+        string+= '------------------- \n'
+        for i,key in enumerate(self.resRetrivalMethods.keys()):
+            string+= f"{i}) {key} \n"       
+        return string
 
     def worker(self):
         tasks = collections.deque()

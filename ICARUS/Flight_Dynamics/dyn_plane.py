@@ -27,9 +27,9 @@ class dyn_Airplane(Airplane):
                 print("No polars found in the airplane object or Specified")
             else:
                 print("Using polars from the airplane object")
-                self.polars3D = self.formatPolars(pln.Polars)
+                polars3D = self.formatPolars(pln.Polars)
         else:
-            self.polars3D = polars3D
+            self.polars3D = self.formatPolars(polars3D)
 
         # Compute Trim State
         self.trim = trimState(self)
@@ -104,11 +104,11 @@ class dyn_Airplane(Airplane):
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
     def __str__(self):
-        str = f"Dynamic AirPlane Object for {self.name}\n"
-        str += f"Trimmed at: {self.trim['U']} m/s, {self.trim['AoA']} deg\n"
-        str += f"Surfaces:\n"
-        for surfaces in self.surfaces:
-            str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
+        str = f"Dynamic AirPlane {self.name}"
+        # str += f"\nTrimmed at: {self.trim['U']} m/s, {self.trim['AoA']} deg\n"
+        # str += f"Surfaces:\n"
+        # for surfaces in self.surfaces:
+        #     str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
         return str
 
 

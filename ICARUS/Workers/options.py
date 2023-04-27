@@ -19,3 +19,10 @@ class Option():
         ss.write(f'{self.name} : {self.value}\n')
         ss.write(f'{self.description}\n')
         return ss.getvalue()
+    
+    def __repr__(self):
+        ss = io.StringIO()
+        
+        ss.write(f'{self.name} : {self.value}\n')
+        ss.write(f'{self.description}\n')
+        return ss.getvalue()

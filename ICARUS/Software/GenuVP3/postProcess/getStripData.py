@@ -1,12 +1,15 @@
+from ICARUS.Database import DB3D
 import pandas as pd
 import os
 
+
 def getStripData(pln, case, NBs):
-    files = os.listdir(os.path.join(pln.CASEDIR,case))
+    directory = os.path.join(DB3D, pln.CASEDIR, case)
+    files = os.listdir(directory)
     stripDat = []
     for file in files:
         if file.startswith('strip'):
-            filename = os.path.join(pln.CASEDIR,case,file)
+            filename = os.path.join(directory,file)
             with open(filename, 'r') as f:
                 data = f.readlines()
             data = [float(item) for item in data[-1].split()]

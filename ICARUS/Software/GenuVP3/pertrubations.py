@@ -7,11 +7,11 @@ from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.Database_3D import dst2case
 
 
-def GNVPdstCase(plane, db, solver2D, maxiter, timestep, Uinf, angle, bodies, dst, analysis):
+def GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep, Uinf, angle, bodies, dst, analysis):
     HOMEDIR = db.HOMEDIR
     PLANEDIR = os.path.join(db.vehiclesDB.DATADIR ,plane.CASEDIR)
     airfoils = plane.airfoils
-    dens = plane.dens
+    dens = environment.AirDensity
     foilsDB = db.foilsDB
 
     movements = airMov(plane.surfaces, plane.CG,
@@ -32,18 +32,18 @@ def GNVPdstCase(plane, db, solver2D, maxiter, timestep, Uinf, angle, bodies, dst
     return f"Case {dst.var} : {dst.amplitude} Done"
 
 
-def runGNVPpertr(plane, db, solver2D, maxiter, timestep, Uinf, angle):
+def runGNVPpertr(plane,environment, db, solver2D, maxiter, timestep, Uinf, angles):
     bodies = []
     for i, surface in enumerate(plane.surfaces):
         bodies.append(makeSurfaceDict(surface, i, plane.CG))
 
     for dst in plane.disturbances:
-        msg = GNVPdstCase(plane, db, solver2D, maxiter, timestep,
-                          Uinf, angle, bodies, dst, "Dynamics")
+        msg = GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep,
+                          Uinf, angles, bodies, dst, "Dynamics")
         print(msg)
 
 
-def runGNVPpertrParallel(plane, db, solver2D, maxiter, timestep, Uinf, angle):
+def runGNVPpertrParallel(plane,environment, db, solver2D, maxiter, timestep, Uinf, angles):
     from multiprocessing import Pool
 
     bodies = []
@@ -51,26 +51,26 @@ def runGNVPpertrParallel(plane, db, solver2D, maxiter, timestep, Uinf, angle):
         bodies.append(makeSurfaceDict(surface, i, plane.CG))
     disturbances = plane.disturbances
     with Pool(12) as pool:
-        args_list = [(plane, db, solver2D, maxiter, timestep,
-                      Uinf, angle, bodies, dst, "Dynamics") for dst in disturbances]
+        args_list = [(plane,environment, db, solver2D, maxiter, timestep,
+                      Uinf, angles, bodies, dst, "Dynamics") for dst in disturbances]
 
         res = pool.starmap(GNVPdstCase, args_list)
         for msg in res:
             print(msg)
 
 
-def runGNVPsensitivity(plane, var, db, solver2D, maxiter, timestep, Uinf, angle):
+def runGNVPsensitivity(plane,environment, var, db, solver2D, maxiter, timestep, Uinf, angles):
     bodies = []
     for i, surface in enumerate(plane.surfaces):
         bodies.append(makeSurfaceDict(surface, i, plane.CG))
 
     for dst in plane.sensitivity[var]:
-        msg = GNVPdstCase(plane.pln, db, solver2D, maxiter, timestep,
-                          Uinf, angle, bodies, dst, "Sensitivity")
+        msg = GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep,
+                          Uinf, angles, bodies, dst, "Sensitivity")
         print(msg)
 
 
-def runGNVPsensitivityParallel(plane, var, db, solver2D, maxiter, timestep, Uinf, angle):
+def runGNVPsensitivityParallel(plane,environment, var, db, solver2D, maxiter, timestep, Uinf, angles):
     from multiprocessing import Pool
 
     bodies = []
@@ -79,8 +79,8 @@ def runGNVPsensitivityParallel(plane, var, db, solver2D, maxiter, timestep, Uinf
 
     disturbances = plane.sensitivity[var]
     with Pool(12) as pool:
-        args_list = [(plane.pln, db, solver2D, maxiter, timestep,
-                      Uinf, angle, bodies, dst, f"Sensitivity_{dst.var}") for dst in disturbances]
+        args_list = [(plane,environment, db, solver2D, maxiter, timestep,
+                      Uinf, angles, bodies, dst, f"Sensitivity_{dst.var}") for dst in disturbances]
 
         res = pool.starmap(GNVPdstCase, args_list)
         for msg in res:
