@@ -1,6 +1,7 @@
 from ICARUS.Core.struct import Struct
 from .options import Option
 from tabulate import tabulate
+import inspect
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -10,13 +11,22 @@ jsonpickle_numpy.register_handlers()
 
 
 class Analysis():
-    def __init__(self,solverName, name, runFunc ,options):
+    def __init__(self,solverName, name, runFunc ,options, unhook =None):
         self.solverName = solverName
         self.name = name
         self.options = Struct()
         self.execute = runFunc
         for option in options.keys():
-            self.options[option] = Option(option,None,options[option]) 
+            self.options[option] = Option(option,None,options[option])
+        
+        void = lambda : None
+        if callable(unhook):
+            self.unhook = unhook
+        elif unhook is None:
+            self.unhook = void
+        else:
+            print('Unhook must be a function! Defaulting to None')
+            self.unhook = void
     
     def __str__(self):
         string = f'Available Options of {self.solverName} for {self.name}: \n\n'
@@ -33,7 +43,9 @@ class Analysis():
         string+= '\n\nIf there are multiple values you should inspect them sepretly by calling the option name\n'
         return string
     
-    def getOptions(self,verbose = True):
+    __repr__ = __str__
+    
+    def getOptions(self,verbose = False):
         if verbose:
             print(self)
         return self.options
@@ -70,7 +82,21 @@ class Analysis():
             print(f"Options not set for {self.name} of {self.solverName}. Here is what was passed:")
             print(self)
             return -1
-            
+        
+    def getResults(self):
+        print('Getting Results')
+        args_needed = list(
+            inspect.signature(self.unhook).parameters.keys()
+        )
+        args = {}
+        for arg in args_needed:
+            try:
+                args[arg] = self.options[arg].value
+            except KeyError:
+                print(f'Option {arg} not set')
+                return -1
+        return self.unhook(**args)           
+    
     def copy(self):
         optiondict = {k:v.description for k,v in self.options.items()}
         return self.__class__(self.solverName, self.name, self.execute, optiondict)

@@ -73,17 +73,6 @@ class dyn_Airplane(Airplane):
                              *lateralPerturb(self, scheme, epsilon)]
         self.disturbances.append(dst(None, 0))
 
-    def accessDynamics(self, HOMEDIR):
-        self.HOMEDIR = HOMEDIR
-        self.DBDIR = self.DBDIR
-        self.CASEDIR = self.CASEDIR
-
-        os.chdir(self.CASEDIR)
-        os.makedirs("Dynamics",exist_ok=True)
-        os.chdir("Dynamics")
-        self.DynDir = os.getcwd()
-        os.chdir(HOMEDIR)
-
     def sensitivityAnalysis(self, var, space):
         self.sensitivity[var] = []
         for e in space:

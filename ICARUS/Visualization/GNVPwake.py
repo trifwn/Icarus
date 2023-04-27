@@ -4,11 +4,11 @@ import numpy as np
 from ICARUS.Software.GenuVP3.postProcess.getWakeData import getWakeData
 
 
-def GNVPwake(plane, case):
+def GNVPwake(plane, case ,figsize = (16,7)):
 
     A1, B1, C1 = getWakeData(plane, case)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(projection='3d')
     ax.set_title(f"{plane.name} WAKE")
     ax.set_ylabel('y')

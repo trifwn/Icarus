@@ -89,3 +89,9 @@ class Database_2D():
 
     def __str__(self):
         return f"Foil Database"
+    
+    def __enter__(self,obj):
+        pass
+
+    def __exit__(self): 
+        pass

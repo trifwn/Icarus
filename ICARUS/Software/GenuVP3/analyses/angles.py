@@ -1,11 +1,12 @@
 import os
 
-from .filesInterface import runGNVPcase
-from .utils import setParams, airMov, makeSurfaceDict
+from ICARUS.Software.GenuVP3.postProcess.forces import forces2polars, rotateForces
+from ICARUS.Software.GenuVP3.utils import setParams, airMov, makeSurfaceDict
+from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 
-from ICARUS.Database.Database_3D import ang2case
-
+from ICARUS.Database.utils import ang2case
+from ICARUS.Database.db import DB
 
 def GNVPangleCase(plane, db, solver2D, maxiter, timestep, Uinf, angle, dens, movements, bodies):
     HOMEDIR = db.HOMEDIR
@@ -60,3 +61,10 @@ def runGNVPanglesParallel(plane, db, solver2D, maxiter, timestep, Uinf, angles, 
 
         for msg in res:
             print(msg)
+
+def processGNVPangles(plane, db: DB):
+    HOMEDIR = db.HOMEDIR
+    CASEDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)    
+    forces = forces2polars(CASEDIR, HOMEDIR)
+    # rotatedforces = rotateForces(forces, forces["AoA"])
+    return forces #, rotatedforces

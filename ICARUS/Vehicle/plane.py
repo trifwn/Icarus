@@ -1,9 +1,11 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import os
+
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 jsonpickle_pd.register_handlers()
+
 from ICARUS.Database import DB3D
 
 class Airplane():
@@ -119,16 +121,6 @@ class Airplane():
                 airfoils.append(f"NACA{surface.airfoil.name}")
         return airfoils
 
-    # def accessDB(self, HOMEDIR, DBDIR):
-    #     os.chdir(DBDIR)
-    #     CASEDIR = self.name
-    #     os.makedirs(CASEDIR,exist_ok=True)
-    #     os.chdir(CASEDIR)
-    #     self.CASEDIR = os.getcwd()
-    #     self.HOMEDIR = HOMEDIR
-    #     self.DBDIR = DBDIR
-    #     os.chdir(HOMEDIR)
-
     def visAirplane(self, fig=None, ax=None, movement=None):
         if fig == None:
             fig = plt.figure()
@@ -165,16 +157,6 @@ class Airplane():
         self.U = U
         self.dens = dens
         self.Q = 0.5 * dens * U**2
-
-    def runAnalysis(self, solver, args, kwargs={}):
-        solver(*args, **kwargs)
-
-    def cleanRes(self, cleanFun, args, kwargs={}):
-        cleanFun(*args, **kwargs)
-
-    def setPolars(self, makePolFun, args, kwargs={}):
-        polarsdf = makePolFun(*args, **kwargs)
-        self.Polars = polarsdf
 
     def toJSON(self):
         return jsonpickle.encode(self)

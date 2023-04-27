@@ -1,49 +1,62 @@
 import numpy as np
-
-from ICARUS.Software.GenuVP3.angles import runGNVPangles, runGNVPanglesParallel
-from ICARUS.Software.GenuVP3.filesInterface import makePolar
-from ICARUS.Software.GenuVP3.checkRuns import checkRuns
-
 import time
-import os
-
 
 def gnvprun(mode='Parallel'):
     print("Testing GNVP Running...")
 
-    from tests.planes import ap, dbMASTER , db
+    # Get Plane, DB
+    from tests.planes import ap, db
+    
+    # Get Environment
+    from ICARUS.Enviroment.definition import EARTH
+    
+    # Get Solver
+    from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
+    gnvp3 = get_gnvp3(db)
+    
+    ## Set Analysis
+    if mode == 'Parallel':
+        # gnvp3.setParallel(True)
+        analysis = gnvp3.getAvailableAnalyses()[2]
+    else:
+        analysis = gnvp3.getAvailableAnalyses()[1]
 
-    HOMEDIR = db.HOMEDIR
+    gnvp3.setAnalysis(analysis)
+    
+    ## Set Options
+    options = gnvp3.getOptions(analysis)
+    
     AoAmin = -3
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
     angles = np.linspace(AoAmin, AoAmax, NoAoA)
-    ang = []
-    for a in angles:
-        if a != 0:
-            ang.append(a)
-    angles = ang
+    angles = [ang for ang in angles if ang != 0]
     Uinf = 20
     maxiter = 20
     timestep = 10
-    from ICARUS.Enviroment.definition import EARTH
-    genuBatchArgs = [ap, dbMASTER, "XFLR",
-                     maxiter, timestep, Uinf, angles, EARTH]
-    start_time = time.perf_counter()
-    if mode == 'Parallel':
-        ap.runAnalysis(runGNVPanglesParallel, genuBatchArgs)
-    elif mode == 'Serial':
-        ap.runAnalysis(runGNVPangles, genuBatchArgs)
-    end_time = time.perf_counter()
+    
+    ap.defineSim(Uinf, EARTH.AirDensity)
+   
+    options.plane.value         = ap
+    options.environment.value   = EARTH
+    options.db.value            = db
+    options.solver2D.value      = 'XFLR'
+    options.maxiter.value       = maxiter
+    options.timestep.value      = timestep
+    options.Uinf.value          = Uinf
+    options.angles.value        = angles
 
+    _ = gnvp3.getOptions(verbose=True)
+    start_time = time.perf_counter()
+    
+    gnvp3.run()
+    
+    end_time = time.perf_counter()
     print(f"GNVP {mode} Run took: --- %s seconds ---" %
           (end_time - start_time))
     print("Testing GNVP Running... Done")
-    print(f'{ap.CASEDIR}')
-    
-    CASEDIR = os.path.join(dbMASTER.vehiclesDB.DATADIR,ap.CASEDIR)
-    genuPolarArgs = [CASEDIR, HOMEDIR]
-    ap.defineSim(Uinf, 1.225)
-    ap.setPolars(makePolar, genuPolarArgs)
+
+    polars = gnvp3.getResults()
     ap.save()
-    checkRuns(CASEDIR, angles)
+    # getRunOptions()
+    

@@ -1,11 +1,12 @@
 import os
 
-from .filesInterface import runGNVPcase
-from .utils import setParams, airMov, makeSurfaceDict
+from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
+from ICARUS.Software.GenuVP3.postProcess.forces import forces2pertrubRes
+from ICARUS.Software.GenuVP3.utils import setParams, airMov, makeSurfaceDict
+
 from ICARUS.Database import BASEGNVP3 as GENUBASE
-
-from ICARUS.Database.Database_3D import dst2case
-
+from ICARUS.Database.utils import dst2case
+from ICARUS.Database.db import DB
 
 def GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep, Uinf, angle, bodies, dst, analysis):
     HOMEDIR = db.HOMEDIR
@@ -85,3 +86,17 @@ def runGNVPsensitivityParallel(plane,environment, var, db, solver2D, maxiter, ti
         res = pool.starmap(GNVPdstCase, args_list)
         for msg in res:
             print(msg)
+            
+def processGNVPpertrubations(plane, db: DB):
+    HOMEDIR = db.HOMEDIR
+    DYNDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
+    forces = forces2pertrubRes(DYNDIR, HOMEDIR)
+    # rotatedforces = rotateForces(forces, forces["AoA"])
+    return forces #rotatedforces
+
+# def processGNVPsensitivity(plane, db: DB):
+#     HOMEDIR = db.HOMEDIR
+#     DYNDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
+#     forces = forces2pertrubRes(DYNDIR, HOMEDIR)
+#     # rotatedforces = rotateForces(forces, forces["AoA"])
+#     return forces #rotatedforces

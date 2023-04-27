@@ -1,7 +1,9 @@
 import numpy as np
-from . import DB3D,APPHOME
+from . import DB3D, APPHOME
 import os
 import pandas as pd
+
+from ICARUS.Software.GenuVP3.postProcess.convergence import getLoadsConvergence, addErrorConvergence2df
 
 from ICARUS.Core.struct import Struct
 
@@ -25,97 +27,112 @@ class Database_3D():
         self.makeData()
 
     def scan(self):
-        os.chdir(DB3D)
-        folders = next(os.walk('.'))[1]
-        for folder in folders:
-            self.Convergence[folder] = Struct()
-            os.chdir(folder)
-            try:
-                clcdLOC = os.path.join(DB3D, folder, 'clcd.genu')
-                self.rawData[folder] = pd.read_csv(clcdLOC)
-                files = next(os.walk('.'))[2]
-                for file in files:
-                    if file.endswith(".json") and not file.startswith("dyn"):
-                        with open(f"{file}", 'r') as f:
-                            json_obj = f.read()
-                            try:
-                                self.Planes[folder] = jsonpickle.decode(json_obj)
-                            except Exception as e:
-                                print(f"Error loading Plane {file} , got error {e}")
-                    if file.endswith(".json") and file.startswith("dyn"):
-                        with open(f"{file}", 'r') as f:
-                            json_obj = f.read()
-                            try:
-                                self.dynPlanes[folder] = jsonpickle.decode(json_obj)
-                            except Exception as e:
-                                print(f"Error loading Dynamic Plane {file}, got error {e}")
-            except FileNotFoundError:
-                print(f"Plane {folder} doesn't contain polars!")
-                files = next(os.walk('.'))[2]
-                for file in files:
-                    if file.endswith(".json"):
-                        with open(f"{file}", 'r') as f:
-                            json_obj = f.read()
-                            plane = jsonpickle.decode(json_obj)
-                        print('Plane object exists. Trying to create Polars...')
-                        try:
-                            from ICARUS.Software.GenuVP3.filesInterface import makePolar
-                            genuPolarArgs = [plane.CASEDIR, self.HOMEDIR]
-                            plane.makePolars(makePolar, genuPolarArgs)
-                            self.Planes[folder] = plane
-                            clcdLOC = os.path.join(DB3D, folder, 'clcd.genu')
-                            self.rawData[folder] = pd.read_csv(clcdLOC)
-                        except e:
-                            print('Failed to create Polars! Got Error:')
-                            print(e)
+        planenames = next(os.walk(DB3D))[1]
+        for plane in planenames: # For each plane planename == folder 
+            # if plane == 'bmark':
+            #     continue           
+            foundPlane = False
+            # Load Plane object
+            file = os.path.join(DB3D, plane, f'{plane}.json')
+            foundPlane = self.loadPlaneFromFile(plane,file)
+            
+            # Load DynPlane object
+            file = os.path.join(DB3D, plane, f'dyn_{plane}.json')
+            temp = self.loadDynPlaneFromFile(plane,file)
+            
+            foundPlane = foundPlane or temp                   
 
-            try:
-                cases = next(os.walk('.'))[1]
+            # Loading Forces from forces.gnvp3 file
+            file = os.path.join(DB3D, plane, 'forces.gnvp3')
+            self.loadGNVPForces(plane,file)
+            
+            if foundPlane:
+                self.Convergence[plane] = Struct()
+                cases = next(os.walk(os.path.join(DB3D, plane)))[1]
                 for case in cases:
-                    os.chdir(case)
-                    files = next(os.walk('.'))[2]
-                    runExists = False
-                    for file in files:
-                        if file == "LOADS_aer.dat":
-                            self.Convergence[folder][case] = pd.read_csv(
-                                file, delim_whitespace=True,
-                                names=cols)
-                            runExists = True
-                            break
-                    if runExists:
-                        for file in files:
-                            if (file == "gnvp.out") and runExists:
-                                with open(file, 'r') as f:
-                                    a = f.readlines()
-                                time = []
-                                error = []
-                                errorm = []
-                                for line in a:
-                                    if line.startswith(" STEP="):
-                                        a = line[6:].split()
-                                        time.append(int(a[0]))
-                                        error.append(float(a[2]))
-                                        errorm.append(float(a[6]))
-                                try:
-                                    foo = len(
-                                        self.Convergence[folder][case]['TTIME'])
-                                    if foo > len(time):
-                                        self.Convergence[folder][case] = self.Convergence[folder][case].tail(len(time))
-                                    else:
-                                        error = error[-foo:]
-                                        errorm = errorm[-foo:]
-                                    self.Convergence[folder][case]["ERROR"] = error
-                                    self.Convergence[folder][case]["ERRORM"] = errorm
-                                except ValueError as e:
-                                    print(
-                                        f"Some Run Had Problems! {folder} {case}\n{e}")
+                    if case.startswith("Dyn") or case.startswith("Sens"):
+                        continue
+                    self.loadGNVPcaseConvergence(plane, case)
 
-                    os.chdir('..')
-            except FileNotFoundError:
-                print("Convergence data not found!")
+    def loadPlaneFromFile(self,name,file):
+        try:
+            with open(file, 'r') as f:
+                json_obj = f.read()
+                try:
+                    self.Planes[name] = jsonpickle.decode(json_obj)
+                except Exception as e:
+                    print(f'Error decoding Plane object {name}! Got error {e}')
+            foundPlane = True
+        except FileNotFoundError:
+            print(f'No Plane object found in {name} folder at {file}!')
+            foundPlane = False
+        return foundPlane
+    
+    def loadDynPlaneFromFile(self,name,file):
+        try:
+            with open(file, 'r') as f:
+                json_obj = f.read()
+                try:
+                    self.dynPlanes[name] = jsonpickle.decode(json_obj)
+                    if name not in self.Planes.keys():
+                        print('Plane object doesnt exist! Creating it...')
+                        self.Planes[name] = self.dynPlanes[name]
+                except Exception as e:
+                    print(f'Error decoding Dyn Plane object {name} ! Got error {e}')
+        except FileNotFoundError:
+            print(f"No Plane object found in {name} folder at {file}!")
 
-            os.chdir(DB3D)
-        os.chdir(self.HOMEDIR)
+    def loadGNVPForces(self, planename, file):
+        # Should get deprecated in favor of analysis logic in the future
+        try:
+            self.rawData[planename] = pd.read_csv(file)
+            return
+        except FileNotFoundError:
+            print(f'No forces.gnvp3 file found in {planename} folder at {DB3D}!')
+            if planename in self.Planes.keys():
+                print('Since plane object exists with that name trying to create polars...')
+                pln = self.Planes[planename]
+                try:
+                    from ICARUS.Software.GenuVP3.filesInterface import makePolar
+                    CASEDIR = os.path.join(DB3D, pln.CASEDIR)
+                    makePolar(CASEDIR, self.HOMEDIR)
+                    file = os.path.join(DB3D, planename, 'forces.gnvp3')
+                    self.rawData[planename] = pd.read_csv(file)
+                except Exception as e:
+                    print(f'Failed to create Polars! Got Error:\n{e}')
+
+    def loadGNVPcaseConvergence(self, planename, case):
+        # Get Load Convergence Data from LOADS_aer.dat
+        file = os.path.join(DB3D, planename, case, 'LOADS_aer.dat')
+        
+        loads = getLoadsConvergence(file) 
+        if loads is not None:
+            # Get Error Convergence Data from gnvp.out
+            file = os.path.join(DB3D, planename, case, 'gnvp.out')
+            # self.Convergence[planename][case] = addErrorConvergence2df(file, loads) # IT OUTPUTS LOTS OF WARNINGS
+            with open(file, 'r') as f:
+                lines = f.readlines() 
+            time, error, errorm = [] , [] , []
+            for line in lines: 
+                if not line.startswith(" STEP="):
+                    continue
+
+                a = line[6:].split()
+                time.append(int(a[0]))
+                error.append(float(a[2]))
+                errorm.append(float(a[6]))
+            try:
+                foo = len(loads['TTIME'])
+                if foo > len(time):
+                    loads = loads.tail(len(time))
+                else:
+                    error = error[-foo:]
+                    errorm = errorm[-foo:]
+                loads["ERROR"] = error
+                loads["ERRORM"] = errorm
+                self.Convergence[planename][case] = loads
+            except ValueError as e:
+                print(f"Some Run Had Problems!\n{e}")
 
     def getPlanes(self):
         return list(self.Planes.keys())
@@ -161,44 +178,10 @@ class Database_3D():
     
     def __str__(self):
         return f"Vehicle Database"
+    
+    def __enter__(self,obj):
+        pass
+    
+    def __exit__(self):
+        pass
 
-cols = ["TTIME",
-        "PSIB",
-        "TFORC(1)",
-        "TFORC(2)",
-        "TFORC(3)",
-        "TAMOM(1)",
-        "TAMOM(2)",
-        "TAMOM(3)",
-        "TFORC2D(1)",
-        "TFORC2D(2)",
-        "TFORC2D(3)",
-        "TAMOM2D(1)",
-        "TAMOM2D(2)",
-        "TAMOM2D(3)",
-        "TFORCDS2D(1)",
-        "TFORCDS2D(2)",
-        "TFORCDS2D(3)",
-        "TAMOMDS2D(1)",
-        "TAMOMDS2D(2)",
-        "TAMOMDS2D(3)"]
-
-
-def ang2case(angle):
-    if angle >= 0:
-        folder = str(angle)[::-1].zfill(7)[::-1] + "_AoA"
-    else:
-        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "_AoA"
-    return folder
-
-
-def dst2case(dst):
-    if dst.var == "Trim":
-        folder = "Trim"
-    elif dst.isPositive:
-        folder = "p" + \
-            str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
-    else:
-        folder = "m" + \
-            str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
-    return folder

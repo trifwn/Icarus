@@ -27,7 +27,7 @@ def forces2polars(CASEDIR, HOMEDIR):
     df.pop("PSIB")
 
     df = df.sort_values("AoA").reset_index(drop=True)
-    df.to_csv('clcd.genu', index=False)
+    df.to_csv('forces.gnvp3', index=False)
     os.chdir(HOMEDIR)
     return df
 
@@ -67,12 +67,13 @@ def forces2pertrubRes(DYNDIR, HOMEDIR):
     df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
     df.pop('TTIME')
     df.pop("PSIB")
+    df = df.sort_values("Type").reset_index(drop=True)
     df.to_csv('pertrubations.genu', index=False)
     os.chdir(HOMEDIR)
     return df
 
 
-def rotateForces(rawpolars, alpha, preferred="2D"):
+def rotateForces(rawpolars, alpha, preferred="2D", save = False):
     Data = pd.DataFrame()
     AoA = alpha * np.pi/180
 

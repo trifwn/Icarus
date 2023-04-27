@@ -1,10 +1,8 @@
 from ICARUS.Workers.solver import Solver
 from ICARUS.Workers.analysis import Analysis
-from ICARUS.Workers.resRetrival import Results
-from ICARUS.Software.GenuVP3.angles import runGNVPanglesParallel, runGNVPangles
-from ICARUS.Software.GenuVP3.pertrubations import runGNVPpertrParallel, runGNVPpertr
+from ICARUS.Software.GenuVP3.analyses.angles import runGNVPanglesParallel, runGNVPangles, processGNVPangles
+from ICARUS.Software.GenuVP3.analyses.pertrubations import runGNVPpertrParallel, runGNVPpertr, processGNVPpertrubations
 from ICARUS.Software.GenuVP3.filesInterface import GNVPexe
-from ICARUS.Software.GenuVP3.filesInterface import makePolar,pertrResults
 from ICARUS.Database.db import DB
 
 
@@ -17,7 +15,6 @@ def get_gnvp3(db: DB):
         "CASEDIR": 'Case Directory',
     }
     rerun = Analysis('gnvp3','rerun', GNVPexe, options)
-    makePlanePolar = Results('makePlanePolar','gnvp3', makePolar, options)
         
     options = {
         "plane":        "Plane Object",
@@ -30,16 +27,22 @@ def get_gnvp3(db: DB):
         "angles":       "Angle to run",
     }
 
-    anglesSerial = Analysis('gnvp3','Angles_Serial', runGNVPangles, options) 
-    anglesParallel = anglesSerial << {'name': 'Angles_Parallel', 'execute': runGNVPanglesParallel}
-    pertrubationSerial = anglesSerial << {'name': 'Pertrubation_Serial', 'execute': runGNVPpertr}
-    pertrubationParallel = anglesSerial << {'name': 'Pertrubation_Parallel', 'execute': runGNVPpertrParallel}
-
-    options = {
-        'HOMEDIR':  'Home Directory',
-        "DYNDIR":   'Dynamics Directory',
-    }
-    planePertResults = Results('planePertResults','gnvp3', pertrResults, options)
+    anglesSerial = Analysis('gnvp3','Angles_Serial', runGNVPangles, options, processGNVPangles) 
+    anglesParallel = anglesSerial << {
+        'name': 'Angles_Parallel',
+        'execute': runGNVPanglesParallel,
+        'unhook' : processGNVPangles
+        }
+    pertrubationSerial = anglesSerial << {
+        'name': 'Pertrubation_Serial', 
+        'execute': runGNVPpertr,
+        'unhook' : processGNVPpertrubations
+        }
+    pertrubationParallel = anglesSerial << {
+        'name': 'Pertrubation_Parallel',
+        'execute': runGNVPpertrParallel,
+        'unhook' : processGNVPpertrubations
+        }
     
     gnvp3.addAnalyses([
         rerun,
@@ -48,8 +51,6 @@ def get_gnvp3(db: DB):
         pertrubationSerial,
         pertrubationParallel
         ])
-    
-    gnvp3.addResRetrival([makePlanePolar,planePertResults])
     
     return gnvp3
 
