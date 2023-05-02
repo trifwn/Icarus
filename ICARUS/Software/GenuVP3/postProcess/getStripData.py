@@ -27,34 +27,36 @@ stripColumns = [
     "Body",
     "Strip",
     "Time",
-    "RNONDIM",
-    "PSIB",
-    "FALFAM",
-    "FALFAGEM",
-    "AMACHS(IST)", "AMACH0S(IST)",
-    "VELAVEL(IST)", "VELAVELG(IST)",
+    "RNONDIM", # PSIB / B 
+    "PSIB", # AZIMUTHAL ANGLE
+    "FALFAM", # GWNIA PROSPTOSIS
+    "FALFAGEM",  # GEOMETRIC PROSPTOSIS XWRIS INDUCED
+    "AMACHS(IST)", # MACH NUMBER ???
+    "AMACH0S(IST)", # MACH NUMBER ???
+    "VELAVEL(IST)", # AVERAGE VELOCITY OF STRIP
+    "VELAVELG(IST)", # AVERAGE VELOCITY OF STRIP DUE TO MOTION OF BODY
 
-    "CLIFTSGN", "CDRAGSGN",
+    "CLIFTSGN", "CDRAGSGN", # Potential
     "CNTGN", "CNTGN",
     "CMOMSGN",
 
-    "CLIFTS2D", "CDRAGS2D",
+    "CLIFTS2D", "CDRAGS2D", #2D / Strip area
     "CNT2D", "CNT2D",
     "CMOMS2D",
 
-    "CLIFTSDS2D", "CDRAGSDS2D",
+    "CLIFTSDS2D", "CDRAGSDS2D", # ONERA / Strip area
     "CNTDS2D", "CNTDS2D",
     "CMOMSDS2D",
 
-    "FSTRGNL(3, IST) / ALSPAN(IST)",
+    "FSTRGNL(3, IST) / ALSPAN(IST)", ## Potential N/m 
     "FSTRGNL(1, IST) / ALSPAN(IST)",
     "AMSTRGNL(IST) / ALSPAN(IST)",
 
-    "FSTR2DL(3, IST) / ALSPAN(IST)",
+    "FSTR2DL(3, IST) / ALSPAN(IST)", ## 2D N/m 
     "FSTR2DL(1, IST) / ALSPAN(IST)",
     "AMSTR2DL(IST) / ALSPAN(IST)",
 
-    "FSTRDS2DL(3, IST) / ALSPAN(IST)",
+    "FSTRDS2DL(3, IST) / ALSPAN(IST)", ## ONERA N/m 
     "FSTRDS2DL(1, IST) / ALSPAN(IST)",
     "AMSTRDS2DL(IST) / ALSPAN(IST)",
 
@@ -62,6 +64,6 @@ stripColumns = [
     "Vind",
     "Wind",
 
-    "FALFA1M",
-    "CIRCtmp(IST)"
+    "FALFA1M", 
+    "CIRCtmp(IST)" # CIRCULATION
 ]

@@ -19,26 +19,39 @@ airfoils = foildb.getAirfoils()
 
 
 from Data.Planes.hermes import hermes
+from Data.Planes.hermesMainWing import hermesMainWing
 from ICARUS.Flight_Dynamics.dyn_plane import dyn_Airplane as dp
 from ICARUS.Enviroment.definition import EARTH
 from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
 
-names = ["Hermes_50", "Hermes_100",'Hermes_200',"Hermes_400"]
-maxiter = {
-    "Hermes_400"    : 400,
-    "Hermes_200"    : 200,
-    "Hermes_100"    : 100,
-    "Hermes_50"     : 50
-}
+# print("Running the following Configurations")
+# names = ["Hermes_50", "Hermes_100",'Hermes_200',"Hermes_400"]
+# print(names)
+# maxiter = {
+#     "Hermes_400"    : 400,
+#     "Hermes_200"    : 200,
+#     "Hermes_100"    : 100,
+#     "Hermes_50"     : 50
+# }
+# timestep = {
+#     "Hermes_400"    : 5e-3,
+#     "Hermes_200"    : 1e-2,
+#     "Hermes_100"    : 5e-2,
+#     "Hermes_50"     : 1e-1
+# }
+
+# # Get Plane
+planes = list()
+planes.append(hermesMainWing(airfoils ,"mainWing"))
 timestep = {
-    "Hermes_400"    : 5e-3,
-    "Hermes_200"    : 2e-2,
-    "Hermes_100"    : 8e-2,
-    "Hermes_50"     : 5e-1
+    "mainWing" : 5e-2
 }
-for name in names:
-    # # Get Plane
-    ap = hermes(airfoils ,name)
+maxiter ={
+    "mainWing" : 100
+}
+
+for ap in planes:
+    print(ap.name)
 
     # # Import Enviroment
     print(EARTH)
@@ -62,15 +75,15 @@ for name in names:
     options.environment.value   = EARTH
     options.db.value            = db
     options.solver2D.value      = 'XFLR'
-    options.maxiter.value       = maxiter[name]
-    options.timestep.value      = timestep[name]
+    options.maxiter.value       = maxiter[ap.name]
+    options.timestep.value      = timestep[ap.name]
     options.Uinf.value          = Uinf
     options.angles.value        = angles
 
     gnvp3.printOptions()
 
-    gnvp3.run()
     polars_time = time.time()
+    gnvp3.run()
     print("Polars took : --- %s seconds --- in Parallel Mode" %
         (time.time() - polars_time))
     polars = gnvp3.getResults()
@@ -86,7 +99,7 @@ for name in names:
         sys.exit("Plane could not be trimmed")
 
     # ### Pertrubations
-    if name == "Hermes_400":
+    if ap.name == "Hermes_400":
         epsilons = {
             "u": 0.01,
             "w": 0.01,
@@ -114,8 +127,8 @@ for name in names:
     options.environment.value   = EARTH
     options.db.value            = db
     options.solver2D.value      = 'XFLR'
-    options.maxiter.value       = maxiter[name]
-    options.timestep.value      = timestep[name]
+    options.maxiter.value       = maxiter[ap.name]
+    options.timestep.value      = timestep[ap.name]
     options.Uinf.value          = dyn.trim['U']
     options.angles.value        = dyn.trim['AoA']
 
@@ -127,22 +140,13 @@ for name in names:
     gnvp3.run()
     print("Pertrubations took : --- %s seconds ---" %
             (time.time() - pert_time))
+
+    # Get Results And Save
+    pertrRes = gnvp3.getResults()
     dyn.save()
-
-    # Get Results
-    results = gnvp3.getAvailableRetrieval()[1] # Pertr
-    print(f"Selecting Retrieval: {results}")
-    gnvp3.setRetrivalMethod(results)
-    options = gnvp3.getRetrievalOptions(results)
-
-
-    options.HOMEDIR.value = db.analysesDB.HOMEDIR
-    options.DYNDIR.value = os.path.join(db.vehiclesDB.DATADIR, ap.CASEDIR, "Dynamics")
-    gnvp3.printRetrievalOptions()
-    polars = gnvp3.getResults()
-
+    
+    
     ## Sensitivity ANALYSIS
-
     # print time it took
     print("PROGRAM TERMINATED")
     print("Execution took : --- %s seconds ---" % (time.time() - start_time))

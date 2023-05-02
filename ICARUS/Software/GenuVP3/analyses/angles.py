@@ -33,7 +33,7 @@ def runGNVPangles(plane, db, solver2D, maxiter, timestep, Uinf, angles, environm
                        plane.orientation, plane.disturbances)
     bodies = []
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, plane.CG))
+        bodies.append(makeSurfaceDict(surface, i))
 
     print("Running Angles in Sequential Mode")
     for angle in angles:
@@ -51,7 +51,7 @@ def runGNVPanglesParallel(plane, db, solver2D, maxiter, timestep, Uinf, angles, 
                        plane.orientation, plane.disturbances)
     bodies = []
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, plane.CG))
+        bodies.append(makeSurfaceDict(surface, i))
 
     print("Running Angles in Parallel Mode")
     with Pool(12) as pool:

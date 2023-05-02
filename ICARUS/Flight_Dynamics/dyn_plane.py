@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 
 from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
@@ -13,13 +12,13 @@ from .trim import trimState
 
 
 class dyn_Airplane(Airplane):
+    """Class for the dynamic analysis of an airplane.
+            The airplane is assumed to be of the airplane class.
+            Inputs:
+            - pln: Airplane class
+            - polars3D: DataFrame with the polars of the airplane
+    """
     def __init__(self, pln, polars3D=None):
-        """Class for the dynamic analysis of an airplane.
-                The airplane is assumed to be of the airplane class.
-                Inputs:
-                - pln: Airplane class
-                - polars3D: DataFrame with the polars of the airplane
-        """
         self.__dict__.update(pln.__dict__)
         self.name = f"dyn_{pln.name}"
         if polars3D is None:

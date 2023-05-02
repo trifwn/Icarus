@@ -24,6 +24,7 @@ class TestAdd(unittest.TestCase):
         np.testing.assert_almost_equal(I, I_act, decimal=3)
 
     def test2_gnvp_run(self):
+        # gnvprun("Serial")
         gnvprun("Parallel")
         # pass
 

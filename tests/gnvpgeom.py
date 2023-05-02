@@ -12,7 +12,7 @@ def gnvpGeom():
     _, _, gridGNVP = getWakeData(ap, case)
     gridAP = []
     for surface in ap.surfaces:
-        gridAP.append(surface.grid)
+        gridAP.append(surface.getGrid())
     gridAP = np.array(gridAP)
     shape = gridAP.shape
     gridAP = gridAP.reshape(shape[0]*shape[1]*shape[2], shape[3]) - ap.CG

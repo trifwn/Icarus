@@ -134,13 +134,17 @@ class Wing:
             endPoint = np.matmul(self.Rmat, endPoint) + self.Origin
 
             if self.isSymmetric == True:
-                surf = Strip(startPoint, endPoint, self.airfoil,
-                            self.Dchord[i], self.Dchord[i+1] )
+                surf = Strip(
+                    startPoint, endPoint, self.airfoil,
+                    self.Dchord[i], self.Dchord[i+1]
+                )
                 strips.append(surf)
                 symStrips.append(Strip(*surf.returnSymmetric()))
             else:
-                surf = Strip(startPoint, endPoint, self.airfoil,
-                            self.Dchord[i], self.Dchord[i+1])
+                surf = Strip(
+                    startPoint, endPoint, self.airfoil,
+                    self.Dchord[i], self.Dchord[i+1]
+                )
                 strips.append(surf)
         self.strips = strips
         self.allStrips = [*strips, *symStrips]
@@ -170,12 +174,19 @@ class Wing:
                 for item in [self.panels_lower, self.panels_upper]:
                     p1, p3, p4, p2 = item[i, j, :, :]
                     xs = np.reshape(
-                        [p1[0], p2[0], p3[0], p4[0]], (2, 2)) + movement[0]
+                        [p1[0], p2[0], p3[0], p4[0]], (2, 2)
+                        ) + movement[0]
+                    
                     ys = np.reshape(
-                        [p1[1], p2[1], p3[1], p4[1]], (2, 2)) + movement[1]
+                        [p1[1], p2[1], p3[1], p4[1]], (2, 2)
+                        ) + movement[1]
+                    
                     zs = np.reshape(
-                        [p1[2], p2[2], p3[2], p4[2]], (2, 2)) + movement[2]
+                        [p1[2], p2[2], p3[2], p4[2]], (2, 2)
+                        ) + movement[2]
+                    
                     ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
+                    
                     if self.isSymmetric == True:
                         ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
 
@@ -215,22 +226,37 @@ class Wing:
             ys_upper[i, :] = ys[i, :]
 
             for j in np.arange(0, self.N):
-                zs_upper[i, j] = self.Ddihedr[j] + \
-                    self.Dchord[j] * self.airfoil.y_upper(i/(self.M-1))
-                zs_lower[i, j] = self.Ddihedr[j] + \
-                    self.Dchord[j] * self.airfoil.y_lower(i/(self.M-1))
-                zs[i, j] = self.Ddihedr[j] + \
-                    self.Dchord[j] * self.airfoil.camber_line(i/(self.M-1))
+                zs_upper[i, j] = (
+                    self.Ddihedr[j] + 
+                    self.Dchord[j] * 
+                    self.airfoil.y_upper(i/(self.M-1))
+                )
+                zs_lower[i, j] = (
+                    self.Ddihedr[j] + 
+                    self.Dchord[j] * 
+                    self.airfoil.y_lower(i/(self.M-1))
+                )
+                zs[i, j] = (
+                    self.Ddihedr[j] + 
+                    self.Dchord[j] *
+                    self.airfoil.camber_line(i/(self.M-1))
+                )
 
             # ROTATE ACCORDING TO RMAT
             xs[i, :], ys[i, :], zs[i, :] = np.matmul(
-                self.Rmat, [xs[i, :], ys[i, :], zs[i, :]])
+                    self.Rmat,
+                    [xs[i, :], ys[i, :], zs[i, :]]
+                )
 
             xs_lower[i, :], ys_lower[i, :], zs_lower[i, :] = np.matmul(
-                self.Rmat, [xs_lower[i, :], ys_lower[i, :], zs_lower[i, :]])
+                    self.Rmat,
+                    [xs_lower[i, :], ys_lower[i, :], zs_lower[i, :]]
+                )
 
             xs_upper[i, :], ys_upper[i, :], zs_upper[i, :] = np.matmul(
-                self.Rmat, [xs_upper[i, :], ys_upper[i, :], zs_upper[i, :]])
+                    self.Rmat,
+                    [xs_upper[i, :], ys_upper[i, :], zs_upper[i, :]]
+                )
 
         for item in [xs, xs_upper, xs_lower]:
             item += self.Origin[0]
@@ -460,10 +486,27 @@ class Wing:
                 I_xy += self.VolumeDist[i, j] * (xd * yd)
                 I_yz += self.VolumeDist[i, j] * (yd * zd)
 
-        self.I = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)
-                          ) * (mass / self.Volume)
+        self.I = np.array(
+            (I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)
+            ) * (mass / self.Volume)
 
-
+    def getGrid(self, which = 'camber' ):
+        if which == 'camber':
+            grid = self.grid
+        elif which == 'upper':
+            grid = self.grid_upper
+        elif which == 'lower':
+            grid = self.grid_lower
+        else:
+            raise ValueError('which must be either camber, upper or lower')
+        if self.isSymmetric is True:
+            reflection = np.array([1,-1,1])
+            gsym = grid[::-1,:,:] * reflection
+            grid = grid[1:,:,:]
+            grid = np.concatenate((gsym,grid))
+            pass
+        return grid
+    
 def linSpan(sp, Ni):
     """Returns a linearly spaced span array."""
     return np.linspace(0, sp, Ni).round(12)

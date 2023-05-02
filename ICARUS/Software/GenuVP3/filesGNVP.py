@@ -29,33 +29,50 @@ def inputF():
 
 
 def dfile(params):
+    """Create Dfile for GNVP3
+
+    Args:
+        params (_type_): _description_
+    """
     fname = "dfile.yours"
     with open(fname, "r") as file:
         data = file.readlines()
 
     data[27] = f'{int(params["nBods"])}           NBODT      number of bodies\n'
     data[28] = f'{int(params["nBlades"])}           NBLADE     number of blades\n'
-    data[
-        35
-    ] = f'{int(params["maxiter"])}         NTIMER     number of the last time step to be performed\n'
+    data[35] = f'{int(params["maxiter"])}         NTIMER     number of the last time step to be performed\n'
     data[36] = f'{params["timestep"]}        DT         time step\n'
-    data[
-        55
-    ] = "5           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
+    data[55] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
     data[59] = f'{ff2(params["Uinf"][0])}       UINF(1)    the velocity at infinity\n'
     data[60] = f'{ff2(params["Uinf"][1])}       UINF(2)    .\n'
     data[61] = f'{ff2(params["Uinf"][2])}       UINF(3)    .\n'
+    
+    DX = 1.5 * np.linalg.norm(params["Uinf"]) * params["timestep"]
+    if DX < 0.005:
+        data[94] = f'{ff2(DX)}       EPSVR      Cut-off length for the free vortex particles (final)\n'
+        data[95] = f'{ff2(DX)}       EPSO       Cut-off length for the free vortex particles (init.)\n'
+
+        DX = DX/100
+        data[90] = f'{ff2(DX)}       EPSFB      Cut-off length for the bound vorticity\n'
+        data[91] = f'{ff2(DX)}       EPSFW      Cut-off length for the near-wake vorticity\n'
+        data[92] = f'{ff2(DX)}       EPSSR      Cut-off length for source distributions\n'
+        data[93] = f'{ff2(DX)}       EPSDI      Cut-off length for source distributions\n'
+    
     data[119] = f'{params["rho"]}       AIRDEN     Fluid density\n'
     data[120] = f'{params["visc"]}   VISCO      Kinematic viscosity\n'
-    data[
-        130
-    ] = f"hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
+    data[130] = f"hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
 
     with open(fname, "w") as file:
         file.writelines(data)
 
 
 def geofile(movements, bodies):
+    """Create Geo file for GNVP3
+
+    Args:
+        movements (_type_): _description_
+        bodies (_type_): _description_
+    """
     fname = "hermes.geo"
     # with open(fname, "r") as file:
     #     data = file.readlines()
@@ -75,8 +92,7 @@ def geofile(movements, bodies):
         for j, mov in enumerate(movements[i]):
             geoBodyMovements(data, mov, len(movements[i]) - j, NB)
 
-        data.append(
-            "-----<end of movement data>----------------------------------------------------\n")
+        data.append("-----<end of movement data>----------------------------------------------------\n")
         data.append("               <blank>\n")
         data.append("Cl, Cd data / IYNVCR(.)=0 then Cl=1., Cd=0.\n")
         data.append("1           IYNVCR(1)\n")
@@ -140,6 +156,10 @@ def geoBodyMovements(data, mov, i, NB):
 
 
 def cldFiles(AeroData, airfoils, solver):
+    """ Create Polars CL-CD-Cm files for each airfoil
+    
+    """
+    
     for airf in airfoils:
         fname = f"{airf[4:]}.cld"
         polars = AeroData[airf][solver]
@@ -203,6 +223,11 @@ def cldFiles(AeroData, airfoils, solver):
 
 
 def bldFiles(bodies):
+    """Create BLD files for each body
+
+    Args:
+        bodies (_type_): _description_
+    """
     for bod in bodies:
         fname = bod["bld"]
         with open(fname, "r") as file:
@@ -218,9 +243,17 @@ def bldFiles(bodies):
             (bod["y_end"] - bod["y_0"]),
             ndigits=5
         )
-        data[3] = f'1          {bod["NACA"]}\n'
-        data[6] = f"0          0          0\n"
-        data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}.WG\n'
+        
+        with open(f'{bod["name"]}.WG', "w") as file:
+            grid = bod["Grid"]
+            for n_strip in grid:
+                file.write("\n")
+                for m_point in n_strip:
+                    file.write(f'{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n')
+                    
+        data[3] = f'0          {bod["NACA"]}       {bod["name"]}.WG\n'
+        data[6] = f"0          0          1\n"
+        data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}OUT.WG\n'
         data[12] = f'{ff4(bod["x_0"])}     {ff4(bod["y_0"])}     {ff4(bod["z_0"])}\n'
         data[15] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
         data[18] = f"1                      0.         1.         \n"  # KSI
@@ -239,16 +272,16 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
 
     # COPY FROM BASE
     filesNeeded = ['dfile.yours', 'hermes.geo', 'hyb.inf',
-                   'input', 'name.cld', 'wing.bld']
+                   'input', 'name.cld', 'name.bld']
     for item in filesNeeded:
         itemLOC = os.path.join(GENUBASE, item)
         shutil.copy(itemLOC, ANGLEDIR)
 
     # EMPTY BLD FILES
     for body in bodies:
-        shutil.copy('wing.bld', f'{body["name"]}.bld')
-    if "wing" not in [bod["name"] for bod in bodies]:
-        os.remove('wing.bld')
+        shutil.copy('name.bld', f'{body["name"]}.bld')
+    os.remove('name.bld')
+    
     # EMPTY CLD FILES
     for airf in airfoils:
         shutil.copy('name.cld', f'{airf[4:]}.cld')

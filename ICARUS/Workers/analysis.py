@@ -11,14 +11,22 @@ jsonpickle_numpy.register_handlers()
 
 
 class Analysis():
-    def __init__(self,solverName, name, runFunc ,options, unhook =None):
+    def __init__(self,solverName, name, runFunc ,options,
+                 secondary_options = None, unhook =None):
         self.solverName = solverName
         self.name = name
         self.options = Struct()
+        self.secondary_options = Struct()
         self.execute = runFunc
+        
         for option in options.keys():
             self.options[option] = Option(option,None,options[option])
         
+        if secondary_options is not None:
+            for option in secondary_options.keys():
+                value , desc = secondary_options[option]
+                self.secondary_options[option] = Option(option,value,desc)
+            
         void = lambda : None
         if callable(unhook):
             self.unhook = unhook

@@ -26,9 +26,8 @@ class Airplane():
         else:
             self.orientation = orientation
 
-        toRemove = []
         gotWing = False
-        for i, surface in enumerate(surfaces):
+        for surface in surfaces:
             if surface.name == "wing":
                 self.mainWing = surface
                 self.S = surface.S
@@ -37,11 +36,6 @@ class Airplane():
                 self.span = surface.span
                 gotWing = True
 
-            if surface.isSymmetric == True:
-                toRemove.append(i)
-                l, r = surface.splitSymmetric()
-                surfaces.append(l)
-                surfaces.append(r)
         if gotWing == False:
             self.mainWing = surfaces[0]
             self.S = surfaces[0].S
@@ -49,8 +43,6 @@ class Airplane():
             self.AR = surfaces[0].AR
             self.span = surfaces[0].span
 
-        self.surfaces = [j for i, j in enumerate(
-            self.surfaces) if i not in toRemove]
 
         self.airfoils = self.getAirfoils()
         self.bodies = []
@@ -69,6 +61,16 @@ class Airplane():
         self.CG = self.findCG()
         self.I = self.findInertia(self.CG)
 
+    def get_seperate_surfaces(self):
+        toRemove = []
+        surfaces = []
+        for i, surface in enumerate(self.surfaces):
+            if surface.isSymmetric == True:
+                l, r = surface.splitSymmetric()
+                surfaces.append(l)
+                surfaces.append(r)
+        return surfaces
+        
     def addMasses(self, masses):
         for mass in masses:
             self.masses.append(mass)

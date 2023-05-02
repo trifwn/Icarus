@@ -45,11 +45,10 @@ def GNVPstrips2D(pln, case, NB, category = 'Wind'):
     stripDat, data = getStripData(pln, case, [NB])
     fig = plt.figure()
     ax = fig.add_subplot()
-    ax.set_title(f"{pln.name} {pln.surfaces[NB].name} {category} Data")
+    ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")
     ax.set_xlabel('Spanwise')
     ax.set_ylabel(category)
-
     ax.plot(data[category])
 
-    
+
     return stripDat

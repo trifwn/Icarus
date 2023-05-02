@@ -23,14 +23,15 @@ Simplewing = wg(name="bmark",
                 Origin=Origin + wingPos,
                 Orientation=wingOrientation,
                 isSymmetric=True,
-                span=2 * 2.5,
-                sweepOffset=0.,
-                dihAngle=0,
-                chordFun=linearChord,
-                chord=[0.8, 0.8],
-                spanFun=linSpan,
-                N=20,
-                M=5,
-                mass=1)
+                span= 2 * 2.5,
+                sweepOffset= 0.,
+                dihAngle= 0,
+                chordFun= linearChord,
+                chord= [0.8, 0.8],
+                spanFun= linSpan,
+                N= 20,
+                M= 5,
+                mass= 1
+            )
 ap = Plane(Simplewing.name, [Simplewing])
 ap.CG = [0.337, 0, 0]

@@ -47,15 +47,22 @@ def setParams(nBodies, nAirfoils, maxiter, timestep, Uinf, WindAngle, dens):
     return params
 
 
-def makeSurfaceDict(surf, idx, CG):
+def makeSurfaceDict(surf, idx):
+    if surf.isSymmetric:
+        N = 2* surf.N -1
+        M = surf.M
+    else:
+        N = surf.N
+        M = surf.M
+        
     s = {
         'NB': idx,
         "NACA": surf.airfoil.name,
         "name": surf.name,
         'bld': f'{surf.name}.bld',
         'cld': f'{surf.airfoil.name}.cld',
-        'NNB': surf.M,
-        'NCWB': surf.N,
+        'NNB': M,
+        'NCWB': N,
         "x_0": surf.Origin[0],
         "y_0": surf.Origin[1],
         "z_0": surf.Origin[2],
@@ -67,7 +74,8 @@ def makeSurfaceDict(surf, idx, CG):
         "z_end": surf.Origin[2] + surf.Ddihedr[-1],
         "Root_chord": surf.chord[0],
         "Tip_chord": surf.chord[-1],
-        "Offset": surf.xoff[-1]
+        "Offset": surf.xoff[-1],
+        "Grid" : surf.getGrid(),
     }
     return s
 

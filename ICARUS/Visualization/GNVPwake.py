@@ -15,8 +15,8 @@ def GNVPwake(plane, case ,figsize = (16,7)):
     ax.set_zlabel('z')
     ax.view_init(30, 150)
     ax.axis('scaled')
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
+    ax.set_xlim(-plane.span/2, plane.span/2)
+    ax.set_ylim(-plane.span/2, plane.span/2)
     ax.set_zlim(-1, 1)
 
     ax.scatter(A1[:, 0], A1[:, 1], A1[:, 2], color='r', s=5.)  # WAKE

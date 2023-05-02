@@ -36,7 +36,7 @@ def GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep, Uinf, angle,
 def runGNVPpertr(plane,environment, db, solver2D, maxiter, timestep, Uinf, angles):
     bodies = []
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, plane.CG))
+        bodies.append(makeSurfaceDict(surface, i))
 
     for dst in plane.disturbances:
         msg = GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep,
@@ -49,7 +49,7 @@ def runGNVPpertrParallel(plane,environment, db, solver2D, maxiter, timestep, Uin
 
     bodies = []
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, plane.CG))
+        bodies.append(makeSurfaceDict(surface, i))
     disturbances = plane.disturbances
     with Pool(12) as pool:
         args_list = [(plane,environment, db, solver2D, maxiter, timestep,
@@ -63,7 +63,7 @@ def runGNVPpertrParallel(plane,environment, db, solver2D, maxiter, timestep, Uin
 def runGNVPsensitivity(plane,environment, var, db, solver2D, maxiter, timestep, Uinf, angles):
     bodies = []
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, plane.CG))
+        bodies.append(makeSurfaceDict(surface, i))
 
     for dst in plane.sensitivity[var]:
         msg = GNVPdstCase(plane,environment, db, solver2D, maxiter, timestep,
@@ -76,7 +76,7 @@ def runGNVPsensitivityParallel(plane,environment, var, db, solver2D, maxiter, ti
 
     bodies = []
     for i, surface in enumerate(plane.surfaces):
-        bodies.append(makeSurfaceDict(surface, i, plane.CG))
+        bodies.append(makeSurfaceDict(surface, i))
 
     disturbances = plane.sensitivity[var]
     with Pool(12) as pool:
