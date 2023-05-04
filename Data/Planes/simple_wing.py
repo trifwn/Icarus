@@ -1,12 +1,11 @@
-from ICARUS.Vehicle.wing import Wing as wg
-from ICARUS.Vehicle.wing import linearChord, linSpan
-from ICARUS.Vehicle.plane import Airplane as Plane
+import numpy as np
 
+from ICARUS.Database import XFLRDB
 from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import readPolars2D
-from ICARUS.Database import XFLRDB
-
-import numpy as np
+from ICARUS.Vehicle.plane import Airplane as Plane
+from ICARUS.Vehicle.wing import Wing as wg
+from ICARUS.Vehicle.wing import linearChord, linSpan
 
 db = DB()
 db.loadData()

@@ -1,15 +1,15 @@
-import numpy as np
 import time
+
+import numpy as np
+
 
 def gnvprun(mode='Parallel'):
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from tests.planes import ap, db
-    
+    from Data.Planes.simple_wing import ap, db
     # Get Environment
     from ICARUS.Enviroment.definition import EARTH
-    
     # Get Solver
     from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
     gnvp3 = get_gnvp3(db)

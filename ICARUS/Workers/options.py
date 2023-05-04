@@ -1,16 +1,17 @@
 import io
 
+
 class Option():
     __slots__ = ['name','value','description']
-    def __init__(self,name,value,description):
+    def __init__(self,name:str,value,description:str) -> None:
         self.name = name
         self.value = value
-        self.description = description
+        self.description :str= description
     
-    def __getstate__(self):
+    def __getstate__(self) -> tuple:
         return (self.name,self.value,self.description)
     
-    def __setstate__(self,state):
+    def __setstate__(self,state: tuple)-> None:
         self.name,self.value,self.description = state
         
     def __str__(self):

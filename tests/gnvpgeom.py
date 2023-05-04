@@ -1,12 +1,13 @@
-from ICARUS.Software.GenuVP3.postProcess.getWakeData import getWakeData
-from ICARUS.Database.utils import ang2case
-from ICARUS.Visualization.GNVPwake import GNVPwake
 import numpy as np
+
+from ICARUS.Database.utils import ang2case
+from ICARUS.Software.GenuVP3.postProcess.getWakeData import getWakeData
+from ICARUS.Visualization.GNVPwake import GNVPwake
 
 
 def gnvpGeom():
 
-    from tests.planes import ap
+    from Data.Planes.simple_wing import ap
 
     case = ang2case(2.)
     _, _, gridGNVP = getWakeData(ap, case)

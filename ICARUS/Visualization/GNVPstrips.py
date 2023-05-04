@@ -1,7 +1,9 @@
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 from ICARUS.Software.GenuVP3.postProcess.getStripData import getStripData
+
 
 def GNVPstrips3D(pln, case, NBs, category = 'Wind'):
 
@@ -21,7 +23,7 @@ def GNVPstrips3D(pln, case, NBs, category = 'Wind'):
     minValue = data[category].min()
 
     norm = mpl.colors.Normalize(vmin=minValue, vmax=maxValue)
-    cmap = mpl.cm.viridis
+    cmap = cm.get_cmap('viridis', 12)
     
     for i,wg in enumerate(pln.surfaces):
         i = i+1
@@ -47,8 +49,10 @@ def GNVPstrips2D(pln, case, NB, category = 'Wind'):
     ax = fig.add_subplot()
     ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")
     ax.set_xlabel('Spanwise')
+    ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)
-    ax.plot(data[category])
+    x = [i for i,data in enumerate(data[category])] 
+    ax.scatter(x,data[category])
 
 
     return stripDat

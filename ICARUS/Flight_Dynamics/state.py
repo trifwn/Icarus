@@ -1,16 +1,17 @@
 import pandas as pd
 
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
-from ICARUS.Enviroment.definition import Environment
-from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Core.struct import Struct
+from ICARUS.Enviroment.definition import Environment
+from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
+from ICARUS.Vehicle.plane import Airplane
 
-from .pertrubations import longitudalPerturb, lateralPerturb
-from .dyn_plane import StabilityDerivativesDS
-from .Stability.longitudalFD import longitudalStability
-from .Stability.lateralFD import lateralStability
 from .disturbances import disturbance as dst
-from .trim import trimState
+from .dyn_plane import StabilityDerivativesDS
+from .pertrubations import lateralPerturb, longitudalPerturb
+from .Stability.lateralFD import lateralStability
+from .Stability.longitudalFD import longitudalStability
+from .trim import trim_state
+
 
 class State():
     """Class for the state of a vehicle.
@@ -23,7 +24,7 @@ class State():
         self.name = name
         self.polars = self.formatPolars(forces)
         
-        self.trim = trimState(self)
+        self.trim = trim_state(self)
         self.Q = 0.5* env.AirKinematicViscosity * self.trim['U']**2      
         self.disturbances = []
         self.sensitivity = Struct()

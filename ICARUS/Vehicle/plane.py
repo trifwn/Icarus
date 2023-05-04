@@ -62,7 +62,6 @@ class Airplane():
         self.I = self.findInertia(self.CG)
 
     def get_seperate_surfaces(self):
-        toRemove = []
         surfaces = []
         for i, surface in enumerate(self.surfaces):
             if surface.isSymmetric == True:

@@ -1,32 +1,34 @@
-from ICARUS.Core.struct import Struct
-from .options import Option
-from tabulate import tabulate
 import inspect
 
 import jsonpickle
-import jsonpickle.ext.pandas as jsonpickle_pd
 import jsonpickle.ext.numpy as jsonpickle_numpy
+import jsonpickle.ext.pandas as jsonpickle_pd
+from tabulate import tabulate
+
+from ICARUS.Core.struct import Struct
+
+from .options import Option
+
 jsonpickle_pd.register_handlers()
 jsonpickle_numpy.register_handlers()
 
 
 class Analysis():
     def __init__(self,solverName, name, runFunc ,options,
-                 secondary_options = None, unhook =None):
+                 solver_options, unhook =None):
         self.solverName = solverName
         self.name = name
         self.options = Struct()
-        self.secondary_options = Struct()
+        self.solver_options = Struct()
         self.execute = runFunc
         
         for option in options.keys():
             self.options[option] = Option(option,None,options[option])
         
-        if secondary_options is not None:
-            for option in secondary_options.keys():
-                value , desc = secondary_options[option]
-                self.secondary_options[option] = Option(option,value,desc)
-            
+        if solver_options is not None:
+            for option in solver_options.keys():
+                value , desc = solver_options[option]
+                self.solver_options[option] = Option(option,value,desc)
         void = lambda : None
         if callable(unhook):
             self.unhook = unhook
@@ -52,6 +54,23 @@ class Analysis():
         return string
     
     __repr__ = __str__
+    
+    def getSolverOptions(self, verbose: bool = False):
+        if verbose:
+            string = f'Available Solver Parameters of {self.solverName} for {self.name}: \n\n'
+            table = [['VarName','Value','Description']]
+            for _,opt in self.solver_options.items():
+                if opt.value is None:
+                    table.append([opt.name,'None',opt.description])
+                elif hasattr(opt.value, '__len__'):
+                    if len(opt.value) > 2:
+                        table.append([opt.name,'Multiple Values',opt.description])                
+                else:
+                    table.append([opt.name,opt.value,opt.description])
+            string+= tabulate(table[1:],headers=table[0] ,tablefmt="github")
+            string+= '\n\nIf there are multiple values you should inspect them sepretly by calling the option name\n'
+            print(string)
+        return self.solver_options
     
     def getOptions(self,verbose = False):
         if verbose:
@@ -83,7 +102,8 @@ class Analysis():
     def __call__(self):
         if self.checkOptions():
             kwargs = {option:self.options[option].value for option in self.options.keys()}
-            res = self.execute(**kwargs)
+            solver_options = {option:self.solver_options[option].value for option in self.solver_options.keys()}
+            res = self.execute(**kwargs, solver_options = solver_options)
             print('Analysis Completed')
             return res
         else:
@@ -107,11 +127,13 @@ class Analysis():
     
     def copy(self):
         optiondict = {k:v.description for k,v in self.options.items()}
-        return self.__class__(self.solverName, self.name, self.execute, optiondict)
+        solver_options = {k:(v.value,v.description) for k,v in self.solver_options.items()}
+        return self.__class__(self.solverName, self.name, self.execute, optiondict, solver_options)
     
     def __copy__(self):
         optiondict = {k:v.description for k,v in self.options.items()}
-        return self.__class__(self.solverName,self.name, self.execute, optiondict)
+        solver_options = {k:(v.value,v.description) for k,v in self.solver_options.items()}
+        return self.__class__(self.solverName,self.name, self.execute, optiondict, solver_options)
     
     def __getstate__(self):
         return self.solverName, self.name, self.execute, self.options
@@ -130,5 +152,4 @@ class Analysis():
         s = self.__copy__()
         s.__dict__.update(other)
         return s
-    
     

@@ -5,8 +5,8 @@ class Environment():
         self.name = name
         self.Gravity = 9.81
         self.AirDensity = 1.225
-        self.AirDynamicViscosity = 1.7894e-5
-        self.AirKinematicViscosity = 1.7894e-5
+        self.AirDynamicViscosity = 1.56e-5
+        self.AirKinematicViscosity = 1.56e-5
         
         self.Temperature = 20 + 273.15 
         self.Gamma = 1.4

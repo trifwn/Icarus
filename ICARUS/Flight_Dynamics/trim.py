@@ -1,7 +1,10 @@
+"""
+Trim module
+"""
 import numpy as np
 
 
-def trimState(plane):
+def trim_state(plane):
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -22,47 +25,47 @@ def trimState(plane):
 
     # Index of interest in the Polar Dataframe
     print(plane.polars3D.keys())
-    trimLoc1 = np.argmin(np.abs(plane.polars3D["Cm"]))
+    trim_loc1 = np.argmin(np.abs(plane.polars3D["Cm"]))
     # Find the polar that is closest to the trim but positive
-    trimLoc2 = trimLoc1
-    if plane.polars3D["Cm"][trimLoc1] < 0:
-        while plane.polars3D["Cm"][trimLoc2] < 0:
-            trimLoc2 -= 1
+    trim_loc2 = trim_loc1
+    if plane.polars3D["Cm"][trim_loc1] < 0:
+        while plane.polars3D["Cm"][trim_loc2] < 0:
+            trim_loc2 -= 1
     else:
-        while plane.polars3D["Cm"][trimLoc2] > 0:
-            trimLoc2 += 1
+        while plane.polars3D["Cm"][trim_loc2] > 0:
+            trim_loc2 += 1
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
-    dCm = plane.polars3D["Cm"][trimLoc2] - plane.polars3D["Cm"][trimLoc1]
-    dAoA = plane.polars3D["AoA"][trimLoc2] - plane.polars3D["AoA"][trimLoc1]
+    d_cm = plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]
+    d_aoa = plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
 
-    AoA_trim = plane.polars3D["AoA"][trimLoc1] - \
-        plane.polars3D["Cm"][trimLoc1] * dAoA / dCm
+    aoa_trim = plane.polars3D["AoA"][trim_loc1] - \
+        plane.polars3D["Cm"][trim_loc1] * d_aoa / d_cm
 
-    Cm_trim = plane.polars3D["Cm"][trimLoc1] + \
-        (plane.polars3D["Cm"][trimLoc2] - plane.polars3D["Cm"][trimLoc1]) * \
-        (AoA_trim - plane.polars3D["AoA"][trimLoc1]) / \
-        (plane.polars3D["AoA"][trimLoc2] - plane.polars3D["AoA"][trimLoc1])
+    cm_trim = plane.polars3D["Cm"][trim_loc1] + \
+        (plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]) * \
+        (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / \
+        (plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1])
 
-    CL_trim = plane.polars3D["CL"][trimLoc1] + \
-        (plane.polars3D["CL"][trimLoc2] - plane.polars3D["CL"][trimLoc1]) * \
-        (AoA_trim - plane.polars3D["AoA"][trimLoc1]) / \
-        (plane.polars3D["AoA"][trimLoc2] - plane.polars3D["AoA"][trimLoc1])
+    cl_trim = plane.polars3D["CL"][trim_loc1] + \
+        (plane.polars3D["CL"][trim_loc2] - plane.polars3D["CL"][trim_loc1]) * \
+        (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / \
+        (plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1])
 
     # Print How accurate is the trim
     print(
-        f"Cm is {plane.polars3D['Cm'][trimLoc1]} instead of 0 at AoA = {plane.polars3D['AoA'][trimLoc1]}")
+        f"Cm is {plane.polars3D['Cm'][trim_loc1]} instead of 0 at AoA = {plane.polars3D['AoA'][trim_loc1]}")
     print(
-        f"Interpolated values are: AoA = {AoA_trim} , Cm = {Cm_trim}, Cl = {CL_trim}")
+        f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
 
     # Find the trim velocity
     S = plane.S
     dens = plane.dens
     W = plane.M * 9.81
-    U_cruise = np.sqrt(W / (0.5 * dens * CL_trim * S))
-    print(f"Trim velocity is {U_cruise} m/s")
+    U_CRUISE = np.sqrt(W / (0.5 * dens * cl_trim * S))
+    print(f"Trim velocity is {U_CRUISE} m/s")
     trim = {
-        "U": U_cruise,
-        "AoA": AoA_trim,
+        "U": U_CRUISE,
+        "AoA": aoa_trim,
     }
     return trim

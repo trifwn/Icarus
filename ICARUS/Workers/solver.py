@@ -15,7 +15,6 @@ class Solver():
             print("Fidelity must be an integer")
         self.fidelity = fidelity
         self.availableAnalyses = {}
-        self.resRetrivalMethods = {}
         self.mode = None
         
     def addAnalyses(self,analyses):
@@ -51,6 +50,13 @@ class Solver():
     def getOptions(self,verbose : bool = False):
         if self.mode is not None:
             return self.availableAnalyses[self.mode].getOptions(verbose)
+        else:
+            print('Analysis hase not been Selected')
+            _ = self.getAvailableAnalyses(verbose=verbose)
+            
+    def getSolverParameters(self,verbose : bool = False):
+        if self.mode is not None:
+            return self.availableAnalyses[self.mode].getSolverOptions(verbose)
         else:
             print('Analysis hase not been Selected')
             _ = self.getAvailableAnalyses(verbose=verbose)
@@ -116,10 +122,6 @@ class Solver():
         string += 'Available Analyses Are: \n'
         string+= '------------------- \n'
         for i,key in enumerate(self.availableAnalyses.keys()):
-            string+= f"{i}) {key} \n"
-        string += '\nAvailable Results: \n'
-        string+= '------------------- \n'
-        for i,key in enumerate(self.resRetrivalMethods.keys()):
             string+= f"{i}) {key} \n"       
         return string
 

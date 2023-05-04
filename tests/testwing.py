@@ -1,5 +1,5 @@
 def geom():
     print("Testing Geometry...")
 
-    from tests.planes import Simplewing
+    from Data.Planes.simple_wing import Simplewing
     return Simplewing.S, Simplewing.MAC, Simplewing.Area, Simplewing.CG, Simplewing.I

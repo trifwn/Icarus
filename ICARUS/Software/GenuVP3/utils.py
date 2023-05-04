@@ -33,19 +33,62 @@ def airMov(surfaces, CG, orientation, disturbances):
         movement.append(sequence)
     return movement
 
-
-def setParams(nBodies, nAirfoils, maxiter, timestep, Uinf, WindAngle, dens):
+def setParams(bodies, plane, maxiter, timestep, Uinf, angle, environment,
+               solver_options):
+    nBodies = len(bodies)
+    nAirfoils = len(plane.airfoils)
+    angle = angle*np.pi/180
+    dens = environment.AirDensity
+    visc = environment.AirDynamicViscosity
+    
+    airVelocity = [Uinf * np.cos(angle),
+                   0.0,
+                   Uinf * np.sin(angle)]
     params = {
         "nBods": nBodies,
         "nBlades": nAirfoils,
         "maxiter": maxiter,
         "timestep": timestep,
-        "Uinf": [Uinf * np.cos(WindAngle*np.pi/180), 0.0, Uinf * np.sin(WindAngle*np.pi/180)],
+        "Uinf": airVelocity,
         "rho": dens,
-        "visc": 0.0000156,
+        "visc": visc,
+        "Split_Symmetric_Bodies": solver_options['Split_Symmetric_Bodies'],
+        "Use_Grid" : solver_options['Use_Grid'],
+        
+        ## LOW LEVEL OPTIONS
+        "NMETH" : solver_options['Integration_Scheme'],
+        "NEMTIP": solver_options['Tip_Emmision'],
+        "NTIMET" : solver_options['Tip_Emmision_Begins'],
+        "NEMSLE" : solver_options['Leading_Edge_Separation'],
+        "NTIMEL" : solver_options['Leading_Edge_Separation_Begins'],
+        "RELAXS" : solver_options['Relaxation_Factor'],
+        "EPSDS" : solver_options['Pot_Convergence_Tolerence'],
+        "NLEVELT" : solver_options['Movement_Levels'],
+        "NNEVP0" : solver_options['Vortex_Particle_Count'],
+        "RELAXU" : solver_options['Vortex_Particle_Relaxation'],
+        "PARVEC" : solver_options['Minimum_Width_Parameter'],
+        "NEMIS" : solver_options['NEMIS'],
+        "EPSFB" : solver_options['Bound_Vorticity_Cutoff'],
+        "EPSFW" : solver_options['Wake_Vorticity_Cutoff'],
+        "EPSSR" : solver_options['Cutoff_Length_Sources'],
+        "EPSDI" : solver_options['Cutoff_Length_Sources2'],
+        "EPSVR" : solver_options['Vortex_Cutoff_Length_f'],
+        "EPSO" : solver_options['Vortex_Cutoff_Length_i'],
+        "EPSINT" : solver_options['EPSINT'],
+        "COEF" : solver_options['Particle_Dissipation_Factor'],
+        "RMETM" : solver_options['Upper_Deformation_Rate'],
+        "IDEFW" : solver_options['Wake_Deformation_Parameter'],
+        "REFLEN" : solver_options['REFLEN'], 
+        "IDIVVRP" : solver_options['Particle_Subdivision_Parameter'],
+        "FLENSC" : solver_options['Subdivision_Length_Scale'],
+        "NREWAK" : solver_options['Wake_Particle_Merging_Parameter'],
+        "NMER" : solver_options['Particle_Merging_Parameter'],
+        "XREWAK" : solver_options['Merging_Starting_Distance'],
+        "RADMER" : solver_options['Merging_Radius'],
+        "Elasticity_Solver" : solver_options['Wake_Vorticity_Cutoff'],
     }
     return params
-
+    
 
 def makeSurfaceDict(surf, idx):
     if surf.isSymmetric:

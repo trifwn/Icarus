@@ -1,7 +1,8 @@
 import os
+
+from Data.Planes.simple_wing import ap as ap
 from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import readPolars3D
-from tests.planes import ap as ap
 
 
 def airPolars(plot=False):

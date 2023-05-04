@@ -1,7 +1,8 @@
 import os
+import shutil
+
 import numpy as np
 import pandas as pd
-import shutil
 
 from ICARUS.Core.formatting import ff, ff2, ff3, ff4
 
@@ -222,7 +223,7 @@ def cldFiles(AeroData, airfoils, solver):
     return df
 
 
-def bldFiles(bodies):
+def bldFiles(bodies, params):
     """Create BLD files for each body
 
     Args:
@@ -243,15 +244,16 @@ def bldFiles(bodies):
             (bod["y_end"] - bod["y_0"]),
             ndigits=5
         )
-        
-        with open(f'{bod["name"]}.WG', "w") as file:
-            grid = bod["Grid"]
-            for n_strip in grid:
-                file.write("\n")
-                for m_point in n_strip:
-                    file.write(f'{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n')
-                    
-        data[3] = f'0          {bod["NACA"]}       {bod["name"]}.WG\n'
+        if params['Split_Symmetric_Bodies']:
+            data[3] = f'1          {bod["NACA"]}       {bod["name"]}.WG\n'
+        else:
+            with open(f'{bod["name"]}.WG', "w") as file:
+                grid = bod["Grid"]
+                for n_strip in grid:
+                    file.write("\n")
+                    for m_point in n_strip:
+                        file.write(f'{m_point[0]} {m_point[1]} {m_point[2]}\n')   
+            data[3] = f'0          {bod["NACA"]}       {bod["name"]}.WG\n'
         data[6] = f"0          0          1\n"
         data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}OUT.WG\n'
         data[12] = f'{ff4(bod["x_0"])}     {ff4(bod["y_0"])}     {ff4(bod["z_0"])}\n'
@@ -294,7 +296,7 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
     # HERMES.GEO
     geofile(movements, bodies)
     # BLD FILES
-    bldFiles(bodies)
+    bldFiles(bodies,params)
     # CLD FILES
     cldFiles(AeroData, airfoils, solver)
     if 'gnvp3' not in next(os.walk('.'))[2]:

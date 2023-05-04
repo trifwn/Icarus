@@ -1,14 +1,14 @@
 import pandas as pd
 
+from ICARUS.Core.struct import Struct
 from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Core.struct import Struct
 
-from .pertrubations import longitudalPerturb, lateralPerturb
-from .Stability.longitudalFD import longitudalStability
-from .Stability.lateralFD import lateralStability
 from .disturbances import disturbance as dst
-from .trim import trimState
+from .pertrubations import lateralPerturb, longitudalPerturb
+from .Stability.lateralFD import lateralStability
+from .Stability.longitudalFD import longitudalStability
+from .trim import trim_state
 
 
 class dyn_Airplane(Airplane):
@@ -31,7 +31,7 @@ class dyn_Airplane(Airplane):
             self.polars3D = self.formatPolars(polars3D)
 
         # Compute Trim State
-        self.trim = trimState(self)
+        self.trim = trim_state(self)
         self.defineSim(self.dens, self.trim['U'])
         self.disturbances = []
         self.sensitivity = {}
@@ -42,7 +42,7 @@ class dyn_Airplane(Airplane):
 
     def change_polars3D(self, polars3D):
         self.polars3D = polars3D
-        self.trim = trimState(self)
+        self.trim = trim_state(self)
 
     def formatPolars(self, rawPolars):
         forces = rotateForces(rawPolars, rawPolars["AoA"])
