@@ -140,7 +140,8 @@ def makeCLCD(CASEDIR, HOMEDIR, anglesAll):
                 cl.append(Cl)
                 cm.append(CmPitch)
     df = pd.DataFrame(
-        np.vstack([angleSucc, cl, cd, cm]).T, columns=["AoA", "CL", "CD", "CM"],
+        np.vstack([angleSucc, cl, cd, cm]).T,
+        columns=["AoA", "CL", "CD", "CM"],
     )
     df = df.sort_values("AoA")
     df.to_csv("clcd.of", index=False)

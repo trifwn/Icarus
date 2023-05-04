@@ -19,7 +19,11 @@ def readPolars2D(db, XFLRdir):
                     foo = polar[4:].split("_")
                     reyn = float(foo[2][2:]) * 1e6
                     dat = pd.read_csv(
-                        polar, sep="  ", header=None, skiprows=11, engine="python",
+                        polar,
+                        sep="  ",
+                        header=None,
+                        skiprows=11,
+                        engine="python",
                     )
                     dat.columns = xfoilcols
                     dat = dat.drop(
@@ -38,7 +42,9 @@ def readPolars2D(db, XFLRdir):
                     if "XFLR" not in db.Data[airf].keys():
                         db.Data[airf]["XFLR"] = {}
                     reyn = np.format_float_scientific(
-                        reyn, sign=False, precision=3,
+                        reyn,
+                        sign=False,
+                        precision=3,
                     ).replace("+", "")
                     db.Data[airf]["XFLR"][reyn] = dat
             os.chdir(XFLRdir)
@@ -49,7 +55,10 @@ def readPolars3D(db, FILENAME, name):
     if f"XFLR_{name}" not in db.Data.keys():
         # import csv into pandas Dataframe and skip first 7 rows
         df = pd.read_csv(
-            FILENAME, skiprows=7, delim_whitespace=True, on_bad_lines="skip",
+            FILENAME,
+            skiprows=7,
+            delim_whitespace=True,
+            on_bad_lines="skip",
         )
         # rename columns
         df.rename(columns={"alpha": "AoA"}, inplace=True)

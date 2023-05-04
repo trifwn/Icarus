@@ -33,7 +33,14 @@ class MissionSegment:
             self.path = path
 
     def setStartingPosition(
-        self, time, latitude, longitude, altitude, speed, wind, windDirection,
+        self,
+        time,
+        latitude,
+        longitude,
+        altitude,
+        speed,
+        wind,
+        windDirection,
     ):
         self.startingTime = time
         self.startingLatitude = latitude
@@ -44,7 +51,14 @@ class MissionSegment:
         self.startingWindDirection = windDirection
 
     def setEndingPosition(
-        self, time, latitude, longitude, altitude, speed, wind, windDirection,
+        self,
+        time,
+        latitude,
+        longitude,
+        altitude,
+        speed,
+        wind,
+        windDirection,
     ):
         self.endingTime = time
         self.endingLatitude = latitude

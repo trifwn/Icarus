@@ -124,7 +124,9 @@ for airf in airfoils:
             airf.setupSolver(of.setupOpenFoam, ofSetupargs, ofSetupkwargs)
             airf.runSolver(of.runFoam, [airf.REYNDIR, airf.HOMEDIR, angles])
             airf.makePolars(
-                of.makeCLCD, "OpenFoam", [airf.REYNDIR, airf.HOMEDIR, angles],
+                of.makeCLCD,
+                "OpenFoam",
+                [airf.REYNDIR, airf.HOMEDIR, angles],
             )
 print("########################################################################")
 print("Program Terminated")

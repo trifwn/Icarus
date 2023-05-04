@@ -24,7 +24,6 @@ def GNVPangleCase(
     bodies,
     solver_options,
 ):
-
     HOMEDIR = db.HOMEDIR
     PLANEDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
     airfoils = plane.airfoils
@@ -36,7 +35,14 @@ def GNVPangleCase(
     os.makedirs(CASEDIR, exist_ok=True)
 
     params = setParams(
-        bodies, plane, maxiter, timestep, Uinf, angle, environment, solver_options,
+        bodies,
+        plane,
+        maxiter,
+        timestep,
+        Uinf,
+        angle,
+        environment,
+        solver_options,
     )
     runGNVPcase(
         CASEDIR,
@@ -54,9 +60,16 @@ def GNVPangleCase(
 
 
 def runGNVPangles(
-    plane, db, solver2D, maxiter, timestep, Uinf, angles, environment, solver_options,
+    plane,
+    db,
+    solver2D,
+    maxiter,
+    timestep,
+    Uinf,
+    angles,
+    environment,
+    solver_options,
 ):
-
     movements = airMov(plane.surfaces, plane.CG, plane.orientation, plane.disturbances)
     bodies = []
     if solver_options["Split_Symmetric_Bodies"]:
@@ -86,9 +99,16 @@ def runGNVPangles(
 
 
 def runGNVPanglesParallel(
-    plane, db, solver2D, maxiter, timestep, Uinf, angles, environment, solver_options,
+    plane,
+    db,
+    solver2D,
+    maxiter,
+    timestep,
+    Uinf,
+    angles,
+    environment,
+    solver_options,
 ):
-
     movements = airMov(plane.surfaces, plane.CG, plane.orientation, plane.disturbances)
     bodies = []
 

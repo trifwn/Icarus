@@ -21,7 +21,8 @@ def getStripData(pln, case, NBs):
             stripDat.append([body, strip, *data])
 
     stripDat = pd.DataFrame(stripDat, columns=stripColumns).sort_values(
-        ["Body", "Strip"], ignore_index=True,
+        ["Body", "Strip"],
+        ignore_index=True,
     )
     data = stripDat[stripDat["Body"].isin(NBs)]
 

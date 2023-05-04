@@ -23,7 +23,15 @@ def anglesSep(anglesALL):
 
 
 def runXFoil(
-    Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9,
+    Reyn,
+    MACH,
+    AoAmin,
+    AoAmax,
+    AoAstep,
+    pts,
+    ftrip_low=0.1,
+    ftrip_up=0.1,
+    Ncrit=9,
 ):
 
     xf = XFoil()

@@ -35,7 +35,14 @@ def airMov(surfaces, CG, orientation, disturbances):
 
 
 def setParams(
-    bodies, plane, maxiter, timestep, Uinf, angle, environment, solver_options,
+    bodies,
+    plane,
+    maxiter,
+    timestep,
+    Uinf,
+    angle,
+    environment,
+    solver_options,
 ):
     nBodies = len(bodies)
     nAirfoils = len(plane.airfoils)

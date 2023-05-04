@@ -100,7 +100,9 @@ class Strip:
             my_color = "red"
         else:
             my_color = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
-                Z.shape[0], Z.shape[1], 4,
+                Z.shape[0],
+                Z.shape[1],
+                4,
             )
 
         ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)

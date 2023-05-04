@@ -7,7 +7,8 @@ from . import markers
 def plotAirfoilReynolds(data, airfoil, reyn, solvers="All", size=(10, 10)):
     fig, axs = plt.subplots(2, 2, figsize=size)
     fig.suptitle(
-        f"NACA {airfoil[4:]}- Reynolds={reyn}\n Aero Coefficients", fontsize=16,
+        f"NACA {airfoil[4:]}- Reynolds={reyn}\n Aero Coefficients",
+        fontsize=16,
     )
     axs[0, 0].set_title("Cm vs AoA")
     axs[0, 0].set_ylabel("Cm")
@@ -49,5 +50,8 @@ def plotAirfoilReynolds(data, airfoil, reyn, solvers="All", size=(10, 10)):
     axs[0, 0].grid()
 
     axs[1, 0].legend(
-        bbox_to_anchor=(-0.1, -0.25), ncol=3, fancybox=True, loc="lower left",
+        bbox_to_anchor=(-0.1, -0.25),
+        ncol=3,
+        fancybox=True,
+        loc="lower left",
     )

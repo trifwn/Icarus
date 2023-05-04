@@ -12,7 +12,9 @@ def GNVPexe(HOMEDIR, ANGLEDIR):
     fin = open("input")
     fout = open("gnvp.out", "w")
     res = subprocess.check_call(
-        [os.path.join(ANGLEDIR, "gnvp3")], stdin=fin, stdout=fout,
+        [os.path.join(ANGLEDIR, "gnvp3")],
+        stdin=fin,
+        stdout=fout,
     )
     fin.close()
     fout.close()
@@ -30,7 +32,15 @@ def pertrResults(DYNDIR, HOMEDIR):
 
 
 def runGNVPcase(
-    CASEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, foildb, solver2D,
+    CASEDIR,
+    HOMEDIR,
+    GENUBASE,
+    movements,
+    bodies,
+    params,
+    airfoils,
+    foildb,
+    solver2D,
 ):
     makeInput(
         CASEDIR,

@@ -272,15 +272,18 @@ class Wing:
 
             # ROTATE ACCORDING TO RMAT
             xs[i, :], ys[i, :], zs[i, :] = np.matmul(
-                self.Rmat, [xs[i, :], ys[i, :], zs[i, :]],
+                self.Rmat,
+                [xs[i, :], ys[i, :], zs[i, :]],
             )
 
             xs_lower[i, :], ys_lower[i, :], zs_lower[i, :] = np.matmul(
-                self.Rmat, [xs_lower[i, :], ys_lower[i, :], zs_lower[i, :]],
+                self.Rmat,
+                [xs_lower[i, :], ys_lower[i, :], zs_lower[i, :]],
             )
 
             xs_upper[i, :], ys_upper[i, :], zs_upper[i, :] = np.matmul(
-                self.Rmat, [xs_upper[i, :], ys_upper[i, :], zs_upper[i, :]],
+                self.Rmat,
+                [xs_upper[i, :], ys_upper[i, :], zs_upper[i, :]],
             )
 
         for item in [xs, xs_upper, xs_lower]:

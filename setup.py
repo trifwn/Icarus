@@ -23,7 +23,7 @@ def get_package_version():
     return __version__
 
 
-class repository:
+class Repository:
     """Class object for a repository"""
 
     def __init__(self, name, url, MakeType):
@@ -72,11 +72,13 @@ class MakeBuild(build_ext):
                     "-DCMAKE_BUILD_TYPE=%s" % cfg,
                     # Ask CMake to place the resulting library in the directory containing the extension
                     "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(
-                        cfg.upper(), extdir,
+                        cfg.upper(),
+                        extdir,
                     ),
                     # Other intermediate static libraries are placed in a temporary build directory instead
                     "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}".format(
-                        cfg.upper(), self.build_temp,
+                        cfg.upper(),
+                        self.build_temp,
                     ),
                     # Hint CMake to use the same Python executable that is launching
                     # the build, prevents possible mismatching if
@@ -90,7 +92,8 @@ class MakeBuild(build_ext):
                         # These options are likely to be needed under Windows
                         "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE",
                         "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_{}={}".format(
-                            cfg.upper(), extdir,
+                            cfg.upper(),
+                            extdir,
                         ),
                     ]
                     # Assuming that Visual Studio and MinGW are supported compilers
@@ -112,10 +115,12 @@ class MakeBuild(build_ext):
 
                 # Config and build the extension
                 subprocess.check_call(
-                    ["cmake", ext.make_lists_dir] + cmake_args, cwd=self.build_temp,
+                    ["cmake", ext.make_lists_dir] + cmake_args,
+                    cwd=self.build_temp,
                 )
                 subprocess.check_call(
-                    ["cmake", "--build", ".", "--config", cfg], cwd=self.build_temp,
+                    ["cmake", "--build", ".", "--config", cfg],
+                    cwd=self.build_temp,
                 )
 
             elif ext.type == "make":
@@ -177,7 +182,7 @@ def main():
         print(f"Uninstalling {package}")
         uninstall(package)
     else:
-        print("Command not recognized")
+        print(f"Command {command} not recognized")
         print("Usage: python setup.py [install|uninstall]")
         sys.exit(1)
 

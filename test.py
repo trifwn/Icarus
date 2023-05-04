@@ -3,10 +3,10 @@ import unittest
 
 import numpy as np
 
-import tests.testwing as testwing
-from tests.airPolars import airPolars
-from tests.gnvpgeom import gnvpGeom
-from tests.gnvprun import gnvprun
+import tests.wing_test as wing_test
+from tests.airplane_polars_test import airPolars
+from tests.solver_geom_test import gnvpGeom
+from tests.solver_run_test import gnvprun
 
 
 class TestAdd(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestAdd(unittest.TestCase):
         CG_act = np.array([0.163, 0.0, 0.0])
         I_act = np.array([2.082, 0.017, 2.099, 0.0, 0.139, 0.0])
 
-        S, MAC, AREA, CG, I = testwing.geom()
+        S, MAC, AREA, CG, I = wing_test.geom()
 
         np.testing.assert_almost_equal(S, S_act, decimal=4)
         np.testing.assert_almost_equal(MAC, MAC_act, decimal=4)
@@ -51,13 +51,19 @@ class TestAdd(unittest.TestCase):
         dec_prec = 1
         for a in AoA:
             np.testing.assert_almost_equal(
-                CL_d[AoA_d == a].values, CL[AoA == a].values, decimal=dec_prec,
+                CL_d[AoA_d == a].values,
+                CL[AoA == a].values,
+                decimal=dec_prec,
             )
             np.testing.assert_almost_equal(
-                CD_d[AoA_d == a].values, CD[AoA == a].values, decimal=dec_prec,
+                CD_d[AoA_d == a].values,
+                CD[AoA == a].values,
+                decimal=dec_prec,
             )
             np.testing.assert_almost_equal(
-                Cm_d[AoA_d == a].values, Cm[AoA == a].values, decimal=dec_prec,
+                Cm_d[AoA_d == a].values,
+                Cm[AoA == a].values,
+                decimal=dec_prec,
             )
 
     def test4_gnvpGeom(self):

@@ -38,7 +38,14 @@ def GNVPdstCase(
     os.makedirs(CASEDIR, exist_ok=True)
 
     params = setParams(
-        bodies, plane, maxiter, timestep, Uinf, angle, environment, solver_options,
+        bodies,
+        plane,
+        maxiter,
+        timestep,
+        Uinf,
+        angle,
+        environment,
+        solver_options,
     )
     runGNVPcase(
         CASEDIR,
@@ -56,7 +63,15 @@ def GNVPdstCase(
 
 
 def runGNVPpertr(
-    plane, db, solver2D, maxiter, timestep, Uinf, angles, environment, solver_options,
+    plane,
+    db,
+    solver2D,
+    maxiter,
+    timestep,
+    Uinf,
+    angles,
+    environment,
+    solver_options,
 ):
     bodies = []
     if solver_options["Split_Symmetric_Bodies"]:
@@ -86,7 +101,15 @@ def runGNVPpertr(
 
 
 def runGNVPpertrParallel(
-    plane, environment, db, solver2D, maxiter, timestep, Uinf, angles, solver_options,
+    plane,
+    environment,
+    db,
+    solver2D,
+    maxiter,
+    timestep,
+    Uinf,
+    angles,
+    solver_options,
 ):
 
     bodies = []

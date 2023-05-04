@@ -290,7 +290,15 @@ def bldFiles(bodies, params):
 
 
 def makeInput(
-    ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, AeroData, solver,
+    ANGLEDIR,
+    HOMEDIR,
+    GENUBASE,
+    movements,
+    bodies,
+    params,
+    airfoils,
+    AeroData,
+    solver,
 ):
     os.chdir(ANGLEDIR)
 
@@ -353,10 +361,14 @@ def filltable(df):
             CMs.append(item)
     for colums in [CLs, CDs, CMs]:
         df[colums] = df[colums].interpolate(
-            method="linear", limit_direction="backward", axis=1,
+            method="linear",
+            limit_direction="backward",
+            axis=1,
         )
         df[colums] = df[colums].interpolate(
-            method="linear", limit_direction="forward", axis=1,
+            method="linear",
+            limit_direction="forward",
+            axis=1,
         )
     return df
 

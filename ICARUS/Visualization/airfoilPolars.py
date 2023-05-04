@@ -64,5 +64,8 @@ def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=No
     axs[0, 0].grid()
 
     axs[1, 0].legend(
-        bbox_to_anchor=(-0.1, per), ncol=3, fancybox=True, loc="lower left",
+        bbox_to_anchor=(-0.1, per),
+        ncol=3,
+        fancybox=True,
+        loc="lower left",
     )

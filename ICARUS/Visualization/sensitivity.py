@@ -5,7 +5,13 @@ from . import markers
 
 
 def plotSensitivity(
-    data, plane, trim, relative=False, vars2s=["All"], solvers=["2D"], size=(16, 7),
+    data,
+    plane,
+    trim,
+    relative=False,
+    vars2s=["All"],
+    solvers=["2D"],
+    size=(16, 7),
 ):
 
     fig, axs = plt.subplots(2, 3, figsize=size)
@@ -49,23 +55,53 @@ def plotSensitivity(
     mz_trim = trim[f"TAMOM{solvers[0]}(2)"].astype(float).values
     if not relative:
         axs[0, 0].axhline(
-            fx_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+            fx_trim,
+            xmin=-1,
+            xmax=1,
+            color="k",
+            label="Trim",
+            linewidth=1,
         )
         axs[0, 1].axhline(
-            fy_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+            fy_trim,
+            xmin=-1,
+            xmax=1,
+            color="k",
+            label="Trim",
+            linewidth=1,
         )
         axs[0, 2].axhline(
-            fz_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+            fz_trim,
+            xmin=-1,
+            xmax=1,
+            color="k",
+            label="Trim",
+            linewidth=1,
         )
 
         axs[1, 0].axhline(
-            mx_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+            mx_trim,
+            xmin=-1,
+            xmax=1,
+            color="k",
+            label="Trim",
+            linewidth=1,
         )
         axs[1, 1].axhline(
-            my_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+            my_trim,
+            xmin=-1,
+            xmax=1,
+            color="k",
+            label="Trim",
+            linewidth=1,
         )
         axs[1, 2].axhline(
-            mz_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+            mz_trim,
+            xmin=-1,
+            xmax=1,
+            color="k",
+            label="Trim",
+            linewidth=1,
         )
 
     for var in list(cases.keys()):

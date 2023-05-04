@@ -8,7 +8,12 @@ from . import markers
 
 
 def plotConvergence(
-    data, plane, angles=["All"], solvers=["All"], plotError=True, size=(10, 10),
+    data,
+    plane,
+    angles=["All"],
+    solvers=["All"],
+    plotError=True,
+    size=(10, 10),
 ):
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig, axs = plt.subplots(3, 3, figsize=size)
@@ -106,10 +111,20 @@ def plotConvergence(
                 axs[1, 2].plot(it, mz, style, label=label, markersize=2.0, linewidth=1)
 
                 axs[2, 0].plot(
-                    it2, error, style, label=label, markersize=2.0, linewidth=1,
+                    it2,
+                    error,
+                    style,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
                 )
                 axs[2, 1].plot(
-                    it2, errorM, style, label=label, markersize=2.0, linewidth=1,
+                    it2,
+                    errorM,
+                    style,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
                 )
             except KeyError as e:
                 print(f"Run Doesn't Exist: {plane},{e},{ang}")

@@ -134,7 +134,11 @@ class Analysis:
             k: (v.value, v.description) for k, v in self.solver_options.items()
         }
         return self.__class__(
-            self.solverName, self.name, self.execute, optiondict, solver_options,
+            self.solverName,
+            self.name,
+            self.execute,
+            optiondict,
+            solver_options,
         )
 
     def __copy__(self):
@@ -143,7 +147,11 @@ class Analysis:
             k: (v.value, v.description) for k, v in self.solver_options.items()
         }
         return self.__class__(
-            self.solverName, self.name, self.execute, optiondict, solver_options,
+            self.solverName,
+            self.name,
+            self.execute,
+            optiondict,
+            solver_options,
         )
 
     def __getstate__(self):
