@@ -1,45 +1,45 @@
+import os
+
 import numpy as np
 import pandas as pd
-import os
 
 
 def forces2polars(CASEDIR, HOMEDIR):
     os.chdir(CASEDIR)
 
-    folders = next(os.walk('.'))[1]
-    print('Making Polars')
+    folders = next(os.walk("."))[1]
+    print("Making Polars")
     pols = []
     for folder in folders:
-        os.chdir(os.path.join(CASEDIR,folder))
-        files = next(os.walk('.'))[2]
+        os.chdir(os.path.join(CASEDIR, folder))
+        files = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
-            name = float(
-                ''.join(c for c in folder if (c.isdigit() or c == '.')))
+            name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
             dat = np.loadtxt("LOADS_aer.dat")[-1]
             if folder.startswith("m"):
-                a = [- name, *dat]
+                a = [-name, *dat]
             else:
                 a = [name, *dat]
             pols.append(a)
         os.chdir(f"{CASEDIR}")
     df = pd.DataFrame(pols, columns=cols)
-    df.pop('TTIME')
+    df.pop("TTIME")
     df.pop("PSIB")
 
     df = df.sort_values("AoA").reset_index(drop=True)
-    df.to_csv('forces.gnvp3', index=False)
+    df.to_csv("forces.gnvp3", index=False)
     os.chdir(HOMEDIR)
     return df
 
 
 def forces2pertrubRes(DYNDIR, HOMEDIR):
     os.chdir(DYNDIR)
-    folders = next(os.walk('.'))[1]
-    print('Logging Pertrubations')
+    folders = next(os.walk("."))[1]
+    print("Logging Pertrubations")
     pols = []
     for folder in folders:
-        os.chdir(os.path.join(DYNDIR,folder))
-        files = next(os.walk('.'))[2]
+        os.chdir(os.path.join(DYNDIR, folder))
+        files = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
             dat = np.loadtxt("LOADS_aer.dat")[-1]
             if folder == "Trim":
@@ -47,35 +47,35 @@ def forces2pertrubRes(DYNDIR, HOMEDIR):
                 continue
 
             # RECONSTRUCT NAME
-            value = ''
-            name = ''
+            value = ""
+            name = ""
             flag = False
             for c in folder[1:]:
-                if (c != '_') and (not flag):
+                if (c != "_") and (not flag):
                     value += c
-                elif (c == '_'):
+                elif c == "_":
                     flag = True
                 else:
                     name += c
             value = float(value)
             if folder.startswith("m"):
-                value = - value
+                value = -value
 
-            pols.append([value, name,  *dat])
-            os.chdir(os.path.join(DYNDIR,folder))
+            pols.append([value, name, *dat])
+            os.chdir(os.path.join(DYNDIR, folder))
         os.chdir(f"{DYNDIR}")
     df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
-    df.pop('TTIME')
+    df.pop("TTIME")
     df.pop("PSIB")
     df = df.sort_values("Type").reset_index(drop=True)
-    df.to_csv('pertrubations.genu', index=False)
+    df.to_csv("pertrubations.genu", index=False)
     os.chdir(HOMEDIR)
     return df
 
 
-def rotateForces(rawpolars, alpha, preferred="2D", save = False):
+def rotateForces(rawpolars, alpha, preferred="2D", save=False):
     Data = pd.DataFrame()
-    AoA = alpha * np.pi/180
+    AoA = alpha * np.pi / 180
 
     for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
         Fx = rawpolars[f"TFORC{enc}(1)"]
@@ -113,24 +113,26 @@ def rotateForces(rawpolars, alpha, preferred="2D", save = False):
     return Data.sort_values(by="AoA").reset_index(drop=True)
 
 
-cols = ["AoA",
-        "TTIME",
-        "PSIB",
-        "TFORC(1)",
-        "TFORC(2)",
-        "TFORC(3)",
-        "TAMOM(1)",
-        "TAMOM(2)",
-        "TAMOM(3)",
-        "TFORC2D(1)",
-        "TFORC2D(2)",
-        "TFORC2D(3)",
-        "TAMOM2D(1)",
-        "TAMOM2D(2)",
-        "TAMOM2D(3)",
-        "TFORCDS2D(1)",
-        "TFORCDS2D(2)",
-        "TFORCDS2D(3)",
-        "TAMOMDS2D(1)",
-        "TAMOMDS2D(2)",
-        "TAMOMDS2D(3)"]
+cols = [
+    "AoA",
+    "TTIME",
+    "PSIB",
+    "TFORC(1)",
+    "TFORC(2)",
+    "TFORC(3)",
+    "TAMOM(1)",
+    "TAMOM(2)",
+    "TAMOM(3)",
+    "TFORC2D(1)",
+    "TFORC2D(2)",
+    "TFORC2D(3)",
+    "TAMOM2D(1)",
+    "TAMOM2D(2)",
+    "TAMOM2D(3)",
+    "TFORCDS2D(1)",
+    "TFORCDS2D(2)",
+    "TFORCDS2D(3)",
+    "TAMOMDS2D(1)",
+    "TAMOMDS2D(2)",
+    "TAMOMDS2D(3)",
+]

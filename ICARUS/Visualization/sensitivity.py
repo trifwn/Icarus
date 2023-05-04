@@ -1,33 +1,36 @@
 import matplotlib.pyplot as plt
-from . import colors, markers
+
+from . import colors
+from . import markers
 
 
-def plotSensitivity(data, plane, trim, relative=False, vars2s=["All"], solvers=['2D'], size=(16, 7)):
+def plotSensitivity(
+    data, plane, trim, relative=False, vars2s=["All"], solvers=["2D"], size=(16, 7),
+):
 
     fig, axs = plt.subplots(2, 3, figsize=size)
-    fig.suptitle(
-        f'{plane.name} Convergence', fontsize=16)
+    fig.suptitle(f"{plane.name} Convergence", fontsize=16)
 
-    axs[0, 0].set_title('Fx vs epsilon')
-    axs[0, 0].set_ylabel('Fx')
+    axs[0, 0].set_title("Fx vs epsilon")
+    axs[0, 0].set_ylabel("Fx")
 
-    axs[0, 1].set_title('Fy vs epsilon')
-    axs[0, 1].set_ylabel('Fy')
+    axs[0, 1].set_title("Fy vs epsilon")
+    axs[0, 1].set_ylabel("Fy")
 
-    axs[0, 2].set_title('Fz vs epsilon')
-    axs[0, 2].set_ylabel('Fz')
+    axs[0, 2].set_title("Fz vs epsilon")
+    axs[0, 2].set_ylabel("Fz")
 
-    axs[1, 0].set_title('Mx vs epsilon')
-    axs[1, 0].set_ylabel('Mx')
-    axs[1, 0].set_xlabel('Epsilon')
+    axs[1, 0].set_title("Mx vs epsilon")
+    axs[1, 0].set_ylabel("Mx")
+    axs[1, 0].set_xlabel("Epsilon")
 
-    axs[1, 1].set_title('My vs epsilon')
-    axs[1, 1].set_ylabel('My')
-    axs[1, 1].set_xlabel('Epsilon')
+    axs[1, 1].set_title("My vs epsilon")
+    axs[1, 1].set_ylabel("My")
+    axs[1, 1].set_xlabel("Epsilon")
 
-    axs[1, 2].set_title('Mz vs epsilon')
-    axs[1, 2].set_ylabel('Mz')
-    axs[1, 2].set_xlabel('Epsilon')
+    axs[1, 2].set_title("Mz vs epsilon")
+    axs[1, 2].set_ylabel("Mz")
+    axs[1, 2].set_xlabel("Epsilon")
 
     try:
         cases = data
@@ -45,25 +48,25 @@ def plotSensitivity(data, plane, trim, relative=False, vars2s=["All"], solvers=[
     my_trim = trim[f"TAMOM{solvers[0]}(2)"].astype(float).values
     mz_trim = trim[f"TAMOM{solvers[0]}(2)"].astype(float).values
     if not relative:
-        axs[0, 0].axhline(fx_trim, xmin=-1, xmax=1,
-                          color='k', label="Trim",
-                          linewidth=1)
-        axs[0, 1].axhline(fy_trim, xmin=-1, xmax=1,
-                          color='k', label="Trim",
-                          linewidth=1)
-        axs[0, 2].axhline(fz_trim, xmin=-1, xmax=1,
-                          color='k', label="Trim",
-                          linewidth=1)
+        axs[0, 0].axhline(
+            fx_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+        )
+        axs[0, 1].axhline(
+            fy_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+        )
+        axs[0, 2].axhline(
+            fz_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+        )
 
-        axs[1, 0].axhline(mx_trim, xmin=-1, xmax=1,
-                          color='k', label="Trim",
-                          linewidth=1)
-        axs[1, 1].axhline(my_trim, xmin=-1, xmax=1,
-                          color='k', label="Trim",
-                          linewidth=1)
-        axs[1, 2].axhline(mz_trim, xmin=-1, xmax=1,
-                          color='k', label="Trim",
-                          linewidth=1)
+        axs[1, 0].axhline(
+            mx_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+        )
+        axs[1, 1].axhline(
+            my_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+        )
+        axs[1, 2].axhline(
+            mz_trim, xmin=-1, xmax=1, color="k", label="Trim", linewidth=1,
+        )
 
     for var in list(cases.keys()):
 
@@ -93,7 +96,7 @@ def plotSensitivity(data, plane, trim, relative=False, vars2s=["All"], solvers=[
                     mz = mz - mz_trim
 
                 j += 1
-                if (i > len(colors) - 1):
+                if i > len(colors) - 1:
                     toomuchData = True
                     break
                 c = colors[i]
@@ -101,19 +104,13 @@ def plotSensitivity(data, plane, trim, relative=False, vars2s=["All"], solvers=[
                 style = f"{c}{m}--"
 
                 label = f"{plane.name} - {solver} - {var}"
-                axs[0, 0].scatter(epsilon, fx, marker=m, label=label,
-                                  linewidth=3.)
-                axs[0, 1].scatter(epsilon, fy, marker=m, label=label,
-                                  linewidth=3.)
-                axs[0, 2].scatter(epsilon, fz, marker=m, label=label,
-                                  linewidth=3.)
+                axs[0, 0].scatter(epsilon, fx, marker=m, label=label, linewidth=3.0)
+                axs[0, 1].scatter(epsilon, fy, marker=m, label=label, linewidth=3.0)
+                axs[0, 2].scatter(epsilon, fz, marker=m, label=label, linewidth=3.0)
 
-                axs[1, 0].scatter(epsilon, mx, marker=m, label=label,
-                                  linewidth=3.)
-                axs[1, 1].scatter(epsilon, my, marker=m, label=label,
-                                  linewidth=3.)
-                axs[1, 2].scatter(epsilon, mz, marker=m, label=label,
-                                  linewidth=3.)
+                axs[1, 0].scatter(epsilon, mx, marker=m, label=label, linewidth=3.0)
+                axs[1, 1].scatter(epsilon, my, marker=m, label=label, linewidth=3.0)
+                axs[1, 2].scatter(epsilon, mz, marker=m, label=label, linewidth=3.0)
 
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {plane.name},{solver},{var}")
@@ -123,9 +120,9 @@ def plotSensitivity(data, plane, trim, relative=False, vars2s=["All"], solvers=[
     fig.tight_layout()
     for axR in axs:
         for ax in axR:
-            ax.grid(which='both', axis='both')
-            ax.set_xscale('log')
-            ax.set_yscale('log')
+            ax.grid(which="both", axis="both")
+            ax.set_xscale("log")
+            ax.set_yscale("log")
 
     axs[1, 0].legend()  # (bbox_to_anchor=(-0.1, -0.25),  ncol=3,
     # fancybox=True, loc='lower left')

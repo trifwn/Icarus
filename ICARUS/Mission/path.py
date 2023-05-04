@@ -1,4 +1,4 @@
-class Path():
+class Path:
     def __init__(self):
         # Flight Path Parameters
         self.flightPath = []
@@ -9,8 +9,18 @@ class Path():
         self.flightPathSpeed = []
         self.flightPathWind = []
         self.flightPathWindDirection = []
-        
-    def setPathParameters(self,positions,time,altitudes,longitudes,latitudes,speeds,winds,windDirections):
+
+    def setPathParameters(
+        self,
+        positions,
+        time,
+        altitudes,
+        longitudes,
+        latitudes,
+        speeds,
+        winds,
+        windDirections,
+    ):
         self.flightPath = positions
         self.flightPathTime = time
         self.flightPathAltitude = altitudes
@@ -19,4 +29,3 @@ class Path():
         self.flightPathSpeed = speeds
         self.flightPathWind = winds
         self.flightPathWindDirection = windDirections
-        

@@ -1,4 +1,5 @@
 import numpy as np
+
 from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 
 
@@ -13,12 +14,12 @@ def longitudalStability(plane, mode="2D"):
     pertr = plane.pertubResults
     eps = plane.epsilons
     m = plane.M
-    U = plane.trim["U"]   # TRIM
-    theta = plane.trim["AoA"] * np.pi / 180   # TRIM
+    U = plane.trim["U"]  # TRIM
+    theta = plane.trim["AoA"] * np.pi / 180  # TRIM
     Ue = np.abs(U * np.cos(theta))
     We = np.abs(U * np.sin(theta))
 
-    G = - 9.81
+    G = -9.81
     Ix, Iy, Iz, Ixz, Ixy, Iyz = plane.I
 
     X = {}
@@ -27,7 +28,7 @@ def longitudalStability(plane, mode="2D"):
     pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
     trimState = pertr[pertr["Type"] == "Trim"]
 
-    for var in ["u",  "q", "w", "theta"]:
+    for var in ["u", "q", "w", "theta"]:
         if plane.scheme == "Central":
             front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
             back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
@@ -41,56 +42,58 @@ def longitudalStability(plane, mode="2D"):
             back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
             de = eps[var]
 
-        if var == 'theta':
-            de *= - np.pi / 180
-        elif var == 'q':
-            de *= - np.pi / 180
+        if var == "theta":
+            de *= -np.pi / 180
+        elif var == "q":
+            de *= -np.pi / 180
 
         back = rotateForces(back, plane.trim["AoA"])
         front = rotateForces(front, plane.trim["AoA"])
         Xf = float(front[f"Fx_{mode}"].to_numpy())
         Xb = float(back[f"Fx_{mode}"].to_numpy())
-        X[var] = (Xf - Xb)/de
+        X[var] = (Xf - Xb) / de
 
         Zf = float(front[f"Fz_{mode}"].to_numpy())
         Zb = float(back[f"Fz_{mode}"].to_numpy())
-        Z[var] = (Zf - Zb)/de
+        Z[var] = (Zf - Zb) / de
 
         Mf = float(front[f"M_{mode}"].to_numpy())
         Mb = float(back[f"M_{mode}"].to_numpy())
-        M[var] = (Mf - Mb)/de
+        M[var] = (Mf - Mb) / de
 
     X["w_dot"] = 0
     Z["w_dot"] = 0
     M["w_dot"] = 0
 
-    xu = X["u"]/m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
-    xw = X["w"]/m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
-    xq = (X['q'] - m * We)/(m)
-    xth = G*np.cos(theta)
+    xu = X["u"] / m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
+    xw = X["w"] / m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
+    xq = (X["q"] - m * We) / (m)
+    xth = G * np.cos(theta)
 
     # xq += (X["w_dot"] * (Z["q"] + m * Ue))/(m*(m-Z["w_dot"]))
     # xth += - (X["w_dot"]*G * np.sin(theta))/((m-Z["w_dot"]))
 
-    zu = Z['u']/(m-Z["w_dot"])
-    zw = Z['w']/(m-Z["w_dot"])
-    zq = (Z['q']+m*Ue)/(m-Z["w_dot"])
-    zth = (m*G*np.sin(theta))/(m-Z["w_dot"])
+    zu = Z["u"] / (m - Z["w_dot"])
+    zw = Z["w"] / (m - Z["w_dot"])
+    zq = (Z["q"] + m * Ue) / (m - Z["w_dot"])
+    zth = (m * G * np.sin(theta)) / (m - Z["w_dot"])
 
-    mu = M['u']/Iy + Z['u']*M["w_dot"]/(Iy*(m-Z["w_dot"]))
-    mw = M['w']/Iy + Z['w']*M["w_dot"]/(Iy*(m-Z["w_dot"]))
-    mq = M['q']/Iy + ((Z['q']+m*Ue) *
-                      M["w_dot"])/(Iy*(m-Z["w_dot"]))
-    mth = - (m*G*np.sin(theta)*M["w_dot"])/(Iy*(m-Z["w_dot"]))
+    mu = M["u"] / Iy + Z["u"] * M["w_dot"] / (Iy * (m - Z["w_dot"]))
+    mw = M["w"] / Iy + Z["w"] * M["w_dot"] / (Iy * (m - Z["w_dot"]))
+    mq = M["q"] / Iy + ((Z["q"] + m * Ue) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
+    mth = -(m * G * np.sin(theta) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
 
-    plane.AstarLong = np.array([[X["u"], X["w"], X["q"], X["theta"]],
-                                [Z['u'], Z['w'], Z['q'], Z['theta']],
-                                [M['u'], M['w'], M['q'], M['theta']],
-                                [0, 0, 1, 0]])
+    plane.AstarLong = np.array(
+        [
+            [X["u"], X["w"], X["q"], X["theta"]],
+            [Z["u"], Z["w"], Z["q"], Z["theta"]],
+            [M["u"], M["w"], M["q"], M["theta"]],
+            [0, 0, 1, 0],
+        ],
+    )
 
-    plane.Along = np.array([[xu, xw, xq, xth],
-                            [zu, zw, zq, zth],
-                            [mu, mw, mq, mth],
-                            [0, 0, 1, 0]])
+    plane.Along = np.array(
+        [[xu, xw, xq, xth], [zu, zw, zq, zth], [mu, mw, mq, mth], [0, 0, 1, 0]],
+    )
 
     return X, Z, M

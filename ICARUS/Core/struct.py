@@ -1,15 +1,15 @@
 class Struct:
-    __slots__ = ['_data', '_depth']
-    
+    __slots__ = ["_data", "_depth"]
+
     def __new__(cls, *args, **kwargs):
         instance = super().__new__(cls)
-        object.__setattr__(instance, '_data', {})
-        object.__setattr__(instance, '_depth', 0)
+        object.__setattr__(instance, "_data", {})
+        object.__setattr__(instance, "_depth", 0)
         return instance
-    
+
     def __init__(self, initial_dict=None):
-        object.__setattr__(self, '_data', {})
-        object.__setattr__(self, '_depth', 0)
+        object.__setattr__(self, "_data", {})
+        object.__setattr__(self, "_depth", 0)
         if initial_dict is not None:
             self.update(initial_dict)
 
@@ -23,7 +23,7 @@ class Struct:
 
     def __delitem__(self, key):
         del self._data[key]
-            
+
     def __getattr__(self, key):
         # if key == '_data' or key == '_depth':
         #     return object.__getattribute__(self, key)
@@ -41,7 +41,7 @@ class Struct:
         if name in self._data:
             del self._data[name]
         else:
-            raise AttributeError("Attribute {} not found".format(name))
+            raise AttributeError(f"Attribute {name} not found")
 
     def __len__(self):
         return len(self._data)
@@ -57,7 +57,7 @@ class Struct:
 
     def __iter__(self):
         return iter(self._data)
-    
+
     def items(self):
         return self._data.items()
 
@@ -66,17 +66,17 @@ class Struct:
 
     def values(self):
         return self._data.values()
-    
+
     def __getstate__(self):
         return self._data
-    
+
     def __setstate__(self, state):
         for key, value in state.items():
             if isinstance(value, dict):
                 value = Struct(value)
             self._data[key] = value
         # self._data = state
-        
+
     def update(self, other):
         for key, value in other.items():
             if isinstance(value, dict):
@@ -86,7 +86,7 @@ class Struct:
     def __invert__(self):
         # This allows us to invert the dictionary using the ~ operator
         return self.invert_nested_dict()
-    
+
     def invert_nested_dict(self):
         def _invert_nested_dict(dd, depth):
             new_dict = {}
@@ -97,7 +97,9 @@ class Struct:
                     new_dict[k] = v
 
             if depth == 0:
-                new_dict = {k: _invert_nested_dict(v, depth + 1) for k, v in new_dict.items()}
+                new_dict = {
+                    k: _invert_nested_dict(v, depth + 1) for k, v in new_dict.items()
+                }
             return new_dict
 
         inverted = _invert_nested_dict(self._data, self._depth)
@@ -105,9 +107,9 @@ class Struct:
 
     def tree(self, indent=0):
         for key, value in self.items():
-            print('--|' * indent + '- {}:'.format(key), end='')
+            print("--|" * indent + f"- {key}:", end="")
             if isinstance(value, Struct):
-                print('')
+                print("")
                 value.tree(indent + 1)
             else:
-                print(' {}'.format(value))
+                print(f" {value}")

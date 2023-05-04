@@ -10,9 +10,9 @@ def dst2case(dst):
     if dst.var == "Trim":
         folder = "Trim"
     elif dst.isPositive:
-        folder = "p" + \
-            str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
+        folder = "p" + str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
     else:
-        folder = "m" + \
-            str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
+        folder = (
+            "m" + str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
+        )
     return folder

@@ -1,19 +1,21 @@
+import os
 import unittest
-from tests.gnvprun import gnvprun
+
+import numpy as np
+
 import tests.testwing as testwing
 from tests.airPolars import airPolars
 from tests.gnvpgeom import gnvpGeom
-import numpy as np
-import os
+from tests.gnvprun import gnvprun
 
 
 class TestAdd(unittest.TestCase):
     def test1_geom(self):
-        S_act = 4,
-        MAC_act = 0.8,
-        AREA_act = 4.0608,
-        CG_act = np.array([0.163, 0., 0.])
-        I_act = np.array([2.082, 0.017, 2.099, 0., 0.139, 0.])
+        S_act = (4,)
+        MAC_act = (0.8,)
+        AREA_act = (4.0608,)
+        CG_act = np.array([0.163, 0.0, 0.0])
+        I_act = np.array([2.082, 0.017, 2.099, 0.0, 0.139, 0.0])
 
         S, MAC, AREA, CG, I = testwing.geom()
 
@@ -30,36 +32,39 @@ class TestAdd(unittest.TestCase):
 
     def test3_airPolars(self):
         des, act = airPolars(plot=True)
-        preffered_pol = '2D'
+        preffered_pol = "2D"
 
-        AoA_d = des['AoA'].astype(float)
-        AoA = act['AoA'].astype(float)
+        AoA_d = des["AoA"].astype(float)
+        AoA = act["AoA"].astype(float)
 
-        CL_d = des['CL']
-        CL = act[f'CL_{preffered_pol}']
+        CL_d = des["CL"]
+        CL = act[f"CL_{preffered_pol}"]
 
-        CD_d = des['CD']
-        CD = act[f'CD_{preffered_pol}']
+        CD_d = des["CD"]
+        CD = act[f"CD_{preffered_pol}"]
 
-        Cm_d = des['Cm']
-        Cm = act[f'Cm_{preffered_pol}']
+        Cm_d = des["Cm"]
+        Cm = act[f"Cm_{preffered_pol}"]
 
         # Compare All Values tha correspond to same AoA
         # to x decimal places (except AoA)
         dec_prec = 1
         for a in AoA:
             np.testing.assert_almost_equal(
-                CL_d[AoA_d == a].values, CL[AoA == a].values, decimal=dec_prec)
+                CL_d[AoA_d == a].values, CL[AoA == a].values, decimal=dec_prec,
+            )
             np.testing.assert_almost_equal(
-                CD_d[AoA_d == a].values, CD[AoA == a].values, decimal=dec_prec)
+                CD_d[AoA_d == a].values, CD[AoA == a].values, decimal=dec_prec,
+            )
             np.testing.assert_almost_equal(
-                Cm_d[AoA_d == a].values, Cm[AoA == a].values, decimal=dec_prec)
+                Cm_d[AoA_d == a].values, Cm[AoA == a].values, decimal=dec_prec,
+            )
 
     def test4_gnvpGeom(self):
         gridAP, gridGNVP = gnvpGeom()
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TestLoader.sortTestMethodsUsing = None
     unittest.main()

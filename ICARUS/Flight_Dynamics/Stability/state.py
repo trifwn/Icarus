@@ -1,10 +1,13 @@
-from ICARUS.Core.struct import Struct
-import numpy as np
-import matplotlib.pyplot as plt
-from tabulate import tabulate
 import io
 
-class State():
+import matplotlib.pyplot as plt
+import numpy as np
+from tabulate import tabulate
+
+from ICARUS.Core.struct import Struct
+
+
+class State:
     def __init__(self, plane, name, trip):
         self.name = name
         self.trip = trip
@@ -39,13 +42,13 @@ class State():
         x = [ele.real for ele in self.lateral.eigenValues]
         # extract imaginary part
         y = [ele.imag for ele in self.lateral.eigenValues]
-        plt.scatter(x, y, color="b", marker='x')
+        plt.scatter(x, y, color="b", marker="x")
 
-        plt.ylabel('Imaginary')
-        plt.xlabel('Real')
+        plt.ylabel("Imaginary")
+        plt.xlabel("Real")
         plt.grid()
         plt.show()
-        
+
     def __str__(self):
         ss = io.StringIO()
         ss.write(f"State: {self.name}\n")
@@ -53,17 +56,23 @@ class State():
         ss.write(f"\n{45*'--'}\n")
 
         ss.write(f"\nLongitudal State:\n")
-        ss.write(f"Eigen Values: {[round(item,3) for item in self.longitudal.eigenValues]}\n")
+        ss.write(
+            f"Eigen Values: {[round(item,3) for item in self.longitudal.eigenValues]}\n",
+        )
         ss.write(f"Eigen Vectors:\n")
         for item in self.longitudal.eigenVectors:
             ss.write(f"\t{[round(i,3) for i in item]}\n")
         ss.write(f"\nThe State Space Matrix:\n")
-        ss.write(tabulate(self.longitudal.stateSpace.A, tablefmt="github", floatfmt=".3f"))
+        ss.write(
+            tabulate(self.longitudal.stateSpace.A, tablefmt="github", floatfmt=".3f"),
+        )
 
         ss.write(f"\n\n{45*'--'}\n")
-        
+
         ss.write(f"\nLateral State:\n")
-        ss.write(f"Eigen Values: {[round(item,3) for item in self.lateral.eigenValues]}\n")
+        ss.write(
+            f"Eigen Values: {[round(item,3) for item in self.lateral.eigenValues]}\n",
+        )
         ss.write(f"Eigen Vectors:\n")
         for item in self.lateral.eigenVectors:
             ss.write(f"\t{[round(i,3) for i in item]}\n")

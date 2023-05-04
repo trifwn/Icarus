@@ -1,16 +1,19 @@
-from ICARUS.Airfoils.airfoilD import AirfoilD
-from ICARUS.Core.struct import Struct
-from . import DB2D, APPHOME
-import pandas as pd
 import os
 
+import pandas as pd
 
-class Database_2D():
+from . import APPHOME
+from . import DB2D
+from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Core.struct import Struct
+
+
+class Database_2D:
     def __init__(self):
         self.HOMEDIR = APPHOME
         self.DATADIR = DB2D
         self.Data = Struct()
-        
+
     def loadData(self):
         self.scan()
         self.airfoils = self.getAirfoils()
@@ -19,9 +22,9 @@ class Database_2D():
         try:
             os.chdir(DB2D)
         except FileNotFoundError:
-            print(f'Database not found! Initializing Database at {DB2D}')
-            os.makedirs(DB2D,exist_ok=True)
-        folders = next(os.walk('.'))[1]
+            print(f"Database not found! Initializing Database at {DB2D}")
+            os.makedirs(DB2D, exist_ok=True)
+        folders = next(os.walk("."))[1]
         Data = Struct()
         for folder in folders:
             os.chdir(folder)
@@ -41,24 +44,24 @@ class Database_2D():
 
     def scanReynolds(self):
         airfoilDict = Struct()
-        folders = next(os.walk('.'))[1]
+        folders = next(os.walk("."))[1]
         for folder in folders:
             os.chdir(folder)
             airfoilDict[folder[9:]] = self.scanSolvers()
-            os.chdir('..')
+            os.chdir("..")
         return airfoilDict
 
     def scanSolvers(self):
         reynDict = Struct()
-        files = next(os.walk('.'))[2]
+        files = next(os.walk("."))[2]
         for file in files:
-            if file.startswith('clcd'):
+            if file.startswith("clcd"):
                 solver = file[5:]
                 if solver == "f2w":
                     name = "Foil2Wake"
-                elif solver == 'of':
+                elif solver == "of":
                     name = "OpenFoam"
-                elif solver == 'xfoil':
+                elif solver == "xfoil":
                     name = "Xfoil"
                 reynDict[name] = pd.read_csv(file)
         return reynDict
@@ -66,8 +69,7 @@ class Database_2D():
     def getAirfoils(self):
         airfoils = Struct()
         for airf in list(self.Data.keys()):
-            airfoils[airf] = AirfoilD.NACA(
-                airf[4:], n_points=200)
+            airfoils[airf] = AirfoilD.NACA(airf[4:], n_points=200)
 
         return airfoils
 
@@ -89,9 +91,9 @@ class Database_2D():
 
     def __str__(self):
         return f"Foil Database"
-    
-    def __enter__(self,obj):
+
+    def __enter__(self, obj):
         pass
 
-    def __exit__(self): 
+    def __exit__(self):
         pass

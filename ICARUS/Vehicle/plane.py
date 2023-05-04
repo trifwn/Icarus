@@ -1,14 +1,16 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
+import matplotlib.pyplot as plt
+import numpy as np
+
 jsonpickle_pd.register_handlers()
 
 from ICARUS.Database import DB3D
 
-class Airplane():
+
+class Airplane:
     def __init__(self, name, surfaces, disturbances=None, orientation=None):
 
         self.name = name
@@ -22,7 +24,7 @@ class Airplane():
             self.disturbances = disturbances
 
         if orientation is None:
-            self.orientation = [0., 0., 0.]
+            self.orientation = [0.0, 0.0, 0.0]
         else:
             self.orientation = orientation
 
@@ -43,7 +45,6 @@ class Airplane():
             self.AR = surfaces[0].AR
             self.span = surfaces[0].span
 
-
         self.airfoils = self.getAirfoils()
         self.bodies = []
         self.masses = []
@@ -52,7 +53,7 @@ class Airplane():
         self.M = 0
         for surface in self.surfaces:
             mass = (surface.mass, surface.CG)
-            mom = (surface.I)
+            mom = surface.I
 
             self.M += surface.mass
             self.Inertia.append(mom)
@@ -69,7 +70,7 @@ class Airplane():
                 surfaces.append(l)
                 surfaces.append(r)
         return surfaces
-        
+
     def addMasses(self, masses):
         for mass in masses:
             self.masses.append(mass)
@@ -106,9 +107,9 @@ class Airplane():
 
         for m, r_bod in self.masses:
             r = point - r_bod
-            I_xx += m * (r[1]**2 + r[2]**2)
-            I_yy += m * (r[0]**2 + r[2]**2)
-            I_zz += m * (r[0]**2 + r[1]**2)
+            I_xx += m * (r[1] ** 2 + r[2] ** 2)
+            I_yy += m * (r[0] ** 2 + r[2] ** 2)
+            I_zz += m * (r[0] ** 2 + r[1] ** 2)
             I_xz += m * (r[0] * r[2])
             I_xy += m * (r[0] * r[1])
             I_yz += m * (r[1] * r[2])
@@ -125,13 +126,13 @@ class Airplane():
     def visAirplane(self, fig=None, ax=None, movement=None):
         if fig == None:
             fig = plt.figure()
-            ax = fig.add_subplot(projection='3d')
+            ax = fig.add_subplot(projection="3d")
             ax.set_title(self.name)
-            ax.set_xlabel('x')
-            ax.set_ylabel('y')
-            ax.set_zlabel('z')
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
             ax.view_init(30, 150)
-            ax.axis('scaled')
+            ax.axis("scaled")
             ax.set_xlim(-1, 1)
             ax.set_ylim(-1, 1)
             ax.set_zlim(-1, 1)
@@ -145,14 +146,22 @@ class Airplane():
             surface.plotWing(fig, ax, mov)
         # Add plot for masses
         for m, r in self.masses:
-            ax.scatter(r[0] + mov[0],
-                       r[1] + mov[1],
-                       r[2] + mov[2],
-                       marker='o', s=m*50., color='r')
-        ax.scatter(self.CG[0] + mov[0],
-                   self.CG[1] + mov[1],
-                   self.CG[2] + mov[2],
-                   marker='o', s=50., color='b')
+            ax.scatter(
+                r[0] + mov[0],
+                r[1] + mov[1],
+                r[2] + mov[2],
+                marker="o",
+                s=m * 50.0,
+                color="r",
+            )
+        ax.scatter(
+            self.CG[0] + mov[0],
+            self.CG[1] + mov[1],
+            self.CG[2] + mov[2],
+            marker="o",
+            s=50.0,
+            color="b",
+        )
 
     def defineSim(self, U, dens):
         self.U = U
@@ -163,8 +172,8 @@ class Airplane():
         return jsonpickle.encode(self)
 
     def save(self):
-        fname = os.path.join(DB3D,self.CASEDIR, f'{self.name}.json')
-        with open(fname, 'w') as f:
+        fname = os.path.join(DB3D, self.CASEDIR, f"{self.name}.json")
+        with open(fname, "w") as f:
             f.write(self.toJSON())
 
     # def __str__(self):
@@ -173,7 +182,7 @@ class Airplane():
     #     for i,surfaces in enumerate(self.surfaces):
     #         str += f"\t{surfaces.name} NB={i} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
     #     return str
-    
+
     def __str__(self):
         str = f"Plane Object: {self.name}"
         return str

@@ -39,24 +39,28 @@ def trim_state(plane):
     d_cm = plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]
     d_aoa = plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
 
-    aoa_trim = plane.polars3D["AoA"][trim_loc1] - \
-        plane.polars3D["Cm"][trim_loc1] * d_aoa / d_cm
+    aoa_trim = (
+        plane.polars3D["AoA"][trim_loc1]
+        - plane.polars3D["Cm"][trim_loc1] * d_aoa / d_cm
+    )
 
-    cm_trim = plane.polars3D["Cm"][trim_loc1] + \
-        (plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]) * \
-        (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / \
-        (plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1])
+    cm_trim = plane.polars3D["Cm"][trim_loc1] + (
+        plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]
+    ) * (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / (
+        plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
+    )
 
-    cl_trim = plane.polars3D["CL"][trim_loc1] + \
-        (plane.polars3D["CL"][trim_loc2] - plane.polars3D["CL"][trim_loc1]) * \
-        (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / \
-        (plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1])
+    cl_trim = plane.polars3D["CL"][trim_loc1] + (
+        plane.polars3D["CL"][trim_loc2] - plane.polars3D["CL"][trim_loc1]
+    ) * (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / (
+        plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
+    )
 
     # Print How accurate is the trim
     print(
-        f"Cm is {plane.polars3D['Cm'][trim_loc1]} instead of 0 at AoA = {plane.polars3D['AoA'][trim_loc1]}")
-    print(
-        f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
+        f"Cm is {plane.polars3D['Cm'][trim_loc1]} instead of 0 at AoA = {plane.polars3D['AoA'][trim_loc1]}",
+    )
+    print(f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
 
     # Find the trim velocity
     S = plane.S

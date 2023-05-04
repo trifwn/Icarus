@@ -23,7 +23,7 @@ def anglesSep(anglesALL):
 
 
 def runXFoil(
-    Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9
+    Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.1, Ncrit=9,
 ):
 
     xf = XFoil()
@@ -60,28 +60,27 @@ def saveXfoil(airfoils, polars, Reynolds):
     os.chdir(masterDir)
     for airf, clcdData in zip(airfoils, polars):
         os.chdir(masterDir)
-        os.chdir(os.path.join("Data","2D",f"NACA{airf}"))
+        os.chdir(os.path.join("Data", "2D", f"NACA{airf}"))
         airfoilPath = os.getcwd()
 
         for i, ReynDat in enumerate(clcdData):
             os.chdir(airfoilPath)
 
             reyndir = f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}"
-            os.makedirs(reyndir,exist_ok=True)
+            os.makedirs(reyndir, exist_ok=True)
             os.chdir(reyndir)
             cwd = os.getcwd()
 
             for angle in ReynDat.keys():
                 os.chdir(cwd)
                 if float(angle) >= 0:
-                    folder = str(angle)[::-1].zfill(7)[::-1] 
+                    folder = str(angle)[::-1].zfill(7)[::-1]
                 else:
-                    folder = "m" + \
-                        str(angle)[::-1].strip("-").zfill(6)[::-1] 
-                os.makedirs(folder,exist_ok=True)
+                    folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+                os.makedirs(folder, exist_ok=True)
                 os.chdir(folder)
-                fname = 'clcd.xfoil'
-                with open(fname, 'w') as file:
+                fname = "clcd.xfoil"
+                with open(fname, "w") as file:
                     pols = angle
                     for i in ReynDat[angle]:
                         pols = pols + "\t" + str(i)
@@ -91,10 +90,17 @@ def saveXfoil(airfoils, polars, Reynolds):
 def plotBatch(data, Reynolds):
     for airfpol in data:
         for i, dict1 in enumerate(airfpol):
-            a = np.vstack([np.hstack((float(key), np.float64(dict1[key])))
-                          for key in dict1.keys()]).T
+            a = np.vstack(
+                [
+                    np.hstack((float(key), np.float64(dict1[key])))
+                    for key in dict1.keys()
+                ],
+            ).T
             plt.plot(
-                a[0, :], a[1, :], label=f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}")
+                a[0, :],
+                a[1, :],
+                label=f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}",
+            )
     plt.legend()
 
 
@@ -129,7 +135,19 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     return [cpsn, nangles], [cps, pangles], x
 
 
-def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip_low=0.1, ftrip_up=0.2, Ncrit=9):
+def runAndSave(
+    CASEDIR,
+    HOMEDIR,
+    Reyn,
+    MACH,
+    AoAmin,
+    AoAmax,
+    AoAstep,
+    pts,
+    ftrip_low=0.1,
+    ftrip_up=0.2,
+    Ncrit=9,
+):
     os.chdir(CASEDIR)
 
     xf = XFoil()
@@ -152,7 +170,7 @@ def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip
         cdXF1 = []
         cmXF1 = []
         flag = 0
-        for angle in np.arange(0, AoAmax+0.5, 0.5):
+        for angle in np.arange(0, AoAmax + 0.5, 0.5):
             f_up = max_tr + slope_up * angle
             f_low = max_tr + slope_low * angle
             xf.xtr = (f_up, f_low)
@@ -202,8 +220,8 @@ def runAndSave(CASEDIR, HOMEDIR, Reyn, MACH, AoAmin, AoAmax, AoAstep, pts, ftrip
         aXF, clXF, cdXF, cmXF, _ = xf.aseq(AoAmin, AoAmax, AoAstep)
 
     Res = np.vstack((aXF, clXF, cdXF, cmXF)).T
-    df = pd.DataFrame(Res, columns=['AoA', 'CL', 'CD', 'Cm']).dropna(thresh=2)
+    df = pd.DataFrame(Res, columns=["AoA", "CL", "CD", "Cm"]).dropna(thresh=2)
     df = df.sort_values("AoA")
-    df.to_csv('clcd.xfoil', index=False)
+    df.to_csv("clcd.xfoil", index=False)
     os.chdir(HOMEDIR)
     return df

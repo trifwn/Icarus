@@ -55,12 +55,12 @@ G = series(Gcont,Gact);
 G = series(G,Gplant);  % Forward Loop Transfer Function
 Gol = series(G,Grg);   % Open Loop Transfer Function
 Gcl = feedback(G,Grg); % Closed Loop Transfer Function
-sim('Pitch_Damper',40) 
+sim('Pitch_Damper',40)
 
 %% PLOT FIGURES
 %% Root locus for positive/negative gain
 figure()
-    
+
 subplot(1,2,1)
 rlocus(Gol)
 
@@ -111,12 +111,12 @@ set(gca,'FontSize',12);hold on;
  plot(xronos,q_response,'LineWidth',2)
  hold on
  plot(xronos,qcomm,'r--','LineWidth',2)
- 
+
  title('\textbf{Pitch rate response}','interpreter','latex')
  xlabel('t [sec]','interpreter','latex');
  ylabel('q $[\frac{rad}{sec}]$','interpreter','latex');
 %  legend({'$q_{response}$','$q_{comm}$'},'interpreter','latex');
- 
+
  set(gca,'FontSize',12);hold on;
      ax = gca;
      ax.TickLabelInterpreter = 'latex';
@@ -125,7 +125,7 @@ set(gca,'FontSize',12);hold on;
      grid minor
 
 % STEP INPUT
-R = tf([0,1],[1,0]); 
+R = tf([0,1],[1,0]);
 Q = Gcl * R;
 
 [ num , den ] = tfdata(Q);                                   % Transfer Function Object
@@ -135,9 +135,9 @@ sden = poly2sym(den, s);                                     % Symbolic Denomina
 FT_time_domain = ilaplace(snum/sden);                        % Inverse Laplace Transform
 
 FT_time_domain = collect(FT_time_domain, exp(-t));
-line = 1; 
+line = 1;
 
-figure(3) 
+figure(3)
 fplot(line,[0,2])
 hold on
 fplot(FT_time_domain,[0,2])

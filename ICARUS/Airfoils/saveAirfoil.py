@@ -1,5 +1,7 @@
 import sys
+
 import numpy as np
+
 from ICARUS.Airfoils.airfoilD import AirfoilD
 
 
@@ -8,12 +10,14 @@ def saveAirfoil(argv):
     if options == []:
         print("No options defined try -h")
         return 0
-    elif options[0] == '-h':
-        print('options: \n-s Save to file\n Usage: python airfoil.py -s file naca mode\
-                \n\nnaca = 4 or 5 digit NACA\nmode: 0-> Load from lib, 1-> Load from File, 2-> Load from Web')
+    elif options[0] == "-h":
+        print(
+            "options: \n-s Save to file\n Usage: python airfoil.py -s file naca mode\
+                \n\nnaca = 4 or 5 digit NACA\nmode: 0-> Load from lib, 1-> Load from File, 2-> Load from Web",
+        )
         return 0
     else:
-        save = 's' in options[0]
+        save = "s" in options[0]
         filen = str(options[1])
         Airfoiln = str(options[2])
         mode = int(options[3])

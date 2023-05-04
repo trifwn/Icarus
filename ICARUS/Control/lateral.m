@@ -1,4 +1,4 @@
-%% LATERAL 
+%% LATERAL
 function sysfull = lateral()
 %%% FULL Longitudal Matrices
 %matrices are for delta control = 0 around trim position

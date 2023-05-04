@@ -4,13 +4,16 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from ICARUS.Core.formatting import ff, ff2, ff3, ff4
+from ICARUS.Core.formatting import ff
+from ICARUS.Core.formatting import ff2
+from ICARUS.Core.formatting import ff3
+from ICARUS.Core.formatting import ff4
 
 
 def inputF():
     # INPUT File
     fname = "input"
-    with open(fname, "r") as file:
+    with open(fname) as file:
         data = file.readlines()
     data[0] = "dfile.yours\n"
     data[1] = "0\n"
@@ -36,32 +39,50 @@ def dfile(params):
         params (_type_): _description_
     """
     fname = "dfile.yours"
-    with open(fname, "r") as file:
+    with open(fname) as file:
         data = file.readlines()
 
     data[27] = f'{int(params["nBods"])}           NBODT      number of bodies\n'
     data[28] = f'{int(params["nBlades"])}           NBLADE     number of blades\n'
-    data[35] = f'{int(params["maxiter"])}         NTIMER     number of the last time step to be performed\n'
+    data[
+        35
+    ] = f'{int(params["maxiter"])}         NTIMER     number of the last time step to be performed\n'
     data[36] = f'{params["timestep"]}        DT         time step\n'
-    data[55] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
+    data[
+        55
+    ] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
     data[59] = f'{ff2(params["Uinf"][0])}       UINF(1)    the velocity at infinity\n'
     data[60] = f'{ff2(params["Uinf"][1])}       UINF(2)    .\n'
     data[61] = f'{ff2(params["Uinf"][2])}       UINF(3)    .\n'
-    
+
     DX = 1.5 * np.linalg.norm(params["Uinf"]) * params["timestep"]
     if DX < 0.005:
-        data[94] = f'{ff2(DX)}       EPSVR      Cut-off length for the free vortex particles (final)\n'
-        data[95] = f'{ff2(DX)}       EPSO       Cut-off length for the free vortex particles (init.)\n'
+        data[
+            94
+        ] = f"{ff2(DX)}       EPSVR      Cut-off length for the free vortex particles (final)\n"
+        data[
+            95
+        ] = f"{ff2(DX)}       EPSO       Cut-off length for the free vortex particles (init.)\n"
 
-        DX = DX/100
-        data[90] = f'{ff2(DX)}       EPSFB      Cut-off length for the bound vorticity\n'
-        data[91] = f'{ff2(DX)}       EPSFW      Cut-off length for the near-wake vorticity\n'
-        data[92] = f'{ff2(DX)}       EPSSR      Cut-off length for source distributions\n'
-        data[93] = f'{ff2(DX)}       EPSDI      Cut-off length for source distributions\n'
-    
+        DX = DX / 100
+        data[
+            90
+        ] = f"{ff2(DX)}       EPSFB      Cut-off length for the bound vorticity\n"
+        data[
+            91
+        ] = f"{ff2(DX)}       EPSFW      Cut-off length for the near-wake vorticity\n"
+        data[
+            92
+        ] = f"{ff2(DX)}       EPSSR      Cut-off length for source distributions\n"
+        data[
+            93
+        ] = f"{ff2(DX)}       EPSDI      Cut-off length for source distributions\n"
+
     data[119] = f'{params["rho"]}       AIRDEN     Fluid density\n'
     data[120] = f'{params["visc"]}   VISCO      Kinematic viscosity\n'
-    data[130] = f"hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
+    data[
+        130
+    ] = f"hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
 
     with open(fname, "w") as file:
         file.writelines(data)
@@ -85,20 +106,22 @@ def geofile(movements, bodies):
         data.append("               <blank>\n")
         NB = bod["NB"]
         geoBodyHeader(data, bod, NB)
-        data.append(
-            f"{len(movements[i])+1}           LEVEL  the level of movement\n")
+        data.append(f"{len(movements[i])+1}           LEVEL  the level of movement\n")
         data.append("               <blank>\n")
         data.append("Give  data for every level\n")
         # PITCH, ROLL, YAW, Movements to CG with angular velocity
         for j, mov in enumerate(movements[i]):
             geoBodyMovements(data, mov, len(movements[i]) - j, NB)
 
-        data.append("-----<end of movement data>----------------------------------------------------\n")
+        data.append(
+            "-----<end of movement data>----------------------------------------------------\n",
+        )
         data.append("               <blank>\n")
         data.append("Cl, Cd data / IYNVCR(.)=0 then Cl=1., Cd=0.\n")
         data.append("1           IYNVCR(1)\n")
         data.append(
-            f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n')
+            f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n',
+        )
         data.append("               <blank>\n")
         data.append("Give the file name for the geometrical distributions\n")
         data.append(f'{bod["bld"]}\n')
@@ -108,7 +131,7 @@ def geofile(movements, bodies):
 
 
 def geoBodyHeader(data, body, NB):
-    data.append(f'Body Number   NB = {NB}\n')
+    data.append(f"Body Number   NB = {NB}\n")
     data.append("               <blank>\n")
     data.append("2           NLIFT\n")
     data.append("0           IYNELSTB   \n")
@@ -130,8 +153,7 @@ def geoBodyMovements(data, mov, i, NB):
     data.append(f"NB={NB}, lev={i}  ( {mov.name} )\n")
     data.append(f"Rotation\n")
     data.append(f"{int(mov.Rtype)}           IMOVEAB  type of movement\n")
-    data.append(
-        f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
+    data.append(f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
     data.append(f"{ff3(mov.Rt1)}    TMOVEAB  -1  1st time step\n")
     data.append(f"{ff3(mov.Rt2)}    TMOVEAB  -2  2nd time step\n")
     data.append(f"0.          TMOVEAB  -3  3d  time step\n")
@@ -143,8 +165,7 @@ def geoBodyMovements(data, mov, i, NB):
     data.append(f"            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
     data.append(f"Translation\n")
     data.append(f"{int(mov.Ttype)}           IMOVEUB  type of movement\n")
-    data.append(
-        f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
+    data.append(f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
     data.append(f"{ff3(mov.Tt1)}    TMOVEUB  -1  1st time step\n")
     data.append(f"{ff3(mov.Tt2)}    TMOVEUB  -2  2nd time step\n")
     data.append(f"0.          TMOVEUB  -3  3d  time step\n")
@@ -157,16 +178,14 @@ def geoBodyMovements(data, mov, i, NB):
 
 
 def cldFiles(AeroData, airfoils, solver):
-    """ Create Polars CL-CD-Cm files for each airfoil
-    
-    """
-    
+    """Create Polars CL-CD-Cm files for each airfoil"""
+
     for airf in airfoils:
         fname = f"{airf[4:]}.cld"
         polars = AeroData[airf][solver]
 
         # GET FILE
-        with open(fname, "r") as file:
+        with open(fname) as file:
             data = file.readlines()
 
         # WRITE MACH NUMBERS !! ITS NOT GOING TO BE USED !!
@@ -179,18 +198,18 @@ def cldFiles(AeroData, airfoils, solver):
         for i, Reyn in enumerate(list(polars.keys())):
             data[6 + len(polars) + i] = f"{Reyn.zfill(5)}\n"
         data[6 + 2 * len(polars)] = "\n"
-        data = data[:6 + 2 * len(polars) + 1]
+        data = data[: 6 + 2 * len(polars) + 1]
 
         # GET 2D AIRFOIL POLARS IN ONE TABLE
         keys = list(polars.keys())
-        df = polars[keys[0]].astype(
-            'float32').dropna(axis=0, how="all")
+        df = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
         for reyn in keys[1:]:
-            df2 = polars[reyn].astype(
-                'float32').dropna(axis=0, how="all")
-            df.rename(columns={
-                      "CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"}, inplace=True)
-            df = pd.merge(df, df2, on="AoA", how='outer')
+            df2 = polars[reyn].astype("float32").dropna(axis=0, how="all")
+            df.rename(
+                columns={"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
+                inplace=True,
+            )
+            df = pd.merge(df, df2, on="AoA", how="outer")
 
         # SORT BY AoA
         df = df.sort_values("AoA")
@@ -208,9 +227,11 @@ def cldFiles(AeroData, airfoils, solver):
             else:
                 data.append("10.       ! Radial Position\n")
             data.append(
-                f"{anglenum}         ! Number of Angles / Airfoil NACA {airf}\n")
+                f"{anglenum}         ! Number of Angles / Airfoil NACA {airf}\n",
+            )
             data.append(
-                f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n")
+                f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
+            )
             for i, ang in enumerate(angles):
                 string = ""
                 nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
@@ -231,20 +252,15 @@ def bldFiles(bodies, params):
     """
     for bod in bodies:
         fname = bod["bld"]
-        with open(fname, "r") as file:
+        with open(fname) as file:
             data = file.readlines()
 
         step = round(
-            (bod["Root_chord"] - bod["Tip_chord"]) /
-            (bod["y_end"] - bod["y_0"]),
-            ndigits=5
+            (bod["Root_chord"] - bod["Tip_chord"]) / (bod["y_end"] - bod["y_0"]),
+            ndigits=5,
         )
-        offset = round(
-            bod['Offset'] /
-            (bod["y_end"] - bod["y_0"]),
-            ndigits=5
-        )
-        if params['Split_Symmetric_Bodies']:
+        offset = round(bod["Offset"] / (bod["y_end"] - bod["y_0"]), ndigits=5)
+        if params["Split_Symmetric_Bodies"]:
             data[3] = f'1          {bod["NACA"]}       {bod["name"]}.WG\n'
         else:
             with open(f'{bod["name"]}.WG', "w") as file:
@@ -252,41 +268,53 @@ def bldFiles(bodies, params):
                 for n_strip in grid:
                     file.write("\n")
                     for m_point in n_strip:
-                        file.write(f'{m_point[0]} {m_point[1]} {m_point[2]}\n')   
+                        file.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
             data[3] = f'0          {bod["NACA"]}       {bod["name"]}.WG\n'
         data[6] = f"0          0          1\n"
         data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}OUT.WG\n'
         data[12] = f'{ff4(bod["x_0"])}     {ff4(bod["y_0"])}     {ff4(bod["z_0"])}\n'
-        data[15] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
+        data[
+            15
+        ] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
         data[18] = f"1                      0.         1.         \n"  # KSI
         data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
-        data[24] = \
-            f'4                      {ff4(bod["Root_chord"])}     {ff4(-step)}     0.         0.         0.         0.\n'
-        data[30] = \
-            f'4                      {ff4(0.)}     {ff4( offset )}     0.         0.         0.         0.\n'
+        data[
+            24
+        ] = f'4                      {ff4(bod["Root_chord"])}     {ff4(-step)}     0.         0.         0.         0.\n'
+        data[
+            30
+        ] = f"4                      {ff4(0.)}     {ff4( offset )}     0.         0.         0.         0.\n"
 
         with open(fname, "w") as file:
             file.writelines(data)
 
 
-def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, AeroData, solver):
+def makeInput(
+    ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, AeroData, solver,
+):
     os.chdir(ANGLEDIR)
 
     # COPY FROM BASE
-    filesNeeded = ['dfile.yours', 'hermes.geo', 'hyb.inf',
-                   'input', 'name.cld', 'name.bld']
+    filesNeeded = [
+        "dfile.yours",
+        "hermes.geo",
+        "hyb.inf",
+        "input",
+        "name.cld",
+        "name.bld",
+    ]
     for item in filesNeeded:
         itemLOC = os.path.join(GENUBASE, item)
         shutil.copy(itemLOC, ANGLEDIR)
 
     # EMPTY BLD FILES
     for body in bodies:
-        shutil.copy('name.bld', f'{body["name"]}.bld')
-    os.remove('name.bld')
-    
+        shutil.copy("name.bld", f'{body["name"]}.bld')
+    os.remove("name.bld")
+
     # EMPTY CLD FILES
     for airf in airfoils:
-        shutil.copy('name.cld', f'{airf[4:]}.cld')
+        shutil.copy("name.cld", f"{airf[4:]}.cld")
     os.remove("name.cld")
 
     # Input File
@@ -296,12 +324,12 @@ def makeInput(ANGLEDIR, HOMEDIR, GENUBASE, movements, bodies, params, airfoils, 
     # HERMES.GEO
     geofile(movements, bodies)
     # BLD FILES
-    bldFiles(bodies,params)
+    bldFiles(bodies, params)
     # CLD FILES
     cldFiles(AeroData, airfoils, solver)
-    if 'gnvp3' not in next(os.walk('.'))[2]:
-        src = os.path.join(HOMEDIR, 'ICARUS', 'gnvp3')
-        dst = os.path.join(ANGLEDIR, 'gnvp3')
+    if "gnvp3" not in next(os.walk("."))[2]:
+        src = os.path.join(HOMEDIR, "ICARUS", "gnvp3")
+        dst = os.path.join(ANGLEDIR, "gnvp3")
         os.symlink(src, dst)
     os.chdir(HOMEDIR)
 
@@ -324,12 +352,12 @@ def filltable(df):
         if item.startswith("Cm") or item.startswith("CM"):
             CMs.append(item)
     for colums in [CLs, CDs, CMs]:
-        df[colums] = df[colums].interpolate(method='linear',
-                                            limit_direction='backward',
-                                            axis=1)
-        df[colums] = df[colums].interpolate(method='linear',
-                                            limit_direction='forward',
-                                            axis=1)
+        df[colums] = df[colums].interpolate(
+            method="linear", limit_direction="backward", axis=1,
+        )
+        df[colums] = df[colums].interpolate(
+            method="linear", limit_direction="forward", axis=1,
+        )
     return df
 
 

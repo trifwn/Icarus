@@ -23,10 +23,9 @@ B_sp = B_longitudal(2:3);
 C_sp = [0 1 ];
 D_sp = 0;
 
-%%% System Decomposition 
+%%% System Decomposition
 System_sp = ss(A_sp,B_sp,C_sp,D_sp);
 
 sysapprox = System_sp;
 sysfull = System_longitudal;
 end
-

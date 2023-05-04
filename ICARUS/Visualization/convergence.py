@@ -1,48 +1,51 @@
-import matplotlib.pyplot as plt
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 
-from . import colors, markers
+from . import colors
+from . import markers
 
 
-def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True, size=(10, 10)):
+def plotConvergence(
+    data, plane, angles=["All"], solvers=["All"], plotError=True, size=(10, 10),
+):
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig, axs = plt.subplots(3, 3, figsize=size)
-    fig.suptitle(
-        f'{plane} Convergence', fontsize=16)
+    fig.suptitle(f"{plane} Convergence", fontsize=16)
 
-    axs[0, 0].set_title('Fx vs Iterations')
-    axs[0, 0].set_ylabel('Fx')
+    axs[0, 0].set_title("Fx vs Iterations")
+    axs[0, 0].set_ylabel("Fx")
 
-    axs[0, 1].set_title('Fy vs Iterations')
-    axs[0, 1].set_ylabel('Fy')
+    axs[0, 1].set_title("Fy vs Iterations")
+    axs[0, 1].set_ylabel("Fy")
 
-    axs[0, 2].set_title('Fz vs Iterations')
-    axs[0, 2].set_ylabel('Fz')
+    axs[0, 2].set_title("Fz vs Iterations")
+    axs[0, 2].set_ylabel("Fz")
 
-    axs[1, 0].set_title('Mx vs Iterations')
-    axs[1, 0].set_ylabel('Mx')
-    axs[1, 0].set_xlabel('Iterations')
+    axs[1, 0].set_title("Mx vs Iterations")
+    axs[1, 0].set_ylabel("Mx")
+    axs[1, 0].set_xlabel("Iterations")
 
-    axs[1, 1].set_title('My vs Iterations')
-    axs[1, 1].set_ylabel('My')
-    axs[1, 1].set_xlabel('Iterations')
+    axs[1, 1].set_title("My vs Iterations")
+    axs[1, 1].set_ylabel("My")
+    axs[1, 1].set_xlabel("Iterations")
 
-    axs[1, 2].set_title('Mz vs Iterations')
-    axs[1, 2].set_ylabel('Mz')
-    axs[1, 2].set_xlabel('Iterations')
+    axs[1, 2].set_title("Mz vs Iterations")
+    axs[1, 2].set_ylabel("Mz")
+    axs[1, 2].set_xlabel("Iterations")
 
-    axs[2, 0].set_title('ERROR vs Iterations')
-    axs[2, 0].set_ylabel('ERROR')
-    axs[2, 0].set_xlabel('Iterations')
+    axs[2, 0].set_title("ERROR vs Iterations")
+    axs[2, 0].set_ylabel("ERROR")
+    axs[2, 0].set_xlabel("Iterations")
 
-    axs[2, 1].set_title('ERRORM vs Iterations')
-    axs[2, 1].set_ylabel('ERRORM')
-    axs[2, 1].set_xlabel('Iterations')
+    axs[2, 1].set_title("ERRORM vs Iterations")
+    axs[2, 1].set_ylabel("ERRORM")
+    axs[2, 1].set_xlabel("Iterations")
 
     fig.delaxes(axs[2, 2])
     # Fill plots with data
-    if solvers == ['All']:
+    if solvers == ["All"]:
         solvers = ["", "2D", "DS2D"]
 
     cases = data[plane]
@@ -50,9 +53,8 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
     j = -1
     toomuchData = False
     for ang in cases.keys():
-        num = float(
-            ''.join(c for c in ang if (c.isdigit() or c == '.')))
-        if ang.startswith('m'):
+        num = float("".join(c for c in ang if (c.isdigit() or c == ".")))
+        if ang.startswith("m"):
             ang_num = -num
         else:
             ang_num = num
@@ -66,7 +68,7 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
         for solver in solvers:
             try:
                 it = runHist["TTIME"].astype(float)
-                it = it/it.iloc[0]
+                it = it / it.iloc[0]
 
                 fx = np.abs(runHist[f"TFORC{solver}(1)"].astype(float))
                 fy = np.abs(runHist[f"TFORC{solver}(2)"].astype(float))
@@ -87,7 +89,7 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
                     mz = np.abs(mz.iloc[1:].values - mz.iloc[:-1].values)
 
                 j += 1
-                if (i > len(colors) - 1):
+                if i > len(colors) - 1:
                     toomuchData = True
                     break
                 c = colors[i]
@@ -95,24 +97,20 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
                 style = f"{c}{m}--"
 
                 label = f"{plane} - {solver} - {ang_num}"
-                axs[0, 0].plot(it, fx, style, label=label,
-                               markersize=2.0, linewidth=1)
-                axs[0, 1].plot(it, fy, style, label=label,
-                               markersize=2.0, linewidth=1)
-                axs[0, 2].plot(it, fz, style, label=label,
-                               markersize=2.0, linewidth=1)
+                axs[0, 0].plot(it, fx, style, label=label, markersize=2.0, linewidth=1)
+                axs[0, 1].plot(it, fy, style, label=label, markersize=2.0, linewidth=1)
+                axs[0, 2].plot(it, fz, style, label=label, markersize=2.0, linewidth=1)
 
-                axs[1, 0].plot(it, mx, style, label=label,
-                               markersize=2.0, linewidth=1)
-                axs[1, 1].plot(it, my, style, label=label,
-                               markersize=2.0, linewidth=1)
-                axs[1, 2].plot(it, mz, style, label=label,
-                               markersize=2.0, linewidth=1)
+                axs[1, 0].plot(it, mx, style, label=label, markersize=2.0, linewidth=1)
+                axs[1, 1].plot(it, my, style, label=label, markersize=2.0, linewidth=1)
+                axs[1, 2].plot(it, mz, style, label=label, markersize=2.0, linewidth=1)
 
-                axs[2, 0].plot(it2, error, style, label=label,
-                               markersize=2.0, linewidth=1)
-                axs[2, 1].plot(it2, errorM, style, label=label,
-                               markersize=2.0, linewidth=1)
+                axs[2, 0].plot(
+                    it2, error, style, label=label, markersize=2.0, linewidth=1,
+                )
+                axs[2, 1].plot(
+                    it2, errorM, style, label=label, markersize=2.0, linewidth=1,
+                )
             except KeyError as e:
                 print(f"Run Doesn't Exist: {plane},{e},{ang}")
     if toomuchData == True:
@@ -121,8 +119,7 @@ def plotConvergence(data, plane, angles=["All"], solvers=['All'], plotError=True
     fig.tight_layout()
     for axR in axs:
         for ax in axR:
-            ax.grid(which='both', axis='both')
-            ax.set_yscale('log')
+            ax.grid(which="both", axis="both")
+            ax.set_yscale("log")
 
-    axs[2, 1].legend(bbox_to_anchor=(1, -0.25),  ncol=2,
-                     fancybox=True, loc='lower left')
+    axs[2, 1].legend(bbox_to_anchor=(1, -0.25), ncol=2, fancybox=True, loc="lower left")

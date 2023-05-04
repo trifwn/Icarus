@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class disturbance():
+class disturbance:
     def __init__(self, variable, amplitude):
         self.amplitude = amplitude
         if amplitude > 0:

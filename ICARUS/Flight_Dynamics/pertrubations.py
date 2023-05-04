@@ -10,12 +10,8 @@ def longitudalPerturb(plane, scheme, epsilon):
     """
     disturbances = []
     if epsilon is None:
-        del (epsilon)
-        epsilon = {"u": 0.01,
-                   "w": 0.01,
-                   "q": 0.25,
-                   "theta": 0.01  # /plane.trim["U"]
-                   }
+        del epsilon
+        epsilon = {"u": 0.01, "w": 0.01, "q": 0.25, "theta": 0.01}  # /plane.trim["U"]
 
     for var in ["u", "w", "q", "theta"]:
         plane.epsilons[var] = epsilon[var]
@@ -27,8 +23,7 @@ def longitudalPerturb(plane, scheme, epsilon):
         elif scheme == "Backward":
             disturbances.append(dst(var, -epsilon[var]))
         else:
-            raise ValueError(
-                "Scheme must be 'Central', 'Forward' or 'Backward'")
+            raise ValueError("Scheme must be 'Central', 'Forward' or 'Backward'")
     return disturbances
 
 
@@ -41,12 +36,8 @@ def lateralPerturb(plane, scheme, epsilon):
     """
     disturbances = []
     if epsilon is None:
-        del (epsilon)
-        epsilon = {"v": 0.01,
-                   "p": 0.25,
-                   "r": 0.25,
-                   "phi": 0.01
-                   }
+        del epsilon
+        epsilon = {"v": 0.01, "p": 0.25, "r": 0.25, "phi": 0.01}
 
     for var in ["v", "p", "r", "phi"]:
         plane.epsilons[var] = epsilon[var]
@@ -58,6 +49,5 @@ def lateralPerturb(plane, scheme, epsilon):
         elif scheme == "Backward":
             disturbances.append(dst(var, -epsilon[var]))
         else:
-            raise ValueError(
-                "Scheme must be 'Central', 'Forward' or 'Backward'")
+            raise ValueError("Scheme must be 'Central', 'Forward' or 'Backward'")
     return disturbances

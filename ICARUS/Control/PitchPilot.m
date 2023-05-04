@@ -86,7 +86,7 @@ PAP_CL = feedback(Gap,Gg);
  CAP = om_s^2/na;
  CAP_new = om_s_new^2/na;
 
- sim('AutoPilot1',30) 
+ sim('AutoPilot1',30)
 
 %% PLOT FIGURES
 % Auto-pilot Root Locus
@@ -102,9 +102,9 @@ pl13 = scatter(0,0,area,'X','LineWidth',3);
 hold on
 pl14 = scatter(-1/Td,0,area,'O','LineWidth',3);
 hold on
-rlocusplot(PAP_CL,0:0.1:50) 
-% hold on 
-% rlocusplot(PAP_OL,0:0.1:5) 
+rlocusplot(PAP_CL,0:0.1:50)
+% hold on
+% rlocusplot(PAP_OL,0:0.1:5)
 
 title('Pitch Auto-pilot - Root Locus','interpreter','latex')
 
@@ -132,7 +132,7 @@ set(gca,'FontSize',12);hold on;
 %     axis tight
     grid on
     grid minor
-    
+
 % Pitch rate response
 figure()
 plot(xronos,q,'LineWidth',2)
