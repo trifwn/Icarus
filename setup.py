@@ -7,9 +7,17 @@ import re
 import subprocess
 import sys
 
+from distutils.command.clean import clean
 from setuptools import Extension
 from setuptools import setup
+from setuptools.command.build import build
 from setuptools.command.build_ext import build_ext
+from setuptools.command.develop import develop
+from setuptools.command.egg_info import egg_info
+from setuptools.command.sdist import sdist
+from setuptools.command.test import test
+from setuptools.command.upload import upload
+from wheel.bdist_wheel import bdist_wheel
 
 HOMEDIR = os.getcwd()
 
@@ -157,11 +165,6 @@ repos = {
 
 def main():
     """MAIN FUNCTION"""
-    # ext_modules = []
-    # for repo in repos.keys():
-    #     repo = repository(repo, repos[repo]['url'], repos[repo]['type'])
-    #     # repo.clone()
-    #     ext_modules.append(BuildExtension(name = repo.name, make_list_dir = repo.repo_dir, makeType= repo.type ))
 
     __version__ = get_package_version()
 
@@ -181,9 +184,37 @@ def main():
     elif command == "uninstall":
         print(f"Uninstalling {package}")
         uninstall(package)
+    elif command == "egg_info":
+        print(f"Generating metadata for {package} version {__version__}")
+        setup(cmdclass={"egg_info": egg_info})
+    elif command == "dist_info":
+        print(
+            f"Generating source distribution metadata for {package} version {__version__}",
+        )
+        setup(cmdclass={"sdist": sdist})
+    elif command == "bdist_wheel":
+        print(f"Generating wheel distribution for {package} version {__version__}")
+        setup(cmdclass={"bdist_wheel": bdist_wheel})
+    elif command == "clean":
+        print("Cleaning up...")
+        setup(cmdclass={"clean": clean})
+    elif command == "build":
+        print("Building...")
+        setup(cmdclass={"build": build})
+    elif command == "develop":
+        print("Installing package in development mode...")
+        setup(cmdclass={"develop": develop})
+    elif command == "test":
+        print("Running tests...")
+        setup(cmdclass={"test": test})
+    elif command == "upload":
+        print("Uploading package...")
+        setup(cmdclass={"upload": upload})
     else:
         print(f"Command {command} not recognized")
-        print("Usage: python setup.py [install|uninstall]")
+        print(
+            "Usage: python setup.py [install|uninstall|egg_info|dist_info|bdist_wheel|clean|build|develop|test|upload]",
+        )
         sys.exit(1)
 
 
@@ -194,6 +225,12 @@ def install(package: str, version: str):
         package (str): Package Name
         version (str): Version Number
     """
+    # ext_modules = []
+    # for repo in repos.keys():
+    #     repo = repository(repo, repos[repo]['url'], repos[repo]['type'])
+    #     # repo.clone()
+    #     ext_modules.append(BuildExtension(name = repo.name, make_list_dir = repo.repo_dir, makeType= repo.type ))
+
     setup(
         name=package,
         version=version,

@@ -97,7 +97,7 @@ def setParams(
 
 
 def makeSurfaceDict(surf, idx):
-    if surf.isSymmetric:
+    if surf.is_symmetric:
         N = 2 * surf.N - 1
         M = surf.M
     else:
@@ -112,18 +112,18 @@ def makeSurfaceDict(surf, idx):
         "cld": f"{surf.airfoil.name}.cld",
         "NNB": M,
         "NCWB": N,
-        "x_0": surf.Origin[0],
-        "y_0": surf.Origin[1],
-        "z_0": surf.Origin[2],
-        "pitch": surf.Orientation[0],
-        "cone": surf.Orientation[1],
-        "wngang": surf.Orientation[2],
-        "x_end": surf.Origin[0] + surf.xoff[-1],
-        "y_end": surf.Origin[1] + surf.span,
-        "z_end": surf.Origin[2] + surf.Ddihedr[-1],
+        "x_0": surf.origin[0],
+        "y_0": surf.origin[1],
+        "z_0": surf.origin[2],
+        "pitch": surf.orientation[0],
+        "cone": surf.orientation[1],
+        "wngang": surf.orientation[2],
+        "x_end": surf.origin[0] + surf._offset_dist[-1],
+        "y_end": surf.origin[1] + surf.span,
+        "z_end": surf.origin[2] + surf._dihedral_dist[-1],
         "Root_chord": surf.chord[0],
         "Tip_chord": surf.chord[-1],
-        "Offset": surf.xoff[-1],
+        "Offset": surf._offset_dist[-1],
         "Grid": surf.getGrid(),
     }
     return s

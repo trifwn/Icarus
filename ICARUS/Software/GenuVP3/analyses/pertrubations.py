@@ -24,7 +24,6 @@ def GNVPdstCase(
     analysis,
     solver_options,
 ):
-
     HOMEDIR = db.HOMEDIR
     PLANEDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
     airfoils = plane.airfoils
@@ -111,7 +110,6 @@ def runGNVPpertrParallel(
     angles,
     solver_options,
 ):
-
     bodies = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces = plane.get_seperate_surfaces()

@@ -23,7 +23,11 @@ dependencies = [
     "pandas",
     "ipykernel",
     "ipython",
+    "tabulate",
     #"xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     "xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
 ]
 dynamic = ["version"]
+
+[mypy]
+plugins = "numpy.typing.mypy_plugin"

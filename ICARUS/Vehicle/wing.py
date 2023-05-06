@@ -1,98 +1,108 @@
+from __future__ import annotations
+
+from typing import Callable
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 
 from .strip import Strip
 
 
 class Wing:
+    """Class to reprsent a wing."""
+
     def __init__(
         self,
-        name,
+        name: str,
         airfoil,
-        Origin,
-        Orientation,
-        isSymmetric,
-        span,
-        sweepOffset,
-        dihAngle,
-        chordFun,
-        chord,
-        spanFun,
-        N,
-        M,
-        mass=1,
+        origin: np.ndarray,
+        orientation: np.ndarray,
+        is_symmetric: bool,
+        span: float,
+        sweep_offset: float,
+        dih_angle: float,
+        chord_fun: Callable[[int, float, float], npt.ArrayLike],
+        chord: npt.ArrayLike,
+        span_fun: Callable[[float, int], npt.ArrayLike],
+        N: int,
+        M: int,
+        mass: float | None = 1,
     ):
-        """Wing Class"""
+        """Initializes the wing."""
 
         self.N = N
         self.M = M
 
-        self.name = name
+        self.name: str = name
         self.airfoil = airfoil
-        self.Origin = Origin
-        self.Orientation = Orientation
-        self.isSymmetric = isSymmetric
+        self.origin: np.ndarray = origin
+        self.orientation = orientation
+        self.is_symmetric = is_symmetric
         self.span = span
-        self.sweepOffset = sweepOffset
-        self.dihAngle = dihAngle
-        self.chordFun = chordFun
+        self.sweep_offset = sweep_offset
+        self.dih_angle = dih_angle
+        self.chord_fun = chord_fun
         self.chord = chord
-        self.spanFun = spanFun
+        self.span_fun = span_fun
         self.mass = mass
 
-        self.Gamma = dihAngle * np.pi / 180
+        self.gamma = dih_angle * np.pi / 180
 
-        # ORIENTATION
-        self.pitch, self.yaw, self.roll = Orientation * np.pi / 180
-        R_pitch = np.array(
+        # orientation
+        self.pitch, self.yaw, self.roll = orientation * np.pi / 180
+        R_PITCH = np.array(
             [
                 [np.cos(self.pitch), 0, np.sin(self.pitch)],
                 [0, 1, 0],
                 [-np.sin(self.pitch), 0, np.cos(self.pitch)],
             ],
         )
-        R_yaw = np.array(
+        R_YAW = np.array(
             [
                 [np.cos(self.yaw), -np.sin(self.yaw), 0],
                 [np.sin(self.yaw), np.cos(self.yaw), 0],
                 [0, 0, 1],
             ],
         )
-        R_roll = np.array(
+        R_ROLL = np.array(
             [
                 [1, 0, 0],
                 [0, np.cos(self.roll), -np.sin(self.roll)],
                 [0, np.sin(self.roll), np.cos(self.roll)],
             ],
         )
-        self.Rmat = R_yaw.dot(R_pitch).dot(R_roll)
+        self.R_MAT = R_YAW.dot(R_PITCH).dot(R_ROLL)
 
         # Make Dihedral Angle Distribution
-        if isSymmetric == True:
-            self.Dchord = chordFun(self.N, *chord)
-            self.Dspan = spanFun(span / 2, self.N)
-            self.xoff = (self.Dspan - span / 2) * (sweepOffset / (span / 2))
-            self.Ddihedr = (self.Dspan - span / 2) * np.sin(self.Gamma)
+        if is_symmetric:
+            self._chord_dist = chord_fun(self.N, *chord)
+            self._span_dist = span_fun(span / 2, self.N)
+            self._offset_dist = (self._span_dist - span / 2) * (
+                sweep_offset / (span / 2)
+            )
+            self._dihedral_dist = (self._span_dist - span / 2) * np.sin(self.gamma)
         else:
-            self.Dchord = chordFun(self.N, *chord)
-            self.Dspan = spanFun(span, self.N)
-            self.xoff = self.Dspan * sweepOffset / span
-            self.Ddihedr = self.Dspan * np.sin(self.Gamma)
+            self._chord_dist = chord_fun(self.N, *chord)
+            self._span_dist = span_fun(span, self.N)
+            self._offset_dist = self._span_dist * sweep_offset / span
+            self._dihedral_dist = self._span_dist * np.sin(self.gamma)
 
         # Create Grid
-        self.createGrid()
+        self.create_grid()
 
         # Create Surfaces
         self.createStrips()
 
         # Find Chords MAC-SMC
-        self.meanChords()
+        self.mean_chords()
 
         # Calculate Areas
-        self.findArea()
+        self.find_area()
 
         # Calculate Volumes
-        self.findVolume()
+        self.find_volume()
 
         # Find Center of Mass
         self.centerMass()
@@ -102,23 +112,25 @@ class Wing:
 
     def splitSymmetric(self):
         """Split Symmetric Wing into two Wings"""
-        if self.isSymmetric == True:
+        if self.is_symmetric == True:
             left = Wing(
                 name=f"L{self.name}",
                 airfoil=self.airfoil,
-                Origin=[
-                    self.Origin[0] + self.sweepOffset,
-                    self.Origin[1] - self.span / 2,
-                    self.Origin[2],
-                ],
-                Orientation=self.Orientation,
-                isSymmetric=False,
+                origin=np.array(
+                    [
+                        self.origin[0] + self.sweep_offset,
+                        self.origin[1] - self.span / 2,
+                        self.origin[2],
+                    ],
+                ),
+                orientation=self.orientation,
+                is_symmetric=False,
                 span=self.span / 2,
-                sweepOffset=-self.sweepOffset,
-                dihAngle=self.dihAngle,
-                chordFun=self.chordFun,
+                sweep_offset=-self.sweep_offset,
+                dih_angle=self.dih_angle,
+                chord_fun=self.chord_fun,
                 chord=self.chord[::-1],
-                spanFun=self.spanFun,
+                span_fun=self.span_fun,
                 N=self.N,
                 M=self.M,
                 mass=self.mass / 2,
@@ -127,15 +139,15 @@ class Wing:
             right = Wing(
                 name=f"R{self.name}",
                 airfoil=self.airfoil,
-                Origin=self.Origin,
-                Orientation=self.Orientation,
-                isSymmetric=False,
+                origin=self.origin,
+                orientation=self.orientation,
+                is_symmetric=False,
                 span=self.span / 2,
-                sweepOffset=self.sweepOffset,
-                dihAngle=self.dihAngle,
-                chordFun=self.chordFun,
+                sweep_offset=self.sweep_offset,
+                dih_angle=self.dih_angle,
+                chord_fun=self.chord_fun,
                 chord=self.chord,
-                spanFun=self.spanFun,
+                span_fun=self.span_fun,
                 N=self.N,
                 M=self.M,
                 mass=self.mass / 2,
@@ -151,29 +163,29 @@ class Wing:
         for i in np.arange(0, self.N - 1):
             startPoint = np.array(
                 [
-                    self.xoff[i],
-                    self.Dspan[i],
-                    self.Ddihedr[i],
+                    self._offset_dist[i],
+                    self._span_dist[i],
+                    self._dihedral_dist[i],
                 ],
             )
-            startPoint = np.matmul(self.Rmat, startPoint) + self.Origin
+            startPoint = np.matmul(self.R_MAT, startPoint) + self.origin
 
             endPoint = np.array(
                 [
-                    self.xoff[i + 1],
-                    self.Dspan[i + 1],
-                    self.Ddihedr[i + 1],
+                    self._offset_dist[i + 1],
+                    self._span_dist[i + 1],
+                    self._dihedral_dist[i + 1],
                 ],
             )
-            endPoint = np.matmul(self.Rmat, endPoint) + self.Origin
+            endPoint = np.matmul(self.R_MAT, endPoint) + self.origin
 
-            if self.isSymmetric == True:
+            if self.is_symmetric:
                 surf = Strip(
                     startPoint,
                     endPoint,
                     self.airfoil,
-                    self.Dchord[i],
-                    self.Dchord[i + 1],
+                    self._chord_dist[i],
+                    self._chord_dist[i + 1],
                 )
                 strips.append(surf)
                 symStrips.append(Strip(*surf.returnSymmetric()))
@@ -182,14 +194,14 @@ class Wing:
                     startPoint,
                     endPoint,
                     self.airfoil,
-                    self.Dchord[i],
-                    self.Dchord[i + 1],
+                    self._chord_dist[i],
+                    self._chord_dist[i + 1],
                 )
                 strips.append(surf)
         self.strips = strips
-        self.allStrips = [*strips, *symStrips]
+        self.all_strips = [*strips, *symStrips]
 
-    def plotWing(self, fig=None, ax=None, movement=None):
+    def plot_wing(self, fig=None, ax=None, movement=None):
         """Plot Wing in 3D"""
         pltshow = False
         if fig is None:
@@ -206,7 +218,7 @@ class Wing:
         if movement is None:
             movement = np.zeros(3)
 
-        # for strip in self.allStrips:
+        # for strip in self.all_strips:
         #     strip.plotStrip(fig, ax, movement)
 
         for i in np.arange(0, self.N - 1):
@@ -221,10 +233,10 @@ class Wing:
 
                     ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
 
-                    if self.isSymmetric == True:
+                    if self.is_symmetric == True:
                         ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
 
-    def grid2panels(self, grid):
+    def grid_to_panels(self, grid):
         """Convert Grid to Panels"""
         panels = np.empty((self.N - 1, self.M - 1, 4, 3))
         for i in np.arange(0, self.N - 1):
@@ -235,7 +247,7 @@ class Wing:
                 panels[i, j, 3, :] = grid[i + 1, j + 1]
         return panels
 
-    def createGrid(self):
+    def create_grid(self):
         """Create Grid for Wing"""
         xs = np.empty((self.M, self.N))
         xs_upper = np.empty((self.M, self.N))
@@ -250,71 +262,73 @@ class Wing:
         zs_lower = np.empty((self.M, self.N))
 
         for i in np.arange(0, self.M):
-            xpos = (self.Dchord) * (i / (self.M - 1))
-            xs[i, :] = self.xoff + xpos
+            xpos = (self._chord_dist) * (i / (self.M - 1))
+            xs[i, :] = self._offset_dist + xpos
             xs_lower[i, :] = xs[i, :]
             xs_upper[i, :] = xs[i, :]
 
-            ys[i, :] = self.Dspan
+            ys[i, :] = self._span_dist
             ys_lower[i, :] = ys[i, :]
             ys_upper[i, :] = ys[i, :]
 
             for j in np.arange(0, self.N):
-                zs_upper[i, j] = self.Ddihedr[j] + self.Dchord[
+                zs_upper[i, j] = self._dihedral_dist[j] + self._chord_dist[
                     j
                 ] * self.airfoil.y_upper(i / (self.M - 1))
-                zs_lower[i, j] = self.Ddihedr[j] + self.Dchord[
+                zs_lower[i, j] = self._dihedral_dist[j] + self._chord_dist[
                     j
                 ] * self.airfoil.y_lower(i / (self.M - 1))
-                zs[i, j] = self.Ddihedr[j] + self.Dchord[j] * self.airfoil.camber_line(
+                zs[i, j] = self._dihedral_dist[j] + self._chord_dist[
+                    j
+                ] * self.airfoil.camber_line(
                     i / (self.M - 1),
                 )
 
-            # ROTATE ACCORDING TO RMAT
+            # ROTATE ACCORDING TO R_MAT
             xs[i, :], ys[i, :], zs[i, :] = np.matmul(
-                self.Rmat,
+                self.R_MAT,
                 [xs[i, :], ys[i, :], zs[i, :]],
             )
 
             xs_lower[i, :], ys_lower[i, :], zs_lower[i, :] = np.matmul(
-                self.Rmat,
+                self.R_MAT,
                 [xs_lower[i, :], ys_lower[i, :], zs_lower[i, :]],
             )
 
             xs_upper[i, :], ys_upper[i, :], zs_upper[i, :] = np.matmul(
-                self.Rmat,
+                self.R_MAT,
                 [xs_upper[i, :], ys_upper[i, :], zs_upper[i, :]],
             )
 
         for item in [xs, xs_upper, xs_lower]:
-            item += self.Origin[0]
+            item += self.origin[0]
 
         for item in [ys, ys_upper, ys_lower]:
-            item += self.Origin[1]
+            item += self.origin[1]
 
         for item in [zs, zs_upper, zs_lower]:
-            item += self.Origin[2]
+            item += self.origin[2]
 
         self.grid = np.array((xs, ys, zs)).T
         self.grid_upper = np.array((xs_upper, ys_upper, zs_upper)).T
         self.grid_lower = np.array((xs_lower, ys_lower, zs_lower)).T
 
-        self.panels = self.grid2panels(self.grid)
-        self.panels_lower = self.grid2panels(self.grid_lower)
-        self.panels_upper = self.grid2panels(self.grid_upper)
+        self.panels = self.grid_to_panels(self.grid)
+        self.panels_lower = self.grid_to_panels(self.grid_lower)
+        self.panels_upper = self.grid_to_panels(self.grid_upper)
 
-    def meanChords(self):
+    def mean_chords(self):
         "Finds the Mean Aerodynamic Chord (MAC) of the wing."
         num = 0
         denum = 0
         for i in np.arange(0, self.N - 1):
-            num += ((self.Dchord[i] + self.Dchord[i + 1]) / 2) ** 2 * (
-                self.Dspan[i + 1] - self.Dspan[i]
+            num += ((self._chord_dist[i] + self._chord_dist[i + 1]) / 2) ** 2 * (
+                self._span_dist[i + 1] - self._span_dist[i]
             )
             denum += (
-                (self.Dchord[i] + self.Dchord[i + 1])
+                (self._chord_dist[i] + self._chord_dist[i + 1])
                 / 2
-                * (self.Dspan[i + 1] - self.Dspan[i])
+                * (self._span_dist[i + 1] - self._span_dist[i])
             )
         self.MAC = num / denum
 
@@ -323,27 +337,29 @@ class Wing:
         denum = 0
         for i in np.arange(0, self.N - 1):
             num += (
-                (self.Dchord[i] + self.Dchord[i + 1])
+                (self._chord_dist[i] + self._chord_dist[i + 1])
                 / 2
-                * (self.Dspan[i + 1] - self.Dspan[i])
+                * (self._span_dist[i + 1] - self._span_dist[i])
             )
-            denum += self.Dspan[i + 1] - self.Dspan[i]
+            denum += self._span_dist[i + 1] - self._span_dist[i]
         self.SMC = num / denum
 
-    def findAspectRatio(self):
+    def find_aspect_ratio(self):
         """Finds the Aspect Ratio of the wing."""
         self.AR = (self.span**2) / self.Area
 
-    def findArea(self):
+    def find_area(self):
         "Finds the area of the wing."
 
         self.Area = 0
         self.S = 0
-        rm1 = np.linalg.inv(self.Rmat)
+        rm1 = np.linalg.inv(self.R_MAT)
         for i in np.arange(0, self.N - 1):
             _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
             _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
-            self.S += 2 * (y1 - y2) * (self.Dchord[i] + self.Dchord[i + 1]) / 2
+            self.S += (
+                2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
+            )
 
         g_up = self.grid_upper
         g_low = self.grid_lower
@@ -368,9 +384,9 @@ class Wing:
                 self.Area += Area_up + Area_low
 
         # Find Aspect Ratio
-        self.findAspectRatio()
+        self.find_aspect_ratio()
 
-    def findVolume(self):
+    def find_volume(self):
         """Finds the volume of the wing. This is done by finding the volume of the wing
         as the sum of a series of panels."""
 
@@ -390,7 +406,6 @@ class Wing:
         # formed by the slanted edges of the tetrahedron.
         for i in np.arange(0, self.N - 1):
             for j in np.arange(0, self.M - 1):
-
                 # Area of the front face
                 AB1 = g_up[i + 1, j, :] - g_up[i, j, :]
                 AB2 = g_low[i + 1, j, :] - g_low[i, j, :]
@@ -416,12 +431,12 @@ class Wing:
                 dx4 = g_low[i + 1, j + 1, 0] - g_low[i + 1, j, 0]
                 dx = (dx1 + dx2 + dx3 + dx4) / 4
 
-                # Volume of the tetrahedron
+                # volume of the tetrahedron
                 self.VolumeDist[i, j] = 0.5 * (Area_front + Area_back) * dx
 
-        self.Volume = np.sum(self.VolumeDist)
-        if self.isSymmetric == True:
-            self.Volume = self.Volume * 2
+        self.volume = np.sum(self.VolumeDist)
+        if self.is_symmetric == True:
+            self.volume = self.volume * 2
 
     def centerMass(self):
         """Finds the center of mass of the wing.
@@ -456,7 +471,7 @@ class Wing:
                 z_low2 = (g_low[i + 1, j, 2] + g_low[i + 1, j, 2]) / 2
                 z = ((z_upp1 + z_upp2) / 2 + (z_low1 + z_low2) / 2) / 2
 
-                if self.isSymmetric == True:
+                if self.is_symmetric:
                     x_cm += self.VolumeDist[i, j] * 2 * x
                     y_cm += 0
                     z_cm += self.VolumeDist[i, j] * 2 * z
@@ -465,7 +480,7 @@ class Wing:
                     y_cm += self.VolumeDist[i, j] * y
                     z_cm += self.VolumeDist[i, j] * z
 
-        self.CG = np.array((x_cm, y_cm, z_cm)) / self.Volume
+        self.CG = np.array((x_cm, y_cm, z_cm)) / self.volume
 
     def inertia(self, mass, cog):
         """Finds the inertia of the wing."""
@@ -502,7 +517,7 @@ class Wing:
 
                 xd = ((x_upp + x_low) / 2 - cog[0]) ** 2
                 zd = ((z_upp + z_low) / 2 - cog[2]) ** 2
-                if self.isSymmetric == True:
+                if self.is_symmetric == True:
                     yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2
                     yd += ((y_upp + y_low) / 2 - cog[1]) ** 2
                 else:
@@ -520,7 +535,7 @@ class Wing:
                 I_xy += self.VolumeDist[i, j] * (xd * yd)
                 I_yz += self.VolumeDist[i, j] * (yd * zd)
 
-        self.I = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.Volume)
+        self.I = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
 
     def getGrid(self, which="camber"):
         if which == "camber":
@@ -531,7 +546,7 @@ class Wing:
             grid = self.grid_lower
         else:
             raise ValueError("which must be either camber, upper or lower")
-        if self.isSymmetric is True:
+        if self.is_symmetric is True:
             reflection = np.array([1, -1, 1])
             gsym = grid[::-1, :, :] * reflection
             grid = grid[1:, :, :]
@@ -540,16 +555,11 @@ class Wing:
         return grid
 
 
-def linSpan(sp, Ni):
+def define_linear_span(sp, Ni):
     """Returns a linearly spaced span array."""
     return np.linspace(0, sp, Ni).round(12)
 
 
-def uniformChord(Ni, ch=1):
-    """Returns a uniform chord array."""
-    return ch * np.ones(Ni)
-
-
-def linearChord(Ni, ch1, ch2):
+def define_linear_chord(Ni, ch1, ch2):
     """Returns a linearly spaced chord array."""
     return np.linspace(ch1, ch2, Ni).round(12)

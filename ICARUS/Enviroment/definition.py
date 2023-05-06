@@ -10,11 +10,11 @@ class Environment:
         self.AirKinematicViscosity = 1.56e-5
 
         self.Temperature = 20 + 273.15
-        self.Gamma = 1.4
+        self.gamma = 1.4
         self.R = 287.058
 
         # Speed of sound
-        self.AirSpeedOfSound = self.getMachSpeed(self.Gamma, self.R, self.Temperature)
+        self.AirSpeedOfSound = self.getMachSpeed(self.gamma, self.R, self.Temperature)
 
         # Chemical properties
         self.AirMolarMass = 0.0289644

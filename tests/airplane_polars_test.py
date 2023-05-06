@@ -15,7 +15,7 @@ def airPolars(plot=False):
     planenames = [ap.name]
     BMARKLOC = os.path.join(db.HOMEDIR, "Data", "XFLR5", "bmark.txt")
     readPolars3D(db3d, BMARKLOC, "bmark")
-    planenames.append(f"XFLR_bmark")
+    planenames.append("XFLR_bmark")
     if plot:
         from ICARUS.Visualization.airplanePolars import plotAirplanePolars
 

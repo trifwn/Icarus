@@ -12,7 +12,6 @@ from ICARUS.Database import DB3D
 
 class Airplane:
     def __init__(self, name, surfaces, disturbances=None, orientation=None):
-
         self.name = name
         self.CASEDIR = name
         self.surfaces = surfaces
@@ -65,7 +64,7 @@ class Airplane:
     def get_seperate_surfaces(self):
         surfaces = []
         for i, surface in enumerate(self.surfaces):
-            if surface.isSymmetric == True:
+            if surface.is_symmetric == True:
                 l, r = surface.splitSymmetric()
                 surfaces.append(l)
                 surfaces.append(r)
@@ -143,7 +142,7 @@ class Airplane:
             mov = movement
 
         for surface in self.surfaces:
-            surface.plotWing(fig, ax, mov)
+            surface.plot_wing(fig, ax, mov)
         # Add plot for masses
         for m, r in self.masses:
             ax.scatter(

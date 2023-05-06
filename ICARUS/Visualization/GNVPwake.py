@@ -5,7 +5,6 @@ from ICARUS.Software.GenuVP3.postProcess.getWakeData import getWakeData
 
 
 def GNVPwake(plane, case, figsize=(16, 7)):
-
     A1, B1, C1 = getWakeData(plane, case)
 
     fig = plt.figure(figsize=figsize)
@@ -25,3 +24,7 @@ def GNVPwake(plane, case, figsize=(16, 7)):
 
     plane.visAirplane(fig, ax, movement=-np.array(plane.CG))
     plt.show()
+
+
+def GNVPwakeVideo(plane, case, figsize=(16, 7)):
+    pass

@@ -6,7 +6,6 @@ from ICARUS.Software.GenuVP3.postProcess.getStripData import getStripData
 
 
 def GNVPstrips3D(pln, case, NBs, category="Wind"):
-
     stripDat, data = getStripData(pln, case, NBs)
 
     fig = plt.figure()
@@ -29,7 +28,7 @@ def GNVPstrips3D(pln, case, NBs, category="Wind"):
         i = i + 1
         if i not in NBs:
             continue
-        for j, surf in enumerate(wg.allStrips):
+        for j, surf in enumerate(wg.all_strips):
             stripD = data[(data["Body"] == i) & (data["Strip"] == j + 1)]
             stripD = float(stripD[category].values)
             color = cmap(norm(stripD))
@@ -40,7 +39,6 @@ def GNVPstrips3D(pln, case, NBs, category="Wind"):
 
 
 def GNVPstrips2D(pln, case, NB, category="Wind"):
-
     if type(NB) is not int:
         print("Only one body can be selected for 2D plots")
         return 0
