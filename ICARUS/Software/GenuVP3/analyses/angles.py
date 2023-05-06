@@ -4,11 +4,9 @@ from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import ang2case
 from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
-from ICARUS.Software.GenuVP3.postProcess.forces import forces2polars
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
-from ICARUS.Software.GenuVP3.utils import airMov
-from ICARUS.Software.GenuVP3.utils import makeSurfaceDict
-from ICARUS.Software.GenuVP3.utils import setParams
+from ICARUS.Software.GenuVP3.postProcess.forces import (forces2polars,
+                                                        rotateForces)
+from ICARUS.Software.GenuVP3.utils import airMov, makeSurfaceDict, setParams
 
 
 def GNVPangleCase(

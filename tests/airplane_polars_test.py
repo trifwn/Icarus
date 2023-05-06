@@ -1,6 +1,6 @@
 import os
 
-from Data.Planes.simple_wing import ap as ap
+from Data.Planes.simple_wing import airplane as airplane
 from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import readPolars3D
 
@@ -12,7 +12,7 @@ def airPolars(plot=False):
     db.loadData()
 
     db3d = db.vehiclesDB
-    planenames = [ap.name]
+    planenames = [airplane.name]
     BMARKLOC = os.path.join(db.HOMEDIR, "Data", "XFLR5", "bmark.txt")
     readPolars3D(db3d, BMARKLOC, "bmark")
     planenames.append("XFLR_bmark")

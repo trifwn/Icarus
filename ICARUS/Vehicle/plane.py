@@ -30,7 +30,7 @@ class Airplane:
         gotWing = False
         for surface in surfaces:
             if surface.name == "wing":
-                self.mainWing = surface
+                self.main_wing = surface
                 self.S = surface.S
                 self.MAC = surface.MAC
                 self.AR = surface.AR
@@ -38,7 +38,7 @@ class Airplane:
                 gotWing = True
 
         if gotWing == False:
-            self.mainWing = surfaces[0]
+            self.main_wing = surfaces[0]
             self.S = surfaces[0].S
             self.MAC = surfaces[0].MAC
             self.AR = surfaces[0].AR

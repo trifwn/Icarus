@@ -7,11 +7,9 @@ def gnvprun(mode="Parallel"):
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from Data.Planes.simple_wing import ap, db
-
+    from Data.Planes.simple_wing import airplane, db
     # Get Environment
     from ICARUS.Enviroment.definition import EARTH
-
     # Get Solver
     from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
 
@@ -38,9 +36,9 @@ def gnvprun(mode="Parallel"):
     maxiter = 20
     timestep = 10
 
-    ap.defineSim(Uinf, EARTH.AirDensity)
+    airplane.defineSim(Uinf, EARTH.AirDensity)
 
-    options.plane.value = ap
+    options.plane.value = airplane
     options.environment.value = EARTH
     options.db.value = db
     options.solver2D.value = "XFLR"
@@ -59,5 +57,5 @@ def gnvprun(mode="Parallel"):
     print("Testing GNVP Running... Done")
 
     polars = gnvp3.getResults()
-    ap.save()
+    airplane.save()
     # getRunOptions()

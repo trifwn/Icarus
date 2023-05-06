@@ -33,7 +33,7 @@ def main():
     airfoils = foildb.getAirfoils()
 
     # # Get Plane
-    planes = list()
+    planes = []
     planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
 
     planes.append(
@@ -45,20 +45,20 @@ def main():
     planes.append(wing_var_chord_offset(airfoils, "taper", [0.159, 0.072], 0.0))
 
     timestep = {
-        "orthogonal": 5e-2,
-        "orthogonalSweep": 5e-2,
-        "taperSweep": 5e-2,
-        "taper": 5e-2,
+        "orthogonal": 1e-3,
+        "orthogonalSweep": 1e-3,
+        "taperSweep": 1e-3,
+        "taper": 1e-3,
     }
     maxiter = {
-        "orthogonal": 5e-2,
-        "orthogonalSweep": 5e-2,
-        "taperSweep": 5e-2,
-        "taper": 5e-2,
+        "orthogonal": 400,
+        "orthogonalSweep": 400,
+        "taperSweep": 400,
+        "taper": 400,
     }
 
-    for ap in planes:
-        print(ap.name)
+    for airplane in planes:
+        print(airplane.name)
 
         # # Import Enviroment
         print(EARTH)
@@ -76,14 +76,14 @@ def main():
         NO_AOA = (AOA_MAX - AOA_MIN) + 1
         angles = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
         UINF = 20
-        ap.defineSim(UINF, EARTH.AirDensity)
+        airplane.defineSim(UINF, EARTH.AirDensity)
 
-        options.plane.value = ap
+        options.plane.value = airplane
         options.environment.value = EARTH
         options.db.value = db
         options.solver2D.value = "XFLR"
-        options.maxiter.value = maxiter[ap.name]
-        options.timestep.value = timestep[ap.name]
+        options.maxiter.value = maxiter[airplane.name]
+        options.timestep.value = timestep[airplane.name]
         options.Uinf.value = UINF
         options.angles.value = angles
 
@@ -95,13 +95,13 @@ def main():
             f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
         )
         polars = gnvp3.getResults()
-        ap.save()
+        airplane.save()
 
         # # Dynamics
 
         # ### Define and Trim Plane
         try:
-            dyn = dp(ap, polars)
+            dyn = dp(airplane, polars)
         except Exception as error:
             print(error)
             continue
@@ -134,8 +134,8 @@ def main():
         options.environment.value = EARTH
         options.db.value = db
         options.solver2D.value = "XFLR"
-        options.maxiter.value = maxiter[ap.name]
-        options.timestep.value = timestep[ap.name]
+        options.maxiter.value = maxiter[airplane.name]
+        options.timestep.value = timestep[airplane.name]
         options.Uinf.value = dyn.trim["U"]
         options.angles.value = dyn.trim["AoA"]
 
@@ -153,9 +153,10 @@ def main():
 
         ## Sensitivity ANALYSIS
         # print time it took
-        print("PROGRAM TERMINATED")
-        print(f"Execution took : --- {time.time() - start_time} seconds ---")
-
+    print("PROGRAM TERMINATED")
+    print(f"Execution took : --- {time.time() - start_time} seconds ---")
+    print(f"               : --- {(time.time() - start_time)/60} mins ---")
+    print(f"               : --- {(time.time() - start_time)/3600} hrs ---")
 
 if __name__ == "__main__":
     main()

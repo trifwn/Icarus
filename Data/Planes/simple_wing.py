@@ -4,9 +4,8 @@ from ICARUS.Database import XFLRDB
 from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import readPolars2D
 from ICARUS.Vehicle.plane import Airplane as Plane
-from ICARUS.Vehicle.wing import linearChord
-from ICARUS.Vehicle.wing import linSpan
 from ICARUS.Vehicle.wing import Wing as wg
+from ICARUS.Vehicle.wing import define_linear_chord, define_linear_span
 
 db = DB()
 db.loadData()
@@ -14,25 +13,25 @@ db2d = db.foilsDB
 readPolars2D(db2d, XFLRDB)
 airfoils = db2d.getAirfoils()
 
-Origin = np.array([0.0, 0.0, 0.0])
-wingPos = np.array([-0.2, 0.0, 0.0])
-wingOrientation = np.array([0.0, 0.0, 0.0])
+origin = np.array([0.0, 0.0, 0.0])
+wing_pos = np.array([-0.2, 0.0, 0.0])
+wing_orientation = np.array([0.0, 0.0, 0.0])
 
 Simplewing = wg(
     name="bmark",
     airfoil=airfoils["NACA0015"],
-    Origin=Origin + wingPos,
-    Orientation=wingOrientation,
-    isSymmetric=True,
+    origin=origin + wing_pos,
+    orientation=wing_orientation,
+    is_symmetric=True,
     span=2 * 2.5,
-    sweepOffset=0.0,
-    dihAngle=0,
-    chordFun=linearChord,
+    sweep_offset=0.0,
+    dih_angle=0,
+    chord_fun=define_linear_chord,
     chord=[0.8, 0.8],
-    spanFun=linSpan,
+    span_fun=define_linear_span,
     N=20,
     M=5,
     mass=1,
 )
-ap = Plane(Simplewing.name, [Simplewing])
-ap.CG = [0.337, 0, 0]
+airplane = Plane(Simplewing.name, [Simplewing])
+airplane.CG = [0.337, 0, 0]
