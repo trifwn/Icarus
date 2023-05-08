@@ -14,24 +14,24 @@ import numpy as np
 
 
 class AirfoilD(af.Airfoil):
-    def __init__(self, upper, lower, naca, n_points):
+    def __init__(self, upper, lower, naca: str, n_points: int):
         super().__init__(upper, lower)
         self.name = naca
         self.fname = f"naca{naca}"
         self.n_points = n_points
         self.airfoil2Selig()
-        self.Reynolds = []
-        self.Polars = {}
+        self.Reynolds: list = []
+        self.Polars: dict = {}
         # self.getFromWeb()
 
     @classmethod
-    def NACA(cls, naca, n_points=200):
+    def NACA(cls, naca: str, n_points: int = 200) -> "AirfoilD":
         re_4digits = re.compile(r"^\d{4}$")
 
         if re_4digits.match(naca):
-            p = float(naca[0]) / 10
-            m = float(naca[1]) / 100
-            xx = float(naca[2:4]) / 100
+            p: float = float(naca[0]) / 10
+            m: float = float(naca[1]) / 100
+            xx: float = float(naca[2:4]) / 100
         else:
             raise af.NACADefintionError(
                 "Identifier not recognised as valid NACA 4 definition",
@@ -39,16 +39,18 @@ class AirfoilD(af.Airfoil):
 
         upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
         self = cls(upper, lower, naca, n_points)
+        self.set_NACA4_digits(p, m, xx)
+
+        return self
+
+    def set_NACA4_digits(self, p: float, m: float, xx: float) -> None:
         self.p = p
         self.m = m
         self.xx = xx
 
-        return self
-
     def camber_line_NACA4(self, points):
         p = self.p
         m = self.m
-        xx = self.xx
 
         res = np.zeros_like(points)
         for i, x in enumerate(points):
@@ -93,7 +95,7 @@ class AirfoilD(af.Airfoil):
             if i.startswith("naca"):
                 self.airfile = os.path.join(self.AFDIR, i)
                 exists = True
-        if True:
+        if exists:
             self.save()
 
     def reynCASE(self, Reyn):

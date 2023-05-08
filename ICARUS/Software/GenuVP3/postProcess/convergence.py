@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-## GET THE SCANNING FROM THE DATABASE AND MAKE DF WITH IT
+# GET THE SCANNING FROM THE DATABASE AND MAKE DF WITH IT
 def getLoadsConvergence(file):
     try:
         return pd.read_csv(file, delim_whitespace=True, names=cols)

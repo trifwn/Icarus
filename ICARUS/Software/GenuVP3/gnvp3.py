@@ -132,7 +132,7 @@ def get_gnvp3(db: DB):
         "solver2D": "2D Solver",
         "maxiter": "Max Iterations",
         "timestep": "Timestep",
-        "Uinf": "Velocity Magnitude",
+        "u_freestream": "Velocity Magnitude",
         "angles": "Angle to run",
     }
 

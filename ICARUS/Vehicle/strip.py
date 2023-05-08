@@ -1,7 +1,5 @@
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import cm
 
 
 class Strip:
@@ -105,7 +103,7 @@ class Strip:
                 4,
             )
 
-        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)  # type: ignore
 
         if pltshow:
             plt.show()

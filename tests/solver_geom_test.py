@@ -6,18 +6,17 @@ from ICARUS.Visualization.GNVPwake import GNVPwake
 
 
 def gnvpGeom():
-
-    from Data.Planes.simple_wing import ap
+    from Data.Planes.simple_wing import airplane
 
     case = ang2case(2.0)
-    _, _, gridGNVP = getWakeData(ap, case)
+    _, _, gridGNVP = getWakeData(airplane, case)
     gridAP = []
-    for surface in ap.surfaces:
+    for surface in airplane.surfaces:
         gridAP.append(surface.getGrid())
     gridAP = np.array(gridAP)
     shape = gridAP.shape
-    gridAP = gridAP.reshape(shape[0] * shape[1] * shape[2], shape[3]) - ap.CG
+    gridAP = gridAP.reshape(shape[0] * shape[1] * shape[2], shape[3]) - airplane.CG
     gridAP = np.meshgrid(gridAP)
     gridGNVP = np.meshgrid(gridGNVP)
-    GNVPwake(ap, case)
+    GNVPwake(airplane, case)
     return gridAP, gridGNVP

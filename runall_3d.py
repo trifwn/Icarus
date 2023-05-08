@@ -3,7 +3,6 @@ Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
-import os
 import time
 
 import numpy as np
@@ -17,7 +16,7 @@ from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
 from ICARUS.Software.XFLR5.polars import readPolars2D
 
 # from Data.Planes.hermes import hermes
-# from Data.Planes.hermes_wing_only import hermesMainWing
+# from Data.Planes.hermes_wing_only import hermes_main_wing
 # # MODULES
 
 
@@ -57,8 +56,8 @@ def main():
         "taper": 5e-2,
     }
 
-    for ap in planes:
-        print(ap.name)
+    for airplane in planes:
+        print(airplane.name)
 
         # # Import Enviroment
         print(EARTH)
@@ -69,22 +68,22 @@ def main():
         # ## AoA Run
         analysis = gnvp3.getAvailableAnalyses()[2]  # ANGLES PARALLEL
         gnvp3.setAnalysis(analysis)
-        options = gnvp3.getOptions(analysis)
+        options = gnvp3.getOptions(verbose=True)
 
         AOA_MIN = -6
         AOA_MAX = 8
         NO_AOA = (AOA_MAX - AOA_MIN) + 1
         angles = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
         UINF = 20
-        ap.defineSim(UINF, EARTH.AirDensity)
+        airplane.defineSim(UINF, EARTH.AirDensity)
 
-        options.plane.value = ap
+        options.plane.value = airplane
         options.environment.value = EARTH
         options.db.value = db
         options.solver2D.value = "XFLR"
-        options.maxiter.value = maxiter[ap.name]
-        options.timestep.value = timestep[ap.name]
-        options.Uinf.value = UINF
+        options.maxiter.value = maxiter[airplane.name]
+        options.timestep.value = timestep[airplane.name]
+        options.u_freestream.value = UINF
         options.angles.value = angles
 
         gnvp3.printOptions()
@@ -95,13 +94,13 @@ def main():
             f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
         )
         polars = gnvp3.getResults()
-        ap.save()
+        airplane.save()
 
         # # Dynamics
 
         # ### Define and Trim Plane
         try:
-            dyn = dp(ap, polars)
+            dyn = dp(airplane, polars)
         except Exception as error:
             print(error)
             continue
@@ -134,9 +133,9 @@ def main():
         options.environment.value = EARTH
         options.db.value = db
         options.solver2D.value = "XFLR"
-        options.maxiter.value = maxiter[ap.name]
-        options.timestep.value = timestep[ap.name]
-        options.Uinf.value = dyn.trim["U"]
+        options.maxiter.value = maxiter[airplane.name]
+        options.timestep.value = timestep[airplane.name]
+        options.u_freestream.value = dyn.trim["U"]
         options.angles.value = dyn.trim["AoA"]
 
         # Run Analysis
@@ -151,10 +150,12 @@ def main():
         _ = gnvp3.getResults()
         dyn.save()
 
-        ## Sensitivity ANALYSIS
-        # print time it took
-        print("PROGRAM TERMINATED")
-        print(f"Execution took : --- {time.time() - start_time} seconds ---")
+        # Sensitivity ANALYSIS
+        # ADD SENSITIVITY ANALYSIS
+
+    # print time program took
+    print("PROGRAM TERMINATED")
+    print(f"Execution took : --- {time.time() - start_time} seconds ---")
 
 
 if __name__ == "__main__":

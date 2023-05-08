@@ -5,10 +5,13 @@ from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 
 def longitudalStability(plane, mode="2D"):
     """This Function Requires the results from perturbation analysis
-    For the Longitudinal Motion, in addition to the state space variables an analysis with respect to the derivative of w perturbation is needed.
-    These derivatives are in this function are added externally and called Xw_dot,Zw_dot,Mw_dot. Depending on the Aerodynamics Solver,
-    these w_dot derivatives can either be computed like the rest derivatives, or require an approximation concerning the downwash velocity
-    that the main wing induces on the tail wing
+    For the Longitudinal Motion, in addition to the state space variables
+    an analysis with respect to the derivative of w perturbation is needed.
+    These derivatives are in this function are added externally and called
+    Xw_dot,Zw_dot,Mw_dot. Depending on the aerodynamics Solver, these w_dot
+    derivatives can either be computed like the rest derivatives, or require
+    an approximation concerning the downwash velocity that the main wing
+    induces on the tail wing
     """
 
     pertr = plane.pertubResults
@@ -41,6 +44,8 @@ def longitudalStability(plane, mode="2D"):
             front = trimState
             back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
             de = eps[var]
+        else:
+            raise ValueError(f"Unknown Scheme {plane.scheme}")
 
         if var == "theta":
             de *= -np.pi / 180

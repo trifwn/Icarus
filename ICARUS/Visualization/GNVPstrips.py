@@ -33,7 +33,7 @@ def GNVPstrips3D(pln, case, NBs, category="Wind"):
             stripD = float(stripD[category].values)
             color = cmap(norm(stripD))
             surf.plotStrip(fig, ax, None, color)
-    cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
+    _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()
     return stripDat
 

@@ -32,6 +32,8 @@ def lateralStability(plane, mode="2D"):
             back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
             front = trimState
             de = eps[var]
+        else:
+            raise ValueError(f"Unknown Scheme {plane.scheme}")
 
         if var != "v":
             de *= np.pi / 180

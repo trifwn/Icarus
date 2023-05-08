@@ -5,9 +5,9 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-jsonpickle_pd.register_handlers()
-
 from ICARUS.Database import DB3D
+
+jsonpickle_pd.register_handlers()
 
 
 class Airplane:
@@ -30,15 +30,15 @@ class Airplane:
         gotWing = False
         for surface in surfaces:
             if surface.name == "wing":
-                self.mainWing = surface
+                self.main_wing = surface
                 self.S = surface.S
                 self.MAC = surface.MAC
                 self.AR = surface.AR
                 self.span = surface.span
                 gotWing = True
 
-        if gotWing == False:
-            self.mainWing = surfaces[0]
+        if not gotWing:
+            self.main_wing = surfaces[0]
             self.S = surfaces[0].S
             self.MAC = surfaces[0].MAC
             self.AR = surfaces[0].AR
@@ -47,7 +47,7 @@ class Airplane:
         self.airfoils = self.getAirfoils()
         self.bodies = []
         self.masses = []
-        self.Inertia = []
+        self.Inertial_moments = []
 
         self.M = 0
         for surface in self.surfaces:
@@ -55,16 +55,16 @@ class Airplane:
             mom = surface.I
 
             self.M += surface.mass
-            self.Inertia.append(mom)
+            self.Inertial_moments.append(mom)
             self.masses.append(mass)
 
         self.CG = self.findCG()
-        self.I = self.findInertia(self.CG)
+        self.total_inertia = self.findInertia(self.CG)
 
     def get_seperate_surfaces(self):
         surfaces = []
         for i, surface in enumerate(self.surfaces):
-            if surface.is_symmetric == True:
+            if surface.is_symmetric:
                 l, r = surface.splitSymmetric()
                 surfaces.append(l)
                 surfaces.append(r)
@@ -74,7 +74,7 @@ class Airplane:
         for mass in masses:
             self.masses.append(mass)
         self.CG = self.findCG()
-        self.I = self.findInertia(self.CG)
+        self.total_inertia = self.findInertia(self.CG)
 
     def findCG(self):
         x_cm = 0
@@ -86,7 +86,7 @@ class Airplane:
             x_cm += m * r[0]
             y_cm += m * r[1]
             z_cm += m * r[2]
-        return np.array((x_cm, y_cm, z_cm)) / self.M
+        return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
     def findInertia(self, point):
         I_xx = 0
@@ -96,13 +96,13 @@ class Airplane:
         I_xy = 0
         I_yz = 0
 
-        for I in self.Inertia:
-            I_xx += I[0]
-            I_yy += I[1]
-            I_zz += I[2]
-            I_xz += I[3]
-            I_xy += I[4]
-            I_yz += I[5]
+        for inertia in self.Inertial_moments:
+            I_xx += inertia[0]
+            I_yy += inertia[1]
+            I_zz += inertia[2]
+            I_xz += inertia[3]
+            I_xy += inertia[4]
+            I_yz += inertia[5]
 
         for m, r_bod in self.masses:
             r = point - r_bod
@@ -123,7 +123,7 @@ class Airplane:
         return airfoils
 
     def visAirplane(self, fig=None, ax=None, movement=None):
-        if fig == None:
+        if fig is None:
             fig = plt.figure()
             ax = fig.add_subplot(projection="3d")
             ax.set_title(self.name)
@@ -145,7 +145,7 @@ class Airplane:
             surface.plot_wing(fig, ax, mov)
         # Add plot for masses
         for m, r in self.masses:
-            ax.scatter(
+            ax.scatter(  # type: ignore
                 r[0] + mov[0],
                 r[1] + mov[1],
                 r[2] + mov[2],
@@ -153,7 +153,7 @@ class Airplane:
                 s=m * 50.0,
                 color="r",
             )
-        ax.scatter(
+        ax.scatter(  # type: ignore
             self.CG[0] + mov[0],
             self.CG[1] + mov[1],
             self.CG[2] + mov[2],
@@ -167,8 +167,9 @@ class Airplane:
         self.dens = dens
         self.Q = 0.5 * dens * U**2
 
-    def toJSON(self):
-        return jsonpickle.encode(self)
+    def toJSON(self) -> str:
+        encoded = jsonpickle.encode(self)
+        return encoded
 
     def save(self):
         fname = os.path.join(DB3D, self.CASEDIR, f"{self.name}.json")

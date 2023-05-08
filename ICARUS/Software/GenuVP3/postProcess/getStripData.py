@@ -56,13 +56,13 @@ stripColumns = [
     "CNTDS2D",
     "CNTDS2D",
     "CMOMSDS2D",
-    "FSTRGNL(3, IST) / ALSPAN(IST)",  ## Potential N/m
+    "FSTRGNL(3, IST) / ALSPAN(IST)",  # Potential N/m
     "FSTRGNL(1, IST) / ALSPAN(IST)",
     "AMSTRGNL(IST) / ALSPAN(IST)",
-    "FSTR2DL(3, IST) / ALSPAN(IST)",  ## 2D N/m
+    "FSTR2DL(3, IST) / ALSPAN(IST)",  # 2D N/m
     "FSTR2DL(1, IST) / ALSPAN(IST)",
     "AMSTR2DL(IST) / ALSPAN(IST)",
-    "FSTRDS2DL(3, IST) / ALSPAN(IST)",  ## ONERA N/m
+    "FSTRDS2DL(3, IST) / ALSPAN(IST)",  # ONERA N/m
     "FSTRDS2DL(1, IST) / ALSPAN(IST)",
     "AMSTRDS2DL(IST) / ALSPAN(IST)",
     "Uind",

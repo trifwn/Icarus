@@ -39,7 +39,7 @@ def setParams(
     plane,
     maxiter,
     timestep,
-    Uinf,
+    u_freestream,
     angle,
     environment,
     solver_options,
@@ -50,18 +50,18 @@ def setParams(
     dens = environment.AirDensity
     visc = environment.AirDynamicViscosity
 
-    airVelocity = [Uinf * np.cos(angle), 0.0, Uinf * np.sin(angle)]
+    airVelocity = [u_freestream * np.cos(angle), 0.0, u_freestream * np.sin(angle)]
     params = {
         "nBods": nBodies,
         "nBlades": nAirfoils,
         "maxiter": maxiter,
         "timestep": timestep,
-        "Uinf": airVelocity,
+        "u_freestream": airVelocity,
         "rho": dens,
         "visc": visc,
         "Split_Symmetric_Bodies": solver_options["Split_Symmetric_Bodies"],
         "Use_Grid": solver_options["Use_Grid"],
-        ## LOW LEVEL OPTIONS
+        # LOW LEVEL OPTIONS
         "NMETH": solver_options["Integration_Scheme"],
         "NEMTIP": solver_options["Tip_Emmision"],
         "NTIMET": solver_options["Tip_Emmision_Begins"],
@@ -142,6 +142,8 @@ def distrubance2movement(disturbance):
         a1 = disturbance.amplitude
         a2 = disturbance.amplitude
         distType = 1
+    else:
+        raise ValueError
 
     empty = {
         "type": 1,

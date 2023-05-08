@@ -1,7 +1,4 @@
-import os
-
 import matplotlib.pyplot as plt
-import numpy as np
 
 from . import colors
 from . import markers
@@ -12,7 +9,7 @@ def plotAirplanePolars(data, airplanes, solvers=["All"], size=(10, 10)):
     if len(airplanes) == 1:
         fig.suptitle(f"{airplanes[0]} Aero Coefficients", fontsize=16)
     else:
-        fig.suptitle(f"Airplanes Aero Coefficients", fontsize=16)
+        fig.suptitle("Airplanes Aero Coefficients", fontsize=16)
 
     axs[0, 0].set_title("Cm vs AoA")
     axs[0, 0].set_ylabel("Cm")
@@ -38,9 +35,9 @@ def plotAirplanePolars(data, airplanes, solvers=["All"], size=(10, 10)):
                 polar = data[airplane]
                 aoa = polar["AoA"]
                 if airplane.startswith("XFLR"):
-                    cl = polar[f"CL"]
-                    cd = polar[f"CD"]
-                    cm = polar[f"Cm"]
+                    cl = polar["CL"]
+                    cd = polar["CD"]
+                    cm = polar["Cm"]
                     skip = True
                     c = "m"
                     m = "x"
@@ -62,7 +59,7 @@ def plotAirplanePolars(data, airplanes, solvers=["All"], size=(10, 10)):
                 axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {airplane},{solver}")
-            if skip == True:
+            if skip:
                 break
     fig.tight_layout()
     for axR in axs:

@@ -16,5 +16,5 @@ class AnalysesDB:
 
     def scan(self):
         os.chdir(ANALYSESDB)
-        ## LOAD ANALYSES
+        # LOAD ANALYSES
         os.chdir(self.HOMEDIR)

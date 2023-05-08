@@ -66,9 +66,9 @@ for airf in airfoils:
         airf.reynCASE(Reyn)
 
         # Foil2Wake
-        if cleaning == True:
+        if cleaning:
             airf.cleanRes(f2w.removeResults, [airf.REYNDIR, airf.HOMEDIR, angles])
-        if calcF2W == True:
+        if calcF2W:
             ftrip_low = {"pos": 0.1, "neg": 0.2}
             ftrip_up = {"pos": 0.2, "neg": 0.1}
             Ncrit = 9
@@ -88,7 +88,7 @@ for airf in airfoils:
             airf.makePolars(f2w.makeCLCD2, "Foil2Wake", [airf.REYNDIR, airf.HOMEDIR])
 
         # # Xfoil
-        if calcXFoil == True:
+        if calcXFoil:
             print("-------  Running Xfoil ------- ")
             xfargs = [
                 airf.REYNDIR,
@@ -105,9 +105,9 @@ for airf in airfoils:
         # # OpenFoam
         os.chdir(airf.REYNDIR)
         maxITER = 800
-        if cleaning == True:
+        if cleaning:
             airf.cleanRes(of.cleanOpenFoam, [HOMEDIR, airf.REYNDIR])
-        if calcOpenFoam == True:
+        if calcOpenFoam:
             print("------- Running OpenFoam ------- ")
             ofSetupargs = [
                 BASEOPENFOAM,

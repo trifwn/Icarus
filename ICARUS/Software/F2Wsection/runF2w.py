@@ -87,7 +87,7 @@ def makeCLCD2(CASEDIR, HOMEDIR):
     a = []
     for folder in folders[1:]:
         if "clcd.out" in next(os.walk(folder))[2]:
-            fileLOC = os.path.joint(folder, "clcd.out")
+            fileLOC = os.path.join(folder, "clcd.out")
             a.append(np.loadtxt(fileLOC))
     df = pd.DataFrame(a, columns=["AoA", "CL", "CD", "Cm"])
     df = df.sort_values("AoA")

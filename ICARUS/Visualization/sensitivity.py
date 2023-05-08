@@ -13,7 +13,6 @@ def plotSensitivity(
     solvers=["2D"],
     size=(16, 7),
 ):
-
     fig, axs = plt.subplots(2, 3, figsize=size)
     fig.suptitle(f"{plane.name} Convergence", fontsize=16)
 
@@ -40,7 +39,7 @@ def plotSensitivity(
 
     try:
         cases = data
-    except:
+    except Exception:
         print("No Sensitivity Results")
         return
     i = -1
@@ -105,7 +104,6 @@ def plotSensitivity(
         )
 
     for var in list(cases.keys()):
-
         if var in vars2s or vars2s == ["All"]:
             runHist = cases[var]
             i += 1
@@ -135,9 +133,9 @@ def plotSensitivity(
                 if i > len(colors) - 1:
                     toomuchData = True
                     break
-                c = colors[i]
+                # c = colors[i]
                 m = markers[j]
-                style = f"{c}{m}--"
+                # style = f"{c}{m}--"
 
                 label = f"{plane.name} - {solver} - {var}"
                 axs[0, 0].scatter(epsilon, fx, marker=m, label=label, linewidth=3.0)
@@ -150,7 +148,7 @@ def plotSensitivity(
 
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {plane.name},{solver},{var}")
-    if toomuchData == True:
+    if toomuchData:
         print(f"Too much data to plot, only plotting {len(colors)} cases")
 
     fig.tight_layout()

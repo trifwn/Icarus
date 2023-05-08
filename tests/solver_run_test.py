@@ -7,7 +7,7 @@ def gnvprun(mode="Parallel"):
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from Data.Planes.simple_wing import ap, db
+    from Data.Planes.simple_wing import airplane, db
 
     # Get Environment
     from ICARUS.Enviroment.definition import EARTH
@@ -17,7 +17,7 @@ def gnvprun(mode="Parallel"):
 
     gnvp3 = get_gnvp3(db)
 
-    ## Set Analysis
+    # Set Analysis
     if mode == "Parallel":
         # gnvp3.setParallel(True)
         analysis = gnvp3.getAvailableAnalyses()[2]
@@ -26,27 +26,27 @@ def gnvprun(mode="Parallel"):
 
     gnvp3.setAnalysis(analysis)
 
-    ## Set Options
-    options = gnvp3.getOptions(analysis)
+    # Set Options
+    options = gnvp3.getOptions(verbose=True)
 
     AoAmin = -3
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
     angles = np.linspace(AoAmin, AoAmax, NoAoA)
     angles = [ang for ang in angles if ang != 0]
-    Uinf = 20
+    u_freestream = 20
     maxiter = 20
     timestep = 10
 
-    ap.defineSim(Uinf, EARTH.AirDensity)
+    airplane.defineSim(u_freestream, EARTH.AirDensity)
 
-    options.plane.value = ap
+    options.plane.value = airplane
     options.environment.value = EARTH
     options.db.value = db
     options.solver2D.value = "XFLR"
     options.maxiter.value = maxiter
     options.timestep.value = timestep
-    options.Uinf.value = Uinf
+    options.u_freestream.value = u_freestream
     options.angles.value = angles
 
     _ = gnvp3.getOptions(verbose=True)
@@ -58,6 +58,6 @@ def gnvprun(mode="Parallel"):
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 
-    polars = gnvp3.getResults()
-    ap.save()
+    _ = gnvp3.getResults()
+    airplane.save()
     # getRunOptions()

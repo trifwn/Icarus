@@ -59,23 +59,23 @@ class State:
         ss.write(
             f"Eigen Values: {[round(item,3) for item in self.longitudal.eigenValues]}\n",
         )
-        ss.write(f"Eigen Vectors:\n")
+        ss.write("Eigen Vectors:\n")
         for item in self.longitudal.eigenVectors:
             ss.write(f"\t{[round(i,3) for i in item]}\n")
-        ss.write(f"\nThe State Space Matrix:\n")
+        ss.write("\nThe State Space Matrix:\n")
         ss.write(
             tabulate(self.longitudal.stateSpace.A, tablefmt="github", floatfmt=".3f"),
         )
 
         ss.write(f"\n\n{45*'--'}\n")
 
-        ss.write(f"\nLateral State:\n")
+        ss.write("\nLateral State:\n")
         ss.write(
             f"Eigen Values: {[round(item,3) for item in self.lateral.eigenValues]}\n",
         )
-        ss.write(f"Eigen Vectors:\n")
+        ss.write("Eigen Vectors:\n")
         for item in self.lateral.eigenVectors:
             ss.write(f"\t{[round(i,3) for i in item]}\n")
-        ss.write(f"\nThe State Space Matrix:\n")
+        ss.write("\nThe State Space Matrix:\n")
         ss.write(tabulate(self.lateral.stateSpace.A, tablefmt="github", floatfmt=".3f"))
         return ss.getvalue()

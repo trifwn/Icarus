@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 from . import colors
 from . import markers
@@ -9,7 +8,7 @@ def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=No
     fig, axs = plt.subplots(2, 2, figsize=size)
 
     fig.suptitle(f"NACA {airfoil[4:]} Aero Coefficients", fontsize=16)
-    axs[0, 0].set_title("Cm vs AoA")
+    axs[0, 0].set_title("Cm vs AoA")  # type: ignore
     axs[0, 0].set_ylabel("Cm")
 
     axs[0, 1].set_title("Cd vs AoA")
@@ -23,7 +22,7 @@ def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=No
     axs[1, 1].set_title("Cl vs Cd")
     axs[1, 1].set_xlabel("Cd")
 
-    if solvers == ["All"]:
+    if solvers == "All":
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     for i, solver in enumerate(data[airfoil].keys()):

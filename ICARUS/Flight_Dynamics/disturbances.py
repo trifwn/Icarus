@@ -1,7 +1,6 @@
-import numpy as np
+class Disturbance:
+    """Class for represanting disturbances"""
 
-
-class disturbance:
     def __init__(self, variable, amplitude):
         self.amplitude = amplitude
         if amplitude > 0:
@@ -42,7 +41,7 @@ class disturbance:
             self.axis = 1
             self.type = "Value"  # Rotational
             self.isRotational = True
-        elif variable == None:
+        elif variable is None:
             self.axis = None
             self.type = None
             self.amplitude = None

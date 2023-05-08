@@ -28,21 +28,21 @@ def saveAirfoil(argv):
     if mode == 0:
         # # Load from Lib
         pt0 = f.selig
-        if save == True:
+        if save:
             np.savetxt(filen, pt0.T)
+        return pt0.T
     elif mode == 1:
         # # Load from the file mode 1
         pt1 = np.loadtxt(filen)
-        if save == True:
+        if save:
             np.savetxt(filen, pt1)
         return pt1
     elif mode == 2:
         # # Fetch from the web mode 2
         pt2 = f.selig2
-        if save == True:
+        if save:
             np.savetxt(filen, pt2.T)
         return pt2.T
-    return pt0.T
 
 
 if __name__ == "__main__":

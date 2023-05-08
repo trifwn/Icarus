@@ -12,7 +12,7 @@ class Database_2D:
     def __init__(self):
         self.HOMEDIR = APPHOME
         self.DATADIR = DB2D
-        self.Data = Struct()
+        self.Data: Struct = Struct()
 
     def loadData(self):
         self.scan()
@@ -25,24 +25,26 @@ class Database_2D:
             print(f"Database not found! Initializing Database at {DB2D}")
             os.makedirs(DB2D, exist_ok=True)
         folders = next(os.walk("."))[1]
-        Data = Struct()
+        data = Struct()
         for folder in folders:
             os.chdir(folder)
-            Data[folder] = self.scanReynolds()
+            data[folder] = self.scanReynolds()
             os.chdir(DB2D)
 
         self.Data = Struct()
-        for i in Data.keys():
+        for i in data.keys():
             if i not in self.Data.keys():
                 self.Data[i] = Struct()
-            for j in Data[i].keys():
-                for k in Data[i][j].keys():
+                continue
+
+            for j in data[i].keys():
+                for k in data[i][j].keys():
                     if k not in self.Data[i].keys():
                         self.Data[i][k] = Struct()
-                    self.Data[i][k][j] = Data[i][j][k]
+                    self.Data[i][k][j] = data[i][j][k]
         os.chdir(self.HOMEDIR)
 
-    def scanReynolds(self):
+    def scanReynolds(self) -> Struct:
         airfoilDict = Struct()
         folders = next(os.walk("."))[1]
         for folder in folders:
@@ -63,6 +65,8 @@ class Database_2D:
                     name = "OpenFoam"
                 elif solver == "xfoil":
                     name = "Xfoil"
+                else:
+                    raise ValueError("Solver not recognized!")
                 reynDict[name] = pd.read_csv(file)
         return reynDict
 
@@ -90,7 +94,7 @@ class Database_2D:
             print("Airfoil Doesn't exist! You should compute it first!")
 
     def __str__(self):
-        return f"Foil Database"
+        return "Foil Database"
 
     def __enter__(self, obj):
         pass

@@ -1,49 +1,50 @@
 import numpy as np
 
-import ICARUS.Vehicle.wing as wing
-from ICARUS.Vehicle.plane import Airplane as Plane
-from ICARUS.Vehicle.wing import Wing as wg
+from ICARUS.Vehicle.plane import Airplane
+from ICARUS.Vehicle.wing import define_linear_chord
+from ICARUS.Vehicle.wing import define_linear_span
+from ICARUS.Vehicle.wing import Wing
 
 
 def hermes(airfoils, name):
-    Origin = np.array([0.0, 0.0, 0.0])
+    origin = np.array([0.0, 0.0, 0.0], dtype=float)
 
-    wingPos = np.array([0.0 - 0.159 / 4, 0.0, 0.0])
-    wingOrientation = np.array([2.8, 0.0, 0.0])
+    wing_position = np.array([0.0 - 0.159 / 4, 0.0, 0.0], dtype=float)
+    wing_orientation = np.array([2.8, 0.0, 0.0], dtype=float)
 
-    mainWing = wg(
+    main_wing = Wing(
         name="wing",
         airfoil=airfoils["NACA4415"],
-        Origin=Origin + wingPos,
-        Orientation=wingOrientation,
-        isSymmetric=True,
+        origin=origin + wing_position,
+        orientation=wing_orientation,
+        is_symmetric=True,
         span=2 * 1.130,
-        sweepOffset=0,
-        dihAngle=0,
-        chordFun=wing.linearChord,
-        chord=[0.159, 0.072],
-        spanFun=wing.linSpan,
+        sweep_offset=0,
+        dih_angle=0,
+        chord_fun=define_linear_chord,
+        chord=np.array([0.159, 0.072]),
+        span_fun=define_linear_span,
         N=30,
         M=5,
         mass=0.670,
     )
-    # mainWing.plotWing()
+    # main_wing.plotWing()
 
     elevatorPos = np.array([0.54 - 0.130 / 4, 0.0, 0.0])
     elevatorOrientantion = np.array([0.0, 0.0, 0.0])
 
-    elevator = wg(
+    elevator = Wing(
         name="tail",
         airfoil=airfoils["NACA0008"],
-        Origin=Origin + elevatorPos,
-        Orientation=elevatorOrientantion,
-        isSymmetric=True,
+        origin=origin + elevatorPos,
+        orientation=elevatorOrientantion,
+        is_symmetric=True,
         span=2 * 0.169,
-        sweepOffset=0,
-        dihAngle=0,
-        chordFun=wing.linearChord,
-        chord=[0.130, 0.03],
-        spanFun=wing.linSpan,
+        sweep_offset=0,
+        dih_angle=0,
+        chord_fun=define_linear_chord,
+        chord=np.array([0.130, 0.03]),
+        span_fun=define_linear_span,
         N=15,
         M=5,
         mass=0.06,
@@ -53,36 +54,36 @@ def hermes(airfoils, name):
     rudderPos = np.array([0.47 - 0.159 / 4, 0.0, 0.01])
     rudderOrientantion = np.array([0.0, 0.0, 90.0])
 
-    rudder = wg(
+    rudder = Wing(
         name="rudder",
         airfoil=airfoils["NACA0008"],
-        Origin=Origin + rudderPos,
-        Orientation=rudderOrientantion,
-        isSymmetric=False,
+        origin=origin + rudderPos,
+        orientation=rudderOrientantion,
+        is_symmetric=False,
         span=0.160,
-        sweepOffset=0.1,
-        dihAngle=0,
-        chordFun=wing.linearChord,
-        chord=[0.2, 0.1],
-        spanFun=wing.linSpan,
+        sweep_offset=0.1,
+        dih_angle=0,
+        chord_fun=define_linear_chord,
+        chord=np.array([0.2, 0.1]),
+        span_fun=define_linear_span,
         N=15,
         M=5,
         mass=0.04,
     )
     # rudder.plotWing()
 
-    liftingSurfaces = [mainWing, elevator, rudder]
+    lifting_surfaces = [main_wing, elevator, rudder]
 
     addedMasses = [
         (0.500, np.array([-0.40, 0.0, 0.0])),  # Motor
         (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
         (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
     ]
-    ap = Plane(name, liftingSurfaces)
+    airplane = Airplane(name, lifting_surfaces)
 
     # from ICARUS.Database import DB3D
-    # ap.accessDB(HOMEDIR, DB3D)
-    # ap.visAirplane()
-    ap.addMasses(addedMasses)
+    # airplane.accessDB(HOMEDIR, DB3D)
+    # airplane.visAirplane()
+    airplane.addMasses(addedMasses)
 
-    return ap
+    return airplane

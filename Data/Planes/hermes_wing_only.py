@@ -1,11 +1,12 @@
 import numpy as np
 
-import ICARUS.Vehicle.wing as wing
-from ICARUS.Vehicle.plane import Airplane as Plane
-from ICARUS.Vehicle.wing import Wing as wg
+from ICARUS.Vehicle.plane import Airplane
+from ICARUS.Vehicle.wing import define_linear_chord
+from ICARUS.Vehicle.wing import define_linear_span
+from ICARUS.Vehicle.wing import Wing
 
 
-def hermesMainWing(airfoils, name: str) -> Plane:
+def hermes_main_wing(airfoils, name: str) -> Airplane:
     """Function to get a plane Consisting only of the main wing of the hermes plane
 
     Args:
@@ -17,36 +18,36 @@ def hermesMainWing(airfoils, name: str) -> Plane:
     """
     origin = np.array([0.0, 0.0, 0.0])
 
-    wingPos = np.array([0.0, 0.0, 0.0])
-    wingOrientation = np.array([2.8, 0.0, 0.0])
+    wing_position = np.array([0.0, 0.0, 0.0])
+    wing_orientation = np.array([2.8, 0.0, 0.0])
 
-    mainWing = wg(
+    main_wing = Wing(
         name="wing",
         airfoil=airfoils["NACA4415"],
-        Origin=origin + wingPos,
-        Orientation=wingOrientation,
-        isSymmetric=True,
+        origin=origin + wing_position,
+        orientation=wing_orientation,
+        is_symmetric=True,
         span=2 * 1.130,
-        sweepOffset=0,
-        dihAngle=0,
-        chordFun=wing.linearChord,
-        chord=[0.159, 0.072],
-        spanFun=wing.linSpan,
+        sweep_offset=0,
+        dih_angle=0,
+        chord_fun=define_linear_chord,
+        chord=np.array([0.159, 0.072]),
+        span_fun=define_linear_span,
         N=20,
         M=5,
         mass=0.670,
     )
-    # mainWing.plotWing()
+    # main_wing.plotWing()
 
-    liftingSurfaces = [mainWing]
-    ap = Plane(name, liftingSurfaces)
+    lifting_surfaces = [main_wing]
+    airplane = Airplane(name, lifting_surfaces)
 
-    # ap.visAirplane()
+    # airplane.visAirplane()
 
     # addedMasses = [
     #     (0.500 , np.array([-0.40, 0.0, 0.0])), # Motor
     #     (1.000 , np.array([0.090, 0.0, 0.0])), # Battery
     #     (0.900 , np.array([0.130, 0.0, 0.0])), # Payload
     #     ]
-    # ap.addMasses(addedMasses)
-    return ap
+    # airplane.addMasses(addedMasses)
+    return airplane

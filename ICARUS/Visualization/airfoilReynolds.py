@@ -10,7 +10,7 @@ def plotAirfoilReynolds(data, airfoil, reyn, solvers="All", size=(10, 10)):
         f"NACA {airfoil[4:]}- Reynolds={reyn}\n Aero Coefficients",
         fontsize=16,
     )
-    axs[0, 0].set_title("Cm vs AoA")
+    axs[0, 0].set_title("Cm vs AoA")  # type: ignore
     axs[0, 0].set_ylabel("Cm")
 
     axs[0, 1].set_title("Cd vs AoA")

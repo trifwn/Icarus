@@ -33,7 +33,6 @@ def runXFoil(
     ftrip_up=0.1,
     Ncrit=9,
 ):
-
     xf = XFoil()
     xf.Re = Reyn
     xf.n_crit = Ncrit
@@ -124,22 +123,24 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     xpts, ypts = pts.T
     airf = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = airf
-    AoAmin = min(angles)
-    AoAmax = max(angles)
+    # AoAmin = min(angles)
+    # AoAmax = max(angles)
 
     nangles, pangles = anglesSep(angles)
     cps = []
     cpsn = []
+    x = []
 
     for a in pangles:
         xf.a(a)
         x, y, cp = xf.get_cp_distribution()
         cps.append(cp)
 
-    for a in pangles:
+    for a in nangles:
         xf.a(a)
         x, y, cp = xf.get_cp_distribution()
         cpsn.append(cp)
+
     return [cpsn, nangles], [cps, pangles], x
 
 

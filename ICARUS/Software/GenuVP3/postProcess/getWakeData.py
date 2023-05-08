@@ -34,8 +34,8 @@ def getWakeData(plane, case):
                 _, x, y, z = (float(i) for i in foo)
                 c.append([x, y, z])
 
-    A1 = np.array(a)
-    B1 = np.array(b)
-    C1 = np.array(c)
+    A1 = np.array(a, dtype=float)
+    B1 = np.array(b, dtype=float)
+    C1 = np.array(c, dtype=float)
 
     return A1, B1, C1

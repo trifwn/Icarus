@@ -3,9 +3,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from . import colors
-from . import markers
-
 
 def plotCP(angle):
     fname = "COEFPRE.OUT"

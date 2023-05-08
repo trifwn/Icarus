@@ -1,8 +1,10 @@
 import inspect
+from typing import Union
 
 import jsonpickle
 import jsonpickle.ext.numpy as jsonpickle_numpy
 import jsonpickle.ext.pandas as jsonpickle_pd
+import numpy as np
 from tabulate import tabulate
 
 from .options import Option
@@ -27,14 +29,14 @@ class Analysis:
             for option in solver_options.keys():
                 value, desc = solver_options[option]
                 self.solver_options[option] = Option(option, value, desc)
-        void = lambda: None
+
         if callable(unhook):
             self.unhook = unhook
         elif unhook is None:
-            self.unhook = void
+            self.unhook = lambda: 0
         else:
             print("Unhook must be a function! Defaulting to None")
-            self.unhook = void
+            self.unhook = lambda: 0
 
     def __str__(self):
         string = f"Available Options of {self.solverName} for {self.name}: \n\n"
@@ -116,7 +118,7 @@ class Analysis:
             print(self)
             return -1
 
-    def getResults(self):
+    def getResults(self) -> Union[np.ndarray, int]:
         print("Getting Results")
         args_needed = list(inspect.signature(self.unhook).parameters.keys())
         args = {}
@@ -160,8 +162,9 @@ class Analysis:
     def __setstate__(self, state):
         self.solverName, self.name, self.execute, self.options = state
 
-    def toJSON(self):
-        return jsonpickle.encode(self)
+    def toJSON(self) -> str:
+        encoded = jsonpickle.encode(self)
+        return encoded
 
     def __lshift__(self, other):
         """overloading operator <<"""

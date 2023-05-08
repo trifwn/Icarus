@@ -1,4 +1,4 @@
-from .disturbances import disturbance as dst
+from .disturbances import Disturbance as dst
 
 
 def longitudalPerturb(plane, scheme, epsilon):

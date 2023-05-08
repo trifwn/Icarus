@@ -4,7 +4,6 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from ICARUS.Core.formatting import ff
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
@@ -51,11 +50,13 @@ def dfile(params):
     data[
         55
     ] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
-    data[59] = f'{ff2(params["Uinf"][0])}       UINF(1)    the velocity at infinity\n'
-    data[60] = f'{ff2(params["Uinf"][1])}       UINF(2)    .\n'
-    data[61] = f'{ff2(params["Uinf"][2])}       UINF(3)    .\n'
+    data[
+        59
+    ] = f'{ff2(params["u_freestream"][0])}       UINF(1)    the velocity at infinity\n'
+    data[60] = f'{ff2(params["u_freestream"][1])}       UINF(2)    .\n'
+    data[61] = f'{ff2(params["u_freestream"][2])}       UINF(3)    .\n'
 
-    DX = 1.5 * np.linalg.norm(params["Uinf"]) * params["timestep"]
+    DX = 1.5 * np.linalg.norm(params["u_freestream"]) * params["timestep"]
     if DX < 0.005:
         data[
             94
@@ -82,7 +83,7 @@ def dfile(params):
     data[120] = f'{params["visc"]}   VISCO      Kinematic viscosity\n'
     data[
         130
-    ] = f"hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
+    ] = "hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
 
     with open(fname, "w") as file:
         file.writelines(data)
@@ -151,33 +152,33 @@ def geoBodyHeader(data, body, NB):
 
 def geoBodyMovements(data, mov, i, NB):
     data.append(f"NB={NB}, lev={i}  ( {mov.name} )\n")
-    data.append(f"Rotation\n")
+    data.append("Rotation\n")
     data.append(f"{int(mov.Rtype)}           IMOVEAB  type of movement\n")
     data.append(f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
     data.append(f"{ff3(mov.Rt1)}    TMOVEAB  -1  1st time step\n")
     data.append(f"{ff3(mov.Rt2)}    TMOVEAB  -2  2nd time step\n")
-    data.append(f"0.          TMOVEAB  -3  3d  time step\n")
-    data.append(f"0.          TMOVEAB  -4  4th time step!---->omega\n")
+    data.append("0.          TMOVEAB  -3  3d  time step\n")
+    data.append("0.          TMOVEAB  -4  4th time step!---->omega\n")
     data.append(f"{ff3(mov.Ra1)}    AMOVEAB  -1  1st value of amplitude\n")
     data.append(f"{ff3(mov.Ra2)}    AMOVEAB  -2  2nd value of amplitude\n")
-    data.append(f"0.          AMOVEAB  -3  3d  value of amplitude\n")
-    data.append(f"0.          AMOVEAB  -4  4th value of amplitude!---->phase\n")
-    data.append(f"            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
-    data.append(f"Translation\n")
+    data.append("0.          AMOVEAB  -3  3d  value of amplitude\n")
+    data.append("0.          AMOVEAB  -4  4th value of amplitude!---->phase\n")
+    data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
+    data.append("Translation\n")
     data.append(f"{int(mov.Ttype)}           IMOVEUB  type of movement\n")
     data.append(f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
     data.append(f"{ff3(mov.Tt1)}    TMOVEUB  -1  1st time step\n")
     data.append(f"{ff3(mov.Tt2)}    TMOVEUB  -2  2nd time step\n")
-    data.append(f"0.          TMOVEUB  -3  3d  time step\n")
-    data.append(f"0.          TMOVEUB  -4  4th time step\n")
+    data.append("0.          TMOVEUB  -3  3d  time step\n")
+    data.append("0.          TMOVEUB  -4  4th time step\n")
     data.append(f"{ff3(mov.Ta1)}    AMOVEUB  -1  1st value of amplitude\n")
     data.append(f"{ff3(mov.Ta2)}    AMOVEUB  -2  2nd value of amplitude\n")
-    data.append(f"0.          AMOVEUB  -3  3d  value of amplitude\n")
-    data.append(f"0.          AMOVEUB  -4  4th value of amplitude\n")
-    data.append(f"            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
+    data.append("0.          AMOVEUB  -3  3d  value of amplitude\n")
+    data.append("0.          AMOVEUB  -4  4th value of amplitude\n")
+    data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cldFiles(AeroData, airfoils, solver):
+def cldFiles(AeroData, airfoils, solver: str) -> None:
     """Create Polars CL-CD-Cm files for each airfoil"""
 
     for airf in airfoils:
@@ -191,7 +192,7 @@ def cldFiles(AeroData, airfoils, solver):
         # WRITE MACH NUMBERS !! ITS NOT GOING TO BE USED !!
         data[4] = f"{len(polars)}  ! Mach numbers for which CL-CD are given\n"
         for i in range(0, len(polars)):
-            data[5 + i] = f"0.08\n"
+            data[5 + i] = "0.08\n"
 
         # WRITE REYNOLDS NUMBERS !! ITS GOING TO BE USED !!
         data[5 + len(polars)] = "! Reyn numbers for which CL-CD are given\n"
@@ -230,7 +231,7 @@ def cldFiles(AeroData, airfoils, solver):
                 f"{anglenum}         ! Number of Angles / Airfoil NACA {airf}\n",
             )
             data.append(
-                f"   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
+                "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
             )
             for i, ang in enumerate(angles):
                 string = ""
@@ -241,7 +242,6 @@ def cldFiles(AeroData, airfoils, solver):
             data.append("\n")
         with open(fname, "w") as file:
             file.writelines(data)
-    return df
 
 
 def bldFiles(bodies, params):
@@ -270,13 +270,13 @@ def bldFiles(bodies, params):
                     for m_point in n_strip:
                         file.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
             data[3] = f'0          {bod["NACA"]}       {bod["name"]}.WG\n'
-        data[6] = f"0          0          1\n"
+        data[6] = "0          0          1\n"
         data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}OUT.WG\n'
         data[12] = f'{ff4(bod["x_0"])}     {ff4(bod["y_0"])}     {ff4(bod["z_0"])}\n'
         data[
             15
         ] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
-        data[18] = f"1                      0.         1.         \n"  # KSI
+        data[18] = "1                      0.         1.         \n"  # KSI
         data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
         data[
             24

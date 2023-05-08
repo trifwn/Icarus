@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .disturbances import disturbance as dst
+from .disturbances import Disturbance as dst
 from .dyn_plane import StabilityDerivativesDS
 from .pertrubations import lateralPerturb
 from .pertrubations import longitudalPerturb
@@ -37,11 +37,11 @@ class State:
     def makeAeroCoeffs(self, Forces):
         Data = pd.DataFrame()
 
-        Data[f"CL"] = Forces[f"Fz"] / (self.Q * self.S)
-        Data[f"CD"] = Forces[f"Fx"] / (self.Q * self.S)
-        Data[f"Cm"] = Forces[f"M"] / (self.Q * self.S * self.MAC)
-        Data[f"Cn"] = Forces[f"N"] / (self.Q * self.S * self.MAC)
-        Data[f"Cl"] = Forces[f"L"] / (self.Q * self.S * self.MAC)
+        Data["CL"] = Forces["Fz"] / (self.Q * self.S)
+        Data["CD"] = Forces["Fx"] / (self.Q * self.S)
+        Data["Cm"] = Forces["M"] / (self.Q * self.S * self.MAC)
+        Data["Cn"] = Forces["N"] / (self.Q * self.S * self.MAC)
+        Data["Cl"] = Forces["L"] / (self.Q * self.S * self.MAC)
         Data["AoA"] = Forces["AoA"]
         return Data
 
@@ -67,8 +67,8 @@ class State:
             self.sensitivity[var].append(dst(var, e))
 
     def get_pertrub(self):
-        for dst in self.disturbances:
-            print(dst)
+        for disturbance in self.disturbances:
+            print(disturbance)
 
     def setPertResults(self, makePolFun, args, kwargs={}):
         petrubdf = makePolFun(*args, **kwargs)

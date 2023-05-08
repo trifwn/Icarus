@@ -1,6 +1,6 @@
 import os
 
-### MOCK CASES ###
+# MOCK CASES ###
 # 2D
 APPHOME = os.path.abspath(".")
 
@@ -9,7 +9,7 @@ BASEFOIL2W = os.path.join(APPHOME, "Data", "Mock", "BaseF2W")
 # 3D
 BASEGNVP3 = os.path.join(APPHOME, "Data", "Mock", "BaseGNVP3")
 
-### DATABASES ###
+# DATABASES ###
 DB2D = os.path.join(APPHOME, "Data", "2D")
 DB3D = os.path.join(APPHOME, "Data", "3D")
 ANALYSESDB = os.path.join(APPHOME, "Data", "Analyses")

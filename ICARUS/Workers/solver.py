@@ -1,5 +1,9 @@
 import collections
 import os
+from typing import Optional
+from typing import Union
+
+import numpy as np
 
 from .analysis import Analysis
 from ICARUS.Database.db import DB
@@ -15,8 +19,8 @@ class Solver:
         except AssertionError:
             print("Fidelity must be an integer")
         self.fidelity = fidelity
-        self.availableAnalyses = {}
-        self.mode = None
+        self.availableAnalyses: dict[str, Analysis] = {}
+        self.mode: Union[str, None] = None
 
     def addAnalyses(self, analyses):
         for analysis in analyses:
@@ -33,18 +37,20 @@ class Solver:
     def setAnalysis(self, analysis: str):
         self.mode = analysis
 
-    def getAnalysis(self, analysis: str = None) -> Analysis:
+    def getAnalysis(self, analysis: str | None = None) -> Analysis | None:
         if analysis is not None:
             try:
                 return self.availableAnalyses[analysis]
-            except:
+            except KeyError:
                 print(f"Analysis {analysis} not available")
-        try:
-            return self.availableAnalyses[self.mode]
-        except:
-            print(f"Analysis {self.mode} not available")
+        else:
+            if self.mode is not None:
+                try:
+                    return self.availableAnalyses[self.mode]
+                except KeyError:
+                    print(f"Analysis {self.mode} not available")
 
-    def printOptions(self):
+    def printOptions(self) -> None:
         if self.mode is not None:
             print(self.availableAnalyses[self.mode])
         else:
@@ -76,15 +82,15 @@ class Solver:
             print(self)
         return list(self.availableAnalyses.keys())
 
-    def run(self, analysis: str = None):
-        if analysis is None:
+    def run(self, analysis_name: str | None = None):
+        if analysis_name is None:
             if self.mode is None:
                 print("Analysis not selected or provided")
                 return -1
             analysis = self.availableAnalyses[self.mode]
         else:
-            if analysis in self.availableAnalyses.keys():
-                analysis = self.availableAnalyses[analysis]
+            if analysis_name in self.availableAnalyses.keys():
+                analysis = self.availableAnalyses[analysis_name]
             else:
                 print("Analysis not available")
                 return -1
@@ -104,15 +110,15 @@ class Solver:
         res = analysis()
         return res
 
-    def getResults(self, analysis: str = None) -> None:
-        if analysis is None:
+    def getResults(self, analysis_name: Optional[str] = None) -> Union[np.ndarray, int]:
+        if analysis_name is None:
             if self.mode is None:
                 print("Analysis not selected or provided")
                 return -1
             analysis = self.availableAnalyses[self.mode]
         else:
-            if analysis in self.availableAnalyses.keys():
-                analysis = self.availableAnalyses[analysis]
+            if analysis_name in self.availableAnalyses.keys():
+                analysis = self.availableAnalyses[analysis_name]
             else:
                 print("Analysis not available")
                 return -1

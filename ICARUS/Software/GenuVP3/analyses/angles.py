@@ -5,10 +5,11 @@ from ICARUS.Database.db import DB
 from ICARUS.Database.utils import ang2case
 from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
 from ICARUS.Software.GenuVP3.postProcess.forces import forces2polars
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 from ICARUS.Software.GenuVP3.utils import airMov
 from ICARUS.Software.GenuVP3.utils import makeSurfaceDict
 from ICARUS.Software.GenuVP3.utils import setParams
+
+# from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 
 
 def GNVPangleCase(
@@ -17,7 +18,7 @@ def GNVPangleCase(
     solver2D,
     maxiter,
     timestep,
-    Uinf,
+    u_freestream,
     angle,
     environment,
     movements,
@@ -39,7 +40,7 @@ def GNVPangleCase(
         plane,
         maxiter,
         timestep,
-        Uinf,
+        u_freestream,
         angle,
         environment,
         solver_options,
@@ -65,7 +66,7 @@ def runGNVPangles(
     solver2D,
     maxiter,
     timestep,
-    Uinf,
+    u_freestream,
     angles,
     environment,
     solver_options,
@@ -88,7 +89,7 @@ def runGNVPangles(
             solver2D,
             maxiter,
             timestep,
-            Uinf,
+            u_freestream,
             angle,
             environment,
             movements,
@@ -104,7 +105,7 @@ def runGNVPanglesParallel(
     solver2D,
     maxiter,
     timestep,
-    Uinf,
+    u_freestream,
     angles,
     environment,
     solver_options,
@@ -130,7 +131,7 @@ def runGNVPanglesParallel(
                 solver2D,
                 maxiter,
                 timestep,
-                Uinf,
+                u_freestream,
                 angle,
                 environment,
                 movements,

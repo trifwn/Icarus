@@ -1,5 +1,3 @@
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -81,10 +79,10 @@ def plotConvergence(
                 mx = np.abs(runHist[f"TAMOM{solver}(1)"].astype(float))
                 my = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
                 mz = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
-                error = runHist[f"ERROR"].astype(float)
-                errorM = runHist[f"ERRORM"].astype(float)
+                error = runHist["ERROR"].astype(float)
+                errorM = runHist["ERRORM"].astype(float)
                 it2 = it
-                if plotError == True:
+                if plotError:
                     it = it.iloc[1:].values
                     fx = np.abs(fx.iloc[1:].values - fx.iloc[:-1].values)
                     fy = np.abs(fy.iloc[1:].values - fy.iloc[:-1].values)
@@ -128,7 +126,7 @@ def plotConvergence(
                 )
             except KeyError as e:
                 print(f"Run Doesn't Exist: {plane},{e},{ang}")
-    if toomuchData == True:
+    if toomuchData:
         print(f"Too much data to plot, only plotting {len(colors)} cases")
 
     fig.tight_layout()
