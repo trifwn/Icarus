@@ -10,11 +10,11 @@ def hermes_main_wing(airfoils, name: str) -> Airplane:
     """Function to get a plane Consisting only of the main wing of the hermes plane
 
     Args:
-        airfoils (_type_): _description_
-        name (_type_): _description_
+        airfoils (dict): _description_
+        name (str): _description_
 
     Returns:
-        _type_: _description_
+        Airplane: _description_
     """
     origin = np.array([0.0, 0.0, 0.0])
 
@@ -44,10 +44,10 @@ def hermes_main_wing(airfoils, name: str) -> Airplane:
 
     # airplane.visAirplane()
 
-    # addedMasses = [
+    # point_masses = [
     #     (0.500 , np.array([-0.40, 0.0, 0.0])), # Motor
     #     (1.000 , np.array([0.090, 0.0, 0.0])), # Battery
     #     (0.900 , np.array([0.130, 0.0, 0.0])), # Payload
     #     ]
-    # airplane.addMasses(addedMasses)
+    # airplane.addMasses(point_masses)
     return airplane

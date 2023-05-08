@@ -36,6 +36,8 @@ def wing_var_chord_offset(
     )
     # main_wing.plotWing()
     lifting_surfaces = [main_wing]
+    # main_wing.plotWing()
+    lifting_surfaces = [main_wing]
 
     addedMasses = [
         (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Motor

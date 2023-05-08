@@ -1,3 +1,4 @@
+"""This module defines the hermes plane object."""
 import numpy as np
 
 from ICARUS.Vehicle.plane import Airplane
@@ -51,14 +52,14 @@ def hermes(airfoils, name):
     )
     # elevator.plotWing()
 
-    rudderPos = np.array([0.47 - 0.159 / 4, 0.0, 0.01])
-    rudderOrientantion = np.array([0.0, 0.0, 90.0])
+    rudder_position = np.array([0.47 - 0.159 / 4, 0.0, 0.01])
+    rudder_orientation = np.array([0.0, 0.0, 90.0])
 
     rudder = Wing(
         name="rudder",
         airfoil=airfoils["NACA0008"],
-        origin=origin + rudderPos,
-        orientation=rudderOrientantion,
+        origin=origin + rudder_position,
+        orientation=rudder_orientation,
         is_symmetric=False,
         span=0.160,
         sweep_offset=0.1,
@@ -74,7 +75,7 @@ def hermes(airfoils, name):
 
     lifting_surfaces = [main_wing, elevator, rudder]
 
-    addedMasses = [
+    point_masses = [
         (0.500, np.array([-0.40, 0.0, 0.0])),  # Motor
         (1.000, np.array([0.090, 0.0, 0.0])),  # Battery
         (0.900, np.array([0.130, 0.0, 0.0])),  # Payload
@@ -84,6 +85,6 @@ def hermes(airfoils, name):
     # from ICARUS.Database import DB3D
     # airplane.accessDB(HOMEDIR, DB3D)
     # airplane.visAirplane()
-    airplane.addMasses(addedMasses)
+    airplane.addMasses(point_masses)
 
     return airplane

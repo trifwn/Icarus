@@ -32,7 +32,7 @@ def main():
     airfoils = foildb.getAirfoils()
 
     # # Get Plane
-    planes = list()
+    planes = []
     planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
 
     planes.append(
@@ -44,16 +44,16 @@ def main():
     planes.append(wing_var_chord_offset(airfoils, "taper", [0.159, 0.072], 0.0))
 
     timestep = {
-        "orthogonal": 5e-2,
-        "orthogonalSweep": 5e-2,
-        "taperSweep": 5e-2,
-        "taper": 5e-2,
+        "orthogonal": 1e-3,
+        "orthogonalSweep": 1e-3,
+        "taperSweep": 1e-3,
+        "taper": 1e-3,
     }
     maxiter = {
-        "orthogonal": 5e-2,
-        "orthogonalSweep": 5e-2,
-        "taperSweep": 5e-2,
-        "taper": 5e-2,
+        "orthogonal": 400,
+        "orthogonalSweep": 400,
+        "taperSweep": 400,
+        "taper": 400,
     }
 
     for airplane in planes:
