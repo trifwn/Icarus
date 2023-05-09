@@ -77,9 +77,9 @@ class Strip:
             strip: 3xn_points array of points
         """
         x: ndarray[Any, dtype[floating[Any]]] = np.linspace(
-            self.x0,
-            self.x1,
-            n_points_span,
+            start=self.x0,
+            stop=self.x1,
+            num=n_points_span,
         )
         y: ndarray[Any, dtype[floating[Any]]] = np.linspace(
             self.y0,
@@ -107,9 +107,9 @@ class Strip:
         )
         return strip
 
-    def plotStrip(self, fig=None, ax=None, movement=None, color=None):
+    def plotStrip(self, prev_fig=None, prev_ax=None, movement=None, color=None):
         pltshow = False
-        if fig is None:
+        if prev_fig is None:
             fig = plt.figure()
             ax = fig.add_subplot(projection="3d")
             ax.set_title("Strip")
@@ -119,6 +119,9 @@ class Strip:
             ax.axis("scaled")
             ax.view_init(30, 150)
             pltshow = True
+        else:
+            fig = prev_fig
+            ax = prev_ax
 
         if movement is None:
             movement = np.zeros(3)

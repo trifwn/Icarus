@@ -1,6 +1,6 @@
 import numpy as np
 
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
+from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 
 
 def longitudalStability(plane, mode="2D"):
@@ -52,8 +52,8 @@ def longitudalStability(plane, mode="2D"):
         elif var == "q":
             de *= -np.pi / 180
 
-        back = rotateForces(back, plane.trim["AoA"])
-        front = rotateForces(front, plane.trim["AoA"])
+        back = rotate_forces(back, plane.trim["AoA"])
+        front = rotate_forces(front, plane.trim["AoA"])
         Xf = float(front[f"Fx_{mode}"].to_numpy())
         Xb = float(back[f"Fx_{mode}"].to_numpy())
         X[var] = (Xf - Xb) / de

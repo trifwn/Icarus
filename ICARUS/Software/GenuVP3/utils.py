@@ -1,10 +1,49 @@
+import dis
+from typing import Any
+
 import numpy as np
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+
+from ICARUS.Flight_Dynamics.disturbances import Disturbance
+from ICARUS.Vehicle.wing import Wing
 
 
-def airMov(surfaces, CG, orientation, disturbances):
-    movement = []
-    for surface in surfaces:
-        sequence = []
+class Movement:
+    def __init__(self, name, Rotation, Translation):
+        self.name = name
+        self.Rtype = Rotation["type"]
+
+        self.Raxis = Rotation["axis"]
+
+        self.Rt1 = Rotation["t1"]
+        self.Rt2 = Rotation["t2"]
+
+        self.Ra1 = Rotation["a1"]
+        self.Ra2 = Rotation["a2"]
+
+        self.Ttype = Translation["type"]
+
+        self.Taxis = Translation["axis"]
+
+        self.Tt1 = Translation["t1"]
+        self.Tt2 = Translation["t2"]
+
+        self.Ta1 = Translation["a1"]
+        self.Ta2 = Translation["a2"]
+
+
+def define_movements(
+    surfaces: list[Wing],
+    CG: ndarray[Any, dtype[floating]],
+    orientation: ndarray[Any, dtype[floating]],
+    disturbances: list[Disturbance],
+) -> list[list[Movement]]:
+
+    movement: list[list[Movement]] = []
+    for _ in surfaces:
+        sequence: list[Movement] = []
         for name, axis in [["pitch", 2], ["roll", 1], ["yaw", 3]]:
             Rotation = {
                 "type": 1,
@@ -34,24 +73,29 @@ def airMov(surfaces, CG, orientation, disturbances):
     return movement
 
 
-def setParams(
+def set_parameters(
     bodies,
     plane,
     maxiter,
     timestep,
     u_freestream,
-    angle,
+    angle_deg,
     environment,
     solver_options,
-):
-    nBodies = len(bodies)
-    nAirfoils = len(plane.airfoils)
-    angle = angle * np.pi / 180
-    dens = environment.AirDensity
-    visc = environment.AirDynamicViscosity
+) -> dict[str, Any]:
 
-    airVelocity = [u_freestream * np.cos(angle), 0.0, u_freestream * np.sin(angle)]
-    params = {
+    nBodies: int = len(bodies)
+    nAirfoils: int = len(plane.airfoils)
+    angle: float = angle_deg * np.pi / 180
+    dens: float = environment.air_density
+    visc: float = environment.air_dynamic_viscosity
+
+    airVelocity: list[float] = [
+        u_freestream * np.cos(angle),
+        0.0,
+        u_freestream * np.sin(angle),
+    ]
+    params: dict[str, Any] = {
         "nBods": nBodies,
         "nBlades": nAirfoils,
         "maxiter": maxiter,
@@ -96,15 +140,15 @@ def setParams(
     return params
 
 
-def makeSurfaceDict(surf, idx):
+def make_surface_dict(surf: Wing, idx) -> dict[str, Any]:
     if surf.is_symmetric:
-        N = 2 * surf.N - 1
-        M = surf.M
+        N: int = 2 * surf.N - 1
+        M: int = surf.M
     else:
         N = surf.N
         M = surf.M
 
-    s = {
+    surface_dict: dict[str, Any] = {
         "NB": idx,
         "NACA": surf.airfoil.name,
         "name": surf.name,
@@ -126,7 +170,7 @@ def makeSurfaceDict(surf, idx):
         "Offset": surf._offset_dist[-1],
         "Grid": surf.getGrid(),
     }
-    return s
+    return surface_dict
 
 
 def distrubance2movement(disturbance):
@@ -171,27 +215,3 @@ def distrubance2movement(disturbance):
         Translation = dist
 
     return Movement(disturbance.name, Rotation, Translation)
-
-
-class Movement:
-    def __init__(self, name, Rotation, Translation):
-        self.name = name
-        self.Rtype = Rotation["type"]
-
-        self.Raxis = Rotation["axis"]
-
-        self.Rt1 = Rotation["t1"]
-        self.Rt2 = Rotation["t2"]
-
-        self.Ra1 = Rotation["a1"]
-        self.Ra2 = Rotation["a2"]
-
-        self.Ttype = Translation["type"]
-
-        self.Taxis = Translation["axis"]
-
-        self.Tt1 = Translation["t1"]
-        self.Tt2 = Translation["t2"]
-
-        self.Ta1 = Translation["a1"]
-        self.Ta2 = Translation["a2"]

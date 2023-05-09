@@ -1,11 +1,15 @@
 class Disturbance:
     """Class for represanting disturbances"""
 
-    def __init__(self, variable: str | None, amplitude: float) -> None:
-        self.amplitude = amplitude
-        if amplitude > 0:
+    def __init__(self, variable: str | None, amplitude_value: float) -> None:
+        if amplitude_value > 0:
             self.isPositive = True
-        else:
+            self.amplitude = amplitude_value
+        elif amplitude_value < 0:
+            self.amplitude = amplitude_value
+            self.isPositive = False
+        elif amplitude_value == 0:
+            self.amplitude = None
             self.isPositive = False
 
         if variable == "u":

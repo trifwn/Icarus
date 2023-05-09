@@ -21,10 +21,10 @@ class TestAdd(unittest.TestCase):
             [2.082, 0.017, 2.099, 0.0, 0.139, 0.0],
         )
 
-        S, mean_aerodynamic_chord, AREA, CG, INERTIA = wing_test.geom()
+        S, MAC, AREA, CG, INERTIA = wing_test.geom()
 
         np.testing.assert_almost_equal(S, S_act, decimal=4)
-        np.testing.assert_almost_equal(mean_aerodynamic_chord, MAC_act, decimal=4)
+        np.testing.assert_almost_equal(MAC, MAC_act, decimal=4)
         np.testing.assert_almost_equal(AREA, AREA_act, decimal=4)
         np.testing.assert_almost_equal(CG, CG_act, decimal=3)
         np.testing.assert_almost_equal(INERTIA, I_act, decimal=3)

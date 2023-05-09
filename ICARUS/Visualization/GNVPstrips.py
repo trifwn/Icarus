@@ -41,7 +41,9 @@ def GNVPstrips3D(
         for j, surf in enumerate(wg.all_strips):
             stripD: DataFrame = data[(data["Body"] == i) & (data["Strip"] == j + 1)]
 
-            stripD_values = float(stripD[category].values)
+            stripD_values: list[float] = [
+                float(item) for item in stripD[category].values
+            ]
             color = cmap(norm(stripD_values))
             surf.plotStrip(fig, ax, None, color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)

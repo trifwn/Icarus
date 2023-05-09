@@ -1,6 +1,6 @@
 import numpy as np
 
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
+from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 
 
 def lateralStability(plane, mode="2D"):
@@ -38,8 +38,8 @@ def lateralStability(plane, mode="2D"):
         if var != "v":
             de *= np.pi / 180
 
-        back = rotateForces(back, plane.trim["AoA"])
-        front = rotateForces(front, plane.trim["AoA"])
+        back = rotate_forces(back, plane.trim["AoA"])
+        front = rotate_forces(front, plane.trim["AoA"])
 
         Yf = float(front[f"Fy_{mode}"].to_numpy())
         Yb = float(back[f"Fy_{mode}"].to_numpy())

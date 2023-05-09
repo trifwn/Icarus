@@ -10,9 +10,10 @@ import numpy as np
 from Data.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
+from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH
-from ICARUS.Flight_Dynamics.dyn_plane import dyn_Airplane as dp
+from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane as dp
 from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
 from ICARUS.Software.XFLR5.polars import readPolars2D
 from ICARUS.Vehicle.plane import Airplane
@@ -22,13 +23,13 @@ from ICARUS.Vehicle.plane import Airplane
 # # MODULES
 
 
-def main():
+def main() -> None:
     """Main function to run the simulations."""
-    start_time = time.time()
+    start_time: float = time.time()
 
     # # DB CONNECTION
     db = DB()
-    foildb = db.foilsDB
+    foildb: Database_2D = db.foilsDB
     foildb.loadData()
     readPolars2D(foildb, XFLRDB)
     airfoils = foildb.getAirfoils()
@@ -77,7 +78,7 @@ def main():
         NO_AOA = (AOA_MAX - AOA_MIN) + 1
         angles = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
         UINF = 20
-        airplane.defineSim(UINF, EARTH.AirDensity)
+        airplane.defineSim(UINF, EARTH.air_density)
 
         options.plane.value = airplane
         options.environment.value = EARTH
@@ -133,7 +134,7 @@ def main():
         if options is None:
             raise ValueError("Options not set")
         # Set Options
-        dyn.defineSim(dyn.trim["U"], EARTH.AirDensity)
+        dyn.defineSim(dyn.trim["U"], EARTH.air_density)
         options.plane.value = dyn
         options.environment.value = EARTH
         options.db.value = db
@@ -146,7 +147,7 @@ def main():
         # Run Analysis
         gnvp3.printOptions()
 
-        pert_time = time.time()
+        pert_time: float = time.time()
         print("Running Pertrubations")
         gnvp3.run()
         print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")

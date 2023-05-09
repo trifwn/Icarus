@@ -120,7 +120,7 @@ class Wing:
         # Calculate Moments
         self._inertia(self.mass, self.CG)
 
-    def split_symmetric_wing(self) -> tuple[Wing, Wing] | None:
+    def split_symmetric_wing(self) -> tuple[Wing, Wing]:
         """Split Symmetric Wing into two Wings"""
         if self.is_symmetric:
             left = Wing(
@@ -165,13 +165,12 @@ class Wing:
             )
             return left, right
         else:
-            print("Cannot Split Body it is not symmetric")
-            return None
+            raise ValueError("Cannot Split Body it is not symmetric")
 
     def create_strips(self) -> None:
         """Create Strips given the Grid and Airfoil"""
-        strips = []
-        symStrips = []
+        strips: list[Strip] = []
+        symStrips: list[Strip] = []
         for i in np.arange(0, self.N - 1):
             startPoint = np.array(
                 [

@@ -4,17 +4,27 @@ import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 
 from ICARUS.Database import DB3D
+from ICARUS.Flight_Dynamics.disturbances import Disturbance
+from ICARUS.Vehicle.wing import Wing
 
 jsonpickle_pd.register_handlers()
 
 
 class Airplane:
-    def __init__(self, name, surfaces, disturbances=None, orientation=None):
+    def __init__(
+        self,
+        name: str,
+        surfaces: list[Wing],
+        disturbances: list[Disturbance] | None = None,
+        orientation=None,
+    ) -> None:
+
         self.name = name
         self.CASEDIR = name
-        self.surfaces = surfaces
+        self.surfaces: list[Wing] = surfaces
         self.masses = []
 
         if disturbances is None:
@@ -61,8 +71,8 @@ class Airplane:
         self.CG = self.findCG()
         self.total_inertia = self.findInertia(self.CG)
 
-    def get_seperate_surfaces(self):
-        surfaces = []
+    def get_seperate_surfaces(self) -> list[Wing]:
+        surfaces: list[Wing] = []
         for i, surface in enumerate(self.surfaces):
             if surface.is_symmetric:
                 l, r = surface.split_symmetric_wing()
@@ -122,9 +132,9 @@ class Airplane:
                 airfoils.append(f"NACA{surface.airfoil.name}")
         return airfoils
 
-    def visAirplane(self, fig=None, ax=None, movement=None):
-        if fig is None:
-            fig = plt.figure()
+    def visAirplane(self, prev_fig=None, prev_ax=None, movement=None):
+        if prev_fig is None:
+            fig: Figure = plt.figure()
             ax = fig.add_subplot(projection="3d")
             ax.set_title(self.name)
             ax.set_xlabel("x")
@@ -135,6 +145,9 @@ class Airplane:
             ax.set_xlim(-1, 1)
             ax.set_ylim(-1, 1)
             ax.set_zlim(-1, 1)
+        else:
+            fig = prev_fig
+            ax = prev_ax
 
         if movement is None:
             mov = np.zeros(3)
@@ -162,7 +175,7 @@ class Airplane:
             color="b",
         )
 
-    def defineSim(self, u, dens) -> None:
+    def defineSim(self, u, dens):
         self.u_freestream: float = u
         self.dens: float = dens
         self.dynamic_pressure: float = 0.5 * dens * u**2

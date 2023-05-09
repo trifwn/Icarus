@@ -1,20 +1,22 @@
 import os
 
+from pandas import DataFrame
+
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.db import DB
-from ICARUS.Database.utils import ang2case
+from ICARUS.Database.utils import angle_to_case
 from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
-from ICARUS.Software.GenuVP3.postProcess.forces import forces2polars
-from ICARUS.Software.GenuVP3.utils import airMov
-from ICARUS.Software.GenuVP3.utils import makeSurfaceDict
-from ICARUS.Software.GenuVP3.utils import setParams
+from ICARUS.Software.GenuVP3.postProcess.forces import forces_to_polars
+from ICARUS.Software.GenuVP3.utils import define_movements
+from ICARUS.Software.GenuVP3.utils import make_surface_dict
+from ICARUS.Software.GenuVP3.utils import set_parameters
 
 # from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 
 
 def GNVPangleCase(
     plane,
-    db,
+    db: DB,
     solver2D,
     maxiter,
     timestep,
@@ -24,18 +26,18 @@ def GNVPangleCase(
     movements,
     bodies,
     solver_options,
-):
+) -> str:
     HOMEDIR = db.HOMEDIR
     PLANEDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
     airfoils = plane.airfoils
     foilsDB = db.foilsDB
 
     print(f"Running Angles {angle}")
-    folder = ang2case(angle)
+    folder = angle_to_case(angle)
     CASEDIR = os.path.join(PLANEDIR, folder)
     os.makedirs(CASEDIR, exist_ok=True)
 
-    params = setParams(
+    params = set_parameters(
         bodies,
         plane,
         maxiter,
@@ -71,7 +73,12 @@ def runGNVPangles(
     environment,
     solver_options,
 ):
-    movements = airMov(plane.surfaces, plane.CG, plane.orientation, plane.disturbances)
+    movements = define_movements(
+        plane.surfaces,
+        plane.CG,
+        plane.orientation,
+        plane.disturbances,
+    )
     bodies = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces = plane.get_seperate_surfaces()
@@ -79,7 +86,7 @@ def runGNVPangles(
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(make_surface_dict(surface, i))
 
     print("Running Angles in Sequential Mode")
     for angle in angles:
@@ -110,7 +117,12 @@ def runGNVPanglesParallel(
     environment,
     solver_options,
 ):
-    movements = airMov(plane.surfaces, plane.CG, plane.orientation, plane.disturbances)
+    movements = define_movements(
+        plane.surfaces,
+        plane.CG,
+        plane.orientation,
+        plane.disturbances,
+    )
     bodies = []
 
     if solver_options["Split_Symmetric_Bodies"]:
@@ -118,7 +130,7 @@ def runGNVPanglesParallel(
     else:
         surfaces = plane.surfaces
     for i, surface in enumerate(surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(make_surface_dict(surface, i))
 
     from multiprocessing import Pool
 
@@ -146,9 +158,9 @@ def runGNVPanglesParallel(
             print(msg)
 
 
-def processGNVPangles(plane, db: DB):
-    HOMEDIR = db.HOMEDIR
-    CASEDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
-    forces = forces2polars(CASEDIR, HOMEDIR)
+def processGNVPangles(plane, db: DB) -> DataFrame:
+    HOMEDIR: str = db.HOMEDIR
+    CASEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    forces: DataFrame = forces_to_polars(CASEDIR, HOMEDIR)
     # rotatedforces = rotateForces(forces, forces["AoA"])
     return forces  # , rotatedforces

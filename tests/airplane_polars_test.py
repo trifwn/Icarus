@@ -18,9 +18,9 @@ def airPolars(plot: bool | None = False):
     readPolars3D(db3d, BMARKLOC, "bmark")
     planenames.append("XFLR_bmark")
     if plot:
-        from ICARUS.Visualization.airplanePolars import plotAirplanePolars
+        from ICARUS.Visualization.airplanePolars import plot_airplane_polars
 
-        plotAirplanePolars(db3d.data, planenames, ["All"], size=(10, 10))
+        plot_airplane_polars(db3d.data, planenames, ["All"], size=(10, 10))
 
     desired = db3d.data["XFLR_bmark"]
     actual = db3d.data["bmark"]

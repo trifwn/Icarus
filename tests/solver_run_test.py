@@ -1,9 +1,16 @@
 import time
+from typing import Any
 
 import numpy as np
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+
+from ICARUS.Core.struct import Struct
+from ICARUS.Workers.solver import Solver
 
 
-def gnvprun(mode="Parallel"):
+def gnvprun(mode: str = "Parallel") -> None:
     print("Testing GNVP Running...")
 
     # Get Plane, DB
@@ -15,12 +22,12 @@ def gnvprun(mode="Parallel"):
     # Get Solver
     from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
 
-    gnvp3 = get_gnvp3(db)
+    gnvp3: Solver = get_gnvp3(db)
 
     # Set Analysis
     if mode == "Parallel":
         # gnvp3.setParallel(True)
-        analysis = gnvp3.getAvailableAnalyses()[2]
+        analysis: str = gnvp3.getAvailableAnalyses()[2]
     else:
         analysis = gnvp3.getAvailableAnalyses()[1]
 
@@ -32,13 +39,13 @@ def gnvprun(mode="Parallel"):
     AoAmin = -3
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
-    angles = np.linspace(AoAmin, AoAmax, NoAoA)
-    angles = [ang for ang in angles if ang != 0]
+    angles_all: ndarray[Any, dtype[Any]] = np.linspace(AoAmin, AoAmax, NoAoA)
+    angles: list[float] = [ang for ang in angles_all if ang != 0]
     u_freestream = 20
     maxiter = 20
     timestep = 10
 
-    airplane.defineSim(u_freestream, EARTH.AirDensity)
+    airplane.defineSim(u_freestream, EARTH.air_density)
 
     options.plane.value = airplane
     options.environment.value = EARTH
@@ -50,11 +57,11 @@ def gnvprun(mode="Parallel"):
     options.angles.value = angles
 
     _ = gnvp3.getOptions(verbose=True)
-    start_time = time.perf_counter()
+    start_time: float = time.perf_counter()
 
     gnvp3.run()
 
-    end_time = time.perf_counter()
+    end_time: float = time.perf_counter()
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 

@@ -2,12 +2,12 @@ import os
 
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.db import DB
-from ICARUS.Database.utils import dst2case
+from ICARUS.Database.utils import disturbance_to_case
 from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
-from ICARUS.Software.GenuVP3.postProcess.forces import forces2pertrubRes
-from ICARUS.Software.GenuVP3.utils import airMov
-from ICARUS.Software.GenuVP3.utils import makeSurfaceDict
-from ICARUS.Software.GenuVP3.utils import setParams
+from ICARUS.Software.GenuVP3.postProcess.forces import forces_to_pertrubation_results
+from ICARUS.Software.GenuVP3.utils import define_movements
+from ICARUS.Software.GenuVP3.utils import make_surface_dict
+from ICARUS.Software.GenuVP3.utils import set_parameters
 
 
 def GNVPdstCase(
@@ -29,14 +29,14 @@ def GNVPdstCase(
     airfoils = plane.airfoils
     foilsDB = db.foilsDB
 
-    movements = airMov(bodies, plane.CG, plane.orientation, [dst])
+    movements = define_movements(bodies, plane.CG, plane.orientation, [dst])
 
     print(f"Running Case {dst.var} - {dst.amplitude}")
-    folder = dst2case(dst)
+    folder = disturbance_to_case(dst)
     CASEDIR = os.path.join(PLANEDIR, analysis, folder)
     os.makedirs(CASEDIR, exist_ok=True)
 
-    params = setParams(
+    params = set_parameters(
         bodies,
         plane,
         maxiter,
@@ -79,7 +79,7 @@ def runGNVPpertr(
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(make_surface_dict(surface, i))
 
     for dst in plane.disturbances:
         msg = GNVPdstCase(
@@ -117,7 +117,7 @@ def runGNVPpertrParallel(
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(make_surface_dict(surface, i))
 
     disturbances = plane.disturbances
 
@@ -166,7 +166,7 @@ def runGNVPsensitivity(
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(make_surface_dict(surface, i))
 
     for dst in plane.sensitivity[var]:
         msg = GNVPdstCase(
@@ -205,7 +205,7 @@ def runGNVPsensitivityParallel(
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies.append(makeSurfaceDict(surface, i))
+        bodies.append(make_surface_dict(surface, i))
 
     disturbances = plane.sensitivity[var]
 
@@ -238,7 +238,7 @@ def runGNVPsensitivityParallel(
 def processGNVPpertrubations(plane, db: DB):
     HOMEDIR = db.HOMEDIR
     DYNDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
-    forces = forces2pertrubRes(DYNDIR, HOMEDIR)
+    forces = forces_to_pertrubation_results(DYNDIR, HOMEDIR)
     # rotatedforces = rotateForces(forces, forces["AoA"])
     return forces  # rotatedforces
 

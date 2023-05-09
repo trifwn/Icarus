@@ -1,20 +1,25 @@
+from struct import Struct
+
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import ndarray
+from pandas import DataFrame
 
 from . import colors
 from . import markers
+from ICARUS.Vehicle.plane import Airplane
 
 
 def plotSensitivity(
-    data,
-    plane,
-    trim,
-    relative=False,
-    vars2s=["All"],
-    solvers=["2D"],
-    size=(16, 7),
+    data: Struct,
+    plane: Airplane,
+    trim: DataFrame,
+    relative: bool = False,
+    vars2s: list[str] = ["All"],
+    solvers: list[str] = ["2D"],
+    size: tuple[int, int] = (16, 7),
 ) -> None:
+
     fig: Figure = plt.figure()
     axs: ndarray = fig.subplots(2, 3)
     fig.suptitle(f"{plane.name} Convergence", fontsize=16)

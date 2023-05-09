@@ -2,8 +2,8 @@ import os
 import subprocess
 
 from .filesGNVP import makeInput
-from .postProcess.forces import forces2pertrubRes
-from .postProcess.forces import forces2polars
+from .postProcess.forces import forces_to_pertrubation_results
+from .postProcess.forces import forces_to_polars
 
 
 def GNVPexe(HOMEDIR, ANGLEDIR):
@@ -24,11 +24,11 @@ def GNVPexe(HOMEDIR, ANGLEDIR):
 
 
 def makePolar(CASEDIR, HOMEDIR):
-    return forces2polars(CASEDIR, HOMEDIR)
+    return forces_to_polars(CASEDIR, HOMEDIR)
 
 
 def pertrResults(DYNDIR, HOMEDIR):
-    return forces2pertrubRes(DYNDIR, HOMEDIR)
+    return forces_to_pertrubation_results(DYNDIR, HOMEDIR)
 
 
 def runGNVPcase(

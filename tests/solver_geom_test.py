@@ -1,6 +1,6 @@
 import numpy as np
 
-from ICARUS.Database.utils import ang2case
+from ICARUS.Database.utils import angle_to_case
 from ICARUS.Software.GenuVP3.postProcess.getWakeData import getWakeData
 from ICARUS.Visualization.GNVPwake import GNVPwake
 
@@ -8,7 +8,7 @@ from ICARUS.Visualization.GNVPwake import GNVPwake
 def gnvpGeom(plot: bool = False):
     from Data.Planes.simple_wing import airplane
 
-    case = ang2case(2.0)
+    case = angle_to_case(2.0)
     _, _, gridGNVP = getWakeData(airplane, case)
     gridAP = []
     for surface in airplane.surfaces:

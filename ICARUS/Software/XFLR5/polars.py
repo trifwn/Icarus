@@ -2,23 +2,27 @@ import os
 
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
+
+from ICARUS.Database.Database_2D import Database_2D
 
 
-def readPolars2D(db, XFLRdir):
+def readPolars2D(db: Database_2D, XFLRdir: str) -> None:
+
     HOMEDIR = db.HOMEDIR
     os.chdir(XFLRdir)
-    files = next(os.walk("."))[1]
-    for airf in files:
+    directories: list[str] = next(os.walk("."))[1]
+    for airf in directories:
         if airf not in db.data.keys():
             db.data[airf] = {}
         if airf.startswith("NACA"):
             os.chdir(airf)
-            dat = next(os.walk("."))[2]
-            for polar in dat:
+            directory_files: list[str] = next(os.walk("."))[2]
+            for polar in directory_files:
                 if polar.startswith("NACA"):
-                    foo = polar[4:].split("_")
-                    reyn = float(foo[2][2:]) * 1e6
-                    dat = pd.read_csv(
+                    foo: list[str] = polar[4:].split("_")
+                    reyn: float = float(foo[2][2:]) * 1e6
+                    dat: DataFrame = pd.read_csv(
                         polar,
                         sep="  ",
                         header=None,
@@ -41,12 +45,12 @@ def readPolars2D(db, XFLRdir):
                     )
                     if "XFLR" not in db.data[airf].keys():
                         db.data[airf]["XFLR"] = {}
-                    reyn = np.format_float_scientific(
+                    reyn_str: str = np.format_float_scientific(
                         reyn,
                         sign=False,
                         precision=3,
                     ).replace("+", "")
-                    db.data[airf]["XFLR"][reyn] = dat
+                    db.data[airf]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 

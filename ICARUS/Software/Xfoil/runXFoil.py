@@ -1,13 +1,17 @@
 import os
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+from pandas import DataFrame
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
 
-def angles_sepatation(anglesALL):
+def angles_sepatation(all_angles: list[float]) -> tuple[list[float], list[float]]:
     """Separate angles in positive and negative.
 
     Args:
@@ -17,9 +21,9 @@ def angles_sepatation(anglesALL):
         _type_: _description_
     """
 
-    pangles = []
-    nangles = []
-    for ang in anglesALL:
+    pangles: list[float] = []
+    nangles: list[float] = []
+    for ang in all_angles:
         if ang > 0:
             pangles.append(ang)
         elif ang == 0:
@@ -32,16 +36,16 @@ def angles_sepatation(anglesALL):
 
 
 def runXFoil(
-    Reyn,
-    MACH,
-    AoAmin,
-    AoAmax,
-    AoAstep,
-    pts,
-    ftrip_low=0.1,
-    ftrip_up=0.1,
-    Ncrit=9,
-):
+    Reyn: float,
+    MACH: float,
+    AoAmin: float,
+    AoAmax: float,
+    AoAstep: float,
+    pts: ndarray[Any, dtype[floating]],
+    ftrip_low: float = 0.1,
+    ftrip_up: float = 0.1,
+    Ncrit: float = 9,
+) -> ndarray[Any, dtype[floating]]:
     xf = XFoil()
     xf.Re = Reyn
     xf.n_crit = Ncrit
@@ -56,54 +60,67 @@ def runXFoil(
     return np.array([aXF, clXF, cdXF, cmXF]).T
 
 
-def batchRUN(Reynolds, MACH, AoAmin, AoAmax, AoAstep, pts):
-    Data = []
+def multiple_reynolds_run(
+    Reynolds: list[float],
+    MACH: float,
+    AoAmin: float,
+    AoAmax: float,
+    AoAstep: float,
+    pts: ndarray[Any, dtype[floating]],
+) -> list[dict[str, ndarray]]:
+
+    Data: list[ndarray[Any, dtype[floating]]] = []
     for Re in Reynolds:
         clcdcmXF = runXFoil(Re, MACH, AoAmin, AoAmax, AoAstep, pts)
         Data.append(clcdcmXF)
 
-    Redicts = []
+    Redicts: list[dict[str, ndarray]] = []
     for i, batchRe in enumerate(Data):
-        tempDict = {}
+        tempDict: dict[str, ndarray] = {}
         for bathchAng in batchRe:
             tempDict[str(bathchAng[0])] = bathchAng[1:4]
         Redicts.append(tempDict)
     return Redicts
 
 
-def saveXfoil(airfoils, polars, Reynolds):
-    masterDir = os.getcwd()
+def saveXfoil(
+    airfoils: str,
+    polars: list[list[dict[str, ndarray]]],
+    Reynolds: list[float],
+) -> None:
+
+    masterDir: str = os.getcwd()
     os.chdir(masterDir)
-    for airf, clcdData in zip(airfoils, polars):
+    for airfoil, clcdData in zip(airfoils, polars):
         os.chdir(masterDir)
-        os.chdir(os.path.join("Data", "2D", f"NACA{airf}"))
-        airfoilPath = os.getcwd()
+        os.chdir(os.path.join("Data", "2D", f"NACA{airfoil}"))
+        airfoilPath: str = os.getcwd()
 
         for i, ReynDat in enumerate(clcdData):
             os.chdir(airfoilPath)
 
-            reyndir = f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}"
+            reyndir: str = f"Reynolds_{np.format_float_scientific(Reynolds[i],sign=False,precision=3).replace('+', '')}"
             os.makedirs(reyndir, exist_ok=True)
             os.chdir(reyndir)
-            cwd = os.getcwd()
+            cwd: str = os.getcwd()
 
             for angle in ReynDat.keys():
                 os.chdir(cwd)
                 if float(angle) >= 0:
-                    folder = str(angle)[::-1].zfill(7)[::-1]
+                    folder: str = str(angle)[::-1].zfill(7)[::-1]
                 else:
                     folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
                 os.makedirs(folder, exist_ok=True)
                 os.chdir(folder)
                 fname = "clcd.xfoil"
                 with open(fname, "w") as file:
-                    pols = angle
+                    pols = str(angle)
                     for i in ReynDat[angle]:
-                        pols = pols + "\t" + str(i)
+                        pols += f"\t{str(i)}"
                     file.writelines(pols)
 
 
-def plotBatch(data, Reynolds):
+def plotBatch(data: list[list[dict[str, ndarray]]], Reynolds: list[float]) -> None:
     for airfpol in data:
         for i, dict1 in enumerate(airfpol):
             a = np.vstack(
@@ -120,7 +137,15 @@ def plotBatch(data, Reynolds):
     plt.legend()
 
 
-def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
+def returnCPs(
+    Reyn: float,
+    MACH: float,
+    angles: list[float],
+    pts: ndarray[Any, dtype[floating]],
+    ftrip_low: float = 1.0,
+    ftrip_up: float = 1.0,
+    Ncrit: float = 9,
+) -> tuple[list[Any], list[Any], ndarray[Any, dtype[floating]]]:
     xf = XFoil()
     xf.Re = Reyn
     print(MACH)
@@ -142,30 +167,30 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
 
     for a in pangles:
         xf.a(a)
-        x, y, cp = xf.get_cp_distribution()
+        x, cp = xf.get_cp_distribution()
         cps.append(cp)
 
     for a in nangles:
         xf.a(a)
-        x, y, cp = xf.get_cp_distribution()
+        x, cp = xf.get_cp_distribution()
         cpsn.append(cp)
 
     return [cpsn, nangles], [cps, pangles], x
 
 
 def runAndSave(
-    CASEDIR,
-    HOMEDIR,
-    Reyn,
-    MACH,
-    AoAmin,
-    AoAmax,
-    AoAstep,
-    pts,
-    ftrip_low=0.1,
-    ftrip_up=0.2,
-    Ncrit=9,
-):
+    CASEDIR: str,
+    HOMEDIR: str,
+    Reyn: float,
+    MACH: float,
+    AoAmin: float,
+    AoAmax: float,
+    AoAstep: float,
+    pts: ndarray[Any, dtype[floating]],
+    ftrip_low: float = 0.1,
+    ftrip_up: float = 0.2,
+    Ncrit: float = 9,
+) -> DataFrame:
     os.chdir(CASEDIR)
 
     xf = XFoil()
@@ -183,10 +208,10 @@ def runAndSave(
         slope_up = (ftrip_up - max_tr) / (AoAmax)
         slope_low = (ftrip_low - max_tr) / (AoAmax)
 
-        aXF1 = []
-        clXF1 = []
-        cdXF1 = []
-        cmXF1 = []
+        aXF1: ndarray[Any, dtype[floating]] = np.array([])
+        clXF1: ndarray[Any, dtype[floating]] = np.array([])
+        cdXF1: ndarray[Any, dtype[floating]] = np.array([])
+        cmXF1: ndarray[Any, dtype[floating]] = np.array([])
         flag = 0
         for angle in np.arange(0, AoAmax + 0.5, 0.5):
             f_up = max_tr + slope_up * angle
@@ -208,10 +233,10 @@ def runAndSave(
         slope_up = (ftrip_low - max_tr) / (AoAmax)
         slope_low = (ftrip_up - max_tr) / (AoAmax)
 
-        aXF2 = []
-        clXF2 = []
-        cdXF2 = []
-        cmXF2 = []
+        aXF2: ndarray[Any, dtype[floating]] = np.array([])
+        clXF2: ndarray[Any, dtype[floating]] = np.array([])
+        cdXF2: ndarray[Any, dtype[floating]] = np.array([])
+        cmXF2: ndarray[Any, dtype[floating]] = np.array([])
         flag = 0
         for angle in np.arange(AoAmin, 0.5, 0.5)[::-1]:
             f_up = max_tr - slope_up * angle
@@ -238,8 +263,11 @@ def runAndSave(
         aXF, clXF, cdXF, cmXF, _ = xf.aseq(AoAmin, AoAmax, AoAstep)
 
     Res = np.vstack((aXF, clXF, cdXF, cmXF)).T
-    df = pd.DataFrame(Res, columns=["AoA", "CL", "CD", "Cm"]).dropna(thresh=2)
-    df = df.sort_values("AoA")
+    df: DataFrame = (
+        DataFrame(Res, columns=["AoA", "CL", "CD", "Cm"])
+        .dropna(thresh=2)
+        .sort_values("AoA")
+    )
     df.to_csv("clcd.xfoil", index=False)
     os.chdir(HOMEDIR)
     return df

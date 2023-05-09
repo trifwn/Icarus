@@ -1,7 +1,8 @@
 from pandas import DataFrame
 
 from .disturbances import Disturbance as dst
-from .dyn_plane import StabilityDerivativesDS
+from .dynamic_plane import Dynamic_Airplane
+from .dynamic_plane import StabilityDerivativesDS
 from .pertrubations import lateralPerturb
 from .pertrubations import longitudalPerturb
 from .Stability.lateralFD import lateralStability
@@ -9,31 +10,36 @@ from .Stability.longitudalFD import longitudalStability
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
 from ICARUS.Enviroment.definition import Environment
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 
 
 class State:
     """Class for the state of a vehicle."""
 
-    def __init__(self, name: str, pln: Airplane, forces, env: Environment) -> None:
-        self.vehicle: Airplane = pln
+    def __init__(
+        self,
+        name: str,
+        pln: Dynamic_Airplane,
+        forces,
+        env: Environment,
+    ) -> None:
+        self.vehicle: Dynamic_Airplane = pln
         self.S: float = pln.S
         self.mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
 
         self.name: str = name
         self.polars: DataFrame = self.formatPolars(forces)
 
-        self.trim: dict[str, float] = trim_state(self)
+        self.trim: dict[str, float] = trim_state(self.vehicle)
         self.dynamic_pressure: float = (
-            0.5 * env.AirKinematicViscosity * self.trim["U"] ** 2
+            0.5 * env.air_kinematic_viscosity * self.trim["U"] ** 2
         )
         self.disturbances: list[dst] = []
         self.sensitivity = Struct()
         self.sensResults = Struct()
 
     def formatPolars(self, forces) -> DataFrame:
-        forces_rotated: DataFrame = rotateForces(forces, forces["AoA"])
+        forces_rotated: DataFrame = rotate_forces(forces, forces["AoA"])
         return self.makeAeroCoeffs(forces_rotated)
 
     def makeAeroCoeffs(self, Forces) -> DataFrame:

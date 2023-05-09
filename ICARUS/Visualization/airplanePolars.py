@@ -1,18 +1,26 @@
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import ndarray
+from pandas import DataFrame
 
 from . import colors
 from . import markers
 
 
-def plotAirplanePolars(
-    data,
+def plot_airplane_polars(
+    data: dict[str, DataFrame],
     airplanes: list[str],
     solvers: list[str] = ["All"],
     size: tuple[int, int] = (10, 10),
 ) -> None:
-    # fig , axs =
+    """Function to plot airplane polars for a given list of airplanes and solvers
+
+    Args:
+        data (dict[str, DataFrame]): Dictionary of airplane polars
+        airplanes (list[str]): List of airplanes to plot
+        solvers (list[str], optional): List of Solvers to plot. Defaults to ["All"].
+        size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
+    """
     fig: Figure = plt.figure(figsize=size)
     axs: ndarray = fig.subplots(2, 2)
 
@@ -49,11 +57,11 @@ def plotAirplanePolars(
                     cd = polar["CD"]
                     cm = polar["Cm"]
                     skip = True
-                    c = "m"
-                    m = "x"
-                    style = f"{c}{m}-"
+                    c: str = "m"
+                    m: str = "x"
+                    style: str = f"{c}{m}-"
 
-                    label = f"{airplane}"
+                    label: str = f"{airplane}"
                 else:
                     cl = polar[f"CL_{solver}"]
                     cd = polar[f"CD_{solver}"]

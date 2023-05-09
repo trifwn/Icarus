@@ -1,8 +1,10 @@
 import os
+from typing import Any
 
 import numpy as np
-from numpy import dtype, ndarray, floating
-from typing import Any
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 
 from ICARUS.Airfoils.airfoilD import AirfoilD
 from ICARUS.Database import BASEFOIL2W
@@ -11,7 +13,6 @@ from ICARUS.Database import DB2D
 from ICARUS.Software.F2Wsection import runF2w as f2w
 from ICARUS.Software.OpenFoam import runOpenFoam as of
 from ICARUS.Software.Xfoil import runXFoil as xf
-
 
 HOMEDIR: str = os.getcwd()
 
@@ -60,7 +61,12 @@ AoAmin: float = -6
 NoAoA: int = (AoAmax - AoAmin) * 2 + 1
 
 angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
-Reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(np.log10(Remin), np.log10(Remax), 5, base=10)
+reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(
+    np.log10(Remin),
+    np.log10(Remax),
+    5,
+    base=10,
+)
 Mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(Machmax, Machmin, 10)
 
 MACH: float = Machmax
@@ -71,83 +77,96 @@ calcOpenFoam: bool = False
 calcXFoil: bool = False
 
 # LOOP
-airfoils: list[str] = ["4415", "0008"]
-for airf in airfoils:
-    print(f"\nRunning airfoil {airf}\n")
+airfoil_names: list[str] = ["4415", "0008"]
+for airfoil_name in airfoil_names:
+    print(f"\nRunning airfoil {airfoil_name}\n")
     # # Get Airfoil
-    airf: AirfoilD = AirfoilD.NACA(airf, n_points=200)
-    airf.accessDB(HOMEDIR, DB2D)
+    airfoil: AirfoilD = AirfoilD.NACA(naca=airfoil_name, n_points=200)
+    airfoil.accessDB(HOMEDIR, DB2D)
     # airf.plotAirfoil()
-    for Reyn in Reynolds:
+    for Reyn in reynolds:
         print(
             f"#################################### {Reyn} ######################################",
         )
 
         # Setup Case Dirs
-        airf.reynCASE(Reyn)
+        airfoil.reynCASE(Reyn)
 
         # Foil2Wake
         if cleaning:
-            airf.cleanRes(f2w.removeResults, [airf.REYNDIR, airf.HOMEDIR, angles])
+            airfoil.cleanRes(
+                f2w.removeResults,
+                [airfoil.REYNDIR, airfoil.HOMEDIR, angles],
+            )
         if calcF2W:
             ftrip_low = {"pos": 0.1, "neg": 0.2}
             ftrip_up = {"pos": 0.2, "neg": 0.1}
             Ncrit = 9
             print("------- Running Foil2Wake -------")
             f2wargs = [
-                airf.REYNDIR,
-                airf.HOMEDIR,
+                airfoil.REYNDIR,
+                airfoil.HOMEDIR,
                 Reyn,
                 MACH,
                 ftrip_low,
                 ftrip_up,
                 angles,
-                f"naca{airf.name}",
+                f"naca{airfoil.name}",
             ]
-            airf.setupSolver(f2w.setupF2W, [BASEFOIL2W, airf.HOMEDIR, airf.REYNDIR])
+            airfoil.setupSolver(
+                f2w.setupF2W,
+                [BASEFOIL2W, airfoil.HOMEDIR, airfoil.REYNDIR],
+            )
             # airf.runSolver(f2w.runF2W, f2wargs)
-            airf.makePolars(f2w.makeCLCD2, "Foil2Wake", [airf.REYNDIR, airf.HOMEDIR])
+            airfoil.makePolars(
+                f2w.makeCLCD2,
+                "Foil2Wake",
+                [airfoil.REYNDIR, airfoil.HOMEDIR],
+            )
 
         # # Xfoil
         if calcXFoil:
             print("-------  Running Xfoil ------- ")
             xfargs = [
-                airf.REYNDIR,
+                airfoil.REYNDIR,
                 HOMEDIR,
                 Reyn,
                 MACH,
                 min(angles),
                 max(angles),
                 0.5,
-                airf.selig.T,
+                airfoil.selig.T,
             ]
-            XRES = airf.makePolars(xf.runAndSave, "XFOIL", xfargs)
+            XRES = airfoil.makePolars(xf.runAndSave, "XFOIL", xfargs)
 
         # # OpenFoam
-        os.chdir(airf.REYNDIR)
+        os.chdir(airfoil.REYNDIR)
         maxITER = 800
         if cleaning:
-            airf.cleanRes(of.cleanOpenFoam, [HOMEDIR, airf.REYNDIR])
+            airfoil.cleanRes(of.clean_open_foam, [HOMEDIR, airfoil.REYNDIR])
         if calcOpenFoam:
             print("------- Running OpenFoam ------- ")
             ofSetupargs = [
                 BASEOPENFOAM,
-                airf.REYNDIR,
-                airf.HOMEDIR,
-                airf.airfile,
-                airf.fname,
+                airfoil.REYNDIR,
+                airfoil.HOMEDIR,
+                airfoil.airfile,
+                airfoil.fname,
                 Reyn,
                 MACH,
                 angles,
             ]
             ofSetupkwargs = {"silent": True, "maxITER": maxITER}
             ofRunargs = [angles]
-            airf.setupSolver(of.setupOpenFoam, ofSetupargs, ofSetupkwargs)
-            airf.runSolver(of.runFoam, [airf.REYNDIR, airf.HOMEDIR, angles])
-            airf.makePolars(
-                of.makeCLCD,
+            airfoil.setupSolver(of.setup_open_foam, ofSetupargs, ofSetupkwargs)
+            airfoil.runSolver(
+                of.run_multiple_angles,
+                [airfoil.REYNDIR, airfoil.HOMEDIR, angles],
+            )
+            airfoil.makePolars(
+                of.make_polars,
                 "OpenFoam",
-                [airf.REYNDIR, airf.HOMEDIR, angles],
+                [airfoil.REYNDIR, airfoil.HOMEDIR, angles],
             )
 print("########################################################################")
 print("Program Terminated")

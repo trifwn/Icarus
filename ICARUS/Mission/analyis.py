@@ -7,20 +7,20 @@ class MissionAnalysis:
     def getVehicle(self):
         return self.mission.vehicle
 
-    def setVehicle(self, vehicle):
+    def setVehicle(self, vehicle) -> None:
         self.mission.vehicle = vehicle
 
-    def Analyze(self):
+    def Analyze(self) -> None:
         pass
 
-    def getResults(self):
+    def getResults(self) -> None:
         pass
 
     def getFitness(self, fitness):
         return fitness.getFitness(self.getResults())
 
-    def plot(self):
+    def plot(self) -> None:
         pass
 
-    def save(self):
+    def save(self) -> None:
         pass

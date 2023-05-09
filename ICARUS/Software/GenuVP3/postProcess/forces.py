@@ -5,7 +5,7 @@ import pandas as pd
 from pandas import DataFrame
 
 
-def forces2polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
+def forces_to_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     os.chdir(CASEDIR)
 
     folders = next(os.walk("."))[1]
@@ -33,7 +33,7 @@ def forces2polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     return df
 
 
-def forces2pertrubRes(DYNDIR: str, HOMEDIR: str) -> DataFrame:
+def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
     os.chdir(DYNDIR)
     folders: list[str] = next(os.walk("."))[1]
     print("Logging Pertrubations")
@@ -48,8 +48,8 @@ def forces2pertrubRes(DYNDIR: str, HOMEDIR: str) -> DataFrame:
                 continue
 
             # RECONSTRUCT NAME
-            value = ""
-            name = ""
+            value: str = ""
+            name: str = ""
             flag = False
             for c in folder[1:]:
                 if (c != "_") and (not flag):
@@ -58,27 +58,33 @@ def forces2pertrubRes(DYNDIR: str, HOMEDIR: str) -> DataFrame:
                     flag = True
                 else:
                     name += c
-            value = float(value)
+            value_num: float = float(value)
             if folder.startswith("m"):
-                value = -value
+                value_num = -value_num
 
-            pols.append([value, name, *dat])
+            pols.append([value_num, name, *dat])
             os.chdir(os.path.join(DYNDIR, folder))
         os.chdir(f"{DYNDIR}")
-    df = DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
-    df.pop("TTIME")
-    df.pop("PSIB")
-    df = df.sort_values("Type").reset_index(drop=True)
+    df: DataFrame = (
+        DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
+        .pop("TTIME")
+        .pop("PSIB")
+        .sort_values("Type")
+        .reset_index(drop=True)
+    )
     df.to_csv("pertrubations.genu", index=False)
     os.chdir(HOMEDIR)
     return df
 
 
-def rotateForces(
-    rawpolars: DataFrame, alpha, preferred: str = "2D", save: bool = False
+def rotate_forces(
+    rawpolars: DataFrame,
+    alpha_deg: float,
+    preferred: str = "2D",
+    save: bool = False,
 ) -> DataFrame:
     Data = pd.DataFrame()
-    AoA = alpha * np.pi / 180
+    AoA: float = alpha_deg * np.pi / 180
 
     for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
         Fx = rawpolars[f"TFORC{enc}(1)"]
@@ -104,7 +110,7 @@ def rotateForces(
         Data[f"M_{name}"] = My_new
         Data[f"N_{name}"] = Mz_new
 
-    Data["AoA"] = alpha
+    Data["AoA"] = alpha_deg
     # print(f"Using {preferred} polars")
     Data["Fx"] = Data[f"Fx_{preferred}"]
     Data["Fy"] = Data[f"Fy_{preferred}"]
@@ -116,7 +122,7 @@ def rotateForces(
     return Data.sort_values(by="AoA").reset_index(drop=True)
 
 
-cols = [
+cols: list[str] = [
     "AoA",
     "TTIME",
     "PSIB",

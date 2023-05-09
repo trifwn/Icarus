@@ -1,8 +1,9 @@
 import pandas as pd
+from pandas import DataFrame
 
 
 # GET THE SCANNING FROM THE DATABASE AND MAKE DF WITH IT
-def getLoadsConvergence(file):
+def getLoadsConvergence(file: str) -> DataFrame | None:
     try:
         return pd.read_csv(file, delim_whitespace=True, names=cols)
     except Exception as e:
@@ -10,21 +11,23 @@ def getLoadsConvergence(file):
         return None
 
 
-def addErrorConvergence2df(file, df):
+def addErrorConvergence2df(file: str, df: DataFrame) -> DataFrame:
     try:
         with open(file, encoding="UTF-8") as f:
-            lines = f.readlines()
-        time, error, errorm = [], [], []
+            lines: list[str] = f.readlines()
+        time: list[int] = []
+        error: list[float] = []
+        errorm: list[float] = []
         for line in lines:
             if not line.startswith(" STEP="):
                 continue
 
-            a = line[6:].split()
+            a: list[str] = line[6:].split()
             time.append(int(a[0]))
             error.append(float(a[2]))
             errorm.append(float(a[6]))
         try:
-            foo = len(df["TTIME"])
+            foo: int = len(df["TTIME"])
             if foo > len(time):
                 df = df.tail(len(time))
             else:
@@ -42,7 +45,7 @@ def addErrorConvergence2df(file, df):
         return df
 
 
-cols = [
+cols: list[str] = [
     "TTIME",
     "PSIB",
     "TFORC(1)",

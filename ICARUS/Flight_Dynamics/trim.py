@@ -2,10 +2,11 @@
 Trim module
 """
 import numpy as np
-from ICARUS.Vehicle.plane import Airplane
+
+from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane
 
 
-def trim_state(plane: Airplane) -> dict[str, float]:
+def trim_state(plane: Dynamic_Airplane) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -40,15 +41,22 @@ def trim_state(plane: Airplane) -> dict[str, float]:
     d_cm = plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]
     d_aoa = plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
 
-    aoa_trim = plane.polars3D["AoA"][trim_loc1] - plane.polars3D["Cm"][trim_loc1] * d_aoa / d_cm
+    aoa_trim = (
+        plane.polars3D["AoA"][trim_loc1]
+        - plane.polars3D["Cm"][trim_loc1] * d_aoa / d_cm
+    )
 
-    cm_trim = plane.polars3D["Cm"][trim_loc1] + (plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]) * (
-        aoa_trim - plane.polars3D["AoA"][trim_loc1]
-    ) / (plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1])
+    cm_trim = plane.polars3D["Cm"][trim_loc1] + (
+        plane.polars3D["Cm"][trim_loc2] - plane.polars3D["Cm"][trim_loc1]
+    ) * (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / (
+        plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
+    )
 
-    cl_trim = plane.polars3D["CL"][trim_loc1] + (plane.polars3D["CL"][trim_loc2] - plane.polars3D["CL"][trim_loc1]) * (
-        aoa_trim - plane.polars3D["AoA"][trim_loc1]
-    ) / (plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1])
+    cl_trim = plane.polars3D["CL"][trim_loc1] + (
+        plane.polars3D["CL"][trim_loc2] - plane.polars3D["CL"][trim_loc1]
+    ) * (aoa_trim - plane.polars3D["AoA"][trim_loc1]) / (
+        plane.polars3D["AoA"][trim_loc2] - plane.polars3D["AoA"][trim_loc1]
+    )
 
     # Print How accurate is the trim
     print(

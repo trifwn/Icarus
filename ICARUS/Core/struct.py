@@ -7,6 +7,8 @@ from typing import Tuple
 
 class Struct:
     __slots__: List[str] = ["_data", "_depth"]
+    _data: Dict[str, Any]
+    _depth: int
 
     def __new__(cls, *args, **kwargs) -> "Struct":
         """Create a new Struct instance."""
@@ -79,15 +81,15 @@ class Struct:
         """Return an iterator over the keys in the Struct instance."""
         return iter(self._data)
 
-    def items(self) -> Iterator[Tuple[str, Any]]:
+    def items(self):
         """Return an iterator over the items in the Struct instance."""
         return self._data.items()
 
-    def keys(self) -> Iterator[str]:
+    def keys(self):
         """Return an iterator over the keys in the Struct instance."""
         return self._data.keys()
 
-    def values(self) -> Iterator[Any]:
+    def values(self):
         """Return an iterator over the values in the Struct instance."""
         return self._data.values()
 
@@ -146,7 +148,7 @@ class Struct:
             Struct: Inverted Dict
         """
 
-        def _invert_nested_dict(dd: Struct, depth: int) -> "Struct":
+        def _invert_nested_dict(dd: dict[Any, Any], depth: int) -> dict:
             new_dict = {}
             for k, v in dd.items():
                 if isinstance(v, dict):
@@ -160,7 +162,7 @@ class Struct:
                 }
             return new_dict
 
-        inverted = _invert_nested_dict(self._data, self._depth)
+        inverted: dict[Any, Any] = _invert_nested_dict(self._data, self._depth)
         return Struct(inverted)
 
     def tree(self, indent: int = 0) -> None:

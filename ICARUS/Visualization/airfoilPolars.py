@@ -7,22 +7,24 @@ from . import colors
 from . import markers
 
 
-def plotAirfoilPolars(
-    data,
-    airfoil,
+def plot_airfoil_polars(
+    data: dict[str, dict[str, dict[str, DataFrame]]],
+    airfoil: str,
     solvers: list[str] | str = "All",
     size: tuple[int, int] = (10, 10),
     AoA_bounds=None,
 ) -> None:
-    """Function to plot airfoil polars
+    """_summary_
 
     Args:
-        data (_type_): _description_
-        airfoil (_type_): _description_
-        solvers (list[str] | str, optional): _description_. Defaults to "All".
-        size (tuple[int, int], optional): _description_. Defaults to (10, 10).
-        AoA_bounds (_type_, optional): _description_. Defaults to None.
+        data (dict[str, dict[str, dict[str, DataFrame]]]): Nested Dictionary with the airfoil polars
+        airfoil (str): airfoil names
+        solvers (list[str] | str, optional): List of solver Names. Defaults to "All".
+        size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
+        AoA_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
     """
+    # Function to plot airfoil polars
+
     fig: Figure = plt.figure(figsize=size)
     axs: ndarray = fig.subplots(2, 2)
 

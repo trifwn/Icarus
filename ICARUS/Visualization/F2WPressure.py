@@ -5,14 +5,14 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 
-def plotCP(angle) -> None:
-    fname = "COEFPRE.OUT"
+def plot_angle_cp(angle: float) -> None:
+    file_name = "COEFPRE.OUT"
     if angle < 0:
         anglef: str = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
     else:
         anglef = str(angle)[::-1].zfill(7)[::-1]
-    fname: str = os.path.join(anglef, fname)
-    data = np.loadtxt(fname).T
+    fullname: str = os.path.join(anglef, file_name)
+    data = np.loadtxt(fullname).T
     c: ArrayLike = data[0]
     p1: ArrayLike = data[1]
     plt.title("Pressure Coefficient")
@@ -22,7 +22,7 @@ def plotCP(angle) -> None:
     plt.show()
 
 
-def plotMultipleCPs(angles) -> None:
+def plot_multiple_cps(angles: list[float]) -> None:
     fname = "COEFPRE.OUT"
     for angle in angles:
         print(angle)

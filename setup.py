@@ -6,6 +6,7 @@ import platform
 import re
 import subprocess
 import sys
+from typing import Any
 
 from setuptools import Extension
 from setuptools import setup
@@ -23,7 +24,7 @@ from wheel.bdist_wheel import bdist_wheel
 HOMEDIR = os.getcwd()
 
 
-def get_package_version():
+def get_package_version() -> str:
     """Get the package version from the __init__ file"""
     __version__ = re.findall(
         r"""__version__ = ["']+([0-9\.]*)["']+""",
@@ -35,13 +36,13 @@ def get_package_version():
 class Repository:
     """Class object for a repository"""
 
-    def __init__(self, name, url, MakeType):
+    def __init__(self, name, url, MakeType) -> None:
         self.url = url
         self.name = name
         self.type = MakeType
         self.repo_dir: str
 
-    def clone(self):
+    def clone(self) -> None:
         """Clone the Repository"""
         self.repo_dir = os.path.join(HOMEDIR, "3d_Party", self.name)
         clone_cmd = f"git clone {self.url} {self.repo_dir}"
@@ -56,7 +57,14 @@ class Repository:
 class BuildExtension(Extension):
     """Class object for building an extension using Make"""
 
-    def __init__(self, name, make_list_dir, makeType, configire_commands, **kwargs):
+    def __init__(
+        self,
+        name,
+        make_list_dir,
+        makeType,
+        configire_commands,
+        **kwargs,
+    ) -> None:
         super().__init__(name, sources=[], **kwargs)
         self.make_lists_dir = os.path.abspath(make_list_dir)
         self.type = makeType
@@ -66,7 +74,7 @@ class BuildExtension(Extension):
 class MakeBuild(build_ext):
     """Class object Build an extension using Make"""
 
-    def build_extensions(self):
+    def build_extensions(self) -> None:
         for ext in self.extensions:
             extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
             cfg = "Release"
@@ -150,7 +158,7 @@ class MakeBuild(build_ext):
                 print(f"Dont know how to make type {ext.type}")
 
 
-repos = {
+repos: dict[str, dict[str, Any]] = {
     "CGNS": {
         "url": "https://github.com/CGNS/CGNS.git",
         "configure_commands": [],
@@ -164,16 +172,16 @@ repos = {
 }
 
 
-def main():
+def main() -> None:
     """MAIN FUNCTION"""
 
-    __version__ = get_package_version()
+    __version__: str = get_package_version()
 
     # Should Check for intel fortran, opemmpi, mlk
 
     # Command line flags forwarded to CMake
     if len(sys.argv) >= 2:
-        command = sys.argv[1]
+        command: str = sys.argv[1]
     else:
         command = "install"
 
@@ -195,7 +203,7 @@ def main():
         setup(cmdclass={"sdist": sdist})
     elif command == "bdist_wheel":
         print(f"Generating wheel distribution for {package} version {__version__}")
-        setup(cmdclass={"bdist_wheel": bdist_wheel})
+        setup(cmdclass={"bdist_wheel": bdist_wheel})  # type: ignore
     # elif command == "clean":
     #     print("Cleaning up...")
     #     setup(cmdclass={"clean": clean})
@@ -219,7 +227,7 @@ def main():
         sys.exit(1)
 
 
-def install(package: str, version: str):
+def install(package: str, version: str) -> None:
     """INSTALL THE PACKAGE
 
     Args:
@@ -240,7 +248,7 @@ def install(package: str, version: str):
     )
 
 
-def uninstall(package: str):
+def uninstall(package: str) -> None:
     """Uninstall the package
 
     Args:

@@ -9,6 +9,7 @@ import jsonpickle
 import jsonpickle.ext.numpy as jsonpickle_numpy
 import jsonpickle.ext.pandas as jsonpickle_pd
 import numpy as np
+from pandas import DataFrame
 from tabulate import tabulate
 
 from .options import Option
@@ -137,7 +138,7 @@ class Analysis:
             print(self)
             return -1
 
-    def getResults(self) -> Union[np.ndarray, int]:
+    def getResults(self) -> Union[DataFrame, int]:
         print("Getting Results")
         args_needed = list(inspect.signature(self.unhook).parameters.keys())
         args = {}

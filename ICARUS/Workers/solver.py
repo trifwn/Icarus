@@ -4,6 +4,7 @@ from typing import Optional
 from typing import Union
 
 import numpy as np
+from pandas import DataFrame
 
 from .analysis import Analysis
 from ICARUS.Core.struct import Struct
@@ -113,7 +114,7 @@ class Solver:
         res = analysis()
         return res
 
-    def getResults(self, analysis_name: Optional[str] = None) -> Union[np.ndarray, int]:
+    def getResults(self, analysis_name: Optional[str] = None) -> Union[DataFrame, int]:
         if analysis_name is None:
             if self.mode is None:
                 print("Analysis not selected or provided")
@@ -125,7 +126,7 @@ class Solver:
             else:
                 print("Analysis not available")
                 return -1
-        res = analysis.getResults()
+        res: DataFrame | int = analysis.getResults()
         return res
 
     def __str__(self) -> str:

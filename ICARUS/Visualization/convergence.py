@@ -1,19 +1,31 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
+from pandas import DataFrame
 
 from . import colors
 from . import markers
 
 
-def plotConvergence(
-    data,
-    plane,
-    angles=["All"],
-    solvers=["All"],
-    plotError=True,
-    size=(10, 10),
-):
+def plot_convergence(
+    data: DataFrame,
+    plane: str,
+    angles: list[str] = ["All"],
+    solvers: list[str] = ["All"],
+    plot_error: bool = True,
+    size: tuple[int, int] = (10, 10),
+) -> None:
+    """Function to plot the convergence of a given plane simulation given the
+    dimensional forces and solver errors
+
+    Args:
+        data (DataFrame): DataFrame of the simulation results
+        plane (str): Plane Name
+        angles (list[str], optional): Angles to show. Defaults to ["All"].
+        solvers (list[str], optional): Solvers to show. Defaults to ["All"].
+        plot_error (bool, optional): Wheter to plot the relative error or not. Defaults to True.
+        size (tuple[int,int], optional): Size of the figure. Defaults to (10, 10).
+    """
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig: Figure = plt.figure(figsize=size)
     axs: np.ndarray = fig.subplots(3, 3)
@@ -60,16 +72,16 @@ def plotConvergence(
     for ang in cases.keys():
         num = float("".join(c for c in ang if (c.isdigit() or c == ".")))
         if ang.startswith("m"):
-            ang_num = -num
+            ang_num: float = -num
         else:
             ang_num = num
 
-        if ang_num in angles or angles is ["All"]:
-            runHist = cases[ang]
-            i += 1
-            j = 0
-        else:
+        if (ang_num not in angles) and (angles is not ["All"]):
             continue
+
+        runHist = cases[ang]
+        i += 1
+        j = 0
         for solver in solvers:
             try:
                 it = runHist["TTIME"].astype(float)
@@ -84,7 +96,7 @@ def plotConvergence(
                 error = runHist["ERROR"].astype(float)
                 errorM = runHist["ERRORM"].astype(float)
                 it2 = it
-                if plotError:
+                if plot_error:
                     it = it.iloc[1:].values
                     fx = np.abs(fx.iloc[1:].values - fx.iloc[:-1].values)
                     fy = np.abs(fy.iloc[1:].values - fy.iloc[:-1].values)
@@ -97,11 +109,11 @@ def plotConvergence(
                 if i > len(colors) - 1:
                     toomuchData = True
                     break
-                c = colors[i]
-                m = markers[j]
-                style = f"{c}{m}--"
+                c: str = colors[i]
+                m: str = markers[j]
+                style: str = f"{c}{m}--"
 
-                label = f"{plane} - {solver} - {ang_num}"
+                label: str = f"{plane} - {solver} - {ang_num}"
                 axs[0, 0].plot(it, fx, style, label=label, markersize=2.0, linewidth=1)
                 axs[0, 1].plot(it, fy, style, label=label, markersize=2.0, linewidth=1)
                 axs[0, 2].plot(it, fz, style, label=label, markersize=2.0, linewidth=1)

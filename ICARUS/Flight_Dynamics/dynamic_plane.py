@@ -1,17 +1,18 @@
 import pandas as pd
+from pandas import DataFrame
+
+from ICARUS.Core.struct import Struct
+from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
+from ICARUS.Vehicle.plane import Airplane
 
 from .disturbances import Disturbance as dst
-from .pertrubations import lateralPerturb
-from .pertrubations import longitudalPerturb
+from .pertrubations import lateralPerturb, longitudalPerturb
 from .Stability.lateralFD import lateralStability
 from .Stability.longitudalFD import longitudalStability
 from .trim import trim_state
-from ICARUS.Core.struct import Struct
-from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
-from ICARUS.Vehicle.plane import Airplane
 
 
-class dyn_Airplane(Airplane):
+class Dynamic_Airplane(Airplane):
     """Class for the dynamic analysis of an airplane.
     The airplane is assumed to be of the airplane class.
     Inputs:
@@ -19,37 +20,30 @@ class dyn_Airplane(Airplane):
     - polars3D: DataFrame with the polars of the airplane
     """
 
-    def __init__(self, pln, polars3D=None):
+    def __init__(self, pln, polars3D) -> None:
         self.__dict__.update(pln.__dict__)
-        self.name = f"dyn_{pln.name}"
-        if polars3D is None:
-            if pln.Polars.empty:
-                print("No polars found in the airplane object or Specified")
-            else:
-                print("Using polars from the airplane object")
-                polars3D = self.formatPolars(pln.Polars)
-        else:
-            self.polars3D = self.formatPolars(polars3D)
+        self.name: str = f"dyn_{pln.name}"
+        self.polars3D: DataFrame = self.formatPolars(polars3D)
 
         # Compute Trim State
-        self.trim = trim_state(self)
+        self.trim: dict[str, float] = trim_state(self)
         self.defineSim(self.dens, self.trim["U"])
-        self.disturbances = []
+        self.disturbances: list[dst] = []
         self.sensitivity = {}
         self.sensResults = {}
 
-    def get_polars3D(self):
+    def get_polars3D(self) -> DataFrame:
         return self.polars3D
 
-    def change_polars3D(self, polars3D):
+    def change_polars3D(self, polars3D) -> None:
         self.polars3D = polars3D
         self.trim = trim_state(self)
 
-    def formatPolars(self, rawPolars):
-        forces = rotateForces(rawPolars, rawPolars["AoA"])
+    def formatPolars(self, rawPolars) -> DataFrame:
+        forces: DataFrame = rotate_forces(rawPolars, rawPolars["AoA"])
         return self.makeAeroCoeffs(forces)
 
-    def makeAeroCoeffs(self, Forces):
+    def makeAeroCoeffs(self, Forces) -> DataFrame:
         Data = pd.DataFrame()
 
         Data["CL"] = Forces["Fz"] / (self.dynamic_pressure * self.S)
@@ -66,14 +60,14 @@ class dyn_Airplane(Airplane):
         Data["AoA"] = Forces["AoA"]
         return Data
 
-    def allPerturb(self, scheme, epsilon=None):
+    def allPerturb(self, scheme: str, epsilon=None) -> None:
         """Function to add a perturbations to the airplane for dynamic analysis
         Inputs:
         - scheme: "Central", "Forward", "Backward"
         - epsilon: Disturbance Magnitudes
         """
-        self.scheme = scheme
-        self.epsilons = {}
+        self.scheme: str = scheme
+        self.epsilons: dict[str, float] = {}
 
         self.disturbances = [
             *longitudalPerturb(self, scheme, epsilon),
@@ -81,32 +75,32 @@ class dyn_Airplane(Airplane):
         ]
         self.disturbances.append(dst(None, 0))
 
-    def sensitivityAnalysis(self, var, space):
+    def sensitivityAnalysis(self, var, space) -> None:
         self.sensitivity[var] = []
         for e in space:
             self.sensitivity[var].append(dst(var, e))
 
-    def get_pertrub(self):
+    def get_pertrub(self) -> None:
         for disturbance in self.disturbances:
             print(disturbance)
 
-    def setPertResults(self, makePolFun, args, kwargs={}):
+    def setPertResults(self, makePolFun, args, kwargs={}) -> None:
         petrubdf = makePolFun(*args, **kwargs)
         self.pertubResults = petrubdf
 
-    def stabilityFD(self, scheme="Central"):
+    def stabilityFD(self, scheme="Central") -> None:
         self.scheme = scheme
         X, Z, M = longitudalStability(self, "2D")
         Y, L, N = lateralStability(self, "Potential")
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
-    def __str__(self):
-        str = f"Dynamic AirPlane {self.name}"
+    def __str__(self) -> str:
+        string: str = f"Dynamic AirPlane {self.name}"
         # str += f"\nTrimmed at: {self.trim['U']} m/s, {self.trim['AoA']} deg\n"
         # str += f"Surfaces:\n"
         # for surfaces in self.surfaces:
         #     str += f"\n\t{surfaces.name} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
-        return str
+        return string
 
 
 class StabilityDerivativesDS(Struct):
