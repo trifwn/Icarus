@@ -32,16 +32,16 @@ class Airplane:
             if surface.name == "wing":
                 self.main_wing = surface
                 self.S = surface.S
-                self.MAC = surface.MAC
-                self.AR = surface.AR
+                self.mean_aerodynamic_chord = surface.mean_aerodynamic_chord
+                self.aspect_ratio = surface.aspect_ratio
                 self.span = surface.span
                 gotWing = True
 
         if not gotWing:
             self.main_wing = surfaces[0]
             self.S = surfaces[0].S
-            self.MAC = surfaces[0].MAC
-            self.AR = surfaces[0].AR
+            self.mean_aerodynamic_chord = surfaces[0].mean_aerodynamic_chord
+            self.aspect_ratio = surfaces[0].aspect_ratio
             self.span = surfaces[0].span
 
         self.airfoils = self.getAirfoils()
@@ -52,7 +52,7 @@ class Airplane:
         self.M = 0
         for surface in self.surfaces:
             mass = (surface.mass, surface.CG)
-            mom = surface.I
+            mom = surface.inertia
 
             self.M += surface.mass
             self.Inertial_moments.append(mom)
@@ -65,7 +65,7 @@ class Airplane:
         surfaces = []
         for i, surface in enumerate(self.surfaces):
             if surface.is_symmetric:
-                l, r = surface.splitSymmetric()
+                l, r = surface.split_symmetric_wing()
                 surfaces.append(l)
                 surfaces.append(r)
         return surfaces
@@ -162,10 +162,10 @@ class Airplane:
             color="b",
         )
 
-    def defineSim(self, U, dens):
-        self.U = U
-        self.dens = dens
-        self.Q = 0.5 * dens * U**2
+    def defineSim(self, u, dens) -> None:
+        self.u_freestream: float = u
+        self.dens: float = dens
+        self.dynamic_pressure: float = 0.5 * dens * u**2
 
     def toJSON(self) -> str:
         encoded = jsonpickle.encode(self)

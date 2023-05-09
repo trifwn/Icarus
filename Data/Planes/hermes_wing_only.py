@@ -1,4 +1,6 @@
 import numpy as np
+from numpy import ndarray, floating, dtype
+from typing import Any
 
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import define_linear_chord
@@ -12,14 +14,14 @@ def hermes_main_wing(airfoils, name: str) -> Airplane:
     Args:
         airfoils (dict): _description_
         name (str): _description_
-
     Returns:
         Airplane: _description_
     """
-    origin = np.array([0.0, 0.0, 0.0])
 
-    wing_position = np.array([0.0, 0.0, 0.0])
-    wing_orientation = np.array([2.8, 0.0, 0.0])
+    origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+
+    wing_position: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+    wing_orientation: ndarray[Any, dtype[floating]] = np.array([2.8, 0.0, 0.0], dtype=float)
 
     main_wing = Wing(
         name="wing",
@@ -31,7 +33,7 @@ def hermes_main_wing(airfoils, name: str) -> Airplane:
         sweep_offset=0,
         dih_angle=0,
         chord_fun=define_linear_chord,
-        chord=np.array([0.159, 0.072]),
+        chord=np.array([0.159, 0.072], dtype=float),
         span_fun=define_linear_span,
         N=20,
         M=5,
@@ -39,15 +41,15 @@ def hermes_main_wing(airfoils, name: str) -> Airplane:
     )
     # main_wing.plotWing()
 
-    lifting_surfaces = [main_wing]
+    lifting_surfaces: list[Wing] = [main_wing]
     airplane = Airplane(name, lifting_surfaces)
 
     # airplane.visAirplane()
 
     # point_masses = [
-    #     (0.500 , np.array([-0.40, 0.0, 0.0])), # Motor
-    #     (1.000 , np.array([0.090, 0.0, 0.0])), # Battery
-    #     (0.900 , np.array([0.130, 0.0, 0.0])), # Payload
+    #     (0.500 , np.array([-0.40, 0.0, 0.0], dtype = float)), # Motor
+    #     (1.000 , np.array([0.090, 0.0, 0.0], dtype = float)), # Battery
+    #     (0.900 , np.array([0.130, 0.0, 0.0], dtype = float)), # Payload
     #     ]
     # airplane.addMasses(point_masses)
     return airplane

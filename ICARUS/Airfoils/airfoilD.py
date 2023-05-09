@@ -114,7 +114,7 @@ class AirfoilD(af.Airfoil):
         except AttributeError:
             print("DATABASE is not initialized!")
 
-    def save(self):
+    def save(self) -> None:
         self.airfile = os.path.join(self.AFDIR, f"naca{self.name}")
         pt0 = self.selig
         np.savetxt(self.airfile, pt0.T)

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 
 from . import colors
 from . import markers
@@ -14,7 +15,8 @@ def plotConvergence(
     size=(10, 10),
 ):
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
-    fig, axs = plt.subplots(3, 3, figsize=size)
+    fig: Figure = plt.figure(figsize=size)
+    axs: np.ndarray = fig.subplots(3, 3)
     fig.suptitle(f"{plane} Convergence", fontsize=16)
 
     axs[0, 0].set_title("Fx vs Iterations")

@@ -2,15 +2,16 @@ import io
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.markers import MarkerStyle
 from tabulate import tabulate
 
 from ICARUS.Core.struct import Struct
 
 
 class State:
-    def __init__(self, plane, name, trip):
-        self.name = name
-        self.trip = trip
+    def __init__(self, plane, name, trip) -> None:
+        self.name: str = name
+        self.trip: dict[str, float] = trip
 
         self.longitudal = Struct()
         self.lateral = Struct()
@@ -42,7 +43,8 @@ class State:
         x = [ele.real for ele in self.lateral.eigenValues]
         # extract imaginary part
         y = [ele.imag for ele in self.lateral.eigenValues]
-        plt.scatter(x, y, color="b", marker="x")
+        marker_x = MarkerStyle("x")
+        plt.scatter(x, y, color="b", marker=marker_x)
 
         plt.ylabel("Imaginary")
         plt.xlabel("Real")
@@ -55,7 +57,7 @@ class State:
         ss.write(f"Trim: {self.trip}\n")
         ss.write(f"\n{45*'--'}\n")
 
-        ss.write(f"\nLongitudal State:\n")
+        ss.write("\nLongitudal State:\n")
         ss.write(
             f"Eigen Values: {[round(item,3) for item in self.longitudal.eigenValues]}\n",
         )

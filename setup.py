@@ -7,10 +7,8 @@ import re
 import subprocess
 import sys
 
-from distutils.command.clean import clean
 from setuptools import Extension
 from setuptools import setup
-from setuptools.command.build import build
 from setuptools.command.build_ext import build_ext
 from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
@@ -18,6 +16,9 @@ from setuptools.command.sdist import sdist
 from setuptools.command.test import test
 from setuptools.command.upload import upload
 from wheel.bdist_wheel import bdist_wheel
+
+# from distutils.command.clean import clean
+# from setuptools.command.build import build
 
 HOMEDIR = os.getcwd()
 
@@ -195,12 +196,12 @@ def main():
     elif command == "bdist_wheel":
         print(f"Generating wheel distribution for {package} version {__version__}")
         setup(cmdclass={"bdist_wheel": bdist_wheel})
-    elif command == "clean":
-        print("Cleaning up...")
-        setup(cmdclass={"clean": clean})
-    elif command == "build":
-        print("Building...")
-        setup(cmdclass={"build": build})
+    # elif command == "clean":
+    #     print("Cleaning up...")
+    #     setup(cmdclass={"clean": clean})
+    # elif command == "build":
+    #     print("Building...")
+    #     setup(cmdclass={"build": build})
     elif command == "develop":
         print("Installing package in development mode...")
         setup(cmdclass={"develop": develop})

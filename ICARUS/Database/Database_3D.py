@@ -1,4 +1,6 @@
 import os
+from typing import Any
+from typing import Literal
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -9,6 +11,7 @@ from . import APPHOME
 from . import DB3D
 from ICARUS.Core.struct import Struct
 from ICARUS.Software.GenuVP3.postProcess.convergence import getLoadsConvergence
+from ICARUS.Vehicle.plane import Airplane
 
 # from ICARUS.Software.GenuVP3.postProcess.convergence import addErrorConvergence2df
 
@@ -158,53 +161,57 @@ class Database_3D:
             except ValueError as e:
                 print(f"Some Run Had Problems!\n{e}")
 
-    def getPlanes(self):
+    def getPlanes(self) -> list[str]:
         return list(self.planes.keys())
 
     def getPolar(self, plane, mode):
         try:
-            cols = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
+            cols: list[str] = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
             return self.data[plane][cols].rename(
                 columns={f"CL_{mode}": "CL", f"CD_{mode}": "CD", f"Cm_{mode}": "Cm"},
             )
         except KeyError:
             print("Polar Doesn't exist! You should compute it first!")
 
-    def makeData(self):
+    def makeData(self) -> None:
         for plane in list(self.planes.keys()):
             self.data[plane] = pd.DataFrame()
-            pln = self.planes[plane]
+            pln: Airplane = self.planes[plane]
             self.data[plane]["AoA"] = self.raw_data[plane]["AoA"]
-            AoA = self.raw_data[plane]["AoA"] * np.pi / 180
+            AoA: np.ndarray[Any, np.dtype[np.floating]] = (
+                self.raw_data[plane]["AoA"] * np.pi / 180
+            )
             for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-                Fx = self.raw_data[plane][f"TFORC{enc}(1)"]
+                Fx: np.ndarray = self.raw_data[plane][f"TFORC{enc}(1)"]
                 # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-                Fz = self.raw_data[plane][f"TFORC{enc}(3)"]
+                Fz: np.ndarray = self.raw_data[plane][f"TFORC{enc}(3)"]
 
                 # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-                My = self.raw_data[plane][f"TAMOM{enc}(2)"]
+                My: np.ndarray = self.raw_data[plane][f"TAMOM{enc}(2)"]
                 # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
-                Fx_new = Fx * np.cos(AoA) + Fz * np.sin(AoA)
+                Fx_new: np.ndarray = Fx * np.cos(AoA) + Fz * np.sin(AoA)
                 # Fy_new = Fy
-                Fz_new = -Fx * np.sin(AoA) + Fz * np.cos(AoA)
+                Fz_new: np.ndarray = -Fx * np.sin(AoA) + Fz * np.cos(AoA)
 
-                My_new = My
+                My_new: np.ndarray = My
                 try:
-                    Q = pln.Q
-                    S = pln.S
-                    MAC = pln.MAC
+                    Q: float = pln.dynamic_pressure
+                    S: float = pln.S
+                    mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
                     self.data[plane][f"CL_{name}"] = Fz_new / (Q * S)
                     self.data[plane][f"CD_{name}"] = Fx_new / (Q * S)
-                    self.data[plane][f"Cm_{name}"] = My_new / (Q * S * MAC)
+                    self.data[plane][f"Cm_{name}"] = My_new / (
+                        Q * S * mean_aerodynamic_chord
+                    )
                 except AttributeError:
-                    print("Plane doesn't have Q, S or MAC!")
+                    print("Plane doesn't have Q, S or mean_aerodynamic_chord!")
 
-    def __str__(self):
+    def __str__(self) -> Literal["Vehicle Database"]:
         return "Vehicle Database"
 
-    def __enter__(self, obj):
+    def __enter__(self, obj) -> None:
         pass
 
-    def __exit__(self):
+    def __exit__(self) -> None:
         pass

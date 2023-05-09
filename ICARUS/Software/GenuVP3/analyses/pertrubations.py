@@ -5,7 +5,9 @@ from ICARUS.Database.db import DB
 from ICARUS.Database.utils import dst2case
 from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
 from ICARUS.Software.GenuVP3.postProcess.forces import forces2pertrubRes
-from ICARUS.Software.GenuVP3.utils import airMov, makeSurfaceDict, setParams
+from ICARUS.Software.GenuVP3.utils import airMov
+from ICARUS.Software.GenuVP3.utils import makeSurfaceDict
+from ICARUS.Software.GenuVP3.utils import setParams
 
 
 def GNVPdstCase(

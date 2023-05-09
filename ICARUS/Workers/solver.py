@@ -6,6 +6,7 @@ from typing import Union
 import numpy as np
 
 from .analysis import Analysis
+from ICARUS.Core.struct import Struct
 from ICARUS.Database.db import DB
 
 
@@ -43,12 +44,14 @@ class Solver:
                 return self.availableAnalyses[analysis]
             except KeyError:
                 print(f"Analysis {analysis} not available")
+                return None
         else:
             if self.mode is not None:
                 try:
                     return self.availableAnalyses[self.mode]
                 except KeyError:
                     print(f"Analysis {self.mode} not available")
+                    return None
 
     def printOptions(self) -> None:
         if self.mode is not None:
@@ -56,12 +59,13 @@ class Solver:
         else:
             print("Analysis hase not been Selected")
 
-    def getOptions(self, verbose: bool = False):
+    def getOptions(self, verbose: bool = False) -> Struct:
         if self.mode is not None:
             return self.availableAnalyses[self.mode].getOptions(verbose)
         else:
             print("Analysis hase not been Selected")
             _ = self.getAvailableAnalyses(verbose=verbose)
+            raise Exception("Analysis hase not been Selected")
 
     def getSolverParameters(self, verbose: bool = False):
         if self.mode is not None:
@@ -70,9 +74,9 @@ class Solver:
             print("Analysis hase not been Selected")
             _ = self.getAvailableAnalyses(verbose=verbose)
 
-    def setOptions(self, options):
+    def setOptions(self, options) -> None:
         if self.mode is not None:
-            return self.availableAnalyses[self.mode].setOptions(options)
+            self.availableAnalyses[self.mode].setOptions(options)
         else:
             print("Analysis hase not been Selected")
             _ = self.getAvailableAnalyses(verbose=True)
@@ -97,7 +101,7 @@ class Solver:
         print(f"Running Solver {self.name}:\n\tAnalysis {analysis.name}...")
 
         def saveAnalysis(analysis: Analysis):
-            folder = self.db.analysesDB.DATADIR
+            folder: str = self.db.analysesDB.DATADIR
             if "plane" in analysis.options.keys():
                 folder = os.path.join(folder, analysis.options["plane"].value.name)
             if not os.path.exists(folder):

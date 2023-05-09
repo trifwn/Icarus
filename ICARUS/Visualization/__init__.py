@@ -1,4 +1,4 @@
-colors = [
+colors: list[str] = [
     "r",
     "k",
     "b",
@@ -22,4 +22,4 @@ colors = [
     "b",
     "g",
 ]
-markers = ["x", "o", ".", "*"]
+markers: list[str] = ["x", "o", ".", "*"]

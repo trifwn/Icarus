@@ -1,4 +1,5 @@
 from typing import Union
+
 import numpy as np
 
 from ICARUS.Core.struct import Struct

@@ -1,9 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Any
+from typing import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 
 from .strip import Strip
 from ICARUS.Core.types import NumericArray
@@ -27,16 +33,17 @@ class Wing:
         span_fun: Callable[[float, int], np.ndarray],
         N: int,
         M: int,
-        mass: float | None = 1.0,
-    ):
+        mass: float = 1.0,
+    ) -> None:
         """Initializes the wing."""
 
         # Conversions to numpy
         orientation = np.array(orientation, dtype=float)
         origin = np.array(origin, dtype=float)
+        chord = np.array(chord, dtype=float)
 
-        self.N = N
-        self.M = M
+        self.N: int = N
+        self.M: int = M
 
         self.name: str = name
         self.airfoil = airfoil
@@ -49,9 +56,9 @@ class Wing:
         self.chord_fun = chord_fun
         self.chord = chord
         self.span_fun = span_fun
-        self.mass = mass
+        self.mass: float = mass
 
-        self.gamma = dih_angle * np.pi / 180
+        self.gamma: float = dih_angle * np.pi / 180
 
         # orientation
         self.pitch, self.yaw, self.roll = orientation * np.pi / 180
@@ -94,9 +101,9 @@ class Wing:
         self.create_grid()
 
         # Create Surfaces
-        self.createStrips()
+        self.create_strips()
 
-        # Find Chords MAC-SMC
+        # Find Chords mean_aerodynamic_chord-standard_mean_chord
         self.mean_chords()
 
         # Calculate Areas
@@ -109,9 +116,9 @@ class Wing:
         self.centerMass()
 
         # Calculate Moments
-        self.inertia(self.mass, self.CG)
+        self._inertia(self.mass, self.CG)
 
-    def splitSymmetric(self):
+    def split_symmetric_wing(self) -> tuple[Wing, Wing] | None:
         """Split Symmetric Wing into two Wings"""
         if self.is_symmetric:
             left = Wing(
@@ -157,8 +164,9 @@ class Wing:
             return left, right
         else:
             print("Cannot Split Body it is not symmetric")
+            return None
 
-    def createStrips(self):
+    def create_strips(self) -> None:
         """Create Strips given the Grid and Airfoil"""
         strips = []
         symStrips = []
@@ -203,12 +211,18 @@ class Wing:
         self.strips = strips
         self.all_strips = [*strips, *symStrips]
 
-    def plot_wing(self, fig=None, ax=None, movement=None):
+    def plot_wing(
+        self,
+        prev_fig=None,
+        prev_ax=None,
+        prev_movement=None,
+    ) -> None:
         """Plot Wing in 3D"""
         show_plot: bool = False
-        if fig is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")
+
+        if prev_fig is None:
+            fig: Figure = plt.figure()
+            ax: Axes3D = fig.add_subplot(projection="3d")
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
@@ -216,9 +230,14 @@ class Wing:
             ax.axis("scaled")
             ax.view_init(30, 150)
             show_plot = True
+        else:
+            fig = prev_fig
+            ax = prev_ax
 
-        if movement is None:
-            movement = np.zeros(3)
+        if prev_movement is None:
+            movement: ndarray[Any, dtype[floating]] = np.zeros(3)
+        else:
+            movement = prev_movement
 
         # for strip in self.all_strips:
         #     strip.plotStrip(fig, ax, movement)
@@ -316,7 +335,7 @@ class Wing:
         self.panels_upper = self.grid_to_panels(self.grid_upper)
 
     def mean_chords(self):
-        "Finds the Mean Aerodynamic Chord (MAC) of the wing."
+        "Finds the Mean Aerodynamic Chord (mean_aerodynamic_chord) of the wing."
         num = 0
         denum = 0
         for i in np.arange(0, self.N - 1):
@@ -324,7 +343,7 @@ class Wing:
                 self._span_dist[i + 1] - self._span_dist[i]
             )
             denum += (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i])
-        self.MAC = num / denum
+        self.mean_aerodynamic_chord = num / denum
 
         # Finds Standard Mean Chord
         num = 0
@@ -332,11 +351,11 @@ class Wing:
         for i in np.arange(0, self.N - 1):
             num += (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i])
             denum += self._span_dist[i + 1] - self._span_dist[i]
-        self.SMC = num / denum
+        self.standard_mean_chord = num / denum
 
     def find_aspect_ratio(self):
         """Finds the Aspect Ratio of the wing."""
-        self.AR = (self.span**2) / self.Area
+        self.aspect_ratio = (self.span**2) / self.Area
 
     def find_area(self):
         "Finds the area of the wing."
@@ -470,7 +489,7 @@ class Wing:
 
         self.CG = np.array((x_cm, y_cm, z_cm)) / self.volume
 
-    def inertia(self, mass, cog):
+    def _inertia(self, mass, cog):
         """Finds the inertia of the wing."""
         I_xx = 0
         I_yy = 0
@@ -515,7 +534,7 @@ class Wing:
                 I_xy += self.VolumeDist[i, j] * (xd * yd)
                 I_yz += self.VolumeDist[i, j] * (yd * zd)
 
-        self.INERTIA = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
+        self.inertia = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
 
     def getGrid(self, which="camber"):
         if which == "camber":

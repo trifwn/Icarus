@@ -1,11 +1,20 @@
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from numpy import ndarray
 
 from . import colors
 from . import markers
 
 
-def plotAirfoilReynolds(data, airfoil, reyn, solvers="All", size=(10, 10)):
-    fig, axs = plt.subplots(2, 2, figsize=size)
+def plotAirfoilReynolds(
+    data,
+    airfoil,
+    reyn,
+    solvers: list[str] = ["All"],
+    size: tuple[int, int] = (10, 10),
+) -> None:
+    fig: Figure = plt.figure(figsize=size)
+    axs: ndarray = fig.subplots(2, 2)
     fig.suptitle(
         f"NACA {airfoil[4:]}- Reynolds={reyn}\n Aero Coefficients",
         fontsize=16,

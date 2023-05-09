@@ -1,14 +1,33 @@
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from numpy import ndarray
+from pandas import DataFrame
 
 from . import colors
 from . import markers
 
 
-def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=None):
-    fig, axs = plt.subplots(2, 2, figsize=size)
+def plotAirfoilPolars(
+    data,
+    airfoil,
+    solvers: list[str] | str = "All",
+    size: tuple[int, int] = (10, 10),
+    AoA_bounds=None,
+) -> None:
+    """Function to plot airfoil polars
+
+    Args:
+        data (_type_): _description_
+        airfoil (_type_): _description_
+        solvers (list[str] | str, optional): _description_. Defaults to "All".
+        size (tuple[int, int], optional): _description_. Defaults to (10, 10).
+        AoA_bounds (_type_, optional): _description_. Defaults to None.
+    """
+    fig: Figure = plt.figure(figsize=size)
+    axs: ndarray = fig.subplots(2, 2)
 
     fig.suptitle(f"NACA {airfoil[4:]} Aero Coefficients", fontsize=16)
-    axs[0, 0].set_title("Cm vs AoA")  # type: ignore
+    axs[0, 0].set_title("Cm vs AoA")
     axs[0, 0].set_ylabel("Cm")
 
     axs[0, 1].set_title("Cd vs AoA")
@@ -28,9 +47,10 @@ def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=No
     for i, solver in enumerate(data[airfoil].keys()):
         if solver not in solvers:
             continue
+
         for j, reynolds in enumerate(data[airfoil][solver].keys()):
             try:
-                polar = data[airfoil][solver][reynolds]
+                polar: DataFrame = data[airfoil][solver][reynolds]
                 if AoA_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar = polar.loc[
@@ -39,10 +59,11 @@ def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=No
                     ]
 
                 aoa, cl, cd, cm = polar.T.values
-                c = colors[j]
-                m = markers[i]
-                style = f"{c}{m}-"
-                label = f"{airfoil}: {reynolds} - {solver}"
+
+                c: str = colors[j]
+                m: str = markers[i]
+                style: str = f"{c}{m}-"
+                label: str = f"{airfoil}: {reynolds} - {solver}"
                 axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)
                 axs[1, 0].plot(aoa, cl, style, label=label, markersize=3, linewidth=1)
                 axs[1, 1].plot(cd, cl, style, label=label, markersize=3, linewidth=1)
@@ -52,7 +73,7 @@ def plotAirfoilPolars(data, airfoil, solvers="All", size=(10, 10), AoA_bounds=No
 
     fig.tight_layout()
     if len(solvers) == 3:
-        per = -0.85
+        per: float = -0.85
     elif len(solvers) == 2:
         per = -0.6
     else:

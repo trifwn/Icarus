@@ -5,8 +5,8 @@ def geom():
 
     return (
         Simplewing.S,
-        Simplewing.MAC,
+        Simplewing.mean_aerodynamic_chord,
         Simplewing.Area,
         Simplewing.CG,
-        Simplewing.INERTIA,
+        Simplewing.inertia,
     )

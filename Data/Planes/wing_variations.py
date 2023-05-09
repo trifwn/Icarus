@@ -1,4 +1,9 @@
+from typing import Any
+
 import numpy as np
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 
 from ICARUS.Core.types import DataDict
 from ICARUS.Core.types import NumericArray
@@ -13,10 +18,28 @@ def wing_var_chord_offset(
     name: str,
     chords: NumericArray,
     offset: float,
-):
-    origin = np.array([0.0, 0.0, 0.0], dtype=float)
-    wing_position = np.array([0.0 - 0.159 / 4, 0.0, 0.0], dtype=float)
-    wing_orientation = np.array([2.8, 0.0, 0.0], dtype=float)
+) -> Airplane:
+    """Defines an airplane consisting only of a wing with a variable chord and offset.
+    The rest of the parameters are the same with the hermes Plane;
+
+    Args:
+        airfoils (DataDict): _description_
+        name (str): _description_
+        chords (NumericArray): _description_
+        offset (float): _description_
+
+    Returns:
+        Airplane: _description_
+    """
+    origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+    wing_position: ndarray[Any, dtype[floating]] = np.array(
+        [0.0 - 0.159 / 4, 0.0, 0.0],
+        dtype=float,
+    )
+    wing_orientation: ndarray[Any, dtype[floating]] = np.array(
+        [2.8, 0.0, 0.0],
+        dtype=float,
+    )
 
     main_wing = Wing(
         name="wing",
@@ -35,11 +58,10 @@ def wing_var_chord_offset(
         mass=0.670,
     )
     # main_wing.plotWing()
-    lifting_surfaces = [main_wing]
+    lifting_surfaces: list[Wing] = [main_wing]
     # main_wing.plotWing()
-    lifting_surfaces = [main_wing]
 
-    addedMasses = [
+    addedMasses: list[tuple[float, np.ndarray[Any, np.dtype[Any]]]] = [
         (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Motor
         (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
         (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload

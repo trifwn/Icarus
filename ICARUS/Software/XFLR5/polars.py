@@ -9,8 +9,8 @@ def readPolars2D(db, XFLRdir):
     os.chdir(XFLRdir)
     files = next(os.walk("."))[1]
     for airf in files:
-        if airf not in db.Data.keys():
-            db.Data[airf] = {}
+        if airf not in db.data.keys():
+            db.data[airf] = {}
         if airf.startswith("NACA"):
             os.chdir(airf)
             dat = next(os.walk("."))[2]
@@ -39,20 +39,20 @@ def readPolars2D(db, XFLRdir):
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in db.Data[airf].keys():
-                        db.Data[airf]["XFLR"] = {}
+                    if "XFLR" not in db.data[airf].keys():
+                        db.data[airf]["XFLR"] = {}
                     reyn = np.format_float_scientific(
                         reyn,
                         sign=False,
                         precision=3,
                     ).replace("+", "")
-                    db.Data[airf]["XFLR"][reyn] = dat
+                    db.data[airf]["XFLR"][reyn] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 
 
 def readPolars3D(db, FILENAME, name):
-    if f"XFLR_{name}" not in db.Data.keys():
+    if f"XFLR_{name}" not in db.data.keys():
         # import csv into pandas Dataframe and skip first 7 rows
         df = pd.read_csv(
             FILENAME,
@@ -65,7 +65,7 @@ def readPolars3D(db, FILENAME, name):
 
         # convert to float
         df = df.astype(float)
-        db.Data[f"XFLR_{name}"] = df
+        db.data[f"XFLR_{name}"] = df
         return df
     else:
         print("Polar Already Exists!")

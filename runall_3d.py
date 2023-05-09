@@ -8,12 +8,14 @@ import time
 import numpy as np
 
 from Data.Planes.wing_variations import wing_var_chord_offset
+from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH
 from ICARUS.Flight_Dynamics.dyn_plane import dyn_Airplane as dp
 from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
 from ICARUS.Software.XFLR5.polars import readPolars2D
+from ICARUS.Vehicle.plane import Airplane
 
 # from Data.Planes.hermes import hermes
 # from Data.Planes.hermes_wing_only import hermes_main_wing
@@ -32,7 +34,7 @@ def main():
     airfoils = foildb.getAirfoils()
 
     # # Get Plane
-    planes = []
+    planes: list[Airplane] = []
     planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
 
     planes.append(
@@ -122,11 +124,14 @@ def main():
         dyn.get_pertrub()
 
         # Define Analysis for Pertrubations
-        analysis = gnvp3.getAvailableAnalyses()[4]  # Pertrubations PARALLEL
+        analysis: str = gnvp3.getAvailableAnalyses()[4]  # Pertrubations PARALLEL
         print(f"Selecting Analysis: {analysis}")
         gnvp3.setAnalysis(analysis)
-        options = gnvp3.getOptions(analysis)
 
+        options: Struct = gnvp3.getOptions(verbose=True)
+
+        if options is None:
+            raise ValueError("Options not set")
         # Set Options
         dyn.defineSim(dyn.trim["U"], EARTH.AirDensity)
         options.plane.value = dyn

@@ -52,11 +52,17 @@ class dyn_Airplane(Airplane):
     def makeAeroCoeffs(self, Forces):
         Data = pd.DataFrame()
 
-        Data["CL"] = Forces["Fz"] / (self.Q * self.S)
-        Data["CD"] = Forces["Fx"] / (self.Q * self.S)
-        Data["Cm"] = Forces["M"] / (self.Q * self.S * self.MAC)
-        Data["Cn"] = Forces["N"] / (self.Q * self.S * self.MAC)
-        Data["Cl"] = Forces["L"] / (self.Q * self.S * self.MAC)
+        Data["CL"] = Forces["Fz"] / (self.dynamic_pressure * self.S)
+        Data["CD"] = Forces["Fx"] / (self.dynamic_pressure * self.S)
+        Data["Cm"] = Forces["M"] / (
+            self.dynamic_pressure * self.S * self.mean_aerodynamic_chord
+        )
+        Data["Cn"] = Forces["N"] / (
+            self.dynamic_pressure * self.S * self.mean_aerodynamic_chord
+        )
+        Data["Cl"] = Forces["L"] / (
+            self.dynamic_pressure * self.S * self.mean_aerodynamic_chord
+        )
         Data["AoA"] = Forces["AoA"]
         return Data
 

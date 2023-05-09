@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from numpy import ndarray
 
 from . import colors
 from . import markers
@@ -12,8 +14,9 @@ def plotSensitivity(
     vars2s=["All"],
     solvers=["2D"],
     size=(16, 7),
-):
-    fig, axs = plt.subplots(2, 3, figsize=size)
+) -> None:
+    fig: Figure = plt.figure()
+    axs: ndarray = fig.subplots(2, 3)
     fig.suptitle(f"{plane.name} Convergence", fontsize=16)
 
     axs[0, 0].set_title("Fx vs epsilon")

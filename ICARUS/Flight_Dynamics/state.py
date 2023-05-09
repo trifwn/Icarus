@@ -1,4 +1,4 @@
-import pandas as pd
+from pandas import DataFrame
 
 from .disturbances import Disturbance as dst
 from .dyn_plane import StabilityDerivativesDS
@@ -16,44 +16,52 @@ from ICARUS.Vehicle.plane import Airplane
 class State:
     """Class for the state of a vehicle."""
 
-    def __init__(self, name: str, pln: Airplane, forces, env: Environment):
-        self.vehicle = pln
-        self.S = pln.S
-        self.MAC = pln.MAC
+    def __init__(self, name: str, pln: Airplane, forces, env: Environment) -> None:
+        self.vehicle: Airplane = pln
+        self.S: float = pln.S
+        self.mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
 
-        self.name = name
-        self.polars = self.formatPolars(forces)
+        self.name: str = name
+        self.polars: DataFrame = self.formatPolars(forces)
 
-        self.trim = trim_state(self)
-        self.Q = 0.5 * env.AirKinematicViscosity * self.trim["U"] ** 2
-        self.disturbances = []
+        self.trim: dict[str, float] = trim_state(self)
+        self.dynamic_pressure: float = (
+            0.5 * env.AirKinematicViscosity * self.trim["U"] ** 2
+        )
+        self.disturbances: list[dst] = []
         self.sensitivity = Struct()
         self.sensResults = Struct()
 
-    def formatPolars(self, forces):
-        forces = rotateForces(forces, forces["AoA"])
-        return self.makeAeroCoeffs(forces)
+    def formatPolars(self, forces) -> DataFrame:
+        forces_rotated: DataFrame = rotateForces(forces, forces["AoA"])
+        return self.makeAeroCoeffs(forces_rotated)
 
-    def makeAeroCoeffs(self, Forces):
-        Data = pd.DataFrame()
+    def makeAeroCoeffs(self, Forces) -> DataFrame:
+        Data: DataFrame = DataFrame()
 
-        Data["CL"] = Forces["Fz"] / (self.Q * self.S)
-        Data["CD"] = Forces["Fx"] / (self.Q * self.S)
-        Data["Cm"] = Forces["M"] / (self.Q * self.S * self.MAC)
-        Data["Cn"] = Forces["N"] / (self.Q * self.S * self.MAC)
-        Data["Cl"] = Forces["L"] / (self.Q * self.S * self.MAC)
+        Data["CL"] = Forces["Fz"] / (self.dynamic_pressure * self.S)
+        Data["CD"] = Forces["Fx"] / (self.dynamic_pressure * self.S)
+        Data["Cm"] = Forces["M"] / (
+            self.dynamic_pressure * self.S * self.mean_aerodynamic_chord
+        )
+        Data["Cn"] = Forces["N"] / (
+            self.dynamic_pressure * self.S * self.mean_aerodynamic_chord
+        )
+        Data["Cl"] = Forces["L"] / (
+            self.dynamic_pressure * self.S * self.mean_aerodynamic_chord
+        )
         Data["AoA"] = Forces["AoA"]
         return Data
 
-    def all_Pertrubations(self, scheme, epsilon=None):
+    def all_Pertrubations(self, scheme: str, epsilon=None) -> None:
         """Function to add a perturbations to the airplane for
         dynamic analysis
         Inputs:
         - scheme: "Central", "Forward", "Backward"
         - epsilon: Disturbance Magnitudes
         """
-        self.scheme = scheme
-        self.epsilons = {}
+        self.scheme: str = scheme
+        self.epsilons: dict[str, float] = {}
 
         self.disturbances = [
             *longitudalPerturb(self, scheme, epsilon),

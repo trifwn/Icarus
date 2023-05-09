@@ -1,11 +1,21 @@
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from numpy import ndarray
 
 from . import colors
 from . import markers
 
 
-def plotAirplanePolars(data, airplanes, solvers=["All"], size=(10, 10)):
-    fig, axs = plt.subplots(2, 2, figsize=size)
+def plotAirplanePolars(
+    data,
+    airplanes: list[str],
+    solvers: list[str] = ["All"],
+    size: tuple[int, int] = (10, 10),
+) -> None:
+    # fig , axs =
+    fig: Figure = plt.figure(figsize=size)
+    axs: ndarray = fig.subplots(2, 2)
+
     if len(airplanes) == 1:
         fig.suptitle(f"{airplanes[0]} Aero Coefficients", fontsize=16)
     else:
@@ -62,8 +72,8 @@ def plotAirplanePolars(data, airplanes, solvers=["All"], size=(10, 10)):
             if skip:
                 break
     fig.tight_layout()
-    for axR in axs:
-        for ax in axR:
+    for axe in axs:
+        for ax in axe:
             ax.axhline(y=0, color="k")
             ax.axvline(x=0, color="k")
             ax.grid()

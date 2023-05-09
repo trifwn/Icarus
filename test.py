@@ -16,10 +16,10 @@ class TestAdd(unittest.TestCase):
         CG_act = np.array([0.163, 0.0, 0.0])
         I_act = np.array([2.082, 0.017, 2.099, 0.0, 0.139, 0.0])
 
-        S, MAC, AREA, CG, INERTIA = wing_test.geom()
+        S, mean_aerodynamic_chord, AREA, CG, INERTIA = wing_test.geom()
 
         np.testing.assert_almost_equal(S, S_act, decimal=4)
-        np.testing.assert_almost_equal(MAC, MAC_act, decimal=4)
+        np.testing.assert_almost_equal(mean_aerodynamic_chord, MAC_act, decimal=4)
         np.testing.assert_almost_equal(AREA, AREA_act, decimal=4)
         np.testing.assert_almost_equal(CG, CG_act, decimal=3)
         np.testing.assert_almost_equal(INERTIA, I_act, decimal=3)
@@ -30,7 +30,7 @@ class TestAdd(unittest.TestCase):
         # pass
 
     def test3_airPolars(self):
-        des, act = airPolars(plot=True)
+        des, act = airPolars()
         preffered_pol = "2D"
 
         AoA_d = des["AoA"].astype(float)
@@ -71,5 +71,5 @@ class TestAdd(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.TestLoader.sortTestMethodsUsing = None
+    unittest.TestLoader.sortTestMethodsUsing = None  # type: ignore
     unittest.main()
