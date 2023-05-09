@@ -1,6 +1,8 @@
 import os
 
 import numpy as np
+from numpy import dtype, ndarray, floating
+from typing import Any
 
 from ICARUS.Airfoils.airfoilD import AirfoilD
 from ICARUS.Database import BASEFOIL2W
@@ -11,50 +13,69 @@ from ICARUS.Software.OpenFoam import runOpenFoam as of
 from ICARUS.Software.Xfoil import runXFoil as xf
 
 
-HOMEDIR = os.getcwd()
+HOMEDIR: str = os.getcwd()
 
 # Reynolds And Mach and AoA
 
 
-def ms2mach(ms):
-    return ms / 340.29
+def ms2mach(speed_m_s: float) -> float:
+    """Converts speed in m/s to mach number
+
+    Args:
+        speed_m_s (float): Speed in m/s
+
+    Returns:
+        float: Mach Number of speed
+    """
+
+    return speed_m_s / 340.29
 
 
-def Re(v, c, n):
-    return (v * c) / n
+def Re(velocity: float, char_length: float, viscosity: float) -> float:
+    """Computes Reynolds number from velocity, characteristic length and viscosity
+
+    Args:
+        velocity (float)
+        char_length (float)
+        viscosity (float)
+
+    Returns:
+        float: Reynolds number
+    """
+    return (velocity * char_length) / viscosity
 
 
-chordMax = 0.18
-chordMin = 0.11
-umax = 30
-umin = 5
-ne = 1.56e-5
+chordMax: float = 0.18
+chordMin: float = 0.11
+umax: float = 30.0
+umin: float = 5.0
+viscosity: float = 1.56e-5
 
 Machmin = ms2mach(10)
-Machmax = ms2mach(30)
-Remax = Re(umax, chordMax, ne)
-Remin = Re(umin, chordMin, ne)
-AoAmax = 15
-AoAmin = -6
-NoAoA = (AoAmax - AoAmin) * 2 + 1
+Machmax: float = ms2mach(30)
+Remax: float = Re(umax, chordMax, viscosity)
+Remin: float = Re(umin, chordMin, viscosity)
+AoAmax: float = 15
+AoAmin: float = -6
+NoAoA: int = (AoAmax - AoAmin) * 2 + 1
 
-angles = np.linspace(AoAmin, AoAmax, NoAoA)
-Reynolds = np.logspace(np.log10(Remin), np.log10(Remax), 5, base=10)
-Mach = np.linspace(Machmax, Machmin, 10)
+angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
+Reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(np.log10(Remin), np.log10(Remax), 5, base=10)
+Mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(Machmax, Machmin, 10)
 
-MACH = Machmax
+MACH: float = Machmax
 
-cleaning = False
-calcF2W = True
-calcOpenFoam = False
-calcXFoil = False
+cleaning: bool = False
+calcF2W: bool = True
+calcOpenFoam: bool = False
+calcXFoil: bool = False
 
 # LOOP
-airfoils = ["4415", "0008"]
+airfoils: list[str] = ["4415", "0008"]
 for airf in airfoils:
     print(f"\nRunning airfoil {airf}\n")
     # # Get Airfoil
-    airf = AirfoilD.NACA(airf, n_points=200)
+    airf: AirfoilD = AirfoilD.NACA(airf, n_points=200)
     airf.accessDB(HOMEDIR, DB2D)
     # airf.plotAirfoil()
     for Reyn in Reynolds:

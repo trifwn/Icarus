@@ -1,8 +1,8 @@
 import os
 
-from numpy.typing import ArrayLike
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import ArrayLike
 
 
 def plotCP(angle) -> None:

@@ -6,6 +6,10 @@ import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 import numpy as np
 import pandas as pd
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+from pandas import DataFrame
 
 from . import APPHOME
 from . import DB3D
@@ -164,7 +168,7 @@ class Database_3D:
     def getPlanes(self) -> list[str]:
         return list(self.planes.keys())
 
-    def getPolar(self, plane, mode):
+    def getPolar(self, plane, mode) -> DataFrame | None:
         try:
             cols: list[str] = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
             return self.data[plane][cols].rename(
@@ -172,29 +176,40 @@ class Database_3D:
             )
         except KeyError:
             print("Polar Doesn't exist! You should compute it first!")
+        return None
 
     def makeData(self) -> None:
         for plane in list(self.planes.keys()):
             self.data[plane] = pd.DataFrame()
             pln: Airplane = self.planes[plane]
             self.data[plane]["AoA"] = self.raw_data[plane]["AoA"]
-            AoA: np.ndarray[Any, np.dtype[np.floating]] = (
+            AoA: np.ndarray[Any, np.dtype[floating]] = (
                 self.raw_data[plane]["AoA"] * np.pi / 180
             )
             for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-                Fx: np.ndarray = self.raw_data[plane][f"TFORC{enc}(1)"]
+                Fx: ndarray[Any, dtype[floating]] = self.raw_data[plane][
+                    f"TFORC{enc}(1)"
+                ]
                 # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-                Fz: np.ndarray = self.raw_data[plane][f"TFORC{enc}(3)"]
+                Fz: ndarray[Any, dtype[floating]] = self.raw_data[plane][
+                    f"TFORC{enc}(3)"
+                ]
 
                 # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-                My: np.ndarray = self.raw_data[plane][f"TAMOM{enc}(2)"]
+                My: ndarray[Any, dtype[floating]] = self.raw_data[plane][
+                    f"TAMOM{enc}(2)"
+                ]
                 # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
-                Fx_new: np.ndarray = Fx * np.cos(AoA) + Fz * np.sin(AoA)
+                Fx_new: ndarray[Any, dtype[floating]] = Fx * np.cos(AoA) + Fz * np.sin(
+                    AoA,
+                )
                 # Fy_new = Fy
-                Fz_new: np.ndarray = -Fx * np.sin(AoA) + Fz * np.cos(AoA)
+                Fz_new: ndarray[Any, dtype[floating]] = -Fx * np.sin(AoA) + Fz * np.cos(
+                    AoA,
+                )
 
-                My_new: np.ndarray = My
+                My_new: ndarray[Any, dtype[floating]] = My
                 try:
                     Q: float = pln.dynamic_pressure
                     S: float = pln.S

@@ -146,7 +146,7 @@ class Struct:
             Struct: Inverted Dict
         """
 
-        def _invert_nested_dict(dd, depth):
+        def _invert_nested_dict(dd: Struct, depth: int) -> "Struct":
             new_dict = {}
             for k, v in dd.items():
                 if isinstance(v, dict):

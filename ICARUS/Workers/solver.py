@@ -12,9 +12,9 @@ from ICARUS.Database.db import DB
 
 class Solver:
     def __init__(self, name: str, solverType: str, fidelity: int, db: DB) -> None:
-        self.name = name
-        self.type = solverType
-        self.db = db
+        self.name: str = name
+        self.type: str = solverType
+        self.db: DB = db
         try:
             assert type(fidelity) == int, "Fidelity must be an integer"
         except AssertionError:
@@ -23,7 +23,7 @@ class Solver:
         self.availableAnalyses: dict[str, Analysis] = {}
         self.mode: Union[str, None] = None
 
-    def addAnalyses(self, analyses):
+    def addAnalyses(self, analyses) -> None:
         for analysis in analyses:
             if analysis.name in self.availableAnalyses.keys():
                 print(f"Analysis {analysis.name} already exists")
@@ -35,7 +35,7 @@ class Solver:
                 continue
             self.availableAnalyses[analysis.name] = analysis
 
-    def setAnalysis(self, analysis: str):
+    def setAnalysis(self, analysis: str) -> None:
         self.mode = analysis
 
     def getAnalysis(self, analysis: str | None = None) -> Analysis | None:
@@ -44,14 +44,13 @@ class Solver:
                 return self.availableAnalyses[analysis]
             except KeyError:
                 print(f"Analysis {analysis} not available")
-                return None
         else:
             if self.mode is not None:
                 try:
                     return self.availableAnalyses[self.mode]
                 except KeyError:
                     print(f"Analysis {self.mode} not available")
-                    return None
+        return None
 
     def printOptions(self) -> None:
         if self.mode is not None:
@@ -67,7 +66,7 @@ class Solver:
             _ = self.getAvailableAnalyses(verbose=verbose)
             raise Exception("Analysis hase not been Selected")
 
-    def getSolverParameters(self, verbose: bool = False):
+    def getSolverParameters(self, verbose: bool = False) -> Struct | None:
         if self.mode is not None:
             return self.availableAnalyses[self.mode].getSolverOptions(verbose)
         else:
@@ -81,7 +80,7 @@ class Solver:
             print("Analysis hase not been Selected")
             _ = self.getAvailableAnalyses(verbose=True)
 
-    def getAvailableAnalyses(self, verbose: bool = False):
+    def getAvailableAnalyses(self, verbose: bool = False) -> list[str]:
         if verbose:
             print(self)
         return list(self.availableAnalyses.keys())
@@ -100,13 +99,13 @@ class Solver:
                 return -1
         print(f"Running Solver {self.name}:\n\tAnalysis {analysis.name}...")
 
-        def saveAnalysis(analysis: Analysis):
+        def saveAnalysis(analysis: Analysis) -> None:
             folder: str = self.db.analysesDB.DATADIR
             if "plane" in analysis.options.keys():
                 folder = os.path.join(folder, analysis.options["plane"].value.name)
             if not os.path.exists(folder):
                 os.makedirs(folder)
-            fname = os.path.join(folder, f"{analysis.name}.json")
+            fname: str = os.path.join(folder, f"{analysis.name}.json")
             with open(fname, "w") as f:
                 f.write(analysis.toJSON())
 
@@ -119,7 +118,7 @@ class Solver:
             if self.mode is None:
                 print("Analysis not selected or provided")
                 return -1
-            analysis = self.availableAnalyses[self.mode]
+            analysis: Analysis = self.availableAnalyses[self.mode]
         else:
             if analysis_name in self.availableAnalyses.keys():
                 analysis = self.availableAnalyses[analysis_name]
@@ -130,7 +129,7 @@ class Solver:
         return res
 
     def __str__(self) -> str:
-        string = f"{self.type} Solver {self.name}:\n"
+        string: str = f"{self.type} Solver {self.name}:\n"
         string += "Available Analyses Are: \n"
         string += "------------------- \n"
         for i, key in enumerate(self.availableAnalyses.keys()):

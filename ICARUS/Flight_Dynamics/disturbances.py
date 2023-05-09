@@ -1,7 +1,7 @@
 class Disturbance:
     """Class for represanting disturbances"""
 
-    def __init__(self, variable, amplitude):
+    def __init__(self, variable: str | None, amplitude: float) -> None:
         self.amplitude = amplitude
         if amplitude > 0:
             self.isPositive = True
@@ -53,5 +53,5 @@ class Disturbance:
             self.name = f"{variable} disturbance"
             self.var = variable
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}:\tType:\t{self.type} and \tAmplitude:\t{self.amplitude}."

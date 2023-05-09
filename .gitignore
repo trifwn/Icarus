@@ -5,6 +5,7 @@ venv/
 setup.cfg
 *__pycache__
 3d_Party/
+typings/
 
 # PACKAGING
 *.egg

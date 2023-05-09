@@ -1,19 +1,29 @@
 """This module defines the hermes plane object."""
-import numpy as np
-from numpy import dtype, ndarray, floating
 from typing import Any
 
+import numpy as np
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+
+from ICARUS.Core.struct import Struct
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import define_linear_chord
 from ICARUS.Vehicle.wing import define_linear_span
 from ICARUS.Vehicle.wing import Wing
 
 
-def hermes(airfoils, name) -> Airplane:
+def hermes(airfoils: Struct, name) -> Airplane:
     origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
 
-    wing_position: ndarray[Any, dtype[floating]] = np.array([0.0 - 0.159 / 4, 0.0, 0.0], dtype=float)
-    wing_orientation: ndarray[Any, dtype[floating]] = np.array([2.8, 0.0, 0.0], dtype=float)
+    wing_position: ndarray[Any, dtype[floating]] = np.array(
+        [0.0 - 0.159 / 4, 0.0, 0.0],
+        dtype=float,
+    )
+    wing_orientation: ndarray[Any, dtype[floating]] = np.array(
+        [2.8, 0.0, 0.0],
+        dtype=float,
+    )
 
     main_wing = Wing(
         name="wing",
@@ -33,8 +43,14 @@ def hermes(airfoils, name) -> Airplane:
     )
     # main_wing.plotWing()
 
-    elevatorPos: ndarray[Any, dtype[floating]] = np.array([0.54 - 0.130 / 4, 0.0, 0.0], dtype=float)
-    elevatorOrientantion: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+    elevatorPos: ndarray[Any, dtype[floating]] = np.array(
+        [0.54 - 0.130 / 4, 0.0, 0.0],
+        dtype=float,
+    )
+    elevatorOrientantion: ndarray[Any, dtype[floating]] = np.array(
+        [0.0, 0.0, 0.0],
+        dtype=float,
+    )
 
     elevator = Wing(
         name="tail",
@@ -54,8 +70,14 @@ def hermes(airfoils, name) -> Airplane:
     )
     # elevator.plotWing()
 
-    rudder_position: ndarray[Any, dtype[floating]] = np.array([0.47 - 0.159 / 4, 0.0, 0.01], dtype=float)
-    rudder_orientation: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 90.0], dtype=float)
+    rudder_position: ndarray[Any, dtype[floating]] = np.array(
+        [0.47 - 0.159 / 4, 0.0, 0.01],
+        dtype=float,
+    )
+    rudder_orientation: ndarray[Any, dtype[floating]] = np.array(
+        [0.0, 0.0, 90.0],
+        dtype=float,
+    )
 
     rudder = Wing(
         name="rudder",

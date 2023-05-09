@@ -89,7 +89,9 @@ class Wing:
         if is_symmetric:
             self._chord_dist = chord_fun(self.N, *chord)
             self._span_dist = span_fun(span / 2, self.N)
-            self._offset_dist = (self._span_dist - span / 2) * (sweep_offset / (span / 2))
+            self._offset_dist = (self._span_dist - span / 2) * (
+                sweep_offset / (span / 2)
+            )
             self._dihedral_dist = (self._span_dist - span / 2) * np.sin(self.gamma)
         else:
             self._chord_dist = chord_fun(self.N, *chord)
@@ -295,9 +297,15 @@ class Wing:
             ys_upper[i, :] = ys[i, :]
 
             for j in np.arange(0, self.N):
-                zs_upper[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.y_upper(i / (self.M - 1))
-                zs_lower[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.y_lower(i / (self.M - 1))
-                zs[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.camber_line(
+                zs_upper[i, j] = self._dihedral_dist[j] + self._chord_dist[
+                    j
+                ] * self.airfoil.y_upper(i / (self.M - 1))
+                zs_lower[i, j] = self._dihedral_dist[j] + self._chord_dist[
+                    j
+                ] * self.airfoil.y_lower(i / (self.M - 1))
+                zs[i, j] = self._dihedral_dist[j] + self._chord_dist[
+                    j
+                ] * self.airfoil.camber_line(
                     i / (self.M - 1),
                 )
 
@@ -342,14 +350,22 @@ class Wing:
             num += ((self._chord_dist[i] + self._chord_dist[i + 1]) / 2) ** 2 * (
                 self._span_dist[i + 1] - self._span_dist[i]
             )
-            denum += (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i])
+            denum += (
+                (self._chord_dist[i] + self._chord_dist[i + 1])
+                / 2
+                * (self._span_dist[i + 1] - self._span_dist[i])
+            )
         self.mean_aerodynamic_chord = num / denum
 
         # Finds Standard Mean Chord
         num = 0
         denum = 0
         for i in np.arange(0, self.N - 1):
-            num += (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i])
+            num += (
+                (self._chord_dist[i] + self._chord_dist[i + 1])
+                / 2
+                * (self._span_dist[i + 1] - self._span_dist[i])
+            )
             denum += self._span_dist[i + 1] - self._span_dist[i]
         self.standard_mean_chord = num / denum
 
@@ -366,7 +382,9 @@ class Wing:
         for i in np.arange(0, self.N - 1):
             _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
             _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
-            self.S += 2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
+            self.S += (
+                2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
+            )
 
         g_up = self.grid_upper
         g_low = self.grid_lower
@@ -506,12 +524,20 @@ class Wing:
                 y_upp = (self.grid_upper[i + 1, j, 1] + self.grid_upper[i, j, 1]) / 2
                 y_low = (self.grid_lower[i + 1, j, 1] + self.grid_lower[i, j, 1]) / 2
 
-                z_upp1 = (self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]) / 2
-                z_upp2 = (self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]) / 2
+                z_upp1 = (
+                    self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]
+                ) / 2
+                z_upp2 = (
+                    self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]
+                ) / 2
                 z_upp = (z_upp1 + z_upp2) / 2
 
-                z_low1 = (self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]) / 2
-                z_low2 = (self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]) / 2
+                z_low1 = (
+                    self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]
+                ) / 2
+                z_low2 = (
+                    self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]
+                ) / 2
                 z_low = (z_low1 + z_low2) / 2
 
                 xd = ((x_upp + x_low) / 2 - cog[0]) ** 2
@@ -534,7 +560,9 @@ class Wing:
                 I_xy += self.VolumeDist[i, j] * (xd * yd)
                 I_yz += self.VolumeDist[i, j] * (yd * zd)
 
-        self.inertia = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
+        self.inertia = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (
+            mass / self.volume
+        )
 
     def getGrid(self, which="camber"):
         if which == "camber":
@@ -554,11 +582,18 @@ class Wing:
         return grid
 
 
-def define_linear_span(sp, Ni):
+def define_linear_span(
+    sp: float,
+    Ni: int,
+) -> ndarray[Any, dtype[Any, dtype[floating[Any]]]]:
     """Returns a linearly spaced span array."""
     return np.linspace(0, sp, Ni).round(12)
 
 
-def define_linear_chord(Ni, ch1, ch2):
+def define_linear_chord(
+    Ni: int,
+    ch1: float,
+    ch2: float,
+) -> ndarray[Any, dtype[floating[Any]]]:
     """Returns a linearly spaced chord array."""
     return np.linspace(ch1, ch2, Ni).round(12)

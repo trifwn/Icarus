@@ -1,7 +1,9 @@
 import inspect
 from io import StringIO
 from tokenize import String
-from typing import Any, Callable, Union
+from typing import Any
+from typing import Callable
+from typing import Union
 
 import jsonpickle
 import jsonpickle.ext.numpy as jsonpickle_numpy
@@ -10,7 +12,6 @@ import numpy as np
 from tabulate import tabulate
 
 from .options import Option
-from typing import Callable
 from ICARUS.Core.struct import Struct
 
 jsonpickle_pd.register_handlers()
@@ -18,7 +19,15 @@ jsonpickle_numpy.register_handlers()
 
 
 class Analysis:
-    def __init__(self, solverName, name, runFunc, options, solver_options, unhook=None) -> None:
+    def __init__(
+        self,
+        solverName,
+        name,
+        runFunc,
+        options,
+        solver_options,
+        unhook=None,
+    ) -> None:
         self.solverName: str = solverName
         self.name: str = name
         self.options = Struct()
@@ -55,7 +64,9 @@ class Analysis:
             else:
                 table.append([opt.name, opt.value, opt.description])
         string.write(tabulate(table[1:], headers=table[0], tablefmt="github"))
-        string.write("\n\nIf there are multiple values you should inspect them sepretly by calling the option name\n")
+        string.write(
+            "\n\nIf there are multiple values you should inspect them sepretly by calling the option name\n",
+        )
         return string.read()
 
     __repr__ = __str__
@@ -109,8 +120,13 @@ class Analysis:
 
     def __call__(self):
         if self.checkOptions():
-            kwargs = {option: self.options[option].value for option in self.options.keys()}
-            solver_options = {option: self.solver_options[option].value for option in self.solver_options.keys()}
+            kwargs = {
+                option: self.options[option].value for option in self.options.keys()
+            }
+            solver_options = {
+                option: self.solver_options[option].value
+                for option in self.solver_options.keys()
+            }
             res = self.execute(**kwargs, solver_options=solver_options)
             print("Analysis Completed")
             return res
@@ -148,7 +164,9 @@ class Analysis:
 
     def __copy__(self) -> "Analysis":
         optiondict = {k: v.description for k, v in self.options.items()}
-        solver_options = {k: (v.value, v.description) for k, v in self.solver_options.items()}
+        solver_options = {
+            k: (v.value, v.description) for k, v in self.solver_options.items()
+        }
         return self.__class__(
             self.solverName,
             self.name,

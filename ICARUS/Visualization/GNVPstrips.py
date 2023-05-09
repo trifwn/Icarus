@@ -1,16 +1,21 @@
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib import cm
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-from matplotlib import cm
 from pandas import DataFrame
 
 from ICARUS.Software.GenuVP3.postProcess.getStripData import getStripData
 from ICARUS.Vehicle.plane import Airplane
 
 
-def GNVPstrips3D(pln: Airplane, case: str, NBs: list[int], category: str = "Wind") -> DataFrame:
+def GNVPstrips3D(
+    pln: Airplane,
+    case: str,
+    NBs: list[int],
+    category: str = "Wind",
+) -> DataFrame:
     stripDat, data = getStripData(pln, case, NBs)
 
     fig: Figure = plt.figure()

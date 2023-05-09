@@ -17,12 +17,12 @@ def saveAirfoil(argv):
         )
         return 0
     else:
-        save = "s" in options[0]
+        save: bool = "s" in options[0]
         filen = str(options[1])
         Airfoiln = str(options[2])
         mode = int(options[3])
         n_points = int(options[4])
-    f = AirfoilD.NACA(Airfoiln, n_points=n_points)
+    f: AirfoilD = AirfoilD.NACA(Airfoiln, n_points=n_points)
 
     # # Return and Save to file
     if mode == 0:

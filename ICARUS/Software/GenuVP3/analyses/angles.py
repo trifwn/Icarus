@@ -53,7 +53,7 @@ def GNVPangleCase(
         bodies,
         params,
         airfoils,
-        foilsDB.Data,
+        foilsDB.data,
         solver2D,
     )
 

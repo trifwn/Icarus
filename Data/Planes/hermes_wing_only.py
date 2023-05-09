@@ -1,6 +1,10 @@
-import numpy as np
-from numpy import ndarray, floating, dtype
+from struct import Struct
 from typing import Any
+
+import numpy as np
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import define_linear_chord
@@ -8,7 +12,7 @@ from ICARUS.Vehicle.wing import define_linear_span
 from ICARUS.Vehicle.wing import Wing
 
 
-def hermes_main_wing(airfoils, name: str) -> Airplane:
+def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
     """Function to get a plane Consisting only of the main wing of the hermes plane
 
     Args:
@@ -18,10 +22,16 @@ def hermes_main_wing(airfoils, name: str) -> Airplane:
         Airplane: _description_
     """
 
-    origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+    origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
 
-    wing_position: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
-    wing_orientation: ndarray[Any, dtype[floating]] = np.array([2.8, 0.0, 0.0], dtype=float)
+    wing_position: ndarray[Any, dtype[floating[Any]]] = np.array(
+        [0.0, 0.0, 0.0],
+        dtype=float,
+    )
+    wing_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(
+        [2.8, 0.0, 0.0],
+        dtype=float,
+    )
 
     main_wing = Wing(
         name="wing",

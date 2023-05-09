@@ -2,9 +2,10 @@ import os
 
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
 
 
-def forces2polars(CASEDIR, HOMEDIR):
+def forces2polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     os.chdir(CASEDIR)
 
     folders = next(os.walk("."))[1]
@@ -22,7 +23,7 @@ def forces2polars(CASEDIR, HOMEDIR):
                 a = [name, *dat]
             pols.append(a)
         os.chdir(f"{CASEDIR}")
-    df = pd.DataFrame(pols, columns=cols)
+    df = DataFrame(pols, columns=cols)
     df.pop("TTIME")
     df.pop("PSIB")
 
@@ -32,9 +33,9 @@ def forces2polars(CASEDIR, HOMEDIR):
     return df
 
 
-def forces2pertrubRes(DYNDIR, HOMEDIR):
+def forces2pertrubRes(DYNDIR: str, HOMEDIR: str) -> DataFrame:
     os.chdir(DYNDIR)
-    folders = next(os.walk("."))[1]
+    folders: list[str] = next(os.walk("."))[1]
     print("Logging Pertrubations")
     pols = []
     for folder in folders:
@@ -64,7 +65,7 @@ def forces2pertrubRes(DYNDIR, HOMEDIR):
             pols.append([value, name, *dat])
             os.chdir(os.path.join(DYNDIR, folder))
         os.chdir(f"{DYNDIR}")
-    df = pd.DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
+    df = DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
     df.pop("TTIME")
     df.pop("PSIB")
     df = df.sort_values("Type").reset_index(drop=True)
@@ -73,7 +74,9 @@ def forces2pertrubRes(DYNDIR, HOMEDIR):
     return df
 
 
-def rotateForces(rawpolars, alpha, preferred="2D", save=False):
+def rotateForces(
+    rawpolars: DataFrame, alpha, preferred: str = "2D", save: bool = False
+) -> DataFrame:
     Data = pd.DataFrame()
     AoA = alpha * np.pi / 180
 

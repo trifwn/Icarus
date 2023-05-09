@@ -1,6 +1,9 @@
 import unittest
+from typing import Any
 
 import numpy as np
+from numpy import dtype
+from numpy import ndarray
 
 import tests.wing_test as wing_test
 from tests.airplane_polars_test import airPolars
@@ -9,12 +12,14 @@ from tests.solver_run_test import gnvprun
 
 
 class TestAdd(unittest.TestCase):
-    def test1_geom(self):
-        S_act = (4,)
-        MAC_act = (0.8,)
-        AREA_act = (4.0608,)
-        CG_act = np.array([0.163, 0.0, 0.0])
-        I_act = np.array([2.082, 0.017, 2.099, 0.0, 0.139, 0.0])
+    def test1_geom(self) -> None:
+        S_act: tuple[float] = (4.0,)
+        MAC_act: tuple[float] = (0.8,)
+        AREA_act: tuple[float] = (4.0608,)
+        CG_act: ndarray[Any, dtype[Any]] = np.array([0.163, 0.0, 0.0])
+        I_act: ndarray[Any, dtype[Any]] = np.array(
+            [2.082, 0.017, 2.099, 0.0, 0.139, 0.0],
+        )
 
         S, mean_aerodynamic_chord, AREA, CG, INERTIA = wing_test.geom()
 
@@ -24,13 +29,13 @@ class TestAdd(unittest.TestCase):
         np.testing.assert_almost_equal(CG, CG_act, decimal=3)
         np.testing.assert_almost_equal(INERTIA, I_act, decimal=3)
 
-    def test2_gnvp_run(self):
+    def test2_gnvp_run(self) -> None:
         # gnvprun("Serial")
         gnvprun("Parallel")
         # pass
 
-    def test3_airPolars(self):
-        des, act = airPolars()
+    def test3_airPolars(self) -> None:
+        des, act = airPolars(plot=False)
         preffered_pol = "2D"
 
         AoA_d = des["AoA"].astype(float)
@@ -65,8 +70,8 @@ class TestAdd(unittest.TestCase):
                 decimal=dec_prec,
             )
 
-    def test4_gnvpGeom(self):
-        gridAP, gridGNVP = gnvpGeom()
+    def test4_gnvpGeom(self) -> None:
+        gridAP, gridGNVP = gnvpGeom(plot=False)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
 

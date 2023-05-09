@@ -7,7 +7,16 @@ from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
 
-def anglesSep(anglesALL):
+def angles_sepatation(anglesALL):
+    """Separate angles in positive and negative.
+
+    Args:
+        anglesALL (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     pangles = []
     nangles = []
     for ang in anglesALL:
@@ -126,7 +135,7 @@ def returnCPs(Reyn, MACH, angles, pts, ftrip_low=1, ftrip_up=1, Ncrit=9):
     # AoAmin = min(angles)
     # AoAmax = max(angles)
 
-    nangles, pangles = anglesSep(angles)
+    nangles, pangles = angles_sepatation(angles)
     cps = []
     cpsn = []
     x = []

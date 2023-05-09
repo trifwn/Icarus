@@ -1,11 +1,14 @@
-import numpy as np
 from typing import Any
-from numpy import ndarray, floating, dtype
 
-from ICARUS.Database import XFLRDB
-from ICARUS.Database.db import DB
+import numpy as np
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+
 from ICARUS.Core.struct import Struct
+from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
+from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import readPolars2D
 from ICARUS.Vehicle.plane import Airplane as Plane
 from ICARUS.Vehicle.wing import define_linear_chord
