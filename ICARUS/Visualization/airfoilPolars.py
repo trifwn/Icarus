@@ -12,7 +12,7 @@ def plot_airfoil_polars(
     airfoil: str,
     solvers: list[str] | str = "All",
     size: tuple[int, int] = (10, 10),
-    AoA_bounds=None,
+    aoa_bounds: list[float] | None = None,
 ) -> None:
     """_summary_
 
@@ -53,11 +53,11 @@ def plot_airfoil_polars(
         for j, reynolds in enumerate(data[airfoil][solver].keys()):
             try:
                 polar: DataFrame = data[airfoil][solver][reynolds]
-                if AoA_bounds is not None:
+                if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar = polar.loc[
-                        (polar["AoA"] >= AoA_bounds[0])
-                        & (polar["AoA"] <= AoA_bounds[1])
+                        (polar["AoA"] >= aoa_bounds[0])
+                        & (polar["AoA"] <= aoa_bounds[1])
                     ]
 
                 aoa, cl, cd, cm = polar.T.values

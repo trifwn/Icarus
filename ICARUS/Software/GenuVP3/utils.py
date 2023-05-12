@@ -37,7 +37,7 @@ class Movement:
 def define_movements(
     surfaces: list[Wing],
     CG: ndarray[Any, dtype[floating]],
-    orientation: ndarray[Any, dtype[floating]],
+    orientation: ndarray[Any, dtype[floating]] | list[float],
     disturbances: list[Disturbance],
 ) -> list[list[Movement]]:
 

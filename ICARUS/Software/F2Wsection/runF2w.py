@@ -9,11 +9,21 @@ import pandas as pd
 
 from . import filesF2w as ff2w
 
+# from os.stat
 
-def anglesSep(anglesALL):
-    pangles = []
-    nangles = []
-    for ang in anglesALL:
+
+def anglesSep(all_angles: list[float]) -> tuple[list[float], list[float]]:
+    """Given A list of angles it separates them in positive and negative
+
+    Args:
+        all_angles (list[float]): Angles to separate
+
+    Returns:
+        tuple[list[float], list[float]]: Tuple of positive and negative angles
+    """
+    pangles: list[float] = []
+    nangles: list[float] = []
+    for ang in all_angles:
         if ang > 0:
             pangles.append(ang)
         elif ang == 0:
@@ -25,12 +35,12 @@ def anglesSep(anglesALL):
     return nangles, pangles
 
 
-def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
+def make_2d_polars(CASEDIR: str, HOMEDIR: str, Reynolds: float, Mach: float):
     os.chdir(CASEDIR)
-    folders = next(os.walk("."))[1]
+    folders: list[str] = next(os.walk("."))[1]
     print("Making Polars")
-    with open("output_bat", "w") as file:
-        folder = folders[0]
+    with open("output_bat", "w", encoding="utf-8") as file:
+        folder: str = folders[0]
         file.writelines("cd " + folder + "\n../write_out\n")
         for folder in folders[1:]:
             if "AERLOAD.OUT" in next(os.walk(folder))[2]:
@@ -38,13 +48,7 @@ def makeCLCD(CASEDIR, HOMEDIR, Reynolds, Mach):
 
         # Write Cat command
         file.writelines("cd ..\n")
-        file.writelines(
-            'echo "Reynolds: '
-            + str(Reynolds)
-            + "\\nMach: "
-            + str(Mach)
-            + '" > clcd.out\n',
-        )
+        file.writelines(f'echo "Reynolds: {Reynolds}\\nMach: {Mach} > clcd.out\\n')
         file.writelines("cat ")
         for folder in folders[::-1]:
             if "AERLOAD.OUT" in next(os.walk(folder))[2]:
@@ -103,13 +107,13 @@ def runF2W(CASEDIR, HOMEDIR, Reynolds, Mach, ftripL, ftripU, anglesALL, airfile)
         NoA = len(angles)
 
         # IO FILES
-        ff2w.iofile(airfile)
+        ff2w.io_file(airfile)
 
         # DESIGN.INP
-        ff2w.designFile(NoA, angles, name)
+        ff2w.desing_file(NoA, angles, name)
 
         # F2W.INP
-        ff2w.f2winp(Reynolds, Mach, ftripL, ftripU, name)
+        ff2w.input_file(Reynolds, Mach, ftripL, ftripU, name)
 
         # RUN Files
         shutil.copy(f"design_{name}.inp", "design.inp")

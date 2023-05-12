@@ -1,35 +1,47 @@
 import os
+from typing import Any
 
-import pandas as pd
+from pandas import DataFrame
 
 from ICARUS.Database import DB3D
+from ICARUS.Vehicle.plane import Airplane
 
 
-def getStripData(pln, case, NBs):
-    directory = os.path.join(DB3D, pln.CASEDIR, case)
-    files = os.listdir(directory)
-    stripDat = []
+def get_strip_data(plane: Airplane, case: str, NBs) -> tuple[DataFrame, DataFrame]:
+    """Function to get strip data from a case simulation.
+
+    Args:
+        pln (Airplane): Plane Object
+        case (str): String containing the case folder
+        NBs (_type_): list with all lifting surfaces for which to get data
+
+    Returns:
+        tuple[DataFrame, DataFrame]: Returns a dataframe with all strip data and a dataframe with all strip data for the NBs
+    """
+    directory: str = os.path.join(DB3D, plane.CASEDIR, case)
+    files: list[str] = os.listdir(directory)
+    strip_data: list[list[Any]] = []
     for file in files:
         if file.startswith("strip"):
-            filename = os.path.join(directory, file)
+            filename: str = os.path.join(directory, file)
             with open(filename, encoding="UTF-8") as f:
-                data = f.readlines()
-            data = [float(item) for item in data[-1].split()]
-            file = file[6:]
+                data: list[str] = f.readlines()
+            data_num: list[float] = [float(item) for item in data[-1].split()]
+            file: str = file[6:]
             body = int(file[:2])
             strip = int(file[3:5])
-            stripDat.append([body, strip, *data])
+            strip_data.append([body, strip, *data_num])
 
-    stripDat = pd.DataFrame(stripDat, columns=stripColumns).sort_values(
+    strip_data_df: DataFrame = DataFrame(strip_data, columns=stripColumns).sort_values(
         ["Body", "Strip"],
         ignore_index=True,
     )
-    data = stripDat[stripDat["Body"].isin(NBs)]
+    nbs_data: DataFrame = strip_data_df[strip_data_df["Body"].isin(NBs)]
 
-    return stripDat, data
+    return strip_data_df, nbs_data
 
 
-stripColumns = [
+stripColumns: list[str] = [
     "Body",
     "Strip",
     "Time",

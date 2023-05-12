@@ -3,7 +3,7 @@ import os
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import disturbance_to_case
-from ICARUS.Software.GenuVP3.filesInterface import runGNVPcase
+from ICARUS.Software.GenuVP3.filesInterface import run_gnvp_case
 from ICARUS.Software.GenuVP3.postProcess.forces import forces_to_pertrubation_results
 from ICARUS.Software.GenuVP3.utils import define_movements
 from ICARUS.Software.GenuVP3.utils import make_surface_dict
@@ -46,7 +46,7 @@ def GNVPdstCase(
         environment,
         solver_options,
     )
-    runGNVPcase(
+    run_gnvp_case(
         CASEDIR,
         HOMEDIR,
         GENUBASE,

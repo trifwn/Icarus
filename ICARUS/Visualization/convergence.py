@@ -10,7 +10,7 @@ from . import markers
 def plot_convergence(
     data: DataFrame,
     plane: str,
-    angles: list[str] = ["All"],
+    angles: list[float] = [],
     solvers: list[str] = ["All"],
     plot_error: bool = True,
     size: tuple[int, int] = (10, 10),
@@ -76,7 +76,7 @@ def plot_convergence(
         else:
             ang_num = num
 
-        if (ang_num not in angles) and (angles is not ["All"]):
+        if (ang_num not in angles) and (angles != []):
             continue
 
         runHist = cases[ang]

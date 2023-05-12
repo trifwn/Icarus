@@ -1,11 +1,11 @@
 from ICARUS.Database.db import DB
-from ICARUS.Software.GenuVP3.analyses.angles import processGNVPangles
-from ICARUS.Software.GenuVP3.analyses.angles import runGNVPangles
-from ICARUS.Software.GenuVP3.analyses.angles import runGNVPanglesParallel
+from ICARUS.Software.GenuVP3.analyses.angles import process_gnvp3_angle_run
+from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles
+from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles_parallel
 from ICARUS.Software.GenuVP3.analyses.pertrubations import processGNVPpertrubations
 from ICARUS.Software.GenuVP3.analyses.pertrubations import runGNVPpertr
 from ICARUS.Software.GenuVP3.analyses.pertrubations import runGNVPpertrParallel
-from ICARUS.Software.GenuVP3.filesInterface import GNVPexe
+from ICARUS.Software.GenuVP3.filesInterface import gnvp_execute
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
@@ -123,7 +123,7 @@ def get_gnvp3(db: DB):
         "Elasticity_Solver": (0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)"),
     }
 
-    rerun = Analysis("gnvp3", "rerun", GNVPexe, options, solver_options)
+    rerun = Analysis("gnvp3", "rerun", gnvp_execute, options, solver_options)
 
     options = {
         "plane": "Plane Object",
@@ -139,16 +139,16 @@ def get_gnvp3(db: DB):
     anglesSerial = Analysis(
         "gnvp3",
         "Angles_Serial",
-        runGNVPangles,
+        run_gnvp_angles,
         options,
         solver_options,
-        unhook=processGNVPangles,
+        unhook=process_gnvp3_angle_run,
     )
 
     anglesParallel = anglesSerial << {
         "name": "Angles_Parallel",
-        "execute": runGNVPanglesParallel,
-        "unhook": processGNVPangles,
+        "execute": run_gnvp_angles_parallel,
+        "unhook": process_gnvp3_angle_run,
     }
     pertrubationSerial = anglesSerial << {
         "name": "Pertrubation_Serial",

@@ -6,7 +6,7 @@ from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from pandas import DataFrame
 
-from ICARUS.Software.GenuVP3.postProcess.getStripData import getStripData
+from ICARUS.Software.GenuVP3.postProcess.getStripData import get_strip_data
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -16,7 +16,7 @@ def GNVPstrips3D(
     NBs: list[int],
     category: str = "Wind",
 ) -> DataFrame:
-    stripDat, data = getStripData(pln, case, NBs)
+    stripDat, data = get_strip_data(pln, case, NBs)
 
     fig: Figure = plt.figure()
     ax = fig.add_subplot(projection="3d")
@@ -56,7 +56,7 @@ def GNVPstrips2D(pln, case, NB, category="Wind") -> DataFrame | int:
         print("Only one body can be selected for 2D plots")
         return 0
 
-    stripDat, data = getStripData(pln, case, [NB])
+    stripDat, data = get_strip_data(pln, case, [NB])
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")

@@ -123,10 +123,10 @@ class Database_3D:
                 )
                 pln = self.planes[planename]
                 try:
-                    from ICARUS.Software.GenuVP3.filesInterface import makePolar
+                    from ICARUS.Software.GenuVP3.filesInterface import make_polars
 
                     CASEDIR = os.path.join(DB3D, pln.CASEDIR)
-                    makePolar(CASEDIR, self.HOMEDIR)
+                    make_polars(CASEDIR, self.HOMEDIR)
                     file = os.path.join(DB3D, planename, "forces.gnvp3")
                     self.raw_data[planename] = pd.read_csv(file)
                 except Exception as e:

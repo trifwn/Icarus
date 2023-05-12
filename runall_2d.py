@@ -11,7 +11,7 @@ from ICARUS.Database import BASEFOIL2W
 from ICARUS.Database import BASEOPENFOAM
 from ICARUS.Database import DB2D
 from ICARUS.Software.F2Wsection import runF2w as f2w
-from ICARUS.Software.OpenFoam import runOpenFoam as of
+from ICARUS.Software.OpenFoam import run_open_foam as of
 from ICARUS.Software.Xfoil import runXFoil as xf
 
 HOMEDIR: str = os.getcwd()
@@ -57,17 +57,17 @@ Machmax: float = ms2mach(30)
 Remax: float = Re(umax, chordMax, viscosity)
 Remin: float = Re(umin, chordMin, viscosity)
 AoAmax: float = 15
-AoAmin: float = -6
-NoAoA: int = (AoAmax - AoAmin) * 2 + 1
+aoa_min: float = -6
+NoAoA: int = (AoAmax - aoa_min) * 2 + 1
 
-angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
+angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(aoa_min, AoAmax, NoAoA)
 reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(
     np.log10(Remin),
     np.log10(Remax),
     5,
     base=10,
 )
-Mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(Machmax, Machmin, 10)
+mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(Machmax, Machmin, 10)
 
 MACH: float = Machmax
 
@@ -84,13 +84,13 @@ for airfoil_name in airfoil_names:
     airfoil: AirfoilD = AirfoilD.NACA(naca=airfoil_name, n_points=200)
     airfoil.accessDB(HOMEDIR, DB2D)
     # airf.plotAirfoil()
-    for Reyn in reynolds:
+    for reynolds in reynolds:
         print(
-            f"#################################### {Reyn} ######################################",
+            f"#################################### {reynolds} ######################################",
         )
 
         # Setup Case Dirs
-        airfoil.reynCASE(Reyn)
+        airfoil.reynCASE(reynolds)
 
         # Foil2Wake
         if cleaning:
@@ -106,7 +106,7 @@ for airfoil_name in airfoil_names:
             f2wargs = [
                 airfoil.REYNDIR,
                 airfoil.HOMEDIR,
-                Reyn,
+                reynolds,
                 MACH,
                 ftrip_low,
                 ftrip_up,
@@ -130,14 +130,14 @@ for airfoil_name in airfoil_names:
             xfargs = [
                 airfoil.REYNDIR,
                 HOMEDIR,
-                Reyn,
+                reynolds,
                 MACH,
                 min(angles),
                 max(angles),
                 0.5,
                 airfoil.selig.T,
             ]
-            XRES = airfoil.makePolars(xf.runAndSave, "XFOIL", xfargs)
+            XRES = airfoil.makePolars(xf.run_and_save, "XFOIL", xfargs)
 
         # # OpenFoam
         os.chdir(airfoil.REYNDIR)
@@ -152,7 +152,7 @@ for airfoil_name in airfoil_names:
                 airfoil.HOMEDIR,
                 airfoil.airfile,
                 airfoil.fname,
-                Reyn,
+                reynolds,
                 MACH,
                 angles,
             ]

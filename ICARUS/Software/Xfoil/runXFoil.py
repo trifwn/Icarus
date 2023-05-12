@@ -35,7 +35,7 @@ def angles_sepatation(all_angles: list[float]) -> tuple[list[float], list[float]
     return nangles, pangles
 
 
-def runXFoil(
+def run_xfoil(
     Reyn: float,
     MACH: float,
     AoAmin: float,
@@ -71,7 +71,7 @@ def multiple_reynolds_run(
 
     Data: list[ndarray[Any, dtype[floating]]] = []
     for Re in Reynolds:
-        clcdcmXF = runXFoil(Re, MACH, AoAmin, AoAmax, AoAstep, pts)
+        clcdcmXF = run_xfoil(Re, MACH, AoAmin, AoAmax, AoAstep, pts)
         Data.append(clcdcmXF)
 
     Redicts: list[dict[str, ndarray]] = []
@@ -178,24 +178,24 @@ def returnCPs(
     return [cpsn, nangles], [cps, pangles], x
 
 
-def runAndSave(
+def run_and_save(
     CASEDIR: str,
     HOMEDIR: str,
-    Reyn: float,
+    reynolds: float,
     MACH: float,
-    AoAmin: float,
-    AoAmax: float,
-    AoAstep: float,
+    aoa_min: float,
+    aoa_max: float,
+    aoa_step: float,
     pts: ndarray[Any, dtype[floating]],
     ftrip_low: float = 0.1,
     ftrip_up: float = 0.2,
-    Ncrit: float = 9,
+    n_crit: float = 9,
 ) -> DataFrame:
     os.chdir(CASEDIR)
 
     xf = XFoil()
-    xf.Re = Reyn
-    xf.n_crit = Ncrit
+    xf.Re = reynolds
+    xf.n_crit = n_crit
     # xf.M = MACH
     xf.max_iter = 100
     xf.print = False
@@ -203,17 +203,17 @@ def runAndSave(
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
 
-    if AoAmin * AoAmax < 0:
+    if aoa_min * aoa_max < 0:
         max_tr = max(ftrip_low, ftrip_up)
-        slope_up = (ftrip_up - max_tr) / (AoAmax)
-        slope_low = (ftrip_low - max_tr) / (AoAmax)
+        slope_up = (ftrip_up - max_tr) / aoa_max
+        slope_low = (ftrip_low - max_tr) / aoa_max
 
         aXF1: ndarray[Any, dtype[floating]] = np.array([])
         clXF1: ndarray[Any, dtype[floating]] = np.array([])
         cdXF1: ndarray[Any, dtype[floating]] = np.array([])
         cmXF1: ndarray[Any, dtype[floating]] = np.array([])
         flag = 0
-        for angle in np.arange(0, AoAmax + 0.5, 0.5):
+        for angle in np.arange(0, aoa_max + 0.5, 0.5):
             f_up = max_tr + slope_up * angle
             f_low = max_tr + slope_low * angle
             xf.xtr = (f_up, f_low)
@@ -230,15 +230,15 @@ def runAndSave(
 
         xf.reset_bls()
 
-        slope_up = (ftrip_low - max_tr) / (AoAmax)
-        slope_low = (ftrip_up - max_tr) / (AoAmax)
+        slope_up = (ftrip_low - max_tr) / aoa_max
+        slope_low = (ftrip_up - max_tr) / aoa_max
 
         aXF2: ndarray[Any, dtype[floating]] = np.array([])
         clXF2: ndarray[Any, dtype[floating]] = np.array([])
         cdXF2: ndarray[Any, dtype[floating]] = np.array([])
         cmXF2: ndarray[Any, dtype[floating]] = np.array([])
         flag = 0
-        for angle in np.arange(AoAmin, 0.5, 0.5)[::-1]:
+        for angle in np.arange(aoa_min, 0.5, 0.5)[::-1]:
             f_up = max_tr - slope_up * angle
             f_low = max_tr - slope_low * angle
             xf.xtr = (f_up, f_low)
@@ -260,7 +260,7 @@ def runAndSave(
         cmXF = np.hstack((cmXF1, cmXF2[1:]))
     else:
         xf.xtr = (ftrip_low, ftrip_up)
-        aXF, clXF, cdXF, cmXF, _ = xf.aseq(AoAmin, AoAmax, AoAstep)
+        aXF, clXF, cdXF, cmXF, _ = xf.aseq(aoa_min, aoa_max, aoa_step)
 
     Res = np.vstack((aXF, clXF, cdXF, cmXF)).T
     df: DataFrame = (

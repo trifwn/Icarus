@@ -54,7 +54,7 @@ class Airplane:
             self.aspect_ratio = surfaces[0].aspect_ratio
             self.span = surfaces[0].span
 
-        self.airfoils = self.getAirfoils()
+        self.airfoils = self.get_all_airfoils()
         self.bodies = []
         self.masses = []
         self.Inertial_moments = []
@@ -125,8 +125,8 @@ class Airplane:
 
         return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz))
 
-    def getAirfoils(self):
-        airfoils = []
+    def get_all_airfoils(self) -> list[str]:
+        airfoils: list[str] = []
         for surface in self.surfaces:
             if f"NACA{surface.airfoil.name}" not in airfoils:
                 airfoils.append(f"NACA{surface.airfoil.name}")

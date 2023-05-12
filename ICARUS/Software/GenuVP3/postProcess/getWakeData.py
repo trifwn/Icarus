@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from .getMaxiter import getMaxiter
+from .getMaxiter import get_max_iterations
 from ICARUS.Database import DB3D
 
 
@@ -15,7 +15,7 @@ def getWakeData(plane, case):
     c = []
     iteration = 0
     flag = True
-    maxiter = getMaxiter(plane, case)
+    maxiter = get_max_iterations(plane, case)
     for i, line in enumerate(data):
         if line.startswith("  WAKE"):
             foo = line.split()

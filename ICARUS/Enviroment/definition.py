@@ -40,7 +40,8 @@ class Environment:
         air_gas_constant: float,
         temperature: float,
     ) -> float:
-        return np.sqrt(gamma * air_gas_constant * temperature)
+        ret = float(np.sqrt(gamma * air_gas_constant * temperature))
+        return ret
 
     def __str__(self) -> str:
         return f"Environment: {self.name}"

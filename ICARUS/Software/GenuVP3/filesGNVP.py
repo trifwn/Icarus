@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -7,13 +8,15 @@ import pandas as pd
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
+from ICARUS.Software.GenuVP3.utils import Movement
 
 
-def inputF():
-    # INPUT File
+def input_file() -> None:
+    """Creates the input file for GNVP3"""
+
     fname = "input"
-    with open(fname) as file:
-        data = file.readlines()
+    with open(fname, encoding="utf-8") as file:
+        data: list[str] = file.readlines()
     data[0] = "dfile.yours\n"
     data[1] = "0\n"
     data[2] = "1\n"
@@ -27,19 +30,19 @@ def inputF():
     data[10] = "1.\n"
     data[11] = "1.\n"
 
-    with open(fname, "w") as file:
+    with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
 
 
-def dfile(params):
+def dfile(params: dict[str, Any]) -> None:
     """Create Dfile for GNVP3
 
     Args:
-        params (_type_): _description_
+        params (dict[str, Any]): A dictionary of all parameter values
     """
-    fname = "dfile.yours"
-    with open(fname) as file:
-        data = file.readlines()
+    fname: str = "dfile.yours"
+    with open(fname, encoding="utf-8") as file:
+        data: list[str] = file.readlines()
 
     data[27] = f'{int(params["nBods"])}           NBODT      number of bodies\n'
     data[28] = f'{int(params["nBlades"])}           NBLADE     number of blades\n'
@@ -56,7 +59,7 @@ def dfile(params):
     data[60] = f'{ff2(params["u_freestream"][1])}       UINF(2)    .\n'
     data[61] = f'{ff2(params["u_freestream"][2])}       UINF(3)    .\n'
 
-    DX = 1.5 * np.linalg.norm(params["u_freestream"]) * params["timestep"]
+    DX: float = 1.5 * np.linalg.norm(params["u_freestream"]) * params["timestep"]
     if DX < 0.005:
         data[
             94
@@ -85,11 +88,11 @@ def dfile(params):
         130
     ] = "hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
 
-    with open(fname, "w") as file:
+    with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
 
 
-def geofile(movements, bodies):
+def geofile(movements, bodies) -> None:
     """Create Geo file for GNVP3
 
     Args:
@@ -99,7 +102,7 @@ def geofile(movements, bodies):
     fname = "hermes.geo"
     # with open(fname, "r") as file:
     #     data = file.readlines()
-    data = []
+    data: list[str] = []
     data.append("READ THE FLOW AND GEOMETRICAL DATA FOR EVERY SOLID BODY\n")
     data.append("               <blank>\n")
 
@@ -127,7 +130,7 @@ def geofile(movements, bodies):
         data.append("Give the file name for the geometrical distributions\n")
         data.append(f'{bod["bld"]}\n')
     data.append("               <blank>\n")
-    with open(fname, "w") as file:
+    with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
 
 
@@ -290,20 +293,21 @@ def bldFiles(bodies, params):
 
 
 def makeInput(
-    ANGLEDIR,
-    HOMEDIR,
-    GENUBASE,
-    movements,
-    bodies,
-    params,
-    airfoils,
+    ANGLEDIR: str,
+    HOMEDIR: str,
+    GENUBASE: str,
+    movements: list[list[Movement]],
+    bodies: list[dict[str, Any]],
+    params: dict[str, Any],
+    airfoils: list[str],
     AeroData,
-    solver,
-):
+    solver: str,
+) -> None:
+
     os.chdir(ANGLEDIR)
 
     # COPY FROM BASE
-    filesNeeded = [
+    filesNeeded: list[str] = [
         "dfile.yours",
         "hermes.geo",
         "hyb.inf",
@@ -312,8 +316,8 @@ def makeInput(
         "name.bld",
     ]
     for item in filesNeeded:
-        itemLOC = os.path.join(GENUBASE, item)
-        shutil.copy(itemLOC, ANGLEDIR)
+        item_location: str = os.path.join(GENUBASE, item)
+        shutil.copy(item_location, ANGLEDIR)
 
     # EMPTY BLD FILES
     for body in bodies:
@@ -326,7 +330,7 @@ def makeInput(
     os.remove("name.cld")
 
     # Input File
-    inputF()
+    input_file()
     # DFILE
     dfile(params)
     # HERMES.GEO
@@ -336,8 +340,8 @@ def makeInput(
     # CLD FILES
     cldFiles(AeroData, airfoils, solver)
     if "gnvp3" not in next(os.walk("."))[2]:
-        src = os.path.join(HOMEDIR, "ICARUS", "gnvp3")
-        dst = os.path.join(ANGLEDIR, "gnvp3")
+        src: str = os.path.join(HOMEDIR, "ICARUS", "gnvp3")
+        dst: str = os.path.join(ANGLEDIR, "gnvp3")
         os.symlink(src, dst)
     os.chdir(HOMEDIR)
 
@@ -373,8 +377,14 @@ def filltable(df):
     return df
 
 
-def removeResults(ANGLEDIR, HOMEDIR):
-    os.chdir(ANGLEDIR)
+def remove_results(CASEDIR: str, HOMEDIR: str) -> None:
+    """Removes the simulation results from a GNVP3 case
+
+    Args:
+        CASEDIR (str): _description_
+        HOMEDIR (str): _description_
+    """
+    os.chdir(CASEDIR)
     os.remove("strip*")
     os.remove("x*")
     os.remove("YOURS*")
