@@ -27,9 +27,8 @@ def desing_file(number_of_angles: int, angles: list[float], name: str) -> None:
     """
     fname: str = f"design_{name}.inp"
     with open(fname, encoding="utf-8") as file:
-        data = file.readlines()
+        data: list[str] = file.readlines()[:3]
     data[2] = f"{number_of_angles}           ! No of ANGLES\n"
-    data: list[str] = data[:3]
     for ang in angles:
         data.append(str(ang) + "\n")
     data.append("ANGLE DIRECTORIES (8 CHAR MAX!!!)\n")

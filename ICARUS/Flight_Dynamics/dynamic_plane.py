@@ -2,9 +2,9 @@ import pandas as pd
 from pandas import DataFrame
 
 from .disturbances import Disturbance as dst
-from .pertrubations import lateralPerturb
-from .pertrubations import longitudalPerturb
-from .Stability.lateralFD import lateralStability
+from .pertrubations import lateral_pertrubations
+from .pertrubations import longitudal_pertrubations
+from .Stability.lateralFD import lateral_stability
 from .Stability.longitudalFD import longitudalStability
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
@@ -20,14 +20,14 @@ class Dynamic_Airplane(Airplane):
     - polars3D: DataFrame with the polars of the airplane
     """
 
-    def __init__(self, pln, polars3D) -> None:
+    def __init__(self, pln: Airplane, polars3D) -> None:
         self.__dict__.update(pln.__dict__)
         self.name: str = f"dyn_{pln.name}"
         self.polars3D: DataFrame = self.formatPolars(polars3D)
 
         # Compute Trim State
         self.trim: dict[str, float] = trim_state(self)
-        self.defineSim(self.dens, self.trim["U"])
+        self.define_dynamic_pressure(self.dens, self.trim["U"])
         self.disturbances: list[dst] = []
         self.sensitivity = {}
         self.sensResults = {}
@@ -70,8 +70,8 @@ class Dynamic_Airplane(Airplane):
         self.epsilons: dict[str, float] = {}
 
         self.disturbances = [
-            *longitudalPerturb(self, scheme, epsilon),
-            *lateralPerturb(self, scheme, epsilon),
+            *longitudal_pertrubations(self, scheme, epsilon),
+            *lateral_pertrubations(self, scheme, epsilon),
         ]
         self.disturbances.append(dst(None, 0))
 
@@ -91,7 +91,7 @@ class Dynamic_Airplane(Airplane):
     def stabilityFD(self, scheme="Central") -> None:
         self.scheme = scheme
         X, Z, M = longitudalStability(self, "2D")
-        Y, L, N = lateralStability(self, "Potential")
+        Y, L, N = lateral_stability(self, "Potential")
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
     def __str__(self) -> str:

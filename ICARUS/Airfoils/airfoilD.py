@@ -24,7 +24,7 @@ class AirfoilD(af.Airfoil):
         self.fname: str = f"naca{naca}"
         self.n_points: int = n_points
         self.airfoil2Selig()
-        self.Reynolds: list = []
+        self.Reynolds: list[float] = []
         self.Polars: dict = {}
         # self.getFromWeb()
 

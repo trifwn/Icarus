@@ -1,9 +1,10 @@
 import numpy as np
 
+from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane
 from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 
 
-def lateralStability(plane, mode="2D"):
+def lateral_stability(plane: Dynamic_Airplane, mode: str = "2D"):
     """This Function Requires the results from perturbation analysis"""
     pertr = plane.pertubResults
     eps = plane.epsilons

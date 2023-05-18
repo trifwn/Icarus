@@ -52,7 +52,7 @@ umax: float = 30.0
 umin: float = 5.0
 viscosity: float = 1.56e-5
 
-Machmin = ms2mach(10)
+Machmin: float = ms2mach(10)
 Machmax: float = ms2mach(30)
 Remax: float = Re(umax, chordMax, viscosity)
 Remin: float = Re(umin, chordMin, viscosity)
@@ -61,7 +61,7 @@ aoa_min: float = -6
 NoAoA: int = (AoAmax - aoa_min) * 2 + 1
 
 angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(aoa_min, AoAmax, NoAoA)
-reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(
+reynolds: ndarray[Any, dtype[floating]] = np.logspace(
     np.log10(Remin),
     np.log10(Remax),
     5,
@@ -84,29 +84,29 @@ for airfoil_name in airfoil_names:
     airfoil: AirfoilD = AirfoilD.NACA(naca=airfoil_name, n_points=200)
     airfoil.accessDB(HOMEDIR, DB2D)
     # airf.plotAirfoil()
-    for reynolds in reynolds:
+    for reyn in reynolds:
         print(
-            f"#################################### {reynolds} ######################################",
+            f"#################################### {reyn} ######################################",
         )
 
         # Setup Case Dirs
-        airfoil.reynCASE(reynolds)
+        airfoil.reynCASE(reyn)
 
         # Foil2Wake
         if cleaning:
             airfoil.cleanRes(
-                f2w.removeResults,
+                f2w.remove_results,
                 [airfoil.REYNDIR, airfoil.HOMEDIR, angles],
             )
         if calcF2W:
-            ftrip_low = {"pos": 0.1, "neg": 0.2}
-            ftrip_up = {"pos": 0.2, "neg": 0.1}
+            ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.2}
+            ftrip_up: dict[str, float] = {"pos": 0.2, "neg": 0.1}
             Ncrit = 9
             print("------- Running Foil2Wake -------")
             f2wargs = [
                 airfoil.REYNDIR,
                 airfoil.HOMEDIR,
-                reynolds,
+                reyn,
                 MACH,
                 ftrip_low,
                 ftrip_up,
@@ -114,12 +114,12 @@ for airfoil_name in airfoil_names:
                 f"naca{airfoil.name}",
             ]
             airfoil.setupSolver(
-                f2w.setupF2W,
+                f2w.setup_f2w,
                 [BASEFOIL2W, airfoil.HOMEDIR, airfoil.REYNDIR],
             )
             # airf.runSolver(f2w.runF2W, f2wargs)
             airfoil.makePolars(
-                f2w.makeCLCD2,
+                f2w.make_2d_polars_2,
                 "Foil2Wake",
                 [airfoil.REYNDIR, airfoil.HOMEDIR],
             )
@@ -130,7 +130,7 @@ for airfoil_name in airfoil_names:
             xfargs = [
                 airfoil.REYNDIR,
                 HOMEDIR,
-                reynolds,
+                reyn,
                 MACH,
                 min(angles),
                 max(angles),
@@ -152,7 +152,7 @@ for airfoil_name in airfoil_names:
                 airfoil.HOMEDIR,
                 airfoil.airfile,
                 airfoil.fname,
-                reynolds,
+                reyn,
                 MACH,
                 angles,
             ]

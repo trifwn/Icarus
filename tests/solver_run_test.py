@@ -31,7 +31,7 @@ def gnvprun(mode: str = "Parallel") -> None:
     else:
         analysis = gnvp3.getAvailableAnalyses()[1]
 
-    gnvp3.setAnalysis(analysis)
+    gnvp3.set_analyses(analysis)
 
     # Set Options
     options = gnvp3.getOptions(verbose=True)
@@ -45,7 +45,7 @@ def gnvprun(mode: str = "Parallel") -> None:
     maxiter = 20
     timestep = 10
 
-    airplane.defineSim(u_freestream, EARTH.air_density)
+    airplane.define_dynamic_pressure(u_freestream, EARTH.air_density)
 
     options.plane.value = airplane
     options.environment.value = EARTH

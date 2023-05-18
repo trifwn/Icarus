@@ -1,14 +1,19 @@
 from .disturbances import Disturbance as dst
+from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane
 
 
-def longitudalPerturb(plane, scheme, epsilon):
+def longitudal_pertrubations(
+    plane: Dynamic_Airplane,
+    scheme: str,
+    epsilon: dict[str, float] | None = None,
+) -> list[dst]:
     """Function to add all longitudinal perturbations
     needed to compute the aero derivatives
     Inputs:
     - variable: string with the variable to perturb
     - amplitude: amplitude of the perturbation
     """
-    disturbances = []
+    disturbances: list[dst] = []
     if epsilon is None:
         del epsilon
         epsilon = {"u": 0.01, "w": 0.01, "q": 0.25, "theta": 0.01}  # /plane.trim["U"]
@@ -27,14 +32,18 @@ def longitudalPerturb(plane, scheme, epsilon):
     return disturbances
 
 
-def lateralPerturb(plane, scheme, epsilon):
+def lateral_pertrubations(
+    plane: Dynamic_Airplane,
+    scheme: str,
+    epsilon: dict[str, float] | None = None,
+) -> list[dst]:
     """Function to add all lateral perturbations
     needed to compute the aero derivatives
     Inputs:
     - variable: string with the variable to perturb
     - amplitude: amplitude of the perturbation
     """
-    disturbances = []
+    disturbances: list[dst] = []
     if epsilon is None:
         del epsilon
         epsilon = {"v": 0.01, "p": 0.25, "r": 0.25, "phi": 0.01}

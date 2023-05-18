@@ -175,19 +175,26 @@ class Airplane:
             color="b",
         )
 
-    def defineSim(self, u, dens):
+    def define_dynamic_pressure(self, u: float, dens: float) -> None:
+        """
+        Define the simulation parameters for the plane
+
+        Args:
+            u (float): Velocity Magnitude of the freestream
+            dens (float): Density of the freestream
+        """
         self.u_freestream: float = u
         self.dens: float = dens
         self.dynamic_pressure: float = 0.5 * dens * u**2
 
-    def toJSON(self) -> str:
+    def to_json(self) -> str:
         encoded = jsonpickle.encode(self)
         return encoded
 
     def save(self):
         fname = os.path.join(DB3D, self.CASEDIR, f"{self.name}.json")
         with open(fname, "w") as f:
-            f.write(self.toJSON())
+            f.write(self.to_json())
 
     # def __str__(self):
     #     str = f"Plane Object for {self.name}\n"

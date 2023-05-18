@@ -6,7 +6,7 @@ from numpy import floating
 from numpy import ndarray
 
 
-def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating]]:
+def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating[Any]]]:
     """Returns the rotation matrix for a rotation around the y axis
     The convention for stability axes is with the x-axis pointing forward.
     So it is x and z are opposite of the general coordinate system.
@@ -26,9 +26,9 @@ def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating]]:
 
 
 def rotate_vector(
-    vector: ndarray[Any, dtype[floating]],
-    R: ndarray[Any, dtype[floating]],
-) -> ndarray[Any, dtype[floating]]:
+    vector: ndarray[Any, dtype[floating[Any]]],
+    R: ndarray[Any, dtype[floating[Any]]],
+) -> ndarray[Any, dtype[floating[Any]]]:
     """_Returns the rotated vectorsummary_
 
     Args:

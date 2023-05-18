@@ -26,46 +26,46 @@ class Database_3D:
     """Class to represent the 3D Database. It contains all the information and results
     of the 3D analysis of the vehicles."""
 
-    def __init__(self):
-        self.HOMEDIR = APPHOME
-        self.DATADIR = DB3D
+    def __init__(self) -> None:
+        self.HOMEDIR: str = APPHOME
+        self.DATADIR: str = DB3D
         self.raw_data = Struct()
         self.data = Struct()
         self.planes = Struct()
         self.dyn_planes = Struct()
         self.convergence_data = Struct()
 
-    def loadData(self):
+    def load_data(self) -> None:
         self.scan()
-        self.makeData()
+        self.make_data()
 
-    def scan(self):
-        planenames = next(os.walk(DB3D))[1]
+    def scan(self) -> None:
+        planenames: list[str] = next(os.walk(DB3D))[1]
         for plane in planenames:  # For each plane planename == folder
             # if plane == 'bmark':
             #     continue
             plane_found = False
             # Load Plane object
-            file = os.path.join(DB3D, plane, f"{plane}.json")
-            plane_found = self.loadPlaneFromFile(plane, file)
+            file: str = os.path.join(DB3D, plane, f"{plane}.json")
+            plane_found: bool = self.loadPlaneFromFile(plane, file)
 
             # Load DynPlane object
             file = os.path.join(DB3D, plane, f"dyn_{plane}.json")
-            temp = self.loadDynPlaneFromFile(plane, file)
+            dyn_plane_found: bool = self.loadDynPlaneFromFile(plane, file)
 
-            plane_found = plane_found or temp
+            plane_found = plane_found or dyn_plane_found
 
             # Loading Forces from forces.gnvp3 file
             file = os.path.join(DB3D, plane, "forces.gnvp3")
-            self.loadGNVPForces(plane, file)
+            self.load_gnvp_forces(plane, file)
 
             if plane_found:
                 self.convergence_data[plane] = Struct()
-                cases = next(os.walk(os.path.join(DB3D, plane)))[1]
+                cases: list[str] = next(os.walk(os.path.join(DB3D, plane)))[1]
                 for case in cases:
                     if case.startswith("Dyn") or case.startswith("Sens"):
                         continue
-                    self.loadGNVPcaseConvergence(plane, case)
+                    self.load_gnvp_case_convergence(plane, case)
 
     def loadPlaneFromFile(self, name: str, file: str) -> bool:
         """Function to get Plane Object from file and decode it.
@@ -79,7 +79,7 @@ class Database_3D:
         """
         try:
             with open(file, encoding="UTF-8") as f:
-                json_obj = f.read()
+                json_obj: str = f.read()
                 try:
                     self.planes[name] = jsonpickle.decode(json_obj)
                 except Exception as error:
@@ -90,18 +90,20 @@ class Database_3D:
             plane_found = False
         return plane_found
 
-    def loadDynPlaneFromFile(self, name: str, file: str):
+    def loadDynPlaneFromFile(self, name: str, file: str) -> bool:
         """Function to retrieve Dyn Plane Object from file and decode it.
 
         Args:
             name (str): _description_
             file (str): _description_
         """
+        flag: bool = False
         try:
             with open(file, encoding="UTF-8") as f:
-                json_obj = f.read()
+                json_obj: str = f.read()
                 try:
                     self.dyn_planes[name] = jsonpickle.decode(json_obj)
+                    flag = True
                     if name not in self.planes.keys():
                         print("Plane object doesnt exist! Creating it...")
                         self.planes[name] = self.dyn_planes[name]
@@ -110,7 +112,9 @@ class Database_3D:
         except FileNotFoundError:
             print(f"No Plane object found in {name} folder at {file}!")
 
-    def loadGNVPForces(self, planename, file):
+        return flag
+
+    def load_gnvp_forces(self, planename, file):
         # Should get deprecated in favor of analysis logic in the future
         try:
             self.raw_data[planename] = pd.read_csv(file)
@@ -132,9 +136,9 @@ class Database_3D:
                 except Exception as e:
                     print(f"Failed to create Polars! Got Error:\n{e}")
 
-    def loadGNVPcaseConvergence(self, planename, case):
+    def load_gnvp_case_convergence(self, planename: str, case: str):
         # Get Load Convergence Data from LOADS_aer.dat
-        file = os.path.join(DB3D, planename, case, "LOADS_aer.dat")
+        file: str = os.path.join(DB3D, planename, case, "LOADS_aer.dat")
 
         loads = getLoadsConvergence(file)
         if loads is not None:
@@ -165,10 +169,10 @@ class Database_3D:
             except ValueError as e:
                 print(f"Some Run Had Problems!\n{e}")
 
-    def getPlanes(self) -> list[str]:
+    def get_planenames(self) -> list[str]:
         return list(self.planes.keys())
 
-    def getPolar(self, plane, mode) -> DataFrame | None:
+    def get_polar(self, plane: str, mode: str) -> DataFrame | None:
         try:
             cols: list[str] = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
             return self.data[plane][cols].rename(
@@ -178,38 +182,42 @@ class Database_3D:
             print("Polar Doesn't exist! You should compute it first!")
         return None
 
-    def makeData(self) -> None:
+    def make_data(self) -> None:
         for plane in list(self.planes.keys()):
             self.data[plane] = pd.DataFrame()
             pln: Airplane = self.planes[plane]
             self.data[plane]["AoA"] = self.raw_data[plane]["AoA"]
-            AoA: np.ndarray[Any, np.dtype[floating]] = (
+            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = (
                 self.raw_data[plane]["AoA"] * np.pi / 180
             )
             for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-                Fx: ndarray[Any, dtype[floating]] = self.raw_data[plane][
+                Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][
                     f"TFORC{enc}(1)"
                 ]
                 # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-                Fz: ndarray[Any, dtype[floating]] = self.raw_data[plane][
+                Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][
                     f"TFORC{enc}(3)"
                 ]
 
                 # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-                My: ndarray[Any, dtype[floating]] = self.raw_data[plane][
+                My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][
                     f"TAMOM{enc}(2)"
                 ]
                 # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
-                Fx_new: ndarray[Any, dtype[floating]] = Fx * np.cos(AoA) + Fz * np.sin(
+                Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
+                    AoA,
+                ) + Fz * np.sin(
                     AoA,
                 )
                 # Fy_new = Fy
-                Fz_new: ndarray[Any, dtype[floating]] = -Fx * np.sin(AoA) + Fz * np.cos(
+                Fz_new: ndarray[Any, dtype[floating[Any]]] = -Fx * np.sin(
+                    AoA,
+                ) + Fz * np.cos(
                     AoA,
                 )
 
-                My_new: ndarray[Any, dtype[floating]] = My
+                My_new: ndarray[Any, dtype[floating[Any]]] = My
                 try:
                     Q: float = pln.dynamic_pressure
                     S: float = pln.S
@@ -225,7 +233,7 @@ class Database_3D:
     def __str__(self) -> Literal["Vehicle Database"]:
         return "Vehicle Database"
 
-    def __enter__(self, obj) -> None:
+    def __enter__(self) -> None:
         pass
 
     def __exit__(self) -> None:

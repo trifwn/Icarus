@@ -1,3 +1,5 @@
+from typing import Any
+
 from ICARUS.Database.db import DB
 from ICARUS.Software.GenuVP3.analyses.angles import process_gnvp3_angle_run
 from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles
@@ -10,16 +12,16 @@ from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_gnvp3(db: DB):
+def get_gnvp3(db: DB) -> Solver:
     gnvp3 = Solver(name="gnvp3", solverType="3D", fidelity=2, db=db)
 
     # # Define GNVP3 Analyses
-    options = {
+    options: dict[str, str] = {
         "HOMEDIR": "Home Directory",
         "CASEDIR": "Case Directory",
     }
 
-    solver_options = {
+    solver_options: dict[str, tuple[Any, str]] = {
         "Split_Symmetric_Bodies": (
             False,
             "Split Symmetric Bodies And Contstruct Them In GNVP3",
@@ -123,7 +125,7 @@ def get_gnvp3(db: DB):
         "Elasticity_Solver": (0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)"),
     }
 
-    rerun = Analysis("gnvp3", "rerun", gnvp_execute, options, solver_options)
+    rerun: Analysis = Analysis("gnvp3", "rerun", gnvp_execute, options, solver_options)
 
     options = {
         "plane": "Plane Object",
@@ -136,7 +138,7 @@ def get_gnvp3(db: DB):
         "angles": "Angle to run",
     }
 
-    anglesSerial = Analysis(
+    anglesSerial: Analysis = Analysis(
         "gnvp3",
         "Angles_Serial",
         run_gnvp_angles,
@@ -145,23 +147,23 @@ def get_gnvp3(db: DB):
         unhook=process_gnvp3_angle_run,
     )
 
-    anglesParallel = anglesSerial << {
+    anglesParallel: Analysis = anglesSerial << {
         "name": "Angles_Parallel",
         "execute": run_gnvp_angles_parallel,
         "unhook": process_gnvp3_angle_run,
     }
-    pertrubationSerial = anglesSerial << {
+    pertrubationSerial: Analysis = anglesSerial << {
         "name": "Pertrubation_Serial",
         "execute": runGNVPpertr,
         "unhook": processGNVPpertrubations,
     }
-    pertrubationParallel = anglesSerial << {
+    pertrubationParallel: Analysis = anglesSerial << {
         "name": "Pertrubation_Parallel",
         "execute": runGNVPpertrParallel,
         "unhook": processGNVPpertrubations,
     }
 
-    gnvp3.addAnalyses(
+    gnvp3.add_analyses(
         [rerun, anglesSerial, anglesParallel, pertrubationSerial, pertrubationParallel],
     )
 

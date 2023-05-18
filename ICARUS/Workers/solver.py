@@ -24,7 +24,7 @@ class Solver:
         self.availableAnalyses: dict[str, Analysis] = {}
         self.mode: Union[str, None] = None
 
-    def addAnalyses(self, analyses) -> None:
+    def add_analyses(self, analyses) -> None:
         for analysis in analyses:
             if analysis.name in self.availableAnalyses.keys():
                 print(f"Analysis {analysis.name} already exists")
@@ -36,10 +36,10 @@ class Solver:
                 continue
             self.availableAnalyses[analysis.name] = analysis
 
-    def setAnalysis(self, analysis: str) -> None:
+    def set_analyses(self, analysis: str) -> None:
         self.mode = analysis
 
-    def getAnalysis(self, analysis: str | None = None) -> Analysis | None:
+    def get_analysis(self, analysis: str | None = None) -> Analysis | None:
         if analysis is not None:
             try:
                 return self.availableAnalyses[analysis]

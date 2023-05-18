@@ -16,7 +16,7 @@ class DB:
     def loadData(self):
         """Loads all the data from the databases"""
         self.foilsDB.loadData()
-        self.vehiclesDB.loadData()
+        self.vehiclesDB.load_data()
 
     def __str__(self):
         return "Database"

@@ -70,7 +70,7 @@ def main() -> None:
 
         # ## AoA Run
         analysis = gnvp3.getAvailableAnalyses()[2]  # ANGLES PARALLEL
-        gnvp3.setAnalysis(analysis)
+        gnvp3.set_analyses(analysis)
         options = gnvp3.getOptions(verbose=True)
 
         AOA_MIN = -6
@@ -78,7 +78,7 @@ def main() -> None:
         NO_AOA = (AOA_MAX - AOA_MIN) + 1
         angles = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
         UINF = 20
-        airplane.defineSim(UINF, EARTH.air_density)
+        airplane.define_dynamic_pressure(UINF, EARTH.air_density)
 
         options.plane.value = airplane
         options.environment.value = EARTH
@@ -127,14 +127,14 @@ def main() -> None:
         # Define Analysis for Pertrubations
         analysis: str = gnvp3.getAvailableAnalyses()[4]  # Pertrubations PARALLEL
         print(f"Selecting Analysis: {analysis}")
-        gnvp3.setAnalysis(analysis)
+        gnvp3.set_analyses(analysis)
 
         options: Struct = gnvp3.getOptions(verbose=True)
 
         if options is None:
             raise ValueError("Options not set")
         # Set Options
-        dyn.defineSim(dyn.trim["U"], EARTH.air_density)
+        dyn.define_dynamic_pressure(dyn.trim["U"], EARTH.air_density)
         options.plane.value = dyn
         options.environment.value = EARTH
         options.db.value = db

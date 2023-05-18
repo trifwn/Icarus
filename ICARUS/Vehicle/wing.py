@@ -343,8 +343,8 @@ class Wing:
 
     def mean_chords(self):
         "Finds the Mean Aerodynamic Chord (mean_aerodynamic_chord) of the wing."
-        num = 0
-        denum = 0
+        num: float = 0
+        denum: float = 0
         for i in np.arange(0, self.N - 1):
             num += ((self._chord_dist[i] + self._chord_dist[i + 1]) / 2) ** 2 * (
                 self._span_dist[i + 1] - self._span_dist[i]

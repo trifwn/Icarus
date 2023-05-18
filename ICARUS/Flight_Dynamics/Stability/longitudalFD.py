@@ -1,9 +1,10 @@
 import numpy as np
 
+from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane
 from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 
 
-def longitudalStability(plane, mode="2D"):
+def longitudalStability(plane: Dynamic_Airplane, mode: str = "2D"):
     """This Function Requires the results from perturbation analysis
     For the Longitudinal Motion, in addition to the state space variables
     an analysis with respect to the derivative of w perturbation is needed.

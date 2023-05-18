@@ -6,7 +6,9 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.Software import logOFscript, runOFscript, setupOFscript
+from ICARUS.Software import logOFscript
+from ICARUS.Software import runOFscript
+from ICARUS.Software import setupOFscript
 
 
 def make_mesh(airfoilFile: str, airfoilName: str, OFBASE: str, HOMEDIR: str) -> None:

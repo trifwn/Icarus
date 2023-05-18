@@ -2,7 +2,7 @@ from .path import Path
 
 
 class MissionSegment:
-    def __init__(self, name, type, path=None):
+    def __init__(self, name: str, type, path=None):
 
         # Mission Segment Definition
         self.name = name

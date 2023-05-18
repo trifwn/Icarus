@@ -13,14 +13,25 @@ from ICARUS.Vehicle.wing import define_linear_span
 from ICARUS.Vehicle.wing import Wing
 
 
-def hermes(airfoils: Struct, name) -> Airplane:
-    origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+def hermes(airfoils: Struct, name: str) -> Airplane:
+    """
+    Function to get the hermes plane.
+    Consisting of the main wing, elevator rudder and masses as constructed.
 
-    wing_position: ndarray[Any, dtype[floating]] = np.array(
+    Args:
+        airfoils (Struct): Struct containing the airfoils
+        name (str): Name of the plane
+
+    Returns:
+        Airplane: hermes Airplane object
+    """
+    origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
+
+    wing_position: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.0 - 0.159 / 4, 0.0, 0.0],
         dtype=float,
     )
-    wing_orientation: ndarray[Any, dtype[floating]] = np.array(
+    wing_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(
         [2.8, 0.0, 0.0],
         dtype=float,
     )
@@ -43,11 +54,11 @@ def hermes(airfoils: Struct, name) -> Airplane:
     )
     # main_wing.plotWing()
 
-    elevatorPos: ndarray[Any, dtype[floating]] = np.array(
+    elevatorPos: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.54 - 0.130 / 4, 0.0, 0.0],
         dtype=float,
     )
-    elevatorOrientantion: ndarray[Any, dtype[floating]] = np.array(
+    elevatorOrientantion: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.0, 0.0, 0.0],
         dtype=float,
     )
@@ -70,11 +81,11 @@ def hermes(airfoils: Struct, name) -> Airplane:
     )
     # elevator.plotWing()
 
-    rudder_position: ndarray[Any, dtype[floating]] = np.array(
+    rudder_position: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.47 - 0.159 / 4, 0.0, 0.01],
         dtype=float,
     )
-    rudder_orientation: ndarray[Any, dtype[floating]] = np.array(
+    rudder_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.0, 0.0, 90.0],
         dtype=float,
     )
@@ -97,7 +108,7 @@ def hermes(airfoils: Struct, name) -> Airplane:
     )
     # rudder.plotWing()
 
-    lifting_surfaces = [main_wing, elevator, rudder]
+    lifting_surfaces: list[Wing] = [main_wing, elevator, rudder]
 
     point_masses = [
         (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Motor

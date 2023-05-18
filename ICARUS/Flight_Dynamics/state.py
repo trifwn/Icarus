@@ -3,9 +3,9 @@ from pandas import DataFrame
 from .disturbances import Disturbance as dst
 from .dynamic_plane import Dynamic_Airplane
 from .dynamic_plane import StabilityDerivativesDS
-from .pertrubations import lateralPerturb
-from .pertrubations import longitudalPerturb
-from .Stability.lateralFD import lateralStability
+from .pertrubations import lateral_pertrubations
+from .pertrubations import longitudal_pertrubations
+from .Stability.lateralFD import lateral_stability
 from .Stability.longitudalFD import longitudalStability
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
@@ -70,8 +70,8 @@ class State:
         self.epsilons: dict[str, float] = {}
 
         self.disturbances = [
-            *longitudalPerturb(self, scheme, epsilon),
-            *lateralPerturb(self, scheme, epsilon),
+            *longitudal_pertrubations(self, scheme, epsilon),
+            *lateral_pertrubations(self, scheme, epsilon),
         ]
         self.disturbances.append(dst(None, 0))
 
@@ -91,7 +91,7 @@ class State:
     def stabilityFD(self, scheme="Central"):
         self.scheme = scheme
         X, Z, M = longitudalStability(self, "2D")
-        Y, L, N = lateralStability(self, "Potential")
+        Y, L, N = lateral_stability(self, "Potential")
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
     def __str__(self):

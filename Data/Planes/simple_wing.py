@@ -21,9 +21,15 @@ db2d: Database_2D = db.foilsDB
 readPolars2D(db2d, XFLRDB)
 airfoils: Struct = db2d.getAirfoils()
 
-origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
-wing_position: ndarray[Any, dtype[floating]] = np.array([-0.2, 0.0, 0.0], dtype=float)
-wing_orientation: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
+origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
+wing_position: ndarray[Any, dtype[floating[Any]]] = np.array(
+    [-0.2, 0.0, 0.0],
+    dtype=float,
+)
+wing_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(
+    [0.0, 0.0, 0.0],
+    dtype=float,
+)
 
 Simplewing = Wing(
     name="bmark",
