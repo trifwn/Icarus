@@ -1,5 +1,6 @@
 # ICARUS
 
+Major Refactoring: Welcoming Version 0.1.0
 ---
 
 ## The project is under Work
@@ -25,25 +26,33 @@ More information on how to run and compile dependencies will be availabe in the 
 
 This library is used to handle and generate airfoils. It is an extension of the airfoils pip module (https://pypi.org/project/airfoils/).
 
+-Conceptual
+
+Module for conceptual Analysis.
+
 -Core
 
 Core functions for the program
+
+-Database:
+
+Storage Interface to save vehicles, airfoils, analyses, solvers and more. Currently it works with the filesystem. Uses JSON to maybe one day integrate with frontend.
 
 -Mission
 
 Defines the mission of the airplane and the flight envelope.
 
--Solver
+-Workers
 
-Abstraction Layer for the solvers
+Abstraction Layer for the solvers.
 
--Plane Definition
+-Vehicle
 
-Defines Airplane
+Defines Airplane and other Vehicles.
 
 -Flight_Dynamics
 
-Defines Dynamic Airplane
+Defines Flight State 
 
 -Software
 
@@ -53,14 +62,15 @@ Integration with 3d Party Software.
 
 All Around visualization functions
 
--Control
+-Environment
 
-Early Stages not much there.
+Abstraction for the Environment.
 
 ---
 
 ## Building and Installing the Python Module
 -----------------------------------------
+Currently there are some errors on building the module. Will be worked out in the future as they are not a priority and project changes rapidly. With some basic debugging it works. The most common problem is with the xfoil package.
 If you want you can create a venv enviroment first:
 ```
 python -m venv venv
@@ -85,12 +95,10 @@ If the installation fails change the comments on  `pyproject.toml` at the root o
 
 ## Tasks To-Do
 
-- MAKE DATABASE USE STRUCT DATA
-- Make requirements.txt
-- Make Mission Class
-- Make Load Visualization
-- Make low fidelity approximations
-- Create master module to manage simulations that is aware of the different software needed to generate them
+- Add the control parameters
+- Make Mission Class and Module the whole flight envelope
+- Make low fidelity approximations. Conceptual Module
+- Integrate AVL and GNVP7
 - Find alternative to matplotlib for visualization (3d graphics are slows)
 - Have the grid/meshing run on julia
 - Add GUI
