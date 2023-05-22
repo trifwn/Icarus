@@ -6,8 +6,8 @@ from numpy import dtype
 from numpy import ndarray
 
 import tests.wing_test as wing_test
-from tests.airplane_polars_test import airPolars
-from tests.solver_geom_test import gnvpGeom
+from tests.airplane_polars_test import airplane_polars
+from tests.solver_geom_test import gnvp_geometry
 from tests.solver_run_test import gnvprun
 
 
@@ -35,7 +35,7 @@ class TestAdd(unittest.TestCase):
         # pass
 
     def test3_airPolars(self) -> None:
-        des, act = airPolars(plot=False)
+        des, act = airplane_polars(plot=False)
         preffered_pol = "2D"
 
         AoA_d = des["AoA"].astype(float)
@@ -71,7 +71,7 @@ class TestAdd(unittest.TestCase):
             )
 
     def test4_gnvpGeom(self) -> None:
-        gridAP, gridGNVP = gnvpGeom(plot=False)
+        gridAP, gridGNVP = gnvp_geometry(plot=False)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
 

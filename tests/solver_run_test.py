@@ -27,14 +27,14 @@ def gnvprun(mode: str = "Parallel") -> None:
     # Set Analysis
     if mode == "Parallel":
         # gnvp3.setParallel(True)
-        analysis: str = gnvp3.getAvailableAnalyses()[2]
+        analysis: str = gnvp3.available_analyses_names()[2]
     else:
-        analysis = gnvp3.getAvailableAnalyses()[1]
+        analysis = gnvp3.available_analyses_names()[1]
 
     gnvp3.set_analyses(analysis)
 
     # Set Options
-    options = gnvp3.getOptions(verbose=True)
+    options = gnvp3.get_analysis_options(verbose=True)
 
     AoAmin = -3
     AoAmax = 3
@@ -56,7 +56,7 @@ def gnvprun(mode: str = "Parallel") -> None:
     options.u_freestream.value = u_freestream
     options.angles.value = angles
 
-    _ = gnvp3.getOptions(verbose=True)
+    _ = gnvp3.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
 
     gnvp3.run()
@@ -65,6 +65,6 @@ def gnvprun(mode: str = "Parallel") -> None:
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 
-    _ = gnvp3.getResults()
+    _ = gnvp3.get_results()
     airplane.save()
     # getRunOptions()

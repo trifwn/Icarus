@@ -5,10 +5,11 @@ from pandas import DataFrame
 
 from . import colors
 from . import markers
+from ICARUS.Core.struct import Struct
 
 
 def plot_airplane_polars(
-    data: dict[str, DataFrame],
+    data: dict[str, DataFrame] | Struct,
     airplanes: list[str],
     solvers: list[str] = ["All"],
     size: tuple[int, int] = (10, 10),

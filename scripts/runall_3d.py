@@ -6,6 +6,10 @@ It is also possible to do a pertubation analysis for each aircraft.
 import time
 
 import numpy as np
+from nptyping import Float
+from nptyping import NDArray
+from nptyping import Shape
+from pandas import DataFrame
 
 from Data.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
@@ -13,10 +17,11 @@ from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH
-from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane as dp
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
-from ICARUS.Software.XFLR5.polars import readPolars2D
+from ICARUS.Software.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
+from ICARUS.Workers.solver import Solver
 
 # from Data.Planes.hermes import hermes
 # from Data.Planes.hermes_wing_only import hermes_main_wing
@@ -30,9 +35,9 @@ def main() -> None:
     # # DB CONNECTION
     db = DB()
     foildb: Database_2D = db.foilsDB
-    foildb.loadData()
-    readPolars2D(foildb, XFLRDB)
-    airfoils = foildb.getAirfoils()
+    foildb.load_data()
+    read_polars_2d(foildb, XFLRDB)
+    airfoils: Struct = foildb.set_available_airfoils()
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -46,13 +51,13 @@ def main() -> None:
 
     planes.append(wing_var_chord_offset(airfoils, "taper", [0.159, 0.072], 0.0))
 
-    timestep = {
+    timestep: dict[str, float] = {
         "orthogonal": 1e-3,
         "orthogonalSweep": 1e-3,
         "taperSweep": 1e-3,
         "taper": 1e-3,
     }
-    maxiter = {
+    maxiter: dict[str, int] = {
         "orthogonal": 400,
         "orthogonalSweep": 400,
         "taperSweep": 400,
@@ -66,17 +71,17 @@ def main() -> None:
         print(EARTH)
 
         # # Get Solver
-        gnvp3 = get_gnvp3(db)
+        gnvp3: Solver = get_gnvp3(db)
 
         # ## AoA Run
-        analysis = gnvp3.getAvailableAnalyses()[2]  # ANGLES PARALLEL
+        analysis: str = gnvp3.available_analyses_names()[2]  # ANGLES PARALLEL
         gnvp3.set_analyses(analysis)
-        options = gnvp3.getOptions(verbose=True)
+        options: Struct = gnvp3.get_analysis_options(verbose=True)
 
         AOA_MIN = -6
         AOA_MAX = 8
-        NO_AOA = (AOA_MAX - AOA_MIN) + 1
-        angles = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
+        NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
+        angles: NDArray[Shape[NO_AOA], Float] = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
         UINF = 20
         airplane.define_dynamic_pressure(UINF, EARTH.air_density)
 
@@ -89,21 +94,22 @@ def main() -> None:
         options.u_freestream.value = UINF
         options.angles.value = angles
 
-        gnvp3.printOptions()
+        gnvp3.print_analysis_options()
 
-        polars_time = time.time()
+        polars_time: float = time.time()
         gnvp3.run()
         print(
             f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
         )
-        polars = gnvp3.getResults()
+        polars: DataFrame | int = gnvp3.get_results()
         airplane.save()
+        if isinstance(polars, int):
+            raise ValueError("Polars not set")
 
         # # Dynamics
-
         # ### Define and Trim Plane
         try:
-            dyn = dp(airplane, polars)
+            dyn = State("Unstick", airplane, polars, EARTH)
         except Exception as error:
             print(error)
             continue
@@ -121,20 +127,19 @@ def main() -> None:
         # }
         epsilons = None
 
-        dyn.allPerturb("Central", epsilons)
+        dyn.add_all_pertrubations("Central", epsilons)
         dyn.get_pertrub()
 
         # Define Analysis for Pertrubations
-        analysis: str = gnvp3.getAvailableAnalyses()[4]  # Pertrubations PARALLEL
+        analysis = gnvp3.available_analyses_names()[4]  # Pertrubations PARALLEL
         print(f"Selecting Analysis: {analysis}")
         gnvp3.set_analyses(analysis)
 
-        options: Struct = gnvp3.getOptions(verbose=True)
+        options = gnvp3.get_analysis_options(verbose=True)
 
         if options is None:
             raise ValueError("Options not set")
         # Set Options
-        dyn.define_dynamic_pressure(dyn.trim["U"], EARTH.air_density)
         options.plane.value = dyn
         options.environment.value = EARTH
         options.db.value = db
@@ -145,7 +150,7 @@ def main() -> None:
         options.angles.value = dyn.trim["AoA"]
 
         # Run Analysis
-        gnvp3.printOptions()
+        gnvp3.print_analysis_options()
 
         pert_time: float = time.time()
         print("Running Pertrubations")
@@ -153,7 +158,7 @@ def main() -> None:
         print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
         # Get Results And Save
-        _ = gnvp3.getResults()
+        _ = gnvp3.get_results()
         dyn.save()
 
         # Sensitivity ANALYSIS

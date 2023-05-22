@@ -203,7 +203,7 @@ def main() -> None:
         setup(cmdclass={"sdist": sdist})
     elif command == "bdist_wheel":
         print(f"Generating wheel distribution for {package} version {__version__}")
-        setup(cmdclass={"bdist_wheel": bdist_wheel})  # type: ignore
+        setup(cmdclass={"bdist_wheel": bdist_wheel})
     # elif command == "clean":
     #     print("Cleaning up...")
     #     setup(cmdclass={"clean": clean})

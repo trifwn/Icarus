@@ -6,7 +6,7 @@ from numpy import floating
 from numpy import ndarray
 
 from ICARUS.Core.types import DataDict
-from ICARUS.Core.types import NumericArray
+from ICARUS.Core.types import FloatOrListArray
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import define_linear_chord
 from ICARUS.Vehicle.wing import define_linear_span
@@ -16,7 +16,7 @@ from ICARUS.Vehicle.wing import Wing
 def wing_var_chord_offset(
     airfoils: DataDict,
     name: str,
-    chords: NumericArray,
+    chords: FloatOrListArray,
     offset: float,
 ) -> Airplane:
     """Defines an airplane consisting only of a wing with a variable chord and offset.
@@ -31,12 +31,12 @@ def wing_var_chord_offset(
     Returns:
         Airplane: _description_
     """
-    origin: ndarray[Any, dtype[floating]] = np.array([0.0, 0.0, 0.0], dtype=float)
-    wing_position: ndarray[Any, dtype[floating]] = np.array(
+    origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
+    wing_position: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.0 - 0.159 / 4, 0.0, 0.0],
         dtype=float,
     )
-    wing_orientation: ndarray[Any, dtype[floating]] = np.array(
+    wing_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(
         [2.8, 0.0, 0.0],
         dtype=float,
     )
@@ -67,5 +67,5 @@ def wing_var_chord_offset(
         (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload
     ]
     airplane = Airplane(name, lifting_surfaces)
-    airplane.addMasses(addedMasses)
+    airplane.add_point_masses(addedMasses)
     return airplane

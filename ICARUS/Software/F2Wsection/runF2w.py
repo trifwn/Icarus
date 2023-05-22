@@ -43,7 +43,7 @@ def separate_angles(all_angles: list[float]) -> tuple[list[float], list[float]]:
 def make_2d_polars(
     CASEDIR: str,
     HOMEDIR: str,
-) -> ndarray[Any, dtype[floating]]:
+) -> ndarray[Any, dtype[floating[Any]]]:
     """
     Make the polars from the forces and return an np array with them
 
@@ -52,7 +52,7 @@ def make_2d_polars(
         HOMEDIR (str): Home Directory
 
     Returns:
-        ndarray[Any, dtype[floating]]: Polars
+        ndarray[Any, dtype[floating[Any]]]: Polars
     """
     os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]
@@ -169,8 +169,8 @@ def runF2W(
         shutil.copy(f"design_{name}.inp", "design.inp")
         shutil.copy(f"f2w_{name}.inp", "f2w.inp")
         print(f"Running {angles}")
-        f: TextIOWrapper = open(f"{name}.out", "w")
-        subprocess.call([os.path.join(CASEDIR, "foil_section")], stdout=f, stderr=f)
+        with open(f"{name}.out", "w") as f:
+            subprocess.call([os.path.join(CASEDIR, "foil_section")], stdout=f, stderr=f)
         os.rmdir("TMP.dir")
     os.remove("SOLOUTI*")
     sleep(1)

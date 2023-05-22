@@ -9,17 +9,17 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
-from ICARUS.Software.XFLR5.polars import readPolars2D
+from ICARUS.Software.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane as Plane
 from ICARUS.Vehicle.wing import define_linear_chord
 from ICARUS.Vehicle.wing import define_linear_span
 from ICARUS.Vehicle.wing import Wing
 
-db = DB()
-db.loadData()
+db: DB = DB()
+db.load_data()
 db2d: Database_2D = db.foilsDB
-readPolars2D(db2d, XFLRDB)
-airfoils: Struct = db2d.getAirfoils()
+read_polars_2d(db2d, XFLRDB)
+airfoils: Struct = db2d.set_available_airfoils()
 
 origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
 wing_position: ndarray[Any, dtype[floating[Any]]] = np.array(
@@ -48,4 +48,4 @@ Simplewing = Wing(
     mass=1,
 )
 airplane = Plane(Simplewing.name, [Simplewing])
-airplane.CG = [0.337, 0, 0]
+airplane.CG = np.array([0.337, 0, 0])

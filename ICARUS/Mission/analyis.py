@@ -1,14 +1,19 @@
+from ICARUS.Mission.definition import Mission
+from ICARUS.Vehicle.plane import Airplane
+from ICARUS.Workers.solver import Solver
+
+
 class MissionAnalysis:
-    def __init__(self, Mission, solver, vehicle) -> None:
-        self.mission = Mission
-        self.solver = solver
+    def __init__(self, mission: Mission, solver: Solver, vehicle: Airplane) -> None:
+        self.mission: Mission = mission
+        self.solver: Solver = solver
+        self.vehicle: Airplane = vehicle
+
+    def getVehicle(self) -> Airplane:
+        return self.vehicle
+
+    def setVehicle(self, vehicle: Airplane) -> None:
         self.vehicle = vehicle
-
-    def getVehicle(self):
-        return self.mission.vehicle
-
-    def setVehicle(self, vehicle) -> None:
-        self.mission.vehicle = vehicle
 
     def Analyze(self) -> None:
         pass

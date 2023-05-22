@@ -1,27 +1,38 @@
 import os
 
+from pandas import DataFrame
+
 from Data.Planes.simple_wing import airplane as airplane
 from ICARUS.Database.Database_3D import Database_3D
 from ICARUS.Database.db import DB
-from ICARUS.Software.XFLR5.polars import readPolars3D
+from ICARUS.Software.XFLR5.polars import read_polars_3d
 
 
-def airPolars(plot: bool | None = False):
+def airplane_polars(plot: bool | None = False) -> tuple[DataFrame, DataFrame]:
+    """
+    Function to test the airplane polars.
+
+    Args:
+        plot (bool | None, optional): Whether to plot the results. Defaults to False.
+
+    Returns:
+        tuple[DataFrame, DataFrame]: Returns the desired and actual results.
+    """
     print("Testing Airplane Polars...")
 
     db = DB()
-    db.loadData()
+    db.load_data()
 
     db3d: Database_3D = db.vehiclesDB
-    planenames = [airplane.name]
-    BMARKLOC = os.path.join(db.HOMEDIR, "Data", "XFLR5", "bmark.txt")
-    readPolars3D(db3d, BMARKLOC, "bmark")
+    planenames: list[str] = [airplane.name]
+    BMARKLOC: str = os.path.join(db.HOMEDIR, "Data", "XFLR5", "bmark.txt")
+    read_polars_3d(db3d, BMARKLOC, "bmark")
     planenames.append("XFLR_bmark")
     if plot:
         from ICARUS.Visualization.airplanePolars import plot_airplane_polars
 
         plot_airplane_polars(db3d.data, planenames, ["All"], size=(10, 10))
 
-    desired = db3d.data["XFLR_bmark"]
-    actual = db3d.data["bmark"]
+    desired: DataFrame = db3d.data["XFLR_bmark"]
+    actual: DataFrame = db3d.data["bmark"]
     return desired, actual

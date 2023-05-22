@@ -18,7 +18,7 @@ class Path:
         self.flight_path_wind: list[Any] = []
         self.flight_path_wind_direction: list[Any] = []
 
-    def setPathParameters(
+    def set_parameters(
         self,
         positions: list[Any],
         time: list[Any],

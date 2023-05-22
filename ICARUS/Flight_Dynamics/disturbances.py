@@ -3,8 +3,8 @@ class Disturbance:
 
     def __init__(self, variable: str | None, amplitude_value: float) -> None:
         if amplitude_value > 0:
-            self.isPositive = True
-            self.amplitude = amplitude_value
+            self.isPositive: bool = True
+            self.amplitude: float | None = amplitude_value
         elif amplitude_value < 0:
             self.amplitude = amplitude_value
             self.isPositive = False
@@ -13,9 +13,9 @@ class Disturbance:
             self.isPositive = False
 
         if variable == "u":
-            self.axis = 1
-            self.type = "Derivative"  # Translational Only get Derivative
-            self.isRotational = False
+            self.axis: int | None = 1
+            self.type: str | None = "Derivative"  # Translational Only get Derivative
+            self.isRotational: bool = False
         elif variable == "w":
             self.axis = 3
             self.type = "Derivative"  # Translational Only get Derivative
@@ -49,8 +49,8 @@ class Disturbance:
             self.axis = None
             self.type = None
             self.amplitude = None
-            self.name = "Trim"
-            self.var = "Trim"
+            self.name: str = "Trim"
+            self.var: str = "Trim"
         else:
             raise ValueError("Invalid disturbance variable")
         if variable is not None:

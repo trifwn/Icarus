@@ -1,11 +1,10 @@
 import os
 import subprocess
-from io import TextIOWrapper
 from typing import Any
 
 from pandas import DataFrame
 
-from .filesGNVP import makeInput
+from .filesGNVP import make_input_files
 from .postProcess.forces import forces_to_pertrubation_results
 from .postProcess.forces import forces_to_polars
 from ICARUS.Database.Database_2D import Database_2D
@@ -24,15 +23,13 @@ def gnvp_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
     """
     os.chdir(ANGLEDIR)
 
-    fin: TextIOWrapper = open("input", encoding="utf-8")
-    fout: TextIOWrapper = open("gnvp.out", "w", encoding="utf-8")
-    res: int = subprocess.check_call(
-        [os.path.join(ANGLEDIR, "gnvp3")],
-        stdin=fin,
-        stdout=fout,
-    )
-    fin.close()
-    fout.close()
+    with open("input", encoding="utf-8") as fin:
+        with open("gnvp.out", "w", encoding="utf-8") as fout:
+            res: int = subprocess.check_call(
+                [os.path.join(ANGLEDIR, "gnvp3")],
+                stdin=fin,
+                stdout=fout,
+            )
 
     os.chdir(HOMEDIR)
     return res
@@ -71,7 +68,7 @@ def run_gnvp_case(
     movements: list[list[Movement]],
     bodies: list[dict[str, Any]],
     params: dict[str, Any],
-    airfoils: list[float],
+    airfoils: list[str],
     foildb: Database_2D,
     solver2D: str,
 ) -> None:
@@ -84,11 +81,11 @@ def run_gnvp_case(
         movements (list[list[Movement]]): List of Movements for each body
         bodies (list[dict[str, Any]]): List of Bodies in dict format
         params (dict[str, Any]): Parameters for the simulation
-        airfoils (list[float]): List with the names of all airfoils
+        airfoils (list[str]): List with the names of all airfoils
         foildb (Database_2D): 2D Foil Database
         solver2D (str): Name of 2D Solver to be used
     """
-    makeInput(
+    make_input_files(
         CASEDIR,
         HOMEDIR,
         GENUBASE,
@@ -96,7 +93,7 @@ def run_gnvp_case(
         bodies,
         params,
         airfoils,
-        foildb,
+        foildb.data,
         solver2D,
     )
     gnvp_execute(HOMEDIR, CASEDIR)

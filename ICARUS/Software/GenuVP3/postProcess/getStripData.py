@@ -7,13 +7,17 @@ from ICARUS.Database import DB3D
 from ICARUS.Vehicle.plane import Airplane
 
 
-def get_strip_data(plane: Airplane, case: str, NBs) -> tuple[DataFrame, DataFrame]:
+def get_strip_data(
+    plane: Airplane,
+    case: str,
+    NBs: list[int],
+) -> tuple[DataFrame, DataFrame]:
     """Function to get strip data from a case simulation.
 
     Args:
         pln (Airplane): Plane Object
         case (str): String containing the case folder
-        NBs (_type_): list with all lifting surfaces for which to get data
+        NBs (list[int]): list with all lifting surfaces for which to get data
 
     Returns:
         tuple[DataFrame, DataFrame]: Returns a dataframe with all strip data and a dataframe with all strip data for the NBs
@@ -27,7 +31,7 @@ def get_strip_data(plane: Airplane, case: str, NBs) -> tuple[DataFrame, DataFram
             with open(filename, encoding="UTF-8") as f:
                 data: list[str] = f.readlines()
             data_num: list[float] = [float(item) for item in data[-1].split()]
-            file: str = file[6:]
+            file = file[6:]
             body = int(file[:2])
             strip = int(file[3:5])
             strip_data.append([body, strip, *data_num])

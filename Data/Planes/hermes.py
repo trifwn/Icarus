@@ -48,7 +48,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
         chord_fun=define_linear_chord,
         chord=np.array([0.159, 0.072], dtype=float),
         span_fun=define_linear_span,
-        N=30,
+        N=25,
         M=5,
         mass=0.670,
     )
@@ -120,6 +120,6 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
     # from ICARUS.Database import DB3D
     # airplane.accessDB(HOMEDIR, DB3D)
     # airplane.visAirplane()
-    airplane.addMasses(point_masses)
+    airplane.add_point_masses(point_masses)
 
     return airplane

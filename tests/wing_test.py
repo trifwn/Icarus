@@ -9,8 +9,8 @@ def geom() -> tuple[
     float,
     float,
     float,
-    ndarray[Any, dtype[floating]],
-    ndarray[Any, dtype[floating]],
+    ndarray[Any, dtype[floating[Any]]],
+    ndarray[Any, dtype[floating[Any]]],
 ]:
     print("Testing Geometry...")
 
@@ -19,7 +19,7 @@ def geom() -> tuple[
     return (
         Simplewing.S,
         Simplewing.mean_aerodynamic_chord,
-        Simplewing.Area,
+        Simplewing.area,
         Simplewing.CG,
         Simplewing.inertia,
     )

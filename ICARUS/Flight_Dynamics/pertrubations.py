@@ -1,9 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .disturbances import Disturbance as dst
-from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.Flight_Dynamics.state import State
 
 
 def longitudal_pertrubations(
-    plane: Dynamic_Airplane,
+    state: State,
     scheme: str,
     epsilon: dict[str, float] | None = None,
 ) -> list[dst]:
@@ -19,7 +25,7 @@ def longitudal_pertrubations(
         epsilon = {"u": 0.01, "w": 0.01, "q": 0.25, "theta": 0.01}  # /plane.trim["U"]
 
     for var in ["u", "w", "q", "theta"]:
-        plane.epsilons[var] = epsilon[var]
+        state.epsilons[var] = epsilon[var]
         if scheme == "Central":
             disturbances.append(dst(var, epsilon[var]))
             disturbances.append(dst(var, -epsilon[var]))
@@ -33,7 +39,7 @@ def longitudal_pertrubations(
 
 
 def lateral_pertrubations(
-    plane: Dynamic_Airplane,
+    state: State,
     scheme: str,
     epsilon: dict[str, float] | None = None,
 ) -> list[dst]:
@@ -49,7 +55,7 @@ def lateral_pertrubations(
         epsilon = {"v": 0.01, "p": 0.25, "r": 0.25, "phi": 0.01}
 
     for var in ["v", "p", "r", "phi"]:
-        plane.epsilons[var] = epsilon[var]
+        state.epsilons[var] = epsilon[var]
         if scheme == "Central":
             disturbances.append(dst(var, epsilon[var]))
             disturbances.append(dst(var, -epsilon[var]))

@@ -5,6 +5,7 @@ import numpy as np
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
+from pandas import DataFrame
 
 from ICARUS.Airfoils.airfoilD import AirfoilD
 from ICARUS.Database import BASEFOIL2W
@@ -46,30 +47,34 @@ def Re(velocity: float, char_length: float, viscosity: float) -> float:
     return (velocity * char_length) / viscosity
 
 
-chordMax: float = 0.18
-chordMin: float = 0.11
-umax: float = 30.0
-umin: float = 5.0
+chord_max: float = 0.18
+chord_min: float = 0.11
+u_max: float = 30.0
+u_min: float = 5.0
 viscosity: float = 1.56e-5
 
-Machmin: float = ms2mach(10)
-Machmax: float = ms2mach(30)
-Remax: float = Re(umax, chordMax, viscosity)
-Remin: float = Re(umin, chordMin, viscosity)
-AoAmax: float = 15
+mach_min: float = ms2mach(10)
+mach_max: float = ms2mach(30)
+reynolds_max: float = Re(u_max, chord_max, viscosity)
+reynolds_min: float = Re(u_min, chord_min, viscosity)
+aoa_max: float = 15
 aoa_min: float = -6
-NoAoA: int = (AoAmax - aoa_min) * 2 + 1
+num_of_angles: float = (aoa_max - aoa_min) * 2 + 1
 
-angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(aoa_min, AoAmax, NoAoA)
-reynolds: ndarray[Any, dtype[floating]] = np.logspace(
-    np.log10(Remin),
-    np.log10(Remax),
-    5,
+angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+    start=aoa_min,
+    stop=aoa_max,
+    num=num_of_angles,
+)
+reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(
+    start=np.log10(reynolds_min),
+    stop=np.log10(reynolds_max),
+    num=5,
     base=10,
 )
-mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(Machmax, Machmin, 10)
+mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(mach_max, mach_min, 10)
 
-MACH: float = Machmax
+MACH: float = mach_max
 
 cleaning: bool = False
 calcF2W: bool = True
@@ -81,8 +86,8 @@ airfoil_names: list[str] = ["4415", "0008"]
 for airfoil_name in airfoil_names:
     print(f"\nRunning airfoil {airfoil_name}\n")
     # # Get Airfoil
-    airfoil: AirfoilD = AirfoilD.NACA(naca=airfoil_name, n_points=200)
-    airfoil.accessDB(HOMEDIR, DB2D)
+    airfoil: AirfoilD = AirfoilD.naca(naca=airfoil_name, n_points=200)
+    airfoil.access_db(HOMEDIR, DB2D)
     # airf.plotAirfoil()
     for reyn in reynolds:
         print(
@@ -90,11 +95,11 @@ for airfoil_name in airfoil_names:
         )
 
         # Setup Case Dirs
-        airfoil.reynCASE(reyn)
+        airfoil.set_reynolds_case(reyn)
 
         # Foil2Wake
         if cleaning:
-            airfoil.cleanRes(
+            airfoil.clean_results(
                 f2w.remove_results,
                 [airfoil.REYNDIR, airfoil.HOMEDIR, angles],
             )
@@ -113,12 +118,12 @@ for airfoil_name in airfoil_names:
                 angles,
                 f"naca{airfoil.name}",
             ]
-            airfoil.setupSolver(
+            airfoil.solver_setup(
                 f2w.setup_f2w,
                 [BASEFOIL2W, airfoil.HOMEDIR, airfoil.REYNDIR],
             )
             # airf.runSolver(f2w.runF2W, f2wargs)
-            airfoil.makePolars(
+            airfoil.make_polars(
                 f2w.make_2d_polars_2,
                 "Foil2Wake",
                 [airfoil.REYNDIR, airfoil.HOMEDIR],
@@ -137,13 +142,13 @@ for airfoil_name in airfoil_names:
                 0.5,
                 airfoil.selig.T,
             ]
-            XRES = airfoil.makePolars(xf.run_and_save, "XFOIL", xfargs)
+            XRES: DataFrame = airfoil.make_polars(xf.run_and_save, "XFOIL", xfargs)
 
         # # OpenFoam
         os.chdir(airfoil.REYNDIR)
         maxITER = 800
         if cleaning:
-            airfoil.cleanRes(of.clean_open_foam, [HOMEDIR, airfoil.REYNDIR])
+            airfoil.clean_results(of.clean_open_foam, [HOMEDIR, airfoil.REYNDIR])
         if calcOpenFoam:
             print("------- Running OpenFoam ------- ")
             ofSetupargs = [
@@ -151,19 +156,19 @@ for airfoil_name in airfoil_names:
                 airfoil.REYNDIR,
                 airfoil.HOMEDIR,
                 airfoil.airfile,
-                airfoil.fname,
+                airfoil.file_name,
                 reyn,
                 MACH,
                 angles,
             ]
             ofSetupkwargs = {"silent": True, "maxITER": maxITER}
             ofRunargs = [angles]
-            airfoil.setupSolver(of.setup_open_foam, ofSetupargs, ofSetupkwargs)
-            airfoil.runSolver(
+            airfoil.solver_setup(of.setup_open_foam, ofSetupargs, ofSetupkwargs)
+            airfoil.solver_run(
                 of.run_multiple_angles,
                 [airfoil.REYNDIR, airfoil.HOMEDIR, angles],
             )
-            airfoil.makePolars(
+            airfoil.make_polars(
                 of.make_polars,
                 "OpenFoam",
                 [airfoil.REYNDIR, airfoil.HOMEDIR, angles],

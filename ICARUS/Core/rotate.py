@@ -14,7 +14,7 @@ def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating[Any]]
         angle (float): Angle of rotation in radians
 
     Returns:
-        ndarray[Any, dtype[floating]]: Rotation matrix
+        ndarray[Any, dtype[floating[Any]]]: Rotation matrix
     """
     return np.array(
         [
@@ -32,10 +32,10 @@ def rotate_vector(
     """_Returns the rotated vectorsummary_
 
     Args:
-        vector (ndarray[Any, dtype[floating]]): Vector to be rotated
-        R (ndarray[Any, dtype[floating]]): Rotation matrix
+        vector (ndarray[Any, dtype[floating[Any]]]): Vector to be rotated
+        R (ndarray[Any, dtype[floating[Any]]]): Rotation matrix
 
     Returns:
-        ndarray[Any, dtype[floating]]: Rotated vector
+        ndarray[Any, dtype[floating[Any]]]: Rotated vector
     """
     return np.dot(R, vector)

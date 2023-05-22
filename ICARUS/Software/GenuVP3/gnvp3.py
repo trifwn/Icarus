@@ -4,16 +4,16 @@ from ICARUS.Database.db import DB
 from ICARUS.Software.GenuVP3.analyses.angles import process_gnvp3_angle_run
 from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles
 from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles_parallel
-from ICARUS.Software.GenuVP3.analyses.pertrubations import processGNVPpertrubations
-from ICARUS.Software.GenuVP3.analyses.pertrubations import runGNVPpertr
-from ICARUS.Software.GenuVP3.analyses.pertrubations import runGNVPpertrParallel
+from ICARUS.Software.GenuVP3.analyses.pertrubations import proccess_pertrubation_res
+from ICARUS.Software.GenuVP3.analyses.pertrubations import run_pertrubation_parallel
+from ICARUS.Software.GenuVP3.analyses.pertrubations import run_pertrubation_serial
 from ICARUS.Software.GenuVP3.filesInterface import gnvp_execute
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
 def get_gnvp3(db: DB) -> Solver:
-    gnvp3 = Solver(name="gnvp3", solverType="3D", fidelity=2, db=db)
+    gnvp3 = Solver(name="gnvp3", solver_type="3D", fidelity=2, db=db)
 
     # # Define GNVP3 Analyses
     options: dict[str, str] = {
@@ -135,10 +135,10 @@ def get_gnvp3(db: DB) -> Solver:
         "maxiter": "Max Iterations",
         "timestep": "Timestep",
         "u_freestream": "Velocity Magnitude",
-        "angles": "Angle to run",
+        "angles": "Angles to run",
     }
 
-    anglesSerial: Analysis = Analysis(
+    angles_serial: Analysis = Analysis(
         "gnvp3",
         "Angles_Serial",
         run_gnvp_angles,
@@ -147,24 +147,47 @@ def get_gnvp3(db: DB) -> Solver:
         unhook=process_gnvp3_angle_run,
     )
 
-    anglesParallel: Analysis = anglesSerial << {
+    angles_parallel: Analysis = angles_serial << {
         "name": "Angles_Parallel",
         "execute": run_gnvp_angles_parallel,
         "unhook": process_gnvp3_angle_run,
     }
-    pertrubationSerial: Analysis = anglesSerial << {
-        "name": "Pertrubation_Serial",
-        "execute": runGNVPpertr,
-        "unhook": processGNVPpertrubations,
+
+    options = {
+        "plane": "Plane Object",
+        "state": "Dynamic State of the airplane",
+        "environment": "Environment",
+        "db": "Database",
+        "solver2D": "2D Solver",
+        "maxiter": "Max Iterations",
+        "timestep": "Timestep",
+        "u_freestream": "Velocity Magnitude",
+        "angle": "Angle to run",
     }
-    pertrubationParallel: Analysis = anglesSerial << {
+
+    pertrubation_serial: Analysis = Analysis(
+        "gnvp3",
+        "Pertrubation_Serial",
+        run_pertrubation_serial,
+        options,
+        solver_options,
+        unhook=proccess_pertrubation_res,
+    )
+
+    pertrubation_parallel: Analysis = pertrubation_serial << {
         "name": "Pertrubation_Parallel",
-        "execute": runGNVPpertrParallel,
-        "unhook": processGNVPpertrubations,
+        "execute": run_pertrubation_parallel,
+        "unhook": proccess_pertrubation_res,
     }
 
     gnvp3.add_analyses(
-        [rerun, anglesSerial, anglesParallel, pertrubationSerial, pertrubationParallel],
+        [
+            rerun,
+            angles_serial,
+            angles_parallel,
+            pertrubation_serial,
+            pertrubation_parallel,
+        ],
     )
 
     return gnvp3

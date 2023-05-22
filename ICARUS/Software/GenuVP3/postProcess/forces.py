@@ -1,32 +1,46 @@
 import os
+from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 from pandas import DataFrame
+from pandas import Series
 
 
 def forces_to_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
+    """
+    Convert the forces to polars and return a dataframe with them.
+
+    Args:
+        CASEDIR (str): Case Directory
+        HOMEDIR (str): Home Directory
+
+    Returns:
+        DataFrame: Resulting Polars
+    """
     os.chdir(CASEDIR)
 
-    folders = next(os.walk("."))[1]
+    folders: list[str] = next(os.walk("."))[1]
     print("Making Polars")
-    pols = []
+    pols: list[list[float]] = []
     for folder in folders:
         os.chdir(os.path.join(CASEDIR, folder))
-        files = next(os.walk("."))[2]
+        files: list[str] = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
             name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
-            dat = np.loadtxt("LOADS_aer.dat")[-1]
+            dat: ndarray[Any, dtype[floating[Any]]] = np.loadtxt("LOADS_aer.dat")[-1]
             if folder.startswith("m"):
-                a = [-name, *dat]
+                a: list[float] = [-name, *dat]
             else:
                 a = [name, *dat]
             pols.append(a)
         os.chdir(f"{CASEDIR}")
-    df = DataFrame(pols, columns=cols)
+    df: DataFrame = DataFrame(pols, columns=cols)
     df.pop("TTIME")
     df.pop("PSIB")
-
     df = df.sort_values("AoA").reset_index(drop=True)
     df.to_csv("forces.gnvp3", index=False)
     os.chdir(HOMEDIR)
@@ -37,12 +51,12 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
     os.chdir(DYNDIR)
     folders: list[str] = next(os.walk("."))[1]
     print("Logging Pertrubations")
-    pols = []
+    pols: list[list[float | str]] = []
     for folder in folders:
         os.chdir(os.path.join(DYNDIR, folder))
-        files = next(os.walk("."))[2]
+        files: list[str] = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
-            dat = np.loadtxt("LOADS_aer.dat")[-1]
+            dat: ndarray[Any, dtype[floating[Any]]] = np.loadtxt("LOADS_aer.dat")[-1]
             if folder == "Trim":
                 pols.append([0, str(folder), *dat])
                 continue
@@ -65,13 +79,11 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
             pols.append([value_num, name, *dat])
             os.chdir(os.path.join(DYNDIR, folder))
         os.chdir(f"{DYNDIR}")
-    df: DataFrame = (
-        DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
-        .pop("TTIME")
-        .pop("PSIB")
-        .sort_values("Type")
-        .reset_index(drop=True)
-    )
+
+    df: DataFrame = DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
+    df.pop("TTIME")
+    df.pop("PSIB")
+    df = df.sort_values("Type").reset_index(drop=True)
     df.to_csv("pertrubations.genu", index=False)
     os.chdir(HOMEDIR)
     return df
@@ -79,47 +91,50 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
 
 def rotate_forces(
     rawpolars: DataFrame,
-    alpha_deg: float,
+    alpha_deg: float | Series | ndarray[Any, dtype[floating[Any]]],
     preferred: str = "2D",
     save: bool = False,
 ) -> DataFrame:
-    Data = pd.DataFrame()
-    AoA: float = alpha_deg * np.pi / 180
+    data = pd.DataFrame()
+    AoA: float | Series[float] | ndarray[Any, dtype[floating[Any]]] = (
+        alpha_deg * np.pi / 180
+    )
 
     for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-        Fx = rawpolars[f"TFORC{enc}(1)"]
-        Fy = rawpolars[f"TFORC{enc}(2)"]
-        Fz = rawpolars[f"TFORC{enc}(3)"]
+        f_x: Series[Any] = rawpolars[f"TFORC{enc}(1)"]
+        f_y: Series[Any] = rawpolars[f"TFORC{enc}(2)"]
+        f_z: Series[Any] = rawpolars[f"TFORC{enc}(3)"]
 
-        Mx = rawpolars[f"TAMOM{enc}(1)"]
-        My = rawpolars[f"TAMOM{enc}(2)"]
-        Mz = rawpolars[f"TAMOM{enc}(3)"]
+        m_x: Series[Any] = rawpolars[f"TAMOM{enc}(1)"]
+        m_y: Series[Any] = rawpolars[f"TAMOM{enc}(2)"]
+        m_z: Series[Any] = rawpolars[f"TAMOM{enc}(3)"]
 
-        Fx_new = Fx * np.cos(-AoA) - Fz * np.sin(-AoA)
-        Fy_new = Fy
-        Fz_new = Fx * np.sin(-AoA) + Fz * np.cos(-AoA)
+        f_x_rot: Series[Any] = f_x * np.cos(-AoA) - f_z * np.sin(-AoA)
+        f_y_rot: Series[Any] = f_y
+        f_z_rot: Series[Any] = f_x * np.sin(-AoA) + f_z * np.cos(-AoA)
 
-        Mx_new = Mx * np.cos(-AoA) - Mz * np.sin(-AoA)
-        My_new = My
-        Mz_new = Mx * np.sin(-AoA) + Mz * np.cos(-AoA)
+        m_x_rot: Series[Any] = m_x * np.cos(-AoA) - m_z * np.sin(-AoA)
+        m_y_rot: Series[Any] = m_y
+        m_z_rot: Series[Any] = m_x * np.sin(-AoA) + m_z * np.cos(-AoA)
 
-        Data[f"Fx_{name}"] = Fx_new
-        Data[f"Fy_{name}"] = Fy_new
-        Data[f"Fz_{name}"] = Fz_new
-        Data[f"L_{name}"] = Mx_new
-        Data[f"M_{name}"] = My_new
-        Data[f"N_{name}"] = Mz_new
+        data[f"Fx_{name}"] = f_x_rot
+        data[f"Fy_{name}"] = f_y_rot
+        data[f"Fz_{name}"] = f_z_rot
+        data[f"L_{name}"] = m_x_rot
+        data[f"M_{name}"] = m_y_rot
+        data[f"N_{name}"] = m_z_rot
 
-    Data["AoA"] = alpha_deg
+    data["AoA"] = alpha_deg
     # print(f"Using {preferred} polars")
-    Data["Fx"] = Data[f"Fx_{preferred}"]
-    Data["Fy"] = Data[f"Fy_{preferred}"]
-    Data["Fz"] = Data[f"Fz_{preferred}"]
-    Data["L"] = Data[f"L_{preferred}"]
-    Data["M"] = Data[f"M_{preferred}"]
-    Data["N"] = Data[f"N_{preferred}"]
+    data["Fx"] = data[f"Fx_{preferred}"]
+    data["Fy"] = data[f"Fy_{preferred}"]
+    data["Fz"] = data[f"Fz_{preferred}"]
+    data["L"] = data[f"L_{preferred}"]
+    data["M"] = data[f"M_{preferred}"]
+    data["N"] = data[f"N_{preferred}"]
     # Reindex the dataframe sort by AoA
-    return Data.sort_values(by="AoA").reset_index(drop=True)
+    data = data.sort_values(by="AoA").reset_index(drop=True)
+    return data
 
 
 cols: list[str] = [

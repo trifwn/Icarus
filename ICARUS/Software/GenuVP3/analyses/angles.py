@@ -6,6 +6,7 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
+from ICARUS.Core.struct import Struct
 from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
@@ -33,9 +34,28 @@ def gnvp_angle_case(
     angle: float,
     environment: Environment,
     movements: list[list[Movement]],
-    bodies: list[dict[str, Any]],
-    solver_options: dict[str, Any],
+    bodies_dicts: list[dict[str, Any]],
+    solver_options: dict[str, Any] | Struct,
 ) -> str:
+    """
+    Run a single angle simulation in GNVP3
+
+    Args:
+        plane (Airplane): Airplane Object
+        db (DB): Database Object
+        solver2D (str): Name of 2D Solver to be used
+        maxiter (int): Max Iterations
+        timestep (float): Timestep for the simulation
+        u_freestream (float): Freestream Velocity Magnitude
+        angle (float): Angle of attack in degrees
+        environment (Environment): Environment Object
+        movements (list[list[Movement]]): List of movements for each surface
+        bodies_dicts (list[dict[str, Any]]): Bodies in dict format
+        solver_options (dict[str, Any] | Struct): Solver Options
+
+    Returns:
+        str: Case Done Message
+    """
     HOMEDIR: str = db.HOMEDIR
     PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
     airfoils: list[str] = plane.airfoils
@@ -47,7 +67,7 @@ def gnvp_angle_case(
     os.makedirs(CASEDIR, exist_ok=True)
 
     params: dict[str, Any] = set_parameters(
-        bodies,
+        bodies_dicts,
         plane,
         maxiter,
         timestep,
@@ -61,10 +81,10 @@ def gnvp_angle_case(
         HOMEDIR,
         GENUBASE,
         movements,
-        bodies,
+        bodies_dicts,
         params,
         airfoils,
-        foilsDB.data,
+        foilsDB,
         solver2D,
     )
 
@@ -101,14 +121,14 @@ def run_gnvp_angles(
         plane.orientation,
         plane.disturbances,
     )
-    bodies: list[dict[str, Any]] = []
+    bodies_dicts: list[dict[str, Any]] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies.append(make_surface_dict(surface, i))
+        bodies_dicts.append(make_surface_dict(surface, i))
 
     print("Running Angles in Sequential Mode")
     for angle in angles:
@@ -122,7 +142,7 @@ def run_gnvp_angles(
             angle,
             environment,
             movements,
-            bodies,
+            bodies_dicts,
             solver_options,
         )
         print(msg)
@@ -135,7 +155,7 @@ def run_gnvp_angles_parallel(
     maxiter: int,
     timestep: float,
     u_freestream: float,
-    angles: list[float] | ndarray[Any, dtype[floating]],
+    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     environment: Environment,
     solver_options: dict[str, Any],
 ) -> None:
@@ -148,7 +168,7 @@ def run_gnvp_angles_parallel(
         maxiter (int): Number of max iterations for each simulation
         timestep (float): Timestep between each iteration
         u_freestream (float): Freestream Velocity Magnitude
-        angles (list[float] | ndarray[Any, dtype[floating]]): List of angles to run
+        angles (list[float] | ndarray[Any, dtype[floating[Any]]]): List of angles to run
         environment (Environment): Environment Object
         solver_options (dict[str, Any]): Solver Options
     """

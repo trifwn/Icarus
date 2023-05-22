@@ -1,88 +1,89 @@
+from typing import Any
+
 from .path import Path
 
 
 class MissionSegment:
-    def __init__(self, name: str, type, path=None):
+    def __init__(self, name: str, type: str, path: Path | None = None) -> None:
 
         # Mission Segment Definition
-        self.name = name
-        self.type = type
+        self.name: str = name
+        self.type: str = type
 
         # Mission Start Position Parameters
-        self.startingTime = 0
-        self.startingLatitude = 0
-        self.startingLongitude = 0
-        self.startingAltitude = 0
-        self.startingSpeed = 0
-        self.startingWind = 0
-        self.startingWindDirection = 0
+        self.startingTime: float = 0
+        self.startingLatitude: float = 0
+        self.startingLongitude: float = 0
+        self.startingAltitude: float = 0
+        self.startingSpeed: float = 0
+        self.startingWind: float = 0
+        self.startingWindDirection: float = 0
 
         # Mission End Position Parameters
-        self.endingTime = 0
-        self.endingLatitude = 0
-        self.endingLongitude = 0
-        self.endingAltitude = 0
-        self.endingSpeed = 0
-        self.endingWind = 0
-        self.endingWindDirection = 0
-        self.endingWindDirection = 0
+        self.endingTime: float = 0
+        self.endingLatitude: float = 0
+        self.endingLongitude: float = 0
+        self.endingAltitude: float = 0
+        self.endingSpeed: float = 0
+        self.endingWind: float = 0
+        self.endingWindDirection: float = 0
 
-        if path is None:
-            self.path = Path()
+        if isinstance(path, Path):
+            self.path: Path = path
         else:
-            self.path = path
+            self.path = Path()
 
-    def setStartingPosition(
+    def set_starting_pos(
         self,
-        time,
-        latitude,
-        longitude,
-        altitude,
-        speed,
-        wind,
-        windDirection,
-    ):
+        time: float,
+        latitude: float,
+        longitude: float,
+        altitude: float,
+        speed: float,
+        wind_speed: float,
+        windDirection: float,
+    ) -> None:
         self.startingTime = time
         self.startingLatitude = latitude
         self.startingLongitude = longitude
         self.startingAltitude = altitude
         self.startingSpeed = speed
-        self.startingWind = wind
+        self.startingWind = wind_speed
         self.startingWindDirection = windDirection
 
-    def setEndingPosition(
+    def set_ending_pos(
         self,
-        time,
-        latitude,
-        longitude,
-        altitude,
-        speed,
-        wind,
-        windDirection,
-    ):
+        time: float,
+        latitude: float,
+        longitude: float,
+        altitude: float,
+        speed: float,
+        wind_speed: float,
+        windDirection: float,
+    ) -> None:
         self.endingTime = time
         self.endingLatitude = latitude
         self.endingLongitude = longitude
         self.endingAltitude = altitude
         self.endingSpeed = speed
-        self.endingWind = wind
+        self.endingWind = wind_speed
         self.endingWindDirection = windDirection
 
-    def setPath(self, path):
+    def set_path(self, path: Path) -> None:
         self.path = path
 
-    def setPathParameters(
+    def set_path_parameters(
         self,
-        positions,
-        time,
-        altitudes,
-        longitudes,
-        latitudes,
-        speeds,
-        winds,
-        windDirections,
-    ):
-        self.path.setPathParameters(
+        positions: list[Any],
+        time: list[Any],
+        altitudes: list[Any],
+        longitudes: list[Any],
+        latitudes: list[Any],
+        speeds: list[Any],
+        winds: list[Any],
+        windDirections: list[Any],
+    ) -> None:
+        self.path.set_parameters(
             positions,
             time,
             altitudes,

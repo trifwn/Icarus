@@ -1,10 +1,19 @@
-import numpy as np
+from typing import Any
+from typing import TYPE_CHECKING
 
-from ICARUS.Flight_Dynamics.dynamic_plane import Dynamic_Airplane
+import numpy as np
+from pandas import DataFrame
+
 from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 
+if TYPE_CHECKING:
+    from ICARUS.Flight_Dynamics.state import State
 
-def longitudalStability(plane: Dynamic_Airplane, mode: str = "2D"):
+
+def longitudal_stability(
+    state: "State",
+    mode: str = "2D",
+) -> tuple[dict[Any, float], dict[Any, float], dict[Any, float]]:
     """This Function Requires the results from perturbation analysis
     For the Longitudinal Motion, in addition to the state space variables
     an analysis with respect to the derivative of w perturbation is needed.
@@ -13,48 +22,51 @@ def longitudalStability(plane: Dynamic_Airplane, mode: str = "2D"):
     derivatives can either be computed like the rest derivatives, or require
     an approximation concerning the downwash velocity that the main wing
     induces on the tail wing
+
+    Args:
+        mode (str, optional): Type of forces to be used "2D", "Onera", "Potential". Defaults to "2D".
     """
 
-    pertr = plane.pertubResults
-    eps = plane.epsilons
-    m = plane.M
-    U = plane.trim["U"]  # TRIM
-    theta = plane.trim["AoA"] * np.pi / 180  # TRIM
-    Ue = np.abs(U * np.cos(theta))
-    We = np.abs(U * np.sin(theta))
+    pert: DataFrame = state.pertrubation_results
+    eps: dict[str, float] = state.epsilons
+    m: float = state.mass
+    trim_velocity: float = state.trim["U"]
+    trim_angle: float = state.trim["AoA"] * np.pi / 180
+    u_e: float = np.abs(trim_velocity * np.cos(trim_angle))
+    w_e: float = np.abs(trim_velocity * np.sin(trim_angle))
 
-    G = -9.81
-    Ix, Iy, Iz, Ixz, Ixy, Iyz = plane.I
+    G: float = -9.81
+    Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
 
-    X = {}
-    Z = {}
-    M = {}
-    pertr = pertr.sort_values(by=["Epsilon"]).reset_index(drop=True)
-    trimState = pertr[pertr["Type"] == "Trim"]
+    X: dict[Any, float] = {}
+    Z: dict[Any, float] = {}
+    M: dict[Any, float] = {}
+    pert = pert.sort_values(by=["Epsilon"]).reset_index(drop=True)
+    trim_state: DataFrame = pert[pert["Type"] == "Trim"]
 
     for var in ["u", "q", "w", "theta"]:
-        if plane.scheme == "Central":
-            front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
-            back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
-            de = 2 * eps[var]
-        elif plane.scheme == "Forward":
-            front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
-            back = trimState
+        if state.scheme == "Central":
+            front: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
+            back: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
+            de: float = 2 * eps[var]
+        elif state.scheme == "Forward":
+            front = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
+            back = trim_state
             de = eps[var]
-        elif plane.scheme == "Backward":
-            front = trimState
-            back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+        elif state.scheme == "Backward":
+            front = trim_state
+            back = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
             de = eps[var]
         else:
-            raise ValueError(f"Unknown Scheme {plane.scheme}")
+            raise ValueError(f"Unknown Scheme {state.scheme}")
 
         if var == "theta":
             de *= -np.pi / 180
         elif var == "q":
             de *= -np.pi / 180
 
-        back = rotate_forces(back, plane.trim["AoA"])
-        front = rotate_forces(front, plane.trim["AoA"])
+        back = rotate_forces(back, state.trim["AoA"])
+        front = rotate_forces(front, state.trim["AoA"])
         Xf = float(front[f"Fx_{mode}"].to_numpy())
         Xb = float(back[f"Fx_{mode}"].to_numpy())
         X[var] = (Xf - Xb) / de
@@ -73,23 +85,23 @@ def longitudalStability(plane: Dynamic_Airplane, mode: str = "2D"):
 
     xu = X["u"] / m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
     xw = X["w"] / m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
-    xq = (X["q"] - m * We) / (m)
-    xth = G * np.cos(theta)
+    xq = (X["q"] - m * w_e) / (m)
+    xth = G * np.cos(trim_angle)
 
     # xq += (X["w_dot"] * (Z["q"] + m * Ue))/(m*(m-Z["w_dot"]))
     # xth += - (X["w_dot"]*G * np.sin(theta))/((m-Z["w_dot"]))
 
     zu = Z["u"] / (m - Z["w_dot"])
     zw = Z["w"] / (m - Z["w_dot"])
-    zq = (Z["q"] + m * Ue) / (m - Z["w_dot"])
-    zth = (m * G * np.sin(theta)) / (m - Z["w_dot"])
+    zq = (Z["q"] + m * u_e) / (m - Z["w_dot"])
+    zth = (m * G * np.sin(trim_angle)) / (m - Z["w_dot"])
 
     mu = M["u"] / Iy + Z["u"] * M["w_dot"] / (Iy * (m - Z["w_dot"]))
     mw = M["w"] / Iy + Z["w"] * M["w_dot"] / (Iy * (m - Z["w_dot"]))
-    mq = M["q"] / Iy + ((Z["q"] + m * Ue) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
-    mth = -(m * G * np.sin(theta) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
+    mq = M["q"] / Iy + ((Z["q"] + m * u_e) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
+    mth = -(m * G * np.sin(trim_angle) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
 
-    plane.AstarLong = np.array(
+    state.longitudal.stateSpace.A = np.array(
         [
             [X["u"], X["w"], X["q"], X["theta"]],
             [Z["u"], Z["w"], Z["q"], Z["theta"]],
@@ -98,7 +110,7 @@ def longitudalStability(plane: Dynamic_Airplane, mode: str = "2D"):
         ],
     )
 
-    plane.Along = np.array(
+    state.longitudal.stateSpace.A_DS = np.array(
         [[xu, xw, xq, xth], [zu, zw, zq, zth], [mu, mw, mq, mth], [0, 0, 1, 0]],
     )
 

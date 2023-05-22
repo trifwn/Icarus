@@ -3,22 +3,37 @@ import os
 import numpy as np
 
 from .getMaxiter import get_max_iterations
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB3D
+from ICARUS.Vehicle.plane import Airplane
 
 
-def getWakeData(plane, case):
-    fname = os.path.join(DB3D, plane.CASEDIR, case, "YOURS.WAK")
+def get_wake_data(
+    plane: Airplane,
+    case: str,
+) -> tuple[FloatArray, FloatArray, FloatArray]:
+    """
+    Get the wake data from a given case by reading the YOURS.WAK file.
+
+    Args:
+        plane (Airplane): Airplane Object
+        case (str): Case Directory
+
+    Returns:
+        tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
+    """
+    fname: str = os.path.join(DB3D, plane.CASEDIR, case, "YOURS.WAK")
     with open(fname) as file:
-        data = file.readlines()
-    a = []
-    b = []
-    c = []
+        data: list[str] = file.readlines()
+    a: list[list[float]] = []
+    b: list[list[float]] = []
+    c: list[list[float]] = []
     iteration = 0
-    flag = True
-    maxiter = get_max_iterations(plane, case)
+    flag: bool = True
+    maxiter: int = get_max_iterations(plane, case)
     for i, line in enumerate(data):
         if line.startswith("  WAKE"):
-            foo = line.split()
+            foo: list[str] = line.split()
             iteration = int(foo[3])
             continue
         if iteration >= maxiter:
@@ -34,8 +49,8 @@ def getWakeData(plane, case):
                 _, x, y, z = (float(i) for i in foo)
                 c.append([x, y, z])
 
-    A1 = np.array(a, dtype=float)
-    B1 = np.array(b, dtype=float)
-    C1 = np.array(c, dtype=float)
+    A1: FloatArray = np.array(a, dtype=float)
+    B1: FloatArray = np.array(b, dtype=float)
+    C1: FloatArray = np.array(c, dtype=float)
 
     return A1, B1, C1

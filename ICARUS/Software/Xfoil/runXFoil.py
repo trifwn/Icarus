@@ -3,6 +3,7 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from nptyping import NDArray
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
@@ -41,11 +42,11 @@ def run_xfoil(
     AoAmin: float,
     AoAmax: float,
     AoAstep: float,
-    pts: ndarray[Any, dtype[floating]],
+    pts: ndarray[Any, dtype[floating[Any]]],
     ftrip_low: float = 0.1,
     ftrip_up: float = 0.1,
     Ncrit: float = 9,
-) -> ndarray[Any, dtype[floating]]:
+) -> ndarray[Any, dtype[floating[Any]]]:
     xf = XFoil()
     xf.Re = Reyn
     xf.n_crit = Ncrit
@@ -66,10 +67,10 @@ def multiple_reynolds_run(
     AoAmin: float,
     AoAmax: float,
     AoAstep: float,
-    pts: ndarray[Any, dtype[floating]],
+    pts: ndarray[Any, dtype[floating[Any]]],
 ) -> list[dict[str, ndarray]]:
 
-    Data: list[ndarray[Any, dtype[floating]]] = []
+    Data: list[ndarray[Any, dtype[floating[Any]]]] = []
     for Re in Reynolds:
         clcdcmXF = run_xfoil(Re, MACH, AoAmin, AoAmax, AoAstep, pts)
         Data.append(clcdcmXF)
@@ -141,11 +142,11 @@ def returnCPs(
     Reyn: float,
     MACH: float,
     angles: list[float],
-    pts: ndarray[Any, dtype[floating]],
+    pts: ndarray[Any, dtype[floating[Any]]],
     ftrip_low: float = 1.0,
     ftrip_up: float = 1.0,
     Ncrit: float = 9,
-) -> tuple[list[Any], list[Any], ndarray[Any, dtype[floating]]]:
+) -> tuple[list[Any], list[Any], NDArray[Any, dtype[floating[Any]]]]:
     xf = XFoil()
     xf.Re = Reyn
     print(MACH)
@@ -163,8 +164,7 @@ def returnCPs(
     nangles, pangles = angles_sepatation(angles)
     cps = []
     cpsn = []
-    x = []
-
+    x = np.array([], dtype=float)
     for a in pangles:
         xf.a(a)
         x, cp = xf.get_cp_distribution()
@@ -186,7 +186,7 @@ def run_and_save(
     aoa_min: float,
     aoa_max: float,
     aoa_step: float,
-    pts: ndarray[Any, dtype[floating]],
+    pts: ndarray[Any, dtype[floating[Any]]],
     ftrip_low: float = 0.1,
     ftrip_up: float = 0.2,
     n_crit: float = 9,
@@ -208,10 +208,10 @@ def run_and_save(
         slope_up = (ftrip_up - max_tr) / aoa_max
         slope_low = (ftrip_low - max_tr) / aoa_max
 
-        aXF1: ndarray[Any, dtype[floating]] = np.array([])
-        clXF1: ndarray[Any, dtype[floating]] = np.array([])
-        cdXF1: ndarray[Any, dtype[floating]] = np.array([])
-        cmXF1: ndarray[Any, dtype[floating]] = np.array([])
+        aXF1: ndarray[Any, dtype[floating[Any]]] = np.array([])
+        clXF1: ndarray[Any, dtype[floating[Any]]] = np.array([])
+        cdXF1: ndarray[Any, dtype[floating[Any]]] = np.array([])
+        cmXF1: ndarray[Any, dtype[floating[Any]]] = np.array([])
         flag = 0
         for angle in np.arange(0, aoa_max + 0.5, 0.5):
             f_up = max_tr + slope_up * angle
@@ -233,10 +233,10 @@ def run_and_save(
         slope_up = (ftrip_low - max_tr) / aoa_max
         slope_low = (ftrip_up - max_tr) / aoa_max
 
-        aXF2: ndarray[Any, dtype[floating]] = np.array([])
-        clXF2: ndarray[Any, dtype[floating]] = np.array([])
-        cdXF2: ndarray[Any, dtype[floating]] = np.array([])
-        cmXF2: ndarray[Any, dtype[floating]] = np.array([])
+        aXF2: ndarray[Any, dtype[floating[Any]]] = np.array([])
+        clXF2: ndarray[Any, dtype[floating[Any]]] = np.array([])
+        cdXF2: ndarray[Any, dtype[floating[Any]]] = np.array([])
+        cmXF2: ndarray[Any, dtype[floating[Any]]] = np.array([])
         flag = 0
         for angle in np.arange(aoa_min, 0.5, 0.5)[::-1]:
             f_up = max_tr - slope_up * angle

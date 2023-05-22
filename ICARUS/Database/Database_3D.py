@@ -44,10 +44,10 @@ class Database_3D:
         for plane in planenames:  # For each plane planename == folder
             # if plane == 'bmark':
             #     continue
-            plane_found = False
+            plane_found: bool = False
             # Load Plane object
             file: str = os.path.join(DB3D, plane, f"{plane}.json")
-            plane_found: bool = self.loadPlaneFromFile(plane, file)
+            plane_found = self.loadPlaneFromFile(plane, file)
 
             # Load DynPlane object
             file = os.path.join(DB3D, plane, f"dyn_{plane}.json")
@@ -114,8 +114,18 @@ class Database_3D:
 
         return flag
 
-    def load_gnvp_forces(self, planename, file):
-        # Should get deprecated in favor of analysis logic in the future
+    def load_gnvp_forces(self, planename: str, file: str) -> None:
+        """
+        Load Forces from forces file and store them in the raw_data dict.
+        If the file doesn't exist it tries to create it by loading the plane object
+        and running the make_polars function. If that fails as weall it prints an error.
+
+        TODO: Should get deprecated in favor of analysis logic in the future
+
+        Args:
+            planename (str): Planename
+            file (str): Filename Containing FOrces (forces.gnvp3)
+        """
         try:
             self.raw_data[planename] = pd.read_csv(file)
             return
@@ -125,39 +135,51 @@ class Database_3D:
                 print(
                     "Since plane object exists with that name trying to create polars...",
                 )
-                pln = self.planes[planename]
+                pln: Airplane = self.planes[planename]
                 try:
                     from ICARUS.Software.GenuVP3.filesInterface import make_polars
 
-                    CASEDIR = os.path.join(DB3D, pln.CASEDIR)
+                    CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
                     make_polars(CASEDIR, self.HOMEDIR)
                     file = os.path.join(DB3D, planename, "forces.gnvp3")
                     self.raw_data[planename] = pd.read_csv(file)
                 except Exception as e:
                     print(f"Failed to create Polars! Got Error:\n{e}")
 
-    def load_gnvp_case_convergence(self, planename: str, case: str):
+    def load_gnvp_case_convergence(self, planename: str, case: str) -> None:
+        """
+        Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
+        convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
+        the convergence data from gnvp.out. If successfull it adds the error data to the
+        dataframe containing the loads and stores it in the convergence_data dict.
+
+        Args:
+            planename (str): Planename
+            case (str): Case Name
+        """
         # Get Load Convergence Data from LOADS_aer.dat
         file: str = os.path.join(DB3D, planename, case, "LOADS_aer.dat")
 
-        loads = getLoadsConvergence(file)
+        loads: DataFrame | None = getLoadsConvergence(file)
         if loads is not None:
             # Get Error Convergence Data from gnvp.out
             file = os.path.join(DB3D, planename, case, "gnvp.out")
             # self.Convergence[planename][case] = addErrorConvergence2df(file, loads) # IT OUTPUTS LOTS OF WARNINGS
             with open(file, encoding="UTF-8") as f:
-                lines = f.readlines()
-            time, error, errorm = [], [], []
+                lines: list[str] = f.readlines()
+            time: list[int] = []
+            error: list[float] = []
+            errorm: list[float] = []
             for line in lines:
                 if not line.startswith(" STEP="):
                     continue
 
-                a = line[6:].split()
+                a: list[str] = line[6:].split()
                 time.append(int(a[0]))
                 error.append(float(a[2]))
                 errorm.append(float(a[6]))
             try:
-                foo = len(loads["TTIME"])
+                foo: int = len(loads["TTIME"])
                 if foo > len(time):
                     loads = loads.tail(len(time))
                 else:
@@ -170,9 +192,25 @@ class Database_3D:
                 print(f"Some Run Had Problems!\n{e}")
 
     def get_planenames(self) -> list[str]:
+        """
+        Returns the list of planenames in the database.
+
+        Returns:
+            list[str]: List of planenames
+        """
         return list(self.planes.keys())
 
     def get_polar(self, plane: str, mode: str) -> DataFrame | None:
+        """
+        Gets the polar for a given plane and mode.
+
+        Args:
+            plane (str): Planename
+            mode (str): Mode (Potential, 2D, ONERA)
+
+        Returns:
+            DataFrame | None: DataFrame containing the polars or None if it doesn't exist.
+        """
         try:
             cols: list[str] = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
             return self.data[plane][cols].rename(
@@ -183,6 +221,10 @@ class Database_3D:
         return None
 
     def make_data(self) -> None:
+        """
+        Formats Polars from Forces, calculates the aerodynamic coefficients and stores them in the data dict.
+        ! TODO: Should get deprecated in favor of analysis logic in the future. Handled by the unhook function.
+        """
         for plane in list(self.planes.keys()):
             self.data[plane] = pd.DataFrame()
             pln: Airplane = self.planes[plane]

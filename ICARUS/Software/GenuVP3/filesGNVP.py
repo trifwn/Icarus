@@ -4,17 +4,23 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from nptyping import Float
+from nptyping import NDArray
+from nptyping import Shape
+from pandas import DataFrame
+from pandas import Series
 
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
+from ICARUS.Core.struct import Struct
 from ICARUS.Software.GenuVP3.utils import Movement
 
 
 def input_file() -> None:
     """Creates the input file for GNVP3"""
 
-    fname = "input"
+    fname: str = "input"
     with open(fname, encoding="utf-8") as file:
         data: list[str] = file.readlines()
     data[0] = "dfile.yours\n"
@@ -92,12 +98,15 @@ def dfile(params: dict[str, Any]) -> None:
         file.writelines(data)
 
 
-def geofile(movements, bodies) -> None:
+def geofile(
+    movements: list[list[Movement]],
+    bodies_dicts: list[dict[str, Any]],
+) -> None:
     """Create Geo file for GNVP3
 
     Args:
-        movements (_type_): _description_
-        bodies (_type_): _description_
+        movements (list[list[Movement]]): List of Movements for each body
+        bd_dicts (_type_): List of Bodies in dict format
     """
     fname = "hermes.geo"
     # with open(fname, "r") as file:
@@ -106,16 +115,16 @@ def geofile(movements, bodies) -> None:
     data.append("READ THE FLOW AND GEOMETRICAL DATA FOR EVERY SOLID BODY\n")
     data.append("               <blank>\n")
 
-    for i, bod in enumerate(bodies):
+    for i, bod in enumerate(bodies_dicts):
         data.append("               <blank>\n")
-        NB = bod["NB"]
-        geoBodyHeader(data, bod, NB)
+        NB: int = bod["NB"]
+        geo_body_header(data, bod, NB)
         data.append(f"{len(movements[i])+1}           LEVEL  the level of movement\n")
         data.append("               <blank>\n")
         data.append("Give  data for every level\n")
         # PITCH, ROLL, YAW, Movements to CG with angular velocity
         for j, mov in enumerate(movements[i]):
-            geoBodyMovements(data, mov, len(movements[i]) - j, NB)
+            geo_body_movements(data, mov, len(movements[i]) - j, NB)
 
         data.append(
             "-----<end of movement data>----------------------------------------------------\n",
@@ -134,7 +143,15 @@ def geofile(movements, bodies) -> None:
         file.writelines(data)
 
 
-def geoBodyHeader(data, body, NB):
+def geo_body_header(data: list[str], body: dict[str, Any], NB: int) -> None:
+    """
+    Crates the header of each body in the geo file.
+
+    Args:
+        data (list[str]): List of string to append to and write to file
+        body (dict[str,Any]): Body in dict format
+        NB (int): Body Number
+    """
     data.append(f"Body Number   NB = {NB}\n")
     data.append("               <blank>\n")
     data.append("2           NLIFT\n")
@@ -153,44 +170,64 @@ def geoBodyHeader(data, body, NB):
     data.append("               <blank>\n")
 
 
-def geoBodyMovements(data, mov, i, NB):
+def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
+    """
+    Add Movement Data to Geo File.
+
+    Args:
+        data (list[str]): Data to append to
+        mov (Movement): Movement Object
+        i (int): Index of Movement
+        NB (int): Body Number
+    """
     data.append(f"NB={NB}, lev={i}  ( {mov.name} )\n")
     data.append("Rotation\n")
-    data.append(f"{int(mov.Rtype)}           IMOVEAB  type of movement\n")
-    data.append(f"{int(mov.Raxis)}           NAXISA   =1,2,3 axis of rotation\n")
-    data.append(f"{ff3(mov.Rt1)}    TMOVEAB  -1  1st time step\n")
-    data.append(f"{ff3(mov.Rt2)}    TMOVEAB  -2  2nd time step\n")
+    data.append(f"{int(mov.rotation_type)}           IMOVEAB  type of movement\n")
+    data.append(
+        f"{int(mov.rotation_axis)}           NAXISA   =1,2,3 axis of rotation\n",
+    )
+    data.append(f"{ff3(mov.rot_t1)}    TMOVEAB  -1  1st time step\n")
+    data.append(f"{ff3(mov.rot_t2)}    TMOVEAB  -2  2nd time step\n")
     data.append("0.          TMOVEAB  -3  3d  time step\n")
     data.append("0.          TMOVEAB  -4  4th time step!---->omega\n")
-    data.append(f"{ff3(mov.Ra1)}    AMOVEAB  -1  1st value of amplitude\n")
-    data.append(f"{ff3(mov.Ra2)}    AMOVEAB  -2  2nd value of amplitude\n")
+    data.append(f"{ff3(mov.rot_a1)}    AMOVEAB  -1  1st value of amplitude\n")
+    data.append(f"{ff3(mov.rot_a2)}    AMOVEAB  -2  2nd value of amplitude\n")
     data.append("0.          AMOVEAB  -3  3d  value of amplitude\n")
     data.append("0.          AMOVEAB  -4  4th value of amplitude!---->phase\n")
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
     data.append("Translation\n")
-    data.append(f"{int(mov.Ttype)}           IMOVEUB  type of movement\n")
-    data.append(f"{int(mov.Taxis)}           NAXISU   =1,2,3 axis of translation\n")
-    data.append(f"{ff3(mov.Tt1)}    TMOVEUB  -1  1st time step\n")
-    data.append(f"{ff3(mov.Tt2)}    TMOVEUB  -2  2nd time step\n")
+    data.append(f"{int(mov.translation_type)}           IMOVEUB  type of movement\n")
+    data.append(
+        f"{int(mov.translation_axis)}           NAXISU   =1,2,3 axis of translation\n",
+    )
+    data.append(f"{ff3(mov.translation_t1)}    TMOVEUB  -1  1st time step\n")
+    data.append(f"{ff3(mov.translation_t2)}    TMOVEUB  -2  2nd time step\n")
     data.append("0.          TMOVEUB  -3  3d  time step\n")
     data.append("0.          TMOVEUB  -4  4th time step\n")
-    data.append(f"{ff3(mov.Ta1)}    AMOVEUB  -1  1st value of amplitude\n")
-    data.append(f"{ff3(mov.Ta2)}    AMOVEUB  -2  2nd value of amplitude\n")
+    data.append(f"{ff3(mov.translation_a1)}    AMOVEUB  -1  1st value of amplitude\n")
+    data.append(f"{ff3(mov.translation_a2)}    AMOVEUB  -2  2nd value of amplitude\n")
     data.append("0.          AMOVEUB  -3  3d  value of amplitude\n")
     data.append("0.          AMOVEUB  -4  4th value of amplitude\n")
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cldFiles(AeroData, airfoils, solver: str) -> None:
-    """Create Polars CL-CD-Cm files for each airfoil"""
+def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
+    """
+    Create Polars CL-CD-Cm files for each airfoil
+
+    Args:
+        foil_dat (Struct): Foil Database Data containing all airfoils, solvers and reynolds
+        airfoils (list[str]): list of airfoils to create files for
+        solver (str): preferred solver
+    """
 
     for airf in airfoils:
-        fname = f"{airf[4:]}.cld"
-        polars = AeroData[airf][solver]
+        fname: str = f"{airf[4:]}.cld"
+        polars: DataFrame = foil_dat[airf][solver]
 
         # GET FILE
         with open(fname) as file:
-            data = file.readlines()
+            data: list[str] = file.readlines()
 
         # WRITE MACH NUMBERS !! ITS NOT GOING TO BE USED !!
         data[4] = f"{len(polars)}  ! Mach numbers for which CL-CD are given\n"
@@ -204,11 +241,11 @@ def cldFiles(AeroData, airfoils, solver: str) -> None:
         data[6 + 2 * len(polars)] = "\n"
         data = data[: 6 + 2 * len(polars) + 1]
 
-        # GET 2D AIRFOIL POLARS IN ONE TABLE
+        # GET ALL 2D AIRFOIL POLARS IN ONE TABLE
         keys = list(polars.keys())
-        df = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
+        df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
         for reyn in keys[1:]:
-            df2 = polars[reyn].astype("float32").dropna(axis=0, how="all")
+            df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
             df.rename(
                 columns={"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
                 inplace=True,
@@ -222,7 +259,7 @@ def cldFiles(AeroData, airfoils, solver: str) -> None:
 
         # Get Angles
         angles = df["AoA"].values
-        anglenum = len(angles)
+        anglenum: int = len(angles)
 
         # FILL FILE
         for radpos in 0, 1:
@@ -237,7 +274,7 @@ def cldFiles(AeroData, airfoils, solver: str) -> None:
                 "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
             )
             for i, ang in enumerate(angles):
-                string = ""
+                string: str = ""
                 nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
                 for num in nums:
                     string = string + ff2(num) + "  "
@@ -247,31 +284,35 @@ def cldFiles(AeroData, airfoils, solver: str) -> None:
             file.writelines(data)
 
 
-def bldFiles(bodies, params):
+def bldFiles(bodies: list[dict[str, Any]], params: dict[str, Any]) -> None:
     """Create BLD files for each body
 
     Args:
         bodies (_type_): _description_
     """
     for bod in bodies:
-        fname = bod["bld"]
+        fname: str = bod["bld"]
         with open(fname) as file:
-            data = file.readlines()
+            data: list[str] = file.readlines()
 
-        step = round(
+        step: float = round(
             (bod["Root_chord"] - bod["Tip_chord"]) / (bod["y_end"] - bod["y_0"]),
             ndigits=5,
         )
-        offset = round(bod["Offset"] / (bod["y_end"] - bod["y_0"]), ndigits=5)
+        offset: float = round(bod["Offset"] / (bod["y_end"] - bod["y_0"]), ndigits=5)
+        # Check Whether to split a symmetric body into two parts
         if params["Split_Symmetric_Bodies"]:
             data[3] = f'1          {bod["NACA"]}       {bod["name"]}.WG\n'
         else:
+            # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
             with open(f'{bod["name"]}.WG', "w") as file:
-                grid = bod["Grid"]
-                for n_strip in grid:
+                grid: NDArray[Shape[Any], Float] = bod["Grid"]
+                for n_strip in grid:  # For each strip
                     file.write("\n")
-                    for m_point in n_strip:
+                    for m_point in n_strip:  # For each point in the strip
+                        # Grid Coordinates
                         file.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
+            # Specify option 0 to read the file
             data[3] = f'0          {bod["NACA"]}       {bod["name"]}.WG\n'
         data[6] = "0          0          1\n"
         data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}OUT.WG\n'
@@ -292,7 +333,7 @@ def bldFiles(bodies, params):
             file.writelines(data)
 
 
-def makeInput(
+def make_input_files(
     ANGLEDIR: str,
     HOMEDIR: str,
     GENUBASE: str,
@@ -300,7 +341,7 @@ def makeInput(
     bodies: list[dict[str, Any]],
     params: dict[str, Any],
     airfoils: list[str],
-    AeroData,
+    foil_dat: Struct,
     solver: str,
 ) -> None:
 
@@ -338,7 +379,7 @@ def makeInput(
     # BLD FILES
     bldFiles(bodies, params)
     # CLD FILES
-    cldFiles(AeroData, airfoils, solver)
+    cldFiles(foil_dat, airfoils, solver)
     if "gnvp3" not in next(os.walk("."))[2]:
         src: str = os.path.join(HOMEDIR, "ICARUS", "gnvp3")
         dst: str = os.path.join(ANGLEDIR, "gnvp3")
@@ -346,16 +387,16 @@ def makeInput(
     os.chdir(HOMEDIR)
 
 
-def filltable(df):
+def filltable(df: DataFrame) -> DataFrame:
     """Fill Nan Values of Panda Dataframe Row by Row
     substituting first backward and then forward
 
     Args:
         df (pandas.DataFrame): Dataframe with NaN values
     """
-    CLs = []
-    CDs = []
-    CMs = []
+    CLs: list[str] = []
+    CDs: list[str] = []
+    CMs: list[str] = []
     for item in list(df.keys()):
         if item.startswith("CL"):
             CLs.append(item)

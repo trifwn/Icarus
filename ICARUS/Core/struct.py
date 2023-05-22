@@ -1,26 +1,29 @@
 from typing import Any
-from typing import Dict
+from typing import ItemsView
 from typing import Iterator
+from typing import KeysView
 from typing import List
-from typing import Tuple
+from typing import ValuesView
 
 
 class Struct:
     __slots__: List[str] = ["_data", "_depth"]
-    _data: Dict[str, Any]
-    _depth: int
+    # _data: Dict[str, Any]
+    # _depth: int
 
-    def __new__(cls, *args, **kwargs) -> "Struct":
+    def __new__(cls, *args: Any, **kwargs: Any) -> "Struct":
         """Create a new Struct instance."""
         instance: "Struct" = super().__new__(cls)
         object.__setattr__(instance, "_data", {})
         object.__setattr__(instance, "_depth", 0)
         return instance
 
-    def __init__(self, initial_dict: Dict[str, Any] | None = None) -> None:
+    def __init__(self, initial_dict: dict[str, Any] | None = None) -> None:
         """Initialize a Struct instance with an optional initial dictionary."""
         object.__setattr__(self, "_data", {})
         object.__setattr__(self, "_depth", 0)
+        # self._data: dict[str, Any] = {}
+        # self._depth: int = 0
         if initial_dict is not None:
             self.update(initial_dict)
 
@@ -81,23 +84,23 @@ class Struct:
         """Return an iterator over the keys in the Struct instance."""
         return iter(self._data)
 
-    def items(self):
+    def items(self) -> ItemsView[str, Any]:
         """Return an iterator over the items in the Struct instance."""
         return self._data.items()
 
-    def keys(self):
+    def keys(self) -> KeysView[str]:
         """Return an iterator over the keys in the Struct instance."""
         return self._data.keys()
 
-    def values(self):
+    def values(self) -> ValuesView[Any]:
         """Return an iterator over the values in the Struct instance."""
         return self._data.values()
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         """Get the state of the Struct instance."""
         return self._data
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         """This method is called when unpickling an instance of Struct. It updates the
         state of the instance by iterating over the items in state, creating a new Struct
         object for any dictionary values it encounters, and assigning the updated
@@ -148,8 +151,8 @@ class Struct:
             Struct: Inverted Dict
         """
 
-        def _invert_nested_dict(dd: dict[Any, Any], depth: int) -> dict:
-            new_dict = {}
+        def _invert_nested_dict(dd: dict[Any, Any], depth: int) -> dict[str, Any]:
+            new_dict: dict[str, Any] = {}
             for k, v in dd.items():
                 if isinstance(v, dict):
                     new_dict[k] = _invert_nested_dict(v, depth + 1)
