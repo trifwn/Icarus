@@ -12,8 +12,6 @@ from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from tabulate import tabulate
 
-from ICARUS.Database import DB3D
-
 from .disturbances import Disturbance as dst
 from .dynamic_plane import StabilityDerivativesDS
 from .pertrubations import lateral_pertrubations
@@ -23,6 +21,7 @@ from .Stability.longitudalFD import longitudal_stability
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB3D
 from ICARUS.Enviroment.definition import Environment
 from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
 from ICARUS.Vehicle.plane import Airplane
@@ -230,7 +229,7 @@ class State:
         """
         Save the state object to a json file.
         """
-        fname: str = os.path.join(self.dynamics_directory,f"{self.name}.json")
+        fname: str = os.path.join(self.dynamics_directory, f"{self.name}.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 

@@ -2,17 +2,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-
 from . import colors
 from . import markers
+from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 
 
 def plot_convergence(
     data: Struct,
     plane: str,
-    angles: list[float] | FloatArray= [],
+    angles: list[float] | FloatArray = [],
     solvers: list[str] = ["All"],
     plot_error: bool = True,
     size: tuple[int, int] = (10, 10),

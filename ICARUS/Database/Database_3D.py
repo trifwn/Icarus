@@ -12,11 +12,10 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.Flight_Dynamics.state import State
-
 from . import APPHOME
 from . import DB3D
 from ICARUS.Core.struct import Struct
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Software.GenuVP3.postProcess.convergence import getLoadsConvergence
 from ICARUS.Vehicle.plane import Airplane
 
@@ -47,7 +46,7 @@ class Database_3D:
         for plane in planenames:  # For each plane planename == folder
             # if plane == 'bmark':
             #     continue
-            
+
             # Load Plane object
             file: str = os.path.join(DB3D, plane, f"{plane}.json")
             plane_found: bool = self.loadPlaneFromFile(plane, file)
@@ -61,13 +60,13 @@ class Database_3D:
                 cases: list[str] = next(os.walk(os.path.join(DB3D, plane)))[1]
                 for case in cases:
                     if case.startswith("Dyn"):
-                        self.states[plane] = self.load_plane_states(plane,case)
+                        self.states[plane] = self.load_plane_states(plane, case)
                         continue
                     if case.startswith("Sens"):
                         continue
                     self.load_gnvp_case_convergence(plane, case)
 
-    def load_plane_states(self,plane:str, case:str) -> dict[str, Any]:
+    def load_plane_states(self, plane: str, case: str) -> dict[str, Any]:
         """
         Function to load the states of the plane from the states.json file.
 
@@ -90,7 +89,7 @@ class Database_3D:
                     print(f"Error decoding states object {plane}! Got error {error}")
         os.chdir(self.HOMEDIR)
         return states
-    
+
     def loadPlaneFromFile(self, name: str, file: str) -> bool:
         """Function to get Plane Object from file and decode it.
 
@@ -113,7 +112,6 @@ class Database_3D:
             print(f"No Plane object found in {name} folder at {file}!")
             plane_found = False
         return plane_found
-
 
     def load_gnvp_forces(self, planename: str, file: str) -> None:
         """
@@ -266,8 +264,10 @@ class Database_3D:
                     Q: float = state.dynamic_pressure
                 except KeyError as e:
                     # print(e)
-                    print(f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s")
-                    Q = 0.5 * 1.225 * 20.0 ** 2
+                    print(
+                        f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
+                    )
+                    Q = 0.5 * 1.225 * 20.0**2
                 finally:
                     S: float = pln.S
                     MAC: float = pln.mean_aerodynamic_chord
