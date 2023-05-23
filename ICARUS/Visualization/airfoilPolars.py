@@ -3,12 +3,14 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
 
+from ICARUS.Core.struct import Struct
+
 from . import colors
 from . import markers
 
 
 def plot_airfoil_polars(
-    data: dict[str, dict[str, dict[str, DataFrame]]],
+    data: dict[str, dict[str, dict[str, DataFrame]]] | Struct,
     airfoil: str,
     solvers: list[str] | str = "All",
     size: tuple[int, int] = (10, 10),
@@ -43,11 +45,12 @@ def plot_airfoil_polars(
     axs[1, 1].set_title("Cl vs Cd")
     axs[1, 1].set_xlabel("Cd")
 
-    if solvers == "All":
+    if solvers == "All" or solvers == ["All"]:
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     for i, solver in enumerate(data[airfoil].keys()):
         if solver not in solvers:
+            print(f"Skipping {solver} is not in {solvers}")
             continue
 
         for j, reynolds in enumerate(data[airfoil][solver].keys()):

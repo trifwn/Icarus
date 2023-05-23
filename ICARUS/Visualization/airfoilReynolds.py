@@ -3,12 +3,14 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
 
+from ICARUS.Core.struct import Struct
+
 from . import colors
 from . import markers
 
 
 def plot_airfoil_reynolds(
-    data: dict[str, dict[str, dict[str, DataFrame]]],
+    data: dict[str, dict[str, dict[str, DataFrame]]] | Struct,
     airfoil_name: str,
     reynolds: str,
     solvers: list[str] = ["All"],
