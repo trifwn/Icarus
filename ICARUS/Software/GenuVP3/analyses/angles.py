@@ -178,14 +178,14 @@ def run_gnvp_angles_parallel(
         plane.orientation,
         plane.disturbances,
     )
-    bodies: list[dict[str, Any]] = []
+    bodies_dict: list[dict[str, Any]] = []
 
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
     for i, surface in enumerate(surfaces):
-        bodies.append(make_surface_dict(surface, i))
+        bodies_dict.append(make_surface_dict(surface, i))
 
     from multiprocessing import Pool
 
@@ -202,7 +202,7 @@ def run_gnvp_angles_parallel(
                 angle,
                 environment,
                 movements,
-                bodies,
+                bodies_dict,
                 solver_options,
             )
             for angle in angles

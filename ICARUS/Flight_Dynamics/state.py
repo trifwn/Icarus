@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import os
 from typing import Any
 from typing import Callable
 
@@ -10,6 +11,8 @@ import numpy as np
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from tabulate import tabulate
+
+from ICARUS.Database import DB3D
 
 from .disturbances import Disturbance as dst
 from .dynamic_plane import StabilityDerivativesDS
@@ -40,6 +43,7 @@ class State:
         self.name: str = name
         # self.vehicle: Airplane = pln
         self.env: Environment = env
+        self.dynamics_directory = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
 
         # Get Airplane Properties And State Variables
         self.mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
@@ -226,7 +230,7 @@ class State:
         """
         Save the state object to a json file.
         """
-        fname: str = f"{self.name}.json"
+        fname: str = os.path.join(self.dynamics_directory,f"{self.name}.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 

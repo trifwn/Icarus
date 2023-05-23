@@ -77,13 +77,14 @@ def main() -> None:
         analysis: str = gnvp3.available_analyses_names()[2]  # ANGLES PARALLEL
         gnvp3.set_analyses(analysis)
         options: Struct = gnvp3.get_analysis_options(verbose=True)
+        solver_parameters = gnvp3.get_solver_parameters()
 
         AOA_MIN = -6
         AOA_MAX = 8
         NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
         angles: NDArray[Shape[NO_AOA], Float] = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
         UINF = 20
-        airplane.define_dynamic_pressure(UINF, EARTH.air_density)
+        # airplane.define_dynamic_pressure(UINF, EARTH.air_density)
 
         options.plane.value = airplane
         options.environment.value = EARTH
@@ -104,12 +105,12 @@ def main() -> None:
         polars: DataFrame | int = gnvp3.get_results()
         airplane.save()
         if isinstance(polars, int):
-            raise ValueError("Polars not set")
+            continue
 
         # # Dynamics
         # ### Define and Trim Plane
         try:
-            dyn = State("Unstick", airplane, polars, EARTH)
+            unstick = State("Unstick", airplane, polars, EARTH)
         except Exception as error:
             print(error)
             continue
@@ -127,8 +128,8 @@ def main() -> None:
         # }
         epsilons = None
 
-        dyn.add_all_pertrubations("Central", epsilons)
-        dyn.get_pertrub()
+        unstick.add_all_pertrubations("Central", epsilons)
+        unstick.get_pertrub()
 
         # Define Analysis for Pertrubations
         analysis = gnvp3.available_analyses_names()[4]  # Pertrubations PARALLEL
@@ -140,14 +141,15 @@ def main() -> None:
         if options is None:
             raise ValueError("Options not set")
         # Set Options
-        options.plane.value = dyn
+        options.plane.value = airplane
+        options.state.value = unstick
         options.environment.value = EARTH
         options.db.value = db
         options.solver2D.value = "XFLR"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
-        options.u_freestream.value = dyn.trim["U"]
-        options.angles.value = dyn.trim["AoA"]
+        options.u_freestream.value = unstick.trim["U"]
+        options.angle.value = unstick.trim["AoA"]
 
         # Run Analysis
         gnvp3.print_analysis_options()
@@ -159,7 +161,7 @@ def main() -> None:
 
         # Get Results And Save
         _ = gnvp3.get_results()
-        dyn.save()
+        unstick.save()
 
         # Sensitivity ANALYSIS
         # ADD SENSITIVITY ANALYSIS

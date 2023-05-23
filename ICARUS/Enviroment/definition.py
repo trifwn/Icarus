@@ -3,9 +3,15 @@ import numpy as np
 
 class Environment:
     def __init__(self, name: str) -> None:
+        """
+        Definition of the Environment object
+
+        Args:
+            name (str): Name of the environment
+        """
         self.name: str = name
         self.GRAVITY: float = 9.81
-        self.air_density: float = 1.225
+        self.air_density: float = 1.225 # self.get_density_from_altitude(altitude) #1.225
         self.air_dynamic_viscosity: float = 1.56e-5
         self.air_kinematic_viscosity: float = 1.56e-5
         self.air_temperature: float = 20 + 273.15
@@ -34,6 +40,17 @@ class Environment:
         self.air_thermal_expansion_coefficient: float = 0.000012
         self.air_prandtl_number: float = 0.71
 
+    # def get_density_from_altitude(self, altitude: float)-> float
+    #     """
+    #     Get Density
+    #     TODO: FIND RELATION
+
+    #     Returns:
+    #         _type_: _description_
+    #     """
+
+    #     return 1.225
+
     def get_speed_of_sound(
         self,
         gamma: float,
@@ -55,4 +72,4 @@ class Environment:
     #     return str
 
 
-EARTH = Environment("Earth")
+# EARTH = Environment("Earth")

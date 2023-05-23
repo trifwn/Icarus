@@ -1,16 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from pandas import DataFrame
+
+from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 
 from . import colors
 from . import markers
 
 
 def plot_convergence(
-    data: DataFrame,
+    data: Struct,
     plane: str,
-    angles: list[float] = [],
+    angles: list[float] | FloatArray= [],
     solvers: list[str] = ["All"],
     plot_error: bool = True,
     size: tuple[int, int] = (10, 10),
@@ -19,7 +21,7 @@ def plot_convergence(
     dimensional forces and solver errors
 
     Args:
-        data (DataFrame): DataFrame of the simulation results
+        data (Struct): Convergence Data from db
         plane (str): Plane Name
         angles (list[str], optional): Angles to show. Defaults to ["All"].
         solvers (list[str], optional): Solvers to show. Defaults to ["All"].

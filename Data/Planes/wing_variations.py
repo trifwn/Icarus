@@ -53,7 +53,7 @@ def wing_var_chord_offset(
         chord_fun=define_linear_chord,
         chord=chords,  # [0.159, 0.072],
         span_fun=define_linear_span,
-        N=30,
+        N=25,
         M=5,
         mass=0.670,
     )

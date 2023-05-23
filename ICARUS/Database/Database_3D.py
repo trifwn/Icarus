@@ -1,4 +1,5 @@
 import os
+import stat
 from typing import Any
 from typing import Literal
 
@@ -10,6 +11,8 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
+
+from ICARUS.Flight_Dynamics.state import State
 
 from . import APPHOME
 from . import DB3D
@@ -32,7 +35,7 @@ class Database_3D:
         self.raw_data = Struct()
         self.data = Struct()
         self.planes = Struct()
-        self.dyn_planes = Struct()
+        self.states = Struct()
         self.convergence_data = Struct()
 
     def load_data(self) -> None:
@@ -44,16 +47,10 @@ class Database_3D:
         for plane in planenames:  # For each plane planename == folder
             # if plane == 'bmark':
             #     continue
-            plane_found: bool = False
+            
             # Load Plane object
             file: str = os.path.join(DB3D, plane, f"{plane}.json")
-            plane_found = self.loadPlaneFromFile(plane, file)
-
-            # Load DynPlane object
-            file = os.path.join(DB3D, plane, f"dyn_{plane}.json")
-            dyn_plane_found: bool = self.loadDynPlaneFromFile(plane, file)
-
-            plane_found = plane_found or dyn_plane_found
+            plane_found: bool = self.loadPlaneFromFile(plane, file)
 
             # Loading Forces from forces.gnvp3 file
             file = os.path.join(DB3D, plane, "forces.gnvp3")
@@ -63,10 +60,37 @@ class Database_3D:
                 self.convergence_data[plane] = Struct()
                 cases: list[str] = next(os.walk(os.path.join(DB3D, plane)))[1]
                 for case in cases:
-                    if case.startswith("Dyn") or case.startswith("Sens"):
+                    if case.startswith("Dyn"):
+                        self.states[plane] = self.load_plane_states(plane,case)
+                        continue
+                    if case.startswith("Sens"):
                         continue
                     self.load_gnvp_case_convergence(plane, case)
 
+    def load_plane_states(self,plane:str, case:str) -> dict[str, Any]:
+        """
+        Function to load the states of the plane from the states.json file.
+
+        Args:
+            plane (str): Plane Name
+            case (str): Case Directory
+        """
+        dynamics_directory: str = os.path.join(DB3D, plane, case)
+        os.chdir(dynamics_directory)
+        files: list[str] = next(os.walk(dynamics_directory))[2]
+        states: dict[str, Any] = {}
+        for file in files:
+            if file.endswith(".json"):
+                with open(file, encoding="UTF-8") as f:
+                    json_obj: str = f.read()
+                try:
+                    state: State = jsonpickle.decode(json_obj)
+                    states[state.name] = state
+                except Exception as error:
+                    print(f"Error decoding states object {plane}! Got error {error}")
+        os.chdir(self.HOMEDIR)
+        return states
+    
     def loadPlaneFromFile(self, name: str, file: str) -> bool:
         """Function to get Plane Object from file and decode it.
 
@@ -90,29 +114,6 @@ class Database_3D:
             plane_found = False
         return plane_found
 
-    def loadDynPlaneFromFile(self, name: str, file: str) -> bool:
-        """Function to retrieve Dyn Plane Object from file and decode it.
-
-        Args:
-            name (str): _description_
-            file (str): _description_
-        """
-        flag: bool = False
-        try:
-            with open(file, encoding="UTF-8") as f:
-                json_obj: str = f.read()
-                try:
-                    self.dyn_planes[name] = jsonpickle.decode(json_obj)
-                    flag = True
-                    if name not in self.planes.keys():
-                        print("Plane object doesnt exist! Creating it...")
-                        self.planes[name] = self.dyn_planes[name]
-                except Exception as e:
-                    print(f"Error decoding Dyn Plane object {name} ! Got error {e}")
-        except FileNotFoundError:
-            print(f"No Plane object found in {name} folder at {file}!")
-
-        return flag
 
     def load_gnvp_forces(self, planename: str, file: str) -> None:
         """
@@ -261,16 +262,18 @@ class Database_3D:
 
                 My_new: ndarray[Any, dtype[floating[Any]]] = My
                 try:
-                    Q: float = pln.dynamic_pressure
+                    state: State = self.states[pln.name]["Unstick"]
+                    Q: float = state.dynamic_pressure
+                except KeyError as e:
+                    # print(e)
+                    print(f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s")
+                    Q = 0.5 * 1.225 * 20.0 ** 2
+                finally:
                     S: float = pln.S
-                    mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
+                    MAC: float = pln.mean_aerodynamic_chord
                     self.data[plane][f"CL_{name}"] = Fz_new / (Q * S)
                     self.data[plane][f"CD_{name}"] = Fx_new / (Q * S)
-                    self.data[plane][f"Cm_{name}"] = My_new / (
-                        Q * S * mean_aerodynamic_chord
-                    )
-                except AttributeError:
-                    print("Plane doesn't have Q, S or mean_aerodynamic_chord!")
+                    self.data[plane][f"Cm_{name}"] = My_new / (Q * S * MAC)
 
     def __str__(self) -> Literal["Vehicle Database"]:
         return "Vehicle Database"
