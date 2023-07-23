@@ -74,4 +74,4 @@ class Environment:
     #     return str
 
 
-# EARTH = Environment("Earth")
+EARTH = Environment("Earth")

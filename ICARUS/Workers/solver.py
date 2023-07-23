@@ -124,7 +124,7 @@ class Solver:
             _ = self.available_analyses_names(verbose=verbose)
             raise Exception("Analysis hase not been Selected")
 
-    def get_solver_parameters(self, verbose: bool = False) -> Struct | None:
+    def get_solver_parameters(self, verbose: bool = False) -> Struct:
         """
         Get the solver parameters of the selected analysis.
 
@@ -138,7 +138,7 @@ class Solver:
             Struct: Struct Object containing the solver parameters.
         """
         if self.mode is not None:
-            return self.availableAnalyses[self.mode].get_solver_options(verbose)
+            return self.availableAnalyses[self.mode].get_solver_options(verbose=verbose)
         else:
             print("Analysis hase not been Selected")
             _ = self.available_analyses_names(verbose=verbose)
@@ -177,7 +177,7 @@ class Solver:
 
         Args:
             analysis_name (str | None, optional): Analysis Name. If false it runs
-                                                  the selected one. Defaults to None.
+                                            the selected one. Defaults to None.
 
         Returns:
             Any: Analysis Results or Error Code.

@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import numpy as np
 
 
@@ -17,7 +20,11 @@ def io_file(airfile: str) -> None:
         file.writelines(data)
 
 
-def desing_file(number_of_angles: int, angles: list[float], name: str) -> None:
+def design_file(
+    number_of_angles: int,
+    angles: list[float],
+    name: str,
+) -> None:
     """Generates the desing.inp file for section f2w. Depending on the name, it will generate the file for positive or negative angles
 
     Args:
@@ -33,7 +40,7 @@ def desing_file(number_of_angles: int, angles: list[float], name: str) -> None:
         data.append(str(ang) + "\n")
     data.append("ANGLE DIRECTORIES (8 CHAR MAX!!!)\n")
     for ang in angles:
-        if name == "pos":
+        if ang>=0:
             data.append(str(ang)[::-1].zfill(7)[::-1] + "/\n")
         else:
             data.append("m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "/\n")
@@ -44,8 +51,11 @@ def desing_file(number_of_angles: int, angles: list[float], name: str) -> None:
 def input_file(
     reynolds: float,
     mach: float,
-    ftrip_low: dict[str, float],
-    ftrip_upper: dict[str, float],
+    max_iter: float,
+    timestep: float,
+    ftrip_low: float,
+    ftrip_upper: float,
+    Ncrit: float,
     name: str,
 ) -> None:
     """Creates the input file for section f2w program
@@ -61,18 +71,49 @@ def input_file(
     with open(fname, encoding="utf-8") as file:
         data: list[str] = file.readlines()
 
-    data[2] = "201       ! NTIMEM\n"
-    data[3] = "0.010     ! DT1\n"
+    data[2] = f"{max_iter}       ! NTIMEM\n"
+    data[3] = f"{timestep}     ! DT1\n"
     data[4] = "50000     ! DT2\n"  # IS NOT IMPLEMENTED
     data[5] = "0.025     ! EPS1\n"
     data[6] = "0.025     ! EPS2\n"
-    data[7] = " 1.00     ! EPSCOE\n"
-    data[27] = "200       ! NTIME_bl\n"
+    data[7] = "1.00      ! EPSCOE\n"
+    data[27] ="200       ! NTIME_bl\n"
     data[
         30
     ] = f"{np.format_float_scientific(reynolds, sign=False, precision=2).zfill(8)}  ! Reynolds\n"
     data[32] = f"{str(mach)[::-1].zfill(3)[::-1]}      ! Mach     Number\n"
-    data[34] = f"{str(ftrip_low[name])[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n"
-    data[35] = f"{str(ftrip_upper[name])[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n"
+    data[34] = f"{str(ftrip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n"
+    data[35] = f"{str(ftrip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n"
+    data[36] = f"{int(Ncrit)}\t\t  ! AMPLUP_tr\n"
+    data[37] = f"{int(Ncrit)}\t\t  ! AMPLUP_tr\n"
+
     with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
+
+
+def setup_f2w(F2WBASE: str, HOMEDIR: str, CASEDIR: str) -> None:
+    """
+    Sets up the f2w case copying and editing all necessary files
+    Args:
+        F2WBASE (str): Base Case Directory for f2w
+        HOMEDIR (str): Home Directory
+        CASEDIR (str): Case Directory
+    """
+    filesNeeded: list[str] = [
+        "design.inp",
+        "design_neg.inp",
+        "design_pos.inp",
+        "f2w.inp",
+        "f2w_neg.inp",
+        "f2w_pos.inp",
+        "io.files",
+        "write_out",
+    ]
+    for item in filesNeeded:
+        src: str = os.path.join(F2WBASE, item)
+        dst: str = os.path.join(CASEDIR, item)
+        shutil.copy(src, dst)
+    if "foil_section" not in next(os.walk(CASEDIR))[2]:
+        src = os.path.join(HOMEDIR, "ICARUS", "foil_section")
+        dst = os.path.join(CASEDIR, "foil_section")
+        os.symlink(src, dst)

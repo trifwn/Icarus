@@ -19,6 +19,7 @@ from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
+from ICARUS.Software.XFLR5.parser import parse_xfl_project
 from ICARUS.Software.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
@@ -41,28 +42,34 @@ def main() -> None:
 
     # # Get Plane
     planes: list[Airplane] = []
-    planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
+    # planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
 
-    planes.append(
-        wing_var_chord_offset(airfoils, "orthogonalSweep", [0.159, 0.159], 0.2),
-    )
+    # planes.append(
+    #     wing_var_chord_offset(airfoils, "orthogonalSweep", [0.159, 0.159], 0.2),
+    # )
 
-    planes.append(wing_var_chord_offset(airfoils, "taperSweep", [0.159, 0.072], 0.2))
+    # planes.append(wing_var_chord_offset(airfoils, "taperSweep", [0.159, 0.072], 0.2))
 
-    planes.append(wing_var_chord_offset(airfoils, "taper", [0.159, 0.072], 0.0))
+    # planes.append(wing_var_chord_offset(airfoils, "taper", [0.159, 0.072], 0.0))
 
     timestep: dict[str, float] = {
         "orthogonal": 1e-3,
         "orthogonalSweep": 1e-3,
         "taperSweep": 1e-3,
         "taper": 1e-3,
+        "atlas": 1e-3,
     }
     maxiter: dict[str, int] = {
         "orthogonal": 400,
         "orthogonalSweep": 400,
         "taperSweep": 400,
         "taper": 400,
+        "atlas": 400,
     }
+    filename: str = 'Data/XFLR5/atlas.xml'
+    atlas = parse_xfl_project(filename)
+    print(atlas.main_wing.airfoil.name)
+    planes.append(atlas)
 
     for airplane in planes:
         print(airplane.name)
@@ -89,7 +96,7 @@ def main() -> None:
         options.plane.value = airplane
         options.environment.value = EARTH
         options.db.value = db
-        options.solver2D.value = "XFLR"
+        options.solver2D.value = "Foil2Wake"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = UINF
@@ -145,7 +152,7 @@ def main() -> None:
         options.state.value = unstick
         options.environment.value = EARTH
         options.db.value = db
-        options.solver2D.value = "XFLR"
+        options.solver2D.value = "Foil2Wake"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = unstick.trim["U"]

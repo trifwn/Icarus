@@ -24,10 +24,12 @@ dependencies = [
     "ipykernel",
     "ipython",
     "tabulate",
+    "nptyping",
+    "pre-commit",
     #"xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     "xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
 ]
 dynamic = ["version"]
 
 [mypy]
-plugins = "numpy.typing.mypy_plugin"
+plugins = numpy.typing.mypy_plugin

@@ -157,66 +157,20 @@ class AirfoilD(af.Airfoil):  # type: ignore
         # y[-1]= 0
         self.selig2: FloatArray = np.vstack((x, y))
 
-    def access_db(self, HOMEDIR: str, DBDIR: str) -> None:
-        """
-        Connection to Database. Saves the airfoil in the database.
-        TODO: TO BE DEPRECATED. It should be handled by the solver
-
-        Args:
-            HOMEDIR (str): Home directory
-            DBDIR (str): Database directory
-        """
-        os.chdir(DBDIR)
-        AFDIR: str = f"NACA{self.name}"
-        os.makedirs(AFDIR, exist_ok=True)
-        os.chdir(AFDIR)
-        self.AFDIR: str = os.getcwd()
-        self.HOMEDIR: str = HOMEDIR
-        self.DBDIR: str = DBDIR
-        os.chdir(HOMEDIR)
-        exists = False
-        for i in os.listdir(self.AFDIR):
-            if i.startswith("naca"):
-                self.airfile = os.path.join(self.AFDIR, i)
-                exists = True
-        if exists:
-            self.save()
-
-    def set_reynolds_case(self, reynolds_num: float) -> None:
-        """
-        Set current reynolds number and create a directory for it.
-        TODO: TO BE DEPRECATED. It should be handled by the database and solver
-
-        Args:
-            Reynolds_number (float): _description_
-        """
-        reynolds_str: str = np.format_float_scientific(
-            reynolds_num,
-            sign=False,
-            precision=3,
-        )
-        self.current_reynolds: str = reynolds_str
-        self.reynolds_ids.append(self.current_reynolds)
-        if self.current_reynolds not in self.polars.keys():
-            self.polars[self.current_reynolds] = {}
-
-        try:
-            self.REYNDIR: str = os.path.join(
-                self.AFDIR,
-                f"Reynolds_{reynolds_str.replace('+', '')}",
-            )
-            os.makedirs(self.REYNDIR, exist_ok=True)
-            shutil.copy(self.airfile, self.REYNDIR)
-        except AttributeError:
-            print("DATABASE is not initialized!")
-
-    def save(self) -> None:
+    def save(self,directory:str | None = None) -> None:
         """
         Saves the airfoil in the selig format.
+
+        Args:
+            directory (str, optional): Directory to save the airfoil. Defaults to None.
         """
-        self.airfile = os.path.join(self.AFDIR, f"naca{self.name}")
+
         pt0 = self.selig
-        np.savetxt(self.airfile, pt0.T)
+        if directory is not None:
+            file_name = os.path.join(directory, self.file_name)
+        else:
+            file_name = self.file_name
+        np.savetxt(file_name, pt0.T)
 
     def plot(self) -> None:
         """
@@ -227,75 +181,3 @@ class AirfoilD(af.Airfoil):  # type: ignore
         plt.plot(x[: self.n_points], y[: self.n_points], "r")
         plt.plot(x[self.n_points :], y[self.n_points :], "b")
         plt.axis("scaled")
-
-    def solver_run(
-        self,
-        solver: Callable[..., None],
-        args: list[Any],
-        kwargs: dict[str, Any] = {},
-    ) -> None:
-        """
-        Runs the solver.
-        TODO: TO BE DEPRECATED. It should be handled by the solver and analysis class
-
-        Args:
-            solver (_type_): Solver function
-            args (_type_): Positional arguments for the solver
-            kwargs (dict, optional): Keyword Arguments for the solver . Defaults to empty {}.
-        """
-        solver(*args, **kwargs)
-
-    def solver_setup(
-        self,
-        setupsolver: Callable[..., None],
-        args: list[Any],
-        kwargs: dict[str, Any] = {},
-    ) -> None:
-        """
-        Runs the solver setup (hook) function.
-        TODO: TO BE DEPRECATED. It should be handled by the solver and analysis class
-
-        Args:
-            setupsolver (Callable[..., None]): Solver setup function
-            args (list[Any]): Solver setup function positional arguments
-            kwargs (dict[str, Any], optional): Solver Setup kwargs . Defaults to empty {}.
-        """
-        setupsolver(*args, **kwargs)
-
-    def clean_results(
-        self,
-        clean_function: Callable[..., None],
-        args: list[Any],
-        kwargs: dict[str, Any] = {},
-    ) -> None:
-        """
-        Cleans the results of the Analysis.
-        TODO: TO BE DEPRECATED. It should be handled by the solver and analysis class
-
-        Args:
-            clean_function (_type_): Function to clean the results
-            args (_type_): Positional arguments for the clean function
-            kwargs (dict, optional): Keyword arguements for the clean function . Defaults to empty {}.
-        """
-        clean_function(*args, **kwargs)
-
-    def make_polars(
-        self,
-        make_polars_function: Callable[..., DataFrame],
-        solver_name: str,
-        args: list[Any],
-        kwargs: dict[str, Any] = {},
-    ) -> DataFrame:
-        """
-        Function to make the polars for a given analysis.
-        TODO: TO BE DEPRECATED. It should be handled by the solver and analysis class
-
-        Args:
-            make_polars_function (Callable[..., DataFrame]): Function to make the polars
-            solver_name (str): Solver name
-            args (list[Any]): Positional arguments for the make_polars function
-            kwargs (dict[str, Any], optional): Keyword Arguements for the function . Defaults to {}.
-        """
-        polars_df: DataFrame = make_polars_function(*args, **kwargs)
-        self.polars[self.current_reynolds][solver_name] = polars_df
-        return polars_df

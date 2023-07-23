@@ -3,10 +3,9 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.Core.struct import Struct
-
 from . import colors
 from . import markers
+from ICARUS.Core.struct import Struct
 
 
 def plot_airfoil_polars(

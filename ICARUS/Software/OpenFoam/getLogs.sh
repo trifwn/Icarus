@@ -1,4 +1,4 @@
 #!/bin/bash
-source /usr/lib/openfoam/openfoam/etc/bashrc
+source /home/tryfonas/Applications/openfoam/openfoam/etc/bashrc
 
 foamLog log

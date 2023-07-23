@@ -11,7 +11,7 @@ from tests.solver_geom_test import gnvp_geometry
 from tests.solver_run_test import gnvprun
 
 
-class TestAdd(unittest.TestCase):
+class BaseAirplaneTests(unittest.TestCase):
     def test1_geom(self) -> None:
         S_act: tuple[float] = (4.0,)
         MAC_act: tuple[float] = (0.8,)
@@ -34,43 +34,49 @@ class TestAdd(unittest.TestCase):
         gnvprun("Parallel")
         # pass
 
-    def test3_airPolars(self) -> None:
+    def test3_3d_polars(self) -> None:
         des, act = airplane_polars(plot=False)
-        preffered_pol = "2D"
+        prefered_pol = "2D"
 
         AoA_d = des["AoA"].astype(float)
         AoA = act["AoA"].astype(float)
 
         CL_d = des["CL"]
-        CL = act[f"CL_{preffered_pol}"]
+        CL = act[f"CL_{prefered_pol}"]
 
         CD_d = des["CD"]
-        CD = act[f"CD_{preffered_pol}"]
+        CD = act[f"CD_{prefered_pol}"]
 
         Cm_d = des["Cm"]
-        Cm = act[f"Cm_{preffered_pol}"]
+        Cm = act[f"Cm_{prefered_pol}"]
 
         # Compare All Values tha correspond to same AoA
         # to x decimal places (except AoA)
         dec_prec = 1
         for a in AoA:
-            np.testing.assert_almost_equal(
-                CL_d[AoA_d == a].values,
-                CL[AoA == a].values,
-                decimal=dec_prec,
-            )
-            np.testing.assert_almost_equal(
-                CD_d[AoA_d == a].values,
-                CD[AoA == a].values,
-                decimal=dec_prec,
-            )
-            np.testing.assert_almost_equal(
-                Cm_d[AoA_d == a].values,
-                Cm[AoA == a].values,
-                decimal=dec_prec,
-            )
+            for x,x_d in zip([CL,CD,Cm],[CL_d,CD_d,Cm_d]):
+                np.testing.assert_almost_equal(
+                    x_d[AoA_d == a].values,
+                    x[AoA == a].values,
+                    decimal=dec_prec,
+                )
+            # np.testing.assert_almost_equal(
+            #     CL_d[AoA_d == a].values,
+            #     CL[AoA == a].values,
+            #     decimal=dec_prec,
+            # )
+            # np.testing.assert_almost_equal(
+            #     CD_d[AoA_d == a].values,
+            #     CD[AoA == a].values,
+            #     decimal=dec_prec,
+            # )
+            # np.testing.assert_almost_equal(
+            #     Cm_d[AoA_d == a].values,
+            #     Cm[AoA == a].values,
+            #     decimal=dec_prec,
+            # )
 
-    def test4_gnvpGeom(self) -> None:
+    def test4_geometry_gnvp(self) -> None:
         gridAP, gridGNVP = gnvp_geometry(plot=False)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 

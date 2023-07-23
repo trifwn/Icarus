@@ -52,7 +52,7 @@ Defines Airplane and other Vehicles.
 
 -Flight_Dynamics
 
-Defines Flight State 
+Defines Flight State
 
 -Software
 

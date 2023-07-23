@@ -259,6 +259,8 @@ class Database_3D:
                 )
 
                 My_new: ndarray[Any, dtype[floating[Any]]] = My
+
+                Q = 0.5 * 1.225 * 20.0**2
                 try:
                     state: State = self.states[pln.name]["Unstick"]
                     Q: float = state.dynamic_pressure
@@ -267,7 +269,6 @@ class Database_3D:
                     print(
                         f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
                     )
-                    Q = 0.5 * 1.225 * 20.0**2
                 finally:
                     S: float = pln.S
                     MAC: float = pln.mean_aerodynamic_chord

@@ -71,7 +71,6 @@ class Analysis:
             str: Name and Options of the analysis
         """
         string = StringIO()
-
         string.write(f"Available Options of {self.solver_name} for {self.name}: \n\n")
         table: list[list[str]] = [["VarName", "Value", "Description"]]
         for _, opt in self.options.items():

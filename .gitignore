@@ -32,3 +32,4 @@ Data/Analyses
 
 # Playground
 test.ipynb
+*.fuse*

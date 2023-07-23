@@ -1,14 +1,16 @@
 """Defines the conceptual plane class"""
-
 from typing import Any
-from numpy import dtype, floating, ndarray
 
 import numpy as np
-from .wing_concept import ConceptualWing
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+
 from .fueselage_concept import ConceptualFueselage
+from .wing_concept import ConceptualWing
 
 
-class ConceptualPlane():
+class ConceptualPlane:
     """Defines a plane in the conceptual design context"""
 
     def __init__(
@@ -36,13 +38,12 @@ class ConceptualPlane():
         self.cl: ndarray[Any, dtype[floating]] = self._lift_coefficient_with_fueselage()
         self.oswald_efficiency: float = 0.7
 
-    def _lift_coefficient_with_fueselage(
-        self
-    ) -> ndarray[Any, dtype[floating]]:
+    def _lift_coefficient_with_fueselage(self) -> ndarray[Any, dtype[floating]]:
         """Defines the lift coefficient of the plane with the fuselage"""
-        cl: ndarray[Any, dtype[floating]] = self.main_wing.cl_3d*(
-            1 - self.fueselage.k *
-            (self.main_wing.cl_0 / self.main_wing.cl_3d) *
-            (self.fueselage.area / self.main_wing.area)
+        cl: ndarray[Any, dtype[floating]] = self.main_wing.cl_3d * (
+            1
+            - self.fueselage.k
+            * (self.main_wing.cl_0 / self.main_wing.cl_3d)
+            * (self.fueselage.area / self.main_wing.area)
         )
         return cl

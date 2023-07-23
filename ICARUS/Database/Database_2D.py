@@ -20,6 +20,9 @@ class Database_2D:
         """
         self.HOMEDIR: str = APPHOME
         self.DATADIR: str = DB2D
+        if not os.path.isdir(self.DATADIR):
+            os.makedirs(self.DATADIR)
+
         self.data: Struct = Struct()
 
     def load_data(self) -> None:
