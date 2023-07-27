@@ -27,7 +27,7 @@ def plot_airfoil_polars(
     # Function to plot airfoil polars
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)
+    axs: ndarray = fig.subplots(2, 2)  # type: ignore
 
     fig.suptitle(f"NACA {airfoil[4:]} Aero Coefficients", fontsize=16)
     axs[0, 0].set_title("Cm vs AoA")

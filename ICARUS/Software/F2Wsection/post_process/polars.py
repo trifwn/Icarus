@@ -1,14 +1,16 @@
-import numpy as np
-from numpy import dtype, floating, ndarray
-import pandas as pd
-from pandas import DataFrame
-
-
 import os
 import stat
 import subprocess
 from os import stat_result
 from typing import Any
+
+import numpy as np
+import pandas as pd
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+from pandas import DataFrame
+
 
 def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     """
@@ -21,21 +23,17 @@ def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     """
     os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]
-    # print(f"Making Polars at {CASEDIR}")
-    with open("output_bat", "w") as file:
-        file.writelines("#!/bin/bash\n")
-        n = 0
-        for folder in folders[1:]:
-            if "AERLOAD.OUT" in next(os.walk(folder))[2]:
-                if n == 0:
-                    file.writelines("cd " + folder + "\n../write_out\n")
-                    n += 1
-                else:
-                    file.writelines("cd ../" + folder + "\n../write_out\n")
-    st: stat_result = os.stat("output_bat")
-    os.chmod("output_bat", st.st_mode | stat.S_IEXEC)
-    subprocess.call([os.path.join(CASEDIR, "output_bat")])
-
+    res_file = "AERLOAD.OUT"
+    for folder in folders:
+        if "AERLOAD.OUT" in next(os.walk(folder))[2]:
+            with open(f"{folder}/{res_file}", encoding="UTF-8") as f:
+                data: str = f.read()
+            if data == "":
+                continue
+            values = [x.strip() for x in data.split(" ") if x != ""]
+            cl, cd, cm, aoa = (values[7], values[8], values[11], values[17])
+            with open(f"{folder}/clcd.out", "w", encoding="UTF-8") as f:
+                f.write(f"{aoa}\t{cl}\t{cd}\t{cm}")
     folders = next(os.walk("."))[1]
     dat: list[Any] = []
     for folder in folders:

@@ -20,7 +20,7 @@ def gnvp_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) ->
 
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")
-    ax.set_title(f"{plane.name} WAKE")
+    ax.set_title(f"{plane.name} wake")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)
@@ -30,7 +30,7 @@ def gnvp_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) ->
     ax.set_zlim(-1, 1)
 
     ax.scatter(A1[:, 0], A1[:, 1], A1[:, 2], color="r", s=5.0)  # WAKE
-    # ax.scatter(B1[:, 0], B1[:, 1], B1[:, 2], color='k', s=5.)  # NEARWAKE
+    ax.scatter(B1[:, 0], B1[:, 1], B1[:, 2], color="k", s=5.0)  # NEARWAKE
     ax.scatter(C1[:, 0], C1[:, 1], C1[:, 2], color="g", s=5.0)  # GRID
 
     plane.visualize(fig, ax, movement=-np.array(plane.CG))

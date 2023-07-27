@@ -1,5 +1,6 @@
 import os
 
+
 def remove_results(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> None:
     """
     Removes Simulation results for a given case

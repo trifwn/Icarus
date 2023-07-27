@@ -1,7 +1,12 @@
 import os
+import shutil
 from typing import Any
 
+import numpy as np
 import pandas as pd
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 
 from . import APPHOME
 from . import DB2D
@@ -99,7 +104,14 @@ class Database_2D:
                     name = "Xfoil"
                 else:
                     raise ValueError("Solver not recognized!")
-                current_reynolds_data[name] = pd.read_csv(file)
+                try:
+                    current_reynolds_data[name] = pd.read_csv(file, dtype=float)
+                except ValueError:
+                    current_reynolds_data[name] = pd.read_csv(
+                        file,
+                        delimiter="\t",
+                        dtype=float,
+                    )
         return current_reynolds_data
 
     def set_available_airfoils(self) -> Struct:
@@ -144,6 +156,52 @@ class Database_2D:
         except KeyError:
             print("Airfoil Doesn't exist! You should compute it first!")
             return None
+
+    def generate_airfoil_directories(
+        self,
+        airfoil: AirfoilD,
+        reynolds: float,
+        angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    ) -> tuple[str, str, str, list[str]]:
+
+        AFDIR = os.path.join(
+            self.DATADIR,
+            f"NACA{airfoil.name}",
+        )
+        os.makedirs(AFDIR, exist_ok=True)
+        exists = False
+        for i in os.listdir():
+            if i.startswith("naca"):
+                exists = True
+        if not exists:
+            airfoil.save(AFDIR)
+
+        reynolds_str: str = np.format_float_scientific(
+            reynolds,
+            sign=False,
+            precision=3,
+        )
+
+        REYNDIR: str = os.path.join(
+            AFDIR,
+            f"Reynolds_{reynolds_str.replace('+', '')}",
+        )
+        os.makedirs(REYNDIR, exist_ok=True)
+        airfile = os.path.join(
+            AFDIR,
+            airfoil.file_name,
+        )
+        shutil.copy(airfile, REYNDIR)
+
+        ANGLEDIRS: list[str] = []
+        for angle in angles:
+            if angle >= 0:
+                folder: str = str(angle)[::-1].zfill(7)[::-1]
+            else:
+                folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+            ANGLEDIRS.append(os.path.join(REYNDIR, folder))
+
+        return self.HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS
 
     def __str__(self) -> str:
         return "Foil Database"

@@ -1,8 +1,7 @@
-from ICARUS.Software import logOFscript
-
-
 import os
 from subprocess import call
+
+from ICARUS.Software import logOFscript
 
 
 def get_convergence_data(HOMEDIR: str, CASEDIR: str) -> None:

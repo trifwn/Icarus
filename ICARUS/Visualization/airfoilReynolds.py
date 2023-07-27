@@ -27,7 +27,7 @@ def plot_airfoil_reynolds(
     """
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)
+    axs: ndarray = fig.subplots(2, 2)  # type: ignore
     fig.suptitle(
         f"NACA {airfoil_name[4:]}- Reynolds={reynolds}\n Aero Coefficients",
         fontsize=16,

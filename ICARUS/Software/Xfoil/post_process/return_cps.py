@@ -1,13 +1,13 @@
-from ICARUS.Software.Xfoil.utils import angles_sepatation
-
+from typing import Any
 
 import numpy as np
-from numpy import dtype, floating, ndarray
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
-
-from typing import Any
+from ICARUS.Software.Xfoil.utils import angles_sepatation
 
 
 def return_cps(
@@ -18,7 +18,7 @@ def return_cps(
     ftrip_low: float = 1.0,
     ftrip_up: float = 1.0,
     Ncrit: float = 9,
-): #-> tuple[list[Any], list[Any], NDArray[Any, dtype[floating[Any]]]]:
+) -> tuple[list[Any], list[Any], ndarray[Any, dtype[floating[Any]]]]:
     """
     !TO BE DEPRECATED! SHOULD BE LOGGED AUTOMATICALLY AND NOT RETURNED
 
@@ -54,12 +54,12 @@ def return_cps(
     x = np.array([], dtype=float)
     for a in pangles:
         xf.a(a)
-        x,y, cp = xf.get_cp_distribution()
+        x, y, cp = xf.get_cp_distribution()
         cps.append(cp)
 
     for a in nangles:
         xf.a(a)
-        x,y, cp = xf.get_cp_distribution()
+        x, y, cp = xf.get_cp_distribution()
         cpsn.append(cp)
 
     return [cpsn, nangles], [cps, pangles], x

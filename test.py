@@ -54,7 +54,7 @@ class BaseAirplaneTests(unittest.TestCase):
         # to x decimal places (except AoA)
         dec_prec = 1
         for a in AoA:
-            for x,x_d in zip([CL,CD,Cm],[CL_d,CD_d,Cm_d]):
+            for x, x_d in zip([CL, CD, Cm], [CL_d, CD_d, Cm_d]):
                 np.testing.assert_almost_equal(
                     x_d[AoA_d == a].values,
                     x[AoA == a].values,
@@ -77,7 +77,7 @@ class BaseAirplaneTests(unittest.TestCase):
             # )
 
     def test4_geometry_gnvp(self) -> None:
-        gridAP, gridGNVP = gnvp_geometry(plot=False)
+        gridAP, gridGNVP = gnvp_geometry(plot=True)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
 

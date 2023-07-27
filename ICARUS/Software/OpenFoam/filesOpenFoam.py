@@ -1,26 +1,31 @@
-from enum import Enum
 import os
 import shutil
+from enum import Enum
 from subprocess import call
 from typing import Any
 
 import numpy as np
-from numpy import ndarray, dtype, floating
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 
 from ICARUS.Software import setup_of_script
 
+
 class MeshType(Enum):
     """Enum for Mesh Type"""
+
     #! TODO: IMPLEMET Other Meshes
     structAirfoilMesher = 0
     copy_from = 1
+
 
 def make_mesh(
     HOMEDIR: str,
     CASEDIR: str,
     OFBASE: str,
     airfoil_fname: str,
-    mesh_type: MeshType
+    mesh_type: MeshType,
 ) -> None:
     """
     Make the mesh for the simulation using the structAirfoilMesher.
@@ -29,17 +34,23 @@ def make_mesh(
 
     """
     if mesh_type == MeshType.structAirfoilMesher:
-        src = os.path.join(OFBASE, "struct.input")
-        dst = os.path.join(CASEDIR, "struct.input")
+        # Check if struct.input exists
+        filename = os.path.join(CASEDIR, "outPatch.out")
+        if os.path.isfile(filename):
+            print("Mesh is already Computed")
+            return
+
+        dst: str = os.path.join(CASEDIR, "struct.input")
+        src: str = os.path.join(OFBASE, "struct.input")
         shutil.copy(src, dst)
 
         os.chdir(CASEDIR)
-        print(f"Making Mesh for {airfoil_fname}")
+        print(f"\t\tMaking Mesh for {airfoil_fname}")
         call(["/bin/bash", "-c", f"{setup_of_script} -n {airfoil_fname}"])
         os.chdir(HOMEDIR)
 
         src = os.path.join(OFBASE, "boundaryTemplate")
-        dst = os.path.join(CASEDIR, "constant", "polyMesh","boundary")
+        dst = os.path.join(CASEDIR, "constant", "polyMesh", "boundary")
         shutil.copy(src, dst)
     elif mesh_type == MeshType.copy_from:
         pass
@@ -73,7 +84,7 @@ def constant_folder(
     OFBASE: str,
     CASEDIR: str,
     reynolds: float,
-)-> None:
+) -> None:
     """
     Make the constant folder for simulation
 
@@ -94,12 +105,13 @@ def constant_folder(
     with open(filename, "w", encoding="UTF-8") as file:
         file.writelines(data)
 
+
 def system_folder(
     OFBASE: str,
     CASEDIR: str,
     angle: float,
     max_iterations: int,
-)->None:
+) -> None:
     """
     Make the system folder for simulation
 
@@ -135,7 +147,7 @@ def setup_open_foam(
     airfoil_fname: str,
     reynolds: float,
     mach: float,
-    angles: list[float] | ndarray[Any, dtype[floating]],
+    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     solver_options: dict[str, Any],
 ) -> None:
     """Function to setup OpenFoam cases for a given airfoil and Reynolds number
@@ -153,9 +165,8 @@ def setup_open_foam(
     """
     if isinstance(angles, float):
         angles = [angles]
-
     mesh_dir: str = ""
-    for i,angle in enumerate(angles):
+    for i, angle in enumerate(angles):
         if angle >= 0:
             folder: str = str(angle)[::-1].zfill(7)[::-1]
         else:
@@ -176,29 +187,29 @@ def setup_open_foam(
         constant_folder(OFBASE, ANGLEDIR, reynolds)
 
         # MAKE system/ FOLDER
-        max_iterations: int = solver_options['max_iterations']
+        max_iterations: int = solver_options["max_iterations"]
         system_folder(OFBASE, ANGLEDIR, angle_rad, max_iterations)
 
-        src: str = os.path.join(AFDIR,airfoil_fname)
-        dst: str = os.path.join(ANGLEDIR,airfoil_fname)
+        src: str = os.path.join(AFDIR, airfoil_fname)
+        dst: str = os.path.join(ANGLEDIR, airfoil_fname)
         shutil.copy(src, dst)
 
-        mesh_type: MeshType = solver_options['mesh_type']
+        mesh_type: MeshType = solver_options["mesh_type"]
         if i == 0:
             make_mesh(
                 HOMEDIR,
                 ANGLEDIR,
                 OFBASE,
                 airfoil_fname,
-                mesh_type
+                mesh_type,
             )
-            mesh_dir: str = ANGLEDIR
+            mesh_dir = ANGLEDIR
         else:
-            src: str = os.path.join(mesh_dir, "constant", "polyMesh")
-            dst: str = os.path.join(ANGLEDIR, "constant", "polyMesh")
+            src = os.path.join(mesh_dir, "constant", "polyMesh")
+            dst = os.path.join(ANGLEDIR, "constant", "polyMesh")
             shutil.copytree(src, dst, dirs_exist_ok=True)
             pass
 
-        if solver_options['silent'] is False:
+        if solver_options["silent"] is False:
             pass
         os.chdir(HOMEDIR)

@@ -4,11 +4,12 @@ It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
 import time
+from typing import Any
 
 import numpy as np
-from nptyping import Float
-from nptyping import NDArray
-from nptyping import Shape
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 from pandas import DataFrame
 
 from Data.Planes.wing_variations import wing_var_chord_offset
@@ -25,8 +26,8 @@ from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
 
 # from Data.Planes.hermes import hermes
+
 # from Data.Planes.hermes_wing_only import hermes_main_wing
-# # MODULES
 
 
 def main() -> None:
@@ -66,8 +67,9 @@ def main() -> None:
         "taper": 400,
         "atlas": 400,
     }
-    filename: str = 'Data/XFLR5/atlas.xml'
-    atlas = parse_xfl_project(filename)
+    filename: str = "Data/XFLR5/atlas.xml"
+    atlas: Airplane = parse_xfl_project(filename)
+    atlas.visualize()
     print(atlas.main_wing.airfoil.name)
     planes.append(atlas)
 
@@ -89,7 +91,11 @@ def main() -> None:
         AOA_MIN = -6
         AOA_MAX = 8
         NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
-        angles: NDArray[Shape[NO_AOA], Float] = np.linspace(AOA_MIN, AOA_MAX, NO_AOA)
+        angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+            AOA_MIN,
+            AOA_MAX,
+            NO_AOA,
+        )
         UINF = 20
         # airplane.define_dynamic_pressure(UINF, EARTH.air_density)
 
@@ -101,6 +107,9 @@ def main() -> None:
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = UINF
         options.angles.value = angles
+
+        solver_parameters.Use_Grid.value = 1
+        solver_parameters.Split_Symmetric_Bodies.value = 1
 
         gnvp3.print_analysis_options()
 

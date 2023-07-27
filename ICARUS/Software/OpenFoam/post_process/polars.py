@@ -1,12 +1,10 @@
-from ICARUS.Software.OpenFoam.post_process.get_aero_coefficients import get_coefficients
-
+import os
 
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-
-import os
+from ICARUS.Software.OpenFoam.post_process.get_aero_coefficients import get_coefficients
 
 
 def make_polars(CASEDIR: str, HOMEDIR: str, all_angles: list[float]) -> DataFrame:

@@ -38,4 +38,4 @@ def rotate_vector(
     Returns:
         ndarray[Any, dtype[floating[Any]]]: Rotated vector
     """
-    return np.dot(R, vector)
+    return np.array(np.dot(R, vector), dtype=float)

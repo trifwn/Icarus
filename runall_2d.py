@@ -14,20 +14,25 @@ from ICARUS.Database.db import DB
 from ICARUS.Software.OpenFoam.filesOpenFoam import MeshType
 from ICARUS.Workers.solver import Solver
 
+
 def main() -> None:
     """Main function to run multiple airfoil simulations"""
-    start_time:float = time.time()
+    start_time: float = time.time()
     # SETUP DB CONNECTION
     db = DB()
 
     # RUN SETUP
     # cleaning: bool = True
-    calcF2W: bool = True # False
-    calcOpenFoam: bool = True #False
-    calcXFoil: bool = True #False
-
+    calcF2W: bool = True  # False
+    calcOpenFoam: bool = True  # True
+    calcXFoil: bool = True
+    print(f"Running:")
+    print(f"\tFoil2Wake section: {calcF2W}")
+    print(f"\tXfoil: {calcXFoil}")
+    print(f"\tOpenfoam: {calcOpenFoam}")
     # LOOP
-    airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
+    # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"] 0008 F2W
+    airfoil_names: list[str] = ["4412"]
 
     # PARAMETERS FOR ESTIMATION
     chord_max: float = 0.18
@@ -56,7 +61,7 @@ def main() -> None:
     # ANGLE OF ATTACK SETUP
     aoa_min: float = -6
     aoa_max: float = 12
-    num_of_angles: float = (aoa_max - aoa_min) * 2 + 1
+    num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
     angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
         start=aoa_min,
         stop=aoa_max,
@@ -68,7 +73,7 @@ def main() -> None:
     ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.2}
     Ncrit = 9
 
-######################## START LOOP ###########################################
+    ######################## START LOOP ###########################################
     for airfoil_name in airfoil_names:
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil_name}\n")
@@ -80,6 +85,7 @@ def main() -> None:
         if calcF2W:
             f2w_stime: float = time.time()
             from ICARUS.Software.F2Wsection.f2w_section import get_f2w_section
+
             f2w_s: Solver = get_f2w_section(db)
 
             analysis: str = f2w_s.available_analyses_names()[0]  # ANGLES PARALLEL
@@ -95,10 +101,10 @@ def main() -> None:
             f2w_options.angles.value = angles
             f2w_s.print_analysis_options()
 
-            f2w_solver_parameters.f_trip_upper.value = ftrip_up['pos']
-            f2w_solver_parameters.f_trip_low.value = ftrip_low['pos']
+            f2w_solver_parameters.f_trip_upper.value = ftrip_up["pos"]
+            f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
-            f2w_solver_parameters.max_iter.value = 400
+            f2w_solver_parameters.max_iter.value = 100
             # f2w_solver_parameters.max_iter_bl.value = 300
             f2w_solver_parameters.timestep.value = 0.001
 
@@ -112,10 +118,11 @@ def main() -> None:
         if calcXFoil:
             xfoil_stime: float = time.time()
             from ICARUS.Software.Xfoil.xfoil import get_xfoil
+
             xfoil: Solver = get_xfoil(db)
 
             # Import Analysis
-            analysis: str = xfoil.available_analyses_names()[0]  # Run
+            analysis = xfoil.available_analyses_names()[0]  # Run
             xfoil.set_analyses(analysis)
 
             # Get Options
@@ -129,13 +136,15 @@ def main() -> None:
             xfoil_options.mach.value = MACH
             xfoil_options.max_aoa.value = aoa_max
             xfoil_options.min_aoa.value = aoa_min
-            xfoil_options.aoa_step.value = (aoa_max - aoa_min) / (num_of_angles + 1)
+            xfoil_options.aoa_step.value = (
+                0.5  # (aoa_max - aoa_min) / (num_of_angles + 1)
+            )
             xfoil.print_analysis_options()
 
             # Set Solver Options
-            xfoil_solver_parameters.max_iter.value = 400
+            xfoil_solver_parameters.max_iter.value = 100
             xfoil_solver_parameters.Ncrit.value = Ncrit
-            xfoil_solver_parameters.xtr.value = (ftrip_up['pos'], ftrip_low['pos'])
+            xfoil_solver_parameters.xtr.value = (ftrip_up["pos"], ftrip_low["pos"])
             xfoil_solver_parameters.print.value = False
             # xfoil.print_solver_options()
 
@@ -150,10 +159,11 @@ def main() -> None:
             for reyn in reynolds:
                 print(f"Running OpenFoam for Re={reyn}")
                 from ICARUS.Software.OpenFoam.open_foam import get_open_foam
+
                 open_foam: Solver = get_open_foam(db)
 
                 # Import Analysis
-                analysis: str = open_foam.available_analyses_names()[0]  # Run
+                analysis = open_foam.available_analyses_names()[0]  # Run
                 open_foam.set_analyses(analysis)
 
                 # Get Options
@@ -170,7 +180,7 @@ def main() -> None:
 
                 # Set Solver Options
                 of_solver_parameters.mesh_type.value = MeshType.structAirfoilMesher
-                of_solver_parameters.max_iterations.value = 400
+                of_solver_parameters.max_iterations.value = 100
                 of_solver_parameters.silent.value = False
                 # xfoil.print_solver_options()
 
@@ -180,14 +190,17 @@ def main() -> None:
             print(f"OpenFoam completed in {of_etime - of_stime} seconds")
 
         airfoil_etime: float = time.time()
-        print(f"Airfoil {airfoil_name} completed in {airfoil_etime - airfoil_stime} seconds")
-######################## END LOOP ##############################################
+        print(
+            f"Airfoil {airfoil_name} completed in {airfoil_etime - airfoil_stime} seconds",
+        )
+    ######################## END LOOP ##############################################
 
     end_time = time.time()
     print(f"Total time: {end_time - start_time}")
     print("########################################################################")
     print("Program Terminated")
     print("########################################################################")
+
 
 if __name__ == "__main__":
     main()

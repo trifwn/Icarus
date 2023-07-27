@@ -222,7 +222,6 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
     """
 
     for airf in airfoils:
-        print(airf)
         fname: str = f"{airf[4:]}.cld"
         polars: DataFrame = foil_dat[airf][solver]
 
@@ -239,7 +238,6 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
         data[5 + len(polars)] = "! Reyn numbers for which CL-CD are given\n"
         for i, Reyn in enumerate(list(polars.keys())):
             data[6 + len(polars) + i] = f"{Reyn.zfill(5)}\n"
-            print(Reyn)
         data[6 + 2 * len(polars)] = "\n"
         data = data[: 6 + 2 * len(polars) + 1]
 
@@ -285,7 +283,6 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
             data.append("\n")
         with open(fname, "w") as file:
             file.writelines(data)
-        print(f"{airf} completed")
 
 
 def bldFiles(bodies: list[dict[str, Any]], params: dict[str, Any]) -> None:
@@ -305,7 +302,7 @@ def bldFiles(bodies: list[dict[str, Any]], params: dict[str, Any]) -> None:
         )
         offset: float = round(bod["Offset"] / (bod["y_end"] - bod["y_0"]), ndigits=5)
         # Check Whether to split a symmetric body into two parts
-        if params["Split_Symmetric_Bodies"]:
+        if not params["Use_Grid"]:
             data[3] = f'1          {bod["NACA"]}       {bod["name"]}.WG\n'
         else:
             # WRITE GRID FILE Since Symmetric objects cant be defined parametrically

@@ -1,3 +1,5 @@
+from typing import Any
+
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import ndarray
@@ -23,7 +25,7 @@ def plot_airplane_polars(
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
     """
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)
+    axs: ndarray[Any, Any] = fig.subplots(2, 2)
 
     if len(airplanes) == 1:
         fig.suptitle(f"{airplanes[0]} Aero Coefficients", fontsize=16)

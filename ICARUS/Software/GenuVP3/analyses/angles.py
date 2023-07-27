@@ -1,10 +1,12 @@
 import os
+from threading import Thread
 from typing import Any
 
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
+from tqdm import tqdm
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import BASEGNVP3 as GENUBASE
@@ -12,7 +14,10 @@ from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Enviroment.definition import Environment
+from ICARUS.Software.GenuVP3.analyses.monitor_progress import parallel_monitor
+from ICARUS.Software.GenuVP3.analyses.monitor_progress import serial_monitor
 from ICARUS.Software.GenuVP3.filesInterface import run_gnvp_case
+from ICARUS.Software.GenuVP3.postProcess import progress
 from ICARUS.Software.GenuVP3.postProcess.forces import forces_to_polars
 from ICARUS.Software.GenuVP3.utils import define_movements
 from ICARUS.Software.GenuVP3.utils import make_surface_dict
@@ -20,8 +25,6 @@ from ICARUS.Software.GenuVP3.utils import Movement
 from ICARUS.Software.GenuVP3.utils import set_parameters
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import Wing
-
-# from ICARUS.Software.GenuVP3.postProcess.forces import rotateForces
 
 
 def gnvp_angle_case(
@@ -36,7 +39,7 @@ def gnvp_angle_case(
     movements: list[list[Movement]],
     bodies_dicts: list[dict[str, Any]],
     solver_options: dict[str, Any] | Struct,
-) -> str:
+) -> None:
     """
     Run a single angle simulation in GNVP3
 
@@ -61,7 +64,6 @@ def gnvp_angle_case(
     airfoils: list[str] = plane.airfoils
     foilsDB: Database_2D = db.foilsDB
 
-    print(f"Running Angles {angle}")
     folder: str = angle_to_case(angle)
     CASEDIR: str = os.path.join(PLANEDIR, folder)
     os.makedirs(CASEDIR, exist_ok=True)
@@ -88,8 +90,6 @@ def gnvp_angle_case(
         solver2D,
     )
 
-    return f"Angle {angle} Done"
-
 
 def run_gnvp_angles(
     plane: Airplane,
@@ -115,12 +115,6 @@ def run_gnvp_angles(
         environment (Environment): Enviroment Object
         solver_options (dict[str, Any]): Solver Options
     """
-    movements: list[list[Movement]] = define_movements(
-        plane.surfaces,
-        plane.CG,
-        plane.orientation,
-        plane.disturbances,
-    )
     bodies_dicts: list[dict[str, Any]] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
@@ -130,22 +124,65 @@ def run_gnvp_angles(
     for i, surface in enumerate(surfaces):
         bodies_dicts.append(make_surface_dict(surface, i))
 
+    movements: list[list[Movement]] = define_movements(
+        surfaces,
+        plane.CG,
+        plane.orientation,
+        plane.disturbances,
+    )
     print("Running Angles in Sequential Mode")
-    for angle in angles:
-        msg: str = gnvp_angle_case(
-            plane,
-            db,
-            solver2D,
-            maxiter,
-            timestep,
-            u_freestream,
-            angle,
-            environment,
-            movements,
-            bodies_dicts,
-            solver_options,
+
+    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    progress_bars: list[tqdm] = []
+    for i, angle in enumerate(angles):
+        folder: str = angle_to_case(angle)
+        CASEDIR: str = os.path.join(PLANEDIR, folder)
+
+        job = Thread(
+            target=gnvp_angle_case,
+            kwargs={
+                "plane": plane,
+                "db": db,
+                "solver2D": solver2D,
+                "maxiter": maxiter,
+                "timestep": timestep,
+                "u_freestream": u_freestream,
+                "angle": angle,
+                "environment": environment,
+                "movements": movements,
+                "bodies_dicts": bodies_dicts,
+                "solver_options": solver_options,
+            },
         )
-        print(msg)
+        pbar = tqdm(
+            total=maxiter,
+            desc=f"{angle}:",
+            position=i,
+            leave=True,
+            colour="#cc3300",
+            bar_format="{l_bar}{bar:30}{r_bar}",
+        )
+        progress_bars.append(pbar)
+
+        job_monitor = Thread(
+            target=serial_monitor,
+            kwargs={
+                "progress_bars": progress_bars,
+                "CASEDIR": CASEDIR,
+                "position": i,
+                "lock": None,
+                "max_iter": maxiter,
+                "refresh_progress": 2,
+            },
+        )
+
+        # Start
+        job.start()
+        job_monitor.start()
+
+        # Join
+        job.join()
+        job_monitor.join()
 
 
 def run_gnvp_angles_parallel(
@@ -172,12 +209,6 @@ def run_gnvp_angles_parallel(
         environment (Environment): Environment Object
         solver_options (dict[str, Any]): Solver Options
     """
-    movements: list[list[Movement]] = define_movements(
-        plane.surfaces,
-        plane.CG,
-        plane.orientation,
-        plane.disturbances,
-    )
     bodies_dict: list[dict[str, Any]] = []
 
     if solver_options["Split_Symmetric_Bodies"]:
@@ -187,30 +218,55 @@ def run_gnvp_angles_parallel(
     for i, surface in enumerate(surfaces):
         bodies_dict.append(make_surface_dict(surface, i))
 
+    movements: list[list[Movement]] = define_movements(
+        surfaces,
+        plane.CG,
+        plane.orientation,
+        plane.disturbances,
+    )
     from multiprocessing import Pool
 
     print("Running Angles in Parallel Mode")
-    with Pool(12) as pool:
-        args_list = [
-            (
-                plane,
-                db,
-                solver2D,
-                maxiter,
-                timestep,
-                u_freestream,
-                angle,
-                environment,
-                movements,
-                bodies_dict,
-                solver_options,
-            )
-            for angle in angles
-        ]
-        res: list[str] = pool.starmap(gnvp_angle_case, args_list)
 
-        for msg in res:
-            print(msg)
+    def run() -> None:
+        with Pool(12) as pool:
+            args_list = [
+                (
+                    plane,
+                    db,
+                    solver2D,
+                    maxiter,
+                    timestep,
+                    u_freestream,
+                    angle,
+                    environment,
+                    movements,
+                    bodies_dict,
+                    solver_options,
+                )
+                for angle in angles
+            ]
+            pool.starmap(gnvp_angle_case, args_list)
+
+    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    folders: list[str] = [angle_to_case(angle) for angle in angles]
+    CASEDIRS: list[str] = [os.path.join(PLANEDIR, folder) for folder in folders]
+
+    refresh_pogress: float = 2
+
+    job = Thread(target=run)
+    job_monitor = Thread(
+        target=parallel_monitor,
+        args=(CASEDIRS, angles, maxiter, refresh_pogress),
+    )
+
+    # Start
+    job.start()
+    job_monitor.start()
+
+    # Join
+    job.join()
+    job_monitor.join()
 
 
 def process_gnvp3_angle_run(plane: Airplane, db: DB) -> DataFrame:

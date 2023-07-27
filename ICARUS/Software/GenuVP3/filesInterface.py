@@ -29,6 +29,7 @@ def gnvp_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
                 [os.path.join(ANGLEDIR, "gnvp3")],
                 stdin=fin,
                 stdout=fout,
+                stderr=fout,
             )
 
     os.chdir(HOMEDIR)

@@ -157,7 +157,7 @@ class AirfoilD(af.Airfoil):  # type: ignore
         # y[-1]= 0
         self.selig2: FloatArray = np.vstack((x, y))
 
-    def save(self,directory:str | None = None) -> None:
+    def save(self, directory: str | None = None) -> None:
         """
         Saves the airfoil in the selig format.
 

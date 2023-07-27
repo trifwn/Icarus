@@ -85,9 +85,10 @@ class Analysis:
         string.write(
             "\n\nIf there are multiple values you should inspect them sepretly by calling the option name\n",
         )
-        return string.read()
 
-    __repr__: Callable[..., str] = __str__
+        return string.getvalue()
+
+    # __repr__: Callable[..., str] = __str__
 
     def get_solver_options(self, verbose: bool = False) -> Struct:
         """
@@ -292,7 +293,7 @@ class Analysis:
         ) = state
 
     def toJSON(self) -> str:
-        encoded: str = jsonpickle.encode(self)
+        encoded: str = jsonpickle.encode(self)  # type: ignore
         return encoded
 
     def __lshift__(self, other: dict[str, Any]) -> "Analysis":

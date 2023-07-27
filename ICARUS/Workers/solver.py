@@ -121,7 +121,7 @@ class Solver:
             return self.availableAnalyses[self.mode].get_options(verbose)
         else:
             print("Analysis hase not been Selected")
-            _ = self.available_analyses_names(verbose=verbose)
+            _ = self.available_analyses_names(verbose)
             raise Exception("Analysis hase not been Selected")
 
     def get_solver_parameters(self, verbose: bool = False) -> Struct:

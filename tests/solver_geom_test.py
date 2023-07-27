@@ -39,7 +39,6 @@ def gnvp_geometry(plot: bool = False) -> tuple[list[FloatArray], list[FloatArray
     mesh_grid_plane: list[FloatArray] = np.meshgrid(
         grid_plane,
     )  # converts the array to a meshgrid
-
     if plot:
         gnvp_wake(airplane, case)
     return mesh_grid_plane, mesh_grid_gnvp

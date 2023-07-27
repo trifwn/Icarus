@@ -26,7 +26,6 @@ def gnvprun(mode: str = "Parallel") -> None:
 
     # Set Analysis
     if mode == "Parallel":
-        # gnvp3.setParallel(True)
         analysis: str = gnvp3.available_analyses_names()[2]
     else:
         analysis = gnvp3.available_analyses_names()[1]
@@ -34,15 +33,16 @@ def gnvprun(mode: str = "Parallel") -> None:
     gnvp3.set_analyses(analysis)
 
     # Set Options
-    options = gnvp3.get_analysis_options(verbose=True)
+    options: Struct = gnvp3.get_analysis_options(verbose=True)
+    solver_parameters: Struct = gnvp3.get_solver_parameters()
 
     AoAmin = -3
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
-    angles_all: ndarray[Any, dtype[Any]] = np.linspace(AoAmin, AoAmax, NoAoA)
+    angles_all: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all if ang != 0]
     u_freestream = 20
-    maxiter = 20
+    maxiter = 10
     timestep = 10
 
     airplane.define_dynamic_pressure(u_freestream, EARTH.air_density)
@@ -55,6 +55,9 @@ def gnvprun(mode: str = "Parallel") -> None:
     options.timestep.value = timestep
     options.u_freestream.value = u_freestream
     options.angles.value = angles
+
+    solver_parameters.Split_Symmetric_Bodies.value = True
+    solver_parameters.Use_Grid.value = True
 
     _ = gnvp3.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()

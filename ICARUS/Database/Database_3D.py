@@ -83,7 +83,7 @@ class Database_3D:
                 with open(file, encoding="UTF-8") as f:
                     json_obj: str = f.read()
                 try:
-                    state: State = jsonpickle.decode(json_obj)
+                    state: State = jsonpickle.decode(json_obj)  # type: ignore
                     states[state.name] = state
                 except Exception as error:
                     print(f"Error decoding states object {plane}! Got error {error}")
@@ -227,6 +227,8 @@ class Database_3D:
         for plane in list(self.planes.keys()):
             self.data[plane] = pd.DataFrame()
             pln: Airplane = self.planes[plane]
+            if plane not in self.raw_data.keys():
+                continue
             self.data[plane]["AoA"] = self.raw_data[plane]["AoA"]
             AoA: np.ndarray[Any, np.dtype[floating[Any]]] = (
                 self.raw_data[plane]["AoA"] * np.pi / 180
@@ -260,10 +262,10 @@ class Database_3D:
 
                 My_new: ndarray[Any, dtype[floating[Any]]] = My
 
-                Q = 0.5 * 1.225 * 20.0**2
+                Q: float = 0.5 * 1.225 * 20.0**2
                 try:
                     state: State = self.states[pln.name]["Unstick"]
-                    Q: float = state.dynamic_pressure
+                    Q = state.dynamic_pressure
                 except KeyError as e:
                     # print(e)
                     print(

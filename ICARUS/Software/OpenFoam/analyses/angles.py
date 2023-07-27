@@ -1,73 +1,73 @@
+import os
+from ast import arg
+from multiprocessing import Pool
+from subprocess import call
+from threading import Thread
+from typing import Any
+
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+from tqdm.auto import tqdm
+
 from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Database import BASEOPENFOAM
 from ICARUS.Database.db import DB
 from ICARUS.Software import runOFscript
+from ICARUS.Software.OpenFoam.analyses.monitor_progress import parallel_monitor
+from ICARUS.Software.OpenFoam.analyses.monitor_progress import serial_monitor
+from ICARUS.Software.OpenFoam.filesOpenFoam import setup_open_foam
 
 
-import os
-import numpy as np
-from numpy import ndarray, dtype, floating
-from typing import Any
-from subprocess import call
-
-from ICARUS.Software.OpenFoam.filesOpenFoam import MeshType, setup_open_foam
-from ICARUS.Database import BASEOPENFOAM
-
-def run_angle(CASEDIR: str, angle: float) -> str:
+def run_angle(
+    REYNDIR: str,
+    ANGLEDIR: str,
+) -> None:
     """Function to run OpenFoam for a given angle given it is already setup
     Args:
-        CASEDIR (str): CASE DIRECTORY
-        angle (float): Angle to run
+        REYNDIR (str): REYNOLDS CASE DIRECTORY
+        ANGLEDIR (float): ANGLE DIRECTORY
     """
-    if angle >= 0:
-        folder: str = str(angle)[::-1].zfill(7)[::-1]
-    else:
-        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
-
-    ANGLEDIR: str = os.path.join(CASEDIR, folder)
+    pass
     os.chdir(ANGLEDIR)
-    print(f"{angle} deg: Simulation Starting")
     call(["/bin/bash", "-c", f"{runOFscript}"])
-    os.chdir(CASEDIR)
+    os.chdir(REYNDIR)
 
-    return f"{angle} deg: Simulation Done"
+
+def run_angles(
+    REYNDIR: str,
+    ANGLEDIRS: list[str],
+) -> None:
+    """
+    Function to run multiple Openfoam Simulations (many AoAs) after they
+    are already setup
+
+    Args:
+        REYNDIR (str): Reynolds Parent Directory
+        ANGLEDIRS (list[str]): Angle Directory
+    """
+    with Pool(processes=12) as pool:
+        args_list: list[tuple[str, str]] = [
+            (REYNDIR, angle_dir) for angle_dir in ANGLEDIRS
+        ]
+        pool.starmap(run_angle, args_list)
 
 
 def angles_serial(
     db: DB,
     airfoil: AirfoilD,
-    angles: list[float] | ndarray[Any, dtype[floating]],
+    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     reynolds: float,
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
 
-    #! TODO : ADD TO DB 
-    os.chdir(db.foilsDB.DATADIR)
-    AFDIR = os.path.join(
-        db.foilsDB.DATADIR,
-        f"NACA{airfoil.name}"
-    )
-    os.makedirs(AFDIR, exist_ok=True)
-    exists = False
-    for i in os.listdir():
-        if i.startswith("naca"):
-            exists = True
-    if not exists:
-            airfoil.save(AFDIR)
-    os.chdir(AFDIR)
-
-    reynolds_str: str = np.format_float_scientific(
-        reynolds,
-        sign=False,
-        precision=3,
-    )
-    
-    REYNDIR: str = os.path.join(
-        AFDIR,
-        f"Reynolds_{reynolds_str.replace('+', '')}",
+    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
+        airfoil=airfoil,
+        reynolds=reynolds,
+        angles=angles,
     )
 
-    HOMEDIR: str = db.HOMEDIR
     setup_open_foam(
         HOMEDIR,
         AFDIR,
@@ -77,48 +77,59 @@ def angles_serial(
         reynolds,
         mach,
         angles,
-        solver_options
+        solver_options,
     )
-    for angle in angles:
-        msg = run_angle(REYNDIR, angle)
-        print(msg)
+    max_iter: int = solver_options["max_iterations"]
+
+    progress_bars = []
+    for pos, angle_dir in enumerate(ANGLEDIRS):
+        job = Thread(target=run_angle, args=(REYNDIR, angle_dir))
+
+        pbar = tqdm(
+            total=max_iter,
+            desc=f"\t\t{angles[pos]} Progress:",
+            position=pos,
+            leave=True,
+            colour="#003366",
+            bar_format="{l_bar}{bar:30}{r_bar}",
+        )
+        progress_bars.append(pbar)
+
+        job_monitor = Thread(
+            target=serial_monitor,
+            kwargs={
+                "progress_bars": progress_bars,
+                "ANGLEDIR": angle_dir,
+                "position": pos,
+                "lock": None,
+                "max_iter": max_iter,
+                "refresh_progress": 2,
+            },
+        )
+        # Start Jobs
+        job.start()
+        job_monitor.start()
+
+        # Join
+        job.join()
+        job_monitor.join()
     os.chdir(HOMEDIR)
+
 
 def angles_parallel(
     db: DB,
     airfoil: AirfoilD,
-    angles: list[float] | ndarray[Any, dtype[floating]],
+    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     reynolds: float,
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-    #! TODO : ADD TO DB 
-    os.chdir(db.foilsDB.DATADIR)
-    AFDIR = os.path.join(
-        db.foilsDB.DATADIR,
-        f"NACA{airfoil.name}"
-    )
-    os.makedirs(AFDIR, exist_ok=True)
-    exists = False
-    for i in os.listdir():
-        if i.startswith("naca"):
-            exists = True
-    if not exists:
-            airfoil.save(AFDIR)
-    os.chdir(AFDIR)
 
-    reynolds_str: str = np.format_float_scientific(
-        reynolds,
-        sign=False,
-        precision=3,
+    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
+        airfoil=airfoil,
+        reynolds=reynolds,
+        angles=angles,
     )
-    
-    REYNDIR: str = os.path.join(
-        AFDIR,
-        f"Reynolds_{reynolds_str.replace('+', '')}",
-    )
-
-    HOMEDIR: str = db.HOMEDIR
     setup_open_foam(
         HOMEDIR,
         AFDIR,
@@ -128,12 +139,17 @@ def angles_parallel(
         reynolds,
         mach,
         angles,
-        solver_options
+        solver_options,
     )
-    from multiprocessing import Pool
-    with Pool() as pool:
-        args_list = [(REYNDIR, angle) for angle in angles]
-        res = pool.starmap(run_angle, args_list)
-    
-    for msg in res:
-        print(msg)
+    max_iter: int = solver_options["max_iterations"]
+
+    job = Thread(target=run_angles, args=(REYNDIR, ANGLEDIRS))
+    job_monitor = Thread(target=parallel_monitor, args=(ANGLEDIRS, angles, max_iter))
+
+    # Start Jobs
+    job.start()
+    job_monitor.start()
+
+    # Join
+    job.join()
+    job_monitor.join()

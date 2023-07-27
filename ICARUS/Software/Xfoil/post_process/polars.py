@@ -1,21 +1,22 @@
-from tkinter import W
+import os
+from typing import Any
+
 import numpy as np
 from numpy import ndarray
-
-import os
-
 from pandas import DataFrame
 
 from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.Database_2D import Database_2D
+
 
 def save_multiple_reyn(
     db: Database_2D,
     airfoil: AirfoilD,
-    polars: list[dict[str, ndarray]],
+    polars: list[dict[str, FloatArray]],
     reynolds: list[float],
 ) -> None:
-    airfoil_dir: str =os.path.join(db.DATADIR, f"NACA{airfoil.name}")
+    airfoil_dir: str = os.path.join(db.DATADIR, f"NACA{airfoil.name}")
     import pprint
 
     for i, reyn_data in enumerate(polars):
@@ -30,14 +31,16 @@ def save_multiple_reyn(
         os.chdir(reyndir)
 
         cwd: str = os.getcwd()
-        df = DataFrame(reyn_data).T.rename(columns={"index": "AoA", 0: "CL", 1: "CD", 2: "CM"})
+        df = DataFrame(reyn_data).T.rename(
+            columns={"index": "AoA", 0: "CL", 1: "CD", 2: "CM"},
+        )
         fname = "clcd.xfoil"
         df.to_csv(fname, sep="\t", index=True, index_label="AoA")
 
 
 def save_multiple_airfoils_reyn(
     airfoils: str,
-    polars: list[list[dict[str, ndarray]]],
+    polars: list[list[dict[str, FloatArray]]],
     reynolds: list[float],
 ) -> None:
 

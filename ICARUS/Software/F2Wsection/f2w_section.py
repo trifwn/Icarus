@@ -1,13 +1,19 @@
 from typing import Any
+
 from ICARUS.Database.db import DB
-from ICARUS.Software.F2Wsection.analyses.angles import process_f2w_run, run_multiple_reynolds_sequentially, run_multiple_reynolds_parallel, run_single_reynolds
+from ICARUS.Software.F2Wsection.analyses.angles import process_f2w_run
+from ICARUS.Software.F2Wsection.analyses.angles import run_multiple_reynolds_parallel
+from ICARUS.Software.F2Wsection.analyses.angles import (
+    run_multiple_reynolds_sequentially,
+)
+from ICARUS.Software.F2Wsection.analyses.angles import run_single_reynolds
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_f2w_section(db:DB) -> Solver:
-    f2w_section = Solver(name = "f2w_section", solver_type = "2D-IBLM", fidelity = 2, db=db)
-    
+def get_f2w_section(db: DB) -> Solver:
+    f2w_section = Solver(name="f2w_section", solver_type="2D-IBLM", fidelity=2, db=db)
+
     options: dict[str, Any] = {
         "db": "Database",
         "airfoil": "Airfoil to run",
@@ -17,27 +23,27 @@ def get_f2w_section(db:DB) -> Solver:
         # "flap"
     }
 
-    solver_options: dict[str, tuple[Any,str]] = {
+    solver_options: dict[str, tuple[Any, str]] = {
         "max_iter": (
-                200,
-                "NTIMEM | Maximum number of iterations",
-            ),
-        "timestep":(
-                0.001,
-                "Simulation timestep (DT1)"
-            ),
-        "f_trip_low":(
-                0.1,
-                "Transition points for positive and negative angles for the lower surface",
-            ),
+            200,
+            "NTIMEM | Maximum number of iterations",
+        ),
+        "timestep": (
+            0.001,
+            "Simulation timestep (DT1)",
+        ),
+        "f_trip_low": (
+            0.1,
+            "Transition points for positive and negative angles for the lower surface",
+        ),
         "f_trip_upper": (
-                0.1,
-                "Transition points for positive and negative angles for the upper surface",
-            ),
+            0.1,
+            "Transition points for positive and negative angles for the upper surface",
+        ),
         "Ncrit": (
-                9,
-                "N critical value for transition according to e to N method",
-            ),
+            9,
+            "N critical value for transition according to e to N method",
+        ),
         # 0.                       ! TEANGLE (deg)
         # 1.                       ! UINF
         # 201                      ! NTIMEM
@@ -73,15 +79,15 @@ def get_f2w_section(db:DB) -> Solver:
         # 9.                       ! AMPLLO_tr
         # 0                        ! ITSEPAR (1: 2 wake calculation) ---> DO NOT CHANGE
         # 1                        ! ISTEADY (1: steady calculation) ---> DO NOT CHANGE
-   }
+    }
 
     multi_reyn_parallel: Analysis = Analysis(
-        solver_name= "f2w_section",
-        analysis_name= "Multiple_Reynolds_Parallel",
-        run_function= run_multiple_reynolds_parallel,
-        options= options,
-        solver_options= solver_options,
-        unhook= process_f2w_run,
+        solver_name="f2w_section",
+        analysis_name="Multiple_Reynolds_Parallel",
+        run_function=run_multiple_reynolds_parallel,
+        options=options,
+        solver_options=solver_options,
+        unhook=process_f2w_run,
     )
 
     multi_reyn_serial: Analysis = multi_reyn_parallel << {
@@ -90,23 +96,21 @@ def get_f2w_section(db:DB) -> Solver:
         "unhook": process_f2w_run,
     }
 
-    options: dict[str, Any] = {
+    options = {
         "db": "Database",
         "airfoil": "Airfoil to run",
         "reynolds": "Reynolds number to run",
         "mach": "Mach number",
-        "f_trip_low": "Transition points for positive and negative angles for the lower surface",
-        "f_trip_upper": "Transition points for positive and negative angles for the upper surface",
-        "all_angles": "All angles to run",
+        "angles": "All angles to run",
     }
 
     signle_reyn: Analysis = Analysis(
-        solver_name= "f2w_section",
-        analysis_name= "Single_Reynolds",
-        run_function= run_single_reynolds,
-        options= options,
-        solver_options= solver_options,
-        unhook= process_f2w_run,
+        solver_name="f2w_section",
+        analysis_name="Single_Reynolds",
+        run_function=run_single_reynolds,
+        options=options,
+        solver_options=solver_options,
+        unhook=process_f2w_run,
     )
 
     f2w_section.add_analyses(
@@ -114,7 +118,7 @@ def get_f2w_section(db:DB) -> Solver:
             multi_reyn_parallel,
             multi_reyn_serial,
             signle_reyn,
-        ]
+        ],
     )
 
     return f2w_section

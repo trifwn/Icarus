@@ -4,18 +4,24 @@ import shutil
 import numpy as np
 
 
-def io_file(airfile: str) -> None:
+def io_file(airfile: str, name: str) -> None:
     """Creates the io.files file for section f2w
 
     Args:
         airfile (str): Name of the file containing the airfoil geometry
+        name (str): Positive or Negative Run
     """
-    fname = "io.files"
+    fname = f"io_{name}.files"
     with open(fname, encoding="utf-8") as file:
         data: list[str] = file.readlines()
-    data[1] = "design.inp\n"
-    data[2] = "f2w.inp\n"
-    data[3] = f"{airfile}\n"
+    data[1] = f"design_{name}.inp\n"
+    data[2] = f"f2w_{name}.inp\n"
+    data[3] = f"{airfile}_{name}\n"
+    shutil.copy(airfile, f"{airfile}_{name}")
+
+    data[13] = f"SOL{name}.INI\n"
+    data[14] = f"SOL{name}.TMP\n"
+    data[15] = f"zx_{name}"
     with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
 
@@ -40,7 +46,7 @@ def design_file(
         data.append(str(ang) + "\n")
     data.append("ANGLE DIRECTORIES (8 CHAR MAX!!!)\n")
     for ang in angles:
-        if ang>=0:
+        if name == "pos":
             data.append(str(ang)[::-1].zfill(7)[::-1] + "/\n")
         else:
             data.append("m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "/\n")
@@ -73,11 +79,11 @@ def input_file(
 
     data[2] = f"{max_iter}       ! NTIMEM\n"
     data[3] = f"{timestep}     ! DT1\n"
-    data[4] = "50000     ! DT2\n"  # IS NOT IMPLEMENTED
+    data[4] = "5000      ! DT2\n"  # IS NOT IMPLEMENTED
     data[5] = "0.025     ! EPS1\n"
     data[6] = "0.025     ! EPS2\n"
     data[7] = "1.00      ! EPSCOE\n"
-    data[27] ="200       ! NTIME_bl\n"
+    data[27] = "400       ! NTIME_bl\n"
     data[
         30
     ] = f"{np.format_float_scientific(reynolds, sign=False, precision=2).zfill(8)}  ! Reynolds\n"
@@ -106,14 +112,19 @@ def setup_f2w(F2WBASE: str, HOMEDIR: str, CASEDIR: str) -> None:
         "f2w.inp",
         "f2w_neg.inp",
         "f2w_pos.inp",
-        "io.files",
+        "io_neg.files",
+        "io_pos.files",
         "write_out",
     ]
     for item in filesNeeded:
         src: str = os.path.join(F2WBASE, item)
         dst: str = os.path.join(CASEDIR, item)
         shutil.copy(src, dst)
+
     if "foil_section" not in next(os.walk(CASEDIR))[2]:
         src = os.path.join(HOMEDIR, "ICARUS", "foil_section")
         dst = os.path.join(CASEDIR, "foil_section")
-        os.symlink(src, dst)
+        try:
+            os.symlink(src, dst)
+        except FileExistsError:
+            pass

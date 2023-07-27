@@ -222,7 +222,7 @@ class State:
         Returns:
             str: Json String
         """
-        encoded: str = jsonpickle.encode(self)
+        encoded: str = jsonpickle.encode(self)  # type: ignore
         return encoded
 
     def save(self) -> None:

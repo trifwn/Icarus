@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-from nptyping import Float
-from nptyping import NDArray
-from nptyping import Shape
+from numpy import dtype
 from numpy import floating
+from numpy import ndarray
 
 from .strip import Strip
 from ICARUS.Airfoils.airfoilD import AirfoilD
@@ -89,11 +88,11 @@ class Wing:
 
         # Make Dihedral Angle Distribution
         if is_symmetric:
-            self._chord_dist: NDArray[Shape[N,], Float] = chord_fun(
+            self._chord_dist: FloatArray = chord_fun(
                 self.N,
                 *chord,
             )
-            self._span_dist: NDArray[Shape[N,], Float] = span_fun(
+            self._span_dist: FloatArray = span_fun(
                 span / 2,
                 self.N,
             )
@@ -145,21 +144,11 @@ class Wing:
         self.find_volume()
 
         # Find Center of Mass
-        self.CG: NDArray[
-            Shape[
-                3,
-            ],
-            Float,
-        ] = np.empty(3, dtype=float)
+        self.CG: FloatArray = np.empty(3, dtype=float)
         self.find_center_mass()
 
         # Calculate Moments
-        self.inertia: NDArray[
-            Shape[
-                6,
-            ],
-            Float,
-        ] = np.empty((6), dtype=float)
+        self.inertia: FloatArray = np.empty((6), dtype=float)
         self.calculate_inertia(self.mass, self.CG)
 
     def split_symmetric_wing(self) -> tuple[Wing, Wing]:
@@ -277,12 +266,7 @@ class Wing:
             show_plot = True
 
         if prev_movement is None:
-            movement: NDArray[
-                Shape[
-                    3,
-                ],
-                Float,
-            ] = np.zeros(3)
+            movement: FloatArray = np.zeros(3)
         else:
             movement = prev_movement
 
@@ -508,7 +492,7 @@ class Wing:
                 # volume of the tetrahedron
                 self.volume_distribution[i, j] = 0.5 * (area_front + area_back) * dx
 
-        self.volume = np.sum(self.volume_distribution)
+        self.volume = float(np.sum(self.volume_distribution))
         if self.is_symmetric:
             self.volume = self.volume * 2
 
@@ -620,27 +604,27 @@ class Wing:
         )
 
     @property
-    def Ixx(self) -> np.floating[Any]:
+    def Ixx(self) -> float:
         return self.inertia[0]
 
     @property
-    def Iyy(self) -> np.floating[Any]:
+    def Iyy(self) -> float:
         return self.inertia[1]
 
     @property
-    def Izz(self) -> np.floating[Any]:
+    def Izz(self) -> float:
         return self.inertia[2]
 
     @property
-    def Ixz(self) -> np.floating[Any]:
+    def Ixz(self) -> float:
         return self.inertia[3]
 
     @property
-    def Ixy(self) -> np.floating[Any]:
+    def Ixy(self) -> float:
         return self.inertia[4]
 
     @property
-    def Iyz(self) -> np.floating[Any]:
+    def Iyz(self) -> float:
         return self.inertia[5]
 
     def getGrid(self, which: str = "camber") -> FloatArray:
@@ -676,7 +660,7 @@ class Wing:
 def define_linear_span(
     sp: float,
     Ni: int,
-) -> NDArray[Shape[Any], Float]:
+) -> FloatArray:
     """Returns a linearly spaced span array."""
     return np.linspace(0, sp, Ni).round(12)
 
@@ -685,6 +669,6 @@ def define_linear_chord(
     Ni: int,
     ch1: float,
     ch2: float,
-) -> NDArray[Shape[Any], Float]:
+) -> FloatArray:
     """Returns a linearly spaced chord array."""
     return np.linspace(ch1, ch2, Ni).round(12)
