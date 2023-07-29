@@ -20,7 +20,7 @@ def gnvprun(mode: str = "Parallel") -> None:
     from ICARUS.Enviroment.definition import EARTH
 
     # Get Solver
-    from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
+    from ICARUS.Software.GenuVP.gnvp3 import get_gnvp3
 
     gnvp3: Solver = get_gnvp3(db)
 
@@ -42,8 +42,8 @@ def gnvprun(mode: str = "Parallel") -> None:
     angles_all: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all if ang != 0]
     u_freestream = 20
-    maxiter = 10
-    timestep = 10
+    maxiter = 400
+    timestep = 1e-3
 
     airplane.define_dynamic_pressure(u_freestream, EARTH.air_density)
 
@@ -56,7 +56,7 @@ def gnvprun(mode: str = "Parallel") -> None:
     options.u_freestream.value = u_freestream
     options.angles.value = angles
 
-    solver_parameters.Split_Symmetric_Bodies.value = True
+    solver_parameters.Split_Symmetric_Bodies.value = False
     solver_parameters.Use_Grid.value = True
 
     _ = gnvp3.get_analysis_options(verbose=True)

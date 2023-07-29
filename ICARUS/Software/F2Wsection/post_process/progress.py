@@ -1,14 +1,11 @@
 import os
 import re
-from re import Match
 from typing import Optional
 
 from ICARUS.Core.tail import tail
 
-def latest_time(
-    REYNDIR: str,
-    name: str
-) -> tuple[Optional[int], Optional[float], bool]:
+
+def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float], bool]:
     """Get the latest iteration of F2W
 
     Args:
@@ -16,31 +13,33 @@ def latest_time(
         name (str): pos.out or neg.out depending on run
 
     Returns:
-        Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle where the simulation is, and an error flag.
+        Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle
+                                                    where the simulation is, and an error flag.
     """
+
     def get_angle() -> Optional[float]:
         folders: list[str] = next(os.walk(REYNDIR))[1]
         angles: list[float] = []
         angle: float = 0
         for folder in folders:
-            if name == 'pos.out' and folder.startswith('m'):
+            if name == "pos.out" and folder.startswith("m"):
                 continue
-            elif name == 'pos.out' and not folder.startswith('m'):
+            elif name == "pos.out" and not folder.startswith("m"):
                 angle = float(folder)
 
-            if name == 'neg.out' and not folder.startswith('m'):
+            if name == "neg.out" and not folder.startswith("m"):
                 continue
-            elif name == 'neg.out' and folder.startswith('m'):
+            elif name == "neg.out" and folder.startswith("m"):
                 angle = float(folder[1:])
             angles.append(angle)
-        
+
         if len(angles) == 0:
             return None
         return max(angles)
 
     filename: str = os.path.join(REYNDIR, name)
     try:
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             data_b: list[bytes] = tail(f, 300)
         data: list[str] = [line.decode() for line in data_b]
     except FileNotFoundError:

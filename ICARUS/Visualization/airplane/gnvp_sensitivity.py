@@ -1,20 +1,18 @@
-from struct import Struct
-
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from numpy import ndarray
-from pandas import DataFrame
+from pandas import Series
 
-from . import colors
-from . import markers
+from ICARUS.Core.struct import Struct
+from ICARUS.Visualization import colors
+from ICARUS.Visualization import markers
 from ICARUS.Vehicle.plane import Airplane
 
 
 def plot_sensitivity(
     data: Struct,
     plane: Airplane,
-    trim: DataFrame,
+    trim: Series,
     relative: bool = False,
     vars2s: list[str] = ["All"],
     solvers: list[str] = ["2D"],

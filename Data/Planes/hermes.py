@@ -54,11 +54,11 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
     )
     # main_wing.plotWing()
 
-    elevatorPos: ndarray[Any, dtype[floating[Any]]] = np.array(
+    elevator_pos: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.54 - 0.130 / 4, 0.0, 0.0],
         dtype=float,
     )
-    elevatorOrientantion: ndarray[Any, dtype[floating[Any]]] = np.array(
+    elevator_orientantion: ndarray[Any, dtype[floating[Any]]] = np.array(
         [0.0, 0.0, 0.0],
         dtype=float,
     )
@@ -66,8 +66,8 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
     elevator = Wing(
         name="tail",
         airfoil=airfoils["NACA0008"],
-        origin=origin + elevatorPos,
-        orientation=elevatorOrientantion,
+        origin=origin + elevator_pos,
+        orientation=elevator_orientantion,
         is_symmetric=True,
         span=2 * 0.169,
         sweep_offset=0,

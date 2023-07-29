@@ -8,13 +8,12 @@ from nptyping import Float
 from nptyping import NDArray
 from nptyping import Shape
 from pandas import DataFrame
-from pandas import Series
 
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.struct import Struct
-from ICARUS.Software.GenuVP3.utils import Movement
+from ICARUS.Software.GenuVP.utils import Movement
 
 
 def input_file() -> None:
@@ -223,7 +222,7 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
 
     for airf in airfoils:
         fname: str = f"{airf[4:]}.cld"
-        polars: DataFrame = foil_dat[airf][solver]
+        polars: dict[str, DataFrame] = foil_dat[airf][solver]
 
         # GET FILE
         with open(fname) as file:
@@ -236,18 +235,22 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
 
         # WRITE REYNOLDS NUMBERS !! ITS GOING TO BE USED !!
         data[5 + len(polars)] = "! Reyn numbers for which CL-CD are given\n"
-        for i, Reyn in enumerate(list(polars.keys())):
-            data[6 + len(polars) + i] = f"{Reyn.zfill(5)}\n"
+        for i, reyn in enumerate(list(polars.keys())):
+            data[6 + len(polars) + i] = f"{reyn.zfill(5)}\n"
         data[6 + 2 * len(polars)] = "\n"
         data = data[: 6 + 2 * len(polars) + 1]
 
         # GET ALL 2D AIRFOIL POLARS IN ONE TABLE
-        keys = list(polars.keys())
+        keys: list[str] = list(polars.keys())
         df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
+        df.rename(
+            index={"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"},
+            inplace=True,
+        )
         for reyn in keys[1:]:
             df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
-            df.rename(
-                columns={"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
+            df2.rename(
+                index={"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
                 inplace=True,
             )
             df = pd.merge(df, df2, on="AoA", how="outer")
@@ -258,7 +261,7 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
         df = filltable(df)
 
         # Get Angles
-        angles = df["AoA"].values
+        angles = df["AoA"].to_numpy()
         anglenum: int = len(angles)
 
         # FILL FILE

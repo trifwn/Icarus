@@ -7,9 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import dtype
 from numpy import floating
-from numpy import ndarray
 
 from .strip import Strip
 from ICARUS.Airfoils.airfoilD import AirfoilD
@@ -96,9 +94,7 @@ class Wing:
                 span / 2,
                 self.N,
             )
-            self._offset_dist = (self._span_dist - span / 2) * (
-                sweep_offset / (span / 2)
-            )
+            self._offset_dist = (self._span_dist) * (sweep_offset / (span / 2))
             self._dihedral_dist: FloatArray = (self._span_dist - span / 2) * np.sin(
                 self.gamma,
             )
@@ -271,7 +267,7 @@ class Wing:
             movement = prev_movement
 
         # for strip in self.all_strips:
-        #     strip.plotStrip(fig, ax, movement)
+        #     strip.plot(fig, ax, movement)
 
         for i in np.arange(0, self.N - 1):
             for j in np.arange(0, self.M - 1):
@@ -334,15 +330,9 @@ class Wing:
             ys_upper[i, :] = ys[i, :]
 
             for j in np.arange(0, self.N):
-                zs_upper[i, j] = self._dihedral_dist[j] + self._chord_dist[
-                    j
-                ] * self.airfoil.y_upper(i / (self.M - 1))
-                zs_lower[i, j] = self._dihedral_dist[j] + self._chord_dist[
-                    j
-                ] * self.airfoil.y_lower(i / (self.M - 1))
-                zs[i, j] = self._dihedral_dist[j] + self._chord_dist[
-                    j
-                ] * self.airfoil.camber_line(
+                zs_upper[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.y_upper(i / (self.M - 1))
+                zs_lower[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.y_lower(i / (self.M - 1))
+                zs[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.camber_line(
                     i / (self.M - 1),
                 )
 
@@ -384,13 +374,12 @@ class Wing:
         num: float = 0
         denum: float = 0
         for i in np.arange(0, self.N - 1):
-            num += ((self._chord_dist[i] + self._chord_dist[i + 1]) / 2) ** 2 * (
-                self._span_dist[i + 1] - self._span_dist[i]
+            num += float(
+                ((self._chord_dist[i] + self._chord_dist[i + 1]) / 2) ** 2
+                * (self._span_dist[i + 1] - self._span_dist[i]),
             )
-            denum += (
-                (self._chord_dist[i] + self._chord_dist[i + 1])
-                / 2
-                * (self._span_dist[i + 1] - self._span_dist[i])
+            denum += float(
+                (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i]),
             )
         self.mean_aerodynamic_chord = num / denum
 
@@ -398,12 +387,10 @@ class Wing:
         num = 0
         denum = 0
         for i in np.arange(0, self.N - 1):
-            num += (
-                (self._chord_dist[i] + self._chord_dist[i + 1])
-                / 2
-                * (self._span_dist[i + 1] - self._span_dist[i])
+            num += float(
+                (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i]),
             )
-            denum += self._span_dist[i + 1] - self._span_dist[i]
+            denum += float(self._span_dist[i + 1] - self._span_dist[i])
         self.standard_mean_chord = num / denum
 
     def find_aspect_ratio(self) -> None:
@@ -417,9 +404,7 @@ class Wing:
         for i in np.arange(0, self.N - 1):
             _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
             _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
-            self.S += (
-                2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
-            )
+            self.S += 2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
 
         g_up = self.grid_upper
         g_low = self.grid_lower
@@ -563,20 +548,12 @@ class Wing:
                 y_upp = (self.grid_upper[i + 1, j, 1] + self.grid_upper[i, j, 1]) / 2
                 y_low = (self.grid_lower[i + 1, j, 1] + self.grid_lower[i, j, 1]) / 2
 
-                z_upp1 = (
-                    self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]
-                ) / 2
-                z_upp2 = (
-                    self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]
-                ) / 2
+                z_upp1 = (self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]) / 2
+                z_upp2 = (self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]) / 2
                 z_upp = (z_upp1 + z_upp2) / 2
 
-                z_low1 = (
-                    self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]
-                ) / 2
-                z_low2 = (
-                    self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]
-                ) / 2
+                z_low1 = (self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]) / 2
+                z_low2 = (self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]) / 2
                 z_low = (z_low1 + z_low2) / 2
 
                 xd = ((x_upp + x_low) / 2 - cog[0]) ** 2
@@ -599,33 +576,31 @@ class Wing:
                 I_xy += self.volume_distribution[i, j] * (xd * yd)
                 I_yz += self.volume_distribution[i, j] * (yd * zd)
 
-        self.inertia = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (
-            mass / self.volume
-        )
+        self.inertia = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
 
     @property
     def Ixx(self) -> float:
-        return self.inertia[0]
+        return float(self.inertia[0])
 
     @property
     def Iyy(self) -> float:
-        return self.inertia[1]
+        return float(self.inertia[1])
 
     @property
     def Izz(self) -> float:
-        return self.inertia[2]
+        return float(self.inertia[2])
 
     @property
     def Ixz(self) -> float:
-        return self.inertia[3]
+        return float(self.inertia[3])
 
     @property
     def Ixy(self) -> float:
-        return self.inertia[4]
+        return float(self.inertia[4])
 
     @property
     def Iyz(self) -> float:
-        return self.inertia[5]
+        return float(self.inertia[5])
 
     def getGrid(self, which: str = "camber") -> FloatArray:
         """

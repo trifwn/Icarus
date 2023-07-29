@@ -8,8 +8,8 @@ from typing import ValuesView
 
 class Struct:
     __slots__: List[str] = ["_data", "_depth"]
-    # _data: Dict[str, Any]
-    # _depth: int
+    _data: dict[str, Any]
+    _depth: int
 
     def __new__(cls, *args: Any, **kwargs: Any) -> "Struct":
         """Create a new Struct instance."""
@@ -30,6 +30,10 @@ class Struct:
     def __getitem__(self, key: str) -> Any:
         """Get an item from the Struct instance by key."""
         return self._data[key]
+
+    def __iter__(self) -> Iterator[str]:
+        "Iterate over Struct"
+        return self._data.__iter__()
 
     def __setitem__(self, key: str, value: Any) -> None:
         """Set an item in the Struct instance by key and value."""
@@ -79,10 +83,6 @@ class Struct:
     def __str__(self) -> str:
         """Return a string representation of the data in the Struct instance."""
         return str(self._data)
-
-    def __iter__(self) -> Iterator[str]:
-        """Return an iterator over the keys in the Struct instance."""
-        return iter(self._data)
 
     def items(self) -> ItemsView[str, Any]:
         """Return an iterator over the items in the Struct instance."""
@@ -160,9 +160,7 @@ class Struct:
                     new_dict[k] = v
 
             if depth == 0:
-                new_dict = {
-                    k: _invert_nested_dict(v, depth + 1) for k, v in new_dict.items()
-                }
+                new_dict = {k: _invert_nested_dict(v, depth + 1) for k, v in new_dict.items()}
             return new_dict
 
         inverted: dict[Any, Any] = _invert_nested_dict(self._data, self._depth)

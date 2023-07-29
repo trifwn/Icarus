@@ -16,9 +16,7 @@ def clean_open_foam(HOMEDIR: str, CASEDIR: str) -> None:
             os.chdir(folder)
             iteration_folder: list[str] = next(os.walk("."))[1]
             iteration_num: list[int] = [
-                int(iteration_folder[j])
-                for j in range(len(iteration_folder))
-                if iteration_folder[j].isdigit()
+                int(iteration_folder[j]) for j in range(len(iteration_folder)) if iteration_folder[j].isdigit()
             ]
             iteration_num = sorted(iteration_num)
             iteration_folder = [str(i) for i in iteration_num]

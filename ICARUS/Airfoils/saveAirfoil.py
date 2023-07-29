@@ -39,7 +39,7 @@ def saveAirfoil(options: list[str]) -> FloatArray | int | None:
         return pt1
     elif mode == 2:
         # # Fetch from the web mode 2
-        pt2: FloatArray = f.selig2
+        pt2: FloatArray = f.selig_web
         if save:
             np.savetxt(filen, pt2.T)
         return pt2.T
@@ -49,6 +49,6 @@ def saveAirfoil(options: list[str]) -> FloatArray | int | None:
 
 
 if __name__ == "__main__":
-    ## python airfoil.py -s file naca mode
+    # python airfoil.py -s file naca mode
     # saveAirfoil('-s','naca3123','3123','0')
     saveAirfoil(sys.argv[1:])

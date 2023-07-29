@@ -29,7 +29,7 @@ def airplane_polars(plot: bool | None = False) -> tuple[DataFrame, DataFrame]:
     read_polars_3d(db3d, BMARKLOC, "bmark")
     planenames.append("XFLR_bmark")
     if plot:
-        from ICARUS.Visualization.airplanePolars import plot_airplane_polars
+        from ICARUS.Visualization.airplane.gnvp_polars import plot_airplane_polars
 
         plot_airplane_polars(db3d.data, planenames, ["All"], size=(10, 10))
 

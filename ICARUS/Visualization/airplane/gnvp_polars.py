@@ -1,12 +1,11 @@
-from typing import Any
-
 import matplotlib.pyplot as plt
+from matplotlib.markers import MarkerStyle
 from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
 
-from . import colors
-from . import markers
+from ICARUS.Visualization import colors
+from ICARUS.Visualization import markers
 from ICARUS.Core.struct import Struct
 
 
@@ -25,7 +24,7 @@ def plot_airplane_polars(
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
     """
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray[Any, Any] = fig.subplots(2, 2)
+    axs: ndarray = fig.subplots(2, 2)  # type: ignore
 
     if len(airplanes) == 1:
         fig.suptitle(f"{airplanes[0]} Aero Coefficients", fontsize=16)
@@ -61,7 +60,7 @@ def plot_airplane_polars(
                     cm = polar["Cm"]
                     skip = True
                     c: str = "m"
-                    m: str = "x"
+                    m: MarkerStyle = MarkerStyle("x")
                     style: str = f"{c}{m}-"
 
                     label: str = f"{airplane}"

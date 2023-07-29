@@ -96,6 +96,8 @@ class Airplane:
                 l, r = surface.split_symmetric_wing()
                 surfaces.append(l)
                 surfaces.append(r)
+            else:
+                surfaces.append(surface)
         return surfaces
 
     def add_point_masses(

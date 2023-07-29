@@ -195,7 +195,6 @@ def run_multiple_reynolds_sequentially(
     angles: list[float],
     solver_options: dict[str, float],
 ) -> None:
-
     for i, reyn in enumerate(reynolds):
         run_single_reynolds(db, airfoil, reyn, mach, angles, solver_options, i)
 
@@ -205,7 +204,6 @@ def process_f2w_run(
     airfoil: AirfoilD,
     reynolds: list[float] | float,
 ) -> dict[str, DataFrame]:
-
     polars: dict[str, DataFrame] = {}
 
     if isinstance(reynolds, float):

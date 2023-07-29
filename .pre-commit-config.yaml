@@ -14,9 +14,11 @@ repos:
       - id: requirements-txt-fixer
 
   - repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 23.7.0
     hooks:
-      - id: black
+      - args: ["--line-length=120", "--skip-string-normalization"]
+        id: black
+
 
   - repo: https://github.com/asottile/reorder-python-imports
     rev: v3.9.0
@@ -48,3 +50,10 @@ repos:
         additional_dependencies:
           - "types-tabulate"
           - "numpy"
+
+  # - repo: https://github.com/pylint-dev/pylint
+  #   rev: v2.17.5
+  #   hooks:
+  #   -   id: pylint
+        # args:
+        # - --errors-only

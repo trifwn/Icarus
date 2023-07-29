@@ -15,7 +15,7 @@ from ICARUS.Software import setup_of_script
 class MeshType(Enum):
     """Enum for Mesh Type"""
 
-    #! TODO: IMPLEMET Other Meshes
+    # ! TODO: IMPLEMET Other Meshes
     structAirfoilMesher = 0
     copy_from = 1
 
@@ -99,9 +99,7 @@ def constant_folder(
     filename: str = os.path.join(CASEDIR, "constant", "transportProperties")
     with open(filename, encoding="UTF-8", newline="\n") as file:
         data: list[str] = file.readlines()
-    data[
-        20
-    ] = f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1/reynolds,sign=False,precision=3)};\n"
+    data[20] = f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1/reynolds,sign=False,precision=3)};\n"
     with open(filename, "w", encoding="UTF-8") as file:
         file.writelines(data)
 

@@ -33,7 +33,5 @@ def disturbance_to_case(dst: Disturbance) -> str:
     elif dst.isPositive:
         folder = "p" + str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
     else:
-        folder = (
-            "m" + str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
-        )
+        folder = "m" + str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
     return folder

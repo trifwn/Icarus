@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 from numpy import dtype
 from numpy import ndarray
+from pandas import Series
 
 import tests.wing_test as wing_test
 from tests.airplane_polars_test import airplane_polars
@@ -35,20 +36,20 @@ class BaseAirplaneTests(unittest.TestCase):
         # pass
 
     def test3_3d_polars(self) -> None:
-        des, act = airplane_polars(plot=False)
+        des, act = airplane_polars(plot=True)
         prefered_pol = "2D"
 
-        AoA_d = des["AoA"].astype(float)
-        AoA = act["AoA"].astype(float)
+        AoA_d: Series[float] = des["AoA"].astype(float)
+        AoA: Series[float] = act["AoA"].astype(float)
 
-        CL_d = des["CL"]
-        CL = act[f"CL_{prefered_pol}"]
+        CL_d: Series[float] = des["CL"].astype(float)
+        CL: Series[float] = act[f"CL_{prefered_pol}"].astype(float)
 
-        CD_d = des["CD"]
-        CD = act[f"CD_{prefered_pol}"]
+        CD_d: Series[float] = des["CD"].astype(float)
+        CD: Series[float] = act[f"CD_{prefered_pol}"].astype(float)
 
-        Cm_d = des["Cm"]
-        Cm = act[f"Cm_{prefered_pol}"]
+        Cm_d: Series[float] = des["Cm"].astype(float)
+        Cm: Series[float] = act[f"Cm_{prefered_pol}"].astype(float)
 
         # Compare All Values tha correspond to same AoA
         # to x decimal places (except AoA)
@@ -56,8 +57,8 @@ class BaseAirplaneTests(unittest.TestCase):
         for a in AoA:
             for x, x_d in zip([CL, CD, Cm], [CL_d, CD_d, Cm_d]):
                 np.testing.assert_almost_equal(
-                    x_d[AoA_d == a].values,
-                    x[AoA == a].values,
+                    actual=x[AoA == a].values,
+                    desired=x_d[AoA_d == a].values,
                     decimal=dec_prec,
                 )
             # np.testing.assert_almost_equal(

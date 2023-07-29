@@ -2,8 +2,8 @@ import numpy as np
 
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.utils import angle_to_case
-from ICARUS.Software.GenuVP3.postProcess.getWakeData import get_wake_data
-from ICARUS.Visualization.GNVPwake import gnvp_wake
+from ICARUS.Software.GenuVP.post_process.getWakeData import get_wake_data
+from ICARUS.Visualization.airplane.gnvp_wake import gnvp_wake
 
 
 def gnvp_geometry(plot: bool = False) -> tuple[list[FloatArray], list[FloatArray]]:

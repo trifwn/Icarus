@@ -1,10 +1,11 @@
+from matplotlib.markers import MarkerStyle
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
 
-from . import colors
-from . import markers
+from .. import colors
+from .. import markers
 from ICARUS.Core.struct import Struct
 
 
@@ -15,7 +16,8 @@ def plot_airfoil_polars(
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
 ) -> None:
-    """_summary_
+    """
+    # ! TODO make the DB connection handle that
 
     Args:
         data (dict[str, dict[str, dict[str, DataFrame]]]): Nested Dictionary with the airfoil polars
@@ -65,15 +67,15 @@ def plot_airfoil_polars(
                 aoa, cl, cd, cm = polar.T.values
 
                 c: str = colors[j]
-                m: str = markers[i]
+                m: MarkerStyle = markers[i]
                 style: str = f"{c}{m}-"
                 label: str = f"{airfoil}: {reynolds} - {solver}"
                 axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)
                 axs[1, 0].plot(aoa, cl, style, label=label, markersize=3, linewidth=1)
                 axs[1, 1].plot(cd, cl, style, label=label, markersize=3, linewidth=1)
                 axs[0, 0].plot(aoa, cm, style, label=label, markersize=3, linewidth=1)
-            except KeyError as solver:
-                print(f"Run Doesn't Exist: {airfoil},{reynolds},{solver}")
+            except KeyError as solv:
+                print(f"Run Doesn't Exist: {airfoil},{reynolds},{solv}")
 
     fig.tight_layout()
     if len(solvers) == 3:

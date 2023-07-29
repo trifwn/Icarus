@@ -4,11 +4,11 @@ from typing import Any
 
 from pandas import DataFrame
 
-from .filesGNVP import make_input_files
-from .postProcess.forces import forces_to_pertrubation_results
-from .postProcess.forces import forces_to_polars
+from .files_gnvp3 import make_input_files
+from ICARUS.Software.GenuVP.post_process.forces import forces_to_pertrubation_results
+from ICARUS.Software.GenuVP.post_process.forces import forces_to_polars
 from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Software.GenuVP3.utils import Movement
+from ICARUS.Software.GenuVP.utils import Movement
 
 
 def gnvp_execute(HOMEDIR: str, ANGLEDIR: str) -> int:

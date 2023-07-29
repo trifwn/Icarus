@@ -14,15 +14,14 @@ from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Enviroment.definition import Environment
-from ICARUS.Software.GenuVP3.analyses.monitor_progress import parallel_monitor
-from ICARUS.Software.GenuVP3.analyses.monitor_progress import serial_monitor
-from ICARUS.Software.GenuVP3.filesInterface import run_gnvp_case
-from ICARUS.Software.GenuVP3.postProcess import progress
-from ICARUS.Software.GenuVP3.postProcess.forces import forces_to_polars
-from ICARUS.Software.GenuVP3.utils import define_movements
-from ICARUS.Software.GenuVP3.utils import make_surface_dict
-from ICARUS.Software.GenuVP3.utils import Movement
-from ICARUS.Software.GenuVP3.utils import set_parameters
+from ICARUS.Software.GenuVP.analyses.monitor_progress import parallel_monitor
+from ICARUS.Software.GenuVP.analyses.monitor_progress import serial_monitor
+from ICARUS.Software.GenuVP.files.gnvp3_interface import run_gnvp_case
+from ICARUS.Software.GenuVP.post_process.forces import forces_to_polars
+from ICARUS.Software.GenuVP.utils import define_movements
+from ICARUS.Software.GenuVP.utils import make_surface_dict
+from ICARUS.Software.GenuVP.utils import Movement
+from ICARUS.Software.GenuVP.utils import set_parameters
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import Wing
 

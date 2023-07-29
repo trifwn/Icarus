@@ -1,5 +1,4 @@
 import os
-import stat
 from typing import Any
 from typing import Literal
 
@@ -16,7 +15,7 @@ from . import APPHOME
 from . import DB3D
 from ICARUS.Core.struct import Struct
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Software.GenuVP3.postProcess.convergence import getLoadsConvergence
+from ICARUS.Software.GenuVP.post_process.convergence import getLoadsConvergence
 from ICARUS.Vehicle.plane import Airplane
 
 # from ICARUS.Software.GenuVP3.postProcess.convergence import addErrorConvergence2df
@@ -83,7 +82,7 @@ class Database_3D:
                 with open(file, encoding="UTF-8") as f:
                     json_obj: str = f.read()
                 try:
-                    state: State = jsonpickle.decode(json_obj)  # type: ignore
+                    state: State = jsonpickle.decode(json_obj)
                     states[state.name] = state
                 except Exception as error:
                     print(f"Error decoding states object {plane}! Got error {error}")
@@ -136,7 +135,7 @@ class Database_3D:
                 )
                 pln: Airplane = self.planes[planename]
                 try:
-                    from ICARUS.Software.GenuVP3.filesInterface import make_polars
+                    from ICARUS.Software.GenuVP.files.gnvp3_interface import make_polars
 
                     CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
                     make_polars(CASEDIR, self.HOMEDIR)
@@ -230,22 +229,14 @@ class Database_3D:
             if plane not in self.raw_data.keys():
                 continue
             self.data[plane]["AoA"] = self.raw_data[plane]["AoA"]
-            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = (
-                self.raw_data[plane]["AoA"] * np.pi / 180
-            )
+            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
             for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-                Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][
-                    f"TFORC{enc}(1)"
-                ]
+                Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(1)"]
                 # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-                Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][
-                    f"TFORC{enc}(3)"
-                ]
+                Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(3)"]
 
                 # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-                My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][
-                    f"TAMOM{enc}(2)"
-                ]
+                My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TAMOM{enc}(2)"]
                 # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
                 Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
@@ -266,8 +257,7 @@ class Database_3D:
                 try:
                     state: State = self.states[pln.name]["Unstick"]
                     Q = state.dynamic_pressure
-                except KeyError as e:
-                    # print(e)
+                except KeyError:
                     print(
                         f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
                     )

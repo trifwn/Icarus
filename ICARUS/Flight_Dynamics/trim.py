@@ -44,21 +44,15 @@ def trim_state(state: "State") -> dict[str, float]:
     d_cm = state.polars["Cm"][trim_loc2] - state.polars["Cm"][trim_loc1]
     d_aoa = state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1]
 
-    aoa_trim = (
-        state.polars["AoA"][trim_loc1] - state.polars["Cm"][trim_loc1] * d_aoa / d_cm
-    )
+    aoa_trim = state.polars["AoA"][trim_loc1] - state.polars["Cm"][trim_loc1] * d_aoa / d_cm
 
-    cm_trim = state.polars["Cm"][trim_loc1] + (
-        state.polars["Cm"][trim_loc2] - state.polars["Cm"][trim_loc1]
-    ) * (aoa_trim - state.polars["AoA"][trim_loc1]) / (
-        state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1]
-    )
+    cm_trim = state.polars["Cm"][trim_loc1] + (state.polars["Cm"][trim_loc2] - state.polars["Cm"][trim_loc1]) * (
+        aoa_trim - state.polars["AoA"][trim_loc1]
+    ) / (state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1])
 
-    cl_trim = state.polars["CL"][trim_loc1] + (
-        state.polars["CL"][trim_loc2] - state.polars["CL"][trim_loc1]
-    ) * (aoa_trim - state.polars["AoA"][trim_loc1]) / (
-        state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1]
-    )
+    cl_trim = state.polars["CL"][trim_loc1] + (state.polars["CL"][trim_loc2] - state.polars["CL"][trim_loc1]) * (
+        aoa_trim - state.polars["AoA"][trim_loc1]
+    ) / (state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1])
 
     # Print How accurate is the trim
     print(

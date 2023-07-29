@@ -6,7 +6,7 @@ from numpy import ndarray
 
 
 def separate_angles(
-    all_angles: list[float] | ndarray[Any, dtype[floating]],
+    all_angles: list[float] | ndarray[Any, dtype[floating[Any]]],
 ) -> tuple[list[float], list[float]]:
     """Given A list of angles it separates them in positive and negative
     Args:

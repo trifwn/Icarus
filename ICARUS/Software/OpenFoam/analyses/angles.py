@@ -1,5 +1,4 @@
 import os
-from ast import arg
 from multiprocessing import Pool
 from subprocess import call
 from threading import Thread
@@ -47,9 +46,7 @@ def run_angles(
         ANGLEDIRS (list[str]): Angle Directory
     """
     with Pool(processes=12) as pool:
-        args_list: list[tuple[str, str]] = [
-            (REYNDIR, angle_dir) for angle_dir in ANGLEDIRS
-        ]
+        args_list: list[tuple[str, str]] = [(REYNDIR, angle_dir) for angle_dir in ANGLEDIRS]
         pool.starmap(run_angle, args_list)
 
 
@@ -61,7 +58,6 @@ def angles_serial(
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-
     HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
@@ -124,7 +120,6 @@ def angles_parallel(
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-
     HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,

@@ -1,10 +1,11 @@
+from matplotlib.markers import MarkerStyle
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
 
-from . import colors
-from . import markers
+from .. import colors
+from .. import markers
 from ICARUS.Core.struct import Struct
 
 
@@ -16,7 +17,7 @@ def plot_airfoil_reynolds(
     size: tuple[int, int] = (10, 10),
 ) -> None:
     """Function to plot airfoil polars for a given list of airfoils and solvers.
-
+    # ! TODO make DB Handle that
     Args:
         data (dict[str, dict[str, dict[str, DataFrame]]]): Nested dictionary containing
                                                         the airfoil Polars
@@ -54,7 +55,7 @@ def plot_airfoil_reynolds(
             polar = data[airfoil_name][solver][reynolds]
             aoa, cl, cd, cm = polar.T.values
             c: str = colors[j]
-            m: str = markers[j]
+            m: MarkerStyle = markers[j]
             style: str = f"{c}{m}-"
             label: str = f"{airfoil_name}: {reynolds} - {solver}"
             axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)

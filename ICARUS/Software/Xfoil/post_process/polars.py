@@ -1,8 +1,6 @@
 import os
-from typing import Any
 
 import numpy as np
-from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.Airfoils.airfoilD import AirfoilD
@@ -17,7 +15,6 @@ def save_multiple_reyn(
     reynolds: list[float],
 ) -> None:
     airfoil_dir: str = os.path.join(db.DATADIR, f"NACA{airfoil.name}")
-    import pprint
 
     for i, reyn_data in enumerate(polars):
         try:
@@ -30,7 +27,6 @@ def save_multiple_reyn(
         os.makedirs(reyndir, exist_ok=True)
         os.chdir(reyndir)
 
-        cwd: str = os.getcwd()
         df = DataFrame(reyn_data).T.rename(
             columns={"index": "AoA", 0: "CL", 1: "CD", 2: "CM"},
         )
@@ -43,7 +39,6 @@ def save_multiple_airfoils_reyn(
     polars: list[list[dict[str, FloatArray]]],
     reynolds: list[float],
 ) -> None:
-
     masterDir: str = os.getcwd()
     os.chdir(masterDir)
     for airfoil, clcd_data in zip(airfoils, polars):

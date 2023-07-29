@@ -2,7 +2,6 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import dtype
@@ -85,11 +84,9 @@ class Strip:
             ndarray[Any, dtype[floating[Any]]]: Array of points defining the root.
         """
         strip: list[ndarray[Any, dtype[floating[Any]]]] = [
-            self.x0
-            + self.chord[0] * np.hstack((self.airfoil._x_upper, self.airfoil._x_lower)),
+            self.x0 + self.chord[0] * np.hstack((self.airfoil._x_upper, self.airfoil._x_lower)),
             self.y0 + np.repeat(0, 2 * self.airfoil.n_points),
-            self.z0
-            + self.chord[0] * np.hstack((self.airfoil._y_upper, self.airfoil._y_lower)),
+            self.z0 + self.chord[0] * np.hstack((self.airfoil._y_upper, self.airfoil._y_lower)),
         ]
         return np.array(strip)
 
@@ -101,11 +98,9 @@ class Strip:
             ndarray[Any, dtype[floating[Any]]]: Array of points defining the tip.
         """
         strip: list[ndarray[Any, dtype[floating[Any]]]] = [
-            self.x1
-            + self.chord[1] * np.hstack((self.airfoil._x_upper, self.airfoil._x_lower)),
+            self.x1 + self.chord[1] * np.hstack((self.airfoil._x_upper, self.airfoil._x_lower)),
             self.y1 + np.repeat(0, 2 * self.airfoil.n_points),
-            self.z1
-            + self.chord[1] * np.hstack((self.airfoil._y_upper, self.airfoil._y_lower)),
+            self.z1 + self.chord[1] * np.hstack((self.airfoil._y_upper, self.airfoil._y_lower)),
         ]
         return np.array(strip)
 

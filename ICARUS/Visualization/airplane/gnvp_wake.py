@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.Software.GenuVP3.postProcess.getWakeData import get_wake_data
+from ICARUS.Software.GenuVP.post_process.getWakeData import get_wake_data
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -19,7 +18,7 @@ def gnvp_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) ->
     A1, B1, C1 = get_wake_data(plane, case)
 
     fig: Figure = plt.figure(figsize=figsize)
-    ax: Axes3D = fig.add_subplot(projection="3d")
+    ax = fig.add_subplot(projection="3d")
     ax.set_title(f"{plane.name} wake")
     ax.set_ylabel("y")
     ax.set_zlabel("z")

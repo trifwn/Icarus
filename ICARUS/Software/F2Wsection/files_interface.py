@@ -1,13 +1,10 @@
 import os
-import shutil
 import subprocess
-from ast import arg
 from time import sleep
 from typing import Any
 
 from ICARUS.Database import BASEFOIL2W as F2WBASE
 from ICARUS.Software.F2Wsection import files_f2w as ff2w
-from ICARUS.Software.F2Wsection.utils import separate_angles
 
 
 def sequential_run(
@@ -20,7 +17,6 @@ def sequential_run(
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-
     os.chdir(CASEDIR)
     num_of_angles: int = len(angles)
 

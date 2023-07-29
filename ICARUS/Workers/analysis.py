@@ -1,14 +1,11 @@
 import inspect
 from io import StringIO
-from tokenize import String
 from typing import Any
 from typing import Callable
-from typing import Union
 
 import jsonpickle
 import jsonpickle.ext.numpy as jsonpickle_numpy
 import jsonpickle.ext.pandas as jsonpickle_pd
-import numpy as np
 from pandas import DataFrame
 from tabulate import tabulate
 
@@ -92,10 +89,12 @@ class Analysis:
 
     def get_solver_options(self, verbose: bool = False) -> Struct:
         """
-        Get Solver Options for the current analysis. Solver Options refer to internal solver settings not the analysis itself.
+        Get Solver Options for the current analysis. Solver Options refer to internal solver settings not
+        the analysis itself.
 
         Args:
-            verbose (bool, optional): Whether to also display the solver options and their description. Defaults to False.
+            verbose (bool, optional): Whether to also display the solver options and their description.
+                                      Defaults to False.
 
         Returns:
             Struct: Object Reffering to the solver Options. Can be used to set the options
@@ -118,7 +117,8 @@ class Analysis:
 
     def get_options(self, verbose: bool = False) -> Struct:
         """
-        Get the options for the current analysis. This referes to the neccessary values that have to be set to run the analysis
+        Get the options for the current analysis. This referes to the neccessary values that have to be set
+        to run the analysis
 
         Args:
             verbose (bool, optional): Whether to print the options. Defaults to False.
@@ -182,12 +182,9 @@ class Analysis:
             Any: Analysis Results as set by the unhook function
         """
         if self.check_options():
-            kwargs: dict[str, Any] = {
-                option: self.options[option].value for option in self.options.keys()
-            }
+            kwargs: dict[str, Any] = {option: self.options[option].value for option in self.options.keys()}
             solver_options: dict[str, Any] = {
-                option: self.solver_options[option].value
-                for option in self.solver_options.keys()
+                option: self.solver_options[option].value for option in self.solver_options.keys()
             }
             res: Any = self.execute(**kwargs, solver_options=solver_options)
             print("Analysis Completed")
@@ -224,9 +221,7 @@ class Analysis:
         Returns:
             Analysis: Copy of the Analysis
         """
-        option_dict: dict[str, Any] = {
-            k: v.description for k, v in self.options.items()
-        }
+        option_dict: dict[str, Any] = {k: v.description for k, v in self.options.items()}
         solver_options: dict[str, tuple[Any, Any]] = {
             k: (v.value, v.description) for k, v in self.solver_options.items()
         }
@@ -239,9 +234,7 @@ class Analysis:
         )
 
     def __copy__(self) -> "Analysis":
-        option_dict: dict[str, Any] = {
-            k: v.description for k, v in self.options.items()
-        }
+        option_dict: dict[str, Any] = {k: v.description for k, v in self.options.items()}
         solver_options: dict[str, tuple[Any, str]] = {
             k: (v.value, v.description) for k, v in self.solver_options.items()
         }
@@ -255,14 +248,7 @@ class Analysis:
 
     def __getstate__(
         self,
-    ) -> tuple[
-        str,
-        str,
-        Callable[..., Any],
-        Struct,
-        Struct,
-        Callable[..., DataFrame | int],
-    ]:
+    ) -> tuple[str, str, Callable[..., Any], Struct, Struct, Callable[..., DataFrame | int]]:
         return (
             self.solver_name,
             self.name,
@@ -293,7 +279,7 @@ class Analysis:
         ) = state
 
     def toJSON(self) -> str:
-        encoded: str = jsonpickle.encode(self)  # type: ignore
+        encoded: str = jsonpickle.encode(self)
         return encoded
 
     def __lshift__(self, other: dict[str, Any]) -> "Analysis":

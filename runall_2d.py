@@ -26,7 +26,7 @@ def main() -> None:
     calcF2W: bool = True  # False
     calcOpenFoam: bool = True  # True
     calcXFoil: bool = True
-    print(f"Running:")
+    print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
     print(f"\tXfoil: {calcXFoil}")
     print(f"\tOpenfoam: {calcOpenFoam}")
@@ -43,9 +43,9 @@ def main() -> None:
     speed_of_sound: float = 340.3
 
     # MACH ESTIMATION
-    mach_min: float = calc_mach(10, speed_of_sound)
     mach_max: float = calc_mach(30, speed_of_sound)
-    mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(mach_max, mach_min, 10)
+    # mach_min: float = calc_mach(10, speed_of_sound)
+    # mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(mach_max, mach_min, 10)
     MACH: float = mach_max
 
     # REYNOLDS ESTIMATION
@@ -73,7 +73,7 @@ def main() -> None:
     ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.2}
     Ncrit = 9
 
-    ######################## START LOOP ###########################################
+    #   ############################## START LOOP ###########################################
     for airfoil_name in airfoil_names:
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil_name}\n")
@@ -136,9 +136,7 @@ def main() -> None:
             xfoil_options.mach.value = MACH
             xfoil_options.max_aoa.value = aoa_max
             xfoil_options.min_aoa.value = aoa_min
-            xfoil_options.aoa_step.value = (
-                0.5  # (aoa_max - aoa_min) / (num_of_angles + 1)
-            )
+            xfoil_options.aoa_step.value = 0.5  # (aoa_max - aoa_min) / (num_of_angles + 1)
             xfoil.print_analysis_options()
 
             # Set Solver Options
@@ -193,7 +191,7 @@ def main() -> None:
         print(
             f"Airfoil {airfoil_name} completed in {airfoil_etime - airfoil_stime} seconds",
         )
-    ######################## END LOOP ##############################################
+    #   ############################### END LOOP ##############################################
 
     end_time = time.time()
     print(f"Total time: {end_time - start_time}")

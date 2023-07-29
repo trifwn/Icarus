@@ -31,7 +31,8 @@ def design_file(
     angles: list[float],
     name: str,
 ) -> None:
-    """Generates the desing.inp file for section f2w. Depending on the name, it will generate the file for positive or negative angles
+    """Generates the desing.inp file for section f2w. Depending on the name, it will generate
+    the file for positive or negative angles
 
     Args:
         number_of_angles (int): Number of angles
@@ -84,9 +85,7 @@ def input_file(
     data[6] = "0.025     ! EPS2\n"
     data[7] = "1.00      ! EPSCOE\n"
     data[27] = "400       ! NTIME_bl\n"
-    data[
-        30
-    ] = f"{np.format_float_scientific(reynolds, sign=False, precision=2).zfill(8)}  ! Reynolds\n"
+    data[30] = f"{np.format_float_scientific(reynolds, sign=False, precision=2).zfill(8)}  ! Reynolds\n"
     data[32] = f"{str(mach)[::-1].zfill(3)[::-1]}      ! Mach     Number\n"
     data[34] = f"{str(ftrip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n"
     data[35] = f"{str(ftrip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n"

@@ -1,9 +1,10 @@
+from matplotlib.markers import MarkerStyle
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
-from . import colors
-from . import markers
+from ICARUS.Visualization import colors
+from ICARUS.Visualization import markers
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 
@@ -111,7 +112,7 @@ def plot_convergence(
                     toomuchData = True
                     break
                 c: str = colors[i]
-                m: str = markers[j]
+                m: MarkerStyle = markers[j]
                 style: str = f"{c}{m}--"
 
                 label: str = f"{plane} - {solver} - {ang_num}"

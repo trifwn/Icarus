@@ -1,10 +1,9 @@
 import os
-import pprint
 import re
-from re import Match
 from typing import Optional
 
 from ICARUS.Core.tail import tail
+
 
 def latest_time(
     CASEDIR: str,
@@ -18,7 +17,6 @@ def latest_time(
     Returns:
         Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle where the simulation is, and an error flag.
     """
-
 
     filename: str = os.path.join(CASEDIR, 'gnvp.out')
     try:

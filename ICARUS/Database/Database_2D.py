@@ -157,13 +157,29 @@ class Database_2D:
             print("Airfoil Doesn't exist! You should compute it first!")
             return None
 
+    @staticmethod
+    def angle_to_dir(angle: float) -> str:
+        """
+        Converts an angle to a directory name.
+
+        Args:
+            angle (float): Angle
+
+        Returns:
+            str: Directory name
+        """
+        if angle >= 0:
+            folder: str = str(angle)[::-1].zfill(7)[::-1]
+        else:
+            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+        return folder
+
     def generate_airfoil_directories(
         self,
         airfoil: AirfoilD,
         reynolds: float,
         angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     ) -> tuple[str, str, str, list[str]]:
-
         AFDIR = os.path.join(
             self.DATADIR,
             f"NACA{airfoil.name}",
@@ -195,10 +211,7 @@ class Database_2D:
 
         ANGLEDIRS: list[str] = []
         for angle in angles:
-            if angle >= 0:
-                folder: str = str(angle)[::-1].zfill(7)[::-1]
-            else:
-                folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+            folder = self.angle_to_dir(angle)
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
         return self.HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS
@@ -206,14 +219,14 @@ class Database_2D:
     def __str__(self) -> str:
         return "Foil Database"
 
-    def __enter__(self) -> None:
-        """
-        TODO: Implement this method.
-        """
-        pass
+    # def __enter__(self) -> None:
+    #     """
+    #     TODO: Implement this method.
+    #     """
+    #     pass
 
-    def __exit__(self) -> None:
-        """
-        TODO: Implement this method.
-        """
-        pass
+    # def __exit__(self) -> None:
+    #     """
+    #     TODO: Implement this method.
+    #     """
+    #     pass

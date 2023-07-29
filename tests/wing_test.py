@@ -5,13 +5,15 @@ from numpy import floating
 from numpy import ndarray
 
 
-def geom() -> tuple[
-    float,
-    float,
-    float,
-    ndarray[Any, dtype[floating[Any]]],
-    ndarray[Any, dtype[floating[Any]]],
-]:
+def geom() -> (
+    tuple[
+        float,
+        float,
+        float,
+        ndarray[Any, dtype[floating[Any]]],
+        ndarray[Any, dtype[floating[Any]]],
+    ]
+):
     print("Testing Geometry...")
 
     from Data.Planes.simple_wing import Simplewing

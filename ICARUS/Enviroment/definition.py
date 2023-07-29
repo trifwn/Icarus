@@ -11,9 +11,7 @@ class Environment:
         """
         self.name: str = name
         self.GRAVITY: float = 9.81
-        self.air_density: float = (
-            1.225  # self.get_density_from_altitude(altitude) #1.225
-        )
+        self.air_density: float = 1.225  # self.get_density_from_altitude(altitude) #1.225
         self.air_dynamic_viscosity: float = 1.56e-5
         self.air_kinematic_viscosity: float = 1.56e-5
         self.air_temperature: float = 20 + 273.15

@@ -1,4 +1,3 @@
-from ast import arg
 from typing import Any
 
 import numpy as np
@@ -24,7 +23,6 @@ def single_reynolds_run(
     airfoil: AirfoilD,
     solver_options: dict[str, Any] = {},
 ) -> ndarray[Any, dtype[floating[Any]]]:
-
     xf = XFoil()
     xf.Re = Reyn
 
@@ -54,7 +52,6 @@ def multiple_reynolds_serial(
     aoa_step: float,
     solver_options: dict[str, Any],
 ) -> None:
-
     data: list[ndarray[Any, dtype[floating[Any]]]] = []
 
     with tqdm(total=len(reynolds), colour="#FF0000") as t:
@@ -92,16 +89,12 @@ def multiple_reynolds_parallel(
     aoa_step: float,
     solver_options: dict[str, Any],
 ) -> None:
-
     data: list[ndarray[Any, dtype[floating[Any]]]] = []
 
-    from multiprocessing import Pool, RLock, freeze_support
+    from multiprocessing import Pool
 
     with Pool(processes=6) as pool:
-        args_list = [
-            (reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options)
-            for reyn in reynolds
-        ]
+        args_list = [(reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
                 pool.imap(single_reynolds_star_run, args_list),

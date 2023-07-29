@@ -5,7 +5,8 @@ from tqdm.auto import tqdm
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
 
-from ICARUS.Software.GenuVP3.postProcess.progress import latest_time
+from ICARUS.Software.GenuVP.post_process.progress import latest_time
+
 
 def serial_monitor(
     progress_bars: list[tqdm],
@@ -14,17 +15,17 @@ def serial_monitor(
     lock: Optional[Lock],
     max_iter: int,
     refresh_progress: float,
-)-> None:
-    sleep(1 + (position+1)/10)
+) -> None:
+    sleep(1 + (position + 1) / 10)
 
     while True:
         sleep(refresh_progress)
         time, error = latest_time(CASEDIR)
 
         if error:
-            progress_bars[position].write(f"Analysis encountered Error")
+            progress_bars[position].write("Analysis encountered Error")
             break
-        
+
         if time is None:
             continue
 
@@ -36,7 +37,7 @@ def serial_monitor(
             progress_bars[position].n = int(time)
             progress_bars[position].refresh(nolock=True)
 
-        if time>=max_iter:
+        if time >= max_iter:
             break
 
 
@@ -45,7 +46,7 @@ def parallel_monitor(
         angles: list[float] | ndarray[Any, dtype[floating[Any]]],
         max_iter: int,
         refresh_progress: float = 0.2
-)-> None:
+) -> None:
     # Create a lock to synchronize progress bar updates
     progress_bar_lock = Lock()
 
@@ -53,7 +54,7 @@ def parallel_monitor(
     progress_bars = []
 
     with ThreadPoolExecutor(max_workers=len(angles)) as executor:
-        for i,angle in enumerate(angles):
+        for i, angle in enumerate(angles):
             pbar = tqdm(
                 total=max_iter,
                 desc=f"\t\t{angle} Progress:",
@@ -67,13 +68,13 @@ def parallel_monitor(
             # Start the progress update in parallel using ThreadPoolExecutor
             executor.submit(
                 serial_monitor,
-                progress_bars = progress_bars,
-                CASEDIR = CASEDIRS[i],
-                position= i,
-                lock = progress_bar_lock,
-                max_iter = max_iter,
-                refresh_progress = refresh_progress,
+                progress_bars=progress_bars,
+                CASEDIR=CASEDIRS[i],
+                position=i,
+                lock=progress_bar_lock,
+                max_iter=max_iter,
+                refresh_progress=refresh_progress,
             )
-    
+
     for pbar in progress_bars:
         pbar.close()

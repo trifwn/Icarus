@@ -9,6 +9,6 @@ from numpy import ndarray
 from ICARUS.Core.struct import Struct
 
 Numeric = Union[int, float, np.number]
-DataDict = Union[dict, Struct]
+DataDict = Union[dict[str, Any], Struct]
 FloatArray = ndarray[Any, dtype[floating[Any]]]
 FloatOrListArray = Union[FloatArray, list[float]]

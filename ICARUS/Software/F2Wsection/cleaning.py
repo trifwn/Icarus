@@ -1,5 +1,7 @@
 import os
 
+from Database.Database_2D import Database_2D
+
 
 def remove_results(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> None:
     """
@@ -19,10 +21,8 @@ def remove_results(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> None:
     parent_directory: str = os.getcwd()
     folders: list[str] = next(os.walk("."))[1]
     for angle in angles:
-        if angle >= 0:
-            folder: str = str(angle)[::-1].zfill(7)[::-1]
-        else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+        folder: str = Database_2D.angle_to_dir(angle=angle)
+
         if folder[:-1] in folders:
             os.chdir(folder)
             os.remove(

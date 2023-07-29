@@ -1,9 +1,7 @@
 import os
 import re
-import shutil
 import urllib.request
 from typing import Any
-from typing import Callable
 
 import airfoils as af
 import matplotlib.pyplot as plt
@@ -11,7 +9,6 @@ import numpy as np
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
-from pandas import DataFrame
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
@@ -139,9 +136,7 @@ class AirfoilD(af.Airfoil):  # type: ignore
         """
         Fetches the airfoil data from the web. Specifically from the UIUC airfoil database.
         """
-        link: str = (
-            "https://m-selig.ae.illinois.edu/ads/coord/naca" + self.name + ".dat"
-        )
+        link: str = "https://m-selig.ae.illinois.edu/ads/coord/naca" + self.name + ".dat"
         with urllib.request.urlopen(link) as url:
             site_data: str = url.read().decode("UTF-8")
         s: list[str] = site_data.split()
@@ -155,7 +150,7 @@ class AirfoilD(af.Airfoil):  # type: ignore
             y.append(temp)
         # y[0] = 0
         # y[-1]= 0
-        self.selig2: FloatArray = np.vstack((x, y))
+        self.selig_web: FloatArray = np.vstack((x, y))
 
     def save(self, directory: str | None = None) -> None:
         """

@@ -23,7 +23,7 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB3D
 from ICARUS.Enviroment.definition import Environment
-from ICARUS.Software.GenuVP3.postProcess.forces import rotate_forces
+from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -37,7 +37,6 @@ class State:
         forces: DataFrame,
         env: Environment,
     ) -> None:
-
         # Set Basic State Variables
         self.name: str = name
         # self.vehicle: Airplane = pln
@@ -56,9 +55,7 @@ class State:
         # GET TRIM STATE
         self.polars: DataFrame = self.format_polars(forces)
         self.trim: dict[str, float] = trim_state(self)
-        self.dynamic_pressure = (
-            0.5 * env.air_density * self.trim["U"] ** 2
-        )  # NOW WE UPDATE IT
+        self.dynamic_pressure = 0.5 * env.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
         self.disturbances: list[dst] = []
@@ -222,7 +219,7 @@ class State:
         Returns:
             str: Json String
         """
-        encoded: str = jsonpickle.encode(self)  # type: ignore
+        encoded: str = jsonpickle.encode(self)
         return encoded
 
     def save(self) -> None:
@@ -234,7 +231,7 @@ class State:
             f.write(self.to_json())
 
     @property
-    def a_long(self) -> FloatArray:
+    def a_long(self) -> Any:
         return self.longitudal.stateSpace.A
 
     @a_long.setter
@@ -242,7 +239,7 @@ class State:
         self.longitudal.stateSpace.A = value
 
     @property
-    def astar_long(self) -> FloatArray:
+    def astar_long(self) -> Any:
         return self.longitudal.stateSpace.A_DS
 
     @astar_long.setter
@@ -250,7 +247,7 @@ class State:
         self.longitudal.stateSpace.A_DS = value
 
     @property
-    def a_lat(self) -> FloatArray:
+    def a_lat(self) -> Any:
         return self.lateral.stateSpace.A
 
     @a_lat.setter
@@ -258,7 +255,7 @@ class State:
         self.lateral.stateSpace.A = value
 
     @property
-    def astar_lat(self) -> FloatArray:
+    def astar_lat(self) -> Any:
         return self.lateral.stateSpace.A_DS
 
     @astar_lat.setter

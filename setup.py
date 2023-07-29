@@ -26,7 +26,7 @@ HOMEDIR = os.getcwd()
 
 def get_package_version() -> str:
     """Get the package version from the __init__ file"""
-    __version__ = re.findall(
+    __version__: str = re.findall(
         r"""__version__ = ["']+([0-9\.]*)["']+""",
         open("ICARUS/__init__.py", encoding="UTF-8").read(),
     )[0]
@@ -36,16 +36,16 @@ def get_package_version() -> str:
 class Repository:
     """Class object for a repository"""
 
-    def __init__(self, name, url, MakeType) -> None:
-        self.url = url
-        self.name = name
-        self.type = MakeType
+    def __init__(self, name: str, url: str, MakeType: str) -> None:
+        self.url: str = url
+        self.name: str = name
+        self.type: str = MakeType
         self.repo_dir: str
 
     def clone(self) -> None:
         """Clone the Repository"""
         self.repo_dir = os.path.join(HOMEDIR, "3d_Party", self.name)
-        clone_cmd = f"git clone {self.url} {self.repo_dir}"
+        clone_cmd: str = f"git clone {self.url} {self.repo_dir}"
         try:
             subprocess.call(clone_cmd.split())
         except Exception:
@@ -54,24 +54,24 @@ class Repository:
             )
 
 
-class BuildExtension(Extension):
+class BuildExtension(Extension):  # type: ignore
     """Class object for building an extension using Make"""
 
     def __init__(
         self,
-        name,
-        make_list_dir,
-        makeType,
-        configire_commands,
-        **kwargs,
+        name: str,
+        make_list_dir: str,
+        makeType: str,
+        configire_commands: str,
+        **kwargs: dict[str, Any],
     ) -> None:
-        super().__init__(name, sources=[], **kwargs)
-        self.make_lists_dir = os.path.abspath(make_list_dir)
-        self.type = makeType
-        self.configire_commands = configire_commands
+        super().__init__(name, sources=[], *kwargs)
+        self.make_lists_dir: str = os.path.abspath(make_list_dir)
+        self.type: str = makeType
+        self.configire_commands: str = configire_commands
 
 
-class MakeBuild(build_ext):
+class MakeBuild(build_ext):  # type: ignore
     """Class object Build an extension using Make"""
 
     def build_extensions(self) -> None:

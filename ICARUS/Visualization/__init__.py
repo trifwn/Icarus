@@ -1,3 +1,6 @@
+from matplotlib.markers import MarkerStyle
+
+
 colors: list[str] = [
     "r",
     "k",
@@ -22,4 +25,5 @@ colors: list[str] = [
     "b",
     "g",
 ]
-markers: list[str] = ["x", "o", ".", "*"]
+markers_str: list[str] = ["x", "o", ".", "*"]
+markers = [MarkerStyle(marker) for marker in markers_str]

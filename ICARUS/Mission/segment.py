@@ -5,7 +5,6 @@ from .path import Path
 
 class MissionSegment:
     def __init__(self, name: str, type: str, path: Path | None = None) -> None:
-
         # Mission Segment Definition
         self.name: str = name
         self.type: str = type

@@ -12,18 +12,19 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
-from Data.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Software.GenuVP3.gnvp3 import get_gnvp3
+from ICARUS.Software.GenuVP.gnvp3 import get_gnvp3
 from ICARUS.Software.XFLR5.parser import parse_xfl_project
 from ICARUS.Software.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
+
+# from Data.Planes.wing_variations import wing_var_chord_offset
 
 # from Data.Planes.hermes import hermes
 
@@ -39,10 +40,11 @@ def main() -> None:
     foildb: Database_2D = db.foilsDB
     foildb.load_data()
     read_polars_2d(foildb, XFLRDB)
-    airfoils: Struct = foildb.set_available_airfoils()
 
     # # Get Plane
     planes: list[Airplane] = []
+
+    # airfoils: Struct = foildb.set_available_airfoils()
     # planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
 
     # planes.append(
@@ -65,7 +67,7 @@ def main() -> None:
         "orthogonalSweep": 400,
         "taperSweep": 400,
         "taper": 400,
-        "atlas": 400,
+        "atlas": 50,
     }
     filename: str = "Data/XFLR5/atlas.xml"
     atlas: Airplane = parse_xfl_project(filename)
@@ -108,8 +110,8 @@ def main() -> None:
         options.u_freestream.value = UINF
         options.angles.value = angles
 
-        solver_parameters.Use_Grid.value = 1
-        solver_parameters.Split_Symmetric_Bodies.value = 1
+        solver_parameters.Use_Grid.value = True
+        solver_parameters.Split_Symmetric_Bodies.value = True
 
         gnvp3.print_analysis_options()
 

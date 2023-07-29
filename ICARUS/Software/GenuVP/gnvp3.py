@@ -1,13 +1,13 @@
 from typing import Any
 
 from ICARUS.Database.db import DB
-from ICARUS.Software.GenuVP3.analyses.angles import process_gnvp3_angle_run
-from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles
-from ICARUS.Software.GenuVP3.analyses.angles import run_gnvp_angles_parallel
-from ICARUS.Software.GenuVP3.analyses.pertrubations import proccess_pertrubation_res
-from ICARUS.Software.GenuVP3.analyses.pertrubations import run_pertrubation_parallel
-from ICARUS.Software.GenuVP3.analyses.pertrubations import run_pertrubation_serial
-from ICARUS.Software.GenuVP3.filesInterface import gnvp_execute
+from ICARUS.Software.GenuVP.analyses.angles import process_gnvp3_angle_run
+from ICARUS.Software.GenuVP.analyses.angles import run_gnvp_angles
+from ICARUS.Software.GenuVP.analyses.angles import run_gnvp_angles_parallel
+from ICARUS.Software.GenuVP.analyses.pertrubations import proccess_pertrubation_res
+from ICARUS.Software.GenuVP.analyses.pertrubations import run_pertrubation_parallel
+from ICARUS.Software.GenuVP.analyses.pertrubations import run_pertrubation_serial
+from ICARUS.Software.GenuVP.files.gnvp3_interface import gnvp_execute
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
@@ -45,7 +45,7 @@ def get_gnvp3(db: DB) -> Solver:
             "NTIMEL Time at which leading-edge separ. begins",
         ),
         "Relaxation_Factor": (
-            0.9,
+            1,
             "RELAXS relaxation factor for the singularity distributions",
         ),
         "Pot_Convergence_Tolerence": (
@@ -100,7 +100,7 @@ def get_gnvp3(db: DB) -> Solver:
             "RMETM   Upper bound of the deformation rate",
         ),
         "Wake_Deformation_Parameter": (
-            1,
+            0,
             "IDEFW   Parameter for the deformation induced by the near wake ",
         ),
         "REFLEN": (
