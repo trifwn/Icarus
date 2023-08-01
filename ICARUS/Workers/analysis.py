@@ -76,15 +76,15 @@ class Analysis:
             elif hasattr(opt.value, "__str__"):
                 if len(str(opt.value)) > 10:
                     value = "Complex Datatype"
-                    if hasattr(opt, "name"):
-                        value += f" ({opt.name})"
+                    if hasattr(opt.value, "name"):
+                        value += f" ({opt.value.name})"
                 else:
                     value = str(opt.value)
             elif hasattr(opt.value, "__len__"):
                 if len(opt.value) > 3:
                     value = "Multiple Values"
-                    if hasattr(opt, "name"):
-                        value += f" ({opt.name})"
+                    if hasattr(opt.value, "name"):
+                        value += f" ({opt.value.name})"
                 else:
                     value = opt.value
             else:

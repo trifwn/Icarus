@@ -228,7 +228,7 @@ class Database_3D:
             pln: Airplane = self.planes[plane]
             if plane not in self.raw_data.keys():
                 continue
-            self.data[plane]["AoA"] = self.raw_data[plane]["AoA"]
+            self.data[plane]['AoA'] = self.raw_data[plane]["AoA"].astype('float')
             AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
             for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
                 Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(1)"]
