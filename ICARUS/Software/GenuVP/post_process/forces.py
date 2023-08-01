@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pandas import Series
 
 
-def forces_to_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
+def log_forces(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     """
     Convert the forces to polars and return a dataframe with them.
 
@@ -96,9 +96,7 @@ def rotate_forces(
     save: bool = False,
 ) -> DataFrame:
     data = pd.DataFrame()
-    AoA: float | Series[float] | ndarray[Any, dtype[floating[Any]]] = (
-        alpha_deg * np.pi / 180
-    )
+    AoA: float | Series[float] | ndarray[Any, dtype[floating[Any]]] = alpha_deg * np.pi / 180
 
     for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
         f_x: Series[Any] = rawpolars[f"TFORC{enc}(1)"]

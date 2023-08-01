@@ -258,9 +258,10 @@ class Database_3D:
                     state: State = self.states[pln.name]["Unstick"]
                     Q = state.dynamic_pressure
                 except KeyError:
-                    print(
-                        f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
-                    )
+                    # print(
+                    #     f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
+                    # )
+                    pass
                 finally:
                     S: float = pln.S
                     MAC: float = pln.mean_aerodynamic_chord

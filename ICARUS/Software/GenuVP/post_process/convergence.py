@@ -7,7 +7,7 @@ def getLoadsConvergence(file: str) -> DataFrame | None:
     try:
         return pd.read_csv(file, delim_whitespace=True, names=cols)
     except Exception as e:
-        print(f"Cant Load {file} as Loads_Aero.dat!\nGot error {e}")
+        # print(f"Cant Load {file} as Loads_Aero.dat!\nGot error {e}")
         return None
 
 

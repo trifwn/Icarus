@@ -7,15 +7,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-from nptyping import Float
-from nptyping import NDArray
-from nptyping import Shape
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
+from ICARUS.Core.types import FloatOrListArray
 from ICARUS.Database import DB3D
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.wing import Wing
 
 jsonpickle_pd.register_handlers()
@@ -27,7 +26,7 @@ class Airplane:
         name: str,
         surfaces: list[Wing],
         disturbances: list[Disturbance] | None = None,
-        orientation: list[float] | ndarray[Any, dtype[floating[Any]]] | None = None,
+        orientation: FloatOrListArray | None = None,
     ) -> None:
         """
         Initialize the Airplane class
@@ -48,7 +47,7 @@ class Airplane:
             self.disturbances = disturbances
 
         if orientation is None:
-            self.orientation: list[float] | NDArray[Shape["3,"], Float] = [
+            self.orientation: FloatOrListArray = [
                 0.0,
                 0.0,
                 0.0,
@@ -74,20 +73,23 @@ class Airplane:
             self.span = surfaces[0].span
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.masses: list[tuple[float, NDArray[Shape["3"], Float]]] = []
-        self.moments: list[NDArray[Shape["6"], Float]] = []
+        self.masses: list[tuple[float, ndarray[Any, dtype[floating[Any]]]]] = []
+        self.moments: list[ndarray[Any, dtype[floating[Any]]]] = []
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, NDArray[Shape["3"], Float]] = (surface.mass, surface.CG)
+            mass: tuple[float, ndarray[Any, dtype[floating[Any]]]] = (surface.mass, surface.CG)
             mom = surface.inertia
 
             self.M += surface.mass
             self.moments.append(mom)
             self.masses.append(mass)
 
-        self.CG: NDArray[Shape["3"], Float] = self.find_cg()
-        self.total_inertia: NDArray[Shape["6"], Float] = self.find_inertia(self.CG)
+        self.CG: ndarray[Any, dtype[floating[Any]]] = self.find_cg()
+        self.total_inertia: ndarray[Any, dtype[floating[Any]]] = self.find_inertia(self.CG)
+
+        # Define Computed States
+        states: list[State] = []
 
     def get_seperate_surfaces(self) -> list[Wing]:
         surfaces: list[Wing] = []
@@ -102,7 +104,7 @@ class Airplane:
 
     def add_point_masses(
         self,
-        masses: list[tuple[float, NDArray[Shape["3"], Float]]],
+        masses: list[tuple[float, ndarray[Any, dtype[floating[Any]]]]],
     ) -> None:
         """
         Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
@@ -115,7 +117,7 @@ class Airplane:
         self.CG = self.find_cg()
         self.total_inertia = self.find_inertia(self.CG)
 
-    def find_cg(self) -> NDArray[Shape["3"], Float]:
+    def find_cg(self) -> ndarray[Any, dtype[floating[Any]]]:
         """
         Find the center of gravity of the plane
 
@@ -133,10 +135,7 @@ class Airplane:
             z_cm += m * r[2]
         return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
-    def find_inertia(
-        self,
-        point: NDArray[Shape["3"], Float],
-    ) -> NDArray[Shape["6"], Float]:
+    def find_inertia(self, point: ndarray[Any, dtype[floating[Any]]]) -> ndarray[Any, dtype[floating[Any]]]:
         """
         Find the inertia of the plane about a point
 
@@ -181,7 +180,7 @@ class Airplane:
         self,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
-        movement: NDArray[Shape["3"], Float] | None = None,
+        movement: ndarray[Any, dtype[floating[Any]]] | None = None,
     ) -> None:
         """
         Visualize the plane
@@ -239,6 +238,7 @@ class Airplane:
             s=50.0,
             color="b",
         )
+        plt.show()
 
     def define_dynamic_pressure(self, u: float, dens: float) -> None:
         """

@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 import os
 from typing import Any
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import jsonpickle
 import matplotlib.pyplot as plt
@@ -24,7 +24,9 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB3D
 from ICARUS.Enviroment.definition import Environment
 from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
-from ICARUS.Vehicle.plane import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.Vehicle.plane import Airplane
 
 
 class State:
@@ -41,14 +43,14 @@ class State:
         self.name: str = name
         # self.vehicle: Airplane = pln
         self.env: Environment = env
-        self.dynamics_directory = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
+        self.dynamics_directory: str = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
 
         # Get Airplane Properties And State Variables
         self.mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
         self.S: float = pln.S
         self.dynamic_pressure: float = (
             0.5 * env.air_density * 20**2
-        )  # VELOCITY IS 1 BECAUSE WE DO NOT KNOW THE TRIM YET
+        )  # VELOCITY IS ARBITRARY BECAUSE WE DO NOT KNOW THE TRIM YET
         self.inertia: FloatArray = pln.total_inertia
         self.mass: float = pln.M
 
@@ -146,17 +148,14 @@ class State:
 
     def set_pertrubation_results(
         self,
-        makePolFun: Callable[..., Any],
-        args: list[Any],
-        kwargs: dict[str, Any] = {},
+        pertrubation_results: DataFrame,
     ) -> None:
-        petrubdf: DataFrame = makePolFun(*args, **kwargs)
-        self.pertrubation_results = petrubdf
+        self.pertrubation_results = pertrubation_results
+        self.stability_fd()
 
-    def stability_fd(self, scheme: str = "Central") -> None:
-        self.scheme = scheme
-        X, Z, M = longitudal_stability(self, "2D")
-        Y, L, N = lateral_stability(self, "Potential")
+    def stability_fd(self, polar_name: str = "2D") -> None:
+        X, Z, M = longitudal_stability(self, polar_name)
+        Y, L, N = lateral_stability(self, polar_name)
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
     def plot_eigenvalues(self) -> None:

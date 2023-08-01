@@ -1,6 +1,6 @@
-from matplotlib.markers import MarkerStyle
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
 
@@ -59,10 +59,7 @@ def plot_airfoil_polars(
                 polar: DataFrame = data[airfoil][solver][reynolds]
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar = polar.loc[
-                        (polar["AoA"] >= aoa_bounds[0])
-                        & (polar["AoA"] <= aoa_bounds[1])
-                    ]
+                    polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
 
                 aoa, cl, cd, cm = polar.T.values
 

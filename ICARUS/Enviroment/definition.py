@@ -14,7 +14,7 @@ class Environment:
         self.air_density: float = 1.225  # self.get_density_from_altitude(altitude) #1.225
         self.air_dynamic_viscosity: float = 1.56e-5
         self.air_kinematic_viscosity: float = 1.56e-5
-        self.air_temperature: float = 20 + 273.15
+        self.temperature: float = 20 + 273.15
 
         self.gamma: float = 1.4
         self.R: float = 287.058
@@ -23,7 +23,7 @@ class Environment:
         self.air_speed_of_sound: float = self.get_speed_of_sound(
             self.gamma,
             self.R,
-            self.air_temperature,
+            self.temperature,
         )
 
         # Chemical properties
@@ -60,16 +60,16 @@ class Environment:
         ret = float(np.sqrt(gamma * air_gas_constant * temperature))
         return ret
 
-    def __str__(self) -> str:
-        return f"Environment: {self.name}"
+    # def __str__(self) -> str:
+    #     return f"Environment: {self.name}"
 
-    # def __str__(self):
-    #     str = f"Environment: {self.name}"
-    #     str += f"\n\tGravity: {self.Gravity}"
-    #     str += f"\n\tDensity: {self.AirDensity}"
-    #     str += f"\n\tViscosity: {self.AirKinematicViscosity}"
-    #     str += f"\n\tTemperature: {self.Temperature}"
-    #     return str
+    def __str__(self) -> str:
+        string: str = f"Environment: {self.name}"
+        string += f"\n\tGravity: {self.GRAVITY}"
+        string += f"\n\tDensity: {self.air_density}"
+        string += f"\n\tViscosity: {self.air_kinematic_viscosity}"
+        string += f"\n\tTemperature: {self.temperature}"
+        return string
 
 
 EARTH = Environment("Earth")

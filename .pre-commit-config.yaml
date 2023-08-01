@@ -48,8 +48,8 @@ repos:
       - id: mypy
         args: [--ignore-missing-imports, --strict, --explicit-package-bases]
         additional_dependencies:
-          - "types-tabulate"
           - "numpy"
+          - "types-tabulate"
 
   # - repo: https://github.com/pylint-dev/pylint
   #   rev: v2.17.5

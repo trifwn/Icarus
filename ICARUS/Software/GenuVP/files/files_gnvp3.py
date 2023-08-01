@@ -4,15 +4,16 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from nptyping import Float
-from nptyping import NDArray
-from nptyping import Shape
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.struct import Struct
+from ICARUS.Database.Database_2D import Database_2D as foilsdb
 from ICARUS.Software.GenuVP.utils import Movement
 
 
@@ -51,47 +52,27 @@ def dfile(params: dict[str, Any]) -> None:
 
     data[27] = f'{int(params["nBods"])}           NBODT      number of bodies\n'
     data[28] = f'{int(params["nBlades"])}           NBLADE     number of blades\n'
-    data[
-        35
-    ] = f'{int(params["maxiter"])}         NTIMER     number of the last time step to be performed\n'
+    data[35] = f'{int(params["maxiter"])}         NTIMER     number of the last time step to be performed\n'
     data[36] = f'{params["timestep"]}        DT         time step\n'
-    data[
-        55
-    ] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
-    data[
-        59
-    ] = f'{ff2(params["u_freestream"][0])}       UINF(1)    the velocity at infinity\n'
+    data[55] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
+    data[59] = f'{ff2(params["u_freestream"][0])}       UINF(1)    the velocity at infinity\n'
     data[60] = f'{ff2(params["u_freestream"][1])}       UINF(2)    .\n'
     data[61] = f'{ff2(params["u_freestream"][2])}       UINF(3)    .\n'
 
     DX: float = 1.5 * np.linalg.norm(params["u_freestream"]) * params["timestep"]
     if DX < 0.005:
-        data[
-            94
-        ] = f"{ff2(DX)}       EPSVR      Cut-off length for the free vortex particles (final)\n"
-        data[
-            95
-        ] = f"{ff2(DX)}       EPSO       Cut-off length for the free vortex particles (init.)\n"
+        data[94] = f"{ff2(DX)}       EPSVR      Cut-off length for the free vortex particles (final)\n"
+        data[95] = f"{ff2(DX)}       EPSO       Cut-off length for the free vortex particles (init.)\n"
 
         DX = DX / 100
-        data[
-            90
-        ] = f"{ff2(DX)}       EPSFB      Cut-off length for the bound vorticity\n"
-        data[
-            91
-        ] = f"{ff2(DX)}       EPSFW      Cut-off length for the near-wake vorticity\n"
-        data[
-            92
-        ] = f"{ff2(DX)}       EPSSR      Cut-off length for source distributions\n"
-        data[
-            93
-        ] = f"{ff2(DX)}       EPSDI      Cut-off length for source distributions\n"
+        data[90] = f"{ff2(DX)}       EPSFB      Cut-off length for the bound vorticity\n"
+        data[91] = f"{ff2(DX)}       EPSFW      Cut-off length for the near-wake vorticity\n"
+        data[92] = f"{ff2(DX)}       EPSSR      Cut-off length for source distributions\n"
+        data[93] = f"{ff2(DX)}       EPSDI      Cut-off length for source distributions\n"
 
     data[119] = f'{params["rho"]}       AIRDEN     Fluid density\n'
     data[120] = f'{params["visc"]}   VISCO      Kinematic viscosity\n'
-    data[
-        130
-    ] = "hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
+    data[130] = "hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
 
     with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
@@ -132,11 +113,11 @@ def geofile(
         data.append("Cl, Cd data / IYNVCR(.)=0 then Cl=1., Cd=0.\n")
         data.append("1           IYNVCR(1)\n")
         data.append(
-            f'{bod["cld"]}      FLCLCD      file name wherefrom Cl, Cd are read\n',
+            f'{bod["cld_fname"]}      FLCLCD      file name wherefrom Cl, Cd are read\n',
         )
         data.append("               <blank>\n")
         data.append("Give the file name for the geometrical distributions\n")
-        data.append(f'{bod["bld"]}\n')
+        data.append(f'{bod["bld_fname"]}\n')
     data.append("               <blank>\n")
     with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
@@ -244,21 +225,22 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
         keys: list[str] = list(polars.keys())
         df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
         df.rename(
-            index={"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"},
+            {"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"},
             inplace=True,
+            axis="columns",
         )
         for reyn in keys[1:]:
             df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
-            df2.rename(
-                index={"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
-                inplace=True,
+            df2 = df2.rename(
+                {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
+                errors='raise',
+                axis="columns",
             )
             df = pd.merge(df, df2, on="AoA", how="outer")
-
         # SORT BY AoA
         df = df.sort_values("AoA")
         # FILL NaN Values By neighbors
-        df = filltable(df)
+        df = foilsdb.fill_polar_table(df)
 
         # Get Angles
         angles = df["AoA"].to_numpy()
@@ -267,9 +249,9 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
         # FILL FILE
         for radpos in 0, 1:
             if radpos == 0:
-                data.append("-10.       ! Radial Position\n")
+                data.append("-100.       ! Radial Position\n")
             else:
-                data.append("10.       ! Radial Position\n")
+                data.append("100.       ! Radial Position\n")
             data.append(
                 f"{anglenum}         ! Number of Angles / Airfoil NACA {airf}\n",
             )
@@ -280,7 +262,6 @@ def cldFiles(foil_dat: Struct, airfoils: list[str], solver: str) -> None:
                 string: str = ""
                 nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
                 for num in nums:
-                    # print(num)
                     string = string + ff2(num) + "  "
                 data.append(f"{string}\n")
             data.append("\n")
@@ -295,7 +276,7 @@ def bldFiles(bodies: list[dict[str, Any]], params: dict[str, Any]) -> None:
         bodies (_type_): _description_
     """
     for bod in bodies:
-        fname: str = bod["bld"]
+        fname: str = bod["bld_fname"]
         with open(fname) as file:
             data: list[str] = file.readlines()
 
@@ -310,7 +291,7 @@ def bldFiles(bodies: list[dict[str, Any]], params: dict[str, Any]) -> None:
         else:
             # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
             with open(f'{bod["name"]}.WG', "w") as file:
-                grid: NDArray[Shape[Any], Float] = bod["Grid"]
+                grid: ndarray[Any, dtype[floating[Any]]] = bod["Grid"]
                 for n_strip in grid:  # For each strip
                     file.write("\n")
                     for m_point in n_strip:  # For each point in the strip
@@ -321,17 +302,13 @@ def bldFiles(bodies: list[dict[str, Any]], params: dict[str, Any]) -> None:
         data[6] = "0          0          1\n"
         data[9] = f'{bod["name"]}.FL   {bod["name"]}.DS   {bod["name"]}OUT.WG\n'
         data[12] = f'{ff4(bod["x_0"])}     {ff4(bod["y_0"])}     {ff4(bod["z_0"])}\n'
-        data[
-            15
-        ] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
+        data[15] = f'{ff4(bod["pitch"])}     {ff4(bod["cone"])}     {ff4(bod["wngang"])}\n'
         data[18] = "1                      0.         1.         \n"  # KSI
         data[21] = f'1                      0.         {bod["y_end"] - bod["y_0"]}\n'
         data[
             24
         ] = f'4                      {ff4(bod["Root_chord"])}     {ff4(-step)}     0.         0.         0.         0.\n'
-        data[
-            30
-        ] = f"4                      {ff4(0.)}     {ff4( offset )}     0.         0.         0.         0.\n"
+        data[30] = f"4                      {ff4(0.)}     {ff4( offset )}     0.         0.         0.         0.\n"
 
         with open(fname, "w") as file:
             file.writelines(data)
@@ -348,7 +325,6 @@ def make_input_files(
     foil_dat: Struct,
     solver: str,
 ) -> None:
-
     os.chdir(ANGLEDIR)
 
     # COPY FROM BASE
@@ -389,37 +365,6 @@ def make_input_files(
         dst: str = os.path.join(ANGLEDIR, "gnvp3")
         os.symlink(src, dst)
     os.chdir(HOMEDIR)
-
-
-def filltable(df: DataFrame) -> DataFrame:
-    """Fill Nan Values of Panda Dataframe Row by Row
-    substituting first backward and then forward
-
-    Args:
-        df (pandas.DataFrame): Dataframe with NaN values
-    """
-    CLs: list[str] = []
-    CDs: list[str] = []
-    CMs: list[str] = []
-    for item in list(df.keys()):
-        if item.startswith("CL"):
-            CLs.append(item)
-        if item.startswith("CD"):
-            CDs.append(item)
-        if item.startswith("Cm") or item.startswith("CM"):
-            CMs.append(item)
-    for colums in [CLs, CDs, CMs]:
-        df[colums] = df[colums].interpolate(
-            method="linear",
-            limit_direction="backward",
-            axis=1,
-        )
-        df[colums] = df[colums].interpolate(
-            method="linear",
-            limit_direction="forward",
-            axis=1,
-        )
-    return df
 
 
 def remove_results(CASEDIR: str, HOMEDIR: str) -> None:

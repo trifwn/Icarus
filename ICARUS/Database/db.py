@@ -19,7 +19,7 @@ class DB:
         self.vehiclesDB.load_data()
 
     def __str__(self) -> str:
-        return "Database"
+        return "Master Database"
 
     # def __enter__(self, obj):
     #     if isinstance(obj, Airplane):

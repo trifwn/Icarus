@@ -2,10 +2,10 @@ import os
 
 import numpy as np
 
-from ICARUS.Vehicle.plane import Airplane
+from .getMaxiter import get_max_iterations
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB3D
-from .getMaxiter import get_max_iterations
+from ICARUS.Vehicle.plane import Airplane
 
 
 def get_wake_data(

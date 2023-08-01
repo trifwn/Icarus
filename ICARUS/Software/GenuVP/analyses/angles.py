@@ -9,15 +9,16 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from ICARUS.Core.struct import Struct
-from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Enviroment.definition import Environment
 from ICARUS.Software.GenuVP.analyses.monitor_progress import parallel_monitor
 from ICARUS.Software.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.Software.GenuVP.files.gnvp3_interface import run_gnvp_case
-from ICARUS.Software.GenuVP.post_process.forces import forces_to_polars
+from ICARUS.Software.GenuVP.files.gnvp3_interface import run_gnvp3_case
+from ICARUS.Software.GenuVP.files.gnvp7_interface import run_gnvp7_case
+from ICARUS.Software.GenuVP.post_process.forces import log_forces
+from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
 from ICARUS.Software.GenuVP.utils import define_movements
 from ICARUS.Software.GenuVP.utils import make_surface_dict
 from ICARUS.Software.GenuVP.utils import Movement
@@ -77,16 +78,15 @@ def gnvp_angle_case(
         environment,
         solver_options,
     )
-    run_gnvp_case(
-        CASEDIR,
-        HOMEDIR,
-        GENUBASE,
-        movements,
-        bodies_dicts,
-        params,
-        airfoils,
-        foilsDB,
-        solver2D,
+    run_gnvp3_case(
+        CASEDIR=CASEDIR,
+        HOMEDIR=HOMEDIR,
+        movements=movements,
+        bodies_dicts=bodies_dicts,
+        params=params,
+        airfoils=airfoils,
+        foildb=foilsDB,
+        solver2D=solver2D,
     )
 
 
@@ -256,7 +256,12 @@ def run_gnvp_angles_parallel(
     job = Thread(target=run)
     job_monitor = Thread(
         target=parallel_monitor,
-        args=(CASEDIRS, angles, maxiter, refresh_pogress),
+        kwargs={
+            "CASEDIRS": CASEDIRS,
+            "variables": angles,
+            "max_iter": maxiter,
+            "refresh_progress": refresh_pogress,
+        },
     )
 
     # Start
@@ -268,7 +273,7 @@ def run_gnvp_angles_parallel(
     job_monitor.join()
 
 
-def process_gnvp3_angle_run(plane: Airplane, db: DB) -> DataFrame:
+def process_gnvp_angle_run(plane: Airplane, db: DB) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
 
@@ -281,6 +286,6 @@ def process_gnvp3_angle_run(plane: Airplane, db: DB) -> DataFrame:
     """
     HOMEDIR: str = db.HOMEDIR
     CASEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
-    forces: DataFrame = forces_to_polars(CASEDIR, HOMEDIR)
-    # rotatedforces = rotateForces(forces, forces["AoA"])
-    return forces  # , rotatedforces
+    forces: DataFrame = log_forces(CASEDIR, HOMEDIR)
+    # rotatedforces: DataFrame = rotate_forces(forces, forces["AoA"])
+    return forces

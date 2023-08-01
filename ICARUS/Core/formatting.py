@@ -1,6 +1,16 @@
 import numpy as np
 
 
+def sps(num: int) -> str:
+    """Return a string with the number of spaces specified by num"""
+    return " " * num
+
+
+def tabs(num: int) -> str:
+    """Return a string with the number of tabs specified by num"""
+    return "\t" * num
+
+
 def ff(num: float) -> str:
     return str(np.format_float_scientific(num, sign=False, precision=2).zfill(5))
 

@@ -42,8 +42,8 @@ def gnvprun(mode: str = "Parallel") -> None:
     angles_all: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all if ang != 0]
     u_freestream = 20
-    maxiter = 400
-    timestep = 1e-3
+    maxiter = 20
+    timestep = 10
 
     airplane.define_dynamic_pressure(u_freestream, EARTH.air_density)
 

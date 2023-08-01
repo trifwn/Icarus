@@ -1,5 +1,6 @@
 import os
 import shutil
+from calendar import c
 from typing import Any
 
 import numpy as np
@@ -7,6 +8,7 @@ import pandas as pd
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
+from pandas import DataFrame
 
 from . import APPHOME
 from . import DB2D
@@ -157,23 +159,6 @@ class Database_2D:
             print("Airfoil Doesn't exist! You should compute it first!")
             return None
 
-    @staticmethod
-    def angle_to_dir(angle: float) -> str:
-        """
-        Converts an angle to a directory name.
-
-        Args:
-            angle (float): Angle
-
-        Returns:
-            str: Directory name
-        """
-        if angle >= 0:
-            folder: str = str(angle)[::-1].zfill(7)[::-1]
-        else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
-        return folder
-
     def generate_airfoil_directories(
         self,
         airfoil: AirfoilD,
@@ -215,6 +200,98 @@ class Database_2D:
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
         return self.HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS
+
+    # STATIC METHODS
+    @staticmethod
+    def angle_to_dir(angle: float) -> str:
+        """
+        Converts an angle to a directory name.
+
+        Args:
+            angle (float): Angle
+
+        Returns:
+            str: Directory name
+        """
+        if angle >= 0:
+            folder: str = str(angle)[::-1].zfill(7)[::-1]
+        else:
+            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+        return folder
+
+    @staticmethod
+    def dir_to_angle(folder: str) -> float:
+        """
+        Converts a directory name to an angle.
+
+        Args:
+            folder (str): Directory name
+
+        Returns:
+            float: Angle
+        """
+        if folder.startswith("m"):
+            angle = -float(folder[1:])
+        else:
+            angle = float(folder)
+        return angle
+
+    @staticmethod
+    def get_reynolds_from_dir(folder: str) -> float:
+        """
+        Gets the reynolds number from a directory name.
+
+        Args:
+            folder (str): Directory name
+
+        Returns:
+            float: Reynolds number
+        """
+        return float(folder[10:].replace("_", "e"))
+
+    @staticmethod
+    def get_dir_from_reynolds(reynolds: float) -> str:
+        """
+        Gets the directory name from a reynolds number.
+
+        Args:
+            reynolds (float): Reynolds number
+
+        Returns:
+            str: Directory name
+        """
+        return f"Reynolds_{reynolds}"
+
+    @staticmethod
+    def fill_polar_table(df: DataFrame) -> DataFrame:
+        """Fill Nan Values of Panda Dataframe Row by Row
+        substituting first backward and then forward
+
+        Args:
+            df (pandas.DataFrame): Dataframe with NaN values
+        """
+        CLs: list[str] = []
+        CDs: list[str] = []
+        CMs: list[str] = []
+        for item in list(df.keys()):
+            if item.startswith("CL"):
+                CLs.append(item)
+            if item.startswith("CD"):
+                CDs.append(item)
+            if item.startswith("Cm") or item.startswith("CM"):
+                CMs.append(item)
+        for colums in [CLs, CDs, CMs]:
+            df[colums] = df[colums].interpolate(
+                method="linear",
+                limit_direction="backward",
+                axis=1,
+            )
+            df[colums] = df[colums].interpolate(
+                method="linear",
+                limit_direction="forward",
+                axis=1,
+            )
+        return df
 
     def __str__(self) -> str:
         return "Foil Database"

@@ -158,6 +158,7 @@ def set_parameters(
         u_freestream * np.sin(angle),
     ]
     params: dict[str, Any] = {
+        "name": plane.name,
         "nBods": nBodies,
         "nBlades": nAirfoils,
         "maxiter": maxiter,
@@ -221,11 +222,17 @@ def make_surface_dict(surf: Wing, idx: int) -> dict[str, Any]:
         M = surf.M
 
     surface_dict: dict[str, Any] = {
+        "type": "thin",
+        "lifting": "yes",
         "NB": idx,
         "NACA": surf.airfoil.name,
         "name": surf.name,
-        "bld": f"{surf.name}.bld",
-        "cld": f"{surf.airfoil.name}.cld",
+        "bld_fname": f"{surf.name}.bld",
+        "topo_fname": f"{surf.name}.topo",
+        "wake_fname": f"{surf.name}.wake",
+        "cld_fname": f"{surf.airfoil.name}.cld",
+        "move_fname": f"{surf.name}.mov",
+        "grid_fname": f"{surf.name}.grid",
         "NNB": M,
         "NCWB": N,
         "x_0": surf.origin[0],

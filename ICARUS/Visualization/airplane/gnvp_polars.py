@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
-from matplotlib.markers import MarkerStyle
 from matplotlib.figure import Figure
+from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
 
+from ICARUS.Core.struct import Struct
 from ICARUS.Visualization import colors
 from ICARUS.Visualization import markers
-from ICARUS.Core.struct import Struct
 
 
 def plot_airplane_polars(
@@ -60,7 +60,7 @@ def plot_airplane_polars(
                     cm = polar["Cm"]
                     skip = True
                     c: str = "m"
-                    m: MarkerStyle = MarkerStyle("x")
+                    m: MarkerStyle = MarkerStyle("x").get_marker()
                     style: str = f"{c}{m}-"
 
                     label: str = f"{airplane}"
@@ -69,14 +69,18 @@ def plot_airplane_polars(
                     cd = polar[f"CD_{solver}"]
                     cm = polar[f"Cm_{solver}"]
                     c = colors[i]
-                    m = markers[j]
+                    m = markers[j].get_marker()
                     style = f"{c}{m}--"
 
                     label = f"{airplane} - {solver}"
-                axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
-                axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
-                axs[1, 1].plot(cd, cl, style, label=label, markersize=3.5, linewidth=1)
-                axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
+                try:
+                    axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
+                    axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
+                    axs[1, 1].plot(cd, cl, style, label=label, markersize=3.5, linewidth=1)
+                    axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
+                except ValueError as e:
+                    print(style)
+                    raise e
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {airplane},{solver}")
             if skip:

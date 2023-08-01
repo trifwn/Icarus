@@ -4,9 +4,9 @@ from matplotlib.figure import Figure
 from pandas import Series
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Visualization import colors
 from ICARUS.Visualization import markers
-from ICARUS.Vehicle.plane import Airplane
 
 
 def plot_sensitivity(
@@ -18,7 +18,6 @@ def plot_sensitivity(
     solvers: list[str] = ["2D"],
     size: tuple[int, int] = (16, 7),
 ) -> None:
-
     fig: Figure = plt.figure(figsize=size)
     axs: list[Axes] = fig.subplots(2, 3)
     fig.suptitle(f"{plane.name} Convergence", fontsize=16)

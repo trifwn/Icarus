@@ -4,16 +4,15 @@ from typing import Any
 
 from pandas import DataFrame
 
-from .files_gnvp3 import make_input_files
-from ICARUS.Database import BASEGNVP3 as GENUBASE
-from ICARUS.Database.Database_2D import Database_2D
+from .files_gnvp7 import make_input_files
 from ICARUS.Software.GenuVP.post_process.forces import forces_to_pertrubation_results
 from ICARUS.Software.GenuVP.post_process.forces import log_forces
+from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Software.GenuVP.utils import Movement
 
 
-def gnvp3_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
-    """Execute GNVP3 after setting up the inputs
+def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
+    """Execute GNVP7 after setting up the inputs
 
     Args:
         HOMEDIR (str): _description_
@@ -24,10 +23,12 @@ def gnvp3_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
     """
     os.chdir(ANGLEDIR)
 
+    cmd = "module load compiler openmpi > /dev/null ; mpirun '-n' '4' 'gnvp7'"
     with open("input", encoding="utf-8") as fin:
         with open("gnvp.out", "w", encoding="utf-8") as fout:
             res: int = subprocess.check_call(
-                [os.path.join(ANGLEDIR, "gnvp3")],
+                cmd,
+                shell=True,
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
@@ -63,7 +64,7 @@ def pertubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
     return forces_to_pertrubation_results(DYNDIR, HOMEDIR)
 
 
-def run_gnvp3_case(
+def run_gnvp7_case(
     CASEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
@@ -78,23 +79,21 @@ def run_gnvp3_case(
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
-        GENUBASE (str): Base of GenuVP3
         movements (list[list[Movement]]): List of Movements for each body
-        bodies (list[dict[str, Any]]): List of Bodies in dict format
+        bodies_dicts (list[dict[str, Any]]): List of Bodies in dict format
         params (dict[str, Any]): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
         foildb (Database_2D): 2D Foil Database
         solver2D (str): Name of 2D Solver to be used
     """
     make_input_files(
-        CASEDIR,
-        HOMEDIR,
-        GENUBASE,
-        movements,
-        bodies_dicts,
-        params,
-        airfoils,
-        foildb.data,
-        solver2D,
+        ANGLEDIR=CASEDIR,
+        HOMEDIR=HOMEDIR,
+        movements=movements,
+        bodies_dicts=bodies_dicts,
+        params=params,
+        airfoils=airfoils,
+        foil_dat=foildb.data,
+        solver=solver2D,
     )
-    gnvp3_execute(HOMEDIR, CASEDIR)
+    gnvp7_execute(HOMEDIR, CASEDIR)

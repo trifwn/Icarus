@@ -1,9 +1,13 @@
-from time import sleep
-from typing import Any, Optional
-from numpy import dtype, floating, ndarray
-from tqdm.auto import tqdm
-from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+from time import sleep
+from typing import Any
+from typing import Optional
+
+from numpy import dtype
+from numpy import floating
+from numpy import ndarray
+from tqdm.autonotebook import tqdm
 
 from ICARUS.Software.GenuVP.post_process.progress import latest_time
 
@@ -42,10 +46,10 @@ def serial_monitor(
 
 
 def parallel_monitor(
-        CASEDIRS: list[str],
-        angles: list[float] | ndarray[Any, dtype[floating[Any]]],
-        max_iter: int,
-        refresh_progress: float = 0.2
+    CASEDIRS: list[str],
+    variables: list[str] | list[float] | ndarray[Any, dtype[floating[Any]]],
+    max_iter: int,
+    refresh_progress: float = 0.2,
 ) -> None:
     # Create a lock to synchronize progress bar updates
     progress_bar_lock = Lock()
@@ -53,15 +57,15 @@ def parallel_monitor(
     # Create a list to store progress bars
     progress_bars = []
 
-    with ThreadPoolExecutor(max_workers=len(angles)) as executor:
-        for i, angle in enumerate(angles):
+    with ThreadPoolExecutor(max_workers=len(variables)) as executor:
+        for i, var in enumerate(variables):
             pbar = tqdm(
                 total=max_iter,
-                desc=f"\t\t{angle} Progress:",
+                desc=f"\t\t{var} Progress:",
                 position=i,
                 leave=True,
                 colour='#cc3300',
-                bar_format="{l_bar}{bar:30}{r_bar}"
+                bar_format="{l_bar}{bar:30}{r_bar}",
             )
             progress_bars.append(pbar)
 

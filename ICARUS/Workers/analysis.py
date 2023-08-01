@@ -72,15 +72,27 @@ class Analysis:
         table: list[list[str]] = [["VarName", "Value", "Description"]]
         for _, opt in self.options.items():
             if opt.value is None:
-                table.append([opt.name, "None", opt.description])
+                value: str = "None"
+            elif hasattr(opt.value, "__str__"):
+                if len(str(opt.value)) > 10:
+                    value = "Complex Datatype"
+                    if hasattr(opt, "name"):
+                        value += f" ({opt.name})"
+                else:
+                    value = str(opt.value)
             elif hasattr(opt.value, "__len__"):
-                if len(opt.value) > 2:
-                    table.append([opt.name, "Multiple Values", opt.description])
+                if len(opt.value) > 3:
+                    value = "Multiple Values"
+                    if hasattr(opt, "name"):
+                        value += f" ({opt.name})"
+                else:
+                    value = opt.value
             else:
-                table.append([opt.name, opt.value, opt.description])
+                value = "N/A"
+            table.append([opt.name, value, opt.description])  # TODO ADD __REPR__ INSTEAD OF __STR__
         string.write(tabulate(table[1:], headers=table[0], tablefmt="github"))
         string.write(
-            "\n\nIf there are multiple values you should inspect them sepretly by calling the option name\n",
+            "\n\nIf there are Multiple Values, or complex datatypes, or N/A you should inspect them sepretly by calling the option name\n",
         )
 
         return string.getvalue()

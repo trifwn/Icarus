@@ -31,8 +31,8 @@ class BaseAirplaneTests(unittest.TestCase):
         np.testing.assert_almost_equal(INERTIA, I_act, decimal=3)
 
     def test2_gnvp_run(self) -> None:
-        # gnvprun("Serial")
-        gnvprun("Parallel")
+        gnvprun("Serial")
+        # gnvprun("Parallel")
         # pass
 
     def test3_3d_polars(self) -> None:

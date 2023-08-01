@@ -54,9 +54,7 @@ def gnvp_strips_3d(
         for j, surf in enumerate(wg.all_strips):
             stripD: DataFrame = data[(data["Body"] == i + 1) & (data["Strip"] == j + 1)]
 
-            stripD_values: list[float] = [
-                float(item) for item in stripD[category].values
-            ]
+            stripD_values: list[float] = [float(item) for item in stripD[category].values]
             color: tuple[Any, ...] = cmap(norm(stripD_values))
             surf.plot(fig, ax, None, color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
@@ -87,13 +85,16 @@ def gnvp_strips_2d(
         return 0
 
     stripDat, data = get_strip_data(pln, case, [NB])
+    print(data[category])
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")
     ax.set_xlabel("Spanwise")
-    ax.set_ylim(0, 1.1)
+    # ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)
     x: list[int] = [i for i, data in enumerate(data[category])]
     ax.scatter(x, data[category])
 
+    fig.show()
+    plt.show()
     return stripDat

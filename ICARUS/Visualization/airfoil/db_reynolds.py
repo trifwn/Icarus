@@ -1,6 +1,6 @@
-from matplotlib.markers import MarkerStyle
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
 

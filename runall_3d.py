@@ -12,6 +12,9 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
+from Data.Planes.hermes import hermes
+from Data.Planes.hermes_wing_only import hermes_main_wing
+from Data.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
@@ -23,12 +26,6 @@ from ICARUS.Software.XFLR5.parser import parse_xfl_project
 from ICARUS.Software.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
-
-# from Data.Planes.wing_variations import wing_var_chord_offset
-
-# from Data.Planes.hermes import hermes
-
-# from Data.Planes.hermes_wing_only import hermes_main_wing
 
 
 def main() -> None:
@@ -44,7 +41,6 @@ def main() -> None:
     # # Get Plane
     planes: list[Airplane] = []
 
-    # airfoils: Struct = foildb.set_available_airfoils()
     # planes.append(wing_var_chord_offset(airfoils, "orthogonal", [0.159, 0.159], 0.0))
 
     # planes.append(
@@ -67,16 +63,17 @@ def main() -> None:
         "orthogonalSweep": 400,
         "taperSweep": 400,
         "taper": 400,
-        "atlas": 50,
+        "atlas": 400,
     }
     filename: str = "Data/XFLR5/atlas.xml"
     atlas: Airplane = parse_xfl_project(filename)
     atlas.visualize()
-    print(atlas.main_wing.airfoil.name)
     planes.append(atlas)
 
     for airplane in planes:
-        print(airplane.name)
+        print("--------------------------------------------------")
+        print(f"Running {airplane.name}")
+        print("--------------------------------------------------")
 
         # # Import Enviroment
         print(EARTH)
@@ -87,11 +84,11 @@ def main() -> None:
         # ## AoA Run
         analysis: str = gnvp3.available_analyses_names()[2]  # ANGLES PARALLEL
         gnvp3.set_analyses(analysis)
-        options: Struct = gnvp3.get_analysis_options(verbose=True)
-        solver_parameters = gnvp3.get_solver_parameters()
+        options: Struct = gnvp3.get_analysis_options(verbose=False)
+        solver_parameters: Struct = gnvp3.get_solver_parameters()
 
         AOA_MIN = -6
-        AOA_MAX = 8
+        AOA_MAX = 10
         NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
         angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
             AOA_MIN,
@@ -154,7 +151,7 @@ def main() -> None:
         print(f"Selecting Analysis: {analysis}")
         gnvp3.set_analyses(analysis)
 
-        options = gnvp3.get_analysis_options(verbose=True)
+        options = gnvp3.get_analysis_options(verbose=False)
 
         if options is None:
             raise ValueError("Options not set")
