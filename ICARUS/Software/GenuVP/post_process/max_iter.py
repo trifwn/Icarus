@@ -4,7 +4,7 @@ from ICARUS.Database import DB3D
 from ICARUS.Vehicle.plane import Airplane
 
 
-def get_max_iterations(plane: Airplane, case: str) -> int:
+def get_max_iterations_3(plane: Airplane, case: str) -> int:
     """Function to get Max Iterations that simulation ran for given an
     airplane object and a case directory
 

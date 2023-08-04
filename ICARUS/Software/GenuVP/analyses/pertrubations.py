@@ -1,5 +1,4 @@
 import os
-import re
 from threading import Thread
 from typing import Any
 
@@ -7,7 +6,6 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS.Core.struct import Struct
-from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import disturbance_to_case
@@ -17,13 +15,12 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Software.GenuVP.analyses.monitor_progress import parallel_monitor
 from ICARUS.Software.GenuVP.analyses.monitor_progress import serial_monitor
 from ICARUS.Software.GenuVP.files.gnvp3_interface import run_gnvp3_case
-from ICARUS.Software.GenuVP.post_process import progress
+from ICARUS.Software.GenuVP.files.gnvp7_interface import run_gnvp7_case
 from ICARUS.Software.GenuVP.post_process.forces import forces_to_pertrubation_results
-from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
-from ICARUS.Software.GenuVP.utils import define_movements
-from ICARUS.Software.GenuVP.utils import make_surface_dict
-from ICARUS.Software.GenuVP.utils import Movement
-from ICARUS.Software.GenuVP.utils import set_parameters
+from ICARUS.Software.GenuVP.utils.genu_movement import define_movements
+from ICARUS.Software.GenuVP.utils.genu_movement import Movement
+from ICARUS.Software.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.Software.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import Wing
 
@@ -38,9 +35,10 @@ def gnvp_disturbance_case(
     angle: float,
     environment: Environment,
     surfaces: list[Wing],
-    bodies_dict: list[dict[str, Any]],
+    bodies_dict: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
+    genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> str:
     """
@@ -56,7 +54,7 @@ def gnvp_disturbance_case(
         angle (float): Angle of attack in degrees
         environment (Environment): Environment Object
         surfaces (list[Wing]): List of surfaces
-        bodies_dict (list[dict[str, Any]]): List of bodies in dict format
+        bodies_dict (list[GenuSurface]): List of bodies in GenuSurface format
         dst (Disturbance): Disturbance to be run
         analysis (str): Analysis Name
         solver_options (dict[str, Any] | Struct): Solver Options
@@ -80,7 +78,7 @@ def gnvp_disturbance_case(
     CASEDIR: str = os.path.join(PLANEDIR, analysis, folder)
     os.makedirs(CASEDIR, exist_ok=True)
 
-    params: dict[str, Any] = set_parameters(
+    params: GenuParameters = GenuParameters(
         bodies_dict,
         plane,
         maxiter,
@@ -90,7 +88,13 @@ def gnvp_disturbance_case(
         environment,
         solver_options,
     )
-    run_gnvp3_case(
+
+    if genu_version == 7:
+        run = run_gnvp3_case
+    else:
+        run = run_gnvp7_case
+
+    run(
         CASEDIR,
         HOMEDIR,
         movements,
@@ -104,16 +108,33 @@ def gnvp_disturbance_case(
     return f"Case {dst.var} : {dst.amplitude} Done"
 
 
+def run_gnvp3_pertrubation_serial(*args: Any, **kwars: Any) -> None:
+    run_pertrubation_serial(genu_version=3, *args, **kwars)  # type: ignore
+
+
+def run_gnvp7_pertrubation_serial(*args: Any, **kwars: Any) -> None:
+    run_pertrubation_serial(genu_version=7, *args, **kwars)  # type: ignore
+
+
+def run_gnvp3_pertrubation_parallel(*args: Any, **kwars: Any) -> None:
+    run_pertrubation_parallel(genu_version=3, *args, **kwars)  # type: ignore
+
+
+def run_gnvp7_pertrubation_parallel(*args: Any, **kwars: Any) -> None:
+    run_pertrubation_parallel(genu_version=7, *args, **kwars)  # type: ignore
+
+
 def run_pertrubation_serial(
     plane: Airplane,
     state: State,
+    environment: Environment,
     db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
     u_freestream: float,
     angle_of_attack: float,
-    environment: Environment,
+    genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """
@@ -132,14 +153,15 @@ def run_pertrubation_serial(
         environment (Environment): Environment Object
         solver_options (dict[str, Any] | Struct): Solver Options
     """
-    bodies_dicts: list[dict[str, Any]] = []
+    bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies_dicts.append(make_surface_dict(surface, i))
+        genu_surf = GenuSurface(surface, i)
+        bodies_dicts.append(genu_surf)
 
     progress_bars = []
     for i, dst in enumerate(state.disturbances):
@@ -158,6 +180,7 @@ def run_pertrubation_serial(
                 "bodies_dicts": bodies_dicts,
                 "dst": dst,
                 "analysis": "Dynamics",
+                "genu_version": genu_version,
                 "solver_options": solver_options,
             },
         )
@@ -204,6 +227,7 @@ def run_pertrubation_parallel(
     timestep: float,
     u_freestream: float,
     angle: float,
+    genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """
@@ -222,21 +246,26 @@ def run_pertrubation_parallel(
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
-    bodies_dicts: list[dict[str, Any]] = []
+    bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies_dicts.append(make_surface_dict(surface, i))
+        genu_surf = GenuSurface(surface, i)
+        bodies_dicts.append(genu_surf)
 
     disturbances: list[Disturbance] = state.disturbances
 
     from multiprocessing import Pool
 
     def run() -> None:
-        with Pool(12) as pool:
+        if genu_version == 3:
+            num_processes = 3
+        else:
+            num_processes = 12
+        with Pool(num_processes) as pool:
             args_list = [
                 (
                     plane,
@@ -251,6 +280,7 @@ def run_pertrubation_parallel(
                     bodies_dicts,
                     dst,
                     "Dynamics",
+                    genu_version,
                     solver_options,
                 )
                 for dst in disturbances
@@ -283,6 +313,22 @@ def run_pertrubation_parallel(
     job_monitor.join()
 
 
+def run_gnvp3_sensitivity_serial(*args: Any, **kwars: Any) -> None:
+    sensitivity_serial(genu_version=3, *args, **kwars)  # type: ignore
+
+
+def run_gnvp7_sensitivity_serial(*args: Any, **kwars: Any) -> None:
+    sensitivity_serial(genu_version=7, *args, **kwars)  # type: ignore
+
+
+def run_gnvp3_sensitivity_parallel(*args: Any, **kwars: Any) -> None:
+    sensitivity_parallel(genu_version=3, *args, **kwars)  # type: ignore
+
+
+def run_gnvp7_sensitivity_parallel(*args: Any, **kwars: Any) -> None:
+    sensitivity_parallel(genu_version=7, *args, **kwars)  # type: ignore
+
+
 def sensitivity_serial(
     plane: Airplane,
     state: State,
@@ -294,6 +340,7 @@ def sensitivity_serial(
     timestep: float,
     u_freestream: float,
     angle: float,
+    genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """
@@ -312,14 +359,15 @@ def sensitivity_serial(
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
-    bodies_dicts: list[dict[str, Any]] = []
+    bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies_dicts.append(make_surface_dict(surface, i))
+        genu_surf = GenuSurface(surface, i)
+        bodies_dicts.append(genu_surf)
 
     for dst in state.sensitivity[var]:
         msg: str = gnvp_disturbance_case(
@@ -335,6 +383,7 @@ def sensitivity_serial(
             bodies_dicts,
             dst,
             "Sensitivity",
+            genu_version,
             solver_options,
         )
         print(msg)
@@ -351,6 +400,7 @@ def sensitivity_parallel(
     timestep: float,
     u_freestream: float,
     angle: float,
+    genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """
@@ -369,20 +419,25 @@ def sensitivity_parallel(
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
-    bodies_dicts: list[dict[str, Any]] = []
+    bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies_dicts.append(make_surface_dict(surface, i))
+        genu_surf = GenuSurface(surface, i)
+        bodies_dicts.append(genu_surf)
 
     disturbances: list[Disturbance] = state.sensitivity[var]
 
     from multiprocessing import Pool
 
-    with Pool(12) as pool:
+    if genu_version == 3:
+        num_processes = 12
+    else:
+        num_processes = 3
+    with Pool(num_processes) as pool:
         args_list = [
             (
                 plane,
@@ -397,6 +452,7 @@ def sensitivity_parallel(
                 bodies_dicts,
                 dst,
                 f"Sensitivity_{dst.var}",
+                genu_version,
                 solver_options,
             )
             for dst in disturbances

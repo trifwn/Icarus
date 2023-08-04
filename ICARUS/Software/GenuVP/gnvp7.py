@@ -2,18 +2,18 @@ from typing import Any
 
 from ICARUS.Database.db import DB
 from ICARUS.Software.GenuVP.analyses.angles import process_gnvp_angles_run
-from ICARUS.Software.GenuVP.analyses.angles import run_gnvp3_angles
-from ICARUS.Software.GenuVP.analyses.angles import run_gnvp3_angles_parallel
+from ICARUS.Software.GenuVP.analyses.angles import run_gnvp7_angles
+from ICARUS.Software.GenuVP.analyses.angles import run_gnvp7_angles_parallel
 from ICARUS.Software.GenuVP.analyses.pertrubations import proccess_pertrubation_res
-from ICARUS.Software.GenuVP.analyses.pertrubations import run_gnvp3_pertrubation_parallel
-from ICARUS.Software.GenuVP.analyses.pertrubations import run_gnvp3_pertrubation_serial
-from ICARUS.Software.GenuVP.files.gnvp3_interface import gnvp3_execute
+from ICARUS.Software.GenuVP.analyses.pertrubations import run_gnvp7_pertrubation_parallel
+from ICARUS.Software.GenuVP.analyses.pertrubations import run_gnvp7_pertrubation_serial
+from ICARUS.Software.GenuVP.files.gnvp7_interface import gnvp7_execute
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_gnvp3(db: DB) -> Solver:
-    gnvp3 = Solver(name="gnvp3", solver_type="3D", fidelity=2, db=db)
+def get_gnvp7(db: DB) -> Solver:
+    gnvp7 = Solver(name="gnvp7", solver_type="3D", fidelity=2, db=db)
 
     # # Define GNVP3 Analyses
     options: dict[str, str] = {
@@ -125,7 +125,7 @@ def get_gnvp3(db: DB) -> Solver:
         "Elasticity_Solver": (0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)"),
     }
 
-    rerun: Analysis = Analysis("gnvp3", "rerun", gnvp3_execute, options, solver_options)
+    rerun: Analysis = Analysis("gnvp7", "rerun", gnvp7_execute, options, solver_options)
 
     options = {
         "plane": "Plane Object",
@@ -139,9 +139,9 @@ def get_gnvp3(db: DB) -> Solver:
     }
 
     angles_serial: Analysis = Analysis(
-        "gnvp3",
+        "gnvp7",
         "Angles_Serial",
-        run_gnvp3_angles,
+        run_gnvp7_angles,
         options,
         solver_options,
         unhook=process_gnvp_angles_run,
@@ -149,7 +149,7 @@ def get_gnvp3(db: DB) -> Solver:
 
     angles_parallel: Analysis = angles_serial << {
         "name": "Angles_Parallel",
-        "execute": run_gnvp3_angles_parallel,
+        "execute": run_gnvp7_angles_parallel,
         "unhook": process_gnvp_angles_run,
     }
 
@@ -166,9 +166,9 @@ def get_gnvp3(db: DB) -> Solver:
     }
 
     pertrubation_serial: Analysis = Analysis(
-        "gnvp3",
+        "gnvp7",
         "Pertrubation_Serial",
-        run_gnvp3_pertrubation_serial,
+        run_gnvp7_pertrubation_serial,
         options,
         solver_options,
         unhook=proccess_pertrubation_res,
@@ -176,21 +176,21 @@ def get_gnvp3(db: DB) -> Solver:
 
     pertrubation_parallel: Analysis = pertrubation_serial << {
         "name": "Pertrubation_Parallel",
-        "execute": run_gnvp3_pertrubation_parallel,
+        "execute": run_gnvp7_pertrubation_parallel,
         "unhook": proccess_pertrubation_res,
     }
 
-    gnvp3.add_analyses(
+    gnvp7.add_analyses(
         [
-            rerun,
-            angles_serial,
-            angles_parallel,
-            pertrubation_serial,
-            pertrubation_parallel,
+            rerun,  # 0
+            angles_serial,  # 1
+            angles_parallel,  # 2
+            pertrubation_serial,  # 3
+            pertrubation_parallel,  # 4
         ],
     )
 
-    return gnvp3
+    return gnvp7
 
 
 # # EXAMPLE USAGE

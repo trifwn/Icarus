@@ -7,7 +7,7 @@ from ICARUS.Database import DB3D
 from ICARUS.Vehicle.plane import Airplane
 
 
-def get_strip_data(
+def get_strip_data_3(
     plane: Airplane,
     case: str,
     NBs: list[int],

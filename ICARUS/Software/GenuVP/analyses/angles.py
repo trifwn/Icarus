@@ -18,13 +18,14 @@ from ICARUS.Software.GenuVP.analyses.monitor_progress import serial_monitor
 from ICARUS.Software.GenuVP.files.gnvp3_interface import run_gnvp3_case
 from ICARUS.Software.GenuVP.files.gnvp7_interface import run_gnvp7_case
 from ICARUS.Software.GenuVP.post_process.forces import log_forces
-from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
-from ICARUS.Software.GenuVP.utils import define_movements
-from ICARUS.Software.GenuVP.utils import make_surface_dict
-from ICARUS.Software.GenuVP.utils import Movement
-from ICARUS.Software.GenuVP.utils import set_parameters
+from ICARUS.Software.GenuVP.utils.genu_movement import define_movements
+from ICARUS.Software.GenuVP.utils.genu_movement import Movement
+from ICARUS.Software.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.Software.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing import Wing
+
+# from ICARUS.Software.GenuVP.utils.utils import make_surface_dict
 
 
 def gnvp_angle_case(
@@ -37,7 +38,8 @@ def gnvp_angle_case(
     angle: float,
     environment: Environment,
     movements: list[list[Movement]],
-    bodies_dicts: list[dict[str, Any]],
+    bodies_dicts: list[GenuSurface],
+    genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """
@@ -53,7 +55,7 @@ def gnvp_angle_case(
         angle (float): Angle of attack in degrees
         environment (Environment): Environment Object
         movements (list[list[Movement]]): List of movements for each surface
-        bodies_dicts (list[dict[str, Any]]): Bodies in dict format
+        bodies_dicts (list[GenuSurface]): Bodies in Genu Format
         solver_options (dict[str, Any] | Struct): Solver Options
 
     Returns:
@@ -68,7 +70,7 @@ def gnvp_angle_case(
     CASEDIR: str = os.path.join(PLANEDIR, folder)
     os.makedirs(CASEDIR, exist_ok=True)
 
-    params: dict[str, Any] = set_parameters(
+    params: GenuParameters = GenuParameters(
         bodies_dicts,
         plane,
         maxiter,
@@ -78,7 +80,12 @@ def gnvp_angle_case(
         environment,
         solver_options,
     )
-    run_gnvp3_case(
+    if genu_version == 7:
+        run = run_gnvp7_case
+    else:
+        run = run_gnvp3_case
+
+    run(
         CASEDIR=CASEDIR,
         HOMEDIR=HOMEDIR,
         movements=movements,
@@ -90,6 +97,22 @@ def gnvp_angle_case(
     )
 
 
+def run_gnvp3_angles(*args: Any, **kwargs: Any) -> None:
+    run_gnvp_angles(genu_version=3, *args, **kwargs)  # type: ignore
+
+
+def run_gnvp7_angles(*args: Any, **kwargs: Any) -> None:
+    run_gnvp_angles(genu_version=7, *args, **kwargs)  # type: ignore
+
+
+def run_gnvp3_angles_parallel(*args: Any, **kwargs: Any) -> None:
+    run_gnvp_angles_parallel(genu_version=3, *args, **kwargs)  # type: ignore
+
+
+def run_gnvp7_angles_parallel(*args: Any, **kwargs: Any) -> None:
+    run_gnvp_angles_parallel(genu_version=7, *args, **kwargs)  # type: ignore
+
+
 def run_gnvp_angles(
     plane: Airplane,
     db: DB,
@@ -99,6 +122,7 @@ def run_gnvp_angles(
     u_freestream: float,
     angles: list[float],
     environment: Environment,
+    genu_version: int,
     solver_options: dict[str, Any],
 ) -> None:
     """Run Multiple Angles Simulation in GNVP3
@@ -114,14 +138,15 @@ def run_gnvp_angles(
         environment (Environment): Enviroment Object
         solver_options (dict[str, Any]): Solver Options
     """
-    bodies_dicts: list[dict[str, Any]] = []
+    bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
     for i, surface in enumerate(surfaces):
-        bodies_dicts.append(make_surface_dict(surface, i))
+        gen_surf: GenuSurface = GenuSurface(surface, i)
+        bodies_dicts.append(gen_surf)
 
     movements: list[list[Movement]] = define_movements(
         surfaces,
@@ -150,6 +175,7 @@ def run_gnvp_angles(
                 "environment": environment,
                 "movements": movements,
                 "bodies_dicts": bodies_dicts,
+                "genu_version": genu_version,
                 "solver_options": solver_options,
             },
         )
@@ -193,6 +219,7 @@ def run_gnvp_angles_parallel(
     u_freestream: float,
     angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     environment: Environment,
+    genu_version: int,
     solver_options: dict[str, Any],
 ) -> None:
     """Run all specified angle simulations in GNVP3 in parallel
@@ -208,14 +235,15 @@ def run_gnvp_angles_parallel(
         environment (Environment): Environment Object
         solver_options (dict[str, Any]): Solver Options
     """
-    bodies_dict: list[dict[str, Any]] = []
+    bodies_dict: list[GenuSurface] = []
 
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[Wing] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
     for i, surface in enumerate(surfaces):
-        bodies_dict.append(make_surface_dict(surface, i))
+        genu_surf = GenuSurface(surface, i)
+        bodies_dict.append(genu_surf)
 
     movements: list[list[Movement]] = define_movements(
         surfaces,
@@ -228,7 +256,11 @@ def run_gnvp_angles_parallel(
     print("Running Angles in Parallel Mode")
 
     def run() -> None:
-        with Pool(12) as pool:
+        if genu_version == 3:
+            num_processes = 12
+        else:
+            num_processes = 3
+        with Pool(num_processes) as pool:
             args_list = [
                 (
                     plane,
@@ -241,6 +273,7 @@ def run_gnvp_angles_parallel(
                     environment,
                     movements,
                     bodies_dict,
+                    genu_version,
                     solver_options,
                 )
                 for angle in angles
@@ -273,7 +306,7 @@ def run_gnvp_angles_parallel(
     job_monitor.join()
 
 
-def process_gnvp_angle_run(plane: Airplane, db: DB) -> DataFrame:
+def process_gnvp_angles_run(plane: Airplane, db: DB) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
 

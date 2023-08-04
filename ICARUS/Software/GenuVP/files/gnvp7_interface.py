@@ -8,15 +8,17 @@ from .files_gnvp7 import make_input_files
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Software.GenuVP.post_process.forces import forces_to_pertrubation_results
 from ICARUS.Software.GenuVP.post_process.forces import log_forces
-from ICARUS.Software.GenuVP.utils import Movement
+from ICARUS.Software.GenuVP.utils.genu_movement import Movement
+from ICARUS.Software.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.Software.GenuVP.utils.genu_surface import GenuSurface
 
 
 def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
     """Execute GNVP7 after setting up the inputs
 
     Args:
-        HOMEDIR (str): _description_
-        ANGLEDIR (str): _description_
+        HOMEDIR (str): Home Directory
+        ANGLEDIR (str): Angle Directory
 
     Returns:
         int: Error Code
@@ -68,8 +70,8 @@ def run_gnvp7_case(
     CASEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
-    bodies_dicts: list[dict[str, Any]],
-    params: dict[str, Any],
+    bodies_dicts: list[GenuSurface],
+    params: GenuParameters,
     airfoils: list[str],
     foildb: Database_2D,
     solver2D: str,
@@ -80,8 +82,8 @@ def run_gnvp7_case(
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
         movements (list[list[Movement]]): List of Movements for each body
-        bodies_dicts (list[dict[str, Any]]): List of Bodies in dict format
-        params (dict[str, Any]): Parameters for the simulation
+        bodies_dicts (list[GenuSurface]): List of Bodies in Genu format
+        params (GenuParameters): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
         foildb (Database_2D): 2D Foil Database
         solver2D (str): Name of 2D Solver to be used

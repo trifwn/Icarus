@@ -113,7 +113,6 @@ def main() -> None:
             _ = f2w_s.get_results()
             f2w_etime: float = time.time()
             print(f"Foil2Wake completed in {f2w_etime - f2w_stime} seconds")
-
         # XFoil
         if calcXFoil:
             xfoil_stime: float = time.time()

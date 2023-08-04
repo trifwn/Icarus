@@ -3,9 +3,7 @@ from typing import Any
 from ICARUS.Database.db import DB
 from ICARUS.Software.F2Wsection.analyses.angles import process_f2w_run
 from ICARUS.Software.F2Wsection.analyses.angles import run_multiple_reynolds_parallel
-from ICARUS.Software.F2Wsection.analyses.angles import (
-    run_multiple_reynolds_sequentially,
-)
+from ICARUS.Software.F2Wsection.analyses.angles import run_multiple_reynolds_sequentially
 from ICARUS.Software.F2Wsection.analyses.angles import run_single_reynolds
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver

@@ -2,8 +2,7 @@ import os
 
 # MOCK CASES ###
 # 2D
-APPHOME = os.path.abspath(".")
-
+APPHOME = os.path.dirname("__file__")
 BASEOPENFOAM = os.path.join(APPHOME, "Data", "Mock", "BaseOF")
 BASEFOIL2W = os.path.join(APPHOME, "Data", "Mock", "BaseF2W")
 # 3D

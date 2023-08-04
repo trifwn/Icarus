@@ -8,7 +8,7 @@ from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from pandas import DataFrame
 
-from ICARUS.Software.GenuVP.post_process.getStripData import get_strip_data
+from ICARUS.Software.GenuVP.post_process.strips import get_strip_data_3
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -30,7 +30,7 @@ def gnvp_strips_3d(
     Returns:
         DataFrame: DataFrame of the strip data
     """
-    stripDat, data = get_strip_data(pln, case, NBs)
+    stripDat, data = get_strip_data_3(pln, case, NBs)
 
     fig: Figure = plt.figure()
     ax = fig.add_subplot(projection="3d")
@@ -84,7 +84,7 @@ def gnvp_strips_2d(
         print("Only one body can be selected for 2D plots")
         return 0
 
-    stripDat, data = get_strip_data(pln, case, [NB])
+    stripDat, data = get_strip_data_3(pln, case, [NB])
     print(data[category])
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()

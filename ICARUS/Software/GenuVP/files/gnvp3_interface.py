@@ -9,7 +9,9 @@ from ICARUS.Database import BASEGNVP3 as GENUBASE
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Software.GenuVP.post_process.forces import forces_to_pertrubation_results
 from ICARUS.Software.GenuVP.post_process.forces import log_forces
-from ICARUS.Software.GenuVP.utils import Movement
+from ICARUS.Software.GenuVP.utils.genu_movement import Movement
+from ICARUS.Software.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.Software.GenuVP.utils.genu_surface import GenuSurface
 
 
 def gnvp3_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
@@ -67,8 +69,8 @@ def run_gnvp3_case(
     CASEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
-    bodies_dicts: list[dict[str, Any]],
-    params: dict[str, Any],
+    bodies_dicts: list[GenuSurface],
+    params: GenuParameters,
     airfoils: list[str],
     foildb: Database_2D,
     solver2D: str,
@@ -80,8 +82,8 @@ def run_gnvp3_case(
         HOMEDIR (str): Home Directory
         GENUBASE (str): Base of GenuVP3
         movements (list[list[Movement]]): List of Movements for each body
-        bodies (list[dict[str, Any]]): List of Bodies in dict format
-        params (dict[str, Any]): Parameters for the simulation
+        bodies (list[dict[GenuSurface]): List of Bodies in GenuSurface format
+        params (GenuParameters): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
         foildb (Database_2D): 2D Foil Database
         solver2D (str): Name of 2D Solver to be used

@@ -84,6 +84,28 @@ class AirfoilD(af.Airfoil):  # type: ignore
         self.set_naca4_digits(p, m, xx)
         return self
 
+    @classmethod
+    def load_from_file(cls, filename: str) -> "AirfoilD":
+        """
+        Initialize the AirfoilD class from a file.
+
+        Args:
+            filename (str): Name of the file to load the airfoil from
+
+        Returns:
+            AirfoilD: AirfoilD class object
+        """
+        x: list[float] = []
+        y: list[float] = []
+        with open(filename) as file:
+            for line in file:
+                x.append(float(line.split()[0]))
+                y.append(float(line.split()[1]))
+        upper: FloatArray = np.array(x)
+        lower: FloatArray = np.array(y)
+        self: "AirfoilD" = cls(upper, lower, filename, len(x))
+        return self
+
     def set_naca4_digits(self, p: float, m: float, xx: float) -> None:
         """
         Class to store the NACA 4 digits parameters for the airfoil in the object

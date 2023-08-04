@@ -12,32 +12,36 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
+from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import sps
 from ICARUS.Core.formatting import tabs
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.Database_2D import Database_2D as foilsdb
-from ICARUS.Software.GenuVP.utils import Movement
+from ICARUS.Software.GenuVP.utils.genu_movement import Movement
+from ICARUS.Software.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.Software.GenuVP.utils.genu_surface import GenuSurface
 
 
-def input_file() -> None:
+def input_file(maxiter: float, timestep: float) -> None:
     """Create input file for gnvp7"""
 
     fname: str = "input"
     with open(fname, "w", encoding='utf-8') as f:
-        f.write("100             !NTIMEM\n")
+        f.write(f"{maxiter}             !NTIMEM\n")
         f.write("1               !IDT\n")
-        f.write("0.0             !OMEGA_DT\n")
+        f.write(f"{timestep}            !OMEGA_DT\n")
         f.write("1               !INIT_gn\n")
 
 
-def dfile(params: dict[str, Any]) -> None:
+def dfile(params: GenuParameters) -> None:
     """
     Create dfile for gnvp7
 
     Args:
-        params (dict[str, Any]): A dictionary containing the parameters values
+        params (GenuParameters): An object containing the parameters values
     """
     f_io = StringIO()
     # Header
@@ -47,8 +51,8 @@ def dfile(params: dict[str, Any]) -> None:
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # Basic parameters
-    nbodt = int(params["nBods"])
-    nblades = int(params["nBlades"])
+    nbodt = int(params.nBods)
+    nblades = int(params.nBlades)
     f_io.write(f"** Read the BASIC parameters{tabs(9)}<blank>\n")
     f_io.write(f"1{tabs(3)}NSYMF{sps(6)}=1,2,3 (no-symm, axi-symm, Y-symm)\n")
     f_io.write(f"{nbodt}{tabs(3)}NBODT{sps(6)}number of bodies\n")
@@ -94,9 +98,9 @@ def dfile(params: dict[str, Any]) -> None:
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # Inflow parameters
-    u_x: float = params["u_freestream"][0]
-    u_y: float = params["u_freestream"][1]
-    u_z: float = params["u_freestream"][2]
+    u_x: float = params.u_freestream[0]
+    u_y: float = params.u_freestream[1]
+    u_z: float = params.u_freestream[2]
 
     u_inf: float = np.sqrt(u_x**2 + u_y**2 + u_z**2)
     yaw: float = np.arctan2(u_y, u_x) * 180 / np.pi
@@ -142,7 +146,7 @@ def dfile(params: dict[str, Any]) -> None:
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # DEFORMATION parameters
-    DX: float = 1.5 * np.linalg.norm(params["u_freestream"]) * params["timestep"]
+    DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
     if DX > 0.005:
         DX = 0.003
 
@@ -167,7 +171,7 @@ def dfile(params: dict[str, Any]) -> None:
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # I/O specifications
-    name: str = params['name']
+    name: str = params.name
 
     f_io.write(f"** I/O specifications{tabs(11)}<blank>\n")
     f_io.write(f"{name}.TOT{tabs(1)}OFILE\n")
@@ -190,8 +194,8 @@ def dfile(params: dict[str, Any]) -> None:
 
     # FLUID parameters
     f_io.write(f"** Read the FLUID parameters{tabs(9)}<blank>\n")
-    f_io.write(f"{params['rho']}{tabs(2)}AIRDEN     Fluid density\n")
-    f_io.write(f"{params['visc']}{tabs(1)}VISCO      Kinematic viscosity\n")
+    f_io.write(f"{params.rho}{tabs(2)}AIRDEN     Fluid density\n")
+    f_io.write(f"{params.visc}{tabs(1)}VISCO      Kinematic viscosity\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # APPLICATION parameters
@@ -216,31 +220,35 @@ def dfile(params: dict[str, Any]) -> None:
         f.write(contents)
 
 
-def geofile(name: str, movements: list[list[Movement]], bodies_dicts: list[dict[str, Any]]) -> None:
+def geofile(
+    movements: list[list[Movement]],
+    bodies: list[GenuSurface],
+    params: GenuParameters,
+) -> None:
     """
     Creates the geofile for GNVP7. The geofile contains the information about
     the geometry of the bodies and the movements of the bodies.
 
     Args:
-        name (str): Name of the simulated Object (e.g. "hermes")
         movements (list[list[Movement]]): List of movements for every body
-        bodies_dicts (list[dict[str, Any]]): List of bodies in dictionary format
+        bodies (list[GenuSurface]): List of bodies in dictionary format
+        params (GenuParameters): An object containing the parameters values
     """
     f_io = StringIO()
     f_io.write(f"READ THE FLOW AND GEOMETRICAL DATA FOR EVERY SOLID BODY\n")
     f_io.write(f"{tabs(3)}<blank>\n")
     f_io.write(f"{tabs(3)}<blank>\n")
 
-    for i, bod in enumerate(bodies_dicts):
-        NB: int = bod['NB'] + 1
-        NNB: int = bod['NNB']
-        NCWB: int = bod['NCWB']
-        type_bod: int = 2 if bod['type'] == 'thin' else 3
-        type_lift: int = 1 if bod['lifting'] else 0
+    for i, bod in enumerate(bodies):
+        NB: int = bod.NB + 1
+        NNB: int = bod.NNB
+        NCWB: int = bod.NCWB
+        type_bod: int = 2 if bod.type == 'thin' else 3
+        type_lift: int = 1 if bod.lifting else 0
 
         f_io.write(f"Body Number{tabs(1)}NB = {NB}\n")
         f_io.write(f"{tabs(3)}<blank>\n")
-        f_io.write(f"{bod['name']}{tabs(2)}BodyName\n")
+        f_io.write(f"{bod.name}{tabs(2)}BodyName\n")
         f_io.write(f"{NB}{tabs(3)}IndBodyB\n")
         f_io.write(f"{type_bod}{tabs(3)}TypBodyB   1 2 (thin) 3 (thick) 4 (tip) 5 (spoiler)\n")
         f_io.write(f"{type_lift}{tabs(3)}YNLiftB    0 1        1         0/1     1\n")
@@ -257,22 +265,22 @@ def geofile(name: str, movements: list[list[Movement]], bodies_dicts: list[dict[
 
         # Write the movements
         f_io.write(f"{len(movements[i])}{tabs(3)}LEVEL   the level of movement\n")
-        f_io.write(f"{bod['move_fname']}{tabs(1)}FILMOV\n")
-        body_movements(movements=movements[i], NB=NB, fname=bod['move_fname'])
+        f_io.write(f"{bod.move_fname}{tabs(1)}FILMOV\n")
+        body_movements(movements=movements[i], NB=NB, fname=bod.move_fname)
         f_io.write(f"{tabs(16)}<blank>\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
         # Write the load parameters
         f_io.write(f"1 1 0{tabs(2)}LoadViscCor  0= No, 1[1,2]=a_ci[a_ci,a_f] 2[1,2]=a_f[a_ci,a_f]\n")
-        f_io.write(f"{bod['cld_fname']}{tabs(1)}FLCLCDB     file name wherefrom Cl, Cd are read\n")
+        f_io.write(f"{bod.cld_fname}{tabs(1)}FLCLCDB     file name wherefrom Cl, Cd are read\n")
         f_io.write(f"{tabs(16)}<blank>\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
         # Write the grid parameters
-        f_io.write(f"{bod['grid_fname']}{tabs(1)}FilGridB\n")
-        grid_file(body_dict=bod)
-        f_io.write(f"{bod['topo_fname']}{tabs(1)}FilTopoB\n")
-        f_io.write(f"{bod['wake_fname']}{tabs(1)}FilWakeB\n")
+        f_io.write(f"{bod.grid_fname}{tabs(1)}FilGridB\n")
+        grid_file(bod)
+        f_io.write(f"{bod.topo_fname}{tabs(1)}FilTopoB\n")
+        f_io.write(f"{bod.wake_fname}{tabs(1)}FilWakeB\n")
         f_io.write(f"{tabs(16)}<blank>\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
@@ -280,29 +288,31 @@ def geofile(name: str, movements: list[list[Movement]], bodies_dicts: list[dict[
         f_io.write(f"0{tabs(3)} ElastBody\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
-        # Uknown parameters
-        f_io.write(f"0 0 126.35\n")
-        f_io.write(f"1 0 0\n")
+        cg: list[float] = params.CG.tolist()
+        f_io.write(f"{cg[0]} {cg[1]} {cg[2]}{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n")
+        f_io.write(f"0. 0. 0.{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n")
+        f_io.write(f"1 0 0{tabs(2)}ROTOR AXIS\n")
+        # f_io.write(f"{u_y/u_inf} {u_z/u_inf} {u_x/u_inf}{tabs(2)}ROTOR AXIS\n")
     f_io.write('\n\n')
-    fname: str = f"{name}.geo"
+    fname: str = f"{params.name}.geo"
     contents: str = f_io.getvalue().expandtabs(4)
 
     with open(fname, "w", encoding="utf-8") as f:
         f.write(contents)
 
 
-def grid_file(body_dict: dict[str, Any]) -> None:
+def grid_file(body_dict: GenuSurface) -> None:
     """
     Generates the grid file for a body.
 
     Args:
-        body_dict (dict[str, Any]): Dictionary Containing the information about
-            the body in dictionary format.
+        body_dict (GenuSurface): Dictionary Containing the information about
+            the body in GenuSurface format.
     """
-    with open(f'{body_dict["grid_fname"]}', "w") as file:
-        grid: ndarray[Any, dtype[floating[Any]]] = body_dict["Grid"]
+    with open(f'{body_dict.grid_fname}', "w") as file:
+        grid: ndarray[Any, dtype[floating[Any]]] = body_dict.Grid
+        file.write("\n")
         for n_strip in grid:  # For each strip
-            file.write("\n")
             for m_point in n_strip:  # For each point in the strip
                 # Grid Coordinates
                 file.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
@@ -310,7 +320,7 @@ def grid_file(body_dict: dict[str, Any]) -> None:
 
 
 def topology_files(
-    bodies_dicts: list[dict[str, Any]],
+    bodies_dicts: list[GenuSurface],
 ) -> None:
     """
     # ! TODO: Make the description of this function more clear and accurate
@@ -320,7 +330,7 @@ def topology_files(
     vortex particles are changed.
 
     Args:
-        bodies_dicts (list[dict[str, Any]]): List of bodies in dictionary format.
+        bodies_dicts (list[GenuSurface]): List of bodies in GenuSurface format.
     """
     for bod in bodies_dicts:
         f_io = StringIO()
@@ -336,14 +346,14 @@ def topology_files(
         f_io.write("  side4\n")
         f_io.write("---< end >------------------------------\n")
 
-        fname: str = bod["topo_fname"]
+        fname: str = bod.topo_fname
         contents: str = f_io.getvalue().expandtabs(4)
         with open(fname, "w", encoding="utf-8") as f:
             f.write(contents)
 
 
 def wake_files(
-    bodies_dicts: list[dict[str, Any]],
+    bodies_dicts: list[GenuSurface],
 ) -> None:
     """
     # ! TODO: Make the description of this function more clear and accurate
@@ -353,7 +363,7 @@ def wake_files(
     emmission and whether separation takes place
 
     Args:
-        bodies_dicts (list[dict[str, Any]]): List of bodies in dictionary format.
+        bodies_dicts (list[GenuSurface]): List of bodies in GenuSurface format.
     """
     for bod in bodies_dicts:
         f_io = StringIO()
@@ -374,7 +384,7 @@ def wake_files(
         f_io.write("\n")
         f_io.write("LE separation is valid for thin bodies only\n")
 
-        fname: str = bod["wake_fname"]
+        fname: str = bod.wake_fname
         contents: str = f_io.getvalue().expandtabs(4)
         with open(fname, "w", encoding="utf-8") as f:
             f.write(contents)
@@ -450,7 +460,7 @@ def pm_file() -> None:
         file.write(f"4  1  1{tabs(3)}! Number of Blocks[i,j,k) == np\n")
         file.write(f"1  1{tabs(4)}! remesh(0,1)/Number of Particels per cell\n")
         file.write(f"1  3{tabs(4)}! tree(0,1),Number of levels\n")
-        file.write(f"4{tabs(6)}! Number of threads       ==max(available threads)\n")
+        file.write(f"12{tabs(6)}! Number of threads       ==max(available threads)\n")
         file.write(f"0\n")
         file.write(f"0\n")
         file.write(f"0{tabs(6)}! IPMWRITE  number of pm time series, max value 10\n")
@@ -485,46 +495,35 @@ def cld_files(
 
         # WRITE MACH AND REYNOLDS NUMBERS
         f_io.write(f"{len(polars)}  ! Mach/Reynolds combs for which CL-CD are given\n")
-        for _ in polars.keys():
+        for i, _ in enumerate(polars.keys()):
             f_io.write(f"0.08000{tabs(1)}")
         f_io.write("MACH\n")
 
         for reyn in polars.keys():
             f_io.write(f"{reyn.zfill(4)}{tabs(1)}")
         f_io.write("Reynolds\n")
+
+        f_io.write(f"2{tabs(1)}! stations\n")
         f_io.write("\n")
 
-        f_io.write(f"{tabs(2)}2{tabs(1)}! stations")
-
         # GET ALL 2D AIRFOIL POLARS IN ONE TABLE
-        # ! TODO: Create POLAR CLASS AND DEPRECATE
-        keys: list[str] = list(polars.keys())
-        df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
-        df.rename({"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"}, inplace=True, axis="columns")
-        for reyn in keys[1:]:
-            df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
-            df2.rename({"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"}, inplace=True, axis="columns")
-            df = pd.merge(df, df2, on="AoA", how="outer")
-
-        # SORT BY AoA
-        df = df.sort_values("AoA")
-        # FILL NaN Values By neighbors
-        df = foilsdb.fill_polar_table(df)
+        polar_obj = Polars(polars)
+        df: DataFrame = polar_obj.df
 
         # Get Angles
-        angles = df["AoA"].to_numpy()
+        angles: FloatArray = polar_obj.angles
 
         # FILL FILE
         for radpos in [-100.0, 100.0]:
-            f_io.write(f"!profile: {radpos}")
+            f_io.write(f"!profile: {radpos}\n")
             f_io.write(f"{radpos}{tabs(1)}{0.25}{tabs(1)}{1}{tabs(7)}Span AerCentr NumFlap\n")
 
             anglenum: int = len(angles)
-            flap_angle: float = 0.0  # Flap Angle
-            a_zero_pot: float = 0.0  # Potential Zero Lift Angle
-            cm_pot: float = 0.0  # Potential Cm at Zero Lift Angle
-            a_zero: float = 0.0  # Viscous Zero Lift Angle
-            cl_slope: float = 0.0  # Slope of Cl vs Alpha (viscous)
+            flap_angle: float = polar_obj.flap_angle  # Flap Angle
+            a_zero_pot: float = polar_obj.a_zero_pot  # Potential Zero Lift Angle
+            cm_pot: float = polar_obj.cm_pot  # Potential Cm at Zero Lift Angle
+            a_zero: float = polar_obj.a_zero_visc  # Viscous Zero Lift Angle
+            cl_slope: float = polar_obj.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
 
             for item in [anglenum, flap_angle, a_zero_pot, cm_pot, a_zero, cl_slope]:
                 f_io.write(f"{item}{tabs(1)}")
@@ -537,7 +536,7 @@ def cld_files(
                     string = string + ff2(num) + "  "
                 f_io.write(f"{string}\n")
             f_io.write("\n")
-
+        f_io.write("\n")
         # Write to File
         contents: str = f_io.getvalue().expandtabs(4)
         with open(fname, "w", encoding='utf-8') as file:
@@ -609,8 +608,8 @@ def make_input_files(
     ANGLEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
-    bodies_dicts: list[dict[str, Any]],
-    params: dict[str, Any],
+    bodies_dicts: list[GenuSurface],
+    params: GenuParameters,
     airfoils: list[str],
     foil_dat: Struct,
     solver: str,
@@ -618,19 +617,19 @@ def make_input_files(
     os.chdir(ANGLEDIR)
 
     # Input File
-    input_file()
+    input_file(params.maxiter, params.timestep)
     # PM File
     pm_file()
     # DFILE
     dfile(params)
     # GEO
-    geofile(params["name"], movements, bodies_dicts)
+    geofile(movements, bodies_dicts, params)
     # TOPOLOGY Files
     topology_files(bodies_dicts)
     # BODY CONNECTIONS
-    body_connections(len(bodies_dicts), params["name"])
+    body_connections(len(bodies_dicts), params.name)
     # Wake Connections
-    wake_connections(params["name"])
+    wake_connections(params.name)
     # WAKE Files
     wake_files(bodies_dicts)
     # ANGLES File

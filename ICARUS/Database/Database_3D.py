@@ -15,7 +15,7 @@ from . import APPHOME
 from . import DB3D
 from ICARUS.Core.struct import Struct
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Software.GenuVP.post_process.convergence import getLoadsConvergence
+from ICARUS.Software.GenuVP.post_process.convergence import get_loads_convergence_3
 from ICARUS.Vehicle.plane import Airplane
 
 # from ICARUS.Software.GenuVP3.postProcess.convergence import addErrorConvergence2df
@@ -82,7 +82,11 @@ class Database_3D:
                 with open(file, encoding="UTF-8") as f:
                     json_obj: str = f.read()
                 try:
-                    state: State = jsonpickle.decode(json_obj)
+                    obj: Any = jsonpickle.decode(json_obj)
+                    if isinstance(obj, State):
+                        state: State = obj
+                    else:
+                        raise TypeError(f"Expected State object, got {type(obj)}")
                     states[state.name] = state
                 except Exception as error:
                     print(f"Error decoding states object {plane}! Got error {error}")
@@ -158,7 +162,7 @@ class Database_3D:
         # Get Load Convergence Data from LOADS_aer.dat
         file: str = os.path.join(DB3D, planename, case, "LOADS_aer.dat")
 
-        loads: DataFrame | None = getLoadsConvergence(file)
+        loads: DataFrame | None = get_loads_convergence_3(file)
         if loads is not None:
             # Get Error Convergence Data from gnvp.out
             file = os.path.join(DB3D, planename, case, "gnvp.out")

@@ -165,6 +165,30 @@ class Analysis:
         for option in options:
             self.set_option(option, options[option])
 
+    def set_solver_param(self, param_name: str, param_value: Any) -> None:
+        """
+        Set a solver parameter for the current analysis.
+        Solver Parameters refer to internal solver settings not the analysis itself.
+
+        Args:
+            param_name (str): Parameter Name
+            param_value (Any): Parameter Value
+        """
+        try:
+            self.solver_options[param_name].value = param_value
+        except KeyError:
+            print(f"Parameter {param_name} not available")
+
+    def set_all_solver_params(self, params: Struct | dict[str, Any]) -> None:
+        """
+        Set all solver parameters for the current analysis.
+
+        Args:
+            params (Struct | dict[str, Any]): Object containing the parameters. Can be a dictionary or a Struct.
+        """
+        for param in params:
+            self.set_solver_param(param, params[param])
+
     def check_options(self) -> bool:
         """
         Checks if all options have been set.
@@ -291,7 +315,7 @@ class Analysis:
         ) = state
 
     def toJSON(self) -> str:
-        encoded: str = jsonpickle.encode(self)
+        encoded: str = str(jsonpickle.encode(self))
         return encoded
 
     def __lshift__(self, other: dict[str, Any]) -> "Analysis":

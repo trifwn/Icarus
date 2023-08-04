@@ -23,7 +23,7 @@ airfoils: Struct = db2d.set_available_airfoils()
 
 origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
 wing_position: ndarray[Any, dtype[floating[Any]]] = np.array(
-    [-0.2, 0.0, 0.0],
+    [0, 0.0, 0.0],
     dtype=float,
 )
 wing_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(

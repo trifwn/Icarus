@@ -10,7 +10,7 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Workers.solver import Solver
 
 
-def gnvprun(mode: str = "Parallel") -> None:
+def gnvp7_run(mode: str = "Parallel") -> None:
     print("Testing GNVP Running...")
 
     # Get Plane, DB
@@ -20,21 +20,21 @@ def gnvprun(mode: str = "Parallel") -> None:
     from ICARUS.Enviroment.definition import EARTH
 
     # Get Solver
-    from ICARUS.Software.GenuVP.gnvp3 import get_gnvp3
+    from ICARUS.Software.GenuVP.gnvp7 import get_gnvp7
 
-    gnvp3: Solver = get_gnvp3(db)
+    gnvp7: Solver = get_gnvp7(db)
 
     # Set Analysis
     if mode == "Parallel":
-        analysis: str = gnvp3.available_analyses_names()[2]
+        analysis: str = gnvp7.available_analyses_names()[2]
     else:
-        analysis = gnvp3.available_analyses_names()[1]
+        analysis = gnvp7.available_analyses_names()[1]
 
-    gnvp3.set_analyses(analysis)
+    gnvp7.set_analyses(analysis)
 
     # Set Options
-    options: Struct = gnvp3.get_analysis_options(verbose=True)
-    solver_parameters: Struct = gnvp3.get_solver_parameters()
+    options: Struct = gnvp7.get_analysis_options(verbose=True)
+    solver_parameters: Struct = gnvp7.get_solver_parameters()
 
     AoAmin = -3
     AoAmax = 3
@@ -59,15 +59,15 @@ def gnvprun(mode: str = "Parallel") -> None:
     solver_parameters.Split_Symmetric_Bodies.value = False
     solver_parameters.Use_Grid.value = True
 
-    _ = gnvp3.get_analysis_options(verbose=True)
+    _ = gnvp7.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
 
-    gnvp3.run()
+    gnvp7.run()
 
     end_time: float = time.perf_counter()
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 
-    _ = gnvp3.get_results()
+    _ = gnvp7.get_results()
     airplane.save()
     # getRunOptions()

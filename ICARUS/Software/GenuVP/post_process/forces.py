@@ -10,7 +10,10 @@ from pandas import DataFrame
 from pandas import Series
 
 
-def log_forces(CASEDIR: str, HOMEDIR: str) -> DataFrame:
+def log_forces(
+    CASEDIR: str,
+    HOMEDIR: str,
+) -> DataFrame:
     """
     Convert the forces to polars and return a dataframe with them.
 
@@ -44,6 +47,7 @@ def log_forces(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     df = df.sort_values("AoA").reset_index(drop=True)
     df.to_csv("forces.gnvp3", index=False)
     os.chdir(HOMEDIR)
+    # df = rotate_forces(df, df['AoA'])
     return df
 
 

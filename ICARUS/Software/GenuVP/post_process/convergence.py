@@ -3,7 +3,7 @@ from pandas import DataFrame
 
 
 # GET THE SCANNING FROM THE DATABASE AND MAKE DF WITH IT
-def getLoadsConvergence(file: str) -> DataFrame | None:
+def get_loads_convergence_3(file: str) -> DataFrame | None:
     try:
         return pd.read_csv(file, delim_whitespace=True, names=cols)
     except Exception as e:
@@ -11,7 +11,7 @@ def getLoadsConvergence(file: str) -> DataFrame | None:
         return None
 
 
-def addErrorConvergence2df(file: str, df: DataFrame) -> DataFrame:
+def add_error_convergence_to_df_3(file: str, df: DataFrame) -> DataFrame:
     try:
         with open(file, encoding="UTF-8") as f:
             lines: list[str] = f.readlines()

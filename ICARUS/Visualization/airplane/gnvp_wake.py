@@ -2,11 +2,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
-from ICARUS.Software.GenuVP.post_process.getWakeData import get_wake_data
+from ICARUS.Software.GenuVP.post_process.wake import get_wake_data_3
+from ICARUS.Software.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Vehicle.plane import Airplane
 
 
-def gnvp_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
+def plot_gnvp3_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
+    gnvp_wake(gnvp_version=3, plane=plane, case=case, figsize=figsize)
+
+
+def plot_gnvp7_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
+    gnvp_wake(gnvp_version=7, plane=plane, case=case, figsize=figsize)
+
+
+def gnvp_wake(gnvp_version: int, plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
     """
     Visualize the wake of a given plane
 
@@ -15,6 +24,14 @@ def gnvp_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) ->
         case (str): Case Name
         figsize (tuple[int,int]): Figure Size. Defaults to (16, 7).
     """
+
+    if gnvp_version == 3:
+        get_wake_data = get_wake_data_3
+    elif gnvp_version == 7:
+        get_wake_data = get_wake_data_7
+    else:
+        raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
+
     A1, B1, C1 = get_wake_data(plane, case)
 
     fig: Figure = plt.figure(figsize=figsize)

@@ -266,6 +266,7 @@ class Database_2D:
     def fill_polar_table(df: DataFrame) -> DataFrame:
         """Fill Nan Values of Panda Dataframe Row by Row
         substituting first backward and then forward
+        #! TODO: DEPRECATE THIS METHOD IN FAVOR OF POLAR CLASS
 
         Args:
             df (pandas.DataFrame): Dataframe with NaN values

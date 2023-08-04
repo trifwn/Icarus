@@ -30,7 +30,7 @@ def latest_time(
     error: bool = any(re.search(r"forrtl", x) for x in data)
 
     # ITERATION
-    matches: list[str] = [x.split('   ')[1] for x in data if re.search(r"^ Time step  NTIME =", x)]
+    matches: list[str] = [x.split('   ')[1] for x in data if re.search(r"NTIME =", x)]
     times: list[int] = [int(x) for x in matches]
     try:
         latest_t: int = max(times)
