@@ -2,7 +2,7 @@ import os
 
 from pandas import DataFrame
 
-from Data.Planes.simple_wing import airplane as plane
+from examples.Planes.simple_wing import airplane as plane
 from ICARUS.Database.Database_3D import Database_3D
 from ICARUS.Database.db import DB
 from ICARUS.Software.XFLR5.polars import read_polars_3d

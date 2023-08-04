@@ -14,7 +14,7 @@ def gnvp3_run(mode: str = "Parallel") -> None:
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from Data.Planes.simple_wing import airplane, db
+    from examples.Planes.simple_wing import airplane, db
 
     # Get Environment
     from ICARUS.Enviroment.definition import EARTH

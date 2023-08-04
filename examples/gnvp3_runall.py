@@ -11,17 +11,16 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
+from Planes.hermes import hermes
+from Planes.wing_variations import wing_var_chord_offset
 
-from Data.Planes.hermes import hermes
-from Data.Planes.hermes_wing_only import hermes_main_wing
-from Data.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Software.GenuVP.gnvp7 import get_gnvp7
+from ICARUS.Software.GenuVP.gnvp3 import get_gnvp3
 from ICARUS.Software.XFLR5.parser import parse_xfl_project
 from ICARUS.Software.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
@@ -43,37 +42,37 @@ def main() -> None:
     # # Get Plane
     planes: list[Airplane] = []
 
-    planes.append(wing_var_chord_offset(airfoils, "orthogonal_7", [0.159, 0.159], 0.0))
+    planes.append(wing_var_chord_offset(airfoils, "orthogonal_3", [0.159, 0.159], 0.0))
 
     planes.append(
-        wing_var_chord_offset(airfoils, "orthogonalSweep_7", [0.32, 0.32], 0.001),
+        wing_var_chord_offset(airfoils, "orthSweep_3", [0.32, 0.32], 0.001),
     )
 
-    planes.append(wing_var_chord_offset(airfoils, "taperSweep_7", [0.159, 0.072], 0.2))
+    planes.append(wing_var_chord_offset(airfoils, "taperSweep_3", [0.159, 0.072], 0.2))
 
-    planes.append(wing_var_chord_offset(airfoils, "taper_7", [0.159, 0.072], 0.0))
+    planes.append(wing_var_chord_offset(airfoils, "taper_3", [0.159, 0.072], 0.0))
 
-    planes.append(hermes(airfoils=airfoils, name='hermes_7'))
+    planes.append(hermes(airfoils=airfoils, name='hermes_3'))
 
     timestep: dict[str, float] = {
-        "orthogonal_7": 1e-3,
-        "orthogonalSweep_7": 1e-3,
-        "taperSweep_7": 1e-3,
-        "taper_7": 1e-3,
-        "atlas_7": 1e-3,
-        "hermes_7": 1e-3,
+        "orthogonal_3": 1e-3,
+        "orthogonalSweep_3": 1e-3,
+        "taperSweep_3": 1e-3,
+        "taper_3": 1e-3,
+        "atlas_3": 1e-3,
+        "hermes_3": 1e-3,
     }
     maxiter: dict[str, int] = {
-        "orthogonal_7": 100,
-        "orthogonalSweep_7": 100,
-        "taperSweep_7": 400,
-        "taper_7": 400,
-        "atlas_7": 400,
-        "hermes_7": 400,
+        "orthogonal_3": 100,
+        "orthogonalSweep_3": 100,
+        "taperSweep_3": 400,
+        "taper_3": 400,
+        "atlas_3": 400,
+        "hermes_3": 400,
     }
     filename: str = "Data/XFLR5/atlas.xml"
     atlas: Airplane = parse_xfl_project(filename)
-    atlas.name = "atlas_7"
+    atlas.name = "atlas_3"
     atlas.visualize()
     planes.append(atlas)
 
@@ -86,7 +85,7 @@ def main() -> None:
         print(EARTH)
 
         # # Get Solver
-        gnvp3: Solver = get_gnvp7(db)
+        gnvp3: Solver = get_gnvp3(db)
 
         # ## AoA Run
         analysis: str = gnvp3.available_analyses_names()[2]  # ANGLES PARALLEL

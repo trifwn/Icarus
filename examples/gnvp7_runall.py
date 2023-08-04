@@ -11,10 +11,10 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
+from Planes.hermes import hermes
+from Planes.hermes_wing_only import hermes_main_wing
+from Planes.wing_variations import wing_var_chord_offset
 
-from Data.Planes.hermes import hermes
-from Data.Planes.hermes_wing_only import hermes_main_wing
-from Data.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
@@ -46,7 +46,7 @@ def main() -> None:
     planes.append(wing_var_chord_offset(airfoils, "orthogonal_7", [0.159, 0.159], 0.0))
 
     planes.append(
-        wing_var_chord_offset(airfoils, "orthogonalSweep_7", [0.32, 0.32], 0.001),
+        wing_var_chord_offset(airfoils, "orthSweep_7", [0.32, 0.32], 0.001),
     )
 
     planes.append(wing_var_chord_offset(airfoils, "taperSweep_7", [0.159, 0.072], 0.2))
