@@ -8,9 +8,9 @@ from numpy import ndarray
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing import define_linear_chord
-from ICARUS.Vehicle.wing import define_linear_span
-from ICARUS.Vehicle.wing import Wing
+from ICARUS.Vehicle.wing_segment import define_linear_chord
+from ICARUS.Vehicle.wing_segment import define_linear_span
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def hermes(airfoils: Struct, name: str) -> Airplane:
@@ -36,7 +36,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Wing(
+    main_wing = Wing_Segment(
         name="wing",
         airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
@@ -63,7 +63,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
         dtype=float,
     )
 
-    elevator = Wing(
+    elevator = Wing_Segment(
         name="tail",
         airfoil=airfoils["NACA0008"],
         origin=origin + elevator_pos,
@@ -90,7 +90,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
         dtype=float,
     )
 
-    rudder = Wing(
+    rudder = Wing_Segment(
         name="rudder",
         airfoil=airfoils["NACA0008"],
         origin=origin + rudder_position,
@@ -108,7 +108,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
     )
     # rudder.plotWing()
 
-    lifting_surfaces: list[Wing] = [main_wing, elevator, rudder]
+    lifting_surfaces: list[Wing_Segment] = [main_wing, elevator, rudder]
 
     point_masses = [
         (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Motor

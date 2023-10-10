@@ -45,12 +45,13 @@ class Analysis:
         self.execute: Callable[..., Any] = run_function
 
         for option in options.keys():
-            self.options[option] = Option(option, None, options[option])
+            desc, option_type = options[option]
+            self.options[option] = Option(option, None, desc, option_type)
 
         if solver_options:
             for option in solver_options.keys():
-                value, desc = solver_options[option]
-                self.solver_options[option] = Option(option, value, desc)
+                value, desc, option_type = solver_options[option]
+                self.solver_options[option] = Option(option, value, desc, option_type)
 
         if callable(unhook):
             self.unhook: Callable[..., DataFrame | int] = unhook
@@ -270,9 +271,9 @@ class Analysis:
         )
 
     def __copy__(self) -> "Analysis":
-        option_dict: dict[str, Any] = {k: v.description for k, v in self.options.items()}
-        solver_options: dict[str, tuple[Any, str]] = {
-            k: (v.value, v.description) for k, v in self.solver_options.items()
+        option_dict: dict[str, tuple[str, Any]] = {k: (v.description, v.option_type) for k, v in self.options.items()}
+        solver_options: dict[str, tuple[Any, str, Any]] = {
+            k: (v.value, v.description, v.option_type) for k, v in self.solver_options.items()
         }
         return self.__class__(
             self.solver_name,

@@ -186,7 +186,7 @@ class Strip:
         Y: FloatArray = np.array(ys)
         Z: FloatArray = np.array(zs)
 
-        if isinstance(color, tuple):
+        if color is not None:
             my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
                 Z.shape[0],
                 Z.shape[1],
@@ -194,7 +194,6 @@ class Strip:
             )
         else:
             my_color = "red"
-
         ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
 
         if pltshow:

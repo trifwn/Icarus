@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm","scikit-build", "cmake"]
+requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -28,9 +28,14 @@ dependencies = [
     "tqdm",
     "xmltodict",
     #"xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
-    "xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
+    #"xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
 ]
 dynamic = ["version"]
+
+
+[tool.setuptools.dynamic]
+version = {attr = "ICARUS.__version__"}
+
 
 [tool.mypy]
 plugins = [

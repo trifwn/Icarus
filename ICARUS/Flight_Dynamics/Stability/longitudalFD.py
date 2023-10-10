@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
+from ICARUS.Input_Output.GenuVP.post_process.forces import rotate_forces
 
 if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State

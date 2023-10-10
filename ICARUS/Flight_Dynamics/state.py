@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import jsonpickle
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from tabulate import tabulate
@@ -23,7 +24,7 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB3D
 from ICARUS.Enviroment.definition import Environment
-from ICARUS.Software.GenuVP.post_process.forces import rotate_forces
+from ICARUS.Input_Output.GenuVP.post_process.forces import rotate_forces
 
 if TYPE_CHECKING:
     from ICARUS.Vehicle.plane import Airplane
@@ -162,23 +163,26 @@ class State:
         """
         Generate a plot of the eigenvalues.
         """
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
         # extract real part
         x: list[float] = [ele.real for ele in self.longitudal.eigenValues]
         # extract imaginary part
         y: list[float] = [ele.imag for ele in self.longitudal.eigenValues]
-        plt.scatter(x, y, color="r")
+        ax.scatter(x, y, color="r")
 
         # extract real part
         x = [ele.real for ele in self.lateral.eigenValues]
         # extract imaginary part
         y = [ele.imag for ele in self.lateral.eigenValues]
         marker_x = MarkerStyle("x")
-        plt.scatter(x, y, color="b", marker=marker_x)
+        ax.scatter(x, y, color="b", marker=marker_x)
 
-        plt.ylabel("Imaginary")
-        plt.xlabel("Real")
-        plt.grid()
-        plt.show()
+        ax.set_ylabel("Imaginary")
+        ax.set_xlabel("Real")
+        ax.grid()
+        fig.show()
 
     def __str__(self) -> str:
         ss = io.StringIO()

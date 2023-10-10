@@ -26,6 +26,7 @@ test*.ipynb
 
 Data/2D
 Data/3D
+Data/Engine
 Data/Mock
 Data/XFLR5
 Data/Analyses

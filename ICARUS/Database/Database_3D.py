@@ -15,7 +15,7 @@ from . import APPHOME
 from . import DB3D
 from ICARUS.Core.struct import Struct
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Software.GenuVP.post_process.convergence import get_loads_convergence_3
+from ICARUS.Input_Output.GenuVP.post_process.convergence import get_loads_convergence_3
 from ICARUS.Vehicle.plane import Airplane
 
 # from ICARUS.Software.GenuVP3.postProcess.convergence import addErrorConvergence2df
@@ -139,7 +139,7 @@ class Database_3D:
                 )
                 pln: Airplane = self.planes[planename]
                 try:
-                    from ICARUS.Software.GenuVP.files.gnvp3_interface import make_polars
+                    from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import make_polars
 
                     CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
                     make_polars(CASEDIR, self.HOMEDIR)
@@ -262,10 +262,13 @@ class Database_3D:
                     state: State = self.states[pln.name]["Unstick"]
                     Q = state.dynamic_pressure
                 except KeyError:
-                    # print(
-                    #     f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
-                    # )
-                    pass
+                    try:
+                        Q = pln.dynamic_pressure
+                    except AttributeError:
+                        print(
+                            f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
+                        )
+                        pass
                 finally:
                     S: float = pln.S
                     MAC: float = pln.mean_aerodynamic_chord

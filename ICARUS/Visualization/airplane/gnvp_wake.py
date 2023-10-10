@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
-from ICARUS.Software.GenuVP.post_process.wake import get_wake_data_3
-from ICARUS.Software.GenuVP.post_process.wake import get_wake_data_7
+from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_3
+from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Vehicle.plane import Airplane
 
 

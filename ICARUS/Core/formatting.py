@@ -33,6 +33,6 @@ def ff3(num: float) -> str:
 
 def ff4(num: float) -> str:
     if num >= 0:
-        return f"{num:2.4f}"
+        return f"{num:1.4e}"
     else:
-        return f"{num:2.3f}"
+        return f"{num:1.3e}"

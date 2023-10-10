@@ -15,7 +15,8 @@ from ICARUS.Core.types import FloatOrListArray
 from ICARUS.Database import DB3D
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.wing import Wing
+from ICARUS.Vehicle.surface_connections import Surface_Connection
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 jsonpickle_pd.register_handlers()
 
@@ -24,7 +25,7 @@ class Airplane:
     def __init__(
         self,
         name: str,
-        surfaces: list[Wing],
+        surfaces: list[Wing_Segment],
         disturbances: list[Disturbance] | None = None,
         orientation: FloatOrListArray | None = None,
     ) -> None:
@@ -35,11 +36,11 @@ class Airplane:
             name (str): Name of the plane
             surfaces (list[Wing]): List of the lifting surfaces of the plane (Wings)
             disturbances (list[Disturbance] | None, optional): Optional List of disturbances. Defaults to None.
-            orientation (list[float] | ndarray[Any, dtype[floating[Any]]] | None, optional): Plane Orientation. Defaults to None.
+            orientation (FloatOrListArray] | None, optional): Plane Orientation. Defaults to None.
         """
         self.name: str = name
         self.CASEDIR: str = name
-        self.surfaces: list[Wing] = surfaces
+        self.surfaces: list[Wing_Segment] = surfaces
 
         if disturbances is None:
             self.disturbances: list[Disturbance] = []
@@ -58,7 +59,7 @@ class Airplane:
         found_wing: bool = False
         for surface in surfaces:
             if surface.name == "wing":
-                self.main_wing: Wing = surface
+                self.main_wing: Wing_Segment = surface
                 self.S: float = surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
                 self.aspect_ratio: float = surface.aspect_ratio
@@ -89,11 +90,15 @@ class Airplane:
         self.total_inertia: ndarray[Any, dtype[floating[Any]]] = self.find_inertia(self.CG)
 
         # Define Computed States
-        states: list[State] = []
+        self.states: list[State] = []
 
-    def get_seperate_surfaces(self) -> list[Wing]:
-        surfaces: list[Wing] = []
-        for i, surface in enumerate(self.surfaces):
+        # Define Connection Dictionary
+        self.connections: dict[str, Surface_Connection] = {}
+        self.register_connections()
+
+    def get_seperate_surfaces(self) -> list[Wing_Segment]:
+        surfaces: list[Wing_Segment] = []
+        for surface in self.surfaces:
             if surface.is_symmetric:
                 l, r = surface.split_symmetric_wing()
                 surfaces.append(l)
@@ -101,6 +106,36 @@ class Airplane:
             else:
                 surfaces.append(surface)
         return surfaces
+
+    def register_connections(self) -> None:
+        """
+        For each surface, detect if it is connected to another surface and register the connection
+        There are 2 types of connections:
+            1: Surfaces Are Connected Spanwise. So the tip emmisions of one surface are non-existent
+            2: Surfaces Are Connected Chordwise. So the trailing edge emmisions of one surface are non-existent
+        """
+        # Detect if surfaces are connected spanwise
+        # To do this, we check if the tip of one surface is the same as the root of another surface
+        # If it is, then we register the connection
+        return None
+        for surface in self.surfaces:
+            for other_surface in self.surfaces:
+                if surface is not other_surface:
+                    if np.allclose(surface.tip, other_surface.root):
+                        if surface.name not in self.connections.keys():
+                            self.connections[surface.name] = Surface_Connection()
+                            self.connections[other_surface.name] = Surface_Connection()
+
+        # Detect if surfaces are connected chordwise
+        # To do this, we check if the trailing edge of one surface is the same as the leading edge of another surface
+        # If it is, then we register the connection
+        for surface in self.surfaces:
+            for other_surface in self.surfaces:
+                if surface is not other_surface:
+                    if np.allclose(surface.trailing_edge, other_surface.leading_edge):
+                        if surface.name not in self.connections.keys():
+                            self.connections[surface.name] = Surface_Connection()
+                            self.connections[other_surface.name] = Surface_Connection()
 
     def add_point_masses(
         self,
@@ -170,6 +205,12 @@ class Airplane:
         return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz))
 
     def get_all_airfoils(self) -> list[str]:
+        """
+        Get all the airfoils used in the plane
+
+        Returns:
+            list[str]: List of all the airfoils used in the plane
+        """
         airfoils: list[str] = []
         for surface in self.surfaces:
             if f"NACA{surface.airfoil.name}" not in airfoils:
@@ -188,7 +229,7 @@ class Airplane:
         Args:
             prev_fig (Figure | None, optional): Previous Figure. When Called from another object . Defaults to None.
             prev_ax (Axes3D | None, optional): Previous Axes. Same as above . Defaults to None.
-            movement (NDArray[Shape[&quot;3,&quot;], Float] | None, optional): Plane Movement from origin. Defaults to None.
+            movement (FloatArray | None, optional): Plane Movement from origin. Defaults to None.
         """
         if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
             fig: Figure = prev_fig

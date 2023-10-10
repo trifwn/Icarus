@@ -9,11 +9,11 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
-from ICARUS.Software.XFLR5.polars import read_polars_2d
+from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane as Plane
-from ICARUS.Vehicle.wing import define_linear_chord
-from ICARUS.Vehicle.wing import define_linear_span
-from ICARUS.Vehicle.wing import Wing
+from ICARUS.Vehicle.wing_segment import define_linear_chord
+from ICARUS.Vehicle.wing_segment import define_linear_span
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 db: DB = DB()
 db.load_data()
@@ -31,7 +31,7 @@ wing_orientation: ndarray[Any, dtype[floating[Any]]] = np.array(
     dtype=float,
 )
 
-Simplewing = Wing(
+Simplewing = Wing_Segment(
     name="bmark",
     airfoil=airfoils["NACA0015"],
     origin=origin + wing_position,
@@ -48,4 +48,5 @@ Simplewing = Wing(
     mass=1,
 )
 airplane = Plane(Simplewing.name, [Simplewing])
+# print(airplane.CG)
 airplane.CG = np.array([0.337, 0, 0])

@@ -64,14 +64,14 @@ def plot_airfoil_polars(
                 aoa, cl, cd, cm = polar.T.values
 
                 c: str = colors[j]
-                m: MarkerStyle = markers[i]
+                m: MarkerStyle = markers[i].get_marker()
                 style: str = f"{c}{m}-"
                 label: str = f"{airfoil}: {reynolds} - {solver}"
                 axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)
                 axs[1, 0].plot(aoa, cl, style, label=label, markersize=3, linewidth=1)
                 axs[1, 1].plot(cd, cl, style, label=label, markersize=3, linewidth=1)
                 axs[0, 0].plot(aoa, cm, style, label=label, markersize=3, linewidth=1)
-            except KeyError as solv:
+            except (KeyError, ValueError) as solv:
                 print(f"Run Doesn't Exist: {airfoil},{reynolds},{solv}")
 
     fig.tight_layout()
@@ -87,8 +87,8 @@ def plot_airfoil_polars(
     axs[0, 0].grid()
 
     axs[1, 0].legend(
-        bbox_to_anchor=(-0.1, per),
+        # bbox_to_anchor=(-0.1, per),
         ncol=3,
         fancybox=True,
-        loc="lower left",
+        loc="best",
     )

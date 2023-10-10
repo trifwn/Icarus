@@ -32,7 +32,7 @@ def get_linear_series(series: pd.Series) -> pd.Series:
     # Get Second Derivative
     second_derivative: pd.Series = series.diff().diff()
     # Apply Threshold
-    threshold: float = 0.001
+    threshold: float = 0.01
     second_derivative = second_derivative.abs() < threshold
     # Filter Series
     return series[second_derivative]
@@ -72,12 +72,12 @@ class Polars:
 
         # SORT BY AoA
         df = df.sort_values("AoA")
-        self.angles: FloatArray = df["AoA"].to_numpy()
 
         # print(df)
         # FILL NaN Values By neighbors
         df = self.fill_polar_table(df)
         self.df: DataFrame = df
+        self.angles: FloatArray = df["AoA"].to_numpy()
 
         # Flap Angle
         self.flap_angle: float = 0.0  # airfoil.flap_angle
@@ -152,4 +152,5 @@ class Polars:
                 limit_direction="forward",
                 axis=1,
             )
+        df.dropna(axis=0, subset=df.columns[1:], how="all", inplace=True)
         return df

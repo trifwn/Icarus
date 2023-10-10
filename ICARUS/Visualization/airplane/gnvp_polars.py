@@ -42,8 +42,8 @@ def plot_airplane_polars(
     axs[1, 0].set_xlabel("AoA")
     axs[1, 0].set_ylabel("Cl")
 
-    axs[1, 1].set_title("Cl vs Cd")
-    axs[1, 1].set_xlabel("Cd")
+    axs[1, 1].set_title("Cl/Cd vs AoA")
+    axs[1, 1].set_xlabel("AoA")
 
     if solvers == ["All"]:
         solvers = ["Potential", "ONERA", "2D"]
@@ -58,8 +58,15 @@ def plot_airplane_polars(
                     cl = polar["CL"]
                     cd = polar["CD"]
                     cm = polar["Cm"]
+                    if airplane.endswith("2D"):
+                        print("Correcting 2D Polar")
+                        import numpy as np
+
+                        cl = cl / np.sqrt(1 - 0.79**2)
+                        cd = cd / np.sqrt(1 - 0.79**2)
+                        cm = cm / np.sqrt(1 - 0.79**2)
                     skip = True
-                    c: str = "m"
+                    c: str = colors[i]
                     m: MarkerStyle = MarkerStyle("x").get_marker()
                     style: str = f"{c}{m}-"
 
@@ -76,7 +83,7 @@ def plot_airplane_polars(
                 try:
                     axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
                     axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
-                    axs[1, 1].plot(cd, cl, style, label=label, markersize=3.5, linewidth=1)
+                    axs[1, 1].plot(aoa, cl / cd, style, label=label, markersize=3.5, linewidth=1)
                     axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
                 except ValueError as e:
                     print(style)

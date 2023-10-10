@@ -8,7 +8,7 @@ from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from pandas import DataFrame
 
-from ICARUS.Software.GenuVP.post_process.strips import get_strip_data_3
+from ICARUS.Input_Output.GenuVP.post_process.strips import get_strip_data
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -30,8 +30,7 @@ def gnvp_strips_3d(
     Returns:
         DataFrame: DataFrame of the strip data
     """
-    stripDat, data = get_strip_data_3(pln, case, NBs)
-
+    all_strip_data, body_data = get_strip_data(pln, case, NBs)
     fig: Figure = plt.figure()
     ax = fig.add_subplot(projection="3d")
     ax.set_title(f"{pln.name} {category} Data")
@@ -42,30 +41,30 @@ def gnvp_strips_3d(
     ax.set_xlim(-pln.span / 2, pln.span / 2)
     ax.set_ylim(-pln.span / 2, pln.span / 2)
     ax.set_zlim(-pln.span / 2, pln.span / 2)
-    maxValue: float = data[category].max()
-    minValue: float = data[category].min()
+    max_value: float = body_data[category].max()
+    min_value: float = body_data[category].min()
 
-    norm = mpl.colors.Normalize(vmin=minValue, vmax=maxValue)
+    norm = mpl.colors.Normalize(vmin=min_value, vmax=max_value)
     cmap: Colormap = cm.get_cmap("viridis", 12)
 
     for i, wg in enumerate(pln.surfaces):
         if i + 1 not in NBs:
             continue
         for j, surf in enumerate(wg.all_strips):
-            stripD: DataFrame = data[(data["Body"] == i + 1) & (data["Strip"] == j + 1)]
+            strip_df: DataFrame = body_data[(body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)]
 
-            stripD_values: list[float] = [float(item) for item in stripD[category].values]
-            color: tuple[Any, ...] = cmap(norm(stripD_values))
+            strip_values: list[float] = [float(item) for item in strip_df[category].values]
+            color: tuple[Any, ...] = cmap(norm(strip_values))
             surf.plot(fig, ax, None, color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()
-    return stripDat
+    return all_strip_data
 
 
 def gnvp_strips_2d(
     pln: Airplane,
     case: str,
-    NB: int,
+    NB: int | list[int],
     category: str = "Wind",
 ) -> DataFrame | int:
     """
@@ -80,12 +79,17 @@ def gnvp_strips_2d(
     Returns:
         DataFrame | int: Returns the strip data if successful, 0 otherwise
     """
+    if isinstance(NB, list):
+        if len(NB) >= 1:
+            print("Only one body can be selected for 2D plots!")
+            print("Selecting First")
+            NB = NB[0]
+
     if type(NB) is not int:
-        print("Only one body can be selected for 2D plots")
         return 0
 
-    stripDat, data = get_strip_data_3(pln, case, [NB])
-    print(data[category])
+    stripDat, data = get_strip_data(pln, case, [NB])
+    # print(data[category])
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")

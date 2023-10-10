@@ -2,21 +2,20 @@ import time
 from typing import Any
 
 from inquirer import Checkbox
-from inquirer import Editor
 from inquirer import List
 from inquirer import Path
 from inquirer import prompt
 from inquirer import Text
+from tqdm.asyncio import tqdm
 
-from ICARUS import Database
 from ICARUS.Airfoils.airfoilD import AirfoilD
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.Units import calc_mach
 from ICARUS.Core.Units import calc_reynolds
 from ICARUS.Database.db import DB
-from ICARUS.Software.F2Wsection.f2w_section import get_f2w_section
-from ICARUS.Software.OpenFoam.open_foam import get_open_foam
-from ICARUS.Software.Xfoil.xfoil import get_xfoil
+from ICARUS.Solvers.Airfoil.f2w_section import get_f2w_section
+from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
+from ICARUS.Solvers.Airfoil.xfoil import get_xfoil
 from ICARUS.Workers.solver import Solver
 
 # SOLVERS
@@ -24,17 +23,17 @@ from ICARUS.Workers.solver import Solver
 
 def ask_num_airfoils() -> int:
     no_question: list[Text] = [
-        Text('num_airfoils', message="How many airfoils Do you want to run", autocomplete=1),
+        Text("num_airfoils", message="How many airfoils Do you want to run", autocomplete=1),
     ]
     answer: dict[Any, Any] | None = prompt(no_question)
     if answer is None:
         print("Exited by User")
         exit()
     try:
-        if int(answer['num_airfoils']) < 1:
+        if int(answer["num_airfoils"]) < 1:
             print(f"Answer {answer['num_airfoils']} doesnt make sense")
             return ask_num_airfoils()
-        return int(answer['num_airfoils'])
+        return int(answer["num_airfoils"])
     except ValueError:
         print(f"Answer {answer['num_airfoils']} doesnt make sense")
         return ask_num_airfoils()
@@ -43,7 +42,7 @@ def ask_num_airfoils() -> int:
 def get_airfoil_file() -> AirfoilD:
     file_question: list[Path] = [
         Path(
-            'airf_file',
+            "airf_file",
             message="Specify the Path to the Airfoil File",
             path_type=Path.DIRECTORY,
         ),
@@ -54,7 +53,7 @@ def get_airfoil_file() -> AirfoilD:
         exit()
     else:
         try:
-            return AirfoilD.load_from_file(answers['airf_file'])
+            return AirfoilD.load_from_file(answers["airf_file"])
         except Exception as e:
             print(e)
             return get_airfoil_file()
@@ -62,7 +61,7 @@ def get_airfoil_file() -> AirfoilD:
 
 def get_airfoil_NACA() -> AirfoilD:
     naca_question: list[Text] = [
-        Text('naca_dig', message="NACA digits (4 or 5):"),
+        Text("naca_dig", message="NACA digits (4 or 5):"),
     ]
     answers: dict[Any, Any] | None = prompt(naca_question)
     if answers is None:
@@ -70,7 +69,7 @@ def get_airfoil_NACA() -> AirfoilD:
         exit()
     else:
         try:
-            return AirfoilD.naca(answers['naca_dig'])
+            return AirfoilD.naca(answers["naca_dig"])
         except Exception as e:
             print(e)
             return get_airfoil_NACA()
@@ -91,7 +90,7 @@ def get_airfoil_db(db: DB) -> AirfoilD:
         exit()
 
     try:
-        airfoil: AirfoilD = airfoils[answer['airfoil']]
+        airfoil: AirfoilD = airfoils[answer["airfoil"]]
         return airfoil
     except Exception as e:
         print(e)
@@ -101,9 +100,9 @@ def get_airfoil_db(db: DB) -> AirfoilD:
 def select_airfoil_source(db: DB) -> AirfoilD:
     airfoil_source_question: list[List] = [
         List(
-            'airfoil_source',
+            "airfoil_source",
             message="Where do you want to get the airfoils from",
-            choices=['File', 'NACA Digits', 'Database'],
+            choices=["File", "NACA Digits", "Database"],
         ),
     ]
 
@@ -111,11 +110,11 @@ def select_airfoil_source(db: DB) -> AirfoilD:
     if answer is None:
         print("Exited by User")
         exit()
-    if answer['airfoil_source'] == 'File':
+    if answer["airfoil_source"] == "File":
         return get_airfoil_file()
-    elif answer['airfoil_source'] == 'NACA Digits':
+    elif answer["airfoil_source"] == "NACA Digits":
         return get_airfoil_NACA()
-    elif answer['airfoil_source'] == 'Database':
+    elif answer["airfoil_source"] == "Database":
         return get_airfoil_db(db)
     else:
         print("Error")
@@ -135,59 +134,131 @@ def set_analysis(solver: Solver) -> None:
     if answer is None:
         print("Exited by User")
         exit()
-    if answer['analysis'] in analyses:
-        solver.set_analyses(answer['analysis'])
+    if answer["analysis"] in analyses:
+        solver.set_analyses(answer["analysis"])
     else:
         print("Error")
         return set_analysis(solver)
 
 
-def set_analysis_options(solver: Solver) -> None:
-    all_options: Struct = solver.get_analysis_options(verbose=True)
-    options = Struct()
-    for option in all_options.keys():
-        if option in ['db', 'airfoil']:
-            continue
-        options[option] = all_options[option]
-    options_quest: list[Text] = [
-        Text(
-            f"{option}",
-            message=f"{option} = ",
+input_options = {
+    float: "float",
+    int: "int",
+    bool: "bool",
+    str: "text",
+    list[float]: "list_float",
+    list[int]: "list_int",
+    list[str]: "list_str",
+    list[bool]: "list_bool",
+    list[str]: "list_str",
+}
+
+
+def get_option(option_name, question_type) -> dict[str, Any]:
+    if question_type.startswith("list_"):
+        quest: Text = Text(
+            f"{option_name}",
+            message=f"{option_name} (Multiple Values Must be seperated with ',') = ",
         )
-        for option in options.keys()
-    ]
-    answer: dict[Any, Any] | None = prompt(options_quest)
+    else:
+        quest: Text = Text(
+            f"{option_name}",
+            message=f"{option_name} = ",
+        )
+
+    answer = prompt([quest])
     if answer is None:
         print("Exited by User")
         exit()
+
     try:
-        solver.set_analysis_options(answer)
+        if question_type == "float":
+            answer[option_name] = float(answer[option_name])
+        elif question_type == "int":
+            answer[option_name] = int(answer[option_name])
+        elif question_type == "bool":
+            answer[option_name] = bool(answer[option_name])
+        elif question_type == "text":
+            answer[option_name] = str(answer[option_name])
+        elif question_type == "list_float":
+            answer[option_name] = [float(x) for x in answer[option_name].split(",")]
+        elif question_type == "list_int":
+            answer[option_name] = [int(x) for x in answer[option_name].split(",")]
+        elif question_type == "list_bool":
+            answer[option_name] = [bool(x) for x in answer[option_name].split(",")]
+        elif question_type == "list_str":
+            answer[option_name] = [str(x) for x in answer[option_name].split(",")]
+    except:
+        print(answer)
+        print("Error Getting Answer! Try Again")
+        import sys
+
+        sys.exit()
+    return answer
+
+
+def set_analysis_options(solver: Solver, db: DB, airfoil: AirfoilD) -> None:
+    all_options: Struct = solver.get_analysis_options(verbose=True)
+    options = Struct()
+    answers = {}
+    for option in all_options.keys():
+        if option == "db":
+            answers[option] = db
+            continue
+        elif option == "airfoil":
+            answers[option] = airfoil
+            continue
+        options[option] = all_options[option]
+
+        try:
+            question_type = input_options[options[option].option_type]
+        except KeyError:
+            print(f"Option {option} has an invalid type")
+            continue
+
+        answer = get_option(option, question_type)
+        answers[option] = answer[option]
+
+    try:
+        solver.set_analysis_options(answers)
         print("Options set")
         _: Struct = solver.get_analysis_options(verbose=True)
 
     except:
         print("Unable to set options! Try Again")
-        return set_analysis_options(solver)
+        return set_analysis_options(solver, db, airfoil)
 
 
 def set_solver_parameters(solver: Solver) -> None:
     parameters: Struct = solver.get_solver_parameters(verbose=True)
-    parameters_quest: list[Text] = [
-        Text(
-            f"{parameter}",
-            message=f"{parameter} = ",
-        )
-        for parameter in parameters.keys()
+    change_prompt: list[List] = [
+        List(
+            "change",
+            message="Do you want to change any of the solver parameters",
+            choices=["Yes", "No"],
+        ),
     ]
-    answer: dict[Any, Any] | None = prompt(parameters_quest)
-    if answer is None:
+    choice: dict[Any, Any] | None = prompt(change_prompt)
+    if choice is None:
         print("Exited by User")
         exit()
-    try:
-        solver.set_solver_parameters(answer)
-    except:
-        print("Unable to set parameters! Try Again")
-        return set_solver_parameters(solver)
+    if choice["change"] == "Yes":
+        parameters_quest: list[Text] = [
+            Text(
+                f"{parameter}",
+                message=f"{parameter} = ",
+            )
+            for parameter in parameters.keys()
+        ]
+        answer: dict[Any, Any] | None = prompt(parameters_quest)
+        if answer is None:
+            print("Exited by User")
+            exit()
+        try:
+            solver.set_solver_parameters(answer)
+        except:
+            print("Unable to set parameters! Try Again")
+            return set_solver_parameters(solver)
 
 
 def airfoil_cli(db: DB) -> None:
@@ -209,18 +280,17 @@ def airfoil_cli(db: DB) -> None:
 
     calc_of: dict[str, bool] = {}
     open_foam_solvers: dict[str, Solver] = {}
-    reynolds: dict[str, list[float]] = {}
 
     for i in range(N):
-        print('\n')
+        print("\n")
         airfoil: AirfoilD = select_airfoil_source(db)
         airfoils.append(airfoil)
 
         select_solver_quest: list[Checkbox] = [
             Checkbox(
-                'solver',
+                "solver",
                 message="Which solvers do you want to run",
-                choices=['Foil2Wake', 'XFoil', 'OpenFoam'],
+                choices=["Foil2Wake", "XFoil", "OpenFoam"],
             ),
         ]
         answer: dict[Any, Any] | None = prompt(select_solver_quest)
@@ -228,35 +298,35 @@ def airfoil_cli(db: DB) -> None:
             print("Error")
             return
 
-        if 'Foil2Wake' in answer['solver']:
+        if "Foil2Wake" in answer["solver"]:
             calc_f2w[airfoil.name] = True
 
             # Get Solver
             f2w_solvers[airfoil.name] = get_f2w_section(db)
             set_analysis(f2w_solvers[airfoil.name])
-            set_analysis_options(f2w_solvers[airfoil.name])
+            set_analysis_options(f2w_solvers[airfoil.name], db, airfoil)
             set_solver_parameters(f2w_solvers[airfoil.name])
         else:
             calc_f2w[airfoil.name] = False
 
-        if 'XFoil' in answer['solver']:
+        if "XFoil" in answer["solver"]:
             calc_xfoil[airfoil.name] = True
 
             # Get Solver
             xfoil_solvers[airfoil.name] = get_xfoil(db)
             set_analysis(xfoil_solvers[airfoil.name])
-            set_analysis_options(xfoil_solvers[airfoil.name])
+            set_analysis_options(xfoil_solvers[airfoil.name], db, airfoil)
             set_solver_parameters(xfoil_solvers[airfoil.name])
         else:
             calc_xfoil[airfoil.name] = False
 
-        if 'OpenFoam' in answer['solver']:
+        if "OpenFoam" in answer["solver"]:
             calc_of[airfoil.name] = True
 
             # Get Solver
             open_foam_solvers[airfoil.name] = get_open_foam(db)
             set_analysis(open_foam_solvers[airfoil.name])
-            set_analysis_options(open_foam_solvers[airfoil.name])
+            set_analysis_options(open_foam_solvers[airfoil.name], db, airfoil)
             set_solver_parameters(open_foam_solvers[airfoil.name])
         else:
             calc_of[airfoil.name] = False
@@ -308,7 +378,8 @@ def airfoil_cli(db: DB) -> None:
             open_foam: Solver = open_foam_solvers[airfoil.name]
             open_foam_options: Struct = open_foam.get_analysis_options(verbose=True)
             open_foam_options.airfoil.value = airfoil
-            for reyn in reynolds[airfoil.name]:
+
+            for reyn in open_foam_options.reynolds.value:
                 print(f"Running OpenFoam for Re={reyn}")
 
                 open_foam_options.reynolds.value = reyn
@@ -330,3 +401,10 @@ def airfoil_cli(db: DB) -> None:
     print("########################################################################")
     print("Program Terminated")
     print("########################################################################")
+
+
+if __name__ == "__main__":
+    db: DB = DB()
+    db.load_data()
+
+    airfoil_cli(db)

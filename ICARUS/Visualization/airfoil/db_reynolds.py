@@ -55,7 +55,7 @@ def plot_airfoil_reynolds(
             polar = data[airfoil_name][solver][reynolds]
             aoa, cl, cd, cm = polar.T.values
             c: str = colors[j]
-            m: MarkerStyle = markers[j]
+            m: MarkerStyle = markers[j].get_marker()
             style: str = f"{c}{m}-"
             label: str = f"{airfoil_name}: {reynolds} - {solver}"
             axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)

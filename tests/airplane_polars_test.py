@@ -5,7 +5,7 @@ from pandas import DataFrame
 from examples.Planes.simple_wing import airplane as plane
 from ICARUS.Database.Database_3D import Database_3D
 from ICARUS.Database.db import DB
-from ICARUS.Software.XFLR5.polars import read_polars_3d
+from ICARUS.Input_Output.XFLR5.polars import read_polars_3d
 
 
 def airplane_polars(plot: bool | None = False) -> tuple[DataFrame, DataFrame]:

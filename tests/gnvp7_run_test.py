@@ -20,7 +20,7 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     from ICARUS.Enviroment.definition import EARTH
 
     # Get Solver
-    from ICARUS.Software.GenuVP.gnvp7 import get_gnvp7
+    from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
 
     gnvp7: Solver = get_gnvp7(db)
 

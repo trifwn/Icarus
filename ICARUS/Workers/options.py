@@ -3,12 +3,13 @@ from typing import Any
 
 
 class Option:
-    __slots__ = ["name", "value", "description"]
+    __slots__ = ["name", "value", "description", "option_type"]
 
-    def __init__(self, name: str, value: Any, description: str) -> None:
+    def __init__(self, name: str, value: Any, description: str, option_type: Any) -> None:
         self.name = name
         self.value = value
         self.description: str = description
+        self.option_type = option_type
 
     def __getstate__(self) -> tuple[str, Any, str]:
         return (self.name, self.value, self.description)

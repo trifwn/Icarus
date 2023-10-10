@@ -7,9 +7,9 @@ from numpy import ndarray
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing import define_linear_chord
-from ICARUS.Vehicle.wing import define_linear_span
-from ICARUS.Vehicle.wing import Wing
+from ICARUS.Vehicle.wing_segment import define_linear_chord
+from ICARUS.Vehicle.wing_segment import define_linear_span
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
@@ -33,7 +33,7 @@ def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Wing(
+    main_wing = Wing_Segment(
         name="wing",
         airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
@@ -51,7 +51,7 @@ def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
     )
     # main_wing.plotWing()
 
-    lifting_surfaces: list[Wing] = [main_wing]
+    lifting_surfaces: list[Wing_Segment] = [main_wing]
     airplane = Airplane(name, lifting_surfaces)
 
     # airplane.visAirplane()
