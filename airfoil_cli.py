@@ -18,8 +18,6 @@ from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
 from ICARUS.Solvers.Airfoil.xfoil import get_xfoil
 from ICARUS.Workers.solver import Solver
 
-# SOLVERS
-
 
 def ask_num_airfoils() -> int:
     no_question: list[Text] = [

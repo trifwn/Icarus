@@ -10,7 +10,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
-class PotentialWing:
+class Wing_LLT:
     """
     ! This class is an example of a potential flow wing solver.
     ! It has to be optimized and generalized to be used in the code.
@@ -322,6 +322,16 @@ class PotentialWing:
             a_np, b_np = self.get_LHS(solve_fun)
             self.a_np = a_np
             self.b_np = b_np
+
+    def solve_wing_horseshoe(self):
+        # ! TODO: IMPLEMENT ACCORDING TO KATZ
+        print("Not implemented yet")
+        pass
+
+    def solve_wing_singularities(self):
+        # ! TODO: IMPLEMENT ACCORDING TO KATZ
+        print("Not implemented yet")
+        pass
 
     def induced_vel_calc(self, fun, i, j, gammas):
         Us = 0
