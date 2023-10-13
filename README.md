@@ -22,51 +22,51 @@ More information on how to run and compile dependencies will be availabe in the 
 
 ## Basic Modules
 
--Aerodynamics
+- Aerodynamics
 
 Library for Aerodynamic calculations. Right now it contains a 3d lifting surface solver used to calculate aircraft aerodynamic loads
 
--Airfoils
+- Airfoils
 
 This library is used to handle and generate airfoils. It is an extension of the airfoils pip module (https://pypi.org/project/airfoils/).
 
--Conceptual
+- Conceptual
 
 Module for conceptual Analysis and sizing of airplanes based on constrained optimization. The final goal is that a user will be able to size an aircraft by defining mission goals and constraints
 
--Core
+- Core
 
 Core functions for the program. Basically any operation that is not significant enough to deserve module or doesnt clearly belong somewhere
 
--Database:
+- Database:
 
 Storage Interface to save vehicles, airfoils, analyses, solvers and more. Currently it works with the filesystem. Uses JSON to maybe one day integrate with frontend.
 
--Mission
+- Mission
 
 Defines the mission of the airplane and the flight envelope.
 
--Workers
+- Workers
 
 Abstraction Layer for the solvers and running of analyses.
 
--Vehicle
+- Vehicle
 
 Defines Airplane and other Vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
 
--Flight_Dynamics
+- Flight_Dynamics
 
 Defines Flight State as a trimmed airplane position. The intnent of the class is to one day integrate the control surface movement as well and also account for transient states.
 
--Input Output
+- Input Output
 
 Integration with 3d Party Software (solvers). Handles conversion between Icarus objects and input for different solvers. Also handles the output conversion and hamdling
 
--Visualization
+- Visualization
 
 All Around visualization functions that are grouped according to their function
 
--Environment
+- Environment
 
 Abstraction for the Environment. Usefull for calculations of fluid and thermodynamical properties at different flight envelope points
 
@@ -96,6 +96,7 @@ If the installation fails change the comments on  `pyproject.toml` at the root o
 ```
 
 The end goal of the project is to come packaged with all 3d party software. Right now it is difficult fore to automate the bulding process or wrap the libraries.
+
 ---
 
 ## Tasks To-Do
