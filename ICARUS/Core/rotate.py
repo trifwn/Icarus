@@ -7,9 +7,11 @@ from numpy import ndarray
 
 
 def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating[Any]]]:
-    """Returns the rotation matrix for a rotation around the y axis
+    """
+    Returns the rotation matrix for a rotation around the y axis
     The convention for stability axes is with the x-axis pointing forward.
     So it is x and z are opposite of the general coordinate system.
+
     Args:
         angle (float): Angle of rotation in radians
 
@@ -29,7 +31,8 @@ def rotate_vector(
     vector: ndarray[Any, dtype[floating[Any]]],
     R: ndarray[Any, dtype[floating[Any]]],
 ) -> ndarray[Any, dtype[floating[Any]]]:
-    """_Returns the rotated vectorsummary_
+    """
+    Returns the rotated vectorsummary
 
     Args:
         vector (ndarray[Any, dtype[floating[Any]]]): Vector to be rotated

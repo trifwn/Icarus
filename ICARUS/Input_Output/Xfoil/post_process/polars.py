@@ -16,7 +16,6 @@ def save_multiple_reyn(
 ) -> None:
     airfoil_dir: str = os.path.join(db.DATADIR, f"NACA{airfoil.name}")
     for i, reyn_data in enumerate(polars):
-        # Check wether reyn dat is empty
         if len(reyn_data) == 0:
             continue
         try:
@@ -25,48 +24,19 @@ def save_multiple_reyn(
             os.makedirs(airfoil_dir, exist_ok=True)
             os.chdir(airfoil_dir)
 
-        reyndir: str = f"Reynolds_{np.format_float_scientific(reynolds[i],sign=False,precision=3).replace('+', '')}"
+        reyndir: str = (
+            f"Reynolds_{np.format_float_scientific(reynolds[i],sign=False,precision=3, min_digits=3).replace('+', '')}"
+        )
         os.makedirs(reyndir, exist_ok=True)
         os.chdir(reyndir)
         df: DataFrame = DataFrame(reyn_data).T.rename(
             columns={"index": "AoA", 0: "CL", 1: "CD", 2: "Cm"},
         )
+        # Check if the DataFrame is empty by checking if the CL column is empty
+        if df["CL"].empty:
+            print(f"Reynolds {reynolds[i]} failed to converge to a solution")
+            continue
+
         fname = "clcd.xfoil"
         df.to_csv(fname, sep="\t", index=True, index_label="AoA")
     airfoil.save_selig_te(airfoil_dir)
-
-
-def save_multiple_airfoils_reyn(
-    airfoils: str,
-    polars: list[list[dict[str, FloatArray]]],
-    reynolds: list[float],
-) -> None:
-    masterDir: str = os.getcwd()
-    os.chdir(masterDir)
-    for airfoil, clcd_data in zip(airfoils, polars):
-        os.chdir(masterDir)
-        os.chdir(os.path.join("Data", "2D", f"NACA{airfoil}"))
-        airfoilPath: str = os.getcwd()
-
-        for i, reyn_data in enumerate(clcd_data):
-            os.chdir(airfoilPath)
-
-            reyndir: str = f"Reynolds_{np.format_float_scientific(reynolds[i],sign=False,precision=3).replace('+', '')}"
-            os.makedirs(reyndir, exist_ok=True)
-            os.chdir(reyndir)
-            cwd: str = os.getcwd()
-
-            for angle in reyn_data.keys():
-                os.chdir(cwd)
-                if float(angle) >= 0:
-                    folder: str = str(angle)[::-1].zfill(7)[::-1]
-                else:
-                    folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
-                os.makedirs(folder, exist_ok=True)
-                os.chdir(folder)
-                fname = "clcd.xfoil"
-                with open(fname, "w") as file:
-                    pols = str(angle)
-                    for i in reyn_data[angle]:
-                        pols += f"\t{str(i)}"
-                    file.writelines(pols)

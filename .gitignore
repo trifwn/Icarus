@@ -34,3 +34,6 @@ Data/Analyses
 # Playground
 test.ipynb
 *.fuse*
+
+# Docs
+docs/build

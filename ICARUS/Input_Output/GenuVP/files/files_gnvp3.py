@@ -20,7 +20,9 @@ from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
 
 
 def input_file() -> None:
-    """Creates the input file for GNVP3"""
+    """
+    Creates the input file for GNVP3
+    """
 
     fname: str = "input"
     with open(fname, encoding="utf-8") as file:

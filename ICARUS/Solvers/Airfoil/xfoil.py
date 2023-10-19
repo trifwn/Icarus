@@ -84,7 +84,7 @@ def get_xfoil(db: DB) -> Solver:
         "unhook": None,
     }
 
-    options: dict[str, tuple[str, Any]] = {
+    options = {
         "db": (
             "Database to save results",
             DB,

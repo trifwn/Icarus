@@ -4,6 +4,7 @@ import shutil
 
 def clean_open_foam(HOMEDIR: str, CASEDIR: str) -> None:
     """Function to clean OpenFoam results
+    
     Args:
         HOMEDIR (str): Home Directory
         CASEDIR (str): Case Directory

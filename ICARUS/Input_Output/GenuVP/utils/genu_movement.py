@@ -24,20 +24,20 @@ class Movement:
 
         Args:
             name (str): Name of the Movement
-            Rotation (dict[str,Any]): Rotation Parameters. They must include:
-                                        1) type: int
-                                        2) axis: int
-                                        3) t1: float
-                                        4) t2: float
-                                        5) a1: float
-                                        6) a2: float
-            Translation (dict[str,Any]): Translation Parameters. They must include:
-                                        1) type: int
-                                        2) axis: int
-                                        3) t1: float
-                                        4) t2: float
-                                        5) a1: float
-                                        6) a2: float
+            Rotation (dict[str,Any]): Rotation Parameters. They must include:\
+                                        1) type: int \
+                                        2) axis: int \
+                                        3) t1: float \
+                                        4) t2: float \
+                                        5) a1: float \
+                                        6) a2: float \
+            Translation (dict[str,Any]): Translation Parameters. They must include: \
+                                        1) type: int \
+                                        2) axis: int \
+                                        3) t1: float \
+                                        4) t2: float \
+                                        5) a1: float \
+                                        6) a2: float \
         """
         self.name: str = name
         self.rotation_type: int = Rotation["type"]

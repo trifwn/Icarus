@@ -78,7 +78,7 @@ def run_single_reynolds(
 
     nangles, pangles = separate_angles(all_angles)
     max_iter: int = solver_options["max_iter"]
-    reyn_str: str = np.format_float_scientific(reynolds, sign=False, precision=2).zfill(
+    reyn_str: str = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(
         8,
     )
 
@@ -218,16 +218,12 @@ def process_f2w_run(
         )
 
     for reyn in reynolds_list:
-        reynolds_str: str = np.format_float_scientific(
-            reyn,
-            sign=False,
-            precision=3,
-        )
+        reynolds_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace('+', '')
 
         CASEDIR: str = os.path.join(
             db.foilsDB.DATADIR,
             f"NACA{airfoil.name}",
-            f"Reynolds_{reynolds_str.replace('+', '')}",
+            f"Reynolds_{reynolds_str}",
         )
 
         polars[reynolds_str] = make_polars(CASEDIR, db.HOMEDIR)

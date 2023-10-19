@@ -40,7 +40,7 @@ def main() -> None:
     package = "ICARUS"
     __version__: str = get_package_version()
 
-    # TODO: Check for intel fortran, opemmpi, mlk
+    # TODO: Check for intel fortran, opemmpi, mkl
     # TODO: if not installed, install them.
 
     if len(sys.argv) >= 2:

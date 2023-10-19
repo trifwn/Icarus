@@ -17,7 +17,7 @@ def gnvp3_run(mode: str = "Parallel") -> None:
     from examples.Planes.simple_wing import airplane, db
 
     # Get Environment
-    from ICARUS.Enviroment.definition import EARTH
+    from ICARUS.Enviroment.definition import EARTH_ISA
 
     # Get Solver
     from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
@@ -45,10 +45,10 @@ def gnvp3_run(mode: str = "Parallel") -> None:
     maxiter = 20
     timestep = 10
 
-    airplane.define_dynamic_pressure(u_freestream, EARTH.air_density)
+    airplane.define_dynamic_pressure(u_freestream, EARTH_ISA.air_density)
 
     options.plane.value = airplane
-    options.environment.value = EARTH
+    options.environment.value = EARTH_ISA
     options.db.value = db
     options.solver2D.value = "XFLR"
     options.maxiter.value = maxiter

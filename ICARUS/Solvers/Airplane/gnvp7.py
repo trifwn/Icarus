@@ -3,7 +3,7 @@ from typing import Any
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run
+from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run_7
 from ICARUS.Input_Output.GenuVP.analyses.angles import run_gnvp7_angles
 from ICARUS.Input_Output.GenuVP.analyses.angles import run_gnvp7_angles_parallel
 from ICARUS.Input_Output.GenuVP.analyses.pertrubations import proccess_pertrubation_res
@@ -220,13 +220,13 @@ def get_gnvp7(db: DB) -> Solver:
         run_gnvp7_angles,
         options,
         solver_options,
-        unhook=process_gnvp_angles_run,
+        unhook=process_gnvp_angles_run_7,
     )
 
     angles_parallel: Analysis = angles_serial << {
         "name": "Angles_Parallel",
         "execute": run_gnvp7_angles_parallel,
-        "unhook": process_gnvp_angles_run,
+        "unhook": process_gnvp_angles_run_7,
     }
 
     options = {

@@ -18,10 +18,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     """
     Function to parse the xflr5 project file as exported in xml format.
     Shortcomings:
-        - No airfoil morphing. XFLR can interpolate in between airfoils, but
-        this is not implemented.
-        - No Multiple Sections. Right now only linear interpolation beetween
-        root and tip chord.
+    - No airfoil morphing. XFLR can interpolate in between airfoils, but this is not implemented.
 
     Args:
         filename (str): Path to the xflr5 project file

@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
+from pandas import Series
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Visualization import colors
@@ -13,8 +15,10 @@ def plot_airplane_polars(
     data: dict[str, DataFrame] | Struct,
     airplanes: list[str],
     solvers: list[str] = ["All"],
+    plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
     size: tuple[int, int] = (10, 10),
-) -> None:
+    title: str = "Aero Coefficients",
+) -> tuple[ndarray, Figure]:
     """Function to plot airplane polars for a given list of airplanes and solvers
 
     Args:
@@ -23,82 +27,88 @@ def plot_airplane_polars(
         solvers (list[str], optional): List of Solvers to plot. Defaults to ["All"].
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
     """
+    number_of_plots = len(plots) + 1
+
+    # Divide the plots equally
+    sqrt_num = number_of_plots**0.5
+    i: int = int(np.ceil(sqrt_num))
+    j: int = int(np.floor(sqrt_num))
+
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)  # type: ignore
+    axs: ndarray = fig.subplots(i, j)  # type: ignore
 
-    if len(airplanes) == 1:
-        fig.suptitle(f"{airplanes[0]} Aero Coefficients", fontsize=16)
-    else:
-        fig.suptitle("Airplanes Aero Coefficients", fontsize=16)
+    fig.suptitle(f"{title}", fontsize=16)
 
-    axs[0, 0].set_title("Cm vs AoA")
-    axs[0, 0].set_ylabel("Cm")
-
-    axs[0, 1].set_title("Cd vs AoA")
-    axs[0, 1].set_xlabel("AoA")
-    axs[0, 1].set_ylabel("Cd")
-
-    axs[1, 0].set_title("Cl vs AoA")
-    axs[1, 0].set_xlabel("AoA")
-    axs[1, 0].set_ylabel("Cl")
-
-    axs[1, 1].set_title("Cl/Cd vs AoA")
-    axs[1, 1].set_xlabel("AoA")
+    for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+        ax.set_xlabel(plot[0])
+        ax.set_ylabel(plot[1])
+        ax.set_title(f"{plot[1]} vs {plot[0]}")
+        ax.grid()
+        ax.axhline(y=0, color="k")
+        ax.axvline(x=0, color="k")
 
     if solvers == ["All"]:
-        solvers = ["Potential", "ONERA", "2D"]
+        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D"]
 
     for i, airplane in enumerate(airplanes):
-        skip = False
+        flag = False
         for j, solver in enumerate(solvers):
             try:
-                polar = data[airplane]
-                aoa = polar["AoA"]
-                if airplane.startswith("XFLR"):
-                    cl = polar["CL"]
-                    cd = polar["CD"]
-                    cm = polar["Cm"]
-                    if airplane.endswith("2D"):
-                        print("Correcting 2D Polar")
-                        import numpy as np
+                polar: DataFrame = data[airplane]
+                for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+                    if airplane.startswith("XFLR"):
+                        key0 = f"{plot[0]}"
+                        key1 = f"{plot[1]}"
+                        ax.plot(
+                            polar[f"{key0}"],
+                            polar[f"{key1}"],
+                            label=f"{airplane} XFLR",
+                            markersize=1.5,
+                            color='m',
+                            linewidth=1,
+                        )
+                        flag = True
 
-                        cl = cl / np.sqrt(1 - 0.79**2)
-                        cd = cd / np.sqrt(1 - 0.79**2)
-                        cm = cm / np.sqrt(1 - 0.79**2)
-                    skip = True
-                    c: str = colors[i]
-                    m: MarkerStyle = MarkerStyle("x").get_marker()
-                    style: str = f"{c}{m}-"
+                    else:
+                        key0 = f"{solver} {plot[0]}"
+                        key1 = f"{solver} {plot[1]}"
 
-                    label: str = f"{airplane}"
-                else:
-                    cl = polar[f"CL_{solver}"]
-                    cd = polar[f"CD_{solver}"]
-                    cm = polar[f"Cm_{solver}"]
-                    c = colors[i]
-                    m = markers[j].get_marker()
-                    style = f"{c}{m}--"
+                        if plot[0] == "AoA":
+                            key0 = "AoA"
+                        if plot[1] == "AoA":
+                            key1 = "AoA"
 
-                    label = f"{airplane} - {solver}"
-                try:
-                    axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
-                    axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
-                    axs[1, 1].plot(aoa, cl / cd, style, label=label, markersize=3.5, linewidth=1)
-                    axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
-                except ValueError as e:
-                    print(style)
-                    raise e
-            except KeyError as solver:
-                print(f"Run Doesn't Exist: {airplane},{solver}")
-            if skip:
-                break
+                        x: Series = polar[f"{key0}"]
+                        y: Series = polar[f"{key1}"]
+                        c = colors(j / len(solvers))
+                        m = markers[i].get_marker()
+                        label: str = f"{airplane} - {solver}"
+                        try:
+                            ax.plot(x, y, ls='--', color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                        except ValueError as e:
+                            raise e
+                if flag:
+                    break
+            except KeyError as e:
+                print(f"Run Doesn't Exist: {airplane},{e} ")
+
+    # In the plots we created there is either one or two empty plots
+    # depending on the number of plots we demanded
+    # We need to remove the empty plots and add the legend to
+    # the empty space
+
+    # Remove empty plots
+    for ax in axs.flatten()[len(plots) :]:
+        ax.remove()
+
+    # Take the legend of all plots (they are the same) and add them to the empty space below
+    # where we removed the empty plots
+    handles, labels = axs.flatten()[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower right", ncol=2)
+
+    # Adjust the plots
     fig.tight_layout()
-    for axe in axs:
-        for ax in axe:
-            ax.axhline(y=0, color="k")
-            ax.axvline(x=0, color="k")
-            ax.grid()
+    fig.subplots_adjust(top=0.9, bottom=0.1)
 
-    axs[1, 0].legend()  # (bbox_to_anchor=(-0.1, -0.25),  ncol=3,
-    # fancybox=True, loc='lower left')
     plt.show()
+    return axs, fig

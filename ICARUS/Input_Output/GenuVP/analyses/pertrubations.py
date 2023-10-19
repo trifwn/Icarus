@@ -347,6 +347,7 @@ def sensitivity_serial(
     For each pertrubation in the sensitivity attribute of the dynamic airplane
     object, run a simulation in GNVP3. Can be used mainly for a sensitivity
     analysis. This analysis is serial.
+
     Args:
         plane (Dynamic_Airplane): Dynamic Airplane Object
         environment (Environment): Environment Object
@@ -407,6 +408,7 @@ def sensitivity_parallel(
     For each pertrubation in the sensitivity attribute of the dynamic airplane
     object, run a simulation in GNVP3. Can be used mainly for a sensitivity
     analysis. This analysis is parallel.
+
     Args:
         plane (Dynamic_Airplane): Dynamic Airplane Object
         environment (Environment): Environment Object

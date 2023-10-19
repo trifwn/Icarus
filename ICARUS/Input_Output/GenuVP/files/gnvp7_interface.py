@@ -40,7 +40,7 @@ def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
     return res
 
 
-def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
+def make_polars_7(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     """Make the polars from the forces and return a dataframe with them
 
     Args:
@@ -50,7 +50,7 @@ def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     Returns:
         DataFrame: _description_
     """
-    return log_forces(CASEDIR, HOMEDIR)
+    return log_forces(CASEDIR, HOMEDIR, 7)
 
 
 def pertubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:

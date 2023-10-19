@@ -57,10 +57,11 @@ class Airplane:
             self.orientation = orientation
 
         found_wing: bool = False
+        self.S: float = 0
         for surface in surfaces:
-            if surface.name == "wing":
+            if surface.name.startswith("wing"):
                 self.main_wing: Wing_Segment = surface
-                self.S: float = surface.S
+                self.S += surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
                 self.aspect_ratio: float = surface.aspect_ratio
                 self.span: float = surface.span
@@ -111,8 +112,9 @@ class Airplane:
         """
         For each surface, detect if it is connected to another surface and register the connection
         There are 2 types of connections:
-            1: Surfaces Are Connected Spanwise. So the tip emmisions of one surface are non-existent
-            2: Surfaces Are Connected Chordwise. So the trailing edge emmisions of one surface are non-existent
+        1: Surfaces Are Connected Spanwise. So the tip emmisions of one surface are non-existent
+        2: Surfaces Are Connected Chordwise. So the trailing edge emmisions of one surface are non-existent
+
         """
         # Detect if surfaces are connected spanwise
         # To do this, we check if the tip of one surface is the same as the root of another surface

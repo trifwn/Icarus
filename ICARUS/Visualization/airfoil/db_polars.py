@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.figure import Figure
-from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
+from pandas import Series
 
 from .. import colors
 from .. import markers
@@ -13,12 +14,12 @@ def plot_airfoil_polars(
     data: dict[str, dict[str, dict[str, DataFrame]]] | Struct,
     airfoil: str,
     solvers: list[str] | str = "All",
+    plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
-) -> None:
+    title: str = "Aero Coefficients",
+) -> tuple[ndarray, Figure]:
     """
-    # ! TODO make the DB connection handle that
-
     Args:
         data (dict[str, dict[str, dict[str, DataFrame]]]): Nested Dictionary with the airfoil polars
         airfoil (str): airfoil names
@@ -26,25 +27,25 @@ def plot_airfoil_polars(
         size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
         AoA_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
     """
-    # Function to plot airfoil polars
+    number_of_plots = len(plots) + 1
+
+    # Divide the plots equally
+    sqrt_num = number_of_plots**0.5
+    i: int = int(np.ceil(sqrt_num))
+    j: int = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)  # type: ignore
+    axs: ndarray = fig.subplots(j, i)  # type: ignore
 
-    fig.suptitle(f"NACA {airfoil[4:]} Aero Coefficients", fontsize=16)
-    axs[0, 0].set_title("Cm vs AoA")
-    axs[0, 0].set_ylabel("Cm")
+    fig.suptitle(f"{title}", fontsize=16)
 
-    axs[0, 1].set_title("Cd vs AoA")
-    axs[0, 1].set_xlabel("AoA")
-    axs[0, 1].set_ylabel("Cd")
-
-    axs[1, 0].set_title("Cl vs AoA")
-    axs[1, 0].set_xlabel("AoA")
-    axs[1, 0].set_ylabel("Cl")
-
-    axs[1, 1].set_title("Cl vs Cd")
-    axs[1, 1].set_xlabel("Cd")
+    for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+        ax.set_xlabel(plot[0])
+        ax.set_ylabel(plot[1])
+        ax.set_title(f"{plot[1]} vs {plot[0]}")
+        ax.grid()
+        ax.axhline(y=0, color="k")
+        ax.axvline(x=0, color="k")
 
     if solvers == "All" or solvers == ["All"]:
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
@@ -60,35 +61,39 @@ def plot_airfoil_polars(
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
+                for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+                    key0 = f"{plot[0]}"
+                    key1 = f"{plot[1]}"
 
-                aoa, cl, cd, cm = polar.T.values
+                    if plot[0] == "AoA":
+                        key0 = "AoA"
+                    if plot[1] == "AoA":
+                        key1 = "AoA"
 
-                c: str = colors[j]
-                m: MarkerStyle = markers[i].get_marker()
-                style: str = f"{c}{m}-"
-                label: str = f"{airfoil}: {reynolds} - {solver}"
-                axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)
-                axs[1, 0].plot(aoa, cl, style, label=label, markersize=3, linewidth=1)
-                axs[1, 1].plot(cd, cl, style, label=label, markersize=3, linewidth=1)
-                axs[0, 0].plot(aoa, cm, style, label=label, markersize=3, linewidth=1)
+                    x: Series = polar[f"{key0}"]
+                    y: Series = polar[f"{key1}"]
+                    c = colors(j / len(data[airfoil][solver].keys()))
+                    m = markers[i].get_marker()
+                    label: str = f"{airfoil}: {reynolds} - {solver}"
+                    try:
+                        ax.plot(x, y, ls='--', color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                    except ValueError as e:
+                        raise e
             except (KeyError, ValueError) as solv:
                 print(f"Run Doesn't Exist: {airfoil},{reynolds},{solv}")
 
-    fig.tight_layout()
-    if len(solvers) == 3:
-        per: float = -0.85
-    elif len(solvers) == 2:
-        per = -0.6
-    else:
-        per = -0.4
-    axs[0, 1].grid()
-    axs[1, 0].grid()
-    axs[1, 1].grid()
-    axs[0, 0].grid()
+    # Remove empty plots
+    for ax in axs.flatten()[len(plots) :]:
+        ax.remove()
 
-    axs[1, 0].legend(
-        # bbox_to_anchor=(-0.1, per),
-        ncol=3,
-        fancybox=True,
-        loc="best",
-    )
+    # Take the legend of all plots (they are the same) and add them to the empty space below
+    # where we removed the empty plots
+    handles, labels = axs.flatten()[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower right", ncol=2)
+
+    # Adjust the plots
+    fig.tight_layout()
+    fig.subplots_adjust(top=0.9, bottom=0.1)
+
+    plt.show()
+    return axs, fig

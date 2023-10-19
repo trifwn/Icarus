@@ -9,6 +9,7 @@ def separate_angles(
     all_angles: list[float] | ndarray[Any, dtype[floating[Any]]],
 ) -> tuple[list[float], list[float]]:
     """Given A list of angles it separates them in positive and negative
+    
     Args:
         all_angles (list[float]): Angles to separate
     Returns:

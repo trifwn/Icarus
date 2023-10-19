@@ -17,10 +17,9 @@ def plot_airfoil_reynolds(
     size: tuple[int, int] = (10, 10),
 ) -> None:
     """Function to plot airfoil polars for a given list of airfoils and solvers.
-    # ! TODO make DB Handle that
+
     Args:
-        data (dict[str, dict[str, dict[str, DataFrame]]]): Nested dictionary containing
-                                                        the airfoil Polars
+        data (dict[str, dict[str, dict[str, DataFrame]]]): Nested dictionary containing the airfoil Polars
         airfoil_name (str): Airfoil name (e.g. naca0012)
         reynolds (str): Reynolds number (e.g. 100000)
         solvers (list[str], optional): Can be either all or individual solver names. Defaults to ["All"].

@@ -10,16 +10,14 @@ from pandas import DataFrame
 from pandas import Series
 
 
-def log_forces(
-    CASEDIR: str,
-    HOMEDIR: str,
-) -> DataFrame:
+def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
     """
     Convert the forces to polars and return a dataframe with them.
 
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
+        genu_version(int): Version of GNVP
 
     Returns:
         DataFrame: Resulting Polars
@@ -27,7 +25,7 @@ def log_forces(
     os.chdir(CASEDIR)
 
     folders: list[str] = next(os.walk("."))[1]
-    print("Making Polars")
+    # print("Making Polars")
     pols: list[list[float]] = []
     for folder in folders:
         os.chdir(os.path.join(CASEDIR, folder))
@@ -45,7 +43,7 @@ def log_forces(
     df.pop("TTIME")
     df.pop("PSIB")
     df = df.sort_values("AoA").reset_index(drop=True)
-    df.to_csv("forces.gnvp3", index=False)
+    df.to_csv(f"forces.gnvp{genu_version}", index=False)
     os.chdir(HOMEDIR)
     # df = rotate_forces(df, df['AoA'])
     return df

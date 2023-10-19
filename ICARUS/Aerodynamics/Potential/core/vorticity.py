@@ -66,12 +66,12 @@ def voring(x, y, z, j, k, gd, gamma=1):
         x,
         y,
         z,
-        gd[j, k + 1, 0],
-        gd[j, k + 1, 1],
-        gd[j, k + 1, 2],
         gd[j, k, 0],
         gd[j, k, 1],
         gd[j, k, 2],
+        gd[j + 1, k, 0],
+        gd[j + 1, k, 1],
+        gd[j + 1, k, 2],
         gamma,
     )
 
@@ -79,18 +79,6 @@ def voring(x, y, z, j, k, gd, gamma=1):
         x,
         y,
         z,
-        gd[j, k, 0],
-        gd[j, k, 1],
-        gd[j, k, 2],
-        gd[j + 1, k, 0],
-        gd[j + 1, k, 1],
-        gd[j + 1, k, 2],
-        gamma,
-    )
-    u3, v3, w3 = vortexL(
-        x,
-        y,
-        z,
         gd[j + 1, k, 0],
         gd[j + 1, k, 1],
         gd[j + 1, k, 2],
@@ -99,7 +87,7 @@ def voring(x, y, z, j, k, gd, gamma=1):
         gd[j + 1, k + 1, 2],
         gamma,
     )
-    u4, v4, w4 = vortexL(
+    u3, v3, w3 = vortexL(
         x,
         y,
         z,
@@ -109,6 +97,18 @@ def voring(x, y, z, j, k, gd, gamma=1):
         gd[j, k + 1, 0],
         gd[j, k + 1, 1],
         gd[j, k + 1, 2],
+        gamma,
+    )
+    u4, v4, w4 = vortexL(
+        x,
+        y,
+        z,
+        gd[j, k + 1, 0],
+        gd[j, k + 1, 1],
+        gd[j, k + 1, 2],
+        gd[j, k, 0],
+        gd[j, k, 1],
+        gd[j, k, 2],
         gamma,
     )
 
@@ -272,9 +272,9 @@ def hshoeSL2(x, y, z, i, j, gd, gamma=1):
     v = v1 + v2 + v3 + v4 + v5
     w = w1 + w2 + w3 + w4 + w5
 
-    ust = u1 + u2 + u4 + u5
-    vst = v1 + v2 + v4 + v5
-    wst = w1 + w2 + w4 + w5
+    ust = u1 + u2 - u3 - u4
+    vst = v1 + v2 - v3 - v4
+    wst = w1 + w2 - w3 - w4
 
     U = np.array((u, v, w))
     Ustar = np.array((ust, vst, wst))

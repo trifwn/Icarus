@@ -37,22 +37,22 @@ class Database_3D:
         self.convergence_data = Struct()
 
     def load_data(self) -> None:
-        self.scan()
-        self.make_data()
+        self.scan_and_make_data()
 
-    def scan(self) -> None:
+    def scan_and_make_data(self) -> None:
         planenames: list[str] = next(os.walk(DB3D))[1]
         for plane in planenames:  # For each plane planename == folder
             # if plane == 'bmark':
             #     continue
 
             # Load Plane object
-            file: str = os.path.join(DB3D, plane, f"{plane}.json")
-            plane_found: bool = self.loadPlaneFromFile(plane, file)
+            file_plane: str = os.path.join(DB3D, plane, f"{plane}.json")
+            plane_found: bool = self.load_plane_from_file(plane, file_plane)
 
-            # Loading Forces from forces.gnvp3 file
-            file = os.path.join(DB3D, plane, "forces.gnvp3")
-            self.load_gnvp_forces(plane, file)
+            # Loading Forces from forces.* files
+            file_gnvp_3: str = os.path.join(DB3D, plane, "forces.gnvp3")
+            file_gnvp_7: str = os.path.join(DB3D, plane, "forces.gnvp7")
+            file_lspt: str = os.path.join(DB3D, plane, "forces.lspt")
 
             if plane_found:
                 self.convergence_data[plane] = Struct()
@@ -64,6 +64,10 @@ class Database_3D:
                     if case.startswith("Sens"):
                         continue
                     self.load_gnvp_case_convergence(plane, case)
+
+            self.load_gnvp_forces(plane, file_gnvp_3, genu_version=3)
+            self.load_gnvp_forces(plane, file_gnvp_7, genu_version=7)
+            self.load_lspt_forces(plane, file_lspt)
 
     def load_plane_states(self, plane: str, case: str) -> dict[str, Any]:
         """
@@ -93,7 +97,7 @@ class Database_3D:
         os.chdir(self.HOMEDIR)
         return states
 
-    def loadPlaneFromFile(self, name: str, file: str) -> bool:
+    def load_plane_from_file(self, name: str, file: str) -> bool:
         """Function to get Plane Object from file and decode it.
 
         Args:
@@ -116,7 +120,7 @@ class Database_3D:
             plane_found = False
         return plane_found
 
-    def load_gnvp_forces(self, planename: str, file: str) -> None:
+    def load_gnvp_forces(self, planename: str, file: str, genu_version: int) -> None:
         """
         Load Forces from forces file and store them in the raw_data dict.
         If the file doesn't exist it tries to create it by loading the plane object
@@ -127,26 +131,48 @@ class Database_3D:
         Args:
             planename (str): Planename
             file (str): Filename Containing FOrces (forces.gnvp3)
+            genu_version (int): GNVP Version
         """
         try:
             self.raw_data[planename] = pd.read_csv(file)
+            self.make_data_gnvp(planename, genu_version)
             return
         except FileNotFoundError:
-            print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
+            # print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
             if planename in self.planes.keys():
-                print(
-                    "Since plane object exists with that name trying to create polars...",
-                )
+                # print(
+                #     "Since plane object exists with that name trying to create polars...",
+                # )
                 pln: Airplane = self.planes[planename]
                 try:
-                    from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import make_polars
-
                     CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
-                    make_polars(CASEDIR, self.HOMEDIR)
-                    file = os.path.join(DB3D, planename, "forces.gnvp3")
+                    if genu_version == 3:
+                        from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import make_polars_3
+
+                        make_polars_3(CASEDIR, self.HOMEDIR)
+                    else:
+                        from ICARUS.Input_Output.GenuVP.files.gnvp7_interface import make_polars_7
+
+                        make_polars_7(CASEDIR, self.HOMEDIR)
+
                     self.raw_data[planename] = pd.read_csv(file)
+                    self.make_data_gnvp(planename, genu_version)
                 except Exception as e:
                     print(f"Failed to create Polars! Got Error:\n{e}")
+
+    def load_lspt_forces(self, planename: str, file: str) -> None:
+        """
+        Load Forces from forces file and store them in the raw_data dict.
+
+        Args:
+            planename (str): _description_
+            file (str): _description_
+        """
+        try:
+            self.raw_data[f"{planename}_LSPT"] = pd.read_csv(file)
+            self.make_data_lspt(planename)
+        except FileNotFoundError:
+            print(f"No forces.lspt file found in {planename} folder at {DB3D}!")
 
     def load_gnvp_case_convergence(self, planename: str, case: str) -> None:
         """
@@ -222,59 +248,132 @@ class Database_3D:
             print("Polar Doesn't exist! You should compute it first!")
         return None
 
-    def make_data(self) -> None:
+    def make_data_gnvp(self, plane: str, gnvp_version) -> None:
         """
+        Args:
+            plane (str): Plane name
+
         Formats Polars from Forces, calculates the aerodynamic coefficients and stores them in the data dict.
         ! TODO: Should get deprecated in favor of analysis logic in the future. Handled by the unhook function.
         """
-        for plane in list(self.planes.keys()):
-            self.data[plane] = pd.DataFrame()
-            pln: Airplane = self.planes[plane]
-            if plane not in self.raw_data.keys():
-                continue
-            self.data[plane]['AoA'] = self.raw_data[plane]["AoA"].astype('float')
-            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
-            for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-                Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(1)"]
-                # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-                Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(3)"]
+        self.data[plane] = pd.DataFrame()
+        pln: Airplane = self.planes[plane]
+        if plane not in self.raw_data.keys():
+            return None
+        self.data[plane]["AoA"] = self.raw_data[plane]["AoA"].astype("float")
+        AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
 
-                # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-                My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TAMOM{enc}(2)"]
-                # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
+        for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
+            Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(1)"]
+            # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
+            Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(3)"]
 
-                Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
-                    AoA,
-                ) + Fz * np.sin(
-                    AoA,
-                )
-                # Fy_new = Fy
-                Fz_new: ndarray[Any, dtype[floating[Any]]] = -Fx * np.sin(
-                    AoA,
-                ) + Fz * np.cos(
-                    AoA,
-                )
+            # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
+            My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TAMOM{enc}(2)"]
+            # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
-                My_new: ndarray[Any, dtype[floating[Any]]] = My
+            Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
+                AoA,
+            ) + Fz * np.sin(
+                AoA,
+            )
+            # Fy_new = Fy
+            Fz_new: ndarray[Any, dtype[floating[Any]]] = -Fx * np.sin(
+                AoA,
+            ) + Fz * np.cos(
+                AoA,
+            )
 
-                Q: float = 0.5 * 1.225 * 20.0**2
+            My_new: ndarray[Any, dtype[floating[Any]]] = My
+
+            Q: float = 0.5 * 1.225 * 20.0**2
+            try:
+                state: State = self.states[pln.name]["Unstick"]
+                Q = state.dynamic_pressure
+            except KeyError:
                 try:
-                    state: State = self.states[pln.name]["Unstick"]
-                    Q = state.dynamic_pressure
-                except KeyError:
-                    try:
-                        Q = pln.dynamic_pressure
-                    except AttributeError:
-                        print(
-                            f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
-                        )
-                        pass
-                finally:
-                    S: float = pln.S
-                    MAC: float = pln.mean_aerodynamic_chord
-                    self.data[plane][f"CL_{name}"] = Fz_new / (Q * S)
-                    self.data[plane][f"CD_{name}"] = Fx_new / (Q * S)
-                    self.data[plane][f"Cm_{name}"] = My_new / (Q * S * MAC)
+                    Q = pln.dynamic_pressure
+                except AttributeError:
+                    print(
+                        f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
+                    )
+                    pass
+            finally:
+                S: float = pln.S
+                MAC: float = pln.mean_aerodynamic_chord
+                self.data[plane][f"GNVP{gnvp_version} {name} CL"] = Fz_new / (Q * S)
+                self.data[plane][f"GNVP{gnvp_version} {name} CD"] = Fx_new / (Q * S)
+                self.data[plane][f"GNVP{gnvp_version} {name} Cm"] = My_new / (Q * S * MAC)
+
+    def make_data_lspt(self, plane: str) -> None:
+        """
+        Args:
+            plane (str): Plane name
+
+        Formats Polars from Forces, calculates the aerodynamic coefficients and stores them in the data dict.
+        """
+
+        pln: Airplane = self.planes[plane]
+        if f"{plane}_LSPT" not in self.raw_data.keys():
+            return None
+
+        for enc, name in zip(["", "_2D"], ["Potential", "2D"]):
+            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"]["AoA"] * np.pi / 180
+            Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"][f"D{enc}"]
+            # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
+            Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"][f"L{enc}"]
+
+            # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
+            My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"][f"My{enc}"]
+            # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
+
+            Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
+                0 * AoA,
+            ) + Fz * np.sin(
+                0 * AoA,
+            )
+            # Fy_new = Fy
+            Fz_new: ndarray[Any, dtype[floating[Any]]] = -Fx * np.sin(
+                0 * AoA,
+            ) + Fz * np.cos(
+                0 * AoA,
+            )
+
+            My_new: ndarray[Any, dtype[floating[Any]]] = My
+
+            Q: float = 0.5 * 1.225 * 20.0**2
+            try:
+                state: State = self.states[pln.name]["Unstick"]
+                Q = state.dynamic_pressure
+            except KeyError:
+                try:
+                    Q = pln.dynamic_pressure
+                except AttributeError:
+                    print(
+                        f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
+                    )
+                    pass
+            finally:
+                S: float = pln.S
+                MAC: float = pln.mean_aerodynamic_chord
+                if f"{plane}" not in self.data.keys():
+                    self.data[f"{plane}"] = pd.DataFrame()
+                    self.data[f"{plane}"][f"AoA"] = AoA * 180 / np.pi
+                    self.data[f"{plane}"][f"LSPT {name} CL"] = Fz_new / (Q * S)
+                    self.data[f"{plane}"][f"LSPT {name} CD"] = Fx_new / (Q * S)
+                    self.data[f"{plane}"][f"LSPT {name} Cm"] = My_new / (Q * S * MAC)
+                else:
+                    # Create a new dataframe with the new data and merge it with the old one
+                    # on the AoA column
+                    df: DataFrame = pd.DataFrame()
+                    df[f"AoA"] = AoA * 180 / np.pi
+                    df[f"LSPT {name} CL"] = Fz_new / (Q * S)
+                    df[f"LSPT {name} CD"] = Fx_new / (Q * S)
+                    df[f"LSPT {name} Cm"] = My_new / (Q * S * MAC)
+                    self.data[f"{plane}"] = self.data[f"{plane}"].merge(df, on="AoA", how="outer")
+
+                    # Sort the dataframe by AoA
+                    self.data[f"{plane}"].sort_values(by="AoA", inplace=True)
 
     def __str__(self) -> Literal["Vehicle Database"]:
         return "Vehicle Database"

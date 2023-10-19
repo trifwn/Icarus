@@ -6,6 +6,7 @@ from Database.Database_2D import Database_2D
 def remove_results(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> None:
     """
     Removes Simulation results for a given case
+
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory

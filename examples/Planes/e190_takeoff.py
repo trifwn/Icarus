@@ -17,7 +17,12 @@ from ICARUS.Vehicle.wing_segment import define_linear_span
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
-def e190_takeoff(name: str) -> Airplane:
+def e190_takeoff_generator(
+    name: str,
+    flap_hinge=0.75,
+    chord_extension=1.3,
+    flap_angle=35,
+) -> Airplane:
     """
     Function to get the embraer e190 plane.
     Consisting of the main wing, elevator rudder and masses as constructed.
@@ -38,7 +43,12 @@ def e190_takeoff(name: str) -> Airplane:
     from ICARUS.Airfoils.airfoilD import AirfoilD
 
     naca64418: AirfoilD = db.foilsDB.set_available_airfoils()["NACA64418"]
-    naca64418_fl: AirfoilD = naca64418.flap_airfoil(0.75, 1.3, 35, plotting=False)
+    naca64418_fl: AirfoilD = naca64418.flap_airfoil(
+        flap_hinge=flap_hinge,
+        chord_extension=chord_extension,
+        flap_angle=flap_angle,
+        plotting=False,
+    )
 
     origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
 

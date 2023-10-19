@@ -12,7 +12,7 @@ def tabs(num: int) -> str:
 
 
 def ff(num: float) -> str:
-    return str(np.format_float_scientific(num, sign=False, precision=2).zfill(5))
+    return str(np.format_float_scientific(num, sign=False, precision=3, min_digits=3).zfill(5))
 
 
 def ff2(num: float) -> str:

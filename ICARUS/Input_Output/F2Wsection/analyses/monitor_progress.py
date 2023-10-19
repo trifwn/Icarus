@@ -68,11 +68,7 @@ def parallel_monitor(
 
     with ThreadPoolExecutor(max_workers=2 * len(reynolds)) as executor:
         for i, reyn in enumerate(reynolds):
-            reyn_str: str = np.format_float_scientific(
-                reyn,
-                sign=False,
-                precision=2,
-            ).zfill(8)
+            reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).zfill(8)
             for j, name in enumerate(["pos", "neg"]):
                 pbar = tqdm(
                     total=max_iter,

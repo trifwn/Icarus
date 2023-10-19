@@ -28,7 +28,7 @@ def main() -> None:
     read_polars_2d(db.foilsDB, XFLRDB)
 
     # RUN SETUP
-    calcF2W: bool = False  # True
+    calcF2W: bool = True  # True
     calcOpenFoam: bool = False  # True
     calcXFoil: bool = True
     print("Running:")
@@ -40,28 +40,32 @@ def main() -> None:
     airfoils: list[AirfoilD] = []
 
     # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    # # Load From DB
-    # db_airfoils: Struct = db.foilsDB.set_available_airfoils()
-    # for airfoil_name in airfoil_names:
-    #     try:
-    #         airfoils.append(db_airfoils[airfoil_name])
-    #     except:
-    #         print(f"Airfoil {airfoil_name} not found in database")
+    airfoil_names: list[str] = ["0008", "4415", "0012"]
+    # Load From DB
+    db_airfoils: Struct = db.foilsDB.set_available_airfoils()
+    for airfoil_name in airfoil_names:
+        try:
+            airfoils.append(db_airfoils[airfoil_name])
+        except KeyError:
+            print(f"Airfoil {airfoil_name} not found in database")
+            print("Trying to Generate it")
+            airfoils.append(AirfoilD.naca(naca=airfoil_name, n_points=200))
+
     # # Load From File
     # for airfoil_name in airfoil_names:
     #     airfoils.append(AirfoilD.naca(naca=airfoil_name, n_points=200))
 
-    naca64418: AirfoilD = AirfoilD.load_from_file(os.path.join(XFLRDB, "NACA64418", 'naca64418.dat'))
-    airfoils.append(naca64418)
+    # naca64418: AirfoilD = AirfoilD.load_from_file(os.path.join(XFLRDB, "NACA64418", 'naca64418.dat'))
+    # airfoils.append(naca64418)
 
-    naca64418_fl: AirfoilD = naca64418.flap_airfoil(0.75, 1.3, 35)
-    airfoils.append(naca64418_fl)
+    # naca64418_fl: AirfoilD = naca64418.flap_airfoil(0.75, 1.3, 35)
+    # airfoils.append(naca64418_fl)
 
     # PARAMETERS FOR ESTIMATION
-    chord_max: float = 5.6
-    chord_min: float = 2.3
-    u_max: float = 10
-    u_min: float = 100
+    chord_max: float = 0.4
+    chord_min: float = 0.1
+    u_max: float = 100
+    u_min: float = 10
     viscosity: float = 1.56e-5
 
     # MACH ESTIMATION
@@ -74,15 +78,15 @@ def main() -> None:
     reynolds_max: float = calc_reynolds(u_max, chord_max, viscosity)
     reynolds_min: float = calc_reynolds(u_min, chord_min, viscosity)
     reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(
-        start=np.log10(21000),  # np.log10(reynolds_min),
-        stop=np.log10(98484864.0),  # np.log10(reynolds_max),
+        start=np.log10(reynolds_min),
+        stop=np.log10(reynolds_max),
         num=20,
         base=10,
     )
 
     # ANGLE OF ATTACK SETUP
-    aoa_min: float = -6
-    aoa_max: float = 10
+    aoa_min: float = -10
+    aoa_max: float = 15
     num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
     angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
         start=aoa_min,
@@ -126,7 +130,7 @@ def main() -> None:
             f2w_solver_parameters.f_trip_upper.value = ftrip_up["pos"]
             f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
-            f2w_solver_parameters.max_iter.value = 500
+            f2w_solver_parameters.max_iter.value = 100
             # f2w_solver_parameters.max_iter_bl.value = 300
             f2w_solver_parameters.timestep.value = 0.001
 

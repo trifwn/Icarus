@@ -35,8 +35,7 @@ class Analysis:
             run_function (Callable[..., Any]): Function to run the analysis
             options (Struct | dict[str, Any]): Analysis options
             solver_options (Struct | dict[str,Any], optional): Solver Options . Defaults to {}.
-            unhook (Callable[...,Any] | None, optional): Function to run after the analysis
-                Mainly for post processing. Defaults to None.
+            unhook (Callable[...,Any] | None, optional): Function to run after the analysis Mainly for post processing. Defaults to None.
         """
         self.solver_name: str = solver_name
         self.name: str = analysis_name
@@ -320,7 +319,9 @@ class Analysis:
         return encoded
 
     def __lshift__(self, other: dict[str, Any]) -> "Analysis":
-        """overloading operator <<"""
+        """
+        overloading operator <<
+        """
         if not isinstance(other, dict):
             raise TypeError("Can only << a dict")
 

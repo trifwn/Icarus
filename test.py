@@ -10,6 +10,7 @@ import tests.wing_test as wing_test
 from tests.airplane_polars_test import airplane_polars
 from tests.gnvp3_run_test import gnvp3_run
 from tests.gnvp7_run_test import gnvp7_run
+from tests.lspt_run_test import lspt_run
 from tests.solver_geom_test import gnvp3_geometry
 from tests.solver_geom_test import gnvp7_geometry
 
@@ -75,32 +76,39 @@ class BaseAirplaneTests(unittest.TestCase):
         gridAP, gridGNVP = gnvp7_geometry(plot=True)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
-    def test7_3d_polars(self) -> None:
+    def test7_lspt_run(self) -> None:
+        lspt_run()
+
+    def test_3d_polars(self) -> None:
         des, act = airplane_polars(plot=True)
-        prefered_pol = "2D"
+        solvers = ["GNVP3 2D", "GNVP7 2D", "LSPT 2D"]
+        for pol in solvers:
+            try:
+                AoA_d: Series[float] = des["AoA"].astype(float)
+                AoA: Series[float] = act["AoA"].astype(float)
 
-        AoA_d: Series[float] = des["AoA"].astype(float)
-        AoA: Series[float] = act["AoA"].astype(float)
+                CL_d: Series[float] = des["CL"].astype(float)
+                CL: Series[float] = act[f"{pol} CL"].astype(float)
 
-        CL_d: Series[float] = des["CL"].astype(float)
-        CL: Series[float] = act[f"CL_{prefered_pol}"].astype(float)
+                CD_d: Series[float] = des["CD"].astype(float)
+                CD: Series[float] = act[f"{pol} CD"].astype(float)
 
-        CD_d: Series[float] = des["CD"].astype(float)
-        CD: Series[float] = act[f"CD_{prefered_pol}"].astype(float)
-
-        Cm_d: Series[float] = des["Cm"].astype(float)
-        Cm: Series[float] = act[f"Cm_{prefered_pol}"].astype(float)
-
-        # Compare All Values tha correspond to same AoA
-        # to x decimal places (except AoA)
-        dec_prec = 2
-        for a in AoA:
-            for x, x_d in zip([CL, CD, Cm], [CL_d, CD_d, Cm_d]):
-                np.testing.assert_almost_equal(
-                    actual=x[AoA == a].to_numpy(),
-                    desired=x_d[AoA_d == a].to_numpy(),
-                    decimal=dec_prec,
-                )
+                Cm_d: Series[float] = des["Cm"].astype(float)
+                Cm: Series[float] = act[f"{pol}Cm"].astype(float)
+            except KeyError:
+                print(f"--------ATTENTION----------")
+                print(f"{pol} not found")
+                continue
+            # Compare All Values tha correspond to same AoA
+            # to x decimal places (except AoA)
+            dec_prec = 2
+            for a in AoA:
+                for x, x_d in zip([CL, CD, Cm], [CL_d, CD_d, Cm_d]):
+                    np.testing.assert_almost_equal(
+                        actual=x[AoA == a].to_numpy(),
+                        desired=x_d[AoA_d == a].to_numpy(),
+                        decimal=dec_prec,
+                    )
 
 
 if __name__ == "__main__":

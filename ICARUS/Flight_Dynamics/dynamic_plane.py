@@ -17,6 +17,7 @@ class StabilityDerivativesDS(Struct):
     ) -> None:
         """
         Initialize Stability Derivatives
+
         Args:
             X (dict[str, float]): Derivatives based on X
             Y (dict[str, float]): Derivatives based on Y
@@ -35,6 +36,7 @@ class StabilityDerivativesDS(Struct):
     def __str__(self) -> str:
         """
         String Representation of Stability Derivatives
+
         Returns:
             str: String Representation of Stability Derivatives
         """

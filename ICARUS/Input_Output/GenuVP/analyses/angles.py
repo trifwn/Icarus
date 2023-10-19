@@ -306,19 +306,31 @@ def run_gnvp_angles_parallel(
     job_monitor.join()
 
 
-def process_gnvp_angles_run(plane: Airplane, db: DB) -> DataFrame:
+def process_gnvp_angles_run_3(plane: Airplane, db: DB) -> DataFrame:
+    return process_gnvp_angles_run(plane, db, 3)
+
+
+def process_gnvp_angles_run_7(
+    plane: Airplane,
+    db: DB,
+) -> DataFrame:
+    return process_gnvp_angles_run(plane, db, 7)
+
+
+def process_gnvp_angles_run(plane: Airplane, db: DB, genu_version: int) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
 
     Args:
         plane (Airplane): Plane Object
         db (DB): Database
+        genu_version: GNVP Version
 
     Returns:
         DataFrame: Forces Calculated
     """
     HOMEDIR: str = db.HOMEDIR
     CASEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
-    forces: DataFrame = log_forces(CASEDIR, HOMEDIR)
+    forces: DataFrame = log_forces(CASEDIR, HOMEDIR, genu_version)
     # rotatedforces: DataFrame = rotate_forces(forces, forces["AoA"])
     return forces

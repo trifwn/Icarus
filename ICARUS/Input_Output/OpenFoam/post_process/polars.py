@@ -8,7 +8,9 @@ from ICARUS.Input_Output.OpenFoam.post_process.get_aero_coefficients import get_
 
 
 def make_polars(CASEDIR: str, HOMEDIR: str, all_angles: list[float]) -> DataFrame:
-    """Function to make polars from OpenFoam results
+    """
+    Function to make polars from OpenFoam results
+    
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory

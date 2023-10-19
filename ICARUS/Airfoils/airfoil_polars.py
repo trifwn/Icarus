@@ -46,22 +46,22 @@ class Polars:
     ) -> None:
         self.data: Struct | dict[str, DataFrame] = data
 
-        reynolds_keys: list[str] = list(data.keys())
-        reynolds_nums: list[float] = [float(reyn) for reyn in reynolds_keys]
+        self.reynolds_keys: list[str] = list(data.keys())
+        self.reynolds_nums: list[float] = [float(reyn) for reyn in self.reynolds_keys]
 
         # MERGE ALL POLARS INTO ONE DATAFRAME
-        df: DataFrame = data[reynolds_keys[0]].astype("float32").dropna(axis=0, how="all")
+        df: DataFrame = data[self.reynolds_keys[0]].astype("float32").dropna(axis=0, how="all")
         df.rename(
             {
-                "CL": f"CL_{reynolds_keys[0]}",
-                "CD": f"CD_{reynolds_keys[0]}",
-                "Cm": f"Cm_{reynolds_keys[0]}",
-                "CM": f"Cm_{reynolds_keys[0]}",
+                "CL": f"CL_{self.reynolds_keys[0]}",
+                "CD": f"CD_{self.reynolds_keys[0]}",
+                "Cm": f"Cm_{self.reynolds_keys[0]}",
+                "CM": f"Cm_{self.reynolds_keys[0]}",
             },
             inplace=True,
             axis="columns",
         )
-        for reyn in reynolds_keys[1:]:
+        for reyn in self.reynolds_keys[1:]:
             df2: DataFrame = data[reyn].astype("float32").dropna(axis=0, how="all")
             df2.rename(
                 {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}", "CM": f"Cm_{reyn}"},
@@ -87,10 +87,10 @@ class Polars:
             potential_cl: pd.Series = df["CL_Potential"]
             potential_cm: pd.Series = df["Cm_Potential"]
         else:
-            least_idx: int = reynolds_nums.index(min(reynolds_nums))
-            potential_cl = df[f"CL_{reynolds_keys[least_idx]}"]
+            least_idx: int = self.reynolds_nums.index(min(self.reynolds_nums))
+            potential_cl = df[f"CL_{self.reynolds_keys[least_idx]}"]
             potential_cl.index = Index(df["AoA"].astype("float32"))
-            potential_cm = df[f"Cm_{reynolds_keys[least_idx]}"]
+            potential_cm = df[f"Cm_{self.reynolds_keys[least_idx]}"]
             potential_cm.index = Index(df["AoA"].astype("float32"))
         self.a_zero_pot: float = self.get_zero_lift(potential_cl)
 
@@ -98,13 +98,44 @@ class Polars:
         self.cm_pot: float = self.get_zero_lift_cm(potential_cm, self.a_zero_pot)
 
         # Viscous Zero Lift Angle
-        max_idx: int = reynolds_nums.index(max(reynolds_nums))
-        viscous: pd.Series = df[f"CL_{reynolds_keys[max_idx]}"]
+        max_idx: int = self.reynolds_nums.index(max(self.reynolds_nums))
+        viscous: pd.Series = df[f"CL_{self.reynolds_keys[max_idx]}"]
         viscous.index = Index(df["AoA"].astype("float32"))
         self.a_zero_visc: float = self.get_zero_lift(viscous)
 
         # Slope of Cl vs Alpha (viscous)
         self.cl_slope_visc: float = self.get_cl_slope(viscous)
+
+    def get_reynolds_subtable(self, reynolds: float | str) -> DataFrame:
+        """Get Reynolds Subtable"""
+        if isinstance(reynolds, float):
+            reynolds = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).replace("+", "")
+
+        if reynolds not in self.reynolds_keys:
+            print(self.reynolds_keys)
+            print(reynolds)
+            # raise ValueError(f"Reynolds Number {reynolds} is not in the list of Reynolds Numbers")
+
+        # Get Reynolds Subtable
+        df: DataFrame = self.df[
+            [
+                "AoA",
+                f"CL_{reynolds}",
+                f"CD_{reynolds}",
+                f"Cm_{reynolds}",
+            ]
+        ]
+
+        # Rename Columns
+        df = df.rename(
+            columns={
+                f"CL_{reynolds}": "CL",
+                f"CD_{reynolds}": "CD",
+                f"Cm_{reynolds}": "Cm",
+            },
+        )
+
+        return df
 
     @staticmethod
     def get_zero_lift(cl_curve: pd.Series) -> float:

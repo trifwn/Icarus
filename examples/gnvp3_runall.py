@@ -11,17 +11,16 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
-from regex import D
+from Planes.e190_cruise import e190_cruise
+from Planes.e190_takeoff import e190_takeoff_generator
+from Planes.hermes import hermes
+from Planes.wing_variations import wing_var_chord_offset
 
-from examples.Planes.e190_cruise import e190_cruise
-from examples.Planes.e190_takeoff import e190_takeoff
-from examples.Planes.hermes import hermes
-from examples.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import EARTH
+from ICARUS.Enviroment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
@@ -59,17 +58,19 @@ def main() -> None:
         "e190_cruise_3": 232,
     }
 
-    DENS: dict[str, float] = {
-        "e190_takeoff_3": 1.225,
-        "e190_cruise_3": 0.538,
-    }
+    ALTITUDE: dict[str, int] = {"e190_cruise_3": 12000, "e190_takeoff_3": 0}
 
+    # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
+    TEMPERATURE: dict[str, int] = {
+        "e190_cruise_3": 273 - 50,
+        "e190_takeoff_3": 273 + 15,
+    }
     DYNAMICS: dict[str, float] = {
         "e190_takeoff_3": False,
         "e190_cruise_3": False,
     }
 
-    embraer_to: Airplane = e190_takeoff(name="e190_takeoff_3")
+    embraer_to: Airplane = e190_takeoff_generator(name="e190_takeoff_3")
     embraer_cr: Airplane = e190_cruise(name="e190_cruise_3")
 
     # embraer.visualize()
@@ -82,8 +83,8 @@ def main() -> None:
         print("--------------------------------------------------")
 
         # # Import Enviroment
-        EARTH.air_density = DENS[airplane.name]
-        print(EARTH)
+        EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
+        print(EARTH_ISA)
 
         # # Get Solver
         gnvp3: Solver = get_gnvp3(db)
@@ -107,10 +108,10 @@ def main() -> None:
             NO_AOA,
         )
 
-        airplane.define_dynamic_pressure(UINF[airplane.name], EARTH.air_density)
+        airplane.define_dynamic_pressure(UINF[airplane.name], EARTH_ISA.air_density)
 
         options.plane.value = airplane
-        options.environment.value = EARTH
+        options.environment.value = EARTH_ISA
         options.db.value = db
         options.solver2D.value = "Xfoil"
         options.maxiter.value = maxiter[airplane.name]
@@ -138,7 +139,7 @@ def main() -> None:
         # # Dynamics
         # ### Define and Trim Plane
         try:
-            unstick = State("Unstick", airplane, polars, EARTH)
+            unstick = State("Unstick", airplane, polars, EARTH_ISA)
         except Exception as error:
             print(error)
             continue
@@ -175,7 +176,7 @@ def main() -> None:
         # Set Options
         options.plane.value = airplane
         options.state.value = unstick
-        options.environment.value = EARTH
+        options.environment.value = EARTH_ISA
         options.db.value = db
         options.solver2D.value = "Xfoil"
         options.maxiter.value = maxiter[airplane.name]

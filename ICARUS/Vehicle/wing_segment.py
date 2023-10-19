@@ -462,6 +462,7 @@ class Wing_Segment:
             _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
             _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
             self.S += 2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
+        self.S = self.S / np.max(self.airfoil._x_lower)
 
         g_up = self.grid_upper
         g_low = self.grid_lower

@@ -20,7 +20,8 @@ import inquirer
 from inquirer import List
 from pyfiglet import Figlet
 
-from airfoil_cli import airfoil_cli
+from ICARUS_CLI.airfoil_cli import airfoil_cli
+from ICARUS_CLI.airplane_cli import airplane_cli
 from ICARUS import __version__
 from ICARUS.Database.db import DB
 
@@ -93,10 +94,8 @@ if __name__ == "__main__":
             mode = answers['Mode']
             if mode == '2D':
                 airfoil_cli(db)
-                print("2D")
             elif mode == '3D':
-                #     run_3d(db, cli=True)
-                print("3D")
+                airplane_cli(db)
             elif mode == 'Visualization':
                 # visualize(cli= True)
                 print("Visualization")

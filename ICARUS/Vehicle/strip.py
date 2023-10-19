@@ -110,6 +110,7 @@ class Strip:
         n_points_span: int = 10,
     ) -> ndarray[Any, dtype[floating[Any]]]:
         """Interpolate between start and end strips and return the section at the given index.
+        
         Args:
             idx: index of interpolation
             n_points: number of points to interpolate in the span direction

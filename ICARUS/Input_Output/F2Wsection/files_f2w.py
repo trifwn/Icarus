@@ -84,7 +84,7 @@ def input_file(
     data[6] = "0.025     ! EPS2\n"
     data[7] = "1.00      ! EPSCOE\n"
     data[27] = "400       ! NTIME_bl\n"
-    data[30] = f"{np.format_float_scientific(reynolds, sign=False, precision=2).zfill(8)}  ! Reynolds\n"
+    data[30] = f"{np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(8)}  ! Reynolds\n"
     data[32] = f"{str(mach)[::-1].zfill(3)[::-1]}      ! Mach     Number\n"
     data[34] = f"{str(ftrip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n"
     data[35] = f"{str(ftrip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n"
@@ -98,6 +98,7 @@ def input_file(
 def setup_f2w(F2WBASE: str, HOMEDIR: str, CASEDIR: str) -> None:
     """
     Sets up the f2w case copying and editing all necessary files
+    
     Args:
         F2WBASE (str): Base Case Directory for f2w
         HOMEDIR (str): Home Directory

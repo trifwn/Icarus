@@ -42,7 +42,7 @@ def get_airfoil_file() -> AirfoilD:
         Path(
             "airf_file",
             message="Specify the Path to the Airfoil File",
-            path_type=Path.DIRECTORY,
+            path_type=Path.FILE,
         ),
     ]
     answers: dict[Any, Any] | None = prompt(file_question)

@@ -81,14 +81,13 @@ def read_polars_2d(db: Database_2D, XFLRdir: str) -> None:
                         axis=1,
                     )
                     if "XFOIL" not in db.data[name].keys():
-                        db.data[name]["XFOIL"] = {}
+                        db.data[name]["XFLR"] = {}
 
-                    reyn_str: str = np.format_float_scientific(
-                        reyn,
-                        sign=False,
-                        precision=3,
-                    ).replace("+", "")
-                    db.data[name]["XFOIL"][reyn_str] = dat
+                    reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                        "+",
+                        "",
+                    )
+                    db.data[name]["XFLR"][reyn_str] = dat
                     dat: DataFrame = pd.read_csv(
                         file,
                         sep="  ",
@@ -111,14 +110,13 @@ def read_polars_2d(db: Database_2D, XFLRdir: str) -> None:
                         axis=1,
                     )
                     if "XFOIL" not in db.data[name].keys():
-                        db.data[name]["XFOIL"] = {}
+                        db.data[name]["XFLR"] = {}
 
-                    reyn_str: str = np.format_float_scientific(
-                        reyn,
-                        sign=False,
-                        precision=3,
-                    ).replace("+", "")
-                    db.data[name]["XFOIL"][reyn_str] = dat
+                    reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                        "+",
+                        "",
+                    )
+                    db.data[name]["XFLR"][reyn_str] = dat
 
                     dat = pd.read_csv(
                         file,
@@ -141,15 +139,11 @@ def read_polars_2d(db: Database_2D, XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFOIL" not in db.data[name].keys():
-                        db.data[name]["XFOIL"] = {}
+                    if "XFLR" not in db.data[name].keys():
+                        db.data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(
-                        reyn,
-                        sign=False,
-                        precision=3,
-                    ).replace("+", "")
-                    db.data[name]["XFOIL"][reyn_str] = dat
+                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
+                    db.data[name]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 
