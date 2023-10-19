@@ -4,9 +4,9 @@ from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
 
-from .. import colors
-from .. import markers
 from ICARUS.Core.struct import Struct
+from ICARUS.Visualization import colors_
+from ICARUS.Visualization import markers
 
 
 def plot_airfoil_reynolds(
@@ -53,14 +53,13 @@ def plot_airfoil_reynolds(
         try:
             polar = data[airfoil_name][solver][reynolds]
             aoa, cl, cd, cm = polar.T.values
-            c: str = colors[j]
+            c = colors_(j / len(solvers))
             m: MarkerStyle = markers[j].get_marker()
-            style: str = f"{c}{m}-"
             label: str = f"{airfoil_name}: {reynolds} - {solver}"
-            axs[0, 1].plot(aoa, cd, style, label=label, markersize=3, linewidth=1)
-            axs[1, 0].plot(aoa, cl, style, label=label, markersize=3, linewidth=1)
-            axs[1, 1].plot(cd, cl, style, label=label, markersize=3, linewidth=1)
-            axs[0, 0].plot(aoa, cm, style, label=label, markersize=3, linewidth=1)
+            axs[0, 1].plot(aoa, cd, color=c, marker=m, label=label, markersize=3, linewidth=1)
+            axs[1, 0].plot(aoa, cl, color=c, marker=m, label=label, markersize=3, linewidth=1)
+            axs[1, 1].plot(cd, cl, color=c, marker=m, label=label, markersize=3, linewidth=1)
+            axs[0, 0].plot(aoa, cm, color=c, marker=m, label=label, markersize=3, linewidth=1)
         except KeyError as solver:
             print(f"Run Doesn't Exist: {airfoil_name},{reynolds},{solver}")
 

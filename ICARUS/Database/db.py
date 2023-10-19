@@ -26,7 +26,7 @@ class DB:
     #         self.vehiclesDB.__enter__(obj)
     #     elif isinstance(obj, dyn_Airplane):
     #         self.vehiclesDB.__enter__(obj)
-    #     elif isinstance(obj, AirfoilD):
+    #     elif isinstance(obj, Airfoil):
     #         self.foilsDB.__enter__(obj)
     #     else:
     #         print(f"Object {obj} not supported")

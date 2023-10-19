@@ -1,6 +1,6 @@
 from typing import Any
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output.OpenFoam.analyses.angles import angles_parallel
 from ICARUS.Input_Output.OpenFoam.analyses.angles import angles_serial
@@ -19,7 +19,7 @@ def get_open_foam(db: DB) -> Solver:
         ),
         "airfoil": (
             "Airfoil to run",
-            AirfoilD,
+            Airfoil,
         ),
         "reynolds": (
             "List of Reynolds numbers to run",

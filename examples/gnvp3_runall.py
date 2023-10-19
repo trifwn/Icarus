@@ -11,19 +11,12 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
-from Planes.e190_cruise import e190_cruise
-from Planes.e190_takeoff import e190_takeoff_generator
-from Planes.hermes import hermes
-from Planes.wing_variations import wing_var_chord_offset
 
 from ICARUS.Core.struct import Struct
-from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
-from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
@@ -36,46 +29,52 @@ def main() -> None:
     # # DB CONNECTION
     db = DB()
     db.load_data()
-    airfoils = db.foilsDB.airfoils
     foildb: Database_2D = db.foilsDB
     foildb.load_data()
+
+    from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
+    from ICARUS.Database import XFLRDB
     read_polars_2d(foildb, XFLRDB)
 
     # # Get Plane
     planes: list[Airplane] = []
 
-    timestep: dict[str, float] = {
-        "e190_takeoff_3": 10,
-        "e190_cruise_3": 10,
-    }
-    maxiter: dict[str, int] = {
-        "e190_takeoff_3": 50,
-        "e190_cruise_3": 50,
-    }
+    from Planes.e190_takeoff import e190_takeoff_generator
+    embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
 
-    UINF: dict[str, float] = {
-        "e190_takeoff_3": 20,
-        "e190_cruise_3": 232,
-    }
-
-    ALTITUDE: dict[str, int] = {"e190_cruise_3": 12000, "e190_takeoff_3": 0}
-
-    # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {
-        "e190_cruise_3": 273 - 50,
-        "e190_takeoff_3": 273 + 15,
-    }
-    DYNAMICS: dict[str, float] = {
-        "e190_takeoff_3": False,
-        "e190_cruise_3": False,
-    }
-
-    embraer_to: Airplane = e190_takeoff_generator(name="e190_takeoff_3")
-    embraer_cr: Airplane = e190_cruise(name="e190_cruise_3")
+    from Planes.e190_cruise import e190_cruise
+    embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
 
     # embraer.visualize()
     planes.append(embraer_to)
     planes.append(embraer_cr)
+
+
+    timestep: dict[str, float] = {
+        "e190_to_3": 10,
+        "e190_cr_3": 10,
+    }
+    maxiter: dict[str, int] = {
+        "e190_to_3": 50,
+        "e190_cr_3": 50,
+    }
+
+    UINF: dict[str, float] = {
+        "e190_to_3": 20,
+        "e190_cr_3": 232,
+    }
+
+    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0}
+
+    # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
+    TEMPERATURE: dict[str, int] = {
+        "e190_cr_3": 273 - 50,
+        "e190_to_3": 273 + 15,
+    }
+    DYNAMICS: dict[str, float] = {
+        "e190_to_3": False,
+        "e190_cr_3": False,
+    }
 
     for airplane in planes:
         print("--------------------------------------------------")

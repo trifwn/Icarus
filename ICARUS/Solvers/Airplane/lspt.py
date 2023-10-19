@@ -1,10 +1,11 @@
 from typing import Any
-from ICARUS.Aerodynamics.Potential.lifting_line import run_lstp_angles
 
+from ICARUS.Aerodynamics.Potential.lifting_line import run_lstp_angles
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run, run_gnvp3_angles
+from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run
+from ICARUS.Input_Output.GenuVP.analyses.angles import run_gnvp3_angles
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
@@ -69,7 +70,7 @@ def get_lspt(db: DB) -> Solver:
         run_lstp_angles,
         options,
         solver_options,
-        unhook= None,
+        unhook=None,
     )
 
     lspt.add_analyses(

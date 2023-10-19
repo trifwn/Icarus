@@ -1,7 +1,13 @@
 from typing import Any
+
 import numpy as np
-from .helper_functions import shape_like, get_climb_rate
+
+from .helper_functions import get_climb_rate
+from .helper_functions import shape_like
+from ICARUS.Core.types import FloatArray
+
 # FAR 4 -> 25.114
+
 
 def far_4_climb(
     no_of_engines: int,
@@ -9,8 +15,8 @@ def far_4_climb(
     cd: float,
     AR: float,
     e: float,
-    wing_loading: Any,
-):
+    wing_loading: FloatArray,
+) -> tuple[FloatArray, FloatArray]:
     """
     Returns the thrust loading for a given number of engines, cl_2, cd, AR and e
 
@@ -24,14 +30,10 @@ def far_4_climb(
     Returns:
         tuple: Wing loading, Thrust loading
     """
-    lift_o_drag: float = cl_2 / (
-        cd + cl_2**2 / (np.pi * AR * e)
-    )
+    lift_o_drag: float = cl_2 / (cd + cl_2**2 / (np.pi * AR * e))
     N: int = no_of_engines
     g1: float = get_climb_rate(N)
 
-    thrust_loading: float =  N / (N-1) / (
-            g1 +  lift_o_drag
-        )
-    thrust_loading = shape_like(thrust_loading,wing_loading)
-    return wing_loading, thrust_loading
+    thrust_loading: float = N / (N - 1) / (g1 + lift_o_drag)
+    thrust_loading_arr: FloatArray = shape_like(thrust_loading, wing_loading)
+    return wing_loading, thrust_loading_arr

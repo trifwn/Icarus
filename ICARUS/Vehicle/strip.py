@@ -8,7 +8,7 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 
 
@@ -24,7 +24,7 @@ class Strip:
         self,
         starting_point: ndarray[int, dtype[floating[Any]]] | list[float],
         ending_point: ndarray[int, dtype[floating[Any]]] | list[float],
-        airfoil: AirfoilD,
+        airfoil: Airfoil,
         starting_chord: float,
         ending_chord: float,
     ) -> None:
@@ -34,7 +34,7 @@ class Strip:
         Args:
             starting_point (ndarray[int, dtype[floating[Any]]]): Starting point of the strip
             ending_point (ndarray[int, dtype[floating[Any]]]): Ending point of the strip
-            airfoil (AirfoilD): Airfoil of the strip.
+            airfoil (Airfoil): Airfoil of the strip.
             starting_chord (float): Starting chord of the strip
             ending_chord (float): Ending chord of the strip
         """
@@ -46,33 +46,33 @@ class Strip:
         self.y1: float = ending_point[1]
         self.z1: float = ending_point[2]
 
-        self.airfoil: AirfoilD = airfoil
+        self.airfoil: Airfoil = airfoil
         self.chord: list[float] = [starting_chord, ending_chord]
 
     def return_symmetric(
         self,
-    ) -> tuple[list[float], list[float], AirfoilD, float, float]:
+    ) -> tuple[list[float], list[float], Airfoil, float, float]:
         """
         Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
         It also adds a small gap if the strip located along the x axis.
 
         Returns:
-            tuple[list[float], list[float], AirfoilD, float, float]: Symmetric Strip initializer
+            tuple[list[float], list[float], Airfoil, float, float]: Symmetric Strip initializer
         """
         start_point: list[float] = [self.x1, -self.y1, self.z1]
         if self.y0 == 0:
             end_point: list[float] = [self.x0, 0.01 * self.y1, self.z0]
         else:
             end_point = [self.x0, -self.y0, self.z0]
-        airf: AirfoilD = self.airfoil
+        airf: Airfoil = self.airfoil
         return start_point, end_point, airf, self.chord[1], self.chord[0]
 
-    def set_airfoil(self, airfoil: AirfoilD) -> None:
+    def set_airfoil(self, airfoil: Airfoil) -> None:
         """
-        Used to set or change the airfoil.
+        Used to set or change the Airfoil.
 
         Args:
-            airfoil (AirfoilD): AirfoilD Class Object.
+            airfoil (Airfoil): Airfoil Class Object.
         """
         self.airfoil = airfoil
 
@@ -110,7 +110,7 @@ class Strip:
         n_points_span: int = 10,
     ) -> ndarray[Any, dtype[floating[Any]]]:
         """Interpolate between start and end strips and return the section at the given index.
-        
+
         Args:
             idx: index of interpolation
             n_points: number of points to interpolate in the span direction

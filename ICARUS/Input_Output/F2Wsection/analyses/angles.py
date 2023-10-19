@@ -11,7 +11,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from tqdm.auto import tqdm
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output.F2Wsection.analyses.monitor_progress import parallel_monitor
 from ICARUS.Input_Output.F2Wsection.analyses.monitor_progress import serial_monitor
@@ -22,7 +22,7 @@ from ICARUS.Input_Output.F2Wsection.utils import separate_angles
 
 def f2w_single_reynolds(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: float,
     mach: float,
     all_angles: list[float] | ndarray[Any, dtype[floating[Any]]],
@@ -63,7 +63,7 @@ def f2w_single_reynolds(
 
 def run_single_reynolds(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: float,
     mach: float,
     all_angles: list[float],
@@ -140,7 +140,7 @@ def run_single_reynolds(
 
 def run_multiple_reynolds_parallel(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
     angles: list[float],
@@ -189,7 +189,7 @@ def run_multiple_reynolds_parallel(
 
 def run_multiple_reynolds_sequentially(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
     angles: list[float],
@@ -201,7 +201,7 @@ def run_multiple_reynolds_sequentially(
 
 def process_f2w_run(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float] | float,
 ) -> dict[str, DataFrame]:
     polars: dict[str, DataFrame] = {}
@@ -218,7 +218,7 @@ def process_f2w_run(
         )
 
     for reyn in reynolds_list:
-        reynolds_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace('+', '')
+        reynolds_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
 
         CASEDIR: str = os.path.join(
             db.foilsDB.DATADIR,

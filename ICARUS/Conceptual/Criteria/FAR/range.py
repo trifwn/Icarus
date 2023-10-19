@@ -2,12 +2,13 @@ import numpy as np
 
 # RANGE
 
+
 def range_criterion(
     range: float,
     mach: float,
     l_over_d: float,
     sfc: float,
-    ):
+) -> float:
     """
     Returns the Fuel fraction for a given range, mach, l_d_dmin, sfc and altitude
 
@@ -21,7 +22,7 @@ def range_criterion(
     Returns:
         _type_: Fuel fraction
     """
-    a = 577 # speed of sound
-    B = a * mach * l_over_d / sfc # Breguet range
-    wf_over_wg = 1 - 1 / np.exp(range / B) # fuel fraction (wf/wg)
+    a = 577  # speed of sound
+    B: float = a * mach * l_over_d / sfc  # Breguet range
+    wf_over_wg: float = 1 - 1 / np.exp(range / B)  # fuel fraction (wf/wg)
     return wf_over_wg

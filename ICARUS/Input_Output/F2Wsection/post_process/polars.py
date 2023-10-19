@@ -15,7 +15,7 @@ from pandas import DataFrame
 def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     """
     Make the polars from the forces and return a dataframe with them
-    
+
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
@@ -57,7 +57,7 @@ def make_polars_bash(
 ) -> ndarray[Any, dtype[floating[Any]]]:
     """
     Make the polars from the forces and return an np array with them
-    
+
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory

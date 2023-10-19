@@ -5,12 +5,12 @@ struct='/home/tryfonas/Applications/structAirfoilMesher/x64/Release/structAirfoi
 while getopts n:p:b: flag
 do
     case "${flag}" in
-        n) airfoilName=${OPTARG};;
+        n) AirfoilName=${OPTARG};;
     esac
 done
 
-$struct $airfoilName < struct.input > struct.out
-plot3dToFoam -noBlank  $airfoilName.p3d > plot3dToFoam.out
+$struct $AirfoilName < struct.input > struct.out
+plot3dToFoam -noBlank  $AirfoilName.p3d > plot3dToFoam.out
 autoPatch 45 > outPatch.out
 rm -rf 1/
 autoPatch -overwrite 45 > outPatch.out

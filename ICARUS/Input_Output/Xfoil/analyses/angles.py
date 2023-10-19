@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output.Xfoil.post_process.polars import save_multiple_reyn
@@ -17,7 +17,7 @@ def single_reynolds_run(
     AoAmin: float,
     AoAmax: float,
     AoAstep: float,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     solver_options: dict[str, Any] = {},
 ) -> FloatArray:
     xf = XFoil()
@@ -39,8 +39,8 @@ def single_reynolds_run(
 def single_reynolds_run_seq(
     Reyn: float,
     MACH: float,
-    angles: list[float],
-    airfoil: AirfoilD,
+    angles: list[float] | FloatArray,
+    airfoil: Airfoil,
     solver_options: dict[str, Any] = {},
 ) -> FloatArray:
     xf = XFoil()
@@ -81,7 +81,7 @@ def single_reynolds_star_run_seq(args: Any) -> FloatArray:
 
 def multiple_reynolds_serial(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
     min_aoa: float,
@@ -118,7 +118,7 @@ def multiple_reynolds_serial(
 
 def multiple_reynolds_parallel(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
     min_aoa: float,
@@ -155,7 +155,7 @@ def multiple_reynolds_parallel(
 
 def multiple_reynolds_parallel_seq(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
     angles: list[float],
@@ -190,7 +190,7 @@ def multiple_reynolds_parallel_seq(
 
 def multiple_reynolds_serial_seq(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
     angles: list[float],

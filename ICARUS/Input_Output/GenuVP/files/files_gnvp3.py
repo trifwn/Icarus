@@ -54,14 +54,14 @@ def dfile(params: GenuParameters) -> None:
     with open(fname, encoding="utf-8") as file:
         data: list[str] = file.readlines()
 
-    data[27] = f'{int(params.nBods)}           NBODT      number of bodies\n'
-    data[28] = f'{int(params.nBlades)}           NBLADE     number of blades\n'
-    data[35] = f'{int(params.maxiter)}         NTIMER     number of the last time step to be performed\n'
-    data[36] = f'{params.timestep}        DT         time step\n'
+    data[27] = f"{int(params.nBods)}           NBODT      number of bodies\n"
+    data[28] = f"{int(params.nBlades)}           NBLADE     number of blades\n"
+    data[35] = f"{int(params.maxiter)}         NTIMER     number of the last time step to be performed\n"
+    data[36] = f"{params.timestep}        DT         time step\n"
     data[55] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
-    data[59] = f'{ff2(params.u_freestream[0])}       UINF(1)    the velocity at infinity\n'
-    data[60] = f'{ff2(params.u_freestream[1])}       UINF(2)    .\n'
-    data[61] = f'{ff2(params.u_freestream[2])}       UINF(3)    .\n'
+    data[59] = f"{ff2(params.u_freestream[0])}       UINF(1)    the velocity at infinity\n"
+    data[60] = f"{ff2(params.u_freestream[1])}       UINF(2)    .\n"
+    data[61] = f"{ff2(params.u_freestream[2])}       UINF(3)    .\n"
 
     DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
     if DX < 0.005:
@@ -81,8 +81,8 @@ def dfile(params: GenuParameters) -> None:
     data[114] = f"100         ITERLOA    Write loads every ... time steps\n"
     data[115] = f"1           ITERCHW    Check the wake calculations every ... time steps\n"
 
-    data[119] = f'{params.rho}       AIRDEN     Fluid density\n'
-    data[120] = f'{params.visc}   VISCO      Kinematic viscosity\n'
+    data[119] = f"{params.rho}       AIRDEN     Fluid density\n"
+    data[120] = f"{params.visc}   VISCO      Kinematic viscosity\n"
     data[130] = "hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
 
     with open(fname, "w", encoding="utf-8") as file:
@@ -124,11 +124,11 @@ def geofile(
         data.append("Cl, Cd data / IYNVCR(.)=0 then Cl=1., Cd=0.\n")
         data.append("1           IYNVCR(1)\n")
         data.append(
-            f'{bod.cld_fname}      FLCLCD      file name wherefrom Cl, Cd are read\n',
+            f"{bod.cld_fname}      FLCLCD      file name wherefrom Cl, Cd are read\n",
         )
         data.append("               <blank>\n")
         data.append("Give the file name for the geometrical distributions\n")
-        data.append(f'{bod.bld_fname}\n')
+        data.append(f"{bod.bld_fname}\n")
     data.append("               <blank>\n")
     with open(fname, "w", encoding="utf-8") as file:
         file.writelines(data)
@@ -148,8 +148,8 @@ def geo_body_header(data: list[str], body: GenuSurface, NB: int) -> None:
     data.append("2           NLIFT\n")
     data.append("0           IYNELSTB   \n")
     data.append("1           NBAER2ELST \n")
-    data.append(f'{body.NNB}          NNBB\n')
-    data.append(f'{body.NCWB}          NCWB\n')
+    data.append(f"{body.NNB}          NNBB\n")
+    data.append(f"{body.NCWB}          NCWB\n")
     data.append("2           ISUBSCB\n")
     data.append("2\n")
     data.append("3           NLEVELSB\n")
@@ -218,7 +218,7 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
             polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
         except KeyError:
             try:
-                polars: dict[str, DataFrame] = foil_dat[f"NACA{bod.airfoil_name}"][solver]
+                polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
             except KeyError:
                 raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
@@ -238,7 +238,7 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
         data[6 + 2 * len(polars)] = "\n"
         data = data[: 6 + 2 * len(polars) + 1]
 
-        # GET ALL 2D AIRFOIL POLARS IN ONE TABLE
+        # GET ALL 2D airfoil POLARS IN ONE TABLE
         keys: list[str] = list(polars.keys())
         df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
         df.rename(
@@ -251,7 +251,7 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
             try:
                 df2 = df2.rename(
                     {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
-                    errors='raise',
+                    errors="raise",
                     axis="columns",
                 )
             except KeyError as e:
@@ -315,7 +315,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             data[3] = f'1          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n'
         else:
             # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
-            with open(f'{bod.name}.WG', "w") as file:
+            with open(f"{bod.name}.WG", "w") as file:
                 grid: ndarray[Any, dtype[floating[Any]]] = bod.Grid
                 for n_strip in grid:  # For each strip
                     file.write("\n")
@@ -325,14 +325,14 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             # Specify option 0 to read the file
             data[3] = f'0          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n'
         data[6] = "0          0          1\n"
-        data[9] = f'{bod.name}.FL   {bod.name}.DS   {bod.name}OUT.WG\n'
-        data[12] = f'{ff4(bod.x_0)} {ff4(bod.y_0)} {ff4(bod.z_0)}\n'
-        data[15] = f'{ff4(bod.pitch)} {ff4(bod.cone)} {ff4(bod.wngang)}\n'
+        data[9] = f"{bod.name}.FL   {bod.name}.DS   {bod.name}OUT.WG\n"
+        data[12] = f"{ff4(bod.x_0)} {ff4(bod.y_0)} {ff4(bod.z_0)}\n"
+        data[15] = f"{ff4(bod.pitch)} {ff4(bod.cone)} {ff4(bod.wngang)}\n"
         data[18] = "1                      0.         1.         \n"  # KSI
-        data[21] = f'1                      0.         {bod.y_end - bod.y_0}\n'
+        data[21] = f"1                      0.         {bod.y_end - bod.y_0}\n"
         data[
             24
-        ] = f'4                      {ff4(bod.Root_chord)} {ff4(-step)}     0.         0.         0.         0.\n'
+        ] = f"4                      {ff4(bod.Root_chord)} {ff4(-step)}     0.         0.         0.         0.\n"
         data[30] = f"4                      {ff4(0.)} {ff4( offset )}     0.         0.         0.         0.\n"
 
         with open(fname, "w") as file:
@@ -368,7 +368,7 @@ def make_input_files(
     # EMPTY BLD FILES
     # EMPTY CLD FILES
     for body in bodies:
-        shutil.copy("name.bld", f'{body.bld_fname}')
+        shutil.copy("name.bld", f"{body.bld_fname}")
         shutil.copy("name.cld", f"{body.cld_fname}")
     os.remove("name.bld")
     os.remove("name.cld")

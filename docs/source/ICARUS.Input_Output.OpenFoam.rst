@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   ICARUS.Input_Output.OpenFoam.analyses
    ICARUS.Input_Output.OpenFoam.post_process
 
 Submodules

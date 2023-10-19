@@ -41,7 +41,7 @@ class GenuParameters:
             dict[str, Any]: dict with all the parameters to define the simulation
         """
         nBodies: int = len(bodies_dicts)
-        nAirfoils: int = len(plane.airfoils)
+        num_airfoils: int = len(plane.airfoils)
         angle: float = angle_deg * np.pi / 180
         dens: float = environment.air_density
         visc: float = environment.air_dynamic_viscosity
@@ -54,7 +54,7 @@ class GenuParameters:
 
         self.name: str = plane.name
         self.nBods: int = nBodies
-        self.nBlades: int = nAirfoils
+        self.nBlades: int = num_airfoils
         self.CG: FloatArray = plane.CG
         self.maxiter: int = maxiter
         self.timestep: float = timestep

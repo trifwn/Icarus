@@ -35,7 +35,7 @@ def read_polars_2d(db: Database_2D, XFLRdir: str) -> None:
             name = foil
 
         if airf.startswith("NACA"):
-            name = 'NACA' + name
+            name = "NACA" + name
         if name not in db.data.keys():
             db.data[name] = {}
 
@@ -83,12 +83,12 @@ def read_polars_2d(db: Database_2D, XFLRdir: str) -> None:
                     if "XFOIL" not in db.data[name].keys():
                         db.data[name]["XFLR"] = {}
 
-                    reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
                     db.data[name]["XFLR"][reyn_str] = dat
-                    dat: DataFrame = pd.read_csv(
+                    dat = pd.read_csv(
                         file,
                         sep="  ",
                         header=None,
@@ -112,7 +112,7 @@ def read_polars_2d(db: Database_2D, XFLRdir: str) -> None:
                     if "XFOIL" not in db.data[name].keys():
                         db.data[name]["XFLR"] = {}
 
-                    reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )

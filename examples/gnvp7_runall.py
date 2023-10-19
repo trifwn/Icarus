@@ -12,19 +12,12 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
-from examples.Planes.e190_cruise import e190_cruise
-from examples.Planes.e190_takeoff import e190_takeoff_generator
-from examples.Planes.hermes import hermes
-from examples.Planes.hermes_wing_only import hermes_main_wing
-from examples.Planes.wing_variations import wing_var_chord_offset
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Enviroment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
-from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
@@ -37,43 +30,29 @@ def main() -> None:
     # # DB CONNECTION
     db = DB()
     db.load_data()
-    airfoils = db.foilsDB.airfoils
     foildb: Database_2D = db.foilsDB
     foildb.load_data()
-    read_polars_2d(foildb, XFLRDB)
+    
+    # from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
+    # read_polars_2d(foildb, XFLRDB)
 
-    # # Get Plane
+    # # Get Planes
     planes: list[Airplane] = []
 
-    # planes.append(wing_var_chord_offset(airfoils, "orthogonal_7", [0.159, 0.159], 0.0))
+    # from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
+    from examples.Planes.e190_cruise import e190_cruise
+    from examples.Planes.e190_takeoff import e190_takeoff_generator
+    embraer_to: Airplane = e190_takeoff_generator(name="e190_to_7")
+    embraer_cr: Airplane = e190_cruise(name="e190_cr_7")
+    
+    planes.append(embraer_to)
+    planes.append(embraer_cr)
 
-    # planes.append(
-    #     wing_var_chord_offset(airfoils, "orthSweep_7", [0.32, 0.32], 0.001),
-    # )
-
-    # planes.append(wing_var_chord_offset(airfoils, "taperSweep_7", [0.159, 0.072], 0.2))
-
-    # planes.append(wing_var_chord_offset(airfoils, "taper_7", [0.159, 0.072], 0.0))
-
-    # planes.append(hermes(airfoils=airfoils, name='hermes_7'))
-    # planes[0].CG = -np.array([0.032, 0., 0.001301])
     timestep: dict[str, float] = {
-        "orthogonal_7": 1e-3,
-        "orthSweep_7": 1e-3,
-        "taperSweep_7": 1e-3,
-        "taper_7": 1e-3,
-        "atlas_7": 1e-3,
-        "hermes_7": 1e-2,
         "e190_to_7": 100,
         "e190_cr_7": 100,
     }
     maxiter: dict[str, int] = {
-        "orthogonal_7": 100,
-        "orthSweep_7": 100,
-        "taperSweep_7": 400,
-        "taper_7": 400,
-        "atlas_7": 400,
-        "hermes_7": 20,
         "e190_to_7": 200,
         "e190_cr_7": 200,
     }
@@ -83,21 +62,16 @@ def main() -> None:
         "e190_cr_7": 232,
     }
 
-    ALTITUDE: dict[str, int] = {"e190_cruise_3": 12000, "e190_takeoff_3": 0}
+    ALTITUDE: dict[str, int] = {
+        "e190_cr_7": 12000,
+        "e190_to_7": 0
+    }
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, int] = {
-        "e190_cruise_3": 273 - 50,
-        "e190_takeoff_3": 273 + 15,
+        "e190_cr_7": 273 - 50,
+        "e190_to_7": 273 + 15,
     }
-
-    # embraer.name = "embraer_3"
-    embraer_to: Airplane = e190_takeoff_generator(name="e190_to_7")
-    embraer_cr: Airplane = e190_cruise(name="e190_cr_7")
-
-    # embraer.visualize()
-    planes.append(embraer_to)
-    planes.append(embraer_cr)
 
     for airplane in planes:
         print("--------------------------------------------------")
@@ -134,7 +108,7 @@ def main() -> None:
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
         options.db.value = db
-        options.solver2D.value = "Xfoil"
+        options.solver2D.value = "Xfoil" # One of "Foil2Wake", "Xfoil", "OpenFoam"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = UINF[airplane.name]
@@ -154,7 +128,8 @@ def main() -> None:
         airplane.save()
         if isinstance(polars, int):
             continue
-        continue
+
+        
         # # Dynamics
         # ### Define and Trim Plane
         try:

@@ -14,3 +14,7 @@ dt em.sig-param:last-of-type::after {
 dl.class > dt:first-of-type {
     display: block !important;
 }
+
+.wy-nav-top {
+    background-color: #003366; /* Change this to your desired color */
+}

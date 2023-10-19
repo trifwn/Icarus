@@ -1,26 +1,25 @@
 import time
 from typing import Any
 
+import jsonpickle
+import jsonpickle.ext.pandas as jsonpickle_pd
+import numpy as np
 from inquirer import Checkbox
 from inquirer import List
 from inquirer import Path
 from inquirer import prompt
 from inquirer import Text
-import numpy as np
 
-from ICARUS.Enviroment.definition import EARTH_ISA
-from ICARUS.Enviroment.definition import Environment
 from ICARUS.Core.struct import Struct
 from ICARUS.Database.db import DB
+from ICARUS.Enviroment.definition import EARTH_ISA
+from ICARUS.Enviroment.definition import Environment
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
 from ICARUS.Solvers.Airplane.lspt import get_lspt
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
-
-import jsonpickle
-import jsonpickle.ext.pandas as jsonpickle_pd
 
 jsonpickle_pd.register_handlers()
 
@@ -68,7 +67,7 @@ def get_airplane_file(load_from: str) -> Airplane:
                 with open(answers["airplane_file"], encoding="UTF-8") as f:
                     json_obj: str = f.read()
                     try:
-                        plane: Airplane = jsonpickle.decode(json_obj) # type: ignore
+                        plane: Airplane = jsonpickle.decode(json_obj)  # type: ignore
                         return plane
                     except Exception as error:
                         print(f"Error decoding Plane object! Got error {error}")
@@ -104,7 +103,7 @@ def get_airplane_db(db: DB) -> Airplane:
 
 
 def select_airplane_source(db: DB) -> Airplane:
-    airfoil_source_question: list[List] = [
+    airplane_source_question: list[List] = [
         List(
             "airplane_source",
             message="Where do you want to get the airplane from",
@@ -112,18 +111,18 @@ def select_airplane_source(db: DB) -> Airplane:
         ),
     ]
 
-    answer: dict[Any, Any] | None = prompt(airfoil_source_question)
+    answer: dict[Any, Any] | None = prompt(airplane_source_question)
     if answer is None:
         print("Exited by User")
         exit()
     if answer["airplane_source"] == "File":
-        return get_airplane_file(load_from = "json")
+        return get_airplane_file(load_from="json")
     elif answer["airplane_source"] == "Database":
         return get_airplane_db(db)
     elif answer["airplane_source"] == "Load from XFLR5":
-        return get_airplane_file(load_from = "xflr5")
+        return get_airplane_file(load_from="xflr5")
     elif answer["airplane_source"] == "Load from AVL":
-        return get_airplane_file(load_from = "avl")
+        return get_airplane_file(load_from="avl")
     else:
         print("Error")
         return select_airplane_source(db)
@@ -162,19 +161,22 @@ input_options = {
 }
 
 
-def get_option(option_name, question_type) -> dict[str, Any]:
+def get_option(
+    option_name: str,
+    question_type: str,
+) -> dict[str, Any]:
     if question_type.startswith("list_"):
         quest: Text = Text(
             f"{option_name}",
             message=f"{option_name} (Multiple Values Must be seperated with ','. You can also specify a range as a:b:c where a and b are the endpoints and c the step )",
         )
     else:
-        quest: Text = Text(
+        quest = Text(
             f"{option_name}",
             message=f"{option_name} = ",
         )
 
-    answer = prompt([quest])
+    answer: dict[str, Any] | None = prompt([quest])
     if answer is None:
         print("Exited by User")
         exit()
@@ -332,15 +334,15 @@ def get_2D_polars_solver(db: DB) -> str:
             )
             for solver in solvers
         ]
-        answer: dict[Any, Any] | None = prompt(solver_pref_quest)
+        answer = prompt(solver_pref_quest)
         if answer is None:
             print("Exited by User")
             exit()
 
         print("This is not fully implemented yet, so we will just use the first priority solver")
-        
+
         # rank solvers by priority
-        solver_ranking = {}
+        solver_ranking: dict[str, float] = {}
         for solver in solvers:
             solver_ranking[solver] = answer[solver]
         solver_ranking = dict(sorted(solver_ranking.items(), key=lambda item: item[1]))
@@ -352,10 +354,11 @@ def get_2D_polars_solver(db: DB) -> str:
         print("Error")
         return get_2D_polars_solver(db)
 
+
 def set_analysis_options(solver: Solver, db: DB, airfoil: Airplane) -> None:
     all_options: Struct = solver.get_analysis_options(verbose=True)
     options = Struct()
-    answers = {}
+    answers: dict[str, Any] = {}
     for option in all_options.keys():
         if option == "db":
             answers[option] = db
@@ -492,7 +495,7 @@ def airplane_cli(db: DB) -> None:
     #####################################  START Calculations #####################################
     for vehicle in airplanes:
         ariplane_stime: float = time.time()
-        print(f"\nRunning airfoil {vehicle.name}\n")
+        print(f"\nRunning Airplane {vehicle.name}\n")
 
         # GNVP3
         if calc_gnvp_3[vehicle.name]:
@@ -544,7 +547,7 @@ def airplane_cli(db: DB) -> None:
 
         airplane_etime: float = time.time()
         print(
-            f"Airfoil {vehicle} completed in {airplane_etime - ariplane_stime} seconds",
+            f"Airplane {vehicle} completed in {airplane_etime - ariplane_stime} seconds",
         )
     ##################################### END Calculations ########################################
 

@@ -12,6 +12,7 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
+from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
@@ -22,7 +23,7 @@ class Merged_Wing:
         self,
         name: str,
         wing_segments: list[Wing_Segment],
-        symmetries=None,
+        symmetries: list[bool] | None = None,
     ) -> None:
         """
         Initializes the Wing Object
@@ -34,14 +35,15 @@ class Merged_Wing:
         """
 
         # Create a grid of points to store all Wing Segments
+        self.name: str = name
         NM = 0
         self._wing_segments = wing_segments
         for segment in wing_segments:
             NM += segment.N * segment.M
 
-        self.grid: ndarray[Any, dtype[floating]] = np.empty((NM, 3))
-        self.grid_lower: ndarray[Any, dtype[floating]] = np.empty((NM, 3))
-        self.grid_upper: ndarray[Any, dtype[floating]] = np.empty((NM, 3))
+        self.grid: FloatArray = np.empty((NM, 3))
+        self.grid_lower: FloatArray = np.empty((NM, 3))
+        self.grid_upper: FloatArray = np.empty((NM, 3))
 
         NM = 0
         for segment in wing_segments:
@@ -57,7 +59,7 @@ class Merged_Wing:
             )
             NM += segment.M * segment.N
 
-    def plot_wing(self):
+    def plot_wing(self) -> None:
         "Plots the wing"
 
         fig: Figure = plt.figure()
@@ -78,12 +80,7 @@ class Merged_Wing:
             ax.plot_trisurf(X, Y, Z, color=c)
         fig.show()
 
-        # plot the wing segments
-        # for segment in [self._wing_segments[0], self._wing_segments[-1]]:
-
-        # plt.show()
-
-    def export_grid(self, filename: str):
+    def export_grid(self, filename: str) -> None:
         "Writes the grid to a file"
 
         with open(filename, 'w') as file:

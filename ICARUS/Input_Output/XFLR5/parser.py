@@ -4,7 +4,7 @@ import re
 import numpy as np
 from xmltodict import parse
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.db import DB
@@ -101,7 +101,7 @@ def parse_xfl_project(filename: str) -> Airplane:
         else:
             raise ValueError("Unknown wing name")
 
-        airfoil_prev: AirfoilD | None = None
+        airfoil_prev: Airfoil | None = None
         y_pos_prev: float = 0
         offset_prev: float = 0
         chord_prev: float = 0
@@ -140,24 +140,24 @@ def parse_xfl_project(filename: str) -> Airplane:
                     if foil_name + ".dat" in flap_files:
                         # load the airfoil from the flap folder
                         filename = os.path.join(XFLRDB, foil_name, foil_name + ".dat")
-                        airfoil: AirfoilD = AirfoilD.load_from_file(filename)
+                        airfoil: Airfoil = Airfoil.load_from_file(filename)
                         airfoil.name = f"{foil + 'fl'}"
                     else:
-                        raise FileNotFoundError(f"Couldnt Find Airfoil {foil_name} in XFLR5DB")
+                        raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in XFLR5DB")
                 else:
-                    raise FileNotFoundError(f"Couldnt Find Airfoil {foil_name} in XFLR5DB")
+                    raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in XFLR5DB")
 
             elif "naca" in text_part.lower():
                 if len(foil) == 4:
-                    airfoil: AirfoilD = AirfoilD.naca(foil)
+                    airfoil = Airfoil.naca(foil)
                     airfoil.name = foil
                 elif len(foil) == 5:
-                    airfoil = AirfoilD.naca(foil)
+                    airfoil = Airfoil.naca(foil)
                     airfoil.name = foil
                 else:
                     raise ValueError(f"Unknown NACA {foil}")
             else:
-                raise ValueError(f"Unknown Airfoil {foil}")
+                raise ValueError(f"Unknown airfoil {foil}")
 
             # twist: float = float(section["Twist"])  # ! TODO: IMPLEMENT TWIST
             y_pos: float = float(section["y_position"])

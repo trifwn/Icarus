@@ -6,13 +6,13 @@ from numpy import dtype
 from numpy import ndarray
 from pandas import Series
 
-import tests.wing_test as wing_test
-from tests.airplane_polars_test import airplane_polars
-from tests.gnvp3_run_test import gnvp3_run
-from tests.gnvp7_run_test import gnvp7_run
-from tests.lspt_run_test import lspt_run
-from tests.solver_geom_test import gnvp3_geometry
-from tests.solver_geom_test import gnvp7_geometry
+import testing.wing_test as wing_test
+from testing.airplane_polars_test import airplane_polars
+from testing.gnvp3_run_test import gnvp3_run
+from testing.gnvp7_run_test import gnvp7_run
+from testing.lspt_run_test import lspt_run
+from testing.solver_geom_test import gnvp3_geometry
+from testing.solver_geom_test import gnvp7_geometry
 
 
 class BaseAirplaneTests(unittest.TestCase):

@@ -7,7 +7,7 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.Units import calc_mach
 from ICARUS.Core.Units import calc_reynolds
@@ -36,8 +36,8 @@ def main() -> None:
     print(f"\tXfoil: {calcXFoil}")
     print(f"\tOpenfoam: {calcOpenFoam}")
 
-    # AIRFOIL SETUP
-    airfoils: list[AirfoilD] = []
+    # airfoil SETUP
+    airfoils: list[Airfoil] = []
 
     # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
     airfoil_names: list[str] = ["0008", "4415", "0012"]
@@ -49,16 +49,16 @@ def main() -> None:
         except KeyError:
             print(f"Airfoil {airfoil_name} not found in database")
             print("Trying to Generate it")
-            airfoils.append(AirfoilD.naca(naca=airfoil_name, n_points=200))
+            airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=200))
 
     # # Load From File
     # for airfoil_name in airfoil_names:
-    #     airfoils.append(AirfoilD.naca(naca=airfoil_name, n_points=200))
+    #     airfoils.append(airfoil.naca(naca=airfoil_name, n_points=200))
 
-    # naca64418: AirfoilD = AirfoilD.load_from_file(os.path.join(XFLRDB, "NACA64418", 'naca64418.dat'))
+    # naca64418: Airfoil = Airfoil.load_from_file(os.path.join(XFLRDB, "NACA64418", 'naca64418.dat'))
     # airfoils.append(naca64418)
 
-    # naca64418_fl: AirfoilD = naca64418.flap_airfoil(0.75, 1.3, 35)
+    # naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35)
     # airfoils.append(naca64418_fl)
 
     # PARAMETERS FOR ESTIMATION
@@ -104,8 +104,8 @@ def main() -> None:
         print(airfoil.name)
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
-        # # Get Airfoil
-        # airf.plotAirfoil()
+        # # Get airfoil
+        # airf.plotairfoil()
 
         # Foil2Wake
         if calcF2W:

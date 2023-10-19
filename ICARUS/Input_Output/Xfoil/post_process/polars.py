@@ -3,14 +3,14 @@ import os
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.Database_2D import Database_2D
 
 
 def save_multiple_reyn(
     db: Database_2D,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     polars: list[dict[str, FloatArray]],
     reynolds: list[float],
 ) -> None:

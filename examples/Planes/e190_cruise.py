@@ -23,7 +23,6 @@ def e190_cruise(name: str) -> Airplane:
     Consisting of the main wing, elevator rudder and masses as constructed.
 
     Args:
-        airfoils (Struct): Struct containing the airfoils
         name (str): Name of the plane
 
     Returns:
@@ -35,10 +34,10 @@ def e190_cruise(name: str) -> Airplane:
     read_polars_2d(foildb, XFLRDB)
     airfoils: Struct = foildb.set_available_airfoils()
 
-    from ICARUS.Airfoils.airfoilD import AirfoilD
+    from ICARUS.Airfoils.airfoil import Airfoil
 
-    naca64418: AirfoilD = db.foilsDB.set_available_airfoils()["NACA64418"]
-    naca64418_fl: AirfoilD = naca64418.flap_airfoil(0.75, 1.3, 35, plotting=False)
+    naca64418: Airfoil = db.foilsDB.set_available_airfoils()["NACA64418"]
+    naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35, plotting=False)
 
     origin: ndarray[Any, dtype[floating[Any]]] = np.array([0.0, 0.0, 0.0], dtype=float)
 

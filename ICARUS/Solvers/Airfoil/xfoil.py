@@ -1,6 +1,6 @@
 from typing import Any
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.db import DB
 from ICARUS.Workers.analysis import Analysis
@@ -17,7 +17,7 @@ def get_xfoil(db: DB) -> Solver:
         ),
         "airfoil": (
             "Airfoil to run",
-            AirfoilD,
+            Airfoil,
         ),
         "reynolds": (
             "List of Reynolds numbers to run",
@@ -91,7 +91,7 @@ def get_xfoil(db: DB) -> Solver:
         ),
         "airfoil": (
             "Airfoil to run",
-            AirfoilD,
+            Airfoil,
         ),
         "reynolds": (
             "List of Reynolds numbers to run",

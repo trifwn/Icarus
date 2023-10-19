@@ -5,7 +5,7 @@ from pandas import Series
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Visualization import colors
+from ICARUS.Visualization import colors_
 from ICARUS.Visualization import markers
 
 
@@ -50,7 +50,6 @@ def plot_sensitivity(
         return
     i = -1
     j = -1
-    toomuchData = False
 
     fx_trim: float = trim[f"TFORC{solvers[0]}(1)"].astype(float).values
     fy_trim: float = trim[f"TFORC{solvers[0]}(2)"].astype(float).values
@@ -136,26 +135,21 @@ def plot_sensitivity(
                     mz = mz - mz_trim
 
                 j += 1
-                if i > len(colors) - 1:
-                    toomuchData = True
-                    break
-                # c = colors[i]
+                c = colors_(i / len(vars2s))
                 m = markers[j]
                 # style = f"{c}{m}--"
 
                 label = f"{plane.name} - {solver} - {var}"
-                axs[0].scatter(epsilon, fx, marker=m, label=label, linewidth=3.0)
-                axs[1].scatter(epsilon, fy, marker=m, label=label, linewidth=3.0)
-                axs[2].scatter(epsilon, fz, marker=m, label=label, linewidth=3.0)
+                axs[0].scatter(epsilon, fx, color=c, marker=m, label=label, linewidth=3.0)
+                axs[1].scatter(epsilon, fy, color=c, marker=m, label=label, linewidth=3.0)
+                axs[2].scatter(epsilon, fz, color=c, marker=m, label=label, linewidth=3.0)
 
-                axs[3].scatter(epsilon, mx, marker=m, label=label, linewidth=3.0)
-                axs[4].scatter(epsilon, my, marker=m, label=label, linewidth=3.0)
-                axs[5].scatter(epsilon, mz, marker=m, label=label, linewidth=3.0)
+                axs[3].scatter(epsilon, mx, color=c, marker=m, label=label, linewidth=3.0)
+                axs[4].scatter(epsilon, my, color=c, marker=m, label=label, linewidth=3.0)
+                axs[5].scatter(epsilon, mz, color=c, marker=m, label=label, linewidth=3.0)
 
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {plane.name},{solver},{var}")
-    if toomuchData:
-        print(f"Too much data to plot, only plotting {len(colors)} cases")
 
     fig.tight_layout()
     for ax in axs:

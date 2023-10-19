@@ -30,7 +30,7 @@ def input_file(maxiter: float, timestep: float) -> None:
     """Create input file for gnvp7"""
 
     fname: str = "input"
-    with open(fname, "w", encoding='utf-8') as f:
+    with open(fname, "w", encoding="utf-8") as f:
         f.write(f"{maxiter}             !NTIMEM\n")
         f.write("1               !IDT\n")
         f.write(f"{timestep}            !OMEGA_DT\n")
@@ -244,7 +244,7 @@ def geofile(
         NB: int = bod.NB + 1
         NNB: int = bod.NNB
         NCWB: int = bod.NCWB
-        type_bod: int = 2 if bod.type == 'thin' else 3
+        type_bod: int = 2 if bod.type == "thin" else 3
         type_lift: int = 1 if bod.lifting else 0
 
         f_io.write(f"Body Number{tabs(1)}NB = {NB}\n")
@@ -298,8 +298,8 @@ def geofile(
         f_io.write(f"{ff4(0)} {ff4(0)} {ff4(0)}{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n")
         # f_io.write(f"{u_y/u_inf} {u_z/u_inf} {u_x/u_inf}{tabs(2)}ROTOR AXIS\n")
         f_io.write(f"1 0 0{tabs(2)}ROTOR AXIS\n")
-        f_io.write('\n')
-        f_io.write('------<end of body data>-----------------------------------\n')
+        f_io.write("\n")
+        f_io.write("------<end of body data>-----------------------------------\n")
     fname: str = f"{params.name}.geo"
     contents: str = f_io.getvalue().expandtabs(4)
 
@@ -315,7 +315,7 @@ def grid_file(body_dict: GenuSurface) -> None:
         body_dict (GenuSurface): Dictionary Containing the information about
             the body in GenuSurface format.
     """
-    with open(f'{body_dict.grid_fname}', "w") as file:
+    with open(f"{body_dict.grid_fname}", "w") as file:
         grid: ndarray[Any, dtype[floating[Any]]] = body_dict.Grid
         file.write("\n")
         for n_strip in grid:  # For each strip
@@ -499,7 +499,7 @@ def cld_files(
 
         except KeyError:
             try:
-                polars: dict[str, DataFrame] = foil_dat[f"NACA{bod.airfoil_name}"][solver]
+                polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
             except KeyError:
                 raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
@@ -519,7 +519,7 @@ def cld_files(
         f_io.write(f"2{tabs(1)}! stations\n")
         f_io.write("\n")
 
-        # GET ALL 2D AIRFOIL POLARS IN ONE TABLE
+        # GET ALL 2D Airfoil POLARS IN ONE TABLE
         polar_obj = Polars(polars)
         df: DataFrame = polar_obj.df
         # Get Angles
@@ -551,7 +551,7 @@ def cld_files(
         f_io.write("\n")
         # Write to File
         contents: str = f_io.getvalue().expandtabs(4)
-        with open(fname, "w", encoding='utf-8') as file:
+        with open(fname, "w", encoding="utf-8") as file:
             file.write(contents)
 
 
@@ -572,7 +572,7 @@ def body_connections(NBs: int, name: str) -> None:
         f_io.write(f"1{tabs(4)}! Number of bodies\n")
         f_io.write(f"{i+1} {1} {1}{tabs(3)}! Index of connected Body\n")
         f_io.write(f"<end of connection>\n")
-    with open(f"{name}.bcon", "w", encoding='utf-8') as file:
+    with open(f"{name}.bcon", "w", encoding="utf-8") as file:
         file.write(f_io.getvalue().expandtabs(4))
 
 
@@ -587,7 +587,7 @@ def wake_connections(name: str) -> None:
     f_io = StringIO()
     f_io.write(f"0{tabs(4)}!Number of Wake Connections\n")
     f_io.write(f"\n")
-    with open(f"{name}.wcon", "w", encoding='utf-8') as file:
+    with open(f"{name}.wcon", "w", encoding="utf-8") as file:
         file.write(f_io.getvalue().expandtabs(4))
 
 
@@ -613,7 +613,7 @@ def angles_inp(
 
     f_io.write(f"\n")
 
-    with open("angles.inp", "w", encoding='utf-8') as file:
+    with open("angles.inp", "w", encoding="utf-8") as file:
         file.write(f_io.getvalue().expandtabs(4))
 
 

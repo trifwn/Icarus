@@ -20,10 +20,10 @@ import inquirer
 from inquirer import List
 from pyfiglet import Figlet
 
-from ICARUS_CLI.airfoil_cli import airfoil_cli
-from ICARUS_CLI.airplane_cli import airplane_cli
 from ICARUS import __version__
 from ICARUS.Database.db import DB
+from cli.airfoil_cli import airfoil_cli
+from cli.airplane_cli import airplane_cli
 
 # from runall_3d import run_3d
 
@@ -55,8 +55,8 @@ if __name__ == "__main__":
     )
     args: Namespace = parser.parse_args()
 
-    f = Figlet(font='slant')
-    print(f.renderText('ICARUS Aerodynamics'))
+    f = Figlet(font="slant")
+    print(f.renderText("ICARUS Aerodynamics"))
 
     # run airfoil analysis
     if args.airfoil:
@@ -84,19 +84,19 @@ if __name__ == "__main__":
 
         questions: list[List] = [
             inquirer.List(
-                'Mode',
+                "Mode",
                 message="Choose modes: (Check All That Apply with space and then press enter)",
-                choices=['2D', '3D', 'Visualization'],
+                choices=["2D", "3D", "Visualization"],
             ),
         ]
         answers: dict[str, Any] | None = inquirer.prompt(questions)
         if answers is not None:
-            mode = answers['Mode']
-            if mode == '2D':
+            mode = answers["Mode"]
+            if mode == "2D":
                 airfoil_cli(db)
-            elif mode == '3D':
+            elif mode == "3D":
                 airplane_cli(db)
-            elif mode == 'Visualization':
+            elif mode == "Visualization":
                 # visualize(cli= True)
                 print("Visualization")
         else:

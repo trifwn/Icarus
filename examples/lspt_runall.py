@@ -1,4 +1,3 @@
-
 """
 Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
@@ -13,9 +12,8 @@ import numpy as np
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
-
-from Planes.e190_takeoff import e190_takeoff_generator
 from Planes.e190_cruise import e190_cruise
+from Planes.e190_takeoff import e190_takeoff_generator
 from Planes.hermes import hermes
 from Planes.wing_variations import wing_var_chord_offset
 
@@ -50,19 +48,19 @@ def main() -> None:
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, Any] = {}
 
-    for flap_hinge in np.arange(start= 0.7, stop = 0.8, step = 0.05):
-        for flap_angle in [30]:#np.arange(start=20, stop = 45, step = 5):
-            for chord_extension in [1.3]:#np.arange(start = 1.2, stop = 1.45, step = 0.05):
+    for flap_hinge in np.arange(start=0.7, stop=0.8, step=0.05):
+        for flap_angle in [30]:  # np.arange(start=20, stop = 45, step = 5):
+            for chord_extension in [1.3]:  # np.arange(start = 1.2, stop = 1.45, step = 0.05):
                 # print(f"{flap_angle=}, {flap_hinge=}")
                 UINF[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"] = 20
                 ALTITUDE[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"] = 0
-                TEMPERATURE[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"]= 288 
+                TEMPERATURE[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"] = 288
 
                 embraer_to: Airplane = e190_takeoff_generator(
-                    name=f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}", 
+                    name=f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}",
                     flap_hinge=flap_hinge,
                     flap_angle=flap_angle,
-                    chord_extension=chord_extension
+                    chord_extension=chord_extension,
                 )
                 planes.append(embraer_to)
 

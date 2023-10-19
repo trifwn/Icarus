@@ -5,17 +5,19 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
 
    ICARUS.Aerodynamics
    ICARUS.Airfoils
    ICARUS.Conceptual
+   ICARUS.Control
    ICARUS.Core
    ICARUS.Database
    ICARUS.Enviroment
    ICARUS.Flight_Dynamics
    ICARUS.Input_Output
    ICARUS.Mission
+   ICARUS.Solvers
    ICARUS.Vehicle
    ICARUS.Visualization
    ICARUS.Workers

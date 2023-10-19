@@ -1,6 +1,6 @@
 from typing import Any
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output.F2Wsection.analyses.angles import process_f2w_run
 from ICARUS.Input_Output.F2Wsection.analyses.angles import run_multiple_reynolds_parallel
@@ -20,7 +20,7 @@ def get_f2w_section(db: DB) -> Solver:
         ),
         "airfoil": (
             "Airfoil to run",
-            AirfoilD,
+            Airfoil,
         ),
         "reynolds": (
             "List of Reynolds numbers to run",
@@ -122,7 +122,7 @@ def get_f2w_section(db: DB) -> Solver:
         ),
         "airfoil": (
             "Airfoil to run",
-            AirfoilD,
+            Airfoil,
         ),
         "reynolds": (
             "Reynolds number to run",

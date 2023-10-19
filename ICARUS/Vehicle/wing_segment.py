@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import floating
 
 from .strip import Strip
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 
 
@@ -20,7 +20,7 @@ class Wing_Segment:
     def __init__(
         self,
         name: str,
-        airfoil: AirfoilD,
+        airfoil: Airfoil,
         origin: FloatArray | list[float],
         orientation: FloatArray,
         is_symmetric: bool,
@@ -45,7 +45,7 @@ class Wing_Segment:
         self.M: int = M
 
         self.name: str = name
-        self.airfoil: AirfoilD = airfoil
+        self.airfoil: Airfoil = airfoil
         self.origin: FloatArray = origin
         self.orientation: FloatArray = orientation
         self.is_symmetric: bool = is_symmetric
@@ -168,12 +168,17 @@ class Wing_Segment:
         """Return Trailing Edge of Wing"""
         return self.grid_upper[-1, :, :] + self.origin
 
-    def real_chord_fun(self, Ni, ch1, ch2) -> FloatArray:
-        const = np.max(self.airfoil._x_lower)
+    def real_chord_fun(
+        self,
+        Ni: int,
+        ch1: float,
+        ch2: float,
+    ) -> FloatArray:
+        const = float(np.max(self.airfoil._x_lower))
         return self.chord_fun(Ni, const * ch1, const * ch2)
 
-    def change_airfoil(self, airfoil: AirfoilD) -> None:
-        """Change Airfoil of Wing"""
+    def change_airfoil(self, airfoil: Airfoil) -> None:
+        """Change airfoil of Wing"""
         self.airfoil = airfoil
         self.create_grid()
         self.create_strips()
@@ -231,7 +236,7 @@ class Wing_Segment:
             raise ValueError("Cannot Split Body it is not symmetric")
 
     def create_strips(self) -> None:
-        """Create Strips given the Grid and Airfoil"""
+        """Create Strips given the Grid and airfoil"""
         strips: list[Strip] = []
         symmetric_strips: list[Strip] = []
         for i in np.arange(0, self.N - 1):
@@ -462,7 +467,7 @@ class Wing_Segment:
             _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
             _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
             self.S += 2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
-        self.S = self.S / np.max(self.airfoil._x_lower)
+        self.S = float(self.S / np.max(self.airfoil._x_lower))
 
         g_up = self.grid_upper
         g_low = self.grid_lower

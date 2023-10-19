@@ -3,7 +3,7 @@ import os
 
 def get_coefficients(angle: float) -> str | None:
     """Function to get coefficients from OpenFoam results for a given angle.
-    
+
     Args:
         angle (float): Angle for which coefficients are required
     Returns:

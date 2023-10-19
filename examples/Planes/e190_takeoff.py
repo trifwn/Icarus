@@ -19,16 +19,16 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 def e190_takeoff_generator(
     name: str,
-    flap_hinge=0.75,
-    chord_extension=1.3,
-    flap_angle=35,
+    flap_hinge: float = 0.75,
+    chord_extension: float = 1.3,
+    flap_angle: float = 35,
 ) -> Airplane:
     """
     Function to get the embraer e190 plane.
     Consisting of the main wing, elevator rudder and masses as constructed.
 
     Args:
-        airfoils (Struct): Struct containing the airfoils
+        Airfoils (Struct): Struct containing the airfoils
         name (str): Name of the plane
 
     Returns:
@@ -40,10 +40,10 @@ def e190_takeoff_generator(
     read_polars_2d(foildb, XFLRDB)
     airfoils: Struct = foildb.set_available_airfoils()
 
-    from ICARUS.Airfoils.airfoilD import AirfoilD
+    from ICARUS.Airfoils.airfoil import Airfoil
 
-    naca64418: AirfoilD = db.foilsDB.set_available_airfoils()["NACA64418"]
-    naca64418_fl: AirfoilD = naca64418.flap_airfoil(
+    naca64418: Airfoil = db.foilsDB.set_available_airfoils()["NACA64418"]
+    naca64418_fl: Airfoil = naca64418.flap_airfoil(
         flap_hinge=flap_hinge,
         chord_extension=chord_extension,
         flap_angle=flap_angle,

@@ -1,14 +1,16 @@
 import os
-import pandas as pd
 from typing import Any
+from typing import Callable
 
+import pandas as pd
 from regex import D
-from ICARUS.Core.types import FloatArray
-from ICARUS.Enviroment.definition import Environment
-from ICARUS.Aerodynamics.Potential.core.wing_lspt import Wing_LSPT
-from ICARUS.Aerodynamics.Potential.core.vorticity import symm_wing_panels, voring
 
+from ICARUS.Aerodynamics.Potential.vorticity import symm_wing_panels
+from ICARUS.Aerodynamics.Potential.vorticity import voring
+from ICARUS.Aerodynamics.Potential.wing_lspt import Wing_LSPT
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.db import DB
+from ICARUS.Enviroment.definition import Environment
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -41,7 +43,7 @@ def run_lstp_angles(
     )
 
     if wing.is_symmetric:
-        solve_fun = symm_wing_panels
+        solve_fun: Callable[..., tuple[FloatArray, FloatArray]] = symm_wing_panels
     else:
         solve_fun = voring
 

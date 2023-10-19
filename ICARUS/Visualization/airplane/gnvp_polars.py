@@ -1,13 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.Core.struct import Struct
-from ICARUS.Visualization import colors
+from ICARUS.Visualization import colors_
 from ICARUS.Visualization import markers
 
 
@@ -15,7 +14,7 @@ def plot_airplane_polars(
     data: dict[str, DataFrame] | Struct,
     airplanes: list[str],
     solvers: list[str] = ["All"],
-    plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
 ) -> tuple[ndarray, Figure]:
@@ -25,7 +24,12 @@ def plot_airplane_polars(
         data (dict[str, DataFrame]): Dictionary of airplane polars
         airplanes (list[str]): List of airplanes to plot
         solvers (list[str], optional): List of Solvers to plot. Defaults to ["All"].
+        plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
+        title (str, optional): Figure Title. Defaults to "Aero Coefficients".
+
+    Returns:
+        tuple[ndarray, Figure]: Array of Axes and Figure
     """
     number_of_plots = len(plots) + 1
 
@@ -80,7 +84,7 @@ def plot_airplane_polars(
 
                         x: Series = polar[f"{key0}"]
                         y: Series = polar[f"{key1}"]
-                        c = colors(j / len(solvers))
+                        c = colors_(j / len(solvers))
                         m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:

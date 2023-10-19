@@ -11,7 +11,6 @@ from ICARUS.Workers.solver import Solver
 
 
 def lspt_run() -> None:
-
     print("Testing GNVP Running...")
 
     # Get Plane, DB
@@ -27,7 +26,6 @@ def lspt_run() -> None:
 
     # Set Analysis
     analysis: str = lspt.available_analyses_names()[0]
-
 
     lspt.set_analyses(analysis)
 
@@ -64,4 +62,3 @@ def lspt_run() -> None:
 
     _ = lspt.get_results()
     airplane.save()
-

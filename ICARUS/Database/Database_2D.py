@@ -14,8 +14,8 @@ from pandas import DataFrame
 from . import APPHOME
 from . import DB2D
 from . import XFLRDB
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Airfoils.airfoil_polars import Polars
-from ICARUS.Airfoils.airfoilD import AirfoilD
 from ICARUS.Core.struct import Struct
 
 
@@ -124,7 +124,7 @@ class Database_2D:
                     )
                 # Check if the dataframe read is nan or empty
                 try:
-                    if current_reynolds_data[name]['CL'].isnull().values.all() or current_reynolds_data[name].empty:
+                    if current_reynolds_data[name]["CL"].isnull().values.all() or current_reynolds_data[name].empty:
                         del current_reynolds_data[name]
                 except:
                     del current_reynolds_data[name]
@@ -135,24 +135,24 @@ class Database_2D:
         airfoils = Struct()
         for airf in list(self.data.keys()):
             try:
-                airfoils[airf] = AirfoilD.naca(airf[4:], n_points=200)
+                airfoils[airf] = Airfoil.naca(airf[4:], n_points=200)
                 if verbose:
-                    print(f"Loaded Airfoil {airf} from NACA Digits")
+                    print(f"Loaded airfoil {airf} from NACA Digits")
             except:
-                # try to load the airfoil from the DB2D
+                # try to load the Airfoil from the DB2D
                 try:
                     filename = os.path.join(DB2D, airf, airf.replace("NACA", "naca"))
-                    airfoils[airf] = AirfoilD.load_from_file(filename)
+                    airfoils[airf] = Airfoil.load_from_file(filename)
                     if verbose:
-                        print(f"Loaded Airfoil {airf} from DB2D")
+                        print(f"Loaded airfoil {airf} from DB2D")
                 except:
                     # Try to load the airfoil from the XFLR5DB
-                    #! TODO DEPRECATE THIS IT IS STUPID AIRFOILS SHOULD BE MORE ROBUST
+                    #! TODO DEPRECATE THIS IT IS STUPID airfoilS SHOULD BE MORE ROBUST
 
                     # list the folders in the XFLR5DB
                     folders: list[str] = os.walk(XFLRDB).__next__()[1]
                     flag = False
-                    name = ""
+                    name: str = ""
                     for folder in folders:
                         pattern = r"\([^)]*\)|[^0-9a-zA-Z]+"
                         cleaned_string: str = re.sub(pattern, " ", folder)
@@ -160,7 +160,7 @@ class Database_2D:
                         foil: str = "".join(filter(str.isdigit, cleaned_string))
                         text_part: str = "".join(filter(str.isalpha, cleaned_string))
                         if text_part.find("flap") != -1:
-                            name: str = f"{foil + 'fl'}"
+                            name = f"{foil + 'fl'}"
                         else:
                             name = foil
 
@@ -178,11 +178,11 @@ class Database_2D:
                         if name + ".dat" in flap_files:
                             # load the airfoil from the flap folder
                             filename = os.path.join(XFLRDB, name, name + ".dat")
-                            airfoils[airf] = AirfoilD.load_from_file(filename)
+                            airfoils[airf] = Airfoil.load_from_file(filename)
                             if verbose:
-                                print(f"Loaded Airfoil {airf} from XFLR5DB")
+                                print(f"Loaded airfoil {airf} from XFLR5DB")
                     else:
-                        raise FileNotFoundError(f"Couldnt Find Airfoil {airf} in DB2D or XFLR5DB")
+                        raise FileNotFoundError(f"Couldnt Find airfoil {airf} in DB2D or XFLR5DB")
         return airfoils
 
     def get_airfoil_solvers(self, airfoil_name: str) -> list[str] | None:
@@ -190,7 +190,7 @@ class Database_2D:
         Get the solvers for a given airfoil.
 
         Args:
-            airfoil_name (str): Airfoil Name
+            airfoil_name (str): airfoil Name
 
         Returns:
             list[str] | None: The solver names or None if the airfoil doesn't exist.
@@ -206,7 +206,7 @@ class Database_2D:
         Returns the reynolds numbers computed for a given airfoil.
 
         Args:
-            airfoil_name (str): Airfoil Name
+            airfoil_name (str): airfoil Name
 
         Returns:
             list[str] | None: List of reynolds numbers computed or None if the airfoil doesn't exist.
@@ -223,7 +223,7 @@ class Database_2D:
 
     def generate_airfoil_directories(
         self,
-        airfoil: AirfoilD,
+        airfoil: Airfoil,
         reynolds: float,
         angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     ) -> tuple[str, str, str, list[str]]:
@@ -366,7 +366,7 @@ class Database_2D:
 
         Args:
             reynolds (float): Reynolds number
-            airfoil_name (str): Airfoil Name
+            airfoil_name (str): airfoil Name
             aoa (float): Angle of Attack
             solver (str): Solver Name
 

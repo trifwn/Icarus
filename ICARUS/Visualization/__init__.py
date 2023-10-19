@@ -7,7 +7,7 @@ cdict = {
     'blue': ((0.0, 0.72, 0.0), (0.5, 0.0, 0.0), (1.0, 0.11, 1.0)),
 }
 
-colors = colors.LinearSegmentedColormap('custom', cdict)
+colors_ = colors.LinearSegmentedColormap('custom', cdict)
 
 markers_str: list[str] = ["x", "o", ".", "*"]
 markers = [MarkerStyle(marker) for marker in markers_str]

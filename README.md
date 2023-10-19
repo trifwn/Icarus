@@ -104,7 +104,7 @@ The end goal of the project is to come packaged with all 3d party software. Righ
 - Add the control parameters
 - Make Mission Class and Module the whole flight envelope
 - Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
-- Integrate AVL 
+- Integrate AVL
 - Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
 - Have the grid/meshing run on julia
 - Add GUI

@@ -5,7 +5,7 @@ from matplotlib.markers import MarkerStyle
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Visualization import colors
+from ICARUS.Visualization import colors_
 from ICARUS.Visualization import markers
 
 
@@ -70,7 +70,6 @@ def plot_convergence(
     cases = data[plane]
     i = -1
     j = -1
-    toomuchData = False
     for ang in cases.keys():
         num = float("".join(c for c in ang if (c.isdigit() or c == ".")))
         if ang.startswith("m"):
@@ -108,26 +107,22 @@ def plot_convergence(
                     mz = np.abs(mz.iloc[1:].values - mz.iloc[:-1].values)
 
                 j += 1
-                if i > len(colors) - 1:
-                    toomuchData = True
-                    break
-                c: str = colors[i]
+                c = colors_(1 / len(solvers))
                 m: MarkerStyle = markers[j].get_marker()
-                style: str = f"{c}{m}--"
 
                 label: str = f"{plane} - {solver} - {ang_num}"
-                axs[0, 0].plot(it, fx, style, label=label, markersize=2.0, linewidth=1)
-                axs[0, 1].plot(it, fy, style, label=label, markersize=2.0, linewidth=1)
-                axs[0, 2].plot(it, fz, style, label=label, markersize=2.0, linewidth=1)
-
-                axs[1, 0].plot(it, mx, style, label=label, markersize=2.0, linewidth=1)
-                axs[1, 1].plot(it, my, style, label=label, markersize=2.0, linewidth=1)
-                axs[1, 2].plot(it, mz, style, label=label, markersize=2.0, linewidth=1)
+                axs[0, 0].plot(it, fx, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
+                axs[0, 1].plot(it, fy, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
+                axs[0, 2].plot(it, fz, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
+                axs[1, 0].plot(it, mx, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
+                axs[1, 1].plot(it, my, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
+                axs[1, 2].plot(it, mz, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
 
                 axs[2, 0].plot(
                     it2,
                     error,
-                    style,
+                    color=c,
+                    marker=m,
                     label=label,
                     markersize=2.0,
                     linewidth=1,
@@ -135,15 +130,14 @@ def plot_convergence(
                 axs[2, 1].plot(
                     it2,
                     errorM,
-                    style,
+                    color=c,
+                    marker=m,
                     label=label,
                     markersize=2.0,
                     linewidth=1,
                 )
             except KeyError as e:
                 print(f"Run Doesn't Exist: {plane},{e},{ang}")
-    if toomuchData:
-        print(f"Too much data to plot, only plotting {len(colors)} cases")
 
     fig.tight_layout()
     for axR in axs:

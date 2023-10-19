@@ -3,7 +3,7 @@ import pandas as pd
 from pandas import DataFrame
 from pandas import Index
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 
@@ -42,7 +42,6 @@ class Polars:
     def __init__(
         self,
         data: Struct | dict[str, DataFrame],
-        # airfoil: AirfoilD
     ) -> None:
         self.data: Struct | dict[str, DataFrame] = data
 

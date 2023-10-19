@@ -5,7 +5,7 @@
 # from numpy import floating
 # from numpy import intp
 # from numpy import ndarray
-# from ICARUS.Airfoils.airfoilD import AirfoilD
+# from ICARUS.Airfoils.airfoil import Airfoil
 # from ICARUS.Core.struct import Struct
 # from ICARUS.Database.Database_2D import Database_2D
 # from ICARUS.Database.db import DB
@@ -21,14 +21,14 @@
 #     ) -> None:
 #         """Initializes the wing
 #         Args:
-#             airfoil (str): Airfoil Name e.g. NACA4415
+#             airfoil (str): airfoil Name e.g. NACA4415
 #             position (list[float]): Position of the wing
 #             chord (float): Chord length (MAC)
 #             span (float): Wing span
 #             area (float): Wing Area
 #         """
 #         if airfoil.startswith("naca") or airfoil.startswith("NACA"):
-#             self.airfoil: AirfoilD = AirfoilD.NACA(airfoil[4:], 200)
+#             self.airfoil: Airfoil = Airfoil.NACA(airfoil[4:], 200)
 #         else:
 #             print("Airfoil not found")
 #         self.position: list[float] = position

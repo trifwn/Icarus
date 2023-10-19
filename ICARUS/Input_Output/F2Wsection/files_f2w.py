@@ -98,7 +98,7 @@ def input_file(
 def setup_f2w(F2WBASE: str, HOMEDIR: str, CASEDIR: str) -> None:
     """
     Sets up the f2w case copying and editing all necessary files
-    
+
     Args:
         F2WBASE (str): Base Case Directory for f2w
         HOMEDIR (str): Home Directory

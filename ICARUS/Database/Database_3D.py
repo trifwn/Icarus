@@ -248,7 +248,7 @@ class Database_3D:
             print("Polar Doesn't exist! You should compute it first!")
         return None
 
-    def make_data_gnvp(self, plane: str, gnvp_version) -> None:
+    def make_data_gnvp(self, plane: str, gnvp_version: int) -> None:
         """
         Args:
             plane (str): Plane name

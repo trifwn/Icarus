@@ -1,18 +1,22 @@
+from ast import Call
 from re import I
 from tabnanny import verbose
 from typing import Any
+from typing import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from matplotlib.figure import Figure
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
-import pandas as pd
-from ICARUS.Enviroment.definition import Environment
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from traitlets import Float
 
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.db import DB
+from ICARUS.Enviroment.definition import Environment
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
@@ -81,35 +85,35 @@ class Wing_LSPT:
             span_dist.append(segment._span_dist + segment.origin[1])
         self.span_dist = np.concatenate(span_dist)
 
-        self.grid: ndarray[Any, dtype[floating]] = np.empty((self.N, self.M + 1, 3))
+        self.grid: FloatArray = np.empty((self.N, self.M + 1, 3))
 
         # find maximum chord to set wake distance
-        max_chord = 0
+        max_chord: float = 0
         for wing_segment in self.wing_segments:
             if np.max(wing_segment._chord_dist) > max_chord:
-                max_chord = np.max(wing_segment._chord_dist)
-        self.max_chord = max_chord
+                max_chord = float(np.max(wing_segment._chord_dist))
+        self.max_chord: float = max_chord
 
         # Get the angle of the trailing edge of each wing segment
-        self.te_angle_dist = []
+        te_angle_dist: list[float] = []
         for wing_segment in self.wing_segments:
-            airfoil = wing_segment.airfoil
+            airfoil: Airfoil = wing_segment.airfoil
             # The trailing edge is the last point of the airfoil
             # We will get the angle of the trailing edge by getting numerical derivative
             # of the airfoil coordinates.
             # We will use the last 3 points to get the derivative
-            x = airfoil._x_lower[-3:]
-            y: ndarray[Any, dtype[Any]] = airfoil.camber_line(x)
-            dydx = np.repeat(np.gradient(y, x), wing_segment.N)
-            self.te_angle_dist.append(np.arctan(dydx))
-        self.te_angle_dist = np.concatenate(self.te_angle_dist)
+            x: FloatArray = airfoil._x_lower[-3:]
+            y: FloatArray = airfoil.camber_line(x)
+            dydx: FloatArray = np.repeat(np.gradient(y, x), wing_segment.N)
+            te_angle_dist.append(float(np.arctan(dydx)))
+        self.te_angle_dist: FloatArray = np.concatenate(self.te_angle_dist)
 
         # Create the grid
-        N_start = 0
+        N_start: int = 0
         for segment in self.wing_segments:
             N_end: int = N_start + segment.N
             self.grid[N_start:N_end, :-1, :] = segment.grid
-            N_start: int = N_end + 0
+            N_start = N_end + 0
 
         # THIS CALCULATIONS DEPEND ON THE ORIENTATION OF THE INFLOW
         self.make_wake_grid_points()
@@ -123,11 +127,11 @@ class Wing_LSPT:
         self.RHS_np: ndarray[Any, dtype[floating]] = None  # type: ignore
 
     @property
-    def alpha(self):
+    def alpha(self) -> float:
         return self._alpha
 
     @alpha.setter
-    def alpha(self, value):
+    def alpha(self, value: float) -> None:
         self._alpha = value
         if self.wake_geom_type != "TE-Geometrical":
             self.make_wake_grid_points()
@@ -135,11 +139,11 @@ class Wing_LSPT:
         (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(self.grid)
 
     @property
-    def beta(self):
+    def beta(self) -> float:
         return self._beta
 
     @beta.setter
-    def beta(self, value):
+    def beta(self, value: float) -> None:
         self._beta = value
         if self.wake_geom_type != "TE-Geometrical":
             self.make_wake_grid_points()
@@ -149,7 +153,7 @@ class Wing_LSPT:
     def make_nj(
         self,
     ) -> None:
-        self.nj = np.repeat(
+        self.nj: FloatArray = np.repeat(
             [
                 (
                     np.sin(self.alpha) * np.cos(self.beta),
@@ -164,7 +168,7 @@ class Wing_LSPT:
     def make_wake_grid_points(
         self,
     ) -> None:
-        N_start = 0
+        N_start: int = 0
         for segment in self.wing_segments:
             N_end: int = N_start + segment.N
 
@@ -185,7 +189,7 @@ class Wing_LSPT:
                 ) * np.tan(self.te_angle_dist[N_start:N_end])
             else:
                 raise ValueError("Invalid wake geometry type")
-            N_start: int = N_end + 0
+            N_start = N_end + 0
 
     def grid_to_panels(self, grid: FloatArray) -> tuple[FloatArray, FloatArray, FloatArray]:
         """
@@ -223,7 +227,7 @@ class Wing_LSPT:
 
     def delete_middle_panels(self) -> None:
         # Remove the panels that are in between wing segments
-        Ns_to_delete = []
+        Ns_to_delete: list[int] = []
         N = 0
         for wing_seg in self.wing_segments[:-1]:
             Ns_to_delete.append(N + wing_seg.N - 1)
@@ -238,8 +242,8 @@ class Wing_LSPT:
         self.grid = np.delete(self.grid, Ns_to_delete, axis=0)
         self.span_dist = np.delete(self.span_dist, Ns_to_delete, axis=0)
 
-    def plot_grid(self, show_wake=False, show_airfoils=False) -> None:
-        fig = plt.figure()
+    def plot_grid(self, show_wake: bool = False, show_airfoils: bool = False) -> None:
+        fig: Figure = plt.figure()
         ax = fig.add_subplot(projection="3d")
 
         dehidral_prev = 0
@@ -265,7 +269,7 @@ class Wing_LSPT:
                 dehidral_prev += wing_seg._dihedral_dist[-1]
                 offset_prev += wing_seg._offset_dist[-1]
         if show_wake:
-            M = self.M
+            M: int = self.M
         else:
             M = self.M - 1
         for i in np.arange(0, self.N - 1):
@@ -287,7 +291,7 @@ class Wing_LSPT:
         ax.set_zlim3d(-0.5, 0.5)
         fig.show()
 
-    def get_RHS(self, Q):
+    def get_RHS(self, Q: FloatArray) -> FloatArray:
         RHS_np = np.zeros((self.N - 1) * (self.M))
         for i in np.arange(0, (self.N - 1) * (self.M)):
             lp, kp = divmod(i, (self.M))
@@ -297,7 +301,7 @@ class Wing_LSPT:
                 RHS_np[i] = -np.dot(Q, self.control_nj[lp, kp])
         return RHS_np
 
-    def get_LHS(self, solve_fun):
+    def get_LHS(self, solve_fun: Callable[..., tuple[FloatArray, FloatArray]]) -> tuple[FloatArray, FloatArray]:
         a_np = np.zeros(((self.N - 1) * (self.M), (self.N - 1) * (self.M)))
         b_np = np.zeros(((self.N - 1) * (self.M), (self.N - 1) * (self.M)))
 
@@ -325,7 +329,7 @@ class Wing_LSPT:
                 a_np[i, j] = np.dot(U, self.control_nj[lp, kp])
         return a_np, b_np
 
-    def solve_wing_panels(self, Q, solve_fun):
+    def solve_wing_panels(self, Q: FloatArray, solve_fun: Callable[..., tuple[FloatArray, FloatArray]]) -> None:
         self.solve_fun = solve_fun
         RHS_np = self.get_RHS(Q)
         self.RHS_np = RHS_np
@@ -341,19 +345,20 @@ class Wing_LSPT:
             self.a_np = a_np
             self.b_np = b_np
 
-    def solve_wing_horseshoe(self):
+    def solve_wing_horseshoe(self) -> None:
         # ! TODO: IMPLEMENT ACCORDING TO KATZ
         print("Not implemented yet")
         pass
 
-    def solve_wing_singularities(self):
+    def solve_wing_singularities(self) -> None:
         # ! TODO: IMPLEMENT ACCORDING TO KATZ
         print("Not implemented yet")
         pass
 
-    def induced_vel_calc(self, i, j, gammas_mat):
-        Us = 0
-        Uss = 0
+    def induced_vel_calc(self, i: int, j: int, gammas_mat: FloatArray) -> tuple[FloatArray, FloatArray]:
+        Us = np.zeros(3)
+        Uss = np.zeros(3)
+
         for l in np.arange(0, self.N - 1):
             for k in np.arange(0, self.M):
                 U, Ustar = self.solve_fun(
@@ -371,7 +376,7 @@ class Wing_LSPT:
 
     def get_gamma_distribution(
         self,
-    ):
+    ) -> None:
         if self.a_np is None:
             raise ValueError("You must solve the wing panels first")
         gammas = np.linalg.solve(self.a_np, self.RHS_np)
@@ -386,7 +391,7 @@ class Wing_LSPT:
             self.w_mat[lp, kp] = self.w[i]
         self.calculate_strip_induced_velocities()
 
-    def plot_gamma_distribution(self):
+    def plot_gamma_distribution(self) -> None:
         if self.gammas_mat is None:
             self.get_gamma_distribution()
 
@@ -400,16 +405,16 @@ class Wing_LSPT:
         fig.colorbar(ax.matshow(self.gammas_mat))
         fig.show()
 
-    def get_aerodynamic_loads(self, umag, verbose=True) -> None:
+    def get_aerodynamic_loads(self, umag: float, verbose: bool = True) -> None:
         if self.gammas_mat is None:
             self.get_gamma_distribution()
 
-        L_pan = np.zeros((self.N - 1, self.M))
-        D_pan = np.zeros((self.N - 1, self.M))
+        L_pan: FloatArray = np.zeros((self.N - 1, self.M))
+        D_pan: FloatArray = np.zeros((self.N - 1, self.M))
         D_trefftz = 0
         for i in np.arange(0, self.N - 1):
             for j in np.arange(0, self.M):
-                dy = self.grid[i + 1, j, 1] - self.grid[i, j, 1]
+                dy: float = self.grid[i + 1, j, 1] - self.grid[i, j, 1]
                 if j == 0:
                     g = self.gammas_mat[i, j]
                 else:
@@ -433,16 +438,16 @@ class Wing_LSPT:
         self.L_pan = L_pan
         self.D_pan = D_pan
 
-        self.L: np.float64 = np.sum(L_pan)
+        self.L: float = float(np.sum(L_pan))
         self.D: float = D_trefftz  # np.sum(D_pan)
-        self.D2: np.float64 = np.sum(D_pan)
+        self.D2: float = float(np.sum(D_pan))
         self.Mx: float = Mx
         self.My: float = My
         self.Mz: float = Mz
 
-        self.CL = 2 * self.L / (self.dens * (umag**2) * self.S)
-        self.CD = 2 * self.D / (self.dens * (umag**2) * self.S)
-        self.Cm = 2 * self.My / (self.dens * (umag**2) * self.S * self.MAC)
+        self.CL: float = 2 * self.L / (self.dens * (umag**2) * self.S)
+        self.CD: float = 2 * self.D / (self.dens * (umag**2) * self.S)
+        self.Cm: float = 2 * self.My / (self.dens * (umag**2) * self.S * self.MAC)
 
         interpolation_success: bool = True
         try:
@@ -465,7 +470,7 @@ class Wing_LSPT:
     def calculate_strip_induced_velocities(self) -> None:
         if self.w_mat is None:
             self.get_gamma_distribution()
-        self.w_induced_strips = np.mean(self.w_mat, axis=1)
+        self.w_induced_strips: FloatArray = np.mean(self.w_mat, axis=1)
 
     def calculate_strip_gamma(self) -> None:
         if self.gammas_mat is None:
@@ -474,11 +479,11 @@ class Wing_LSPT:
 
     def plot_w_induced_strips(
         self,
-        umag,
-    ):
+        umag: float,
+    ) -> None:
         if self.w_induced_strips is None:
             self.calculate_strip_induced_velocities()
-        fig, ax = plt.subplots(1, 3)
+        fig, ax = plt.subplots(3)
         ax[0].plot(self.span_dist[:-1], self.w_induced_strips)
         ax[0].set_title("Induced Velocity [m/s]")
         ax[0].set_xlabel("Span [m]")
@@ -505,7 +510,7 @@ class Wing_LSPT:
 
     def plot_lift_drag_strips(
         self,
-    ):
+    ) -> None:
         if self.L_pan is None:
             self.get_aerodynamic_loads(umag=20)
 
@@ -523,7 +528,7 @@ class Wing_LSPT:
         ax[1].set_ylabel("Drag")
         fig.show()
 
-    def plot_lift_drag_panels(self, umag):
+    def plot_lift_drag_panels(self, umag: float) -> None:
         if self.L_pan is None:
             self.get_aerodynamic_loads(umag=umag)
 
@@ -544,7 +549,12 @@ class Wing_LSPT:
         fig.colorbar(ax[1].matshow(self.D_pan))
         fig.show()
 
-    def aseq(self, angles, umag, solver_fun) -> pd.DataFrame:
+    def aseq(
+        self,
+        angles: list[float] | FloatArray,
+        umag: float,
+        solver_fun: Callable[..., tuple[FloatArray, FloatArray]],
+    ) -> pd.DataFrame:
         # Using no penetration condition
         CL = np.zeros(len(angles))
         CD = np.zeros(len(angles))
@@ -569,7 +579,7 @@ class Wing_LSPT:
             Uinf = umag * np.cos(self.alpha) * np.cos(self.beta)
             Vinf = umag * np.cos(self.alpha) * np.sin(self.beta)
             Winf = umag * np.sin(self.alpha) * np.cos(self.beta)
-            Q = np.array((Uinf, Vinf, Winf))
+            Q: FloatArray = np.array((Uinf, Vinf, Winf))
 
             self.solve_wing_panels(Q, solver_fun)
             self.get_gamma_distribution()
@@ -624,28 +634,30 @@ class Wing_LSPT:
                 "CL_2D": CL_2D,
                 "CD_2D": CD_2D,
                 "Cm_2D": Cm_2D,
-            }
+            },
         )
         return df
 
-    def get_strip_chords(self):
+    def calc_strip_chords(self) -> None:
         # Get the chord of each strip adding the chordwise distance of each panel
-        self.chords = np.zeros(self.N - 1)
+        self.chords: FloatArray = np.zeros(self.N - 1)
         for i in np.arange(0, self.N - 1):
             for j in np.arange(0, self.M - 1):
                 self.chords[i] += (self.grid[i, j + 1, :] - self.grid[i, j, :])[0]
 
-    def get_strip_reynolds(self, umag):
+    def calc_strip_reynolds(self, umag: float) -> None:
         if self.w_induced_strips is None:
             self.calculate_strip_induced_velocities()
-        self.get_strip_chords()
+        self.calc_strip_chords()
 
         # Get the effective angle of attack of each strip
-        self.strip_effective_aoa = np.arctan(self.w_induced_strips / umag) * 180 / np.pi + self.alpha * 180 / np.pi
+        self.strip_effective_aoa: FloatArray = (
+            np.arctan(self.w_induced_strips / umag) * 180 / np.pi + self.alpha * 180 / np.pi
+        )
 
         # Get the reynolds number of each strip
-        strip_vel = np.sqrt(self.w_induced_strips**2 + umag**2)
-        self.strip_reynolds = self.dens * strip_vel * self.chords / self.visc
+        strip_vel: FloatArray = np.sqrt(self.w_induced_strips**2 + umag**2)
+        self.strip_reynolds: FloatArray = self.dens * strip_vel * self.chords / self.visc
 
         # Scan all wing segments and get the orientation of each airfoil
         # Match that orientation with the each strip and get the effective aoa
@@ -657,12 +669,12 @@ class Wing_LSPT:
                 self.strip_airfoil_effective_aoa[N + j] = self.strip_effective_aoa[N + j] + wing_seg.orientation[0]
             N += wing_seg.N - 1
 
-    def integrate_polars_from_reynolds(self, uinf: float, solver="Xfoil") -> None:
+    def integrate_polars_from_reynolds(self, uinf: float, solver: str = "Xfoil") -> None:
         # self.get_strip_reynolds(20, 1.225, 1.7894e-5)
         # if self.strip_reynolds is None:
-        self.strip_CL_2D = np.zeros(self.N - 1)
-        self.strip_CD_2D = np.zeros(self.N - 1)
-        self.strip_Cm_2D = np.zeros(self.N - 1)
+        self.strip_CL_2D: FloatArray = np.zeros(self.N - 1)
+        self.strip_CD_2D: FloatArray = np.zeros(self.N - 1)
+        self.strip_Cm_2D: FloatArray = np.zeros(self.N - 1)
 
         self.L_2D: float | None = None
         self.D_2D: float | None = None
@@ -672,19 +684,19 @@ class Wing_LSPT:
         self.CD_2D: float | None = None
         self.Cm_2D: float | None = None
 
-        self.get_strip_reynolds(uinf)
+        self.calc_strip_reynolds(uinf)
 
         N: int = 0
         L: float = 0
         D: float = 0
         My_at_quarter_chord: float = 0
         for wing_seg in self.wing_segments:
-            airfoil: AirfoilD = wing_seg.airfoil
+            airfoil: Airfoil = wing_seg.airfoil
             for j in np.arange(0, wing_seg.N - 1):
-                dy = np.mean(self.grid[N + j +1, :, 1] - self.grid[N + j, :, 1])
+                dy: float = float(np.mean(self.grid[N + j + 1, :, 1] - self.grid[N + j, :, 1]))
 
                 CL, CD, Cm = self.db.foilsDB.interpolate_polars(
-                    reynolds=self.strip_reynolds[N + j],
+                    reynolds=float(self.strip_reynolds[N + j]),
                     airfoil_name=airfoil.name,
                     aoa=float(self.strip_airfoil_effective_aoa[N + j]),
                     solver=solver,
@@ -693,14 +705,14 @@ class Wing_LSPT:
                 self.strip_CD_2D[N + j] = CD
                 self.strip_Cm_2D[N + j] = Cm
 
-                surface = self.chords[N + j] * dy
-                vel_mag = np.sqrt(self.w_induced_strips[N + j] ** 2 + uinf**2)
-                dynamic_pressure = 0.5 * self.dens * vel_mag**2
+                surface: float = float(self.chords[N + j]) * dy
+                vel_mag: float = np.sqrt(self.w_induced_strips[N + j] ** 2 + uinf**2)
+                dynamic_pressure: float = 0.5 * self.dens * vel_mag**2
 
                 # "Integrate" the CL and CD of each strip to get the total L, D and My
                 L += CL * surface * dynamic_pressure
                 D += CD * surface * dynamic_pressure
-                My_at_quarter_chord += Cm * surface * dynamic_pressure * self.chords[N + j]
+                My_at_quarter_chord += Cm * surface * dynamic_pressure * float(self.chords[N + j])
 
             N += wing_seg.N - 1
 
@@ -709,9 +721,9 @@ class Wing_LSPT:
 
         # Calculate Total Moment moving the moment from the quarter chord
         # to the cg and then add the moment of the lift and drag
-        
+
         self.My_2D = My_at_quarter_chord - D * self.cog[0] + L * self.cog[0]
-    
+
         self.CL_2D = 2 * self.L_2D / (self.dens * (uinf**2) * self.S)
         self.CD_2D = 2 * self.D_2D / (self.dens * (uinf**2) * self.S)
         self.Cm_2D = 2 * self.My_2D / (self.dens * (uinf**2) * self.S * self.MAC)

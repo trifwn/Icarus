@@ -43,7 +43,7 @@ class Environment:
         self.air_thermal_expansion_coefficient: float = 0.000012
         self.air_prandtl_number: float = 0.71
 
-    def _set_altitude(self, h: float, units="SI") -> None:
+    def _set_altitude(self, h: float, units: str = "SI") -> None:
         """
         Set the altitude of the environment
 
@@ -74,13 +74,13 @@ class Environment:
         else:
             self.temperature = self.reference_temperature - 87.05
 
-    def _set_pressure_from_altitude_and_temperature(self, h: float, T: float):
+    def _set_pressure_from_altitude_and_temperature(self, h: float, T: float) -> None:
         """
         Reference from https://www.omnicalculator.com/physics/air-pressure-at-altitude
 
         Args:
-            h (float): _description_
-            T (float): _description_
+            h (float): Altitude in meters
+            T (float): Temperature in Kelvin
         """
         self.temperature = T
         self._set_altitude(h)
@@ -89,7 +89,7 @@ class Environment:
             -self.GRAVITY * self.air_molar_mass * (h - self.reference_altitude) / (self.UNIVERSAL_GAS_CONSTANT * T),
         )
 
-    def set_temperature_and_pressure_from_altitude(self, h: float, units="SI") -> None:
+    def set_temperature_and_pressure_from_altitude(self, h: float, units: str = "SI") -> None:
         """
         Sets the temperature, pressure and altitude of the environment.
         It uses the standard atmosphere model and approximations from:
@@ -109,7 +109,7 @@ class Environment:
 
     @property
     def air_dynamic_viscosity(self) -> float:
-        mu = 1.458e-6 * (self.temperature**1.5) / (self.temperature + 110.4)
+        mu: float = 1.458e-6 * (self.temperature**1.5) / (self.temperature + 110.4)
         return mu
 
     @property

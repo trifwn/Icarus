@@ -8,7 +8,7 @@ from inquirer import prompt
 from inquirer import Text
 from tqdm.asyncio import tqdm
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.Units import calc_mach
 from ICARUS.Core.Units import calc_reynolds
@@ -37,11 +37,11 @@ def ask_num_airfoils() -> int:
         return ask_num_airfoils()
 
 
-def get_airfoil_file() -> AirfoilD:
+def get_airfoil_file() -> Airfoil:
     file_question: list[Path] = [
         Path(
             "airf_file",
-            message="Specify the Path to the Airfoil File",
+            message="Specify the Path to the airfoil File",
             path_type=Path.FILE,
         ),
     ]
@@ -51,13 +51,13 @@ def get_airfoil_file() -> AirfoilD:
         exit()
     else:
         try:
-            return AirfoilD.load_from_file(answers["airf_file"])
+            return Airfoil.load_from_file(answers["airf_file"])
         except Exception as e:
             print(e)
             return get_airfoil_file()
 
 
-def get_airfoil_NACA() -> AirfoilD:
+def get_airfoil_NACA() -> Airfoil:
     naca_question: list[Text] = [
         Text("naca_dig", message="NACA digits (4 or 5):"),
     ]
@@ -67,13 +67,13 @@ def get_airfoil_NACA() -> AirfoilD:
         exit()
     else:
         try:
-            return AirfoilD.naca(answers["naca_dig"])
+            return Airfoil.naca(answers["naca_dig"])
         except Exception as e:
             print(e)
             return get_airfoil_NACA()
 
 
-def get_airfoil_db(db: DB) -> AirfoilD:
+def get_airfoil_db(db: DB) -> Airfoil:
     airfoils: Struct = db.foilsDB.set_available_airfoils()
     airfoil_question: list[List] = [
         List(
@@ -88,14 +88,14 @@ def get_airfoil_db(db: DB) -> AirfoilD:
         exit()
 
     try:
-        airfoil: AirfoilD = airfoils[answer["airfoil"]]
+        airfoil: Airfoil = airfoils[answer["airfoil"]]
         return airfoil
     except Exception as e:
         print(e)
         return get_airfoil_db(db)
 
 
-def select_airfoil_source(db: DB) -> AirfoilD:
+def select_airfoil_source(db: DB) -> Airfoil:
     airfoil_source_question: list[List] = [
         List(
             "airfoil_source",
@@ -152,19 +152,19 @@ input_options = {
 }
 
 
-def get_option(option_name, question_type) -> dict[str, Any]:
+def get_option(option_name: str, question_type: str) -> dict[str, Any]:
     if question_type.startswith("list_"):
         quest: Text = Text(
             f"{option_name}",
             message=f"{option_name} (Multiple Values Must be seperated with ',') = ",
         )
     else:
-        quest: Text = Text(
+        quest = Text(
             f"{option_name}",
             message=f"{option_name} = ",
         )
 
-    answer = prompt([quest])
+    answer: dict[str, Any] | None = prompt([quest])
     if answer is None:
         print("Exited by User")
         exit()
@@ -195,7 +195,7 @@ def get_option(option_name, question_type) -> dict[str, Any]:
     return answer
 
 
-def set_analysis_options(solver: Solver, db: DB, airfoil: AirfoilD) -> None:
+def set_analysis_options(solver: Solver, db: DB, airfoil: Airfoil) -> None:
     all_options: Struct = solver.get_analysis_options(verbose=True)
     options = Struct()
     answers = {}
@@ -268,7 +268,7 @@ def airfoil_cli(db: DB) -> None:
         print("N must be greater than 0")
         return
 
-    airfoils: list[AirfoilD] = []
+    airfoils: list[Airfoil] = []
 
     calc_f2w: dict[str, bool] = {}
     f2w_solvers: dict[str, Solver] = {}
@@ -281,7 +281,7 @@ def airfoil_cli(db: DB) -> None:
 
     for i in range(N):
         print("\n")
-        airfoil: AirfoilD = select_airfoil_source(db)
+        airfoil: Airfoil = select_airfoil_source(db)
         airfoils.append(airfoil)
 
         select_solver_quest: list[Checkbox] = [

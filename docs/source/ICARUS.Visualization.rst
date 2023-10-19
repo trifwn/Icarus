@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    ICARUS.Visualization.airfoil
+   ICARUS.Visualization.airplane
 
 Module contents
 ---------------

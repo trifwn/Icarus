@@ -20,12 +20,12 @@ from ICARUS.Core.types import FloatArray
 # ##### 2 = load from file
 
 
-class AirfoilD(af.Airfoil):  # type: ignore
+class Airfoil(af.Airfoil):  # type: ignore
     """
-    Class to represent an airfoil. Inherits from Airfoil class from the airfoils module.
+    Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
-    # ! TODO DEPRECATE THE DEPENDANCE ON THE AIRFOIL MODULE. SPECIFICALLY WE HAVE
-    # ! TO CHANGE THE MODULE SO THAT IT DOESNT NORMALIZE THE AIRFOIL
+    # ! TODO DEPRECATE THE DEPENDANCE ON THE airfoil MODULE. SPECIFICALLY WE HAVE
+    # ! TO CHANGE THE MODULE SO THAT IT DOESNT NORMALIZE THE airfoil
 
     Args:
         af : Airfoil class from the airfoils module
@@ -39,7 +39,7 @@ class AirfoilD(af.Airfoil):  # type: ignore
         n_points: int,
     ) -> None:
         """
-        Initialize the AirfoilD class
+        Initialize the Airfoil class
 
         Args:
             upper (FloatArray): Upper surface coordinates
@@ -49,14 +49,14 @@ class AirfoilD(af.Airfoil):  # type: ignore
         """
         super().__init__(upper, lower)
         name = name.replace(" ", "")
-        name = name.replace(".dat", '')
-        name = name.replace('naca', '')
+        name = name.replace(".dat", "")
+        name = name.replace("naca", "")
         if name.lower().startswith("naca"):
             self.file_name: str = name.upper()
         else:
             self.file_name = f"naca{name}"
         # self.file_name: str = f"{name}"
-        name = name.replace('NACA', '')
+        name = name.replace("NACA", "")
         self.name: str = name
 
         self.n_points: int = n_points
@@ -64,12 +64,18 @@ class AirfoilD(af.Airfoil):  # type: ignore
 
         self.airfoil_to_selig()
         self.fix_le()
+
+        # For Type Checking
+        self._x_upper: FloatArray = self._x_upper
+        self._y_upper: FloatArray = self._y_upper
+        self._x_lower: FloatArray = self._x_lower
+        self._y_lower: FloatArray = self._y_lower
         # self.getFromWeb()
 
     @classmethod
-    def naca(cls, naca: str, n_points: int = 200) -> "AirfoilD":
+    def naca(cls, naca: str, n_points: int = 200) -> "Airfoil":
         """
-        Initialize the AirfoilD class from a NACA 4 digit identifier.
+        Initialize the Airfoil class from a NACA 4 digit identifier.
 
         Args:
             naca (str): NACA 4 digit identifier (e.g. 0012) can also take NACA0012
@@ -79,7 +85,7 @@ class AirfoilD(af.Airfoil):  # type: ignore
             af.NACADefintionError: If the NACA identifier is not valid
 
         Returns:
-            AirfoilD: AirfoilD class object
+            Airfoil: airfoil class object
         """
         re_4digits: re.Pattern[str] = re.compile(r"^\d{4}$")
         re_5digits: re.Pattern[str] = re.compile(r"^\d{5}$")
@@ -90,14 +96,14 @@ class AirfoilD(af.Airfoil):  # type: ignore
             q: float = float(naca[2]) / 1000
             xx: float = float(naca[3:5]) / 1000
             upper, lower = gen_NACA5_airfoil(naca, n_points)
-            self: "AirfoilD" = cls(upper, lower, naca, n_points)
+            self: "Airfoil" = cls(upper, lower, naca, n_points)
             return self
         elif re_4digits.match(naca):
-            p: float = float(naca[0]) / 10
+            p = float(naca[0]) / 10
             m: float = float(naca[1]) / 100
-            xx: float = float(naca[2:4]) / 100
+            xx = float(naca[2:4]) / 100
             upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
-            self: "AirfoilD" = cls(upper, lower, naca, n_points)
+            self = cls(upper, lower, naca, n_points)
             self.set_naca4_digits(p, m, xx)
             return self
         else:
@@ -106,15 +112,15 @@ class AirfoilD(af.Airfoil):  # type: ignore
             )
 
     @classmethod
-    def load_from_file(cls, filename: str) -> "AirfoilD":
+    def load_from_file(cls, filename: str) -> "Airfoil":
         """
-        Initialize the AirfoilD class from a file.
+        Initialize the Airfoil class from a file.
 
         Args:
             filename (str): Name of the file to load the airfoil from
 
         Returns:
-            AirfoilD: AirfoilD class object
+            Airfoil: Airfoil class object
         """
         x: list[float] = []
         y: list[float] = []
@@ -142,7 +148,7 @@ class AirfoilD(af.Airfoil):  # type: ignore
 
         upper: FloatArray = np.array([x[:idx], y[:idx]])
         lower: FloatArray = np.array([x[idx:], y[idx:]])
-        self: "AirfoilD" = cls(upper, lower, os.path.split(filename)[-1], len(x))
+        self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
         return self
 
     def fix_le(self) -> None:
@@ -168,26 +174,39 @@ class AirfoilD(af.Airfoil):  # type: ignore
             self.fix_le()
         return None
 
-    def flap_airfoil(self, flap_hinge: float, chord_extension: float, flap_angle: float, plotting=False):
-        self.is_flapped = True
-        self.flap_angle = flap_angle
-        self.flap_hinge = flap_hinge
-        self.chord_extension = chord_extension
+    def flap_airfoil(
+        self,
+        flap_hinge: float,
+        chord_extension: float,
+        flap_angle: float,
+        plotting: bool = False,
+    ) -> "Airfoil":
+        """
+        Function to generate a flapped airfoil. The flap is defined by the flap hinge, the chord extension and the flap angle.
 
+        Args:
+            flap_hinge (float): Chordwise location of the flap hinge
+            chord_extension (float): Chord extension of the flap
+            flap_angle (float): Angle of the flap
+            plotting (bool, optional): Whether to plot the new and old airfoil. Defaults to False.
+
+        Returns:
+            Airfoil: Flapped airfoil
+        """
         # Find the index of the flap hinge
         idx_lower: int = int(np.argmin(np.abs(self._x_lower - flap_hinge)))
         idx_upper: int = int(np.argmin(np.abs(self._x_upper - flap_hinge)))
         # Rotate all the points to the right of the hinge
         # and then stretch them in the direction of the flap angle
 
-        x_lower: ndarray[Any, dtype[floating]] = self._x_lower[idx_lower:]
-        x_upper: ndarray[Any, dtype[floating]] = self._x_upper[idx_upper:]
+        x_lower: FloatArray = self._x_lower[idx_lower:]
+        x_upper: FloatArray = self._x_upper[idx_upper:]
         x_lower = x_lower - flap_hinge
         x_upper = x_upper - flap_hinge
 
-        y_lower: ndarray[Any, dtype[floating]] = self._y_lower[idx_lower:]
+        y_lower: FloatArray = self._y_lower[idx_lower:]
         temp = y_lower[0].copy()
-        y_upper: ndarray[Any, dtype[floating]] = self._y_upper[idx_upper:]
+        y_upper: FloatArray = self._y_upper[idx_upper:]
         y_lower = y_lower - temp
         y_upper = y_upper - temp
 
@@ -211,13 +230,13 @@ class AirfoilD(af.Airfoil):  # type: ignore
         if plotting:
             self.plot()
 
-        upper: ndarray[Any, dtype[floating]] = np.array(
+        upper: FloatArray = np.array(
             [[*self._x_upper[:idx_upper], *x_upper], [*self._y_upper[:idx_upper], *y_upper]],
         )
-        lower: ndarray[Any, dtype[floating]] = np.array(
+        lower: FloatArray = np.array(
             [[*self._x_lower[:idx_lower], *x_lower], [*self._y_lower[:idx_lower], *y_lower]],
         )
-        flapped = AirfoilD(upper, lower, f"{self.name}_flapped", n_points=self.n_points)
+        flapped = Airfoil(upper, lower, f"{self.name}_flapped", n_points=self.n_points)
 
         if plotting:
             flapped.plot()
@@ -247,9 +266,9 @@ class AirfoilD(af.Airfoil):  # type: ignore
             xx (float): Thickness
         """
         self.l: float = l
-        self.p: float = p
+        self.p = p
         self.q: float = q
-        self.xx: float = xx
+        self.xx = xx
 
     def camber_line_naca4(
         self,
@@ -365,7 +384,11 @@ class AirfoilD(af.Airfoil):  # type: ignore
         plt.axis("scaled")
 
 
-def interpolate(xa, ya, queryPoints):
+def interpolate(
+    xa: FloatArray | list[float],
+    ya: FloatArray | list[float],
+    queryPoints: FloatArray | list[float],
+) -> FloatArray:
     """
     A cubic spline interpolation on a given set of points (x,y)
     Recalculates everything on every call which is far from efficient but does the job for now
@@ -378,8 +401,9 @@ def interpolate(xa, ya, queryPoints):
     # http://paint-mono.googlecode.com/svn/trunk/src/PdnLib/SplineInterpolator.cs
 
     # number of points
-    n = len(xa)
-    u, y2 = [0] * n, [0] * n
+    n: int = len(xa)
+    u: FloatArray = np.zeros(n)
+    y2: FloatArray = np.zeros(n)
 
     for i in range(1, n - 1):
         # This is the decomposition loop of the tridiagonal algorithm.
@@ -407,7 +431,7 @@ def interpolate(xa, ya, queryPoints):
     # ISBN 0-521-43108-5, page 113, section 3.3.
     # http://paint-mono.googlecode.com/svn/trunk/src/PdnLib/SplineInterpolator.cs
 
-    results = [0] * n
+    results = np.zeros(n)
 
     # loop over all query points
     for i in range(len(queryPoints)):
@@ -436,46 +460,60 @@ def interpolate(xa, ya, queryPoints):
     return results
 
 
-def gen_NACA5_airfoil(number, n_points, finite_TE=False):
+def gen_NACA5_airfoil(number: str, n_points: int, finite_TE: bool = False) -> tuple[FloatArray, FloatArray]:
+    """
+    Generates a NACA 5 digit airfoil
+
+    Args:
+        number (str): NACA 5 digit identifier
+        n_points (int): Number of points to generate
+        finite_TE (bool, optional): Wheter to have a finite TE. Defaults to False.
+
+    Returns:
+        tuple[FloatArray, FloatArray]: Upper and lower surface coordinates
+    """
+
     naca1 = int(number[0])
     naca23 = int(number[1:3])
     naca45 = int(number[3:])
 
-    cld = naca1 * (3.0 / 2.0) / 10.0
-    p = 0.5 * naca23 / 100.0
-    t = naca45 / 100.0
+    cld: float = naca1 * (3.0 / 2.0) / 10.0
+    p: float = 0.5 * naca23 / 100.0
+    t: float = naca45 / 100.0
 
-    a0 = +0.2969
-    a1 = -0.1260
-    a2 = -0.3516
-    a3 = +0.2843
+    a0: float = +0.2969
+    a1: float = -0.1260
+    a2: float = -0.3516
+    a3: float = +0.2843
 
     if finite_TE:
-        a4 = -0.1015  # For finite thickness trailing edge
+        a4: float = -0.1015  # For finite thickness trailing edge
     else:
         a4 = -0.1036  # For zero thickness trailing edge
 
     x = np.linspace(0.0, 1.0, n_points + 1)
 
-    yt = [5 * t * (a0 * np.sqrt(xx) + a1 * xx + a2 * pow(xx, 2) + a3 * pow(xx, 3) + a4 * pow(xx, 4)) for xx in x]
+    yt: list[float] = [
+        5 * t * (a0 * np.sqrt(xx) + a1 * xx + a2 * pow(xx, 2) + a3 * pow(xx, 3) + a4 * pow(xx, 4)) for xx in x
+    ]
 
-    P = [0.05, 0.1, 0.15, 0.2, 0.25]
-    M = [0.0580, 0.1260, 0.2025, 0.2900, 0.3910]
-    K = [361.4, 51.64, 15.957, 6.643, 3.230]
+    P: list[float] = [0.05, 0.1, 0.15, 0.2, 0.25]
+    M: list[float] = [0.0580, 0.1260, 0.2025, 0.2900, 0.3910]
+    K: list[float] = [361.4, 51.64, 15.957, 6.643, 3.230]
 
     m = interpolate(P, M, [p])[0]
     k1 = interpolate(M, K, [m])[0]
 
-    xc1 = [xx for xx in x if xx <= p]
-    xc2 = [xx for xx in x if xx > p]
-    xc = xc1 + xc2
+    xc1: list[float] = [xx for xx in x if xx <= p]
+    xc2: list[float] = [xx for xx in x if xx > p]
+    xc: list[float] = xc1 + xc2
 
     if p == 0:
-        xu = x
-        yu = yt
+        xu: list[float] | FloatArray = x
+        yu: list[float] | FloatArray = yt
 
-        xl = x
-        yl = [-x for x in yt]
+        xl: list[float] | FloatArray = x
+        yl: list[float] | FloatArray = [-x for x in yt]
 
         zc = [0] * len(xc)
     else:
@@ -483,11 +521,13 @@ def gen_NACA5_airfoil(number, n_points, finite_TE=False):
         yc2 = [k1 / 6.0 * pow(m, 3) * (1 - xx) for xx in xc2]
         zc = [cld / 0.3 * xx for xx in yc1 + yc2]
 
-        dyc1_dx = [cld / 0.3 * (1.0 / 6.0) * k1 * (3 * pow(xx, 2) - 6 * m * xx + pow(m, 2) * (3 - m)) for xx in xc1]
-        dyc2_dx = [cld / 0.3 * -(1.0 / 6.0) * k1 * pow(m, 3)] * len(xc2)
+        dyc1_dx: list[float] = [
+            cld / 0.3 * (1.0 / 6.0) * k1 * (3 * pow(xx, 2) - 6 * m * xx + pow(m, 2) * (3 - m)) for xx in xc1
+        ]
+        dyc2_dx: list[float] = [cld / 0.3 * -(1.0 / 6.0) * k1 * pow(m, 3)] * len(xc2)
 
-        dyc_dx = dyc1_dx + dyc2_dx
-        theta = [np.arctan(xx) for xx in dyc_dx]
+        dyc_dx: list[float] = dyc1_dx + dyc2_dx
+        theta: list[float] = [np.arctan(xx) for xx in dyc_dx]
 
         xu = [xx - yy * np.sin(zz) for xx, yy, zz in zip(x, yt, theta)]
         yu = [xx + yy * np.cos(zz) for xx, yy, zz in zip(zc, yt, theta)]
@@ -495,6 +535,6 @@ def gen_NACA5_airfoil(number, n_points, finite_TE=False):
         xl = [xx + yy * np.sin(zz) for xx, yy, zz in zip(x, yt, theta)]
         yl = [xx - yy * np.cos(zz) for xx, yy, zz in zip(zc, yt, theta)]
 
-    upper = np.array([xu, yu])
-    lower = np.array([xl, yl])
+    upper: FloatArray = np.array([xu, yu])
+    lower: FloatArray = np.array([xl, yl])
     return upper, lower

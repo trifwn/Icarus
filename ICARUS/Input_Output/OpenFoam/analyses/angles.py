@@ -9,7 +9,7 @@ from numpy import floating
 from numpy import ndarray
 from tqdm.auto import tqdm
 
-from ICARUS.Airfoils.airfoilD import AirfoilD
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Database import BASEOPENFOAM
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output import runOFscript
@@ -23,6 +23,7 @@ def run_angle(
     ANGLEDIR: str,
 ) -> None:
     """Function to run OpenFoam for a given angle given it is already setup
+    
     Args:
         REYNDIR (str): REYNOLDS CASE DIRECTORY
         ANGLEDIR (float): ANGLE DIRECTORY
@@ -52,12 +53,23 @@ def run_angles(
 
 def angles_serial(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     reynolds: float,
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
+    """
+    Runs OpenFoam for multiple angles in serial (same subproccess)
+
+    Args:
+        db (DB): Database
+        airfoil (Airfoil): Airfoil Object
+        angles (list[float] | ndarray[Any, dtype[floating[Any]]]): List of angles to run
+        reynolds (float): Reynolds Number
+        mach (float): Mach Number
+        solver_options (dict[str, Any]): Solver Options in a dictionary
+    """
     HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
@@ -114,12 +126,23 @@ def angles_serial(
 
 def angles_parallel(
     db: DB,
-    airfoil: AirfoilD,
+    airfoil: Airfoil,
     angles: list[float] | ndarray[Any, dtype[floating[Any]]],
     reynolds: float,
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
+    """
+    Runs OpenFoam for multiple angles in parallel (different subproccesses)
+
+    Args:
+        db (DB): Database
+        airfoil (Airfoil): Airfoil Object
+        angles (list[float] | ndarray[Any, dtype[floating[Any]]]): List of angles
+        reynolds (float): Reynolds Number
+        mach (float): Mach Number
+        solver_options (dict[str, Any]): Dictionary of solver options
+    """
     HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,

@@ -1,6 +1,14 @@
 ICARUS.Conceptual package
 =========================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ICARUS.Conceptual.Criteria
+
 Submodules
 ----------
 

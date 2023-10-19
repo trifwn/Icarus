@@ -5,7 +5,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from .. import colors
+from .. import colors_
 from .. import markers
 from ICARUS.Core.struct import Struct
 
@@ -14,7 +14,7 @@ def plot_airfoil_polars(
     data: dict[str, dict[str, dict[str, DataFrame]]] | Struct,
     airfoil: str,
     solvers: list[str] | str = "All",
-    plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
@@ -22,7 +22,7 @@ def plot_airfoil_polars(
     """
     Args:
         data (dict[str, dict[str, dict[str, DataFrame]]]): Nested Dictionary with the airfoil polars
-        airfoil (str): airfoil names
+        airfoil (str): Airfoil names
         solvers (list[str] | str, optional): List of solver Names. Defaults to "All".
         size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
         AoA_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
@@ -72,11 +72,11 @@ def plot_airfoil_polars(
 
                     x: Series = polar[f"{key0}"]
                     y: Series = polar[f"{key1}"]
-                    c = colors(j / len(data[airfoil][solver].keys()))
+                    c = colors_(j / len(data[airfoil][solver].keys()))
                     m = markers[i].get_marker()
                     label: str = f"{airfoil}: {reynolds} - {solver}"
                     try:
-                        ax.plot(x, y, ls='--', color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                        ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
                     except ValueError as e:
                         raise e
             except (KeyError, ValueError) as solv:
