@@ -18,8 +18,6 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.GenuVP.post_process.convergence import get_loads_convergence_3
 from ICARUS.Vehicle.plane import Airplane
 
-# from ICARUS.Software.GenuVP3.postProcess.convergence import addErrorConvergence2df
-
 jsonpickle_pd.register_handlers()
 
 

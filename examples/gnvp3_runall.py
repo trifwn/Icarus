@@ -34,47 +34,38 @@ def main() -> None:
 
     from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
     from ICARUS.Database import XFLRDB
+
     read_polars_2d(foildb, XFLRDB)
 
     # # Get Plane
     planes: list[Airplane] = []
 
     from Planes.e190_takeoff import e190_takeoff_generator
+
     embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
+    # planes.append(embraer_to)
 
     from Planes.e190_cruise import e190_cruise
+
     embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
+    # planes.append(embraer_cr)
 
+    from Planes.hermes import hermes
+
+    hermes_3: Airplane = hermes(airfoils=foildb.airfoils, name="hermes_3")
+    planes.append(hermes_3)
     # embraer.visualize()
-    planes.append(embraer_to)
-    planes.append(embraer_cr)
 
+    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "hermes_3": 1e-3}
+    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "hermes_3": 300}
 
-    timestep: dict[str, float] = {
-        "e190_to_3": 10,
-        "e190_cr_3": 10,
-    }
-    maxiter: dict[str, int] = {
-        "e190_to_3": 50,
-        "e190_cr_3": 50,
-    }
+    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "hermes_3": 20}
 
-    UINF: dict[str, float] = {
-        "e190_to_3": 20,
-        "e190_cr_3": 232,
-    }
-
-    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0}
+    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "hermes_3": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {
-        "e190_cr_3": 273 - 50,
-        "e190_to_3": 273 + 15,
-    }
-    DYNAMICS: dict[str, float] = {
-        "e190_to_3": False,
-        "e190_cr_3": False,
-    }
+    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "hermes_3": 273 + 15}
+    DYNAMICS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "hermes_3": True}
 
     for airplane in planes:
         print("--------------------------------------------------")
@@ -112,7 +103,7 @@ def main() -> None:
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
         options.db.value = db
-        options.solver2D.value = "Xfoil"
+        options.solver2D.value = "Foil2Wake"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = UINF[airplane.name]

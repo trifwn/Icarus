@@ -37,3 +37,7 @@ test.ipynb
 
 # Docs
 docs/build
+
+# Reports
+.~lock*
+report/*

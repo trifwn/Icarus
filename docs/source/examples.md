@@ -1,4 +1,0 @@
-# Airfoil Examples
-
-
-# Airplane Examples

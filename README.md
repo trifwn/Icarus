@@ -58,7 +58,7 @@ Defines Airplane and other Vehicles. Defines an airplane as a part of wings that
 
 Defines Flight State as a trimmed airplane position. The intnent of the class is to one day integrate the control surface movement as well and also account for transient states.
 
-- Input Output
+- Input_Output
 
 Integration with 3d Party Software (solvers). Handles conversion between Icarus objects and input for different solvers. Also handles the output conversion and hamdling
 

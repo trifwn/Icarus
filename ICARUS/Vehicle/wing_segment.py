@@ -257,24 +257,18 @@ class Wing_Segment:
                 ],
             )
             end_point = np.matmul(self.R_MAT, end_point) + self.origin
+            surf = Strip(
+                start_leading_edge=start_point,
+                end_leading_edge=end_point,
+                start_airfoil=self.airfoil,
+                end_airfoil=self.airfoil,
+                start_chord=float(self._chord_dist[i]),
+                end_chord=float(self._chord_dist[i + 1]),
+            )
             if self.is_symmetric:
-                surf = Strip(
-                    start_point,
-                    end_point,
-                    self.airfoil,
-                    float(self._chord_dist[i]),
-                    float(self._chord_dist[i + 1]),
-                )
                 strips.append(surf)
-                symmetric_strips.append(Strip(*surf.return_symmetric()))
+                symmetric_strips.append(surf.return_symmetric())
             else:
-                surf = Strip(
-                    start_point,
-                    end_point,
-                    self.airfoil,
-                    float(self._chord_dist[i]),
-                    float(self._chord_dist[i + 1]),
-                )
                 strips.append(surf)
         self.strips = strips
         self.all_strips = [*strips, *symmetric_strips]

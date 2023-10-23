@@ -73,6 +73,51 @@ class Airfoil(af.Airfoil):  # type: ignore
         # self.getFromWeb()
 
     @classmethod
+    def morph_new_from_two_foils(
+        cls,
+        airfoil1: "Airfoil",
+        airfoil2: "Airfoil",
+        eta: float,
+        n_points: int,
+    ) -> 'Airfoil':
+        """
+        Returns a new airfoil morphed between two airfoils
+
+        Notes:
+            * This is an alternative constructor for the Airfoil class
+
+        Args:
+            airfoil1 (Airfoil): First airfoil
+            airfoil2 (Airfoil): Second airfoil
+            eta (float): Morphing parameter
+            n_points (int): Number of points to generate
+
+        Raises:
+            ValueError: If eta is not in range [0,1]
+
+        Returns:
+            Airfoil: New airfoil morphed between the two airfoils
+        """
+
+        if not 0 <= eta <= 1:
+            raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
+
+        x = np.linspace(0, 1, n_points)
+
+        y_upper_af1 = airfoil1.y_upper(x)
+        y_lower_af1 = airfoil1.y_lower(x)
+        y_upper_af2 = airfoil2.y_upper(x)
+        y_lower_af2 = airfoil2.y_lower(x)
+
+        y_upper_new = y_upper_af1 * (1 - eta) + y_upper_af2 * eta
+        y_lower_new = y_lower_af1 * (1 - eta) + y_lower_af2 * eta
+
+        upper = np.array([x, y_upper_new])
+        lower = np.array([x, y_lower_new])
+
+        return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
+
+    @classmethod
     def naca(cls, naca: str, n_points: int = 200) -> "Airfoil":
         """
         Initialize the Airfoil class from a NACA 4 digit identifier.
@@ -210,16 +255,19 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_lower = y_lower - temp
         y_upper = y_upper - temp
 
+        # Stretch the points so all points move the same amount
+        flap_chord_extension = chord_extension * np.cos(np.deg2rad(flap_angle))
+        x_lower = x_lower * (flap_chord_extension)
+        x_upper = x_upper * (flap_chord_extension)
+        # x_lower = x_lower * (chord_extension)
+        # x_upper = x_upper * (chord_extension)
+
         # Rotate the points according to the hinge (located on the lower side)
         theta: float = -np.deg2rad(flap_angle)
         x_lower = x_lower * np.cos(theta) - y_lower * np.sin(theta)
         x_upper = x_upper * np.cos(theta) - y_upper * np.sin(theta)
         y_lower = x_lower * np.sin(theta) + y_lower * np.cos(theta)
         y_upper = x_upper * np.sin(theta) + y_upper * np.cos(theta)
-
-        # Stretch the points so all points move the same amount
-        x_lower = x_lower * (1 + chord_extension)
-        x_upper = x_upper * (1 + chord_extension)
 
         # Translate the points back
         x_lower = x_lower + flap_hinge
@@ -373,14 +421,23 @@ class Airfoil(af.Airfoil):  # type: ignore
             for x, y in pts.T:
                 file.write(f" {x:.6f} {y:.6f}\n")
 
-    def plot(self) -> None:
+    def plot(self, camber: bool = False, scatter: bool = False) -> None:
         """
         Plots the airfoil in the selig format
+
+        Args:
+            camber (bool, optional): Whether to plot the camber line. Defaults to False.
+            scatter (bool, optional): Whether to plot the airfoil as a scatter plot. Defaults to False.
         """
         pts = self.selig
         x, y = pts
-        plt.plot(x[: self.n_points], y[: self.n_points], "r")
-        plt.plot(x[self.n_points :], y[self.n_points :], "b")
+        if scatter:
+            plt.scatter(x[: self.n_points], y[: self.n_points])
+            plt.scatter(x[self.n_points :], y[self.n_points :])
+        else:
+            plt.plot(x[: self.n_points], y[: self.n_points], "r")
+            plt.plot(x[self.n_points :], y[self.n_points :], "b")
+
         plt.axis("scaled")
 
 
@@ -393,6 +450,14 @@ def interpolate(
     A cubic spline interpolation on a given set of points (x,y)
     Recalculates everything on every call which is far from efficient but does the job for now
     should eventually be replaced by an external helper class
+
+    Args:
+        xa (FloatArray | list[float]): X coordinates of the points
+        ya (FloatArray | list[float]): Y coordinates of the points
+        queryPoints (FloatArray | list[float]): X coordinates of the points to interpolate
+
+    Returns:
+        FloatArray: coordinates of the points to interpolate
     """
 
     # PreCompute() from Paint Mono which in turn adapted:

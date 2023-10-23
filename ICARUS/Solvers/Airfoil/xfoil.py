@@ -55,7 +55,7 @@ def get_xfoil(db: DB) -> Solver:
         "xtr": (
             (0.1, 0.1),
             "Transition points: Lower and upper",
-            tuple[float, float],
+            tuple[float],
         ),
         "print": (
             False,

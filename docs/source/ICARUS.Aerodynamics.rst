@@ -4,15 +4,15 @@ ICARUS.Aerodynamics package
 Subpackages
 -----------
 
-.. toctree::
-   :maxdepth: 4
+.. .. toctree::
+..    :maxdepth: 4
 
-   ICARUS.Aerodynamics.Potential
+..    ICARUS.Aerodynamics.Potential
 
 Module contents
 ---------------
 
-.. automodule:: ICARUS.Aerodynamics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: ICARUS.Aerodynamics
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:

@@ -2,8 +2,6 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 from pty import master_open
@@ -19,6 +17,7 @@ extensions: list[str] = [
     "sphinx.ext.autodoc",
     "sphinx_markdown_parser",
     "myst_parser",
+    'sphinx.ext.napoleon',
 ]
 
 templates_path: list[str] = ["_templates"]
@@ -61,5 +60,4 @@ import sys
 
 sys.path.insert(0, os.path.abspath("/home/tryfonas/data/Uni/Software/hermes/ICARUS"))
 sys.path.insert(0, os.path.abspath("/home/tryfonas/data/Uni/Software/hermes/examples"))
-sys.path.insert(0, os.path.abspath("/home/tryfonas/data/Uni/Software/hermes/testing"))
 sys.path.insert(0, os.path.abspath("/home/tryfonas/data/Uni/Software/hermes/cli"))

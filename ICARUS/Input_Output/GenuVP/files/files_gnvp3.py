@@ -211,7 +211,6 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
         bodies (list[GenuSurface]): list of bodies in GenuSurface format
         solver (str): preferred solver
     """
-
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
         try:
@@ -220,6 +219,8 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
             try:
                 polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
             except KeyError:
+                print(foil_dat.keys())
+                print(foil_dat[f"NACA{bod.airfoil_name}"].keys())
                 raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         # GET FILE

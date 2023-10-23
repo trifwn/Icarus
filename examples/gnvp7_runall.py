@@ -32,7 +32,7 @@ def main() -> None:
     db.load_data()
     foildb: Database_2D = db.foilsDB
     foildb.load_data()
-    
+
     # from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
     # read_polars_2d(foildb, XFLRDB)
 
@@ -42,9 +42,10 @@ def main() -> None:
     # from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
     from examples.Planes.e190_cruise import e190_cruise
     from examples.Planes.e190_takeoff import e190_takeoff_generator
+
     embraer_to: Airplane = e190_takeoff_generator(name="e190_to_7")
     embraer_cr: Airplane = e190_cruise(name="e190_cr_7")
-    
+
     planes.append(embraer_to)
     planes.append(embraer_cr)
 
@@ -62,10 +63,7 @@ def main() -> None:
         "e190_cr_7": 232,
     }
 
-    ALTITUDE: dict[str, int] = {
-        "e190_cr_7": 12000,
-        "e190_to_7": 0
-    }
+    ALTITUDE: dict[str, int] = {"e190_cr_7": 12000, "e190_to_7": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, int] = {
@@ -108,7 +106,7 @@ def main() -> None:
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
         options.db.value = db
-        options.solver2D.value = "Xfoil" # One of "Foil2Wake", "Xfoil", "OpenFoam"
+        options.solver2D.value = "Xfoil"  # One of "Foil2Wake", "Xfoil", "OpenFoam"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = UINF[airplane.name]
@@ -129,7 +127,6 @@ def main() -> None:
         if isinstance(polars, int):
             continue
 
-        
         # # Dynamics
         # ### Define and Trim Plane
         try:

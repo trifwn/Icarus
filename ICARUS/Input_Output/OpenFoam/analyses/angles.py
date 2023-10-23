@@ -23,7 +23,7 @@ def run_angle(
     ANGLEDIR: str,
 ) -> None:
     """Function to run OpenFoam for a given angle given it is already setup
-    
+
     Args:
         REYNDIR (str): REYNOLDS CASE DIRECTORY
         ANGLEDIR (float): ANGLE DIRECTORY

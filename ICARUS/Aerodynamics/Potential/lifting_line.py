@@ -64,7 +64,14 @@ def save_results(
     df: pd.DataFrame,
 ) -> None:
     """
-    Function to save the results of the LLT solver
+    Function to save the results of the wing LLT solver
+
+    :param db: _description_
+    :type db: DB
+    :param plane: _description_
+    :type plane: Airplane
+    :param df: _description_
+    :type df: pd.DataFrame
     """
     plane_dir: str = os.path.join(db.vehiclesDB.DATADIR, plane.name)
     try:

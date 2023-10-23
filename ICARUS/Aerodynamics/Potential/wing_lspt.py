@@ -95,7 +95,7 @@ class Wing_LSPT:
         self.max_chord: float = max_chord
 
         # Get the angle of the trailing edge of each wing segment
-        te_angle_dist: list[float] = []
+        te_angle_dist: list[FloatArray] = []
         for wing_segment in self.wing_segments:
             airfoil: Airfoil = wing_segment.airfoil
             # The trailing edge is the last point of the airfoil
@@ -105,8 +105,8 @@ class Wing_LSPT:
             x: FloatArray = airfoil._x_lower[-3:]
             y: FloatArray = airfoil.camber_line(x)
             dydx: FloatArray = np.repeat(np.gradient(y, x), wing_segment.N)
-            te_angle_dist.append(float(np.arctan(dydx)))
-        self.te_angle_dist: FloatArray = np.concatenate(self.te_angle_dist)
+            te_angle_dist.append(np.arctan(dydx))
+        self.te_angle_dist: FloatArray = np.concatenate(te_angle_dist)
 
         # Create the grid
         N_start: int = 0

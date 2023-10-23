@@ -25,8 +25,6 @@ from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
-# from ICARUS.Software.GenuVP.utils.utils import make_surface_dict
-
 
 def gnvp_angle_case(
     plane: Airplane,

@@ -5,27 +5,19 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
-   ICARUS.Aerodynamics
-   ICARUS.Airfoils
-   ICARUS.Conceptual
-   ICARUS.Control
-   ICARUS.Core
-   ICARUS.Database
-   ICARUS.Enviroment
-   ICARUS.Flight_Dynamics
-   ICARUS.Input_Output
-   ICARUS.Mission
-   ICARUS.Solvers
-   ICARUS.Vehicle
-   ICARUS.Visualization
    ICARUS.Workers
-
-Module contents
----------------
-
-.. automodule:: ICARUS
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   ICARUS.Solvers
+   ICARUS.Airfoils
+   ICARUS.Vehicle
+   ICARUS.Enviroment
+   ICARUS.Database
+   ICARUS.Input_Output
+   ICARUS.Aerodynamics
+   ICARUS.Conceptual
+   ICARUS.Flight_Dynamics
+   ICARUS.Control
+   ICARUS.Mission
+   ICARUS.Visualization
+   ICARUS.Core

@@ -22,36 +22,43 @@ class Strip:
 
     def __init__(
         self,
-        starting_point: ndarray[int, dtype[floating[Any]]] | list[float],
-        ending_point: ndarray[int, dtype[floating[Any]]] | list[float],
-        airfoil: Airfoil,
-        starting_chord: float,
-        ending_chord: float,
+        start_leading_edge: FloatArray | list[float],
+        start_chord: float,
+        start_airfoil: Airfoil,
+        end_leading_edge: FloatArray | list[float],
+        end_chord: float,
+        end_airfoil: Airfoil | None = None,
     ) -> None:
         """
         Initialize the Strip class.
 
         Args:
-            starting_point (ndarray[int, dtype[floating[Any]]]): Starting point of the strip
-            ending_point (ndarray[int, dtype[floating[Any]]]): Ending point of the strip
-            airfoil (Airfoil): Airfoil of the strip.
-            starting_chord (float): Starting chord of the strip
-            ending_chord (float): Ending chord of the strip
+            start_leading_edge (FloatArray | list[float]): Starting point of the strip.
+            start_chord (float): Starting chord.
+            start_airfoil (Airfoil): Starting airfoil.
+            end_leading_edge (FloatArray | list[float]): Ending point of the strip.
+            end_chord (float): Ending chord.
+            end_airfoil (Airfoil, optional): Ending airfoil. Defaults to None. If None, the starting airfoil is used.
         """
-        self.x0: float = starting_point[0]
-        self.y0: float = starting_point[1]
-        self.z0: float = starting_point[2]
+        self.x0: float = start_leading_edge[0]
+        self.y0: float = start_leading_edge[1]
+        self.z0: float = start_leading_edge[2]
 
-        self.x1: float = ending_point[0]
-        self.y1: float = ending_point[1]
-        self.z1: float = ending_point[2]
+        self.x1: float = end_leading_edge[0]
+        self.y1: float = end_leading_edge[1]
+        self.z1: float = end_leading_edge[2]
 
-        self.airfoil: Airfoil = airfoil
-        self.chord: list[float] = [starting_chord, ending_chord]
+        self.airfoil1: Airfoil = start_airfoil
+        if end_airfoil is None:
+            self.airfoil2: Airfoil = start_airfoil
+        else:
+            self.airfoil2 = end_airfoil
+
+        self.chord: list[float] = [start_chord, end_chord]
 
     def return_symmetric(
         self,
-    ) -> tuple[list[float], list[float], Airfoil, float, float]:
+    ) -> "Strip":
         """
         Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
         It also adds a small gap if the strip located along the x axis.
@@ -64,17 +71,30 @@ class Strip:
             end_point: list[float] = [self.x0, 0.01 * self.y1, self.z0]
         else:
             end_point = [self.x0, -self.y0, self.z0]
-        airf: Airfoil = self.airfoil
-        return start_point, end_point, airf, self.chord[1], self.chord[0]
 
-    def set_airfoil(self, airfoil: Airfoil) -> None:
+        symm_strip: Strip = Strip(
+            start_leading_edge=start_point,
+            start_chord=self.chord[1],
+            start_airfoil=self.airfoil1,
+            end_leading_edge=end_point,
+            end_chord=self.chord[0],
+            end_airfoil=self.airfoil2,
+        )
+        return symm_strip
+
+    def set_airfoils(self, airfoil: Airfoil, airfoil2: Airfoil | None = None) -> None:
         """
         Used to set or change the Airfoil.
 
         Args:
-            airfoil (Airfoil): Airfoil Class Object.
+            airfoil (Airfoil): Airfoil for the starting section.
+            airfoil2 (Airfoil, optional): Airfoil for the ending section. Defaults to None. If None, the starting airfoil is used.
         """
-        self.airfoil = airfoil
+        self.airfoil1 = airfoil
+        if airfoil2 is not None:
+            self.airfoil2 = airfoil2
+        else:
+            self.airfoil2 = airfoil
 
     def get_root_strip(self) -> ndarray[Any, dtype[floating[Any]]]:
         """
@@ -84,9 +104,9 @@ class Strip:
             ndarray[Any, dtype[floating[Any]]]: Array of points defining the root.
         """
         strip: list[ndarray[Any, dtype[floating[Any]]]] = [
-            self.x0 + self.chord[0] * np.hstack((self.airfoil._x_upper, self.airfoil._x_lower)),
-            self.y0 + np.repeat(0, 2 * self.airfoil.n_points),
-            self.z0 + self.chord[0] * np.hstack((self.airfoil._y_upper, self.airfoil._y_lower)),
+            self.x0 + self.chord[0] * np.hstack((self.airfoil1._x_upper, self.airfoil1._x_lower)),
+            self.y0 + np.repeat(0, 2 * self.airfoil1.n_points),
+            self.z0 + self.chord[0] * np.hstack((self.airfoil1._y_upper, self.airfoil1._y_lower)),
         ]
         return np.array(strip)
 
@@ -98,9 +118,9 @@ class Strip:
             ndarray[Any, dtype[floating[Any]]]: Array of points defining the tip.
         """
         strip: list[ndarray[Any, dtype[floating[Any]]]] = [
-            self.x1 + self.chord[1] * np.hstack((self.airfoil._x_upper, self.airfoil._x_lower)),
-            self.y1 + np.repeat(0, 2 * self.airfoil.n_points),
-            self.z1 + self.chord[1] * np.hstack((self.airfoil._y_upper, self.airfoil._y_lower)),
+            self.x1 + self.chord[1] * np.hstack((self.airfoil2._x_upper, self.airfoil2._x_lower)),
+            self.y1 + np.repeat(0, 2 * self.airfoil1.n_points),
+            self.z1 + self.chord[1] * np.hstack((self.airfoil2._y_upper, self.airfoil2._y_lower)),
         ]
         return np.array(strip)
 
@@ -138,15 +158,39 @@ class Strip:
             n_points_span,
         )
 
-        strip: ndarray[Any, dtype[Any]] = np.array(
+        # Relative position of the point wrt to the start and end of the strip
+        heta: float = (idx + 1) / (n_points_span + 1)
+
+        airfoil: Airfoil = Airfoil.morph_new_from_two_foils(self.airfoil1, self.airfoil2, heta, self.airfoil1.n_points)
+
+        camber_line: ndarray[Any, dtype[Any]] = np.array(
             [
-                x[idx] + c[idx] * self.airfoil._x_lower,
-                y[idx] + np.repeat(0, self.airfoil.n_points),
-                z[idx] + c[idx] * self.airfoil.camber_line_naca4(self.airfoil._x_lower),
+                x[idx] + c[idx] * airfoil._x_lower,
+                y[idx] + np.repeat(0, airfoil.n_points),
+                z[idx] + c[idx] * airfoil.camber_line(airfoil._x_lower),
             ],
             dtype=float,
         )
-        return strip
+
+        suction_side: ndarray[Any, dtype[Any]] = np.array(
+            [
+                x[idx] + c[idx] * airfoil._x_upper,
+                y[idx] + np.repeat(0, airfoil.n_points),
+                z[idx] + c[idx] * airfoil.y_upper(airfoil._x_upper),
+            ],
+            dtype=float,
+        )
+
+        pressure_side: ndarray[Any, dtype[Any]] = np.array(
+            [
+                x[idx] + c[idx] * airfoil._x_lower,
+                y[idx] + np.repeat(0, airfoil.n_points),
+                z[idx] + c[idx] * airfoil.y_lower(airfoil._x_lower),
+            ],
+            dtype=float,
+        )
+
+        return camber_line
 
     def plot(
         self,
@@ -177,7 +221,7 @@ class Strip:
         xs: list[float] = []
         ys: list[float] = []
         zs: list[float] = []
-        N: int = 2
+        N: int = 10
         for i in range(N):
             x, y, z = self.get_interpolated_section(i, N)
             xs.append(x + movement[0])
@@ -193,9 +237,10 @@ class Strip:
                 Z.shape[1],
                 4,
             )
+            ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
         else:
             my_color = "red"
-        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
+            ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
 
         if pltshow:
             plt.show()

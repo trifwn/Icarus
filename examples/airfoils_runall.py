@@ -28,7 +28,7 @@ def main() -> None:
     read_polars_2d(db.foilsDB, XFLRDB)
 
     # RUN SETUP
-    calcF2W: bool = True  # True
+    calcF2W: bool = False  # True
     calcOpenFoam: bool = False  # True
     calcXFoil: bool = True
     print("Running:")
@@ -39,8 +39,8 @@ def main() -> None:
     # airfoil SETUP
     airfoils: list[Airfoil] = []
 
-    # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    airfoil_names: list[str] = ["0008", "4415", "0012"]
+    airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
+    # airfoil_names: list[str] = ["0012"]
     # Load From DB
     db_airfoils: Struct = db.foilsDB.set_available_airfoils()
     for airfoil_name in airfoil_names:
@@ -147,7 +147,11 @@ def main() -> None:
             xfoil: Solver = get_xfoil(db)
 
             # Import Analysis
-            analysis = xfoil.available_analyses_names()[3]  # Run
+            # 0) Sequential Angle run for multiple reynolds in parallel,
+            # 1) Sequential Angle run for multiple reynolds in serial,
+            # 2) Sequential Angle run for multiple reynolds in parallel with zeroing of the boundary layer between angles,
+            # 3) Sequential Angle run for multiple reynolds in serial with zeroing of the boundary layer between angles,
+            analysis = xfoil.available_analyses_names()[1]  # Run
             xfoil.set_analyses(analysis)
 
             # Get Options
@@ -159,10 +163,10 @@ def main() -> None:
             xfoil_options.airfoil.value = airfoil
             xfoil_options.reynolds.value = reynolds
             xfoil_options.mach.value = MACH
-            # xfoil_options.max_aoa.value = aoa_max
-            # xfoil_options.min_aoa.value = aoa_min
-            # xfoil_options.aoa_step.value = 0.5  # (aoa_max - aoa_min) / (num_of_angles + 1)
-            xfoil_options.angles.value = angles
+            xfoil_options.max_aoa.value = aoa_max
+            xfoil_options.min_aoa.value = aoa_min
+            xfoil_options.aoa_step.value = 0.5
+            # xfoil_options.angles.value = angles # For options 2 and 3
             xfoil.print_analysis_options()
             # Set Solver Options
             xfoil_solver_parameters.max_iter.value = 10000

@@ -20,10 +20,10 @@ import inquirer
 from inquirer import List
 from pyfiglet import Figlet
 
-from ICARUS import __version__
-from ICARUS.Database.db import DB
 from cli.airfoil_cli import airfoil_cli
 from cli.airplane_cli import airplane_cli
+from ICARUS import __version__
+from ICARUS.Database.db import DB
 
 # from runall_3d import run_3d
 
