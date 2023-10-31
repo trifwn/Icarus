@@ -8,7 +8,7 @@ from .failed_approach_criterion import far_2_failed_approach
 from .landing_criterion import far_1_landing
 from .range import range_criterion
 from .takeoff_criterion import far_3_takeoff
-from .usefull_load import usefull_load_criterion
+from .useful_load import usefull_load_criterion
 from ICARUS.Core.types import FloatArray
 
 

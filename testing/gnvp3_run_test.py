@@ -1,12 +1,9 @@
 import time
-from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Workers.solver import Solver
 
 
@@ -14,10 +11,10 @@ def gnvp3_run(mode: str = "Parallel") -> None:
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from examples.Planes.simple_wing import airplane, db
+    from examples.Vehicles.Planes.simple_wing import airplane, db
 
     # Get Environment
-    from ICARUS.Enviroment.definition import EARTH_ISA
+    from ICARUS.Environment.definition import EARTH_ISA
 
     # Get Solver
     from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
@@ -39,7 +36,7 @@ def gnvp3_run(mode: str = "Parallel") -> None:
     AoAmin = -3
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
-    angles_all: ndarray[Any, dtype[floating[Any]]] = np.linspace(AoAmin, AoAmax, NoAoA)
+    angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all if ang != 0]
     u_freestream = 20
     maxiter = 20

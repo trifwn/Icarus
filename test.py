@@ -20,8 +20,8 @@ class BaseAirplaneTests(unittest.TestCase):
     #     S_act: tuple[float] = (4.0,)
     #     MAC_act: tuple[float] = (0.8,)
     #     AREA_act: tuple[float] = (4.0608,)
-    #     CG_act: ndarray[Any, dtype[Any]] = np.array([0.363, 0.0, 0.0])
-    #     I_act: ndarray[Any, dtype[Any]] = np.array(
+    #     CG_act: FloatArray = np.array([0.363, 0.0, 0.0])
+    #     I_act: FloatArray = np.array(
     #         [2.082, 0.017, 2.099, 0.0, 0.139, 0.0],
     #     )
 

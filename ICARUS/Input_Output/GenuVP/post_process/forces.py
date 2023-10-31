@@ -9,6 +9,8 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
+from ICARUS.Core.types import FloatArray
+
 
 def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
     """
@@ -32,7 +34,7 @@ def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
         files: list[str] = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
             name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
-            dat: ndarray[Any, dtype[floating[Any]]] = np.loadtxt("LOADS_aer.dat")[-1]
+            dat: FloatArray = np.loadtxt("LOADS_aer.dat")[-1]
             if folder.startswith("m"):
                 a: list[float] = [-name, *dat]
             else:
@@ -58,7 +60,7 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
         os.chdir(os.path.join(DYNDIR, folder))
         files: list[str] = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
-            dat: ndarray[Any, dtype[floating[Any]]] = np.loadtxt("LOADS_aer.dat")[-1]
+            dat: FloatArray = np.loadtxt("LOADS_aer.dat")[-1]
             if folder == "Trim":
                 pols.append([0, str(folder), *dat])
                 continue
@@ -93,12 +95,12 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
 
 def rotate_forces(
     rawpolars: DataFrame,
-    alpha_deg: float | Series | ndarray[Any, dtype[floating[Any]]],
+    alpha_deg: float | Series | FloatArray,
     preferred: str = "2D",
     save: bool = False,
 ) -> DataFrame:
     data = pd.DataFrame()
-    AoA: float | Series[float] | ndarray[Any, dtype[floating[Any]]] = alpha_deg * np.pi / 180
+    AoA: float | Series[float] | FloatArray = alpha_deg * np.pi / 180
 
     for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
         f_x: Series[Any] = rawpolars[f"TFORC{enc}(1)"]

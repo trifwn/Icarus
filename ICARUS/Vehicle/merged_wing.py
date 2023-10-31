@@ -1,16 +1,13 @@
 """
-Create the wing of an Airplane from wing Segments
+==================
+Merged Wing Class
+==================
 """
-from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.wing_segment import Wing_Segment
@@ -60,7 +57,9 @@ class Merged_Wing:
             NM += segment.M * segment.N
 
     def plot_wing(self) -> None:
-        "Plots the wing"
+        """
+        Plots the wing
+        """
 
         fig: Figure = plt.figure()
         ax: Axes3D = fig.add_subplot(111, projection='3d')

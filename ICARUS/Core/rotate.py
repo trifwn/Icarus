@@ -1,12 +1,9 @@
-from typing import Any
-
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
+
+from ICARUS.Core.types import FloatArray
 
 
-def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating[Any]]]:
+def y_rotation_stability_axes(angle: float) -> FloatArray:
     """
     Returns the rotation matrix for a rotation around the y axis
     The convention for stability axes is with the x-axis pointing forward.
@@ -16,7 +13,7 @@ def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating[Any]]
         angle (float): Angle of rotation in radians
 
     Returns:
-        ndarray[Any, dtype[floating[Any]]]: Rotation matrix
+        FloatArray: Rotation matrix
     """
     return np.array(
         [
@@ -28,17 +25,17 @@ def y_rotation_stability_axes(angle: float) -> ndarray[Any, dtype[floating[Any]]
 
 
 def rotate_vector(
-    vector: ndarray[Any, dtype[floating[Any]]],
-    R: ndarray[Any, dtype[floating[Any]]],
-) -> ndarray[Any, dtype[floating[Any]]]:
+    vector: FloatArray,
+    R: FloatArray,
+) -> FloatArray:
     """
     Returns the rotated vectorsummary
 
     Args:
-        vector (ndarray[Any, dtype[floating[Any]]]): Vector to be rotated
-        R (ndarray[Any, dtype[floating[Any]]]): Rotation matrix
+        vector (FloatArray): Vector to be rotated
+        R (FloatArray): Rotation matrix
 
     Returns:
-        ndarray[Any, dtype[floating[Any]]]: Rotated vector
+        FloatArray: Rotated vector
     """
     return np.array(np.dot(R, vector), dtype=float)

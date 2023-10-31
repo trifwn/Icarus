@@ -9,7 +9,7 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import disturbance_to_case
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.GenuVP.analyses.monitor_progress import parallel_monitor

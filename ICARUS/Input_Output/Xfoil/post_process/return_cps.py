@@ -1,12 +1,10 @@
 from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
+from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output.Xfoil.utils import angles_sepatation
 
 
@@ -14,11 +12,11 @@ def return_cps(
     Reyn: float,
     MACH: float,
     angles: list[float],
-    pts: ndarray[Any, dtype[floating[Any]]],
+    pts: FloatArray,
     ftrip_low: float = 1.0,
     ftrip_up: float = 1.0,
     Ncrit: float = 9,
-) -> tuple[list[Any], list[Any], ndarray[Any, dtype[floating[Any]]]]:
+) -> tuple[list[Any], list[Any], FloatArray]:
     """
     !TO BE DEPRECATED! SHOULD BE LOGGED AUTOMATICALLY AND NOT RETURNED
 
@@ -26,7 +24,7 @@ def return_cps(
         Reyn (float): _description_
         MACH (float): _description_
         angles (list[float]): _description_
-        pts (ndarray[Any, dtype[floating[Any]]]): _description_
+        pts (FloatArray): _description_
         ftrip_low (float, optional): _description_. Defaults to 1.0.
         ftrip_up (float, optional): _description_. Defaults to 1.0.
         Ncrit (float, optional): _description_. Defaults to 9.

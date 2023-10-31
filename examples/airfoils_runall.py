@@ -1,16 +1,12 @@
-import os
 import time
-from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
-from ICARUS.Core.Units import calc_mach
-from ICARUS.Core.Units import calc_reynolds
+from ICARUS.Core.types import FloatArray
+from ICARUS.Core.units import calc_mach
+from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output.OpenFoam.filesOpenFoam import MeshType
@@ -71,13 +67,13 @@ def main() -> None:
     # MACH ESTIMATION
     mach_max: float = 0.085
     # mach_min: float = calc_mach(10, speed_of_sound)
-    # mach: ndarray[Any, dtype[floating[Any]]] = np.linspace(mach_max, mach_min, 10)
+    # mach: FloatArray = np.linspace(mach_max, mach_min, 10)
     MACH: float = mach_max
 
     # REYNOLDS ESTIMATION
     reynolds_max: float = calc_reynolds(u_max, chord_max, viscosity)
     reynolds_min: float = calc_reynolds(u_min, chord_min, viscosity)
-    reynolds: ndarray[Any, dtype[floating[Any]]] = np.logspace(
+    reynolds: FloatArray = np.logspace(
         start=np.log10(reynolds_min),
         stop=np.log10(reynolds_max),
         num=20,
@@ -88,7 +84,7 @@ def main() -> None:
     aoa_min: float = -10
     aoa_max: float = 15
     num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
-    angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+    angles: FloatArray = np.linspace(
         start=aoa_min,
         stop=aoa_max,
         num=num_of_angles,

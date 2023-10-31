@@ -6,11 +6,10 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D
-from numpy import dtype
-from numpy import floating
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
+from ICARUS.Core.types import FloatArray
 from ICARUS.Core.types import FloatOrListArray
 from ICARUS.Database import DB3D
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
@@ -75,20 +74,20 @@ class Airplane:
             self.span = surfaces[0].span
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.masses: list[tuple[float, ndarray[Any, dtype[floating[Any]]]]] = []
-        self.moments: list[ndarray[Any, dtype[floating[Any]]]] = []
+        self.masses: list[tuple[float, FloatArray]] = []
+        self.moments: list[FloatArray] = []
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, ndarray[Any, dtype[floating[Any]]]] = (surface.mass, surface.CG)
+            mass: tuple[float, FloatArray] = (surface.mass, surface.CG)
             mom = surface.inertia
 
             self.M += surface.mass
             self.moments.append(mom)
             self.masses.append(mass)
 
-        self.CG: ndarray[Any, dtype[floating[Any]]] = self.find_cg()
-        self.total_inertia: ndarray[Any, dtype[floating[Any]]] = self.find_inertia(self.CG)
+        self.CG: FloatArray = self.find_cg()
+        self.total_inertia: FloatArray = self.find_inertia(self.CG)
 
         # Define Computed States
         self.states: list[State] = []
@@ -141,7 +140,7 @@ class Airplane:
 
     def add_point_masses(
         self,
-        masses: list[tuple[float, ndarray[Any, dtype[floating[Any]]]]],
+        masses: list[tuple[float, FloatArray]],
     ) -> None:
         """
         Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
@@ -154,7 +153,7 @@ class Airplane:
         self.CG = self.find_cg()
         self.total_inertia = self.find_inertia(self.CG)
 
-    def find_cg(self) -> ndarray[Any, dtype[floating[Any]]]:
+    def find_cg(self) -> FloatArray:
         """
         Find the center of gravity of the plane
 
@@ -172,7 +171,7 @@ class Airplane:
             z_cm += m * r[2]
         return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
-    def find_inertia(self, point: ndarray[Any, dtype[floating[Any]]]) -> ndarray[Any, dtype[floating[Any]]]:
+    def find_inertia(self, point: FloatArray) -> FloatArray:
         """
         Find the inertia of the plane about a point
 
@@ -223,7 +222,7 @@ class Airplane:
         self,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
-        movement: ndarray[Any, dtype[floating[Any]]] | None = None,
+        movement: FloatArray | None = None,
     ) -> None:
         """
         Visualize the plane

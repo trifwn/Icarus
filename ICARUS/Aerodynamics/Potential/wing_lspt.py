@@ -16,7 +16,7 @@ from traitlets import Float
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import Environment
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
@@ -706,7 +706,7 @@ class Wing_LSPT:
                 self.strip_Cm_2D[N + j] = Cm
 
                 surface: float = float(self.chords[N + j]) * dy
-                vel_mag: float = np.sqrt(self.w_induced_strips[N + j] ** 2 + uinf**2)
+                vel_mag: float = float(np.sqrt(self.w_induced_strips[N + j] ** 2 + uinf**2))
                 dynamic_pressure: float = 0.5 * self.dens * vel_mag**2
 
                 # "Integrate" the CL and CD of each strip to get the total L, D and My

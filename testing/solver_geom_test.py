@@ -27,7 +27,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> tuple[list[FloatArra
     Returns:
         tuple[list[FloatArray], list[FloatArray]]: Meshgrid of the geometry from the gnvp results and the airplane.
     """
-    from examples.Planes.simple_wing import airplane
+    from examples.Vehicles.Planes.simple_wing import airplane
 
     # Get The correct wake data function
     if gnvp_version == 3:

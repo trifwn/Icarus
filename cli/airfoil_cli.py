@@ -8,10 +8,11 @@ from inquirer import prompt
 from inquirer import Text
 from tqdm.asyncio import tqdm
 
+from .cli_home import cli_home
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
-from ICARUS.Core.Units import calc_mach
-from ICARUS.Core.Units import calc_reynolds
+from ICARUS.Core.units import calc_mach
+from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database.db import DB
 from ICARUS.Solvers.Airfoil.f2w_section import get_f2w_section
 from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
@@ -259,7 +260,7 @@ def set_solver_parameters(solver: Solver) -> None:
             return set_solver_parameters(solver)
 
 
-def airfoil_cli(db: DB) -> None:
+def airfoil_cli(db: DB, return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
 
@@ -397,8 +398,11 @@ def airfoil_cli(db: DB) -> None:
     end_time: float = time.time()
     print(f"Total time: {end_time - start_time}")
     print("########################################################################")
-    print("Program Terminated")
+    print("All analyses have terminated")
     print("########################################################################")
+
+    if return_home:
+        cli_home(db)
 
 
 if __name__ == "__main__":

@@ -4,19 +4,16 @@ It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
 import time
-from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import EARTH_ISA
+from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
 from ICARUS.Vehicle.plane import Airplane
@@ -40,8 +37,8 @@ def main() -> None:
     planes: list[Airplane] = []
 
     # from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
-    from examples.Planes.e190_cruise import e190_cruise
-    from examples.Planes.e190_takeoff import e190_takeoff_generator
+    from Vehicles.Planes.e190_cruise import e190_cruise
+    from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
 
     embraer_to: Airplane = e190_takeoff_generator(name="e190_to_7")
     embraer_cr: Airplane = e190_cruise(name="e190_cr_7")
@@ -95,7 +92,7 @@ def main() -> None:
         AOA_MIN = -6
         AOA_MAX = 6
         NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
-        angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        angles: FloatArray = np.linspace(
             AOA_MIN,
             AOA_MAX,
             NO_AOA,

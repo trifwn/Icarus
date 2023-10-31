@@ -4,12 +4,10 @@ from subprocess import call
 from threading import Thread
 from typing import Any
 
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from tqdm.auto import tqdm
 
 from ICARUS.Airfoils.airfoil import Airfoil
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database import BASEOPENFOAM
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output import runOFscript
@@ -54,7 +52,7 @@ def run_angles(
 def angles_serial(
     db: DB,
     airfoil: Airfoil,
-    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    angles: list[float] | FloatArray,
     reynolds: float,
     mach: float,
     solver_options: dict[str, Any],
@@ -65,7 +63,7 @@ def angles_serial(
     Args:
         db (DB): Database
         airfoil (Airfoil): Airfoil Object
-        angles (list[float] | ndarray[Any, dtype[floating[Any]]]): List of angles to run
+        angles (list[float] | FloatArray): List of angles to run
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         solver_options (dict[str, Any]): Solver Options in a dictionary
@@ -127,7 +125,7 @@ def angles_serial(
 def angles_parallel(
     db: DB,
     airfoil: Airfoil,
-    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    angles: list[float] | FloatArray,
     reynolds: float,
     mach: float,
     solver_options: dict[str, Any],
@@ -138,7 +136,7 @@ def angles_parallel(
     Args:
         db (DB): Database
         airfoil (Airfoil): Airfoil Object
-        angles (list[float] | ndarray[Any, dtype[floating[Any]]]): List of angles
+        angles (list[float] | FloatArray): List of angles
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         solver_options (dict[str, Any]): Dictionary of solver options

@@ -316,7 +316,7 @@ def grid_file(body_dict: GenuSurface) -> None:
             the body in GenuSurface format.
     """
     with open(f"{body_dict.grid_fname}", "w") as file:
-        grid: ndarray[Any, dtype[floating[Any]]] = body_dict.Grid
+        grid: FloatArray = body_dict.Grid
         file.write("\n")
         for n_strip in grid:  # For each strip
             for m_point in n_strip:  # For each point in the strip

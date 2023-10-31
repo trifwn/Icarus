@@ -1,7 +1,7 @@
 import os
 import re
 
-from ICARUS.Core.tail import tail
+from ICARUS.Core.file_tail import tail
 
 
 def latest_time(ANGLEDIR: str) -> int | None:

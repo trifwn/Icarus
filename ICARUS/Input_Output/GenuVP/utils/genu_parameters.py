@@ -7,7 +7,7 @@ import numpy as np
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.Vehicle.plane import Airplane
 

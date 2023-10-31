@@ -6,7 +6,7 @@ import numpy as np
 from ICARUS.Conceptual.Criteria.FAR.get_all_criteria import get_all_far_criteria
 from ICARUS.Conceptual.Criteria.FAR.helper_functions import drag_coeff_skin
 from ICARUS.Core.types import FloatArray
-from ICARUS.Core.Units import si_to_imperial
+from ICARUS.Core.units import si_to_imperial
 
 
 class ConceptAirplane:

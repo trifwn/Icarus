@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import DataFrame
@@ -39,8 +40,7 @@ def plot_airplane_polars(
     j: int = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(i, j)  # type: ignore
-
+    axs: ndarray[Axes] = fig.subplots(i, j)  # type: ignore
     fig.suptitle(f"{title}", fontsize=16)
 
     for plot, ax in zip(plots, axs.flatten()[: len(plots)]):

@@ -5,13 +5,11 @@ from threading import Thread
 from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS.Airfoils.airfoil import Airfoil
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.db import DB
 from ICARUS.Input_Output.F2Wsection.analyses.monitor_progress import parallel_monitor
 from ICARUS.Input_Output.F2Wsection.analyses.monitor_progress import serial_monitor
@@ -25,7 +23,7 @@ def f2w_single_reynolds(
     airfoil: Airfoil,
     reynolds: float,
     mach: float,
-    all_angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    all_angles: list[float] | FloatArray,
     solver_options: dict[str, Any],
 ) -> None:
     HOMEDIR, _, REYNDIR, _ = db.foilsDB.generate_airfoil_directories(

@@ -2,17 +2,15 @@ import os
 from threading import Thread
 from typing import Any
 
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 from tqdm import tqdm
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
 from ICARUS.Database.utils import angle_to_case
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.GenuVP.analyses.monitor_progress import parallel_monitor
 from ICARUS.Input_Output.GenuVP.analyses.monitor_progress import serial_monitor
 from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import run_gnvp3_case
@@ -133,7 +131,7 @@ def run_gnvp_angles(
         timestep (float): Timestep for simulations
         u_freestream (float): Freestream Velocity
         angles (list[float]): List of angles to run
-        environment (Environment): Enviroment Object
+        environment (Environment): Environment Object
         solver_options (dict[str, Any]): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
@@ -215,7 +213,7 @@ def run_gnvp_angles_parallel(
     maxiter: int,
     timestep: float,
     u_freestream: float,
-    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    angles: list[float] | FloatArray,
     environment: Environment,
     genu_version: int,
     solver_options: dict[str, Any],
@@ -229,7 +227,7 @@ def run_gnvp_angles_parallel(
         maxiter (int): Number of max iterations for each simulation
         timestep (float): Timestep between each iteration
         u_freestream (float): Freestream Velocity Magnitude
-        angles (list[float] | ndarray[Any, dtype[floating[Any]]]): List of angles to run
+        angles (list[float] | FloatArray): List of angles to run
         environment (Environment): Environment Object
         solver_options (dict[str, Any]): Solver Options
     """

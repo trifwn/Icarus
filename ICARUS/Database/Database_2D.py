@@ -2,13 +2,9 @@ import os
 import re
 import shutil
 from time import sleep
-from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 
 from . import APPHOME
@@ -17,6 +13,7 @@ from . import XFLRDB
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 
 
 class Database_2D:
@@ -225,7 +222,7 @@ class Database_2D:
         self,
         airfoil: Airfoil,
         reynolds: float,
-        angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+        angles: list[float] | FloatArray,
     ) -> tuple[str, str, str, list[str]]:
         AFDIR: str = os.path.join(
             self.DATADIR,

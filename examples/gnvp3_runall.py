@@ -7,15 +7,13 @@ import time
 from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import EARTH_ISA
+from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Vehicle.plane import Airplane
@@ -40,17 +38,17 @@ def main() -> None:
     # # Get Plane
     planes: list[Airplane] = []
 
-    from Planes.e190_takeoff import e190_takeoff_generator
+    from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
 
     embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
     # planes.append(embraer_to)
 
-    from Planes.e190_cruise import e190_cruise
+    from Vehicles.Planes.e190_cruise import e190_cruise
 
     embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
     # planes.append(embraer_cr)
 
-    from Planes.hermes import hermes
+    from Vehicles.Planes.hermes import hermes
 
     hermes_3: Airplane = hermes(airfoils=foildb.airfoils, name="hermes_3")
     planes.append(hermes_3)
@@ -72,7 +70,7 @@ def main() -> None:
         print(f"Running {airplane.name}")
         print("--------------------------------------------------")
 
-        # # Import Enviroment
+        # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
         print(EARTH_ISA)
 
@@ -92,7 +90,7 @@ def main() -> None:
         AOA_MIN = -5
         AOA_MAX = 6
         NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
-        angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        angles: FloatArray = np.linspace(
             AOA_MIN,
             AOA_MAX,
             NO_AOA,

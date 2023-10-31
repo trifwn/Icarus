@@ -1,7 +1,7 @@
 from typing import Any
 
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run_7
 from ICARUS.Input_Output.GenuVP.analyses.angles import run_gnvp7_angles

@@ -1,14 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from time import sleep
-from typing import Any
 from typing import Optional
 
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from tqdm.auto import tqdm
 
+from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output.OpenFoam.post_process.progress import latest_time
 
 
@@ -43,7 +40,7 @@ def serial_monitor(
 
 def parallel_monitor(
     ANGLEDIRS: list[str],
-    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    angles: list[float] | FloatArray,
     max_iter: int,
     refresh_progress: float = 2,
 ) -> None:

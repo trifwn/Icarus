@@ -1,18 +1,15 @@
 import os
 import shutil
-from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database.Database_2D import Database_2D as foilsdb
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
@@ -317,7 +314,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
         else:
             # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
             with open(f"{bod.name}.WG", "w") as file:
-                grid: ndarray[Any, dtype[floating[Any]]] = bod.Grid
+                grid: FloatArray = bod.Grid
                 for n_strip in grid:  # For each strip
                     file.write("\n")
                     for m_point in n_strip:  # For each point in the strip

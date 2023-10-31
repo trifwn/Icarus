@@ -27,6 +27,8 @@ dependencies = [
     "pre-commit",
     "tqdm",
     "xmltodict",
+    "inquirer",
+    "pyfiglet",
     #"xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     #"xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
 ]

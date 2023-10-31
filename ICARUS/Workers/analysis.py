@@ -17,6 +17,20 @@ jsonpickle_numpy.register_handlers()
 
 
 class Analysis:
+    """
+    Analysis Class. Used to define an analysis and store all the necessary information for it.
+    The analysis can be run by calling the object. The results can be obtained by calling the get_results function.
+
+    Args:
+        solver_name (str): Name of the associated solver
+        analysis_name (str): Name of the analysis
+        run_function (Callable[..., Any]): Function to run the analysis
+        options (Struct | dict[str, Any]): Analysis options
+        solver_options (Struct | dict[str,Any], optional): Solver Options . Defaults to {}.
+        unhook (Callable[...,Any] | None, optional): Function to run after the analysis Mainly for post processing. Defaults to None.
+
+    """
+
     def __init__(
         self,
         solver_name: str,

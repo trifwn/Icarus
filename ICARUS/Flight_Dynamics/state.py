@@ -14,16 +14,16 @@ from pandas import DataFrame
 from tabulate import tabulate
 
 from .disturbances import Disturbance as dst
-from .dynamic_plane import StabilityDerivativesDS
-from .pertrubations import lateral_pertrubations
-from .pertrubations import longitudal_pertrubations
+from .perturbations import lateral_pertrubations
+from .perturbations import longitudal_pertrubations
 from .Stability.lateralFD import lateral_stability
 from .Stability.longitudalFD import longitudal_stability
+from .Stability.stability_derivatives import StabilityDerivativesDS
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB3D
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.GenuVP.post_process.forces import rotate_forces
 
 if TYPE_CHECKING:

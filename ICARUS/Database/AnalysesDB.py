@@ -11,7 +11,7 @@ class AnalysesDB:
         self.DATADIR: str = ANALYSESDB
         self.data = Struct()
 
-    def loadData(self) -> None:
+    def load_data(self) -> None:
         self.scan()
 
     def scan(self) -> None:

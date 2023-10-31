@@ -1,6 +1,6 @@
 # ICARUS
 
-Major Refactoring: Welcoming Version 0.1.0
+Major Refactoring: Welcoming Version 0.2.0
 ---
 
 ## The project is under Work
@@ -101,6 +101,9 @@ The end goal of the project is to come packaged with all 3d party software. Righ
 
 ## Tasks To-Do
 
+- Add __init__ includes to all modules
+- Add __init__ rst description to all modules
+- Add doctests
 - Add the control parameters
 - Make Mission Class and Module the whole flight envelope
 - Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers

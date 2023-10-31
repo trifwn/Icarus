@@ -1,3 +1,55 @@
+"""
+Airfoil class to represent an airfoil. Inherits from airfoil class from the airfoils module.
+The airfoil class is used to generate, store, and manipulate airfoils. To initialize the class
+you need to pass the upper and lower surface coordinates. The class also contains alternative
+constructors to generate airfoils from NACA 4 and 5 digit identifiers.
+
+To initialize the Airfoil class, you need to pass the upper and lower surface coordinates.
+
+>>> from ICARUS.Airfoils.airfoil import Airfoil
+>>> naca0012 = Airfoil.naca("0012", n_points=200)
+>>> naca0012.plot()
+
+Alternatively, you can initialize the class from a file.
+
+>>> naca0008 = Airfoil.load_from_file("naca0008.dat")
+>>> naca0008.plot()
+
+There is functionality to get the data from the web. This is done by fetching the data from the UIUC airfoil database.
+
+>>> naca0008 = Airfoil.naca("0008", n_points=200)
+>>> naca0008.load_from_web()
+>>> naca0008.plot()
+
+Finally, you can initialize the class from a morph between two airfoils.
+
+>>> naca0008 = Airfoil.naca("0008", n_points=200)
+>>> naca0012 = Airfoil.naca("0012", n_points=200)
+>>> naca_merged = Airfoil.morph_new_from_two_foils(naca0008, naca0012, eta=0.5, n_points=200)
+
+The class also contains methods to generate a flapped airfoil.
+
+>>> naca0008_flapped = naca0008.flap_airfoil(flap_hinge=0.5, chord_extension=0.2, flap_angle=20, plotting=True)
+
+The class contains methods to save the airfoil in the selig format (starting from the trailing edge) or in
+the reverse selig format (starting from the leading edge).
+
+>>> file_name = "naca0008"
+>>> naca0008.save_selig_te(file_name)
+>>> naca0008.save_le(file_name)
+
+Finally, the class inherits from the airfoil class from the airfoils module. This means that you can use all the
+methods from the original airfoil class which include but are not limited to:
+
+>>> x = np.linspace(0, 1, 200)
+>>> naca0008.camber_line(x)
+>>> naca0008.camber_line_angle(x)
+>>> naca0008.y_upper(x)
+>>> naca0008.y_lower(x)
+>>> naca0008.all_points()
+
+
+"""
 import os
 import re
 import urllib.request
@@ -11,6 +63,7 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
+from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 
@@ -79,7 +132,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         airfoil2: "Airfoil",
         eta: float,
         n_points: int,
-    ) -> 'Airfoil':
+    ) -> "Airfoil":
         """
         Returns a new airfoil morphed between two airfoils
 
@@ -321,7 +374,7 @@ class Airfoil(af.Airfoil):  # type: ignore
     def camber_line_naca4(
         self,
         points: FloatArray,
-    ) -> ndarray[Any, dtype[floating[Any]]]:
+    ) -> FloatArray:
         """
         Function to generate the camber line for a NACA 4 digit airfoil.
         Returns the camber line for a given set of x coordinates.
@@ -330,12 +383,12 @@ class Airfoil(af.Airfoil):  # type: ignore
             points (FloatArray): X coordinates for which we need the camber line
 
         Returns:
-            ndarray[Any, dtype[floating[Any]]]: X,Y coordinates of the camber line
+            FloatArray: X,Y coordinates of the camber line
         """
         p: float = self.p
         m: float = self.m
 
-        res: ndarray[Any, dtype[floating[Any]]] = np.zeros_like(points)
+        res: FloatArray = np.zeros_like(points)
         for i, x in enumerate(points):
             if x < p:
                 res[i] = m / p**2 * (2 * p * x - x**2)
@@ -439,167 +492,3 @@ class Airfoil(af.Airfoil):  # type: ignore
             plt.plot(x[self.n_points :], y[self.n_points :], "b")
 
         plt.axis("scaled")
-
-
-def interpolate(
-    xa: FloatArray | list[float],
-    ya: FloatArray | list[float],
-    queryPoints: FloatArray | list[float],
-) -> FloatArray:
-    """
-    A cubic spline interpolation on a given set of points (x,y)
-    Recalculates everything on every call which is far from efficient but does the job for now
-    should eventually be replaced by an external helper class
-
-    Args:
-        xa (FloatArray | list[float]): X coordinates of the points
-        ya (FloatArray | list[float]): Y coordinates of the points
-        queryPoints (FloatArray | list[float]): X coordinates of the points to interpolate
-
-    Returns:
-        FloatArray: coordinates of the points to interpolate
-    """
-
-    # PreCompute() from Paint Mono which in turn adapted:
-    # NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING
-    # ISBN 0-521-43108-5, page 113, section 3.3.
-    # http://paint-mono.googlecode.com/svn/trunk/src/PdnLib/SplineInterpolator.cs
-
-    # number of points
-    n: int = len(xa)
-    u: FloatArray = np.zeros(n)
-    y2: FloatArray = np.zeros(n)
-
-    for i in range(1, n - 1):
-        # This is the decomposition loop of the tridiagonal algorithm.
-        # y2 and u are used for temporary storage of the decomposed factors.
-
-        wx = xa[i + 1] - xa[i - 1]
-        sig = (xa[i] - xa[i - 1]) / wx
-        p = sig * y2[i - 1] + 2.0
-
-        y2[i] = (sig - 1.0) / p
-
-        ddydx = (ya[i + 1] - ya[i]) / (xa[i + 1] - xa[i]) - (ya[i] - ya[i - 1]) / (xa[i] - xa[i - 1])
-
-        u[i] = (6.0 * ddydx / wx - sig * u[i - 1]) / p
-
-    y2[n - 1] = 0
-
-    # This is the backsubstitution loop of the tridiagonal algorithm
-    # ((int i = n - 2; i >= 0; --i):
-    for i in range(n - 2, -1, -1):
-        y2[i] = y2[i] * y2[i + 1] + u[i]
-
-    # interpolate() adapted from Paint Mono which in turn adapted:
-    # NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING
-    # ISBN 0-521-43108-5, page 113, section 3.3.
-    # http://paint-mono.googlecode.com/svn/trunk/src/PdnLib/SplineInterpolator.cs
-
-    results = np.zeros(n)
-
-    # loop over all query points
-    for i in range(len(queryPoints)):
-        # bisection. This is optimal if sequential calls to this
-        # routine are at random values of x. If sequential calls
-        # are in order, and closely spaced, one would do better
-        # to store previous values of klo and khi and test if
-
-        klo = 0
-        khi = n - 1
-
-        while khi - klo > 1:
-            k = (khi + klo) >> 1
-            if xa[k] > queryPoints[i]:
-                khi = k
-            else:
-                klo = k
-
-        h = xa[khi] - xa[klo]
-        a = (xa[khi] - queryPoints[i]) / h
-        b = (queryPoints[i] - xa[klo]) / h
-
-        # Cubic spline polynomial is now evaluated.
-        results[i] = a * ya[klo] + b * ya[khi] + ((a * a * a - a) * y2[klo] + (b * b * b - b) * y2[khi]) * (h * h) / 6.0
-
-    return results
-
-
-def gen_NACA5_airfoil(number: str, n_points: int, finite_TE: bool = False) -> tuple[FloatArray, FloatArray]:
-    """
-    Generates a NACA 5 digit airfoil
-
-    Args:
-        number (str): NACA 5 digit identifier
-        n_points (int): Number of points to generate
-        finite_TE (bool, optional): Wheter to have a finite TE. Defaults to False.
-
-    Returns:
-        tuple[FloatArray, FloatArray]: Upper and lower surface coordinates
-    """
-
-    naca1 = int(number[0])
-    naca23 = int(number[1:3])
-    naca45 = int(number[3:])
-
-    cld: float = naca1 * (3.0 / 2.0) / 10.0
-    p: float = 0.5 * naca23 / 100.0
-    t: float = naca45 / 100.0
-
-    a0: float = +0.2969
-    a1: float = -0.1260
-    a2: float = -0.3516
-    a3: float = +0.2843
-
-    if finite_TE:
-        a4: float = -0.1015  # For finite thickness trailing edge
-    else:
-        a4 = -0.1036  # For zero thickness trailing edge
-
-    x = np.linspace(0.0, 1.0, n_points + 1)
-
-    yt: list[float] = [
-        5 * t * (a0 * np.sqrt(xx) + a1 * xx + a2 * pow(xx, 2) + a3 * pow(xx, 3) + a4 * pow(xx, 4)) for xx in x
-    ]
-
-    P: list[float] = [0.05, 0.1, 0.15, 0.2, 0.25]
-    M: list[float] = [0.0580, 0.1260, 0.2025, 0.2900, 0.3910]
-    K: list[float] = [361.4, 51.64, 15.957, 6.643, 3.230]
-
-    m = interpolate(P, M, [p])[0]
-    k1 = interpolate(M, K, [m])[0]
-
-    xc1: list[float] = [xx for xx in x if xx <= p]
-    xc2: list[float] = [xx for xx in x if xx > p]
-    xc: list[float] = xc1 + xc2
-
-    if p == 0:
-        xu: list[float] | FloatArray = x
-        yu: list[float] | FloatArray = yt
-
-        xl: list[float] | FloatArray = x
-        yl: list[float] | FloatArray = [-x for x in yt]
-
-        zc = [0] * len(xc)
-    else:
-        yc1 = [k1 / 6.0 * (pow(xx, 3) - 3 * m * pow(xx, 2) + pow(m, 2) * (3 - m) * xx) for xx in xc1]
-        yc2 = [k1 / 6.0 * pow(m, 3) * (1 - xx) for xx in xc2]
-        zc = [cld / 0.3 * xx for xx in yc1 + yc2]
-
-        dyc1_dx: list[float] = [
-            cld / 0.3 * (1.0 / 6.0) * k1 * (3 * pow(xx, 2) - 6 * m * xx + pow(m, 2) * (3 - m)) for xx in xc1
-        ]
-        dyc2_dx: list[float] = [cld / 0.3 * -(1.0 / 6.0) * k1 * pow(m, 3)] * len(xc2)
-
-        dyc_dx: list[float] = dyc1_dx + dyc2_dx
-        theta: list[float] = [np.arctan(xx) for xx in dyc_dx]
-
-        xu = [xx - yy * np.sin(zz) for xx, yy, zz in zip(x, yt, theta)]
-        yu = [xx + yy * np.cos(zz) for xx, yy, zz in zip(zc, yt, theta)]
-
-        xl = [xx + yy * np.sin(zz) for xx, yy, zz in zip(x, yt, theta)]
-        yl = [xx - yy * np.cos(zz) for xx, yy, zz in zip(zc, yt, theta)]
-
-    upper: FloatArray = np.array([xu, yu])
-    lower: FloatArray = np.array([xl, yl])
-    return upper, lower

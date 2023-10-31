@@ -4,11 +4,9 @@ from time import sleep
 from typing import Any
 from typing import Optional
 
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from tqdm.auto import tqdm
 
+from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output.GenuVP.post_process.progress import latest_time
 
 
@@ -47,7 +45,7 @@ def serial_monitor(
 
 def parallel_monitor(
     CASEDIRS: list[str],
-    variables: list[str] | list[float] | ndarray[Any, dtype[floating[Any]]],
+    variables: list[str] | list[float] | FloatArray,
     max_iter: int,
     refresh_progress: float = 0.2,
 ) -> None:
@@ -64,7 +62,7 @@ def parallel_monitor(
                 desc=f"\t\t{var} Progress:",
                 position=i,
                 leave=True,
-                colour='#cc3300',
+                colour="#cc3300",
                 bar_format="{l_bar}{bar:30}{r_bar}",
             )
             progress_bars.append(pbar)

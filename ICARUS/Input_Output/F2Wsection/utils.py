@@ -1,12 +1,8 @@
-from typing import Any
-
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
+from ICARUS.Core.types import FloatArray
 
 
 def separate_angles(
-    all_angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    all_angles: list[float] | FloatArray,
 ) -> tuple[list[float], list[float]]:
     """Given A list of angles it separates them in positive and negative
 

@@ -6,10 +6,9 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
+
+from ICARUS.Core.types import FloatArray
 
 
 def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
@@ -54,7 +53,7 @@ def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
 def make_polars_bash(
     CASEDIR: str,
     HOMEDIR: str,
-) -> ndarray[Any, dtype[floating[Any]]]:
+) -> FloatArray:
     """
     Make the polars from the forces and return an np array with them
 
@@ -62,7 +61,7 @@ def make_polars_bash(
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
     Returns:
-        ndarray[Any, dtype[floating[Any]]]: Polars
+        FloatArray: Polars
     """
     os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]
@@ -92,6 +91,6 @@ def make_polars_bash(
     for item in data:
         n: list[str] = item.split()
         nums.append([float(i) for i in n])
-    clcd: ndarray[Any, dtype[floating[Any]]] = np.array(nums)
+    clcd: FloatArray = np.array(nums)
     os.chdir(HOMEDIR)
     return clcd

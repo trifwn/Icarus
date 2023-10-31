@@ -1,8 +1,4 @@
-from typing import Any
-
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
+from ICARUS.Core.types import FloatArray
 
 
 def geom() -> (
@@ -10,13 +6,13 @@ def geom() -> (
         float,
         float,
         float,
-        ndarray[Any, dtype[floating[Any]]],
-        ndarray[Any, dtype[floating[Any]]],
+        FloatArray,
+        FloatArray,
     ]
 ):
     print("Testing Geometry...")
 
-    from examples.Planes.simple_wing import Simplewing
+    from examples.Vehicles.Planes.simple_wing import Simplewing
 
     return (
         Simplewing.S,

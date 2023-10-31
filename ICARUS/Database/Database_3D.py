@@ -6,14 +6,13 @@ import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 import numpy as np
 import pandas as pd
-from numpy import dtype
 from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 
 from . import APPHOME
 from . import DB3D
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.GenuVP.post_process.convergence import get_loads_convergence_3
 from ICARUS.Vehicle.plane import Airplane
@@ -262,27 +261,27 @@ class Database_3D:
         AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
 
         for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-            Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(1)"]
+            Fx: FloatArray = self.raw_data[plane][f"TFORC{enc}(1)"]
             # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-            Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TFORC{enc}(3)"]
+            Fz: FloatArray = self.raw_data[plane][f"TFORC{enc}(3)"]
 
             # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-            My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[plane][f"TAMOM{enc}(2)"]
+            My: FloatArray = self.raw_data[plane][f"TAMOM{enc}(2)"]
             # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
-            Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
+            Fx_new: FloatArray = Fx * np.cos(
                 AoA,
             ) + Fz * np.sin(
                 AoA,
             )
             # Fy_new = Fy
-            Fz_new: ndarray[Any, dtype[floating[Any]]] = -Fx * np.sin(
+            Fz_new: FloatArray = -Fx * np.sin(
                 AoA,
             ) + Fz * np.cos(
                 AoA,
             )
 
-            My_new: ndarray[Any, dtype[floating[Any]]] = My
+            My_new: FloatArray = My
 
             Q: float = 0.5 * 1.225 * 20.0**2
             try:
@@ -317,27 +316,27 @@ class Database_3D:
 
         for enc, name in zip(["", "_2D"], ["Potential", "2D"]):
             AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"]["AoA"] * np.pi / 180
-            Fx: ndarray[Any, dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"][f"D{enc}"]
+            Fx: FloatArray = self.raw_data[f"{plane}_LSPT"][f"D{enc}"]
             # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-            Fz: ndarray[Any, dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"][f"L{enc}"]
+            Fz: FloatArray = self.raw_data[f"{plane}_LSPT"][f"L{enc}"]
 
             # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-            My: ndarray[Any, dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"][f"My{enc}"]
+            My: FloatArray = self.raw_data[f"{plane}_LSPT"][f"My{enc}"]
             # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
-            Fx_new: ndarray[Any, dtype[floating[Any]]] = Fx * np.cos(
+            Fx_new: FloatArray = Fx * np.cos(
                 0 * AoA,
             ) + Fz * np.sin(
                 0 * AoA,
             )
             # Fy_new = Fy
-            Fz_new: ndarray[Any, dtype[floating[Any]]] = -Fx * np.sin(
+            Fz_new: FloatArray = -Fx * np.sin(
                 0 * AoA,
             ) + Fz * np.cos(
                 0 * AoA,
             )
 
-            My_new: ndarray[Any, dtype[floating[Any]]] = My
+            My_new: FloatArray = My
 
             Q: float = 0.5 * 1.225 * 20.0**2
             try:

@@ -10,10 +10,11 @@ from inquirer import Path
 from inquirer import prompt
 from inquirer import Text
 
+from .cli_home import cli_home
 from ICARUS.Core.struct import Struct
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import EARTH_ISA
-from ICARUS.Enviroment.definition import Environment
+from ICARUS.Environment.definition import EARTH_ISA
+from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
@@ -422,7 +423,7 @@ def set_solver_parameters(solver: Solver) -> None:
             return set_solver_parameters(solver)
 
 
-def airplane_cli(db: DB) -> None:
+def airplane_cli(db: DB, return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
 
@@ -556,6 +557,9 @@ def airplane_cli(db: DB) -> None:
     print("########################################################################")
     print("Program Terminated")
     print("########################################################################")
+
+    if return_home:
+        cli_home(db)
 
 
 if __name__ == "__main__":

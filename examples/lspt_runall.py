@@ -9,19 +9,17 @@ import time
 from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
-from Planes.e190_cruise import e190_cruise
-from Planes.e190_takeoff import e190_takeoff_generator
-from Planes.hermes import hermes
-from Planes.wing_variations import wing_var_chord_offset
+from Vehicles.Planes.e190_cruise import e190_cruise
+from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
+from Vehicles.Planes.hermes import hermes
+from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Core.types import FloatArray
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.db import DB
-from ICARUS.Enviroment.definition import EARTH_ISA
+from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Solvers.Airplane.lspt import get_lspt
@@ -75,7 +73,7 @@ def main() -> None:
         print(f"Running {airplane.name}")
         print("--------------------------------------------------")
 
-        # # Import Enviroment
+        # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
         print(EARTH_ISA)
 
@@ -93,7 +91,7 @@ def main() -> None:
         AOA_MIN = -5
         AOA_MAX = 6
         NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
-        angles: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        angles: FloatArray = np.linspace(
             AOA_MIN,
             AOA_MAX,
             NO_AOA,

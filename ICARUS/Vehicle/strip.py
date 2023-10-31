@@ -96,28 +96,28 @@ class Strip:
         else:
             self.airfoil2 = airfoil
 
-    def get_root_strip(self) -> ndarray[Any, dtype[floating[Any]]]:
+    def get_root_strip(self) -> FloatArray:
         """
         Returns the root strip of the wing.
 
         Returns:
-            ndarray[Any, dtype[floating[Any]]]: Array of points defining the root.
+            FloatArray: Array of points defining the root.
         """
-        strip: list[ndarray[Any, dtype[floating[Any]]]] = [
+        strip: list[FloatArray] = [
             self.x0 + self.chord[0] * np.hstack((self.airfoil1._x_upper, self.airfoil1._x_lower)),
             self.y0 + np.repeat(0, 2 * self.airfoil1.n_points),
             self.z0 + self.chord[0] * np.hstack((self.airfoil1._y_upper, self.airfoil1._y_lower)),
         ]
         return np.array(strip)
 
-    def get_tip_strip(self) -> ndarray[Any, dtype[floating[Any]]]:
+    def get_tip_strip(self) -> FloatArray:
         """
         Returns the tip strip of the wing.
 
         Returns:
-            ndarray[Any, dtype[floating[Any]]]: Array of points defining the tip.
+            FloatArray: Array of points defining the tip.
         """
-        strip: list[ndarray[Any, dtype[floating[Any]]]] = [
+        strip: list[FloatArray] = [
             self.x1 + self.chord[1] * np.hstack((self.airfoil2._x_upper, self.airfoil2._x_lower)),
             self.y1 + np.repeat(0, 2 * self.airfoil1.n_points),
             self.z1 + self.chord[1] * np.hstack((self.airfoil2._y_upper, self.airfoil2._y_lower)),
@@ -128,31 +128,31 @@ class Strip:
         self,
         idx: int,
         n_points_span: int = 10,
-    ) -> ndarray[Any, dtype[floating[Any]]]:
+    ) -> tuple[FloatArray, FloatArray, FloatArray]:
         """Interpolate between start and end strips and return the section at the given index.
 
         Args:
             idx: index of interpolation
             n_points: number of points to interpolate in the span direction
         Returns:
-            strip: 3xn_points array of points
+            tuple[FloatArray, FloatArray, FloatArray]: suction side, camber line and pressure side coordinates of the section at the given index
         """
-        x: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        x: FloatArray = np.linspace(
             start=self.x0,
             stop=self.x1,
             num=n_points_span,
         )
-        y: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        y: FloatArray = np.linspace(
             self.y0,
             self.y1,
             n_points_span,
         )
-        z: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        z: FloatArray = np.linspace(
             self.z0,
             self.z1,
             n_points_span,
         )
-        c: ndarray[Any, dtype[floating[Any]]] = np.linspace(
+        c: FloatArray = np.linspace(
             self.chord[0],
             self.chord[1],
             n_points_span,
@@ -163,7 +163,7 @@ class Strip:
 
         airfoil: Airfoil = Airfoil.morph_new_from_two_foils(self.airfoil1, self.airfoil2, heta, self.airfoil1.n_points)
 
-        camber_line: ndarray[Any, dtype[Any]] = np.array(
+        camber_line: FloatArray = np.array(
             [
                 x[idx] + c[idx] * airfoil._x_lower,
                 y[idx] + np.repeat(0, airfoil.n_points),
@@ -172,7 +172,7 @@ class Strip:
             dtype=float,
         )
 
-        suction_side: ndarray[Any, dtype[Any]] = np.array(
+        suction_side: FloatArray = np.array(
             [
                 x[idx] + c[idx] * airfoil._x_upper,
                 y[idx] + np.repeat(0, airfoil.n_points),
@@ -181,7 +181,7 @@ class Strip:
             dtype=float,
         )
 
-        pressure_side: ndarray[Any, dtype[Any]] = np.array(
+        pressure_side: FloatArray = np.array(
             [
                 x[idx] + c[idx] * airfoil._x_lower,
                 y[idx] + np.repeat(0, airfoil.n_points),
@@ -190,7 +190,7 @@ class Strip:
             dtype=float,
         )
 
-        return camber_line
+        return suction_side, camber_line, pressure_side
 
     def plot(
         self,
@@ -218,29 +218,40 @@ class Strip:
         if movement is None:
             movement = np.zeros(3)
 
-        xs: list[float] = []
-        ys: list[float] = []
-        zs: list[float] = []
+        to_plot = ["suction", "camber", "pressure"]
+
+        xs: dict[str, list[float]] = {key: [] for key in to_plot}
+        ys: dict[str, list[float]] = {key: [] for key in to_plot}
+        zs: dict[str, list[float]] = {key: [] for key in to_plot}
+
         N: int = 10
         for i in range(N):
-            x, y, z = self.get_interpolated_section(i, N)
-            xs.append(x + movement[0])
-            ys.append(y + movement[1])
-            zs.append(z + movement[2])
-        X: FloatArray = np.array(xs)
-        Y: FloatArray = np.array(ys)
-        Z: FloatArray = np.array(zs)
+            suction, camber, pressure = self.get_interpolated_section(i, N)
 
-        if color is not None:
-            my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
-                Z.shape[0],
-                Z.shape[1],
-                4,
-            )
-            ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
-        else:
-            my_color = "red"
-            ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
+            x_camber, y_camber, z_camber = camber
+            x_suction, y_suction, z_suction = suction
+            x_pressure, y_pressure, z_pressure = pressure
+
+            for key in to_plot:
+                xs[key].append(x_camber + movement[0])
+                ys[key].append(y_camber + movement[1])
+                zs[key].append(z_camber + movement[2])
+
+        for key in to_plot:
+            X: FloatArray = np.array(xs[key])
+            Y: FloatArray = np.array(ys[key])
+            Z: FloatArray = np.array(zs[key])
+
+            if color is not None:
+                my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
+                    Z.shape[0],
+                    Z.shape[1],
+                    4,
+                )
+                ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
+            else:
+                my_color = "red"
+                ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
 
         if pltshow:
             plt.show()

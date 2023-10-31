@@ -1,9 +1,6 @@
 from typing import Any
 
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
-
+from ICARUS.Core.types import FloatArray
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
@@ -119,8 +116,8 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
 
 def define_movements(
     surfaces: list[Wing_Segment],
-    CG: ndarray[Any, dtype[floating[Any]]],
-    orientation: ndarray[Any, dtype[floating[Any]]] | list[float],
+    CG: FloatArray,
+    orientation: FloatArray | list[float],
     disturbances: list[Disturbance] = [],
 ) -> list[list[Movement]]:
     """
@@ -128,8 +125,8 @@ def define_movements(
 
     Args:
         surfaces (list[Wing]): List of Wing Objects
-        CG (ndarray[Any, dtype[floating[Any]]]): Center of Gravity
-        orientation (ndarray[Any, dtype[floating[Any]]] | list[float]): Orientation of the plane
+        CG (FloatArray): Center of Gravity
+        orientation (FloatArray | list[float]): Orientation of the plane
         disturbances (list[Disturbance]): List of possible Disturbances. Defaults to empty list.
 
     Returns:

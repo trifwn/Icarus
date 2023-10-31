@@ -9,6 +9,7 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
+from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output import setup_of_script
 
 
@@ -145,7 +146,7 @@ def setup_open_foam(
     airfoil_fname: str,
     reynolds: float,
     mach: float,
-    angles: list[float] | ndarray[Any, dtype[floating[Any]]],
+    angles: list[float] | FloatArray,
     solver_options: dict[str, Any],
 ) -> None:
     """Function to setup OpenFoam cases for a given airfoil and Reynolds number
