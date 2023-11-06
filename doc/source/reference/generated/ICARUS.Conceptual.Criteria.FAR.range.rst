@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.range
+﻿ICARUS.Conceptual.Criteria.FAR.range
 ====================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.range

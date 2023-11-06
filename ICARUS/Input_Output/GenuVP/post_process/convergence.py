@@ -39,7 +39,7 @@ def add_error_convergence_to_df_3(file: str, df: DataFrame) -> DataFrame:
             print(f"Some Run Had Problems!\n{e}")
 
     except FileNotFoundError:
-        print(f"No gnvp.out file found in {file}!")
+        print(f"No gnvp3.out or gnvp7.out file found in {file}!")
 
     finally:
         return df

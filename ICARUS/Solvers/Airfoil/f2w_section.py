@@ -1,7 +1,7 @@
 from typing import Any
 
 from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Input_Output.F2Wsection.analyses.angles import process_f2w_run
 from ICARUS.Input_Output.F2Wsection.analyses.angles import run_multiple_reynolds_parallel
 from ICARUS.Input_Output.F2Wsection.analyses.angles import run_multiple_reynolds_sequentially
@@ -10,14 +10,10 @@ from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_f2w_section(db: DB) -> Solver:
-    f2w_section = Solver(name="f2w_section", solver_type="2D-IBLM", fidelity=2, db=db)
+def get_f2w_section() -> Solver:
+    f2w_section = Solver(name="f2w_section", solver_type="2D-IBLM", fidelity=2)
 
     options: dict[str, tuple[str, Any]] = {
-        "db": (
-            "Database",
-            DB,
-        ),
         "airfoil": (
             "Airfoil to run",
             Airfoil,
@@ -116,10 +112,6 @@ def get_f2w_section(db: DB) -> Solver:
     }
 
     options = {
-        "db": (
-            "Database",
-            DB,
-        ),
         "airfoil": (
             "Airfoil to run",
             Airfoil,
@@ -159,6 +151,4 @@ def get_f2w_section(db: DB) -> Solver:
 
 
 if __name__ == "__main__":
-    db = DB()
-    db.load_data()
-    f2w_section = get_f2w_section(db)
+    f2w_section = get_f2w_section()

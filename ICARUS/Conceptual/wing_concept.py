@@ -8,7 +8,7 @@
 # from ICARUS.Airfoils.airfoil import Airfoil
 # from ICARUS.Core.struct import Struct
 # from ICARUS.Database.Database_2D import Database_2D
-# from ICARUS.Database.db import DB
+# from ICARUS.Database import DB
 # class ConceptualWing:
 #     """Defines a wing in the conceptual design context"""
 #     def __init__(

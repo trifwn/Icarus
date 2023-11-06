@@ -20,7 +20,7 @@ class Wing_Segment:
     def __init__(
         self,
         name: str,
-        airfoil: Airfoil,
+        airfoil: Airfoil | str,
         origin: FloatArray | list[float],
         orientation: FloatArray,
         is_symmetric: bool,
@@ -45,6 +45,8 @@ class Wing_Segment:
         self.M: int = M
 
         self.name: str = name
+        if isinstance(airfoil, str):
+            airfoil = Airfoil.naca(airfoil)
         self.airfoil: Airfoil = airfoil
         self.origin: FloatArray = origin
         self.orientation: FloatArray = orientation
@@ -273,7 +275,7 @@ class Wing_Segment:
         self.strips = strips
         self.all_strips = [*strips, *symmetric_strips]
 
-    def plot_wing(
+    def plot(
         self,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,

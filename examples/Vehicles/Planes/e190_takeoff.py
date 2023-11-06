@@ -3,8 +3,8 @@ import numpy as np
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
 from ICARUS.Database import XFLRDB
-from ICARUS.Database.db import DB
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import define_linear_chord
@@ -29,15 +29,12 @@ def e190_takeoff_generator(
     Returns:
         Airplane: hermes Airplane object
     """
-    db = DB()
-    foildb = db.foilsDB
-    foildb.load_data()
-    read_polars_2d(foildb, XFLRDB)
-    airfoils: Struct = foildb.set_available_airfoils()
+    read_polars_2d(XFLRDB)
+    airfoils: Struct = DB.foils_db.set_available_airfoils()
 
     from ICARUS.Airfoils.airfoil import Airfoil
 
-    naca64418: Airfoil = db.foilsDB.set_available_airfoils()["NACA64418"]
+    naca64418: Airfoil = DB.foils_db.set_available_airfoils()["NACA64418"]
     naca64418_fl: Airfoil = naca64418.flap_airfoil(
         flap_hinge=flap_hinge,
         chord_extension=chord_extension,
@@ -52,7 +49,7 @@ def e190_takeoff_generator(
         dtype=float,
     )
     wing_orientation: FloatArray = np.array(
-        [1.5, 0.0, 0.0],
+        [1.5, 0.0, 0.0],  # [pitch , yaw , Roll]
         dtype=float,
     )
 
@@ -68,8 +65,8 @@ def e190_takeoff_generator(
         chord_fun=define_linear_chord,
         chord=np.array([5.6, 3.7], dtype=float),
         span_fun=define_linear_span,
-        N=15,
-        M=10,
+        N=15,  # Spanwise
+        M=10,  # Chordwise
         mass=1,
     )
     # main_wing.plotWing()

@@ -11,8 +11,8 @@ from pandas import DataFrame
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
 from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.db import DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
@@ -25,15 +25,10 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    db = DB()
-    db.load_data()
-    foildb: Database_2D = db.foilsDB
-    foildb.load_data()
-
     from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
     from ICARUS.Database import XFLRDB
 
-    read_polars_2d(foildb, XFLRDB)
+    read_polars_2d(XFLRDB)
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -43,22 +38,20 @@ def main() -> None:
     embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
     # planes.append(embraer_to)
 
-    from Vehicles.Planes.e190_cruise import e190_cruise
+    # from Vehicles.Planes.e190_cruise import e190_cruise
 
-    embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
+    # embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
     # planes.append(embraer_cr)
 
-    from Vehicles.Planes.hermes import hermes
+    # from Vehicles.Planes.hermes import hermes
 
-    hermes_3: Airplane = hermes(airfoils=foildb.airfoils, name="hermes_3")
-    planes.append(hermes_3)
+    # hermes_3: Airplane = hermes(name="hermes_3")
+    planes.append(embraer_to)
     # embraer.visualize()
 
     timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "hermes_3": 1e-3}
     maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "hermes_3": 300}
-
     UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "hermes_3": 20}
-
     ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "hermes_3": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
@@ -75,7 +68,7 @@ def main() -> None:
         print(EARTH_ISA)
 
         # # Get Solver
-        gnvp3: Solver = get_gnvp3(db)
+        gnvp3: Solver = get_gnvp3()
 
         # ## AoA Run
         # 0: Single Angle of Attack (AoA) Run
@@ -100,7 +93,6 @@ def main() -> None:
 
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
-        options.db.value = db
         options.solver2D.value = "Foil2Wake"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
@@ -165,7 +157,6 @@ def main() -> None:
         options.plane.value = airplane
         options.state.value = unstick
         options.environment.value = EARTH_ISA
-        options.db.value = db
         options.solver2D.value = "Xfoil"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]

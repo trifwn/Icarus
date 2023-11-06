@@ -1,6 +1,5 @@
 from typing import Any
 
-from ICARUS.Database.db import DB
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run_7
@@ -15,8 +14,8 @@ from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_gnvp7(db: DB) -> Solver:
-    gnvp7 = Solver(name="gnvp7", solver_type="3D", fidelity=2, db=db)
+def get_gnvp7() -> Solver:
+    gnvp7 = Solver(name="gnvp7", solver_type="3D", fidelity=2)
 
     # # Define GNVP3 Analyses
     options: dict[str, tuple[str, Any]] = {
@@ -188,10 +187,6 @@ def get_gnvp7(db: DB) -> Solver:
             "Environment",
             Environment,
         ),
-        "db": (
-            "Database",
-            DB,
-        ),
         "solver2D": (
             "2D Solver",
             str,
@@ -241,10 +236,6 @@ def get_gnvp7(db: DB) -> Solver:
         "environment": (
             "Environment",
             Environment,
-        ),
-        "db": (
-            "Database",
-            DB,
         ),
         "solver2D": (
             "2D Solver",
@@ -299,18 +290,17 @@ def get_gnvp7(db: DB) -> Solver:
 # # EXAMPLE USAGE
 if __name__ == "__main__":
     from ICARUS.Database.utils import angle_to_case
+    from ICARUS.Database import DB
     import os
 
     HOMEDIR = os.getcwd()
-    db = DB()
-    db.load_data()
-    gnvp3 = get_gnvp7(db)
+    gnvp3 = get_gnvp7()
     analysis = gnvp3.available_analyses_names()[0]
     gnvp3.set_analyses(analysis)
     options = gnvp3.get_analysis_options()
 
-    plane = list(db.vehiclesDB.planes.items())[0][1]
+    plane = list(DB.vehicles_db.planes.items())[0][1]
     CASEDIR = plane.CASEDIR + "/" + angle_to_case(0.0) + "/"
-    options['HOMEDIR'].value = HOMEDIR
-    options['CASEDIR'].value = CASEDIR
+    options["HOMEDIR"].value = HOMEDIR
+    options["CASEDIR"].value = CASEDIR
     # gnvp3.run()

@@ -5,16 +5,15 @@ from pandas import DataFrame
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.Database_2D import Database_2D
+from ICARUS.Database import DB
 
 
 def save_multiple_reyn(
-    db: Database_2D,
     airfoil: Airfoil,
     polars: list[dict[str, FloatArray]],
     reynolds: list[float],
 ) -> None:
-    airfoil_dir: str = os.path.join(db.DATADIR, f"NACA{airfoil.name}")
+    airfoil_dir: str = os.path.join(DB.foils_db.DATADIR, f"NACA{airfoil.name}")
     for i, reyn_data in enumerate(polars):
         if len(reyn_data) == 0:
             continue

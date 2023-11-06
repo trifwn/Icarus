@@ -7,7 +7,7 @@ from xfoil.model import Airfoil as XFAirfoil
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Input_Output.Xfoil.post_process.polars import save_multiple_reyn
 
 
@@ -31,7 +31,17 @@ def single_reynolds_run(
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
 
-    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
+    # If the values are both negative and positive split the into 2 run
+    if AoAmin < 0 and AoAmax > 0:
+        aXF1, clXF1, cdXF1, cmXF1, cpXF1 = xf.aseq(0, AoAmin, -AoAstep)
+        aXF2, clXF2, cdXF2, cmXF2, cpXF2 = xf.aseq(0, AoAmax, AoAstep)
+        aXF = np.concatenate((aXF1, aXF2[1:]))
+        clXF = np.concatenate((clXF1, clXF2[1:]))
+        cdXF = np.concatenate((cdXF1, cdXF2[1:]))
+        cmXF = np.concatenate((cmXF1, cmXF2[1:]))
+        cpXF = np.concatenate((cpXF1, cpXF2[1:]))
+    else:
+        aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
 
     return np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
 
@@ -67,7 +77,7 @@ def single_reynolds_run_seq(
         cdXF.append(cd)
         cmXF.append(cm)
         cpXF.append(cp)
-        # xf.reset_bls()
+        xf.reset_bls()
     return np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
 
 
@@ -80,7 +90,6 @@ def single_reynolds_star_run_seq(args: Any) -> FloatArray:
 
 
 def multiple_reynolds_serial(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
@@ -113,11 +122,10 @@ def multiple_reynolds_serial(
             tempDict[str(bathchAng[0])] = bathchAng[1:4]
         reyn_dicts.append(tempDict)
 
-    save_multiple_reyn(db.foilsDB, airfoil, reyn_dicts, reynolds)
+    save_multiple_reyn(airfoil, reyn_dicts, reynolds)
 
 
 def multiple_reynolds_parallel(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
@@ -150,11 +158,10 @@ def multiple_reynolds_parallel(
             tempDict[str(bathchAng[0])] = bathchAng[1:4]
         reyn_dicts.append(tempDict)
 
-    save_multiple_reyn(db.foilsDB, airfoil, reyn_dicts, reynolds)
+    save_multiple_reyn(airfoil, reyn_dicts, reynolds)
 
 
 def multiple_reynolds_parallel_seq(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
@@ -185,11 +192,10 @@ def multiple_reynolds_parallel_seq(
             tempDict[str(bathchAng[0])] = bathchAng[1:4]
         reyn_dicts.append(tempDict)
 
-    save_multiple_reyn(db.foilsDB, airfoil, reyn_dicts, reynolds)
+    save_multiple_reyn(airfoil, reyn_dicts, reynolds)
 
 
 def multiple_reynolds_serial_seq(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
@@ -218,4 +224,4 @@ def multiple_reynolds_serial_seq(
             tempDict[str(bathchAng[0])] = bathchAng[1:4]
         reyn_dicts.append(tempDict)
 
-    save_multiple_reyn(db.foilsDB, airfoil, reyn_dicts, reynolds)
+    save_multiple_reyn(airfoil, reyn_dicts, reynolds)

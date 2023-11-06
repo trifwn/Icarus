@@ -5,12 +5,12 @@ from matplotlib.markers import MarkerStyle
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
 from ICARUS.Visualization import colors_
 from ICARUS.Visualization import markers
 
 
 def plot_convergence(
-    data: Struct,
     plane: str,
     angles: list[float] | FloatArray = [],
     solvers: list[str] = ["All"],
@@ -21,13 +21,14 @@ def plot_convergence(
     dimensional forces and solver errors
 
     Args:
-        data (Struct): Convergence Data from db
         plane (str): Plane Name
         angles (list[str], optional): Angles to show. Defaults to ["All"].
         solvers (list[str], optional): Solvers to show. Defaults to ["All"].
         plot_error (bool, optional): Wheter to plot the relative error or not. Defaults to True.
         size (tuple[int,int], optional): Size of the figure. Defaults to (10, 10).
     """
+    data = DB.vehicles_db.convergence_data
+
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig: Figure = plt.figure(figsize=size)
     axs: np.ndarray = fig.subplots(3, 3)  # type: ignore

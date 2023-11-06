@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import BASEOPENFOAM
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Input_Output import runOFscript
 from ICARUS.Input_Output.OpenFoam.analyses.monitor_progress import parallel_monitor
 from ICARUS.Input_Output.OpenFoam.analyses.monitor_progress import serial_monitor
@@ -50,7 +50,6 @@ def run_angles(
 
 
 def angles_serial(
-    db: DB,
     airfoil: Airfoil,
     angles: list[float] | FloatArray,
     reynolds: float,
@@ -61,14 +60,13 @@ def angles_serial(
     Runs OpenFoam for multiple angles in serial (same subproccess)
 
     Args:
-        db (DB): Database
         airfoil (Airfoil): Airfoil Object
         angles (list[float] | FloatArray): List of angles to run
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         solver_options (dict[str, Any]): Solver Options in a dictionary
     """
-    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
+    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,
@@ -123,7 +121,6 @@ def angles_serial(
 
 
 def angles_parallel(
-    db: DB,
     airfoil: Airfoil,
     angles: list[float] | FloatArray,
     reynolds: float,
@@ -134,14 +131,13 @@ def angles_parallel(
     Runs OpenFoam for multiple angles in parallel (different subproccesses)
 
     Args:
-        db (DB): Database
         airfoil (Airfoil): Airfoil Object
         angles (list[float] | FloatArray): List of angles
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         solver_options (dict[str, Any]): Dictionary of solver options
     """
-    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = db.foilsDB.generate_airfoil_directories(
+    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,

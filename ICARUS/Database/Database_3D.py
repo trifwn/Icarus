@@ -39,31 +39,34 @@ class Database_3D:
     def scan_and_make_data(self) -> None:
         planenames: list[str] = next(os.walk(DB3D))[1]
         for plane in planenames:  # For each plane planename == folder
-            # if plane == 'bmark':
-            #     continue
-
             # Load Plane object
             file_plane: str = os.path.join(DB3D, plane, f"{plane}.json")
             plane_found: bool = self.load_plane_from_file(plane, file_plane)
 
-            # Loading Forces from forces.* files
-            file_gnvp_3: str = os.path.join(DB3D, plane, "forces.gnvp3")
-            file_gnvp_7: str = os.path.join(DB3D, plane, "forces.gnvp7")
-            file_lspt: str = os.path.join(DB3D, plane, "forces.lspt")
-
             if plane_found:
-                self.convergence_data[plane] = Struct()
+                # Load Convergence Data
+                if plane not in self.convergence_data.keys():
+                    self.convergence_data[plane] = Struct()
                 cases: list[str] = next(os.walk(os.path.join(DB3D, plane)))[1]
                 for case in cases:
+                    # Load States
                     if case.startswith("Dyn"):
                         self.states[plane] = self.load_plane_states(plane, case)
                         continue
                     if case.startswith("Sens"):
                         continue
-                    self.load_gnvp_case_convergence(plane, case)
+                    if "gnvp_3" in os.listdir(os.path.join(DB3D, plane, case)):
+                        self.load_gnvp_case_convergence(plane, case, 3)
+                    if "gnvp_7" in os.listdir(os.path.join(DB3D, plane, case)):
+                        self.load_gnvp_case_convergence(plane, case, 7)
 
-            self.load_gnvp_forces(plane, file_gnvp_3, genu_version=3)
+            # Loading Forces from forces.* files
+            file_gnvp_7: str = os.path.join(DB3D, plane, "forces.gnvp7")
+            file_gnvp_3: str = os.path.join(DB3D, plane, "forces.gnvp3")
+            file_lspt: str = os.path.join(DB3D, plane, "forces.lspt")
+
             self.load_gnvp_forces(plane, file_gnvp_7, genu_version=7)
+            self.load_gnvp_forces(plane, file_gnvp_3, genu_version=3)
             self.load_lspt_forces(plane, file_lspt)
 
     def load_plane_states(self, plane: str, case: str) -> dict[str, Any]:
@@ -135,27 +138,26 @@ class Database_3D:
             self.make_data_gnvp(planename, genu_version)
             return
         except FileNotFoundError:
-            # print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
-            if planename in self.planes.keys():
-                # print(
-                #     "Since plane object exists with that name trying to create polars...",
-                # )
-                pln: Airplane = self.planes[planename]
-                try:
-                    CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
-                    if genu_version == 3:
-                        from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import make_polars_3
+            print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
+            # if planename in self.planes.keys():
+            #     # print(
+            #     #     "Since plane object exists with that name trying to create polars...",
+            #     # )
+            #     pln: Airplane = self.planes[planename]
+            #     try:
+            #         CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
+            #         if genu_version == 3:
+            #             from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import make_polars_3
+            #             make_polars_3(CASEDIR, self.HOMEDIR)
+            #         else:
+            #             from ICARUS.Input_Output.GenuVP.files.gnvp7_interface import make_polars_7
 
-                        make_polars_3(CASEDIR, self.HOMEDIR)
-                    else:
-                        from ICARUS.Input_Output.GenuVP.files.gnvp7_interface import make_polars_7
+            #             make_polars_7(CASEDIR, self.HOMEDIR)
 
-                        make_polars_7(CASEDIR, self.HOMEDIR)
-
-                    self.raw_data[planename] = pd.read_csv(file)
-                    self.make_data_gnvp(planename, genu_version)
-                except Exception as e:
-                    print(f"Failed to create Polars! Got Error:\n{e}")
+            #         self.raw_data[planename] = pd.read_csv(file)
+            #         self.make_data_gnvp(planename, genu_version)
+            #     except Exception as e:
+            #         print(f"Failed to create Polars! Got Error:\n{e}")
 
     def load_lspt_forces(self, planename: str, file: str) -> None:
         """
@@ -171,7 +173,12 @@ class Database_3D:
         except FileNotFoundError:
             print(f"No forces.lspt file found in {planename} folder at {DB3D}!")
 
-    def load_gnvp_case_convergence(self, planename: str, case: str) -> None:
+    def load_gnvp_case_convergence(
+        self,
+        planename: str,
+        case: str,
+        genu_version: int,
+    ) -> None:
         """
         Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
         convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
@@ -181,6 +188,7 @@ class Database_3D:
         Args:
             planename (str): Planename
             case (str): Case Name
+            genu_version (int): GNVP Version
         """
         # Get Load Convergence Data from LOADS_aer.dat
         file: str = os.path.join(DB3D, planename, case, "LOADS_aer.dat")
@@ -188,7 +196,7 @@ class Database_3D:
         loads: DataFrame | None = get_loads_convergence_3(file)
         if loads is not None:
             # Get Error Convergence Data from gnvp.out
-            file = os.path.join(DB3D, planename, case, "gnvp.out")
+            file = os.path.join(DB3D, planename, case, f"gnvp_{genu_version}.out")
             # self.Convergence[planename][case] = addErrorConvergence2df(file, loads) # IT OUTPUTS LOTS OF WARNINGS
             with open(file, encoding="UTF-8") as f:
                 lines: list[str] = f.readlines()
@@ -200,6 +208,7 @@ class Database_3D:
                     continue
 
                 a: list[str] = line[6:].split()
+                # print(line)
                 time.append(int(a[0]))
                 error.append(float(a[2]))
                 errorm.append(float(a[6]))
@@ -253,11 +262,9 @@ class Database_3D:
         Formats Polars from Forces, calculates the aerodynamic coefficients and stores them in the data dict.
         ! TODO: Should get deprecated in favor of analysis logic in the future. Handled by the unhook function.
         """
-        self.data[plane] = pd.DataFrame()
         pln: Airplane = self.planes[plane]
         if plane not in self.raw_data.keys():
             return None
-        self.data[plane]["AoA"] = self.raw_data[plane]["AoA"].astype("float")
         AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
 
         for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
@@ -298,9 +305,33 @@ class Database_3D:
             finally:
                 S: float = pln.S
                 MAC: float = pln.mean_aerodynamic_chord
-                self.data[plane][f"GNVP{gnvp_version} {name} CL"] = Fz_new / (Q * S)
-                self.data[plane][f"GNVP{gnvp_version} {name} CD"] = Fx_new / (Q * S)
-                self.data[plane][f"GNVP{gnvp_version} {name} Cm"] = My_new / (Q * S * MAC)
+                df = pd.DataFrame()
+                df["AoA"] = self.raw_data[plane]["AoA"].astype("float")
+                df[f"GNVP{gnvp_version} {name} CL"] = Fz_new / (Q * S)
+                df[f"GNVP{gnvp_version} {name} CD"] = Fx_new / (Q * S)
+                df[f"GNVP{gnvp_version} {name} Cm"] = My_new / (Q * S * MAC)
+
+                # Merge the new data with data from other solvers
+                if plane not in self.data.keys():
+                    self.data[plane] = df
+                else:
+                    # If the data contain old data from a previous run, then delete the old data
+                    # and replace it with the new one
+                    if f"GNVP{gnvp_version} {name} CL" in self.data[plane].columns:
+                        self.data[plane].drop(
+                            columns=[
+                                f"GNVP{gnvp_version} {name} CL",
+                                f"GNVP{gnvp_version} {name} CD",
+                                f"GNVP{gnvp_version} {name} Cm",
+                            ],
+                            inplace=True,
+                        )
+
+                    # Merge the data with the new one on the AoA column
+                    self.data[plane] = self.data[plane].merge(df, on="AoA", how="outer")
+
+                    # Sort the dataframe by AoA
+                    self.data[plane].sort_values(by="AoA", inplace=True)
 
     def make_data_lspt(self, plane: str) -> None:
         """

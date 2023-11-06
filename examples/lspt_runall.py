@@ -16,9 +16,9 @@ from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
 from ICARUS.Database import XFLRDB
 from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.db import DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
@@ -32,11 +32,7 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    db = DB()
-    db.load_data()
-    foildb: Database_2D = db.foilsDB
-    foildb.load_data()
-    read_polars_2d(foildb, XFLRDB)
+    read_polars_2d(XFLRDB)
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -78,7 +74,7 @@ def main() -> None:
         print(EARTH_ISA)
 
         # # Get Solver
-        lspt: Solver = get_lspt(db)
+        lspt: Solver = get_lspt()
 
         # ## AoA Run
         # 0: Angles Sequential
@@ -101,7 +97,6 @@ def main() -> None:
 
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
-        options.db.value = db
         options.solver2D.value = "Xfoil"
         options.u_freestream.value = UINF[airplane.name]
         options.angles.value = angles

@@ -1,4 +1,4 @@
-ICARUS.Flight\_Dynamics.Stability.lateralFD
+﻿ICARUS.Flight\_Dynamics.Stability.lateralFD
 ===========================================
 
 .. automodule:: ICARUS.Flight_Dynamics.Stability.lateralFD

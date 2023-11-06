@@ -5,7 +5,7 @@ from pandas import DataFrame
 
 from .analysis import Analysis
 from ICARUS.Core.struct import Struct
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 
 
 class Solver:
@@ -13,7 +13,7 @@ class Solver:
     Abstract class to represent a solver. It is used to run analyses.
     """
 
-    def __init__(self, name: str, solver_type: str, fidelity: int, db: DB) -> None:
+    def __init__(self, name: str, solver_type: str, fidelity: int) -> None:
         """
         Initialize the Solver class.
 
@@ -21,11 +21,9 @@ class Solver:
             name (str): Solver Name.
             solver_type (str): Solver Type.
             fidelity (int): Fidelity of the solver.
-            db (DB): Database.
         """
         self.name: str = name
         self.type: str = solver_type
-        self.db: DB = db
         try:
             assert type(fidelity) == int, "Fidelity must be an integer"
         except AssertionError:
@@ -203,7 +201,7 @@ class Solver:
         print(f"Running Solver {self.name}:\n\tAnalysis {analysis.name}...")
 
         def saveAnalysis(analysis: Analysis) -> None:
-            folder: str = self.db.analysesDB.DATADIR
+            folder: str = DB.analyses_db.DATADIR
             if "plane" in analysis.options.keys():
                 folder = os.path.join(folder, analysis.options["plane"].value.name)
             if not os.path.exists(folder):

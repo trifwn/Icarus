@@ -1,7 +1,6 @@
 from typing import Any
 
 from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Database.db import DB
 from ICARUS.Input_Output.OpenFoam.analyses.angles import angles_parallel
 from ICARUS.Input_Output.OpenFoam.analyses.angles import angles_serial
 from ICARUS.Input_Output.OpenFoam.filesOpenFoam import MeshType
@@ -9,14 +8,10 @@ from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_open_foam(db: DB) -> Solver:
-    open_foam = Solver(name="open_foam", solver_type="CFD", fidelity=3, db=db)
+def get_open_foam() -> Solver:
+    open_foam = Solver(name="open_foam", solver_type="CFD", fidelity=3)
 
     options: dict[str, tuple[str, Any]] = {
-        "db": (
-            "Database",
-            DB,
-        ),
         "airfoil": (
             "Airfoil to run",
             Airfoil,
@@ -82,6 +77,4 @@ def get_open_foam(db: DB) -> Solver:
 
 
 if __name__ == "__main__":
-    db = DB()
-    db.load_data()
-    open_foam = get_open_foam(db)
+    open_foam = get_open_foam()

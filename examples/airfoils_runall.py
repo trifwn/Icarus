@@ -1,3 +1,4 @@
+import os
 import time
 
 import numpy as np
@@ -7,8 +8,8 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
+from ICARUS.Database import DB
 from ICARUS.Database import XFLRDB
-from ICARUS.Database.db import DB
 from ICARUS.Input_Output.OpenFoam.filesOpenFoam import MeshType
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Workers.solver import Solver
@@ -19,14 +20,12 @@ def main() -> None:
     start_time: float = time.time()
 
     # SETUP DB CONNECTION
-    db = DB()
-    # db.load_data()
-    read_polars_2d(db.foilsDB, XFLRDB)
+    read_polars_2d(XFLRDB)
 
     # RUN SETUP
-    calcF2W: bool = False  # True
+    calcF2W: bool = True
     calcOpenFoam: bool = False  # True
-    calcXFoil: bool = True
+    calcXFoil: bool = False  # True
     print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
     print(f"\tXfoil: {calcXFoil}")
@@ -35,33 +34,33 @@ def main() -> None:
     # airfoil SETUP
     airfoils: list[Airfoil] = []
 
-    airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    # airfoil_names: list[str] = ["0012"]
+    # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
+    airfoil_names: list[str] = ["0012"]
     # Load From DB
-    db_airfoils: Struct = db.foilsDB.set_available_airfoils()
+    db_airfoils: Struct = DB.foils_db.set_available_airfoils()
     for airfoil_name in airfoil_names:
         try:
             airfoils.append(db_airfoils[airfoil_name])
         except KeyError:
             print(f"Airfoil {airfoil_name} not found in database")
             print("Trying to Generate it")
-            airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=200))
+            # airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=200))
 
     # # Load From File
     # for airfoil_name in airfoil_names:
     #     airfoils.append(airfoil.naca(naca=airfoil_name, n_points=200))
 
-    # naca64418: Airfoil = Airfoil.load_from_file(os.path.join(XFLRDB, "NACA64418", 'naca64418.dat'))
-    # airfoils.append(naca64418)
+    naca64418: Airfoil = Airfoil.load_from_file(os.path.join(XFLRDB, "NACA64418", "naca64418.dat"))
+    airfoils.append(naca64418)
 
     # naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35)
     # airfoils.append(naca64418_fl)
 
     # PARAMETERS FOR ESTIMATION
-    chord_max: float = 0.4
-    chord_min: float = 0.1
+    chord_max: float = 5.6
+    chord_min: float = 2.3
     u_max: float = 100
-    u_min: float = 10
+    u_min: float = 50
     viscosity: float = 1.56e-5
 
     # MACH ESTIMATION
@@ -81,8 +80,8 @@ def main() -> None:
     )
 
     # ANGLE OF ATTACK SETUP
-    aoa_min: float = -10
-    aoa_max: float = 15
+    aoa_min: float = -5
+    aoa_max: float = 5
     num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
     angles: FloatArray = np.linspace(
         start=aoa_min,
@@ -108,7 +107,7 @@ def main() -> None:
             f2w_stime: float = time.time()
             from ICARUS.Solvers.Airfoil.f2w_section import get_f2w_section
 
-            f2w_s: Solver = get_f2w_section(db)
+            f2w_s: Solver = get_f2w_section()
 
             analysis: str = f2w_s.available_analyses_names()[0]  # ANGLES PARALLEL
             f2w_s.set_analyses(analysis)
@@ -116,7 +115,6 @@ def main() -> None:
             f2w_solver_parameters: Struct = f2w_s.get_solver_parameters()
 
             # Set Options
-            f2w_options.db.value = db
             f2w_options.airfoil.value = airfoil
             f2w_options.reynolds.value = reynolds
             f2w_options.mach.value = MACH
@@ -140,14 +138,14 @@ def main() -> None:
             xfoil_stime: float = time.time()
             from ICARUS.Solvers.Airfoil.xfoil import get_xfoil
 
-            xfoil: Solver = get_xfoil(db)
+            xfoil: Solver = get_xfoil()
 
             # Import Analysis
             # 0) Sequential Angle run for multiple reynolds in parallel,
             # 1) Sequential Angle run for multiple reynolds in serial,
             # 2) Sequential Angle run for multiple reynolds in parallel with zeroing of the boundary layer between angles,
             # 3) Sequential Angle run for multiple reynolds in serial with zeroing of the boundary layer between angles,
-            analysis = xfoil.available_analyses_names()[1]  # Run
+            analysis = xfoil.available_analyses_names()[2]  # Run
             xfoil.set_analyses(analysis)
 
             # Get Options
@@ -155,14 +153,13 @@ def main() -> None:
             xfoil_solver_parameters: Struct = xfoil.get_solver_parameters()
 
             # Set Options
-            xfoil_options.db.value = db
             xfoil_options.airfoil.value = airfoil
             xfoil_options.reynolds.value = reynolds
             xfoil_options.mach.value = MACH
-            xfoil_options.max_aoa.value = aoa_max
-            xfoil_options.min_aoa.value = aoa_min
-            xfoil_options.aoa_step.value = 0.5
-            # xfoil_options.angles.value = angles # For options 2 and 3
+            # xfoil_options.max_aoa.value = aoa_max
+            # xfoil_options.min_aoa.value = aoa_min
+            # xfoil_options.aoa_step.value = 0.5
+            xfoil_options.angles.value = angles  # For options 2 and 3
             xfoil.print_analysis_options()
             # Set Solver Options
             xfoil_solver_parameters.max_iter.value = 10000
@@ -184,7 +181,7 @@ def main() -> None:
                 print(f"Running OpenFoam for Re={reyn}")
                 from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
 
-                open_foam: Solver = get_open_foam(db)
+                open_foam: Solver = get_open_foam()
 
                 # Import Analysis
                 analysis = open_foam.available_analyses_names()[0]  # Run
@@ -195,7 +192,6 @@ def main() -> None:
                 of_solver_parameters: Struct = open_foam.get_solver_parameters()
 
                 # Set Options
-                of_options.db.value = db
                 of_options.airfoil.value = airfoil
                 of_options.angles.value = angles
                 of_options.reynolds.value = reyn

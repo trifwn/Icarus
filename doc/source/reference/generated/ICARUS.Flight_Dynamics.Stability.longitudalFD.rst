@@ -1,4 +1,4 @@
-ICARUS.Flight\_Dynamics.Stability.longitudalFD
+﻿ICARUS.Flight\_Dynamics.Stability.longitudalFD
 ==============================================
 
 .. automodule:: ICARUS.Flight_Dynamics.Stability.longitudalFD

@@ -1,4 +1,4 @@
-ICARUS.Solvers.Airfoil.f2w\_section
+﻿ICARUS.Solvers.Airfoil.f2w\_section
 ===================================
 
 .. automodule:: ICARUS.Solvers.Airfoil.f2w_section

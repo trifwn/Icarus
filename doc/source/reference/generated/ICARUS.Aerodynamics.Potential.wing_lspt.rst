@@ -1,4 +1,4 @@
-ICARUS.Aerodynamics.Potential.wing\_lspt
+﻿ICARUS.Aerodynamics.Potential.wing\_lspt
 ========================================
 
 .. automodule:: ICARUS.Aerodynamics.Potential.wing_lspt

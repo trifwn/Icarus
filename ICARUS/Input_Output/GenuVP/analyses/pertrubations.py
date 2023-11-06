@@ -6,8 +6,8 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS.Core.struct import Struct
+from ICARUS.Database import DB
 from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.db import DB
 from ICARUS.Database.utils import disturbance_to_case
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
@@ -27,7 +27,6 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 def gnvp_disturbance_case(
     plane: Airplane,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -46,7 +45,6 @@ def gnvp_disturbance_case(
 
     Args:
         plane (Airplane): Plane Object
-        db (DB): Database Object
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -62,10 +60,9 @@ def gnvp_disturbance_case(
     Returns:
         str: Case Done Message
     """
-    HOMEDIR: str = db.HOMEDIR
-    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    HOMEDIR: str = DB.HOMEDIR
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     airfoils: list[str] = plane.airfoils
-    foilsDB: Database_2D = db.foilsDB
 
     movements: list[list[Movement]] = define_movements(
         surfaces,
@@ -101,7 +98,6 @@ def gnvp_disturbance_case(
         bodies_dicts,
         params,
         airfoils,
-        foilsDB,
         solver2D,
     )
 
@@ -128,7 +124,6 @@ def run_pertrubation_serial(
     plane: Airplane,
     state: State,
     environment: Environment,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -144,7 +139,6 @@ def run_pertrubation_serial(
     Args:
         plane (Airplane): Airplane Object
         state (State): Dynamic State of the airplane
-        db (DB): Database Object
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -169,7 +163,6 @@ def run_pertrubation_serial(
             target=gnvp_disturbance_case,
             kwargs={
                 "plane": plane,
-                "db": db,
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
@@ -194,7 +187,7 @@ def run_pertrubation_serial(
         )
         progress_bars.append(pbar)
         folder: str = disturbance_to_case(dst)
-        PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
         job_monitor = Thread(
             target=serial_monitor,
@@ -221,7 +214,6 @@ def run_pertrubation_parallel(
     plane: Airplane,
     state: State,
     environment: Environment,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -238,7 +230,6 @@ def run_pertrubation_parallel(
         plane (Airplane): Airplane Object
         state (State): Dynamic State of the airplane
         environment (Environment): Environment Object
-        db (DB): Database Object
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -269,7 +260,6 @@ def run_pertrubation_parallel(
             args_list = [
                 (
                     plane,
-                    db,
                     solver2D,
                     maxiter,
                     timestep,
@@ -288,7 +278,7 @@ def run_pertrubation_parallel(
 
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
-    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, "Dynamics", folder) for folder in folders]
 
@@ -334,7 +324,6 @@ def sensitivity_serial(
     state: State,
     environment: Environment,
     var: str,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -352,7 +341,6 @@ def sensitivity_serial(
         plane (Dynamic_Airplane): Dynamic Airplane Object
         environment (Environment): Environment Object
         var (str): Variable to be perturbed
-        db (DB): Database Object
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -373,7 +361,6 @@ def sensitivity_serial(
     for dst in state.sensitivity[var]:
         msg: str = gnvp_disturbance_case(
             plane,
-            db,
             solver2D,
             maxiter,
             timestep,
@@ -395,7 +382,6 @@ def sensitivity_parallel(
     state: State,
     environment: Environment,
     var: str,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -413,7 +399,6 @@ def sensitivity_parallel(
         plane (Dynamic_Airplane): Dynamic Airplane Object
         environment (Environment): Environment Object
         var (str): Variable to be perturbed
-        db (DB): Database Object
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -443,7 +428,6 @@ def sensitivity_parallel(
         args_list = [
             (
                 plane,
-                db,
                 solver2D,
                 maxiter,
                 timestep,
@@ -463,31 +447,31 @@ def sensitivity_parallel(
         _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
 
-def proccess_pertrubation_res(plane: Airplane, db: DB, state: State) -> DataFrame:
+def proccess_pertrubation_res(plane: Airplane, state: State) -> DataFrame:
     """
     Process the pertrubation results from the GNVP solver
 
     Args:
-        plane (Airplane | Dynamic_Airplane): Airplane Object
-        db (DB): Database Object
+        plane (Airplane): Airplane Object
         state (State): Plane State to load results to
 
     Returns:
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
-    HOMEDIR: str = db.HOMEDIR
-    DYNDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
+    HOMEDIR: str = DB.HOMEDIR
+    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, "Dynamics")
     forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR)
 
     state.set_pertrubation_results(forces)
     state.stability_fd(polar_name="2D")
+    DB.vehicles_db.states[plane.name] = state
 
     return forces
 
 
-# def processGNVPsensitivity(plane, db: DB):
-#     HOMEDIR = db.HOMEDIR
-#     DYNDIR = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
+# def processGNVPsensitivity(plane):
+#     HOMEDIR = DB.HOMEDIR
+#     DYNDIR = os.path.join(DB.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
 #     forces = forces2pertrubRes(DYNDIR, HOMEDIR)
 #     # rotatedforces = rotateForces(forces, forces["AoA"])
 #     return forces #rotatedforces

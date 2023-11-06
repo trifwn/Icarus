@@ -27,7 +27,7 @@ def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
 
     cmd = "module load compiler openmpi > /dev/null ; mpirun '-n' '4' 'gnvp7'"
     with open("input", encoding="utf-8") as fin:
-        with open("gnvp.out", "w", encoding="utf-8") as fout:
+        with open("gnvp7.out", "w", encoding="utf-8") as fout:
             res: int = subprocess.check_call(
                 cmd,
                 shell=True,
@@ -73,7 +73,6 @@ def run_gnvp7_case(
     bodies_dicts: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
-    foildb: Database_2D,
     solver2D: str,
 ) -> None:
     """Makes input and runs GNVP3, for a specified Case
@@ -85,7 +84,6 @@ def run_gnvp7_case(
         bodies_dicts (list[GenuSurface]): List of Bodies in Genu format
         params (GenuParameters): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
-        foildb (Database_2D): 2D Foil Database
         solver2D (str): Name of 2D Solver to be used
     """
     make_input_files(
@@ -95,7 +93,6 @@ def run_gnvp7_case(
         bodies_dicts=bodies_dicts,
         params=params,
         airfoils=airfoils,
-        foil_dat=foildb.data,
         solver=solver2D,
     )
     gnvp7_execute(HOMEDIR, CASEDIR)

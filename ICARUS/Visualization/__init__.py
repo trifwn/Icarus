@@ -9,6 +9,7 @@ ICARUS Visualization Module
 
     ICARUS.Visualization.airfoil
     ICARUS.Visualization.airplane
+    ICARUS.Visualization.mission
 
 .. module:: ICARUS.Visualization
     :platform: Unix, Windows
@@ -21,16 +22,11 @@ This module contains classes and routines for visualization. The module is divid
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Visualization.airfoil - Airfoil visualization class definition
-    ICARUS.Visualization.airplane - Airplane visualization class definition
+    ICARUS.Visualization.airfoil - Airfoil visualization
+    ICARUS.Visualization.airplane - Airplane visualization
+    ICARUS.Visualization.mission - Mission visualization
 
 """
-from . import airfoil
-from . import airplane
-
-__all__ = ['airfoil', 'airplane']
-
-
 from matplotlib import colors
 from matplotlib.markers import MarkerStyle
 
@@ -44,3 +40,9 @@ colors_ = colors.LinearSegmentedColormap('custom', cdict)
 
 markers_str: list[str] = ["x", "o", ".", "*"]
 markers = [MarkerStyle(marker) for marker in markers_str]
+
+
+from . import airfoil
+from . import airplane
+
+__all__ = ['airfoil', 'airplane']

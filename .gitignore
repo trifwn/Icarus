@@ -41,3 +41,6 @@ docs/build
 # Reports
 .~lock*
 report/*
+
+# DEMO
+demo*

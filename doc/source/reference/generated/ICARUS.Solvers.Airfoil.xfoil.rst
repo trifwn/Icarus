@@ -1,4 +1,4 @@
-ICARUS.Solvers.Airfoil.xfoil
+﻿ICARUS.Solvers.Airfoil.xfoil
 ============================
 
 .. automodule:: ICARUS.Solvers.Airfoil.xfoil

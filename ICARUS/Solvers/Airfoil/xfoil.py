@@ -2,19 +2,15 @@ from typing import Any
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_xfoil(db: DB) -> Solver:
-    xfoil = Solver(name="xfoil", solver_type="2D-IBLM", fidelity=2, db=db)
+def get_xfoil() -> Solver:
+    xfoil = Solver(name="xfoil", solver_type="2D-IBLM", fidelity=2)
 
     options: dict[str, tuple[str, Any]] = {
-        "db": (
-            "Database to save results",
-            DB,
-        ),
         "airfoil": (
             "Airfoil to run",
             Airfoil,
@@ -85,10 +81,6 @@ def get_xfoil(db: DB) -> Solver:
     }
 
     options = {
-        "db": (
-            "Database to save results",
-            DB,
-        ),
         "airfoil": (
             "Airfoil to run",
             Airfoil,
@@ -135,6 +127,4 @@ def get_xfoil(db: DB) -> Solver:
 
 
 if __name__ == "__main__":
-    db = DB()
-    db.load_data()
-    f2w_section = get_xfoil(db)
+    f2w_section = get_xfoil()

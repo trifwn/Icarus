@@ -4,6 +4,7 @@ import numpy as np
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
 
 
@@ -11,7 +12,9 @@ def lspt_run() -> None:
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from examples.Vehicles.Planes.simple_wing import airplane, db
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+
+    airplane: Airplane = get_bmark_plane("bmark")
 
     # Get Environment
     from ICARUS.Environment.definition import EARTH_ISA
@@ -19,7 +22,7 @@ def lspt_run() -> None:
     # Get Solver
     from ICARUS.Solvers.Airplane.lspt import get_lspt
 
-    lspt: Solver = get_lspt(db)
+    lspt: Solver = get_lspt()
 
     # Set Analysis
     analysis: str = lspt.available_analyses_names()[0]
@@ -40,7 +43,6 @@ def lspt_run() -> None:
 
     options.plane.value = airplane
     options.environment.value = EARTH_ISA
-    options.db.value = db
     options.solver2D.value = "Xfoil"
     options.u_freestream.value = u_freestream
     options.angles.value = angles

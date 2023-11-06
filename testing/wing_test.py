@@ -1,23 +1,26 @@
 from ICARUS.Core.types import FloatArray
+from ICARUS.Vehicle.plane import Airplane
 
 
 def geom() -> (
     tuple[
         float,
         float,
-        float,
+        # float,
         FloatArray,
         FloatArray,
     ]
 ):
     print("Testing Geometry...")
 
-    from examples.Vehicles.Planes.simple_wing import Simplewing
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+
+    bmark: Airplane = get_bmark_plane("bmark")
 
     return (
-        Simplewing.S,
-        Simplewing.mean_aerodynamic_chord,
-        Simplewing.area,
-        Simplewing.CG,
-        Simplewing.inertia,
+        bmark.S,
+        bmark.mean_aerodynamic_chord,
+        # bmark.ar,
+        bmark.CG,
+        bmark.total_inertia,
     )

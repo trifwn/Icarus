@@ -10,7 +10,7 @@ from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.Database_2D import Database_2D as foilsdb
+from ICARUS.Database import DB
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
@@ -262,7 +262,7 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
         # SORT BY AoA
         df = df.sort_values("AoA")
         # FILL NaN Values By neighbors
-        df = foilsdb.fill_polar_table(df)
+        df = DB.foils_db.fill_polar_table(df)
 
         # Get Angles
         angles = df["AoA"].to_numpy()
@@ -345,7 +345,6 @@ def make_input_files(
     bodies: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
-    foil_dat: Struct,
     solver: str,
 ) -> None:
     os.chdir(ANGLEDIR)
@@ -380,7 +379,7 @@ def make_input_files(
     # BLD FILES
     bldFiles(bodies, params)
     # CLD FILES
-    cldFiles(foil_dat, bodies, solver)
+    cldFiles(DB.foils_db.data, bodies, solver)
     if "gnvp3" not in next(os.walk("."))[2]:
         src: str = os.path.join(HOMEDIR, "ICARUS", "gnvp3")
         dst: str = os.path.join(ANGLEDIR, "gnvp3")

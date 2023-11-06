@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.cruise
+﻿ICARUS.Conceptual.Criteria.cruise
 =================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.cruise

@@ -1,7 +1,7 @@
 from typing import Any
 
 from ICARUS.Core.struct import Struct
-from ICARUS.Mission.mission_segment import MissionSegment
+from ICARUS.Mission.Segment.mission_segment import MissionSegment
 
 
 class Mission:

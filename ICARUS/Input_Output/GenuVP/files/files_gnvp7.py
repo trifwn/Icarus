@@ -20,7 +20,7 @@ from ICARUS.Core.formatting import sps
 from ICARUS.Core.formatting import tabs
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.Database_2D import Database_2D as foilsdb
+from ICARUS.Database import DB
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
@@ -624,7 +624,6 @@ def make_input_files(
     bodies_dicts: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
-    foil_dat: Struct,
     solver: str,
 ) -> None:
     os.chdir(ANGLEDIR)
@@ -646,9 +645,9 @@ def make_input_files(
     # WAKE Files
     wake_files(bodies_dicts)
     # ANGLES File
-    angles_inp(foil_dat, airfoils, solver)
+    angles_inp(DB.foils_db.data, airfoils, solver)
     # CLD FILES
-    cld_files(foil_dat, bodies_dicts, solver)
+    cld_files(DB.foils_db.data, bodies_dicts, solver)
 
     if "gnvp7" not in next(os.walk("."))[2]:
         src: str = os.path.join(HOMEDIR, "ICARUS", "gnvp7")

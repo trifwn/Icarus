@@ -57,3 +57,8 @@ from . import AnalysesDB
 from . import db
 
 __all__ = ["Database_2D", "Database_3D", "AnalysesDB", "db"]
+
+from .db import Database
+
+DB = Database()
+DB.load_data()

@@ -1,4 +1,4 @@
-ICARUS.Aerodynamics.Potential.vorticity
+﻿ICARUS.Aerodynamics.Potential.vorticity
 =======================================
 
 .. automodule:: ICARUS.Aerodynamics.Potential.vorticity

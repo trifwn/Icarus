@@ -11,11 +11,6 @@ Recapping the above, in ICARUS all computation is handled by workers which model
 Workers.solver module
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
-.. include a link to the solver module
-.. toctree::
-    :maxdepth: 1
-
-    solver
 
 A solver is initialized by Calling the following function:
 
@@ -46,10 +41,6 @@ After we have our Solver Object we can add analyses to it.
 Workers.analysis module
 --------------------------------------------------------------------------------------------------------------------------------------------
 
-.. toctree::
-    :maxdepth: 1
-
-    analysis
 
 An analysis is the bread-and-butter of computation it has to define:
     * How we communicate with our solver
@@ -185,11 +176,6 @@ Finnaly the function that is called when the analysis is run is defined in the f
 
 Workers.options module
 -------------------------------------------------------------------------------------------
-
-.. toctree::
-    :maxdepth: 1
-
-    options
 
 
 .. literalinclude:: ../../../../ICARUS/Workers/options.py

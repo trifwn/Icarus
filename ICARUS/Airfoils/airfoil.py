@@ -485,8 +485,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         pts = self.selig
         x, y = pts
         if scatter:
-            plt.scatter(x[: self.n_points], y[: self.n_points])
-            plt.scatter(x[self.n_points :], y[self.n_points :])
+            plt.scatter(x[: self.n_points], y[: self.n_points], s=1)
+            plt.scatter(x[self.n_points :], y[self.n_points :], s=1)
         else:
             plt.plot(x[: self.n_points], y[: self.n_points], "r")
             plt.plot(x[self.n_points :], y[self.n_points :], "b")

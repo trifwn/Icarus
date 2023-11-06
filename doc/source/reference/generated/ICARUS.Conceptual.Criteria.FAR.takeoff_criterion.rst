@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.takeoff\_criterion
+﻿ICARUS.Conceptual.Criteria.FAR.takeoff\_criterion
 =================================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.takeoff_criterion

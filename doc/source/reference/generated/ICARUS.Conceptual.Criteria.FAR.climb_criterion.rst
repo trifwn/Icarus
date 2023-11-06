@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.climb\_criterion
+﻿ICARUS.Conceptual.Criteria.FAR.climb\_criterion
 ===============================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.climb_criterion

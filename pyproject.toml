@@ -25,6 +25,7 @@ dependencies = [
     "ipython",
     "tabulate",
     "pre-commit",
+    "regex",
     "tqdm",
     "xmltodict",
     "inquirer",

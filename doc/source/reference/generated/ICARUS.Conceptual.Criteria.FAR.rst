@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR
+﻿ICARUS.Conceptual.Criteria.FAR
 ==============================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR

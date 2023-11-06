@@ -4,6 +4,7 @@ import numpy as np
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
 
 
@@ -11,7 +12,9 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     print("Testing GNVP Running...")
 
     # Get Plane, DB
-    from examples.Vehicles.Planes.simple_wing import airplane, db
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+
+    airplane: Airplane = get_bmark_plane("bmark")
 
     # Get Environment
     from ICARUS.Environment.definition import EARTH_ISA
@@ -19,7 +22,7 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     # Get Solver
     from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
 
-    gnvp7: Solver = get_gnvp7(db)
+    gnvp7: Solver = get_gnvp7()
 
     # Set Analysis
     if mode == "Parallel":
@@ -39,14 +42,13 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all if ang != 0]
     u_freestream = 20
-    maxiter = 20
-    timestep = 10
+    maxiter = 30
+    timestep = 0.04
 
     airplane.define_dynamic_pressure(u_freestream, EARTH_ISA.air_density)
 
     options.plane.value = airplane
     options.environment.value = EARTH_ISA
-    options.db.value = db
     options.solver2D.value = "XFLR"
     options.maxiter.value = maxiter
     options.timestep.value = timestep

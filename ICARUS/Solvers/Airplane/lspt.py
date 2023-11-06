@@ -1,28 +1,23 @@
 from typing import Any
 
 from ICARUS.Aerodynamics.Potential.lifting_surfaces import run_lstp_angles
-from ICARUS.Database.db import DB
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run
-from ICARUS.Input_Output.GenuVP.analyses.angles import run_gnvp3_angles
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_lspt(db: DB) -> Solver:
+def get_lspt() -> Solver:
     """
     Returns a Solver object for the ICARUS lifting surface potential theory
     solver.
 
-    Args:
-        db (DB): Database
 
     Returns:
         Solver: Solver object
     """
-    lspt = Solver(name="lspt", solver_type="3D", fidelity=1, db=db)
+    lspt = Solver(name="lspt", solver_type="3D", fidelity=1)
 
     options: dict[str, Any] = {
         "plane": (
@@ -32,10 +27,6 @@ def get_lspt(db: DB) -> Solver:
         "environment": (
             "Environment",
             Environment,
-        ),
-        "db": (
-            "Database",
-            DB,
         ),
         "solver2D": (
             "2D Solver",
@@ -86,17 +77,16 @@ def get_lspt(db: DB) -> Solver:
 # # EXAMPLE USAGE
 if __name__ == "__main__":
     from ICARUS.Database.utils import angle_to_case
+    from ICARUS.Database import DB
     import os
 
     HOMEDIR = os.getcwd()
-    db = DB()
-    db.load_data()
-    lspt = get_lspt(db)
+    lspt = get_lspt()
     analysis = lspt.available_analyses_names()[0]
     lspt.set_analyses(analysis)
     options = lspt.get_analysis_options()
 
-    plane = list(db.vehiclesDB.planes.items())[0][1]
+    plane = list(DB.vehicles_db.planes.items())[0][1]
     CASEDIR = plane.CASEDIR + "/" + angle_to_case(0.0) + "/"
     options["HOMEDIR"].value = HOMEDIR
     options["CASEDIR"].value = CASEDIR

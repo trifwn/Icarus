@@ -1,4 +1,4 @@
-ICARUS.Solvers.Airplane.lspt
+﻿ICARUS.Solvers.Airplane.lspt
 ============================
 
 .. automodule:: ICARUS.Solvers.Airplane.lspt

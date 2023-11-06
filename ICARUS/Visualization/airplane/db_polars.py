@@ -1,3 +1,5 @@
+from typing import Any
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -6,19 +8,18 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.Core.struct import Struct
+from ICARUS.Database import DB
 from ICARUS.Visualization import colors_
 from ICARUS.Visualization import markers
 
 
 def plot_airplane_polars(
-    data: dict[str, DataFrame] | Struct,
-    airplanes: list[str],
+    airplane_names: list[str],
     solvers: list[str] = ["All"],
     plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
-) -> tuple[ndarray, Figure]:
+) -> tuple[ndarray[Any, Any], Figure]:
     """Function to plot airplane polars for a given list of airplanes and solvers
 
     Args:
@@ -54,11 +55,11 @@ def plot_airplane_polars(
     if solvers == ["All"]:
         solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D"]
 
-    for i, airplane in enumerate(airplanes):
+    for i, airplane in enumerate(airplane_names):
         flag = False
         for j, solver in enumerate(solvers):
             try:
-                polar: DataFrame = data[airplane]
+                polar: DataFrame = DB.vehicles_db.data[airplane]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if airplane.startswith("XFLR"):
                         key0 = f"{plot[0]}"
@@ -68,7 +69,7 @@ def plot_airplane_polars(
                             polar[f"{key1}"],
                             label=f"{airplane} XFLR",
                             markersize=1.5,
-                            color='m',
+                            color="m",
                             linewidth=1,
                         )
                         flag = True
@@ -88,7 +89,7 @@ def plot_airplane_polars(
                         m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:
-                            ax.plot(x, y, ls='--', color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                            ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
                         except ValueError as e:
                             raise e
                 if flag:

@@ -7,7 +7,6 @@ from xmltodict import parse
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import XFLRDB
-from ICARUS.Database.db import DB
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import define_linear_chord
 from ICARUS.Vehicle.wing_segment import define_linear_span
@@ -42,6 +41,8 @@ def parse_xfl_project(filename: str) -> Airplane:
 
     point_masses: list[tuple[float, FloatArray]] = []
     if plane["Inertia"] is not None:
+        if not isinstance(plane["Inertia"]["Point_Mass"], list):
+            plane["Inertia"]["Point_Mass"] = [plane["Inertia"]["Point_Mass"]]
         for pmass in plane["Inertia"]["Point_Mass"]:
             m = float(pmass["Mass"])
             coor: FloatArray = np.array(

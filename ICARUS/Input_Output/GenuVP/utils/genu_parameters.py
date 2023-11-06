@@ -44,7 +44,7 @@ class GenuParameters:
         num_airfoils: int = len(plane.airfoils)
         angle: float = angle_deg * np.pi / 180
         dens: float = environment.air_density
-        visc: float = environment.air_dynamic_viscosity
+        visc: float = environment.air_kinematic_viscosity
 
         airVelocity: list[float] = [
             u_freestream * np.cos(angle),

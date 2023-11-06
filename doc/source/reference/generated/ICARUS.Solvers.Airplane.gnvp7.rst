@@ -1,4 +1,4 @@
-ICARUS.Solvers.Airplane.gnvp7
+﻿ICARUS.Solvers.Airplane.gnvp7
 =============================
 
 .. automodule:: ICARUS.Solvers.Airplane.gnvp7

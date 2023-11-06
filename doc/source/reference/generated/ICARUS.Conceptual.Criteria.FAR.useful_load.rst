@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.useful\_load
+﻿ICARUS.Conceptual.Criteria.FAR.useful\_load
 ===========================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.useful_load

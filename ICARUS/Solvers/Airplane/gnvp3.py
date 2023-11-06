@@ -1,6 +1,6 @@
 from typing import Any
 
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Input_Output.GenuVP.analyses.angles import process_gnvp_angles_run_3
@@ -15,8 +15,8 @@ from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
 
-def get_gnvp3(db: DB) -> Solver:
-    gnvp3 = Solver(name="gnvp3", solver_type="3D", fidelity=2, db=db)
+def get_gnvp3() -> Solver:
+    gnvp3 = Solver(name="gnvp3", solver_type="3D", fidelity=2)
 
     # # Define GNVP3 Analyses
     options: dict[str, tuple[str, Any]] = {
@@ -180,10 +180,6 @@ def get_gnvp3(db: DB) -> Solver:
             "Environment",
             Environment,
         ),
-        "db": (
-            "Database",
-            DB,
-        ),
         "solver2D": (
             "2D Solver",
             str,
@@ -193,7 +189,7 @@ def get_gnvp3(db: DB) -> Solver:
             int,
         ),
         "timestep": (
-            "Timestep",
+            "Timestep = 0.05 * chord / u_inf",
             float,
         ),
         "u_freestream": (
@@ -232,10 +228,6 @@ def get_gnvp3(db: DB) -> Solver:
         "environment": (
             "Environment",
             Environment,
-        ),
-        "db": (
-            "Database",
-            DB,
         ),
         "solver2D": (
             "2D Solver",
@@ -293,15 +285,13 @@ if __name__ == "__main__":
     import os
 
     HOMEDIR = os.getcwd()
-    db = DB()
-    db.load_data()
-    gnvp3 = get_gnvp3(db)
+    gnvp3 = get_gnvp3()
     analysis = gnvp3.available_analyses_names()[0]
     gnvp3.set_analyses(analysis)
     options = gnvp3.get_analysis_options()
 
-    plane = list(db.vehiclesDB.planes.items())[0][1]
+    plane = list(DB.vehicles_db.planes.items())[0][1]
     CASEDIR = plane.CASEDIR + "/" + angle_to_case(0.0) + "/"
-    options['HOMEDIR'].value = HOMEDIR
-    options['CASEDIR'].value = CASEDIR
+    options["HOMEDIR"].value = HOMEDIR
+    options["CASEDIR"].value = CASEDIR
     # gnvp3.run()

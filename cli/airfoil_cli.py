@@ -1,3 +1,9 @@
+"""
+ICARUS CLI for computing Airfoils
+
+Returns:
+    None: None
+"""
 import time
 from typing import Any
 
@@ -6,14 +12,13 @@ from inquirer import List
 from inquirer import Path
 from inquirer import prompt
 from inquirer import Text
-from tqdm.asyncio import tqdm
 
 from .cli_home import cli_home
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Solvers.Airfoil.f2w_section import get_f2w_section
 from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
 from ICARUS.Solvers.Airfoil.xfoil import get_xfoil
@@ -74,8 +79,8 @@ def get_airfoil_NACA() -> Airfoil:
             return get_airfoil_NACA()
 
 
-def get_airfoil_db(db: DB) -> Airfoil:
-    airfoils: Struct = db.foilsDB.set_available_airfoils()
+def get_airfoil_db() -> Airfoil:
+    airfoils: Struct = DB.foils_db.set_available_airfoils()
     airfoil_question: list[List] = [
         List(
             "airfoil",
@@ -93,10 +98,10 @@ def get_airfoil_db(db: DB) -> Airfoil:
         return airfoil
     except Exception as e:
         print(e)
-        return get_airfoil_db(db)
+        return get_airfoil_db()
 
 
-def select_airfoil_source(db: DB) -> Airfoil:
+def select_airfoil_source() -> Airfoil:
     airfoil_source_question: list[List] = [
         List(
             "airfoil_source",
@@ -114,10 +119,10 @@ def select_airfoil_source(db: DB) -> Airfoil:
     elif answer["airfoil_source"] == "NACA Digits":
         return get_airfoil_NACA()
     elif answer["airfoil_source"] == "Database":
-        return get_airfoil_db(db)
+        return get_airfoil_db()
     else:
         print("Error")
-        return select_airfoil_source(db)
+        return select_airfoil_source()
 
 
 def set_analysis(solver: Solver) -> None:
@@ -196,15 +201,12 @@ def get_option(option_name: str, question_type: str) -> dict[str, Any]:
     return answer
 
 
-def set_analysis_options(solver: Solver, db: DB, airfoil: Airfoil) -> None:
+def set_analysis_options(solver: Solver, airfoil: Airfoil) -> None:
     all_options: Struct = solver.get_analysis_options(verbose=True)
     options = Struct()
     answers = {}
     for option in all_options.keys():
-        if option == "db":
-            answers[option] = db
-            continue
-        elif option == "airfoil":
+        if option == "airfoil":
             answers[option] = airfoil
             continue
         options[option] = all_options[option]
@@ -225,7 +227,7 @@ def set_analysis_options(solver: Solver, db: DB, airfoil: Airfoil) -> None:
 
     except:
         print("Unable to set options! Try Again")
-        return set_analysis_options(solver, db, airfoil)
+        return set_analysis_options(solver, airfoil)
 
 
 def set_solver_parameters(solver: Solver) -> None:
@@ -260,7 +262,7 @@ def set_solver_parameters(solver: Solver) -> None:
             return set_solver_parameters(solver)
 
 
-def airfoil_cli(db: DB, return_home: bool = False) -> None:
+def airfoil_cli(return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
 
@@ -282,7 +284,7 @@ def airfoil_cli(db: DB, return_home: bool = False) -> None:
 
     for i in range(N):
         print("\n")
-        airfoil: Airfoil = select_airfoil_source(db)
+        airfoil: Airfoil = select_airfoil_source()
         airfoils.append(airfoil)
 
         select_solver_quest: list[Checkbox] = [
@@ -301,9 +303,9 @@ def airfoil_cli(db: DB, return_home: bool = False) -> None:
             calc_f2w[airfoil.name] = True
 
             # Get Solver
-            f2w_solvers[airfoil.name] = get_f2w_section(db)
+            f2w_solvers[airfoil.name] = get_f2w_section()
             set_analysis(f2w_solvers[airfoil.name])
-            set_analysis_options(f2w_solvers[airfoil.name], db, airfoil)
+            set_analysis_options(f2w_solvers[airfoil.name], airfoil)
             set_solver_parameters(f2w_solvers[airfoil.name])
         else:
             calc_f2w[airfoil.name] = False
@@ -312,9 +314,9 @@ def airfoil_cli(db: DB, return_home: bool = False) -> None:
             calc_xfoil[airfoil.name] = True
 
             # Get Solver
-            xfoil_solvers[airfoil.name] = get_xfoil(db)
+            xfoil_solvers[airfoil.name] = get_xfoil()
             set_analysis(xfoil_solvers[airfoil.name])
-            set_analysis_options(xfoil_solvers[airfoil.name], db, airfoil)
+            set_analysis_options(xfoil_solvers[airfoil.name], airfoil)
             set_solver_parameters(xfoil_solvers[airfoil.name])
         else:
             calc_xfoil[airfoil.name] = False
@@ -323,9 +325,9 @@ def airfoil_cli(db: DB, return_home: bool = False) -> None:
             calc_of[airfoil.name] = True
 
             # Get Solver
-            open_foam_solvers[airfoil.name] = get_open_foam(db)
+            open_foam_solvers[airfoil.name] = get_open_foam()
             set_analysis(open_foam_solvers[airfoil.name])
-            set_analysis_options(open_foam_solvers[airfoil.name], db, airfoil)
+            set_analysis_options(open_foam_solvers[airfoil.name], airfoil)
             set_solver_parameters(open_foam_solvers[airfoil.name])
         else:
             calc_of[airfoil.name] = False
@@ -402,11 +404,8 @@ def airfoil_cli(db: DB, return_home: bool = False) -> None:
     print("########################################################################")
 
     if return_home:
-        cli_home(db)
+        cli_home()
 
 
 if __name__ == "__main__":
-    db: DB = DB()
-    db.load_data()
-
-    airfoil_cli(db)
+    airfoil_cli()

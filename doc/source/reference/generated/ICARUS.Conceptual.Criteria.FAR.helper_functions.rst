@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.helper\_functions
+﻿ICARUS.Conceptual.Criteria.FAR.helper\_functions
 ================================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.helper_functions

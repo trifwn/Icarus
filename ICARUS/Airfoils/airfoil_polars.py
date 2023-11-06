@@ -11,9 +11,7 @@ Struct data from the DataBase to the constructor.
 
 >>> from ICARUS.Airfoils.airfoil_polars import AirfoilPolars
 >>> from ICARUS.Database import DB
->>> db = DB()
->>> db.load_data()
->>> data = db.get_airfoil_data("NACA0012")
+>>> data = DB.get_airfoil_data("NACA0012")
 >>> polars = AirfoilPolars(data)
 
 Then we can get a specific Reynolds Subtable by calling:

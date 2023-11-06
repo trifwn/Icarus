@@ -1,3 +1,12 @@
+"""
+ICARUS CLI for Airplane Analysis
+
+Raises:
+    NotImplementedError: _description_
+
+Returns:
+    None: None
+"""
 import time
 from typing import Any
 
@@ -12,7 +21,7 @@ from inquirer import Text
 
 from .cli_home import cli_home
 from ICARUS.Core.struct import Struct
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
@@ -81,8 +90,8 @@ def get_airplane_file(load_from: str) -> Airplane:
             return get_airplane_file(load_from)
 
 
-def get_airplane_db(db: DB) -> Airplane:
-    planes: list[str] = db.vehiclesDB.get_planenames()
+def get_airplane_db() -> Airplane:
+    planes: list[str] = DB.vehicles_db.get_planenames()
     airplane_question: list[List] = [
         List(
             "plane_name",
@@ -96,14 +105,14 @@ def get_airplane_db(db: DB) -> Airplane:
         exit()
 
     try:
-        airplane: Airplane = db.vehiclesDB.planes[answer["plane_name"]]
+        airplane: Airplane = DB.vehicles_db.planes[answer["plane_name"]]
         return airplane
     except Exception as e:
         print(e)
-        return get_airplane_db(db)
+        return get_airplane_db()
 
 
-def select_airplane_source(db: DB) -> Airplane:
+def select_airplane_source() -> Airplane:
     airplane_source_question: list[List] = [
         List(
             "airplane_source",
@@ -119,14 +128,14 @@ def select_airplane_source(db: DB) -> Airplane:
     if answer["airplane_source"] == "File":
         return get_airplane_file(load_from="json")
     elif answer["airplane_source"] == "Database":
-        return get_airplane_db(db)
+        return get_airplane_db()
     elif answer["airplane_source"] == "Load from XFLR5":
         return get_airplane_file(load_from="xflr5")
     elif answer["airplane_source"] == "Load from AVL":
         return get_airplane_file(load_from="avl")
     else:
         print("Error")
-        return select_airplane_source(db)
+        return select_airplane_source()
 
 
 def set_analysis(solver: Solver) -> None:
@@ -300,7 +309,7 @@ def get_environment() -> Environment:
         return get_environment()
 
 
-def get_2D_polars_solver(db: DB) -> str:
+def get_2D_polars_solver() -> str:
     solver_quest: list[List] = [
         List(
             "solver",
@@ -353,22 +362,19 @@ def get_2D_polars_solver(db: DB) -> str:
 
     else:
         print("Error")
-        return get_2D_polars_solver(db)
+        return get_2D_polars_solver()
 
 
-def set_analysis_options(solver: Solver, db: DB, airfoil: Airplane) -> None:
+def set_analysis_options(solver: Solver, airfoil: Airplane) -> None:
     all_options: Struct = solver.get_analysis_options(verbose=True)
     options = Struct()
     answers: dict[str, Any] = {}
     for option in all_options.keys():
-        if option == "db":
-            answers[option] = db
-            continue
-        elif option == "environment":
+        if option == "environment":
             answers[option] = get_environment()
             continue
         elif option == "solver2D":
-            answers[option] = get_2D_polars_solver(db)
+            answers[option] = get_2D_polars_solver()
             continue
         options[option] = all_options[option]
 
@@ -388,7 +394,7 @@ def set_analysis_options(solver: Solver, db: DB, airfoil: Airplane) -> None:
 
     except:
         print("Unable to set options! Try Again")
-        return set_analysis_options(solver, db, airfoil)
+        return set_analysis_options(solver, airfoil)
 
 
 def set_solver_parameters(solver: Solver) -> None:
@@ -423,7 +429,7 @@ def set_solver_parameters(solver: Solver) -> None:
             return set_solver_parameters(solver)
 
 
-def airplane_cli(db: DB, return_home: bool = False) -> None:
+def airplane_cli(return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
 
@@ -445,7 +451,7 @@ def airplane_cli(db: DB, return_home: bool = False) -> None:
 
     for i in range(N):
         print("\n")
-        vehicle: Airplane = select_airplane_source(db)
+        vehicle: Airplane = select_airplane_source()
         airplanes.append(vehicle)
 
         select_solver_quest: list[Checkbox] = [
@@ -464,9 +470,9 @@ def airplane_cli(db: DB, return_home: bool = False) -> None:
             calc_gnvp_3[vehicle.name] = True
 
             # Get Solver
-            gnvp_3_solvers[vehicle.name] = get_gnvp3(db)
+            gnvp_3_solvers[vehicle.name] = get_gnvp3()
             set_analysis(gnvp_3_solvers[vehicle.name])
-            set_analysis_options(gnvp_3_solvers[vehicle.name], db, vehicle)
+            set_analysis_options(gnvp_3_solvers[vehicle.name], vehicle)
             set_solver_parameters(gnvp_3_solvers[vehicle.name])
         else:
             calc_gnvp_3[vehicle.name] = False
@@ -475,9 +481,9 @@ def airplane_cli(db: DB, return_home: bool = False) -> None:
             calc_gnvp_7[vehicle.name] = True
 
             # Get Solver
-            gnvp_7_solvers[vehicle.name] = get_gnvp7(db)
+            gnvp_7_solvers[vehicle.name] = get_gnvp7()
             set_analysis(gnvp_7_solvers[vehicle.name])
-            set_analysis_options(gnvp_7_solvers[vehicle.name], db, vehicle)
+            set_analysis_options(gnvp_7_solvers[vehicle.name], vehicle)
             set_solver_parameters(gnvp_7_solvers[vehicle.name])
         else:
             calc_gnvp_7[vehicle.name] = False
@@ -486,9 +492,9 @@ def airplane_cli(db: DB, return_home: bool = False) -> None:
             calc_lspt[vehicle.name] = True
 
             # Get Solver
-            lspt_solvers[vehicle.name] = get_lspt(db)
+            lspt_solvers[vehicle.name] = get_lspt()
             set_analysis(lspt_solvers[vehicle.name])
-            set_analysis_options(lspt_solvers[vehicle.name], db, vehicle)
+            set_analysis_options(lspt_solvers[vehicle.name], vehicle)
             set_solver_parameters(lspt_solvers[vehicle.name])
         else:
             calc_lspt[vehicle.name] = False
@@ -559,11 +565,8 @@ def airplane_cli(db: DB, return_home: bool = False) -> None:
     print("########################################################################")
 
     if return_home:
-        cli_home(db)
+        cli_home()
 
 
 if __name__ == "__main__":
-    db: DB = DB()
-    db.load_data()
-
-    airplane_cli(db)
+    airplane_cli()

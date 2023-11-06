@@ -1,6 +1,3 @@
-from ast import Call
-from re import I
-from tabnanny import verbose
 from typing import Any
 from typing import Callable
 
@@ -11,11 +8,10 @@ from matplotlib.figure import Figure
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
-from traitlets import Float
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Environment.definition import Environment
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import Wing_Segment
@@ -32,7 +28,6 @@ class Wing_LSPT:
 
     def __init__(
         self,
-        db: DB,
         plane: Airplane,
         environment: Environment,
         alpha: float,
@@ -40,9 +35,6 @@ class Wing_LSPT:
         ground_clearence: float = 5,
         wake_geom_type: str = "TE-Geometrical",
     ) -> None:
-        # Store the database
-        self.db: DB = db
-
         # Get the environment properties
         self.dens: float = environment.air_density
         self.visc: float = environment.air_dynamic_viscosity
@@ -695,7 +687,7 @@ class Wing_LSPT:
             for j in np.arange(0, wing_seg.N - 1):
                 dy: float = float(np.mean(self.grid[N + j + 1, :, 1] - self.grid[N + j, :, 1]))
 
-                CL, CD, Cm = self.db.foilsDB.interpolate_polars(
+                CL, CD, Cm = DB.foils_db.interpolate_polars(
                     reynolds=float(self.strip_reynolds[N + j]),
                     airfoil_name=airfoil.name,
                     aoa=float(self.strip_airfoil_effective_aoa[N + j]),

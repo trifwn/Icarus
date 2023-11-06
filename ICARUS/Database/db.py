@@ -4,19 +4,19 @@ from .Database_2D import Database_2D
 from .Database_3D import Database_3D
 
 
-class DB:
+class Database:
     """Master Database Class Containing other Databases and managing them."""
 
     def __init__(self) -> None:
         self.HOMEDIR: str = APPHOME
-        self.foilsDB: Database_2D = Database_2D()
-        self.vehiclesDB: Database_3D = Database_3D()
-        self.analysesDB: AnalysesDB = AnalysesDB()
+        self.foils_db: Database_2D = Database_2D()
+        self.vehicles_db: Database_3D = Database_3D()
+        self.analyses_db: AnalysesDB = AnalysesDB()
 
     def load_data(self) -> None:
         """Loads all the data from the databases"""
-        self.foilsDB.load_data()
-        self.vehiclesDB.load_data()
+        self.foils_db.load_data()
+        self.vehicles_db.load_data()
 
     def __str__(self) -> str:
         return "Master Database"

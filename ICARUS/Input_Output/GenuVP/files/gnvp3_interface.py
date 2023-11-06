@@ -27,7 +27,7 @@ def gnvp3_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
     os.chdir(ANGLEDIR)
 
     with open("input", encoding="utf-8") as fin:
-        with open("gnvp.out", "w", encoding="utf-8") as fout:
+        with open("gnvp3.out", "w", encoding="utf-8") as fout:
             res: int = subprocess.check_call(
                 [os.path.join(ANGLEDIR, "gnvp3")],
                 stdin=fin,
@@ -72,7 +72,6 @@ def run_gnvp3_case(
     bodies_dicts: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
-    foildb: Database_2D,
     solver2D: str,
 ) -> None:
     """Makes input and runs GNVP3, for a specified Case
@@ -85,7 +84,6 @@ def run_gnvp3_case(
         bodies (list[dict[GenuSurface]): List of Bodies in GenuSurface format
         params (GenuParameters): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
-        foildb (Database_2D): 2D Foil Database
         solver2D (str): Name of 2D Solver to be used
     """
     make_input_files(
@@ -96,7 +94,6 @@ def run_gnvp3_case(
         bodies_dicts,
         params,
         airfoils,
-        foildb.data,
         solver2D,
     )
     gnvp3_execute(HOMEDIR, CASEDIR)

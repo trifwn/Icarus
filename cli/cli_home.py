@@ -22,13 +22,11 @@ import inquirer
 from inquirer import List
 from pyfiglet import Figlet
 
-from cli.airfoil_cli import airfoil_cli
-from cli.airplane_cli import airplane_cli
 from ICARUS import __version__
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 
 
-def cli_home(db: DB) -> None:
+def cli_home() -> None:
     # parse args
     parser = argparse.ArgumentParser(description="ICARUS Aerodynamics")
     parser.add_argument(
@@ -49,18 +47,32 @@ def cli_home(db: DB) -> None:
         action="store_true",
         help="Run airplane analysis",
     )
-    args: Namespace = parser.parse_args()
+
+    parser.add_argument(
+        "-vis",
+        "--visualization",
+        action="store_true",
+        help="Visualize results",
+    )
 
     f = Figlet(font="slant")
+
+    args: Namespace = parser.parse_args()
     print(f.renderText("ICARUS Aerodynamics"))
 
     # run airfoil analysis
-    if args.airfoil:
-        airfoil_cli(db=db, return_home=True)
+    from cli.airfoil_cli import airfoil_cli
+    from cli.airplane_cli import airplane_cli
+    from cli.visualization_cli import visualization_cli
 
-    # run airplane analysis
+    if args.airfoil:
+        airfoil_cli(return_home=True)
+
     elif args.plane:
-        airplane_cli(db=db, return_home=True)
+        airplane_cli(return_home=True)
+
+    elif args.visualization:
+        visualization_cli(return_home=True)
 
     # No input
     else:
@@ -89,19 +101,17 @@ def cli_home(db: DB) -> None:
         if answers is not None:
             mode = answers["Mode"]
             if mode == "2D":
-                airfoil_cli(db, return_home=True)
+                airfoil_cli(return_home=True)
+                DB.foils_db.load_data()
             elif mode == "3D":
-                airplane_cli(db, return_home=True)
+                airplane_cli(return_home=True)
+                DB.vehicles_db.load_data()
             elif mode == "Visualization":
-                # visualize(cli= True)
-                print("Visualization")
+                visualization_cli(return_home=True)
         else:
             exit()
 
 
 if __name__ == "__main__":
     # Establish DB Connection
-    db = DB()
-    db.load_data()
-
-    cli_home(db)
+    cli_home()

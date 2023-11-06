@@ -3,13 +3,14 @@ import numpy as np
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import define_linear_chord
 from ICARUS.Vehicle.wing_segment import define_linear_span
 from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
-def hermes(airfoils: Struct, name: str) -> Airplane:
+def hermes(name: str) -> Airplane:
     """
     Function to get the hermes plane.
     Consisting of the main wing, elevator rudder and masses as constructed.
@@ -34,7 +35,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
 
     main_wing = Wing_Segment(
         name="wing",
-        airfoil=airfoils["NACA4415"],
+        airfoil=DB.foils_db.data["NACA4415"],
         origin=origin + wing_position,
         orientation=wing_orientation,
         is_symmetric=True,
@@ -60,8 +61,8 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
     )
 
     elevator = Wing_Segment(
-        name="tail",
-        airfoil=airfoils["NACA0008"],
+        name="elevator",
+        airfoil=DB.foils_db.data["NACA0008"],
         origin=origin + elevator_pos,
         orientation=elevator_orientantion,
         is_symmetric=True,
@@ -88,7 +89,7 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
 
     rudder = Wing_Segment(
         name="rudder",
-        airfoil=airfoils["NACA0008"],
+        airfoil=DB.foils_db.data["NACA0008"],
         origin=origin + rudder_position,
         orientation=rudder_orientation,
         is_symmetric=False,
@@ -107,8 +108,9 @@ def hermes(airfoils: Struct, name: str) -> Airplane:
     lifting_surfaces: list[Wing_Segment] = [main_wing, elevator, rudder]
 
     point_masses = [
-        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Motor
-        (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
+        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Engine
+        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
+        (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Structure
         (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload
     ]
     airplane: Airplane = Airplane(name, lifting_surfaces)

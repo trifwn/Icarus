@@ -7,8 +7,8 @@ from tqdm import tqdm
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
+from ICARUS.Database import DB3D
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.GenuVP.analyses.monitor_progress import parallel_monitor
@@ -26,7 +26,6 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 def gnvp_angle_case(
     plane: Airplane,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -43,7 +42,6 @@ def gnvp_angle_case(
 
     Args:
         plane (Airplane): Airplane Object
-        db (DB): Database Object
         solver2D (str): Name of 2D Solver to be used
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -57,10 +55,9 @@ def gnvp_angle_case(
     Returns:
         str: Case Done Message
     """
-    HOMEDIR: str = db.HOMEDIR
-    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    HOMEDIR: str = DB.HOMEDIR
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     airfoils: list[str] = plane.airfoils
-    foilsDB: Database_2D = db.foilsDB
 
     folder: str = angle_to_case(angle)
     CASEDIR: str = os.path.join(PLANEDIR, folder)
@@ -88,7 +85,6 @@ def gnvp_angle_case(
         bodies_dicts=bodies_dicts,
         params=params,
         airfoils=airfoils,
-        foildb=foilsDB,
         solver2D=solver2D,
     )
 
@@ -111,7 +107,6 @@ def run_gnvp7_angles_parallel(*args: Any, **kwargs: Any) -> None:
 
 def run_gnvp_angles(
     plane: Airplane,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -125,7 +120,6 @@ def run_gnvp_angles(
 
     Args:
         plane (Airplane): Plane Object
-        db (DB): Database
         solver2D (str): Name of 2D Solver to be used for the 2d polars
         maxiter (int): Maxiteration for each case
         timestep (float): Timestep for simulations
@@ -152,7 +146,7 @@ def run_gnvp_angles(
     )
     print("Running Angles in Sequential Mode")
 
-    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     progress_bars: list[tqdm] = []
     for i, angle in enumerate(angles):
         folder: str = angle_to_case(angle)
@@ -162,7 +156,6 @@ def run_gnvp_angles(
             target=gnvp_angle_case,
             kwargs={
                 "plane": plane,
-                "db": db,
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
@@ -194,6 +187,7 @@ def run_gnvp_angles(
                 "lock": None,
                 "max_iter": maxiter,
                 "refresh_progress": 2,
+                "genu_version": genu_version,
             },
         )
 
@@ -208,7 +202,6 @@ def run_gnvp_angles(
 
 def run_gnvp_angles_parallel(
     plane: Airplane,
-    db: DB,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -222,7 +215,6 @@ def run_gnvp_angles_parallel(
 
     Args:
         plane (Airplane): Plane Object
-        db (DB): Database
         solver2D (str): 2D Solver Name to be used for 2d polars
         maxiter (int): Number of max iterations for each simulation
         timestep (float): Timestep between each iteration
@@ -260,7 +252,6 @@ def run_gnvp_angles_parallel(
             args_list = [
                 (
                     plane,
-                    db,
                     solver2D,
                     maxiter,
                     timestep,
@@ -276,7 +267,7 @@ def run_gnvp_angles_parallel(
             ]
             pool.starmap(gnvp_angle_case, args_list)
 
-    PLANEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     folders: list[str] = [angle_to_case(angle) for angle in angles]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, folder) for folder in folders]
 
@@ -290,6 +281,7 @@ def run_gnvp_angles_parallel(
             "variables": angles,
             "max_iter": maxiter,
             "refresh_progress": refresh_pogress,
+            "genu_version": genu_version,
         },
     )
 
@@ -302,31 +294,41 @@ def run_gnvp_angles_parallel(
     job_monitor.join()
 
 
-def process_gnvp_angles_run_3(plane: Airplane, db: DB) -> DataFrame:
-    return process_gnvp_angles_run(plane, db, 3)
+def process_gnvp_angles_run_3(plane: Airplane) -> DataFrame:
+    return process_gnvp_angles_run(plane, 3)
 
 
-def process_gnvp_angles_run_7(
-    plane: Airplane,
-    db: DB,
-) -> DataFrame:
-    return process_gnvp_angles_run(plane, db, 7)
+def process_gnvp_angles_run_7(plane: Airplane) -> DataFrame:
+    return process_gnvp_angles_run(plane, 7)
 
 
-def process_gnvp_angles_run(plane: Airplane, db: DB, genu_version: int) -> DataFrame:
+def process_gnvp_angles_run(plane: Airplane, genu_version: int) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
 
     Args:
         plane (Airplane): Plane Object
-        db (DB): Database
         genu_version: GNVP Version
 
     Returns:
         DataFrame: Forces Calculated
     """
-    HOMEDIR: str = db.HOMEDIR
-    CASEDIR: str = os.path.join(db.vehiclesDB.DATADIR, plane.CASEDIR)
+    HOMEDIR: str = DB.HOMEDIR
+    CASEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     forces: DataFrame = log_forces(CASEDIR, HOMEDIR, genu_version)
+    plane.save()
+
+    print("Adding Results to Database")
+    # Add Plane to Database
+    file_plane: str = os.path.join(DB3D, plane.name, f"{plane.name}.json")
+    _ = DB.vehicles_db.load_plane_from_file(name=plane.name, file=file_plane)
+
+    # Add Forces to Database
+    file_gnvp: str = os.path.join(DB3D, plane.name, f"forces.gnvp{genu_version}")
+    DB.vehicles_db.load_gnvp_forces(planename=plane.name, file=file_gnvp, genu_version=genu_version)
+
+    # Add Convergence to Database
+    cases = next(os.walk(CASEDIR))[1]
+    DB.vehicles_db.load_gnvp_case_convergence(planename=plane.name, case=CASEDIR, genu_version=genu_version)
     # rotatedforces: DataFrame = rotate_forces(forces, forces["AoA"])
     return forces

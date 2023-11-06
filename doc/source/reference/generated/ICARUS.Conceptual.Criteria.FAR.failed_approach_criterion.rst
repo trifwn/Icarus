@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.failed\_approach\_criterion
+﻿ICARUS.Conceptual.Criteria.FAR.failed\_approach\_criterion
 ==========================================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.failed_approach_criterion

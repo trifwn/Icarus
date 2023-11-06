@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.db import DB
+from ICARUS.Database import DB
 from ICARUS.Input_Output.F2Wsection.analyses.monitor_progress import parallel_monitor
 from ICARUS.Input_Output.F2Wsection.analyses.monitor_progress import serial_monitor
 from ICARUS.Input_Output.F2Wsection.files_interface import sequential_run
@@ -19,20 +19,19 @@ from ICARUS.Input_Output.F2Wsection.utils import separate_angles
 
 
 def f2w_single_reynolds(
-    db: DB,
     airfoil: Airfoil,
     reynolds: float,
     mach: float,
-    all_angles: list[float] | FloatArray,
+    angles: list[float] | FloatArray,
     solver_options: dict[str, Any],
 ) -> None:
-    HOMEDIR, _, REYNDIR, _ = db.foilsDB.generate_airfoil_directories(
+    HOMEDIR, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
-        angles=all_angles,
+        angles=angles,
     )
 
-    nangles, pangles = separate_angles(all_angles)
+    nangles, pangles = separate_angles(angles)
 
     jobs: list[Thread] = []
     for name, angles in zip(["pos", "neg"], [pangles, nangles]):
@@ -60,21 +59,20 @@ def f2w_single_reynolds(
 
 
 def run_single_reynolds(
-    db: DB,
     airfoil: Airfoil,
     reynolds: float,
     mach: float,
-    all_angles: list[float],
+    angles: list[float],
     solver_options: dict[str, Any],
     position: int = 1,
 ) -> None:
-    HOMEDIR, _, REYNDIR, _ = db.foilsDB.generate_airfoil_directories(
+    HOMEDIR, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
-        angles=all_angles,
+        angles=angles,
     )
 
-    nangles, pangles = separate_angles(all_angles)
+    nangles, pangles = separate_angles(angles)
     max_iter: int = solver_options["max_iter"]
     reyn_str: str = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(
         8,
@@ -83,11 +81,10 @@ def run_single_reynolds(
     job = Thread(
         target=f2w_single_reynolds,
         kwargs={
-            "db": db,
             "airfoil": airfoil,
             "reynolds": reynolds,
             "mach": mach,
-            "all_angles": all_angles,
+            "angles": angles,
             "solver_options": solver_options,
         },
     )
@@ -137,7 +134,6 @@ def run_single_reynolds(
 
 
 def run_multiple_reynolds_parallel(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
@@ -146,7 +142,7 @@ def run_multiple_reynolds_parallel(
 ) -> None:
     REYNDIRS: list[str] = []
     for reyn in reynolds:
-        _, _, REYNDIR, _ = db.foilsDB.generate_airfoil_directories(
+        _, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
             airfoil=airfoil,
             reynolds=reyn,
             angles=angles,
@@ -159,7 +155,6 @@ def run_multiple_reynolds_parallel(
         with Pool(12) as pool:
             args_list = [
                 (
-                    db,
                     airfoil,
                     reyn,
                     mach,
@@ -186,7 +181,6 @@ def run_multiple_reynolds_parallel(
 
 
 def run_multiple_reynolds_sequentially(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float],
     mach: float,
@@ -194,11 +188,10 @@ def run_multiple_reynolds_sequentially(
     solver_options: dict[str, float],
 ) -> None:
     for i, reyn in enumerate(reynolds):
-        run_single_reynolds(db, airfoil, reyn, mach, angles, solver_options, i)
+        run_single_reynolds(airfoil, reyn, mach, angles, solver_options, i)
 
 
 def process_f2w_run(
-    db: DB,
     airfoil: Airfoil,
     reynolds: list[float] | float,
 ) -> dict[str, DataFrame]:
@@ -219,11 +212,11 @@ def process_f2w_run(
         reynolds_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
 
         CASEDIR: str = os.path.join(
-            db.foilsDB.DATADIR,
+            DB.foils_db.DATADIR,
             f"NACA{airfoil.name}",
             f"Reynolds_{reynolds_str}",
         )
 
-        polars[reynolds_str] = make_polars(CASEDIR, db.HOMEDIR)
+        polars[reynolds_str] = make_polars(CASEDIR, DB.HOMEDIR)
 
     return polars

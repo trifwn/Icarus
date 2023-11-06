@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.cruise\_criterion
+﻿ICARUS.Conceptual.Criteria.FAR.cruise\_criterion
 ================================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.cruise_criterion

@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.get\_all\_criteria
+﻿ICARUS.Conceptual.Criteria.FAR.get\_all\_criteria
 =================================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.get_all_criteria

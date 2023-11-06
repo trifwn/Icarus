@@ -1,3 +1,5 @@
+from typing import Any
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
@@ -8,24 +10,25 @@ from pandas import Series
 from .. import colors_
 from .. import markers
 from ICARUS.Core.struct import Struct
+from ICARUS.Database import DB
 
 
 def plot_airfoil_polars(
-    data: dict[str, dict[str, dict[str, DataFrame]]] | Struct,
-    airfoil: str,
+    airfoil_name: str,
     solvers: list[str] | str = "All",
     plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
-) -> tuple[ndarray, Figure]:
+) -> tuple[ndarray[Any, Any], Figure]:
     """
     Args:
-        data (dict[str, dict[str, dict[str, DataFrame]]]): Nested Dictionary with the airfoil polars
-        airfoil (str): Airfoil names
+        airfoil_name (str): Airfoil names
         solvers (list[str] | str, optional): List of solver Names. Defaults to "All".
+        plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
         size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
-        AoA_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
+        aoa_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
+        title (str, optional): Figure Title. Defaults to "Aero Coefficients".
     """
     number_of_plots = len(plots) + 1
 
@@ -50,14 +53,17 @@ def plot_airfoil_polars(
     if solvers == "All" or solvers == ["All"]:
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
-    for i, solver in enumerate(data[airfoil].keys()):
+    # Get the data from the database
+    data: Struct = DB.foils_db.data
+
+    for i, solver in enumerate(data[airfoil_name].keys()):
         if solver not in solvers:
             print(f"Skipping {solver} is not in {solvers}")
             continue
 
-        for j, reynolds in enumerate(data[airfoil][solver].keys()):
+        for j, reynolds in enumerate(data[airfoil_name][solver].keys()):
             try:
-                polar: DataFrame = data[airfoil][solver][reynolds]
+                polar: DataFrame = data[airfoil_name][solver][reynolds]
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
@@ -72,15 +78,15 @@ def plot_airfoil_polars(
 
                     x: Series = polar[f"{key0}"]
                     y: Series = polar[f"{key1}"]
-                    c = colors_(j / len(data[airfoil][solver].keys()))
+                    c = colors_(j / len(data[airfoil_name][solver].keys()))
                     m = markers[i].get_marker()
-                    label: str = f"{airfoil}: {reynolds} - {solver}"
+                    label: str = f"{airfoil_name}: {reynolds} - {solver}"
                     try:
                         ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
                     except ValueError as e:
                         raise e
             except (KeyError, ValueError) as solv:
-                print(f"Run Doesn't Exist: {airfoil},{reynolds},{solv}")
+                print(f"Run Doesn't Exist: {airfoil_name},{reynolds},{solv}")
 
     # Remove empty plots
     for ax in axs.flatten()[len(plots) :]:

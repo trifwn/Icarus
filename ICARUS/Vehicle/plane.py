@@ -261,7 +261,7 @@ class Airplane:
                     mov = np.zeros(3)
 
         for surface in self.surfaces:
-            surface.plot_wing(fig, ax, mov)
+            surface.plot(fig, ax, mov)
         # Add plot for masses
         for m, r in self.masses:
             ax.scatter(

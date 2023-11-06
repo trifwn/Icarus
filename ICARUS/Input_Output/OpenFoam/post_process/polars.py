@@ -7,14 +7,14 @@ from pandas import DataFrame
 from ICARUS.Input_Output.OpenFoam.post_process.get_aero_coefficients import get_coefficients
 
 
-def make_polars(CASEDIR: str, HOMEDIR: str, all_angles: list[float]) -> DataFrame:
+def make_polars(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> DataFrame:
     """
     Function to make polars from OpenFoam results
 
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
-        all_angles (list[float]): Angles to make polars for
+        angles (list[float]): Angles to make polars for
     Returns:
         DataFrame: Dataframe Containing CL, CD, CM for all angles
     """
@@ -24,7 +24,7 @@ def make_polars(CASEDIR: str, HOMEDIR: str, all_angles: list[float]) -> DataFram
     cm: list[float] = []
     folders: list[str] = next(os.walk("."))[1]
     angles_succeded: list[float] = []
-    for angle in all_angles:
+    for angle in angles:
         if angle >= 0:
             folder: str = str(angle)[::-1].zfill(7)[::-1]
         else:

@@ -1,4 +1,4 @@
-ICARUS.Aerodynamics.Potential.lifting\_surfaces
+﻿ICARUS.Aerodynamics.Potential.lifting\_surfaces
 ===============================================
 
 .. automodule:: ICARUS.Aerodynamics.Potential.lifting_surfaces

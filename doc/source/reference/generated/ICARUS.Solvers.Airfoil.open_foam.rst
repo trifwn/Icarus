@@ -1,4 +1,4 @@
-ICARUS.Solvers.Airfoil.open\_foam
+﻿ICARUS.Solvers.Airfoil.open\_foam
 =================================
 
 .. automodule:: ICARUS.Solvers.Airfoil.open_foam

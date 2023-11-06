@@ -1,4 +1,4 @@
-ICARUS.Conceptual.Criteria.FAR.landing\_criterion
+﻿ICARUS.Conceptual.Criteria.FAR.landing\_criterion
 =================================================
 
 .. automodule:: ICARUS.Conceptual.Criteria.FAR.landing_criterion

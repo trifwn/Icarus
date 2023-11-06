@@ -8,14 +8,14 @@ from ICARUS.Vehicle.plane import Airplane
 
 
 def plot_gnvp3_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
-    gnvp_wake(gnvp_version=3, plane=plane, case=case, figsize=figsize)
+    plot_gnvp_wake(gnvp_version=3, plane=plane, case=case, figsize=figsize)
 
 
 def plot_gnvp7_wake(plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
-    gnvp_wake(gnvp_version=7, plane=plane, case=case, figsize=figsize)
+    plot_gnvp_wake(gnvp_version=7, plane=plane, case=case, figsize=figsize)
 
 
-def gnvp_wake(gnvp_version: int, plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
+def plot_gnvp_wake(gnvp_version: int, plane: Airplane, case: str, figsize: tuple[int, int] = (16, 7)) -> None:
     """
     Visualize the wake of a given plane
 
