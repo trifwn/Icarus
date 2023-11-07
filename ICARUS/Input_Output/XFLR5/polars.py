@@ -67,6 +67,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                             engine="python",
                         )
                     except pd.errors.EmptyDataError:
+                        print(f"Error")
                         continue
 
                     dat.columns = xfoilcols
@@ -83,7 +84,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFOIL" not in foils_db.data[name].keys():
+                    if "XFLR" not in foils_db.data[name].keys():
                         foils_db.data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
@@ -112,7 +113,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFOIL" not in foils_db.data[name].keys():
+                    if "XFLR" not in foils_db.data[name].keys():
                         foils_db.data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(

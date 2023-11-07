@@ -5,8 +5,6 @@ from typing import Any
 from pandas import DataFrame
 
 from .files_gnvp3 import make_input_files
-from ICARUS.Database import BASEGNVP3 as GENUBASE
-from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Input_Output.GenuVP.post_process.forces import forces_to_pertrubation_results
 from ICARUS.Input_Output.GenuVP.post_process.forces import log_forces
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
@@ -89,11 +87,9 @@ def run_gnvp3_case(
     make_input_files(
         CASEDIR,
         HOMEDIR,
-        GENUBASE,
         movements,
         bodies_dicts,
         params,
-        airfoils,
         solver2D,
     )
     gnvp3_execute(HOMEDIR, CASEDIR)

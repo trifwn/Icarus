@@ -78,9 +78,9 @@ def get_gnvp3() -> Solver:
             int,
         ),
         "Vortex_Particle_Count": (
-            1.0,
+            1,
             "NNEVP0 Number of vortex particles created within a time step per near-wake element of a thin  wing",
-            float,
+            int,
         ),
         "Vortex_Particle_Relaxation": (
             1.0,
@@ -139,7 +139,7 @@ def get_gnvp3() -> Solver:
             float,
         ),
         "Wake_Deformation_Parameter": (
-            0,
+            1,
             "IDEFW   Parameter for the deformation induced by the near wake ",
             float,
         ),

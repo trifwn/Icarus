@@ -1,9 +1,11 @@
 import os
 import shutil
+from io import TextIOWrapper
+from typing import Any
 
-import numpy as np
 import pandas as pd
 from pandas import DataFrame
+from regex import B
 
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
@@ -16,29 +18,56 @@ from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
 
 
+def line(value: Any, var_name: str, description: str, file: TextIOWrapper) -> None:
+    # the value should be added on the first 15 columns after that we should have the
+    # var_name on the 16 column and then the description on 25 column
+    # Depending on the type of value we should use different formatting. We should also
+    # complete the empty spaces with spaces
+
+    # value formatting
+    if isinstance(value, float):
+        value = ff4(value)
+    elif isinstance(value, int):
+        value = str(value)
+    elif isinstance(value, str):
+        pass
+    else:
+        raise ValueError("The value should be a float, int or str")
+
+    # value formatting
+    value = value.ljust(15)
+
+    # var_name formatting
+    var_name = var_name.ljust(10)
+
+    # final formatting
+    line: str = value + var_name + description + "\n"
+    file.write(line)
+
+
+def blankline(f: TextIOWrapper):
+    f.write("                                                                <blank>\n")
+
+
 def input_file() -> None:
     """
     Creates the input file for GNVP3
     """
 
     fname: str = "input"
-    with open(fname, encoding="utf-8") as file:
-        data: list[str] = file.readlines()
-    data[0] = "dfile.yours\n"
-    data[1] = "0\n"
-    data[2] = "1\n"
-    data[3] = "1.     ! NTIMER\n"
-    data[4] = "1.     ! NTIMEHYB\n"
-    data[5] = "1.     ! ITERWAK\n"
-    data[6] = "1.     ! ITERVEL\n"
-    data[7] = "1.\n"
-    data[8] = "1.\n"
-    data[9] = "1.\n"
-    data[10] = "1.\n"
-    data[11] = "1.\n"
-
-    with open(fname, "w", encoding="utf-8") as file:
-        file.writelines(data)
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write("dfile.yours\n")
+        f.write("0\n")
+        f.write("1\n")
+        f.write("1.     ! NTIMER\n")
+        f.write("1.     ! NTIMEHYB\n")
+        f.write("1.     ! ITERWAK\n")
+        f.write("1.     ! ITERVEL\n")
+        f.write("1.\n")
+        f.write("1.\n")
+        f.write("1.\n")
+        f.write("1.\n")
+        f.write("1.\n")
 
 
 def dfile(params: GenuParameters) -> None:
@@ -48,42 +77,143 @@ def dfile(params: GenuParameters) -> None:
         params (GenuParameters): An object containing all parameter values
     """
     fname: str = "dfile.yours"
-    with open(fname, encoding="utf-8") as file:
-        data: list[str] = file.readlines()
-
-    data[27] = f"{int(params.nBods)}           NBODT      number of bodies\n"
-    data[28] = f"{int(params.nBlades)}           NBLADE     number of blades\n"
-    data[35] = f"{int(params.maxiter)}         NTIMER     number of the last time step to be performed\n"
-    data[36] = f"{params.timestep}        DT         time step\n"
-    data[55] = "4           NLEVELT    number of movements levels  ( 15 if tail rotor is considered ) \n"
-    data[59] = f"{ff2(params.u_freestream[0])}       UINF(1)    the velocity at infinity\n"
-    data[60] = f"{ff2(params.u_freestream[1])}       UINF(2)    .\n"
-    data[61] = f"{ff2(params.u_freestream[2])}       UINF(3)    .\n"
-
-    DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
-    if DX < 0.005:
-        data[94] = f"{ff2(DX)}       EPSVR      Cut-off length for the free vortex particles (final)\n"
-        data[95] = f"{ff2(DX)}       EPSO       Cut-off length for the free vortex particles (init.)\n"
-
-        DX = DX / 100
-        data[90] = f"{ff2(DX)}       EPSFB      Cut-off length for the bound vorticity\n"
-        data[91] = f"{ff2(DX)}       EPSFW      Cut-off length for the near-wake vorticity\n"
-        data[92] = f"{ff2(DX)}       EPSSR      Cut-off length for source distributions\n"
-        data[93] = f"{ff2(DX)}       EPSDI      Cut-off length for source distributions\n"
-
-    data[110] = f"1           ITERPRE    Write forces every ... time steps\n"
-    data[111] = f"1           ITERWAK    Write wake geometry every ... time steps\n"
-    data[112] = f"10000       ITERVEL    Write inflow velocities\n"
-    data[113] = f"10000       ITERREC    Take back-up every ... time steps\n"
-    data[114] = f"100         ITERLOA    Write loads every ... time steps\n"
-    data[115] = f"1           ITERCHW    Check the wake calculations every ... time steps\n"
-
-    data[119] = f"{params.rho}       AIRDEN     Fluid density\n"
-    data[120] = f"{params.visc}   VISCO      Kinematic viscosity\n"
-    data[130] = "hermes.geo   FILEGEO    the data file for the geometry of the configuration\n"
-
-    with open(fname, "w", encoding="utf-8") as file:
-        file.writelines(data)
+    with open(fname, "w", encoding="utf-8") as f:
+        line(0, "ISTART", "(=0 for a full run, =1 for a rerun)')", f)
+        blankline(f)
+        blankline(f)
+        f.write("Three lines follow where text can be included as HEADER of the main OUTPUT file\n")
+        f.write("<------------------  maximum line length  ------------------------------------->\n")
+        f.write("SIMULATION---------------------------\n")
+        f.write("-------------------------------------\n")
+        f.write("-------------------------------------\n")
+        blankline(f)
+        f.write("Give the names of the OUTPUT files\n")
+        f.write("<---------->\n")
+        blankline(f)
+        line("YOURS.TOT", "OFILE", "Name of the OUTPUT file containing general  results", f)
+        line("YOURS.WAK", "OWAKE", "Name of the OUTPUT file containing   wake   results", f)
+        line("YOURS.PRE", "OPRES", "Name of the OUTPUT file containing pressure results", f)
+        line("YOURS.BAK", "RCALL", "Name of the OUTPUT file containing backup   results", f)
+        line("YOURS.SAS", "SUPAS", "Name of the BINARY file containing AS", f)
+        line("YOURS.SBU", "SUPBU", "Name of the BINARY file containing BU", f)
+        line("YOURS.CHW", "CHWAK", "Name of the OUTPUT file containing wake-sts results", f)
+        line("YOURS.LOA", "LOADS", "Name of the OUTPUT file containing   loads  results", f)
+        blankline(f)
+        blankline(f)
+        f.write("Give the general data in FREE format\n")
+        blankline(f)
+        f.write("a. The BASIC parameters\n")
+        blankline(f)
+        line(1, "NSYMF", "=1,2,3 (no-symm, axi-symm, Y-symm)", f)
+        line(params.nBods, "NBODT", "number of bodies", f)
+        line(params.nBlades, "NBLADE", "number of blades", f)
+        line(0, "IABSREF", "= 0 for GCS =1 for RCS", f)
+        line(1, "IAXISRF", "=1,2,3 gives the axis of rotation if IABSREF=1", f)
+        line(0.0, "OMEGAR", "is the rotation speed of the RCS", f)
+        f.write("\n")
+        f.write("b. The TIME parameters\n")
+        blankline(f)
+        line(params.maxiter, "NTIMER", "number of the last time step to be performed", f)
+        line(params.timestep, "DT", "time step", f)
+        line(0, "IDT", "if IDT=1 then DT is the number of steps per rotation", f)
+        line(1, "OMEAGT", "the rotation speed for the definition of the PERIOD", f)
+        line(params.NMETH, "NMETHT", "=1 for Euler =2 for Adams Bashford time integrat. scheme", f)
+        line(params.NEMTIP, "NEMTIP", "=0,1. The latter means that tip-emission takes place", f)
+        line(params.NTIMET, "NTIMET", "time step that tip-emission begins", f)
+        line(params.NEMSLE, "NEMSLE", "=0(no action), 1(leading-edge separ. takes place)", f)
+        line(params.NTIMEL, "NTIMEL", "time step that leading-edge separation starts", f)
+        line(0.0, "AZIMIN", "the initial azimuthal angle", f)
+        blankline(f)
+        f.write("c. The SOLUTION parameters\n")
+        blankline(f)
+        line(0, "IMAT", "=0 AS is calculated, =1 AS is read from disk", f)
+        line(200, "ITERM", "maximum number of potential iterations", f)
+        line(params.RELAXS, "RELAXS", "relaxation factor for the singularity distributions", f)
+        line(params.EPSDS, "EPSDS", "convergence tolerance of the potential calculations", f)
+        blankline(f)
+        f.write("d. The MOVEMENT parameters\n")
+        blankline(f)
+        line(params.NLEVELT, "NLEVELT", "number of movements levels  ( 15 if tail rotor is considered )", f)
+        blankline(f)
+        f.write("e. The FLOW parameters\n")
+        blankline(f)
+        line(params.u_freestream[0], "UINF(1)", "the velocity at infinity", f)
+        line(params.u_freestream[1], "UINF(2)", ".", f)
+        line(params.u_freestream[2], "UINF(3)", ".", f)
+        line(0, "UREF", "the reference velocity", f)
+        line(1, "ADIML", "the length scale used for the non-dimentionalisation", f)
+        line(1, "ADIMT", "the  time  scale used for the non-dimentionalisation", f)
+        line(0, "IUINFC", "0(no action), 1(UINF varies)", f)
+        line(1, "IAXISUI", "=1,2,3 gives the direction of UINF that varies", f)
+        line(0.00, "TIUINF(1)", "time parameters of the variation   *** 5 periods ***", f)
+        line(0.00, "TIUINF(2)", ".shear exponent", f)
+        line(0.00, "TIUINF(3)", ".xronos pou arxizei to INWIND", f)
+        line(0.00, "TIUINF(4)", ".tower impact factor", f)
+        line(1, "TIUINF(5)", ".record pou arxeizei na diabazei", f)
+        line(0.000, "AMUINF(1)", "", f)
+        line(0.000, "AMUINF(2)", ".", f)
+        line(0.000, "AMUINF(3)", ".", f)
+        line(0.000, "AMUINF(4)", ".", f)
+        line(0.000, "AMUINF(5)", ".", f)
+        line(0.000, "AMUINF(6)", ".", f)
+        line(0.000, "AMUINF(7)", ".", f)
+        blankline(f)
+        f.write("f. The EMISSION parameters\n")
+        blankline(f)
+        line("", "", "Number of vortex particles created within a time step", f)
+        line(params.NNEVP0, "NNEVP0", "per near-wake element of a thin  wing", f)
+        line(params.RELAXU, "RELAXU", "relaxation factor for the emission velocity", f)
+        line(params.PARVEC, "PARVEC", "parameter for the minimum width of the near-wake elemen.", f)
+        line(params.NEMIS, "NEMISS", "=1,2 (See CREATE)", f)
+        blankline(f)
+        f.write("g. The DEFORMATION parameters\n")
+        blankline(f)
+        line(params.EPSFB, "EPSFB", "Cut-off length for the bound vorticity", f)
+        line(params.EPSFW, "EPSFW", "Cut-off length for the near-wake vorticity", f)
+        line(params.EPSSR, "EPSSR", "Cut-off length for source distributions", f)
+        line(params.EPSDI, "EPSDI", "Cut-off length for source distributions", f)
+        line(params.EPSVR, "EPSVR", "Cut-off length for the free vortex particles (final)", f)
+        line(params.EPSO, "EPSO", "Cut-off length for the free vortex particles (init.)", f)
+        line(params.EPSINT, "EPSINT", "", f)
+        line(params.COEF, "COEF", "Factor for the disipation of particles", f)
+        line(params.RMETM, "RMETM", "Upper bound of the deformation rate", f)
+        line(params.IDEFW, "IDEFW", "Parameter for the deformation induced by the near wake", f)
+        line(params.REFLEN, "REFLEN", "Length used in VELEF for suppresing far-particle calc.", f)
+        line(params.IDIVVRP, "IDIVVRP", "Parameter for the subdivision of particles", f)
+        line(params.FLENSC, "FLENSC", "Length scale for the subdivision of particles", f)
+        line(params.NREWAK, "NREWAK", "Parameter for merging of particles", f)
+        line(params.NMER, "NMER", "Parameter for merging of particles", f)
+        line(params.XREWAK, "XREWAK", "X starting distance of merging", f)
+        line(params.RADMER, "RADMER", "Radius for merging", f)
+        blankline(f)
+        f.write("j. The MANAGEMENT parameters\n")
+        blankline(f)
+        line(1, "ITERPRE", "Write forces every ... time steps", f)
+        line(1, "ITERWAK", "Write wake geometry every ... time steps", f)
+        line(10000, "ITERVEL", "Write inflow velocities", f)
+        line(10000, "ITERREC", "Take back-up every ... time steps", f)
+        line(100, "ITERLOA", "Write loads every ... time steps", f)
+        line(1, "ITERCHW", "Check the wake calculations every ... time steps", f)
+        blankline(f)
+        f.write("i. The FLUID parameters\n")
+        blankline(f)
+        line(params.rho, "AIRDEN", "Fluid density", f)
+        line(params.visc, "VISCO", "Kinematic viscosity", f)
+        blankline(f)
+        f.write("k. The APPLICATION parameters\n")
+        blankline(f)
+        line(0, "IAPPLIC", "= 0(no action), 1(velocity profiles in the wakes)", f)
+        line(0, "IUEXTER", "= 0(no action), 1(there is an external velocity field)", f)
+        blankline(f)
+        blankline(f)
+        f.write("GIVE THE NAME OF THE DATA FILE FOR THE BODIES OF THE CONFIGURATION\n")
+        f.write("            ... FILEGEO\n")
+        line("hermes.geo", "FILEGEO", "the data file for the geometry of the configuration", f)
+        f.write("                       (See DGEOM-3.frm format file, Subr. INITGEO and\n")
+        f.write("                        gnvp-3.txt)\n")
+        line(0, "IYNELST", "(1=BEAMDYN,2-ALCYONE,3=GAST)", f)
+        f.write("\n")
+        f.write("\n")
 
 
 def geofile(
@@ -209,7 +339,6 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
         solver (str): preferred solver
     """
     for bod in bodies:
-        fname: str = f"{bod.cld_fname}"
         try:
             polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
         except KeyError:
@@ -220,75 +349,70 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
                 print(foil_dat[f"NACA{bod.airfoil_name}"].keys())
                 raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
-        # GET FILE
-        with open(fname) as file:
-            data: list[str] = file.readlines()
+        fname: str = f"{bod.cld_fname}"
+        with open(fname, "w", encoding="UTF-8") as f:
+            f.write("------ CL and CD data input file for BO105 Rotor\n")
+            f.write("------ Mach number dependence included\n")
+            blankline(f)
+            line(2, "NSPAN", "Number of positions for which CL-CD data are given", f)
+            line(len(polars), "! NMACH", "Mach numbers for which CL-CD are given", f)
+            for i in range(0, len(polars)):
+                f.write(f"0.08\n")
+            f.write("! Reyn numbers for which CL-CD are given\n")
+            for reyn in polars.keys():
+                f.write(f"{reyn.zfill(5)}\n")
+            blankline(f)
+            # GET ALL 2D airfoil POLARS IN ONE TABLE
+            keys: list[str] = list(polars.keys())
+            df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
+            df.rename(
+                {"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"},
+                inplace=True,
+                axis="columns",
+            )
+            for reyn in keys[1:]:
+                df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
+                try:
+                    df2 = df2.rename(
+                        {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
+                        errors="raise",
+                        axis="columns",
+                    )
+                except KeyError as e:
+                    print("------------------------")
+                    print(f"KeyError: {e}")
+                    print(bod.cld_fname)
+                    print(reyn)
+                    continue
+                df = pd.merge(df, df2, on="AoA", how="outer")
+            # SORT BY AoA
+            df = df.sort_values("AoA")
+            # FILL NaN Values By neighbors
+            df = DB.foils_db.fill_polar_table(df)
 
-        # WRITE MACH NUMBERS !! ITS NOT GOING TO BE USED !!
-        data[4] = f"{len(polars)}  ! Mach numbers for which CL-CD are given\n"
-        for i in range(0, len(polars)):
-            data[5 + i] = "0.08\n"
+            # Get Angles
+            angles = df["AoA"].to_numpy()
+            anglenum: int = len(angles)
 
-        # WRITE REYNOLDS NUMBERS !! ITS GOING TO BE USED !!
-        data[5 + len(polars)] = "! Reyn numbers for which CL-CD are given\n"
-        for i, reyn in enumerate(list(polars.keys())):
-            data[6 + len(polars) + i] = f"{reyn.zfill(5)}\n"
-        data[6 + 2 * len(polars)] = "\n"
-        data = data[: 6 + 2 * len(polars) + 1]
-
-        # GET ALL 2D airfoil POLARS IN ONE TABLE
-        keys: list[str] = list(polars.keys())
-        df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
-        df.rename(
-            {"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"},
-            inplace=True,
-            axis="columns",
-        )
-        for reyn in keys[1:]:
-            df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
-            try:
-                df2 = df2.rename(
-                    {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
-                    errors="raise",
-                    axis="columns",
+            # FILL FILE
+            for radpos in 0, 1:
+                if radpos == 0:
+                    line(-100, "RADPOS", "! Radial Position", f)
+                else:
+                    line(100, "RADPOS", "! Radial Position", f)
+                f.write(
+                    f"{anglenum}         ! Number of Angles / Airfoil NACA {bod.airfoil_name}\n",
                 )
-            except KeyError as e:
-                print("------------------------")
-                print(f"KeyError: {e}")
-                print(bod.cld_fname)
-                print(reyn)
-                continue
-            df = pd.merge(df, df2, on="AoA", how="outer")
-        # SORT BY AoA
-        df = df.sort_values("AoA")
-        # FILL NaN Values By neighbors
-        df = DB.foils_db.fill_polar_table(df)
-
-        # Get Angles
-        angles = df["AoA"].to_numpy()
-        anglenum: int = len(angles)
-
-        # FILL FILE
-        for radpos in 0, 1:
-            if radpos == 0:
-                data.append("-100.       ! Radial Position\n")
-            else:
-                data.append("100.       ! Radial Position\n")
-            data.append(
-                f"{anglenum}         ! Number of Angles / Airfoil NACA {bod.airfoil_name}\n",
-            )
-            data.append(
-                "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
-            )
-            for i, ang in enumerate(angles):
-                string: str = ""
-                nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
-                for num in nums:
-                    string = string + ff2(num) + "  "
-                data.append(f"{string}\n")
-            data.append("\n")
-        with open(fname, "w") as file:
-            file.writelines(data)
+                f.write(
+                    "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
+                )
+                for i, ang in enumerate(angles):
+                    string: str = ""
+                    nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
+                    for num in nums:
+                        string = string + ff2(num) + "  "
+                    f.write(f"{string}\n")
+                f.write("\n")
 
 
 def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
@@ -300,78 +424,130 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
     """
     for bod in bodies:
         fname: str = bod.bld_fname
-        with open(fname) as file:
-            data: list[str] = file.readlines()
+        with open(fname, "w", encoding="UTF-8") as f:
+            f.write(f"INPUT FILE FOR {bod.name}\n")
+            f.write("0\n")
+            f.write("IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]\n")
 
-        step: float = round(
-            (bod.Root_chord - bod.Tip_chord) / (bod.y_end - bod.y_0),
-            ndigits=5,
-        )
-        offset: float = round(bod.Offset / (bod.y_end - bod.y_0), ndigits=5)
-        # Check Whether to split a symmetric body into two parts
-        if not params.Use_Grid:
-            data[3] = f'1          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n'
-        else:
-            # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
-            with open(f"{bod.name}.WG", "w") as file:
-                grid: FloatArray = bod.Grid
-                for n_strip in grid:  # For each strip
-                    file.write("\n")
-                    for m_point in n_strip:  # For each point in the strip
-                        # Grid Coordinates
-                        file.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
-            # Specify option 0 to read the file
-            data[3] = f'0          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n'
-        data[6] = "0          0          1\n"
-        data[9] = f"{bod.name}.FL   {bod.name}.DS   {bod.name}OUT.WG\n"
-        data[12] = f"{ff4(bod.x_0)} {ff4(bod.y_0)} {ff4(bod.z_0)}\n"
-        data[15] = f"{ff4(bod.pitch)} {ff4(bod.cone)} {ff4(bod.wngang)}\n"
-        data[18] = "1                      0.         1.         \n"  # KSI
-        data[21] = f"1                      0.         {bod.y_end - bod.y_0}\n"
-        data[
-            24
-        ] = f"4                      {ff4(bod.Root_chord)} {ff4(-step)}     0.         0.         0.         0.\n"
-        data[30] = f"4                      {ff4(0.)} {ff4( offset )}     0.         0.         0.         0.\n"
+            # Check Whether to split a symmetric body into two parts
+            if not params.Use_Grid:
+                f.write(f'1          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n')
+            else:
+                f.write(f'0          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n')
+                # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
+                # Specify option 0 to read the file
+                with open(f"{bod.name}.WG", "w") as f_wg:
+                    grid: FloatArray = bod.Grid
+                    for n_strip in grid:  # For each strip
+                        f_wg.write("\n")
+                        for m_point in n_strip:  # For each point in the strip
+                            # Grid Coordinates
+                            f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
+            blankline(f)
+            f.write("IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n")
+            f.write("0          0          1\n")
+            blankline(f)
+            f.write("NFILFL     NFILDS     NFILWG      [corresponding file names]\n")
+            f.write(f"{bod.name}.FL   {bod.name}.DS   {bod.name}.WG\n")
+            blankline(f)
+            f.write("XOO        YOO        ZOO\n")
+            f.write(f"{ff4(bod.x_0)} {ff4(bod.y_0)} {ff4(bod.z_0)}\n")
+            blankline(f)
+            f.write("PITCH      CONE       WNGANG[azimuthal angle]\n")
+            f.write(f"{ff4(bod.pitch)} {ff4(bod.cone)} {ff4(bod.wngang)}\n")
+            blankline(f)
+            f.write("IEXKS      NFILKS      AKSI(1)    AKSI(NNC)\n")
+            f.write("1          0           0.         0.\n")
+            blankline(f)
 
-        with open(fname, "w") as file:
-            file.writelines(data)
+            step: float = round(
+                (bod.Root_chord - bod.Tip_chord) / (bod.y_end - bod.y_0),
+                ndigits=5,
+            )
+            offset: float = round(bod.Offset / (bod.y_end - bod.y_0), ndigits=5)
+
+            f.write("IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
+            f.write(f"1          0           0.         {bod.y_end - bod.y_0}\n")
+            blankline(f)
+            f.write("IEXCH      NFILCH      FCCH(1)    FCCH(2)   FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)\n")
+            f.write(
+                f"4                      {ff4(bod.Root_chord)} {ff4(-step)}     0.         0.         0.         0.\n",
+            )
+            blankline(f)
+            f.write("IEXTW      NFILTW      FCTW(1)    FCTW(2)   FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)\n")
+            f.write(f"4                      0.        0         0.         0.         0.         0.\n")
+            blankline(f)
+            f.write("IEXXO      NFILXO      FCXO(1)    FCXO(2)   FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)\n")
+            f.write(f"4                     {ff4(0.)} {ff4(offset)}     0.         0.         0.         0.\n")
+            blankline(f)
+            f.write("IEXZO      NFILZO      FCZO(1)    FCZO(2)   FCZO(3)    FCZO(4)    FCZO(5)    FCZO(6)\n")
+            f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
+            blankline(f)
+            f.write("IEXXS      NFILXS      FCXS(1)    FCXS(2)   FCXS(3)    FCXS(4)    FCXS(5)    FCXS(6)\n")
+            f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
+            blankline(f)
+            f.write("IEXRT      NFILRT      FCRT(1)    FCRT(2)   FCRT(3)    FCRT(4)    FCRT(5)    FCRT(6)\n")
+            f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
+            blankline(f)
+
+            f.write("C  INDEXFL    index of the airfoil (e.g. 4412 for NACA 4-digits airfoil)\n")
+            f.write("C  NFILxx     xx = KS, RC, CH, TH, XO, ZO, RT input file names for the\n")
+            f.write("C                                             corresponding distributions\n")
+            f.write("C  IEXxx      parameter defining the type of interpolation\n")
+            f.write("C         I)  in s. DISTRB\n")
+            f.write("C             xx distributions (xx=KS for AKSI(.), xx=RC for RC(.))\n")
+            f.write("C             =1 for linear interpolation\n")
+            f.write("C             =2 for sinusoinal interpolation\n")
+            f.write("C             =3 for double sinusoidal interpolation\n")
+            f.write("C             =5 for reading the disribution of xx from file\n")
+            f.write("C                (NNB(xx=KS)/NCW(xx=RC) must be equal to NUPO)\n")
+            f.write("C        II)  in s. CATAN\n")
+            f.write("C             xx distributions (xx=CH for CH(.), xx=TW for TW(.),\n")
+            f.write("C                xx=XO for XO(.), xx=ZO for ZO(.), xx=RT for RT(.))\n")
+            f.write("C             =4 for polynomial interpolation\n")
+            f.write("C             =5 for reading the disributions of xx and DxxDR from file\n")
+            f.write("C                (NCW must be equal to NUPO)\n")
+            f.write("C             =6 for reading the disributions of xx and DxxDR from file\n")
+            f.write("C                and interpolate both according RC(.)\n")
+            f.write("C             =7 for reading the disribution ONLY of xx from file and\n")
+            f.write("C                calculate DxxDR using 2nd order finite differences\n")
+            f.write("C                schemes. (NCW must be equal to NUPO)\n")
+            f.write("C             =8 for reading the disribution ONLY of xx from file,\n")
+            f.write("C                interpolate according RC(.) and  calculate DxxDR using\n")
+            f.write("C                2nd order finite differences shemes according RC(.)\n")
+            f.write("C  NUPOxx     number of data pairs for the distributions:\n")
+            f.write("C             AKSI(.), RC(.), CH(.), TW(.), XO(.), ZO(.), RT(.)\n")
+            f.write("C             NUPOxx is read from the 2nd line of file  NFILxx\n")
+            f.write("C")
+
+
+def hybrid_wake() -> None:
+    """
+    Creates the hybrid wake file for GNVP3
+    """
+    fname: str = "hyb.inf"
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write("Data for the Hybrid wake calculations \n")
+        f.write("  0.150  DGRLEN\n")
+        f.write("10000    NTIMEHYB\n")
+        f.write(" 18      NHYBAV\n")
+        f.write("360      NTHYBP\n")
 
 
 def make_input_files(
     ANGLEDIR: str,
     HOMEDIR: str,
-    GENUBASE: str,
     movements: list[list[Movement]],
     bodies: list[GenuSurface],
     params: GenuParameters,
-    airfoils: list[str],
     solver: str,
 ) -> None:
     os.chdir(ANGLEDIR)
 
-    # COPY FROM BASE
-    filesNeeded: list[str] = [
-        "dfile.yours",
-        "hermes.geo",
-        "hyb.inf",
-        "input",
-        "name.cld",
-        "name.bld",
-    ]
-    for item in filesNeeded:
-        item_location: str = os.path.join(GENUBASE, item)
-        shutil.copy(item_location, ANGLEDIR)
-
-    # EMPTY BLD FILES
-    # EMPTY CLD FILES
-    for body in bodies:
-        shutil.copy("name.bld", f"{body.bld_fname}")
-        shutil.copy("name.cld", f"{body.cld_fname}")
-    os.remove("name.bld")
-    os.remove("name.cld")
-
     # Input File
     input_file()
+    # Hybrid Wake input file
+    hybrid_wake()
     # DFILE
     dfile(params)
     # HERMES.GEO

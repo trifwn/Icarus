@@ -9,6 +9,7 @@ from matplotlib.widgets import Slider
 from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
+from regex import F
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import DB
@@ -18,14 +19,94 @@ from ICARUS.Visualization import markers
 from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
 
 
+def setup_plot(
+    airplane: str,
+    solvers: list[str] = ["All"],
+    size: tuple[int, int] = (10, 10),
+    title: str = "Aero Coefficients",
+):
+    fig = plt.figure(figsize=size)
+    axs: ndarray = fig.subplots(2, 2)  # type: ignore
+
+    if len(airplane) == 1:
+        fig.suptitle(f"{airplane} Aero Coefficients", fontsize=16)
+    else:
+        fig.suptitle("Airplanes Aero Coefficients", fontsize=16)
+
+    axs[0, 0].set_title("Cm vs AoA")
+    axs[0, 0].set_ylabel("Cm")
+
+    axs[0, 1].set_title("Cd vs AoA")
+    axs[0, 1].set_xlabel("AoA")
+    axs[0, 1].set_ylabel("Cd")
+
+    axs[1, 0].set_title("Cl vs AoA")
+    axs[1, 0].set_xlabel("AoA")
+    axs[1, 0].set_ylabel("Cl")
+
+    axs[1, 1].set_title("Cl/Cd vs AoA")
+    axs[1, 1].set_xlabel("AoA")
+
+    if solvers == ["All"]:
+        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D"]
+
+    for j, solver in enumerate(solvers):
+        skip = False
+        try:
+            polar = DB.vehicles_db.data[airplane]
+            aoa = polar["AoA"]
+            if airplane.startswith("XFLR"):
+                cl = polar[f"{solver} CL"]
+                cd = polar[f"{solver} CD"]
+                cm = polar[f"{solver} Cm"]
+                skip = True
+
+                style: str = f"--"
+
+                label: str = f"{airplane}"
+            else:
+                cl = polar[f"{solver} CL"]
+                cd = polar[f"{solver} CD"]
+                cm = polar[f"{solver} Cm"]
+                style = f"--"
+
+                label = f"{airplane} - {solver}"
+            try:
+                axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
+                axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
+                axs[1, 1].plot(aoa, cl / cd, style, label=label, markersize=3.5, linewidth=1)
+                axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
+            except ValueError as e:
+                print(style)
+                raise e
+        except KeyError as solver:
+            print(f"Run Doesn't Exist: {airplane},{solver}")
+        if skip:
+            break
+    fig.tight_layout()
+    for axe in axs:
+        for ax in axe:
+            ax.axhline(y=0, color="k")
+            ax.axvline(x=0, color="k")
+            ax.grid()
+
+    axs[1, 0].legend()  # (bbox_to_anchor=(-0.1, -0.25),  ncol=3,
+    # fancybox=True, loc='lower left')
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+    fig.show()
+
+    return axs, fig
+
+
 def cg_investigation(
     airplane_name: str,
     solvers: list[str] = ["All"],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
 ) -> None:
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]]
-    axs, fig = plot_airplane_polars([airplane_name], solvers, plots, size, title)
+    axs, fig = setup_plot(airplane_name, solvers, size, title)
 
     # Get the plane from the database
     plane: Airplane = DB.vehicles_db.planes[airplane_name]
@@ -36,20 +117,94 @@ def cg_investigation(
 
     cg_slider = Slider(ax=ax_cg, label="CG", valmin=-1, valmax=1, valinit=cg_x)
 
+    ## CLS
+    lines = list(axs[1, 0].get_lines())
+    CLs = {}
+    for line in lines:
+        name = line.get_label()
+        if name.startswith("_"):
+            continue
+        CLs[name] = line.get_ydata()
+
+    ## CDs
+    lines = list(axs[0, 1].get_lines())
+    CDs = {}
+    for line in lines:
+        name = line.get_label()
+        if name.startswith("_"):
+            continue
+        CDs[name] = line.get_ydata()
+
+    ## CMs
+    lines = list(axs[0, 0].get_lines())
+    CMs = {}
+    AoAs = {}
+    for line in lines:
+        name = line.get_label()
+        if name.startswith("_"):
+            continue
+        CMs[name] = line.get_ydata()
+        AoAs[name] = line.get_xdata()
+
+    points_cl = []
+    points_cd = []
+    points_cm = []
+    points_clcd = []
+    for name in CLs.keys():
+        cl = np.array(CLs[name])
+        cd = np.array(CDs[name])
+        cm = np.array(CMs[name])
+
+        # Find the point where the CM = 0
+        id = np.argmin(np.abs(cm))
+        aoa = AoAs[name][id]
+
+        points_cm.append(axs[0, 0].scatter(aoa, cm[id], marker="x", color="k"))
+        points_cd.append(axs[0, 1].scatter(aoa, cd[id], marker="x", color="k"))
+        points_cl.append(axs[1, 0].scatter(aoa, cl[id], marker="x", color="k"))
+        points_clcd.append(axs[1, 1].scatter(aoa, cl[id] / cd[id], marker="x", color="k"))
+
     # The function to be called anytime a slider's value changes
-    def update(val: float) -> None:
+    def update(new_cg: float) -> None:
         """
         The function to be called anytime a slider's value changes
         Each time the slider is changed, the cg position is updated and the plot is redrawn
         All the forces and moments are recalculated.
 
         Args:
-            val (float): The new cg position in the x direction
+            new_cg (float): The new cg position in the x direction
         """
-        # Remove all the plots
-        ax = axs.flatten()[2]
-        ax.clear()
-        fig.canvas.draw_idle()
+
+        # Adjust the CM according to the new CG
+        # Update the plot only for the CMs
+        axs[0, 0].clear()
+        axs[0, 0].set_title("Cm vs AoA")
+        axs[0, 0].set_ylabel("Cm")
+        axs[0, 0].set_xlabel("AoA")
+        axs[0, 0].grid()
+
+        axs[0, 0].axhline(y=0, color="k")
+        axs[0, 0].axvline(x=0, color="k")
+
+        for i, name in enumerate(CLs.keys()):
+            cl = np.array(CLs[name])
+            cd = np.array(CDs[name])
+            cm = np.array(CMs[name])
+
+            CM_new = cm + (cg_x - new_cg) * cl / plane.mean_aerodynamic_chord
+            CM_new = CM_new + (cg_x - new_cg) * cd / plane.mean_aerodynamic_chord
+
+            axs[0, 0].plot(AoAs[name], CM_new, label=name)
+
+            # Find the point where the CM = 0
+            id = np.argmin(np.abs(CM_new))
+            aoa = AoAs[name][id]
+
+            # Add the point to the plots
+            points_cm[i].set_offsets(np.c_[aoa, CM_new[id]])
+            points_cd[i].set_offsets(np.c_[aoa, cd[id]])
+            points_cl[i].set_offsets(np.c_[aoa, cl[id]])
+            points_clcd[i].set_offsets(np.c_[aoa, cl[id] / cd[id]])
 
     # register the update function with each slider
     cg_slider.on_changed(update)
@@ -62,3 +217,16 @@ def cg_investigation(
         cg_slider.reset()
 
     button.on_clicked(reset)
+    plt.show()
+
+
+if __name__ == "__main__":
+    planenames: list[str] = DB.vehicles_db.get_planenames()
+
+    cg_investigation(
+        planenames[2],
+        solvers=[
+            "GNVP7 2D",
+        ],
+        size=(10, 7),
+    )

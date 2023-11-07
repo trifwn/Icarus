@@ -16,7 +16,7 @@ from ICARUS.Database import DB
 def plot_airfoil_polars(
     airfoil_name: str,
     solvers: list[str] | str = "All",
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CD", "CL"]],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
@@ -56,14 +56,20 @@ def plot_airfoil_polars(
     # Get the data from the database
     data: Struct = DB.foils_db.data
 
-    for i, solver in enumerate(data[airfoil_name].keys()):
+    try:
+        db_solvers = data[airfoil_name]
+    except KeyError:
+        db_solvers = data[f"NACA{airfoil_name}"]
+
+    for i, solver in enumerate(db_solvers):
         if solver not in solvers:
             print(f"Skipping {solver} is not in {solvers}")
             continue
 
-        for j, reynolds in enumerate(data[airfoil_name][solver].keys()):
+        for j, reynolds in enumerate(db_solvers[solver].keys()):
+            print(reynolds, solver)
             try:
-                polar: DataFrame = data[airfoil_name][solver][reynolds]
+                polar: DataFrame = db_solvers[solver][reynolds]
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
@@ -78,7 +84,7 @@ def plot_airfoil_polars(
 
                     x: Series = polar[f"{key0}"]
                     y: Series = polar[f"{key1}"]
-                    c = colors_(j / len(data[airfoil_name][solver].keys()))
+                    c = colors_(j / len(db_solvers[solver].keys()))
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reynolds} - {solver}"
                     try:

@@ -219,4 +219,5 @@ def process_f2w_run(
 
         polars[reynolds_str] = make_polars(CASEDIR, DB.HOMEDIR)
 
+    DB.foils_db.load_data()
     return polars

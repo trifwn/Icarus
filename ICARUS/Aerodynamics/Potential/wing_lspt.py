@@ -327,12 +327,13 @@ class Wing_LSPT:
         self.RHS_np = RHS_np
 
         if (self.a_np is not None) and self.wake_geom_type == "TE-Geometrical":
-            print(f"Using previous solution for a and b! Be smart")
+            # print(f"Using previous solution for a and b! Be smart")
             return
         else:
             print(f"Solving for a and b")
             if self.wake_geom_type == "TE-Geometrical":
-                print("We should be using LU decomposition")
+                # print("We should be using LU decomposition")
+                pass
             a_np, b_np = self.get_LHS(solve_fun)
             self.a_np = a_np
             self.b_np = b_np
@@ -575,7 +576,7 @@ class Wing_LSPT:
 
             self.solve_wing_panels(Q, solver_fun)
             self.get_gamma_distribution()
-            self.get_aerodynamic_loads(umag)
+            self.get_aerodynamic_loads(umag, verbose=False)
 
             # No pen
             Ls[i] = self.L
