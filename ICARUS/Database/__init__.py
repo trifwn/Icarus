@@ -41,7 +41,6 @@ APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 
 BASEOPENFOAM: str = os.path.join(APPHOME, "Data", "Mock", "BaseOF")
-BASEFOIL2W: str = os.path.join(APPHOME, "Data", "Mock", "BaseF2W")
 # 3D
 BASEGNVP3: str = os.path.join(APPHOME, "Data", "Mock", "BaseGNVP3")
 

@@ -8,12 +8,11 @@ from tqdm.auto import tqdm
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import BASEOPENFOAM
 from ICARUS.Database import DB
 from ICARUS.Input_Output import runOFscript
 from ICARUS.Input_Output.OpenFoam.analyses.monitor_progress import parallel_monitor
 from ICARUS.Input_Output.OpenFoam.analyses.monitor_progress import serial_monitor
-from ICARUS.Input_Output.OpenFoam.filesOpenFoam import setup_open_foam
+from ICARUS.Input_Output.OpenFoam.files.setup_case import setup_open_foam
 
 
 def run_angle(
@@ -76,7 +75,6 @@ def angles_serial(
         HOMEDIR,
         AFDIR,
         REYNDIR,
-        BASEOPENFOAM,
         airfoil.file_name,
         reynolds,
         mach,
@@ -146,7 +144,6 @@ def angles_parallel(
         HOMEDIR,
         AFDIR,
         REYNDIR,
-        BASEOPENFOAM,
         airfoil.file_name,
         reynolds,
         mach,

@@ -10,7 +10,7 @@ from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
 from ICARUS.Database import XFLRDB
-from ICARUS.Input_Output.OpenFoam.filesOpenFoam import MeshType
+from ICARUS.Input_Output.OpenFoam.files.setup_case import MeshType
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Workers.solver import Solver
 
@@ -44,14 +44,14 @@ def main() -> None:
         except KeyError:
             print(f"Airfoil {airfoil_name} not found in database")
             print("Trying to Generate it")
-            # airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=200))
+            airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=200))
 
     # # Load From File
     # for airfoil_name in airfoil_names:
     #     airfoils.append(airfoil.naca(naca=airfoil_name, n_points=200))
 
-    naca64418: Airfoil = Airfoil.load_from_file(os.path.join(XFLRDB, "NACA64418", "naca64418.dat"))
-    airfoils.append(naca64418)
+    # naca64418: Airfoil = Airfoil.load_from_file(os.path.join(XFLRDB, "NACA64418", "naca64418.dat"))
+    # airfoils.append(naca64418)
 
     # naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35)
     # airfoils.append(naca64418_fl)

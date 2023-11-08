@@ -3,7 +3,6 @@ import subprocess
 from time import sleep
 from typing import Any
 
-from ICARUS.Database import BASEFOIL2W as F2WBASE
 from ICARUS.Input_Output.F2Wsection import files_f2w as ff2w
 
 
@@ -29,7 +28,6 @@ def sequential_run(
 
     # Create files from mock
     ff2w.setup_f2w(
-        F2WBASE=F2WBASE,
         HOMEDIR=HOMEDIR,
         CASEDIR=CASEDIR,
     )

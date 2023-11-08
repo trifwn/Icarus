@@ -5,13 +5,12 @@ from subprocess import call
 from typing import Any
 
 import numpy as np
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import APPHOME
 from ICARUS.Input_Output import setup_of_script
 
+OFBASE = os.path.join(APPHOME,"ICARUS","Input_Output","OpenFoam","files")
 
 class MeshType(Enum):
     """Enum for Mesh Type"""
@@ -24,7 +23,6 @@ class MeshType(Enum):
 def make_mesh(
     HOMEDIR: str,
     CASEDIR: str,
-    OFBASE: str,
     airfoil_fname: str,
     mesh_type: MeshType,
 ) -> None:
@@ -42,7 +40,7 @@ def make_mesh(
             return
 
         dst: str = os.path.join(CASEDIR, "struct.input")
-        src: str = os.path.join(OFBASE, "struct.input")
+        src: str = os.path.join("struct.input")
         shutil.copy(src, dst)
 
         os.chdir(CASEDIR)
@@ -58,7 +56,6 @@ def make_mesh(
 
 
 def init_case(
-    OFBASE: str,
     CASEDIR: str,
     angle: float,
 ) -> None:
@@ -66,7 +63,6 @@ def init_case(
     Make the zero folder for simulation
 
     Args:
-        OFBASE (str): Base directory for OpenFoam Mock Case
         CASEDIR (str): Case Directory
         angle (float): Angle to run
     """
@@ -82,7 +78,6 @@ def init_case(
 
 
 def constant_folder(
-    OFBASE: str,
     CASEDIR: str,
     reynolds: float,
 ) -> None:
@@ -90,7 +85,6 @@ def constant_folder(
     Make the constant folder for simulation
 
     Args:
-        OFBASE (str): Base directory for OpenFoam Mock Case
         CASEDIR (str): Case Directory
         reynolds (float): Reynolds Number
     """
@@ -106,7 +100,6 @@ def constant_folder(
 
 
 def system_folder(
-    OFBASE: str,
     CASEDIR: str,
     angle: float,
     max_iterations: int,
@@ -115,7 +108,6 @@ def system_folder(
     Make the system folder for simulation
 
     Args:
-        OFBASE (str): Base directory for OpenFoam Mock Case
         CASEDIR (str): Case Directory
         angle (float): Angle to run
         max_iterations (int): Max iterations for the simulation
@@ -138,11 +130,12 @@ def system_folder(
         file.writelines(data)
 
 
+
+
 def setup_open_foam(
     HOMEDIR: str,
     AFDIR: str,
     CASEDIR: str,
-    OFBASE: str,
     airfoil_fname: str,
     reynolds: float,
     mach: float,
@@ -152,9 +145,8 @@ def setup_open_foam(
     """Function to setup OpenFoam cases for a given airfoil and Reynolds number
 
     Args:
-        OFBASE (str): Base directory for OpenFoam Mock Case
-        CASEDIR (str): Directory of Current Case
         HOMEDIR (str): Home Directory
+        CASEDIR (str): Directory of Current Case
         airfoil_file (str): Filename containg the arifoil geometry
         airfoil_name (str): Name of the airfoil
         reynolds (float): Reynolds Number
@@ -180,14 +172,14 @@ def setup_open_foam(
 
         angle_rad: float = angle * np.pi / 180
         # MAKE 0/ FOLDER
-        init_case(OFBASE, ANGLEDIR, angle_rad)
+        init_case(ANGLEDIR, angle_rad)
 
         # MAKE constant/ FOLDER
-        constant_folder(OFBASE, ANGLEDIR, reynolds)
+        constant_folder(ANGLEDIR, reynolds)
 
         # MAKE system/ FOLDER
         max_iterations: int = solver_options["max_iterations"]
-        system_folder(OFBASE, ANGLEDIR, angle_rad, max_iterations)
+        system_folder(ANGLEDIR, angle_rad, max_iterations)
 
         src: str = os.path.join(AFDIR, airfoil_fname)
         dst: str = os.path.join(ANGLEDIR, airfoil_fname)
@@ -198,7 +190,6 @@ def setup_open_foam(
             make_mesh(
                 HOMEDIR,
                 ANGLEDIR,
-                OFBASE,
                 airfoil_fname,
                 mesh_type,
             )

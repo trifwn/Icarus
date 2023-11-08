@@ -3,7 +3,7 @@ from typing import Any
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Input_Output.OpenFoam.analyses.angles import angles_parallel
 from ICARUS.Input_Output.OpenFoam.analyses.angles import angles_serial
-from ICARUS.Input_Output.OpenFoam.filesOpenFoam import MeshType
+from ICARUS.Input_Output.OpenFoam.files.setup_case import MeshType
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 
