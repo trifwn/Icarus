@@ -22,7 +22,6 @@ from .Stability.stability_derivatives import StabilityDerivativesDS
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB3D
 from ICARUS.Environment.definition import Environment
 from ICARUS.Input_Output.GenuVP.post_process.forces import rotate_forces
 
@@ -44,6 +43,7 @@ class State:
         self.name: str = name
         # self.vehicle: Airplane = pln
         self.env: Environment = env
+        from ICARUS.Database import DB3D
         self.dynamics_directory: str = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
 
         # Get Airplane Properties And State Variables

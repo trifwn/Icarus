@@ -3,9 +3,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 

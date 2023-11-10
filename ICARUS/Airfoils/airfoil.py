@@ -58,10 +58,6 @@ from typing import Any
 import airfoils as af
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 
 from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
 from ICARUS.Core.struct import Struct

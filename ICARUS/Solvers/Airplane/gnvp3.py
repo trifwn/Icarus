@@ -94,12 +94,12 @@ def get_gnvp3() -> Solver:
         ),
         "NEMIS": (1, "1 or 2 UKNOWN", int),
         "Bound_Vorticity_Cutoff": (
-            0.003,
+            1e-3,
             "EPSFB  Cut-off length for the bound vorticity",
             float,
         ),
         "Wake_Vorticity_Cutoff": (
-            0.003,
+            1e-3,
             "EPSFW  Cut-off length for the near-wake vorticity",
             float,
         ),
@@ -114,12 +114,12 @@ def get_gnvp3() -> Solver:
             float,
         ),
         "Vortex_Cutoff_Length_f": (
-            0.500,
+            1e-1,
             "EPSVR  Cut-off length for the free vortex particles (final)",
             float,
         ),
         "Vortex_Cutoff_Length_i": (
-            0.500,
+            1e-1,
             "EPSO   Cut-off length for the free vortex particles (init.) ",
             float,
         ),

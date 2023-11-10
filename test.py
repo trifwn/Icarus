@@ -47,7 +47,7 @@ class BaseAirplaneTests(unittest.TestCase):
     def test6_geometry_gnvp7(self) -> None:
         gridAP, gridGNVP = gnvp7_geometry(plot=True)
 
-    #     np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
+        np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
     def test7_lspt_run(self) -> None:
         lspt_run()

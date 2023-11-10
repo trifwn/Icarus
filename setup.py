@@ -1,6 +1,7 @@
 """
 Setup script for ICARUS
 """
+from importlib.metadata import entry_points
 import os
 import platform
 import re
@@ -71,6 +72,9 @@ def install(package: str, version: str) -> None:
     setup(
         name=package,
         version=version,
+        # entry_points = {
+        #     'gnvp_wake' 
+        # }
     )
 
 

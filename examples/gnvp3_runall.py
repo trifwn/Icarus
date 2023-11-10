@@ -42,21 +42,22 @@ def main() -> None:
 
     # embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
     # planes.append(embraer_cr)
+    # planes.append(embraer_to)
 
-    # from Vehicles.Planes.hermes import hermes
+    from Vehicles.Planes.hermes import hermes
 
-    # hermes_3: Airplane = hermes(name="hermes_3")
-    planes.append(embraer_to)
+    hermes_3: Airplane = hermes(name="hermes_3_2")
+    planes.append(hermes_3)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "hermes_3": 1e-3}
-    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "hermes_3": 300}
-    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "hermes_3": 20}
-    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "hermes_3": 0}
+    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "hermes_3_2": 1e-3}
+    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "hermes_3_2": 300}
+    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "hermes_3_2": 20}
+    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "hermes_3_2": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "hermes_3": 273 + 15}
-    DYNAMICS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "hermes_3": True}
+    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "hermes_3_2": 273 + 15}
+    DYNAMICS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "hermes_3_2": True}
 
     for airplane in planes:
         print("--------------------------------------------------")

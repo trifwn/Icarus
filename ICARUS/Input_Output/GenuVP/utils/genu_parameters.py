@@ -94,3 +94,4 @@ class GenuParameters:
         self.XREWAK = solver_options["Merging_Starting_Distance"]
         self.RADMER = solver_options["Merging_Radius"]
         self.Elasticity_Solver = solver_options["Wake_Vorticity_Cutoff"]
+        self.IYNELST = solver_options["Elasticity_Solver"]

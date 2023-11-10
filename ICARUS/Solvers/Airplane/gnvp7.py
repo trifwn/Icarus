@@ -101,12 +101,12 @@ def get_gnvp7() -> Solver:
             int,
         ),
         "Bound_Vorticity_Cutoff": (
-            0.003,
+            1e-3,
             "EPSFB  Cut-off length for the bound vorticity",
             float,
         ),
         "Wake_Vorticity_Cutoff": (
-            0.003,
+            1e-3,
             "EPSFW  Cut-off length for the near-wake vorticity",
             float,
         ),
@@ -121,12 +121,12 @@ def get_gnvp7() -> Solver:
             float,
         ),
         "Vortex_Cutoff_Length_f": (
-            0.500,
+            0.100,
             "EPSVR  Cut-off length for the free vortex particles (final)",
             float,
         ),
         "Vortex_Cutoff_Length_i": (
-            0.500,
+            0.100,
             "EPSO   Cut-off length for the free vortex particles (init.) ",
             float,
         ),
@@ -170,10 +170,26 @@ def get_gnvp7() -> Solver:
             "NREWAK  Parameter for merging of particles",
             float,
         ),
-        "Particle_Merging_Parameter": (0, "NMER    Parameter for merging of particles", float),
-        "Merging_Starting_Distance": (0, "XREWAK  X starting distance of merging", float),
-        "Merging_Radius": (0, "RADMER  Radius for merging", float),
-        "Elasticity_Solver": (0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)", int),
+        "Particle_Merging_Parameter": (
+            0,
+            "NMER    Parameter for merging of particles",
+             float
+        ),
+        "Merging_Starting_Distance": (
+            0,
+            "XREWAK  X starting distance of merging",
+             float
+        ),
+        "Merging_Radius": (
+            0,
+            "RADMER  Radius for merging",
+             float
+        ),
+        "Elasticity_Solver": (
+            0,
+            "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)",
+             int
+        ),
     }
 
     rerun: Analysis = Analysis("gnvp7", "rerun", gnvp7_execute, options, solver_options)

@@ -40,10 +40,10 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
     angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
-    angles: list[float] = [ang for ang in angles_all if ang != 0]
+    angles: list[float] = [ang for ang in angles_all ]
     u_freestream = 20
     maxiter = 30
-    timestep = 0.04
+    timestep = 0.004
 
     airplane.define_dynamic_pressure(u_freestream, EARTH_ISA.air_density)
 
@@ -58,6 +58,11 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     solver_parameters.Split_Symmetric_Bodies.value = False
     solver_parameters.Use_Grid.value = True
 
+    # DEFORMATION
+    solver_parameters.Bound_Vorticity_Cutoff.value = 0.003 # EPSFB
+    solver_parameters.Wake_Vorticity_Cutoff.value = 0.003  # EPSFW
+    solver_parameters.Vortex_Cutoff_Length_f.value = 1e-1 # EPSVR
+    solver_parameters.Vortex_Cutoff_Length_i.value = 1e-1 # EPSO
     _ = gnvp7.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
 

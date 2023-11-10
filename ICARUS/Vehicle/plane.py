@@ -1,5 +1,4 @@
 import os
-from typing import Any
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -11,7 +10,6 @@ from numpy import ndarray
 
 from ICARUS.Core.types import FloatArray
 from ICARUS.Core.types import FloatOrListArray
-from ICARUS.Database import DB3D
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.surface_connections import Surface_Connection
@@ -308,6 +306,7 @@ class Airplane:
         """
         Save the plane object to a json file
         """
+        from ICARUS.Database import DB3D
         fname: str = os.path.join(DB3D, self.CASEDIR, f"{self.name}.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())

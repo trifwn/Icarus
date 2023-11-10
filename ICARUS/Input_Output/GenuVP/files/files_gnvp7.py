@@ -59,7 +59,7 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"{nbodt}{tabs(3)}NBODT{sps(6)}number of bodies\n")
     f_io.write(f"{nblades}{tabs(3)}SymLevels=old NBLADE{tabs(1)} number of blades\n")
     f_io.write(f"1{tabs(3)}IAXISRF{sps(4)}=1,2,3 gives the axis of rotation if IABSREF=1\n")
-    f_io.write(f"4{tabs(3)}NLEVELT{sps(4)}number of movement levels\n")
+    f_io.write(f"{params.NLEVELT}{tabs(3)}NLEVELT{sps(4)}number of movement levels\n")
     f_io.write(f"0.{tabs(3)}OMEGAR{sps(5)}is the rotation speed of the RCS\n")
 
     # Simulation options
@@ -76,13 +76,13 @@ def dfile(params: GenuParameters) -> None:
     # Time parameters
     f_io.write(f"** Read the TIME parameters{tabs(10)}<blank>\n")
     f_io.write(f"1{tabs(3)}OMEGAT{sps(5)}the rotation speed for the definition of the PERIOD\n")
-    f_io.write(f"2{tabs(3)}NMETHT{sps(5)}=1 for Euler =2 for Adams Bashford time integrat. scheme\n")
+    f_io.write(f"{params.NMETH}{tabs(3)}NMETHT{sps(5)}=1 for Euler =2 for Adams Bashford time integrat. scheme\n")
 
     # Tip emission parameters
-    f_io.write(f"0{tabs(3)}NEMTIP{sps(5)}=0,1. The latter means that tip-emission takes place\n")
-    f_io.write(f"0{tabs(3)}NTIMET{sps(5)}time step that tip-emission begins\n")
-    f_io.write(f"0{tabs(3)}NEMSLE{sps(5)}=0(no action), 1(leading-edge separ. takes place)\n")
-    f_io.write(f"0{tabs(3)}NTIMEL{sps(5)}time step that leading-edge separation starts\n")
+    f_io.write(f"{params.NEMTIP}{tabs(3)}NEMTIP{sps(5)}=0,1. The latter means that tip-emission takes place\n")
+    f_io.write(f"{ff2(params.NTIMET)}{tabs(2)}NTIMET{sps(5)}time step that tip-emission begins\n")
+    f_io.write(f"{params.NEMSLE}{tabs(3)}NEMSLE{sps(5)}=0(no action), 1(leading-edge separ. takes place)\n")
+    f_io.write(f"{ff2(params.NTIMEL)}{tabs(2)}NTIMEL{sps(5)}time step that leading-edge separation starts\n")
 
     # Root emission parameters
     f_io.write(f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n")
@@ -94,8 +94,8 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"** Read the SOLUTION parameters{tabs(9)}<blank>\n")
     f_io.write(f"0{tabs(3)}IMAT{sps(7)}=0 AS is calculated every timestep, =1 only once\n")
     f_io.write(f"200{tabs(3)}ITERM{sps(6)}maximum number of potential iterations\n")
-    f_io.write(f"0.9{tabs(3)}RELAXS{sps(5)}relaxation factor for the singularity distributions\n")
-    f_io.write(f"0.01{tabs(2)}EPSDS{sps(6)}convergence tolerance of the potential calculations\n")
+    f_io.write(f"{params.RELAXS}{tabs(3)}RELAXS{sps(5)}relaxation factor for the singularity distributions\n")
+    f_io.write(f"{params.EPSDS}{tabs(2)}EPSDS{sps(6)}convergence tolerance of the potential calculations\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # Inflow parameters
@@ -140,35 +140,36 @@ def dfile(params: GenuParameters) -> None:
 
     # EMISSION parameters
     f_io.write(f"** Read the EMISSION parameters{tabs(9)}<blank>\n")
-    f_io.write(f"1{tabs(3)}NNEVP0     per near-wake element of a thin wing\n")
-    f_io.write(f"1{tabs(3)}NNEVP1     per near-wake element of a thick wing\n")
-    f_io.write(f"1.{tabs(3)}RELAXU     relaxation factor for the emission velocity\n")
-    f_io.write(f"1{tabs(3)}NEMISS     =0,1 (See CREATE)\n")
+    f_io.write(f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP0     per near-wake element of a thin wing\n")
+    f_io.write(f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP1     per near-wake element of a thick wing\n")
+    f_io.write(f"{ff2(params.RELAXU)}{tabs(3)}RELAXU     relaxation factor for the emission velocity\n")
+    f_io.write(f"{ff2(params.NEMIS)}{tabs(2)}NEMISS     =0,1 (See CREATE)\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # DEFORMATION parameters
-    DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
-    if DX > 0.005:
-        DX = 0.003
+    # DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
+    # if DX > 0.005:
+        # DX = 0.003
+    
 
     f_io.write(f"** Read the DEFORMATION parameters{tabs(8)}<blank>\n")
-    f_io.write(f"{ff2(DX)}{tabs(2)}EPSFB      Cut-off length for the bound vorticity\n")
-    f_io.write(f"{ff2(DX)}{tabs(2)}EPSFW      Cut-off length for the near-wake vorticity\n")
-    f_io.write(f"{ff2(DX)}{tabs(2)}EPSSRC     Cut-off length for source distributions\n")
-    f_io.write(f"{ff2(DX)}{tabs(2)}EPSDIP     Cut-off length for dipole distributions\n")
-    f_io.write(f"{ff2(DX)}{tabs(2)}EPSVR      Cut-off length for the free vortex particles (final)\n")
-    f_io.write(f"{ff2(DX)}{tabs(2)}EPSO       Cut-off length for the free vortex particles (init.)\n")
-    f_io.write(f"0.001{tabs(2)}EPSINTbas  Cut-off length for VORTEX SOLID INTERACTION\n")
-    f_io.write(f"0.{tabs(3)}COEF       Factor for the dissipation of particles\n")
-    f_io.write(f"0.001{tabs(2)}RMETM      Upper bound of the deformation rate\n")
-    f_io.write(f"1 {tabs(3)}IDEFW      Parameter for the deformation induced by the near wake\n")
-    f_io.write(f"1000.{tabs(2)}REFLEN     Length used in VELEF for suppressing far-particle calculations\n")
-    f_io.write(f"0 {tabs(3)}IDIVVRP    Parameter for the subdivision of particles\n")
-    f_io.write(f"1000.{tabs(2)}FLENSC     Length scale for the subdivision of particles\n")
-    f_io.write(f"0 {tabs(3)}NREWAK     Parameter for merging of particles\n")
-    f_io.write(f"0 {tabs(3)}NMER       Parameter for merging of particles\n")
-    f_io.write(f"0.{tabs(3)}XREWAK     X starting distance of merging\n")
-    f_io.write(f"0.{tabs(3)}RADMER     Radius for merging\n")
+    f_io.write(f"{ff2(params.EPSFB)}{tabs(2)}EPSFB      Cut-off length for the bound vorticity\n")
+    f_io.write(f"{ff2(params.EPSFW)}{tabs(2)}EPSFW      Cut-off length for the near-wake vorticity\n")
+    f_io.write(f"{ff2(params.EPSSR)}{tabs(2)}EPSSRC     Cut-off length for source distributions\n")
+    f_io.write(f"{ff2(params.EPSDI)}{tabs(2)}EPSDIP     Cut-off length for dipole distributions\n")
+    f_io.write(f"{ff2(params.EPSVR)}{tabs(2)}EPSVR      Cut-off length for the free vortex particles (final)\n")
+    f_io.write(f"{ff2(params.EPSO)}{tabs(2)}EPSO       Cut-off length for the free vortex particles (init.)\n")
+    f_io.write(f"{ff2(params.EPSINT)}{tabs(2)}EPSINTbas  Cut-off length for VORTEX SOLID INTERACTION\n")
+    f_io.write(f"{ff2(params.COEF)}{tabs(2)}COEF       Factor for the dissipation of particles\n")
+    f_io.write(f"{ff2(params.RMETM)}{tabs(2)}RMETM      Upper bound of the deformation rate\n")
+    f_io.write(f"{ff2(params.IDEFW)} {tabs(2)}IDEFW      Parameter for the deformation induced by the near wake\n")
+    f_io.write(f"{ff2(params.REFLEN)}{tabs(2)}REFLEN     Length used in VELEF for suppressing far-particle calculations\n")
+    f_io.write(f"{ff2(params.IDIVVRP)} {tabs(2)}IDIVVRP    Parameter for the subdivision of particles\n")
+    f_io.write(f"{ff2(params.FLENSC)}{tabs(2)}FLENSC     Length scale for the subdivision of particles\n")
+    f_io.write(f"{ff2(params.NREWAK)}{tabs(2)}NREWAK     Parameter for merging of particles\n")
+    f_io.write(f"{ff2(params.NMER)}{tabs(2)}NMER       Parameter for merging of particles\n")
+    f_io.write(f"{ff2(params.XREWAK)}{tabs(2)}XREWAK     X starting distance of merging\n")
+    f_io.write(f"{ff2(params.RADMER)}{tabs(2)}RADMER     Radius for merging\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # I/O specifications
@@ -204,7 +205,7 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"0{tabs(3)}IAPPLIC    = 0(no action), 1(------------------------------)\n")
     f_io.write(f"0{tabs(3)}IDEX_APPLIC\n")
     f_io.write(f"{tabs(3)}FILE_APPLIC\n")
-    f_io.write(f"0{tabs(3)}IYNELAST    aeroelastic coupling\n")
+    f_io.write(f"{params.IYNELST}{tabs(3)}IYNELAST    aeroelastic coupling\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # FILES data
