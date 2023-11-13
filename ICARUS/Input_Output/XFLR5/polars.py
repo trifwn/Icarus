@@ -20,8 +20,12 @@ def read_polars_2d(XFLRdir: str) -> None:
     """
     HOMEDIR: str = DB.HOMEDIR
     foils_db: Database_2D = DB.foils_db
-
-    os.chdir(XFLRdir)
+    try:
+        os.chdir(XFLRdir)
+    except FileNotFoundError:
+        print("XFLR5 Directory Not Found!")
+        os.makedirs(XFLRdir, exist_ok=True)
+        return
     directories: list[str] = next(os.walk("."))[1]
     for airf in directories:
         if airf == "XFLs":

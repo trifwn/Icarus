@@ -37,6 +37,10 @@ class Database_3D:
         self.scan_and_make_data()
 
     def scan_and_make_data(self) -> None:
+        if not os.path.isdir(DB3D):
+            # print(f"Creating {DB3D} directory...")
+            os.makedirs(DB3D, exist_ok=True)
+
         planenames: list[str] = next(os.walk(DB3D))[1]
         for plane in planenames:  # For each plane planename == folder
             # Load Plane object
