@@ -1,7 +1,6 @@
 from typing import Any
 
 from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Database import DB
 from ICARUS.Input_Output.F2Wsection.analyses.angles import process_f2w_run
 from ICARUS.Input_Output.F2Wsection.analyses.angles import run_multiple_reynolds_parallel
 from ICARUS.Input_Output.F2Wsection.analyses.angles import run_multiple_reynolds_sequentially

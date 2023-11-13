@@ -12,7 +12,7 @@ from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
+from ICARUS.Database import DB, GenuVP3_exe
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
@@ -557,7 +557,7 @@ def make_input_files(
     # CLD FILES
     cldFiles(DB.foils_db.data, bodies, solver)
     if "gnvp3" not in next(os.walk("."))[2]:
-        src: str = os.path.join(HOMEDIR, "ICARUS", "gnvp3")
+        src: str = GenuVP3_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp3")
         os.symlink(src, dst)
     os.chdir(HOMEDIR)

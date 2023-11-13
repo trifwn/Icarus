@@ -33,16 +33,30 @@ The package is divided in the following files:
 
 """
 import os
+import platform
 
-# MOCK CASES ###
+
 # 2D
 APPHOME: str = os.path.dirname(os.path.realpath(__file__))
 APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 
+# MOCK CASES ###
 BASEOPENFOAM: str = os.path.join(APPHOME, "Data", "Mock", "BaseOF")
-# 3D
-BASEGNVP3: str = os.path.join(APPHOME, "Data", "Mock", "BaseGNVP3")
+
+### SOLVER EXECUTABLES ###
+platform_os = platform.system()
+
+if platform_os == "Windows":
+    GenuVP3_exe: str = os.path.join(APPHOME, "bin", "gnvp3.exe")
+    GenuVP7_exe: str = os.path.join(APPHOME, "bin", "gnvp7.exe")
+    F2W_exe: str = os.path.join(APPHOME, "bin", "f2w.exe")
+    Foil_Section_exe: str = os.path.join(APPHOME, "bin", "foil_section.exe")
+elif platform_os == "Linux":
+    GenuVP3_exe = os.path.join(APPHOME, "bin", "gnvp3")
+    GenuVP7_exe = os.path.join(APPHOME, "bin", "gnvp7")
+    F2W_exe = os.path.join(APPHOME, "bin", "f2w")
+    Foil_Section_exe = os.path.join(APPHOME, "bin", "foil_section")
 
 # DATABASES ###
 DB2D: str = os.path.join(APPHOME, "Data", "2D")
@@ -61,3 +75,4 @@ from .db import Database
 
 DB = Database()
 DB.load_data()
+# DB.inspect()

@@ -547,6 +547,7 @@ class Wing_LSPT:
         angles: list[float] | FloatArray,
         umag: float,
         solver_fun: Callable[..., tuple[FloatArray, FloatArray]],
+        verbose: bool = True,
     ) -> pd.DataFrame:
         # Using no penetration condition
         CL = np.zeros(len(angles))
@@ -576,7 +577,7 @@ class Wing_LSPT:
 
             self.solve_wing_panels(Q, solver_fun)
             self.get_gamma_distribution()
-            self.get_aerodynamic_loads(umag, verbose=False)
+            self.get_aerodynamic_loads(umag, verbose=verbose)
 
             # No pen
             Ls[i] = self.L

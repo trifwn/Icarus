@@ -3,6 +3,8 @@ import shutil
 
 import numpy as np
 
+from ICARUS.Database import Foil_Section_exe
+
 
 def io_file(airfile: str, name: str) -> None:
     """Creates the io.files file for section f2w
@@ -139,7 +141,7 @@ def setup_f2w(HOMEDIR: str, CASEDIR: str) -> None:
         CASEDIR (str): Case Directory
     """
     if "foil_section" not in next(os.walk(CASEDIR))[2]:
-        src = os.path.join(HOMEDIR, "ICARUS", "foil_section")
+        src = Foil_Section_exe
         dst = os.path.join(CASEDIR, "foil_section")
         try:
             os.symlink(src, dst)

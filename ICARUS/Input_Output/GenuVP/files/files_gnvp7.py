@@ -20,7 +20,7 @@ from ICARUS.Core.formatting import sps
 from ICARUS.Core.formatting import tabs
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
+from ICARUS.Database import DB, GenuVP7_exe
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
@@ -651,7 +651,7 @@ def make_input_files(
     cld_files(DB.foils_db.data, bodies_dicts, solver)
 
     if "gnvp7" not in next(os.walk("."))[2]:
-        src: str = os.path.join(HOMEDIR, "ICARUS", "gnvp7")
+        src: str = GenuVP7_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp7")
         os.symlink(src, dst)
     os.chdir(HOMEDIR)

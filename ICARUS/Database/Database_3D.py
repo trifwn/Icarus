@@ -93,7 +93,8 @@ class Database_3D:
                         raise TypeError(f"Expected State object, got {type(obj)}")
                     states[state.name] = state
                 except Exception as error:
-                    print(f"Error decoding states object {plane}! Got error {error}")
+                    # print(f"Error decoding states object {plane}! Got error {error}")
+                    pass
         os.chdir(self.HOMEDIR)
         return states
 
@@ -113,10 +114,11 @@ class Database_3D:
                 try:
                     self.planes[name] = jsonpickle.decode(json_obj)
                 except Exception as error:
-                    print(f"Error decoding Plane object {name}! Got error {error}")
+                    # print(f"Error decoding Plane object {name}! Got error {error}")
+                    pass
             plane_found = True
         except FileNotFoundError:
-            print(f"No Plane object found in {name} folder at {file}!")
+            # print(f"No Plane object found in {name} folder at {file}!")
             plane_found = False
         return plane_found
 
@@ -138,7 +140,8 @@ class Database_3D:
             self.make_data_gnvp(planename, genu_version)
             return
         except FileNotFoundError:
-            print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
+            # print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
+            pass
             # if planename in self.planes.keys():
             #     # print(
             #     #     "Since plane object exists with that name trying to create polars...",
@@ -171,7 +174,8 @@ class Database_3D:
             self.raw_data[f"{planename}_LSPT"] = pd.read_csv(file)
             self.make_data_lspt(planename)
         except FileNotFoundError:
-            print(f"No forces.lspt file found in {planename} folder at {DB3D}!")
+            # print(f"No forces.lspt file found in {planename} folder at {DB3D}!")
+            pass
 
     def load_gnvp_case_convergence(
         self,
@@ -208,7 +212,6 @@ class Database_3D:
                     continue
 
                 a: list[str] = line[6:].split()
-                # print(line)
                 time.append(int(a[0]))
                 error.append(float(a[2]))
                 errorm.append(float(a[6]))

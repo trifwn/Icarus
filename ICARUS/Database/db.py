@@ -21,6 +21,40 @@ class Database:
     def __str__(self) -> str:
         return "Master Database"
 
+    def inspect(self) -> None:
+        """Prints the content of the database"""
+        print("Master Database Contents:")
+        print("")
+        print("------------------------------------------------")
+        print(f"|        {self.foils_db}                          |")
+        print("------------------------------------------------")
+        for foil in self.foils_db.data.keys():
+            string = f"|{foil}\t\t\t\t\t|\n"
+            for solver in self.foils_db.data[foil].keys():
+                string += f"|  - {solver}:"
+                reyns = list(self.foils_db.data[foil][solver].keys())
+                reyns_num = [float(reyn) for reyn in reyns]
+                string += f"\t Re: {min(reyns_num)} - {max(reyns_num)} "
+                string += "\t|\n"
+            string += "|\t\t\t\t\t\t|\n|\t\t\t\t\t\t|"
+            print(string)
+        print("-----------------------------------------")
+        print("")
+
+        print("------------------------------------------------")
+        print(f"|        {self.vehicles_db}             |")
+        print("------------------------------------------------")
+
+        for vehicle in self.vehicles_db.data.keys():
+            string = f"|{vehicle}\n"
+            for solver in self.vehicles_db.data[vehicle].keys():
+                string += f"|\t - {solver}:"
+                string += "\n"
+            string += "|\n|"
+            print(string)
+        print("-----------------------------------------")
+        print("")
+
     # def __enter__(self, obj):
     #     if isinstance(obj, Airplane):
     #         self.vehiclesDB.__enter__(obj)
