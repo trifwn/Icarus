@@ -220,7 +220,7 @@ class Airplane:
         self,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = No    ne,
+        movement: FloatArray | None = None,
     ) -> None:
         """
         Visualize the plane
