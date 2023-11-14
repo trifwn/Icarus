@@ -59,9 +59,14 @@ def design_file(
         f.write("ANGLE DIRECTORIES (8 CHAR MAX!!!)\n")
         for ang in angles:
             if name == "pos":
-                f.write(str(ang)[::-1].zfill(7)[::-1] + "\n")
+                f.write(str(ang)[::-1].zfill(7)[::-1])
             else:
-                f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "\n")
+                f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1])
+            from ICARUS.Database import platform_os
+            if platform_os == 'Windows':
+                f.write("\\ \n")
+            else:
+                f.write("/\n")
 
         f.write(f"\n")
         f.write(f"\n")
