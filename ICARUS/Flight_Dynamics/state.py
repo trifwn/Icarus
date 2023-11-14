@@ -44,6 +44,7 @@ class State:
         # self.vehicle: Airplane = pln
         self.env: Environment = env
         from ICARUS.Database import DB3D
+
         self.dynamics_directory: str = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
 
         # Get Airplane Properties And State Variables

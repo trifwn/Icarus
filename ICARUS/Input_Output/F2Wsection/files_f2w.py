@@ -34,6 +34,7 @@ def io_file(airfile: str, name: str) -> None:
         f.write(f"\n")
         f.write(f"\n")
 
+
 def design_file(
     number_of_angles: int,
     angles: list[float],
@@ -48,7 +49,7 @@ def design_file(
         name (str): pos or neg. Meaning positive or negative run
     """
     fname: str = f"design_{name}.inp"
-    with open(fname,'w', encoding="utf-8") as f:
+    with open(fname, 'w', encoding="utf-8") as f:
         f.write(f"{angles[0]}\n")
         f.write(f"0            ! ISOL\n")
         f.write(f"{number_of_angles}           ! No of ANGLES\n")
@@ -58,12 +59,13 @@ def design_file(
         f.write("ANGLE DIRECTORIES (8 CHAR MAX!!!)\n")
         for ang in angles:
             if name == "pos":
-                f.write(str(ang)[::-1].zfill(7)[::-1] + "/\n")
+                f.write(str(ang)[::-1].zfill(7)[::-1] + "\n")
             else:
-                f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "/\n")
+                f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1] + "\n")
 
         f.write(f"\n")
         f.write(f"\n")
+
 
 def input_file(
     reynolds: float,

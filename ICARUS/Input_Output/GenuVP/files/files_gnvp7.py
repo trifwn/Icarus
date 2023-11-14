@@ -20,7 +20,8 @@ from ICARUS.Core.formatting import sps
 from ICARUS.Core.formatting import tabs
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB, GenuVP7_exe
+from ICARUS.Database import DB
+from ICARUS.Database import GenuVP7_exe
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface
@@ -149,8 +150,7 @@ def dfile(params: GenuParameters) -> None:
     # DEFORMATION parameters
     # DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
     # if DX > 0.005:
-        # DX = 0.003
-    
+    # DX = 0.003
 
     f_io.write(f"** Read the DEFORMATION parameters{tabs(8)}<blank>\n")
     f_io.write(f"{ff2(params.EPSFB)}{tabs(2)}EPSFB      Cut-off length for the bound vorticity\n")
@@ -163,7 +163,9 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"{ff2(params.COEF)}{tabs(2)}COEF       Factor for the dissipation of particles\n")
     f_io.write(f"{ff2(params.RMETM)}{tabs(2)}RMETM      Upper bound of the deformation rate\n")
     f_io.write(f"{ff2(params.IDEFW)} {tabs(2)}IDEFW      Parameter for the deformation induced by the near wake\n")
-    f_io.write(f"{ff2(params.REFLEN)}{tabs(2)}REFLEN     Length used in VELEF for suppressing far-particle calculations\n")
+    f_io.write(
+        f"{ff2(params.REFLEN)}{tabs(2)}REFLEN     Length used in VELEF for suppressing far-particle calculations\n",
+    )
     f_io.write(f"{ff2(params.IDIVVRP)} {tabs(2)}IDIVVRP    Parameter for the subdivision of particles\n")
     f_io.write(f"{ff2(params.FLENSC)}{tabs(2)}FLENSC     Length scale for the subdivision of particles\n")
     f_io.write(f"{ff2(params.NREWAK)}{tabs(2)}NREWAK     Parameter for merging of particles\n")

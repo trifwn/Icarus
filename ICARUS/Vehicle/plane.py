@@ -220,7 +220,7 @@ class Airplane:
         self,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
+        movement: FloatArray | None = No    ne,
     ) -> None:
         """
         Visualize the plane
@@ -307,6 +307,7 @@ class Airplane:
         Save the plane object to a json file
         """
         from ICARUS.Database import DB3D
+
         fname: str = os.path.join(DB3D, self.CASEDIR, f"{self.name}.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())

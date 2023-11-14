@@ -1,12 +1,12 @@
 """
 Setup script for ICARUS
 """
-from importlib.metadata import entry_points
 import os
 import platform
 import re
 import subprocess
 import sys
+from importlib.metadata import entry_points
 from typing import Any
 
 from setuptools import Extension
@@ -73,7 +73,7 @@ def install(package: str, version: str) -> None:
         name=package,
         version=version,
         # entry_points = {
-        #     'gnvp_wake' 
+        #     'gnvp_wake'
         # }
     )
 

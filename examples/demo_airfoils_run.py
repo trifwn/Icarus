@@ -7,8 +7,8 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
-from ICARUS.Database import XFLRDB
 from ICARUS.Database import DB
+from ICARUS.Database import XFLRDB
 from ICARUS.Input_Output.OpenFoam.files.setup_case import MeshType
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Workers.solver import Solver
@@ -63,7 +63,7 @@ ftrip_low: dict[str, float] = {"pos": 0.01, "neg": 0.02}
 Ncrit = 9
 
 # Which solvers to run
-FOIL2WAKE: bool = True # True
+FOIL2WAKE: bool = True  # True
 OPENFOAM: bool = False
 XFOIL: bool = False
 

@@ -36,7 +36,7 @@ def get_bmark_plane(name: str):
         orientation=wing_orientation,
         is_symmetric=True,
         span=2 * 2.5,
-        sweep_offset=0.,
+        sweep_offset=0.0,
         dih_angle=0,
         chord_fun=define_linear_chord,
         chord=np.array([0.8, 0.8]),

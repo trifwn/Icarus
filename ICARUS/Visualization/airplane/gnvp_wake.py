@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from ICARUS.Database.utils import angle_to_case
 
+from ICARUS.Database.utils import angle_to_case
 from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_3
 from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Vehicle.plane import Airplane
@@ -17,7 +17,11 @@ def plot_gnvp7_wake(plane: Airplane, case: str, scale: str = "True", figsize: tu
 
 
 def plot_gnvp_wake(
-    gnvp_version: int, plane: Airplane, case: str, scale: str = "True", figsize: tuple[int, int] = (16, 7)
+    gnvp_version: int,
+    plane: Airplane,
+    case: str,
+    scale: str = "True",
+    figsize: tuple[int, int] = (16, 7),
 ) -> None:
     """
     Visualize the wake of a given plane

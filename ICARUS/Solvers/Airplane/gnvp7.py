@@ -292,10 +292,10 @@ def get_gnvp7() -> Solver:
 
     gnvp7.add_analyses(
         [
-            rerun,                  # 0
-            angles_serial,          # 1
-            angles_parallel,        # 2
-            pertrubation_serial,    # 3
+            rerun,  # 0
+            angles_serial,  # 1
+            angles_parallel,  # 2
+            pertrubation_serial,  # 3
             pertrubation_parallel,  # 4
         ],
     )

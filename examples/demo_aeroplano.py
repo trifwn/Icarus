@@ -1,5 +1,4 @@
 """This module defines the hermes plane object."""
-from matplotlib.pyplot import plot
 import numpy as np
 
 from ICARUS.Core.struct import Struct

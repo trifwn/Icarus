@@ -3,31 +3,28 @@ Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
-from re import T
 import time
-from typing import Any
+from re import T
 
 import numpy as np
+from demo_aeroplano import airplane_generator
 from pandas import DataFrame
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database import DB
+from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
 
-
-
 ########################################################################################
 ########################################################################################
 ###################      PARAMETERS   ##################################################
 ########################################################################################
 
-from demo_aeroplano import airplane_generator
 name = "aeroplano"
 aeroplano: Airplane = airplane_generator(name)
 
@@ -42,13 +39,13 @@ angles: FloatArray = np.linspace(
 )
 
 # Environment Definition
-temperature: float = 273 + 15 # TEMPERATURE IN KELVIN
-altitude: float = 0           # ALTITUDE IN METERS
-uinf: float = 20              # FREESTREAM VELOCITY IN m/s
+temperature: float = 273 + 15  # TEMPERATURE IN KELVIN
+altitude: float = 0  # ALTITUDE IN METERS
+uinf: float = 20  # FREESTREAM VELOCITY IN m/s
 
 # Solver Parameters
 timestep: float = 1e-3  # Timestep for the solver
-maxiter: int = 300      # Number of time iterations for the solver
+maxiter: int = 300  # Number of time iterations for the solver
 airfoil_solver: str = "Foil2Wake"  # Solver to use for the airfoil
 
 # Dynamic Analysis
@@ -59,11 +56,11 @@ epsilons: dict[str, float] = {
     "u": 0.01,
     "w": 0.01,
     "q": 0.001,
-    "theta": 0.01 ,
+    "theta": 0.01,
     "v": 0.01,
     "p": 0.001,
     "r": 0.001,
-    "phi": 0.001
+    "phi": 0.001,
 }
 
 ########################################################################################
@@ -77,21 +74,20 @@ def main() -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
 
-
     from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
     from ICARUS.Database import XFLRDB
+
     read_polars_2d(XFLRDB)
 
     ## Get Plane
     planes: list[Airplane] = []
     planes.append(aeroplano)
 
-
     TIMESTEP: dict[str, float] = {f"{name}": timestep}
     MAXITER: dict[str, int] = {f"{name}": maxiter}
-    UINF: dict[str, float] = {f"{name}" : uinf}
+    UINF: dict[str, float] = {f"{name}": uinf}
     ALTITUDE: dict[str, float] = {f"{name}": altitude}
-    TEMPERATURE: dict[str, int] = {f"{name}": temperature} 
+    TEMPERATURE: dict[str, int] = {f"{name}": temperature}
     DYNAMICS: dict[str, float] = {f"{name}": run_dynamic_analysis}
 
     for airplane in planes:
@@ -116,12 +112,11 @@ def main() -> None:
         options: Struct = gnvp3.get_analysis_options(verbose=False)
         solver_parameters: Struct = gnvp3.get_solver_parameters()
 
-
         airplane.define_dynamic_pressure(UINF[airplane.name], EARTH_ISA.air_density)
 
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
-        options.solver2D.value = airfoil_solver 
+        options.solver2D.value = airfoil_solver
         options.maxiter.value = MAXITER[airplane.name]
         options.timestep.value = TIMESTEP[airplane.name]
         options.u_freestream.value = UINF[airplane.name]
@@ -151,7 +146,6 @@ def main() -> None:
         except Exception as error:
             print(error)
             continue
-
 
         epsilons = None
 

@@ -12,7 +12,8 @@ from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB, GenuVP3_exe
+from ICARUS.Database import DB
+from ICARUS.Database import GenuVP3_exe
 from ICARUS.Input_Output.GenuVP.utils.genu_movement import Movement
 from ICARUS.Input_Output.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.Input_Output.GenuVP.utils.genu_surface import GenuSurface

@@ -10,7 +10,8 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import APPHOME
 from ICARUS.Input_Output import setup_of_script
 
-OFBASE = os.path.join(APPHOME,"ICARUS","Input_Output","OpenFoam","files")
+OFBASE = os.path.join(APPHOME, "ICARUS", "Input_Output", "OpenFoam", "files")
+
 
 class MeshType(Enum):
     """Enum for Mesh Type"""
@@ -128,8 +129,6 @@ def system_folder(
     data[110] = f"\t\tUInf ({np.cos(angle)} {np.sin(angle)} {0.});\n"
     with open(filename, "w", encoding="UTF-8") as file:
         file.writelines(data)
-
-
 
 
 def setup_open_foam(
