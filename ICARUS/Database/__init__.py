@@ -35,7 +35,6 @@ The package is divided in the following files:
 import os
 import platform
 
-
 # 2D
 APPHOME: str = os.path.dirname(os.path.realpath(__file__))
 APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
@@ -62,7 +61,7 @@ elif platform_os == "Linux":
 DB2D: str = os.path.join(APPHOME, "Data", "2D")
 DB3D: str = os.path.join(APPHOME, "Data", "3D")
 ANALYSESDB: str = os.path.join(APPHOME, "Data", "Analyses")
-XFLRDB: str = os.path.join(APPHOME, "Data", "XFLR5")
+EXTERNAL_DB: str = os.path.join(APPHOME, "Data", "3d_Party")
 
 from . import Database_2D
 from . import Database_3D
@@ -73,6 +72,8 @@ __all__ = ["Database_2D", "Database_3D", "AnalysesDB", "db"]
 
 from .db import Database
 
+cwd = os.getcwd()
 DB = Database()
 DB.load_data()
 # DB.inspect()
+os.chdir(cwd)

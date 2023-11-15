@@ -38,6 +38,7 @@ class State:
         pln: Airplane,
         forces: DataFrame,
         env: Environment,
+        preffered_polar: str = "2D",
     ) -> None:
         # Set Basic State Variables
         self.name: str = name
@@ -57,7 +58,7 @@ class State:
         self.mass: float = pln.M
 
         # GET TRIM STATE
-        self.polars: DataFrame = self.format_polars(forces)
+        self.polars: DataFrame = self.format_polars(forces, preffered_polar=preffered_polar)
         self.trim: dict[str, float] = trim_state(self)
         self.dynamic_pressure = 0.5 * env.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
 
@@ -101,8 +102,8 @@ class State:
         self.lateral.eigenValues = eigvalLat
         self.lateral.eigenVectors = eigvecLat
 
-    def format_polars(self, forces: DataFrame) -> DataFrame:
-        forces_rotated: DataFrame = rotate_forces(forces, forces["AoA"])
+    def format_polars(self, forces: DataFrame, preffered_polar="2D") -> DataFrame:
+        forces_rotated: DataFrame = rotate_forces(forces, forces["AoA"], preferred=preffered_polar)
         return self.make_aero_coefficients(forces_rotated)
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:

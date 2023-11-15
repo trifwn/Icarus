@@ -16,9 +16,7 @@ from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import XFLRDB
-from ICARUS.Database.Database_2D import Database_2D
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
@@ -32,7 +30,7 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    read_polars_2d(XFLRDB)
+    read_polars_2d(EXTERNAL_DB)
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -42,26 +40,16 @@ def main() -> None:
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, Any] = {}
 
-    for flap_hinge in np.arange(start=0.7, stop=0.8, step=0.05):
-        for flap_angle in [30]:  # np.arange(start=20, stop = 45, step = 5):
-            for chord_extension in [1.3]:  # np.arange(start = 1.2, stop = 1.45, step = 0.05):
-                # print(f"{flap_angle=}, {flap_hinge=}")
-                UINF[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"] = 20
-                ALTITUDE[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"] = 0
-                TEMPERATURE[f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}"] = 288
+    from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
 
-                embraer_to: Airplane = e190_takeoff_generator(
-                    name=f"e190_takeoff_3_H{flap_hinge}_A{flap_angle}_CE{chord_extension}",
-                    flap_hinge=flap_hinge,
-                    flap_angle=flap_angle,
-                    chord_extension=chord_extension,
-                )
-                planes.append(embraer_to)
+    filename: str = "Data/3D_Party/plane_titos.xml"
+    airplane = parse_xfl_project(filename)
+    planes.append(airplane)
 
-    embraer_cr: Airplane = e190_cruise(name="e190_clean_sea_level")
-    UINF["e190_clean_sea_level"] = 20
-    ALTITUDE["e190_clean_sea_level"] = 0
-    TEMPERATURE["e190_clean_sea_level"] = 273 + 15
+    embraer_cr: Airplane = e190_cruise(name="plane_1")
+    UINF["plane_1"] = 20
+    ALTITUDE["plane_1"] = 0
+    TEMPERATURE["plane_1"] = 273 + 15
     planes.append(embraer_cr)
 
     for airplane in planes:

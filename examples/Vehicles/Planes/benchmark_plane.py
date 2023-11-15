@@ -6,7 +6,7 @@ import numpy as np
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
-from ICARUS.Database import XFLRDB
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane as Plane
@@ -16,7 +16,7 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def get_bmark_plane(name: str):
-    read_polars_2d(XFLRDB)
+    read_polars_2d(EXTERNAL_DB)
     airfoils: Struct = DB.foils_db.set_available_airfoils()
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)

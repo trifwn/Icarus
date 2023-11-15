@@ -63,6 +63,7 @@ def design_file(
             else:
                 f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1])
             from ICARUS.Database import platform_os
+
             if platform_os == 'Windows':
                 f.write("\\ \n")
             else:

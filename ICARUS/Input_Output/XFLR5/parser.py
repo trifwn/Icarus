@@ -6,7 +6,7 @@ from xmltodict import parse
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import XFLRDB
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import define_linear_chord
 from ICARUS.Vehicle.wing_segment import define_linear_span
@@ -132,21 +132,21 @@ def parse_xfl_project(filename: str) -> Airplane:
                 # check if there is a flap airfoil folder in XFLR5/
                 # if not, raise an error
 
-                # list the folders in the XFLR5DB
-                folders: list[str] = os.listdir(XFLRDB)
+                # list the folders in the EXTERNAL DB
+                folders: list[str] = os.listdir(EXTERNAL_DB)
                 if foil_name in folders:
                     # list the files in the flap folder
-                    flap_files: list[str] = os.listdir(os.path.join(XFLRDB, foil_name))
+                    flap_files: list[str] = os.listdir(os.path.join(EXTERNAL_DB, foil_name))
                     # check if the airfoil is in the flap folder
                     if foil_name + ".dat" in flap_files:
                         # load the airfoil from the flap folder
-                        filename = os.path.join(XFLRDB, foil_name, foil_name + ".dat")
+                        filename = os.path.join(EXTERNAL_DB, foil_name, foil_name + ".dat")
                         airfoil: Airfoil = Airfoil.load_from_file(filename)
                         airfoil.name = f"{foil + 'fl'}"
                     else:
-                        raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in XFLR5DB")
+                        raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in EXTERNAL DB")
                 else:
-                    raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in XFLR5DB")
+                    raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in EXTERNAL DB")
 
             elif "naca" in text_part.lower():
                 if len(foil) == 4:

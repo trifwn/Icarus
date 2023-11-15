@@ -170,26 +170,10 @@ def get_gnvp7() -> Solver:
             "NREWAK  Parameter for merging of particles",
             float,
         ),
-        "Particle_Merging_Parameter": (
-            0,
-            "NMER    Parameter for merging of particles",
-             float
-        ),
-        "Merging_Starting_Distance": (
-            0,
-            "XREWAK  X starting distance of merging",
-             float
-        ),
-        "Merging_Radius": (
-            0,
-            "RADMER  Radius for merging",
-             float
-        ),
-        "Elasticity_Solver": (
-            0,
-            "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)",
-             int
-        ),
+        "Particle_Merging_Parameter": (0, "NMER    Parameter for merging of particles", float),
+        "Merging_Starting_Distance": (0, "XREWAK  X starting distance of merging", float),
+        "Merging_Radius": (0, "RADMER  Radius for merging", float),
+        "Elasticity_Solver": (0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)", int),
     }
 
     rerun: Analysis = Analysis("gnvp7", "rerun", gnvp7_execute, options, solver_options)

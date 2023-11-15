@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------------------*\
-|                                                                                    | 
-|    ANSA_VERSION: 22.1.0                                                            | 
-|                                                                                    | 
-|    file created by  A N S A  Mon Feb 28 15:04:06 2022                              | 
-|                                                                                    | 
-|    Output from: /home/dvlastos/TzimiNiki/Untitled.ansa                             | 
-|                                                                                    | 
+|                                                                                    |
+|    ANSA_VERSION: 22.1.0                                                            |
+|                                                                                    |
+|    file created by  A N S A  Mon Feb 28 15:04:06 2022                              |
+|                                                                                    |
+|    Output from: /home/dvlastos/TzimiNiki/Untitled.ansa                             |
+|                                                                                    |
 \*----------------------------------------------------------------------------------*/
 
 
@@ -23,7 +23,7 @@ FoamFile
 
 solvers
 {
- "p.*" 
+ "p.*"
 {
         solver           GAMG;
         tolerance        1e-10;

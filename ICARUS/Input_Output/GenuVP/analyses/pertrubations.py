@@ -198,6 +198,7 @@ def run_pertrubation_serial(
                 "lock": None,
                 "max_iter": maxiter,
                 "refresh_progress": 2,
+                "genu_version": genu_version,
             },
         )
 
@@ -291,6 +292,7 @@ def run_pertrubation_parallel(
             "variables": [f"{dst.var} - {dst.amplitude}" for dst in disturbances],
             "max_iter": maxiter,
             "refresh_progress": refresh_progress,
+            "genu_version": genu_version,
         },
     )
 

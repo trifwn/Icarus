@@ -4,7 +4,7 @@ import numpy as np
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
-from ICARUS.Database import XFLRDB
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.wing_segment import define_linear_chord
@@ -23,7 +23,7 @@ def e190_cruise(name: str) -> Airplane:
     Returns:
         Airplane: hermes Airplane object
     """
-    read_polars_2d(XFLRDB)
+    read_polars_2d(EXTERNAL_DB)
     airfoils: Struct = DB.foils_db.set_available_airfoils()
 
     from ICARUS.Airfoils.airfoil import Airfoil

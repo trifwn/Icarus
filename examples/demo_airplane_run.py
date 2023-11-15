@@ -75,9 +75,9 @@ def main() -> None:
     start_time: float = time.time()
 
     from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
-    from ICARUS.Database import XFLRDB
+    from ICARUS.Database import EXTERNAL_DB
 
-    read_polars_2d(XFLRDB)
+    read_polars_2d(EXTERNAL_DB)
 
     ## Get Plane
     planes: list[Airplane] = []
@@ -87,8 +87,8 @@ def main() -> None:
     MAXITER: dict[str, int] = {f"{name}": maxiter}
     UINF: dict[str, float] = {f"{name}": uinf}
     ALTITUDE: dict[str, float] = {f"{name}": altitude}
-    TEMPERATURE: dict[str, int] = {f"{name}": temperature}
-    DYNAMICS: dict[str, float] = {f"{name}": run_dynamic_analysis}
+    TEMPERATURE: dict[str, float] = {f"{name}": temperature}
+    DYNAMICS: dict[str, bool] = {f"{name}": run_dynamic_analysis}
 
     for airplane in planes:
         print("--------------------------------------------------")

@@ -204,7 +204,7 @@ class Database_3D:
         loads: DataFrame | None = get_loads_convergence_3(file)
         if loads is not None:
             # Get Error Convergence Data from gnvp.out
-            file = os.path.join(DB3D, planename, case, f"gnvp_{genu_version}.out")
+            file = os.path.join(DB3D, planename, case, f"gnvp{genu_version}.out")
             # self.Convergence[planename][case] = addErrorConvergence2df(file, loads) # IT OUTPUTS LOTS OF WARNINGS
             with open(file, encoding="UTF-8") as f:
                 lines: list[str] = f.readlines()

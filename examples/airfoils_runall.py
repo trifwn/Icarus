@@ -9,7 +9,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
-from ICARUS.Database import XFLRDB
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Input_Output.OpenFoam.files.setup_case import MeshType
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Workers.solver import Solver
@@ -20,12 +20,12 @@ def main() -> None:
     start_time: float = time.time()
 
     # SETUP DB CONNECTION
-    read_polars_2d(XFLRDB)
+    read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
     calcF2W: bool = True
     calcOpenFoam: bool = False  # True
-    calcXFoil: bool = True  # True
+    calcXFoil: bool = False  # True
     print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
     print(f"\tXfoil: {calcXFoil}")
@@ -35,7 +35,7 @@ def main() -> None:
     airfoils: list[Airfoil] = []
 
     # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    airfoil_names: list[str] = ["0012"]
+    airfoil_names: list[str] = ["2412"]
     # Load From DB
     db_airfoils: Struct = DB.foils_db.set_available_airfoils()
     for airfoil_name in airfoil_names:
@@ -57,10 +57,10 @@ def main() -> None:
     # airfoils.append(naca64418_fl)
 
     # PARAMETERS FOR ESTIMATION
-    chord_max: float = 0.2
-    chord_min: float = 0.2
-    u_max: float = 5
-    u_min: float = 40
+    chord_max: float = 0.4
+    chord_min: float = 0.4
+    u_max: float = 40
+    u_min: float = 5
     viscosity: float = 1.56e-5
 
     # MACH ESTIMATION
@@ -72,11 +72,10 @@ def main() -> None:
     # REYNOLDS ESTIMATION
     reynolds_max: float = calc_reynolds(u_max, chord_max, viscosity)
     reynolds_min: float = calc_reynolds(u_min, chord_min, viscosity)
-    reynolds: FloatArray = np.logspace(
-        start=np.log10(reynolds_min),
-        stop=np.log10(reynolds_max),
+    reynolds: FloatArray = np.linspace(
+        start=reynolds_min,
+        stop=reynolds_max,
         num=20,
-        base=10,
     )
 
     # ANGLE OF ATTACK SETUP
@@ -90,8 +89,8 @@ def main() -> None:
     )
 
     # Transition to turbulent Boundary Layer
-    ftrip_up: dict[str, float] = {"pos": 0.02, "neg": 0.01}
-    ftrip_low: dict[str, float] = {"pos": 0.01, "neg": 0.02}
+    ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 0.1}
+    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.1}
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
@@ -124,9 +123,9 @@ def main() -> None:
             f2w_solver_parameters.f_trip_upper.value = ftrip_up["pos"]
             f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
-            f2w_solver_parameters.max_iter.value = 400
-            f2w_solver_parameters.boundary_layer_solve_time.value = 200
-            f2w_solver_parameters.timestep.value = 0.001
+            f2w_solver_parameters.max_iter.value = 200
+            f2w_solver_parameters.boundary_layer_solve_time.value = 100
+            f2w_solver_parameters.timestep.value = 0.01
 
             f2w_s.run()
 
@@ -145,7 +144,7 @@ def main() -> None:
             # 1) Sequential Angle run for multiple reynolds in serial,
             # 2) Sequential Angle run for multiple reynolds in parallel with zeroing of the boundary layer between angles,
             # 3) Sequential Angle run for multiple reynolds in serial with zeroing of the boundary layer between angles,
-            analysis = xfoil.available_analyses_names()[2]  # Run
+            analysis = xfoil.available_analyses_names()[0]  # Run
             xfoil.set_analyses(analysis)
 
             # Get Options
@@ -156,10 +155,11 @@ def main() -> None:
             xfoil_options.airfoil.value = airfoil
             xfoil_options.reynolds.value = reynolds
             xfoil_options.mach.value = MACH
-            # xfoil_options.max_aoa.value = aoa_max
-            # xfoil_options.min_aoa.value = aoa_min
-            # xfoil_options.aoa_step.value = 0.5
-            xfoil_options.angles.value = angles  # For options 2 and 3
+            xfoil_options.max_aoa.value = aoa_max
+            xfoil_options.min_aoa.value = aoa_min
+            xfoil_options.aoa_step.value = 0.5
+            # xfoil_options.angles.value = angles  # For options 2 and 3
+
             xfoil.print_analysis_options()
             # Set Solver Options
             xfoil_solver_parameters.max_iter.value = 10000
@@ -212,6 +212,23 @@ def main() -> None:
         airfoil_etime: float = time.time()
         print(
             f"Airfoil {airfoil.name} completed in {airfoil_etime - airfoil_stime} seconds",
+        )
+
+        from ICARUS.Visualization.airfoil.db_polars import plot_airfoil_polars
+
+        DB.foils_db.load_data()
+        solvers = []
+        if calcF2W:
+            solvers += ["Foil2Wake"]
+        if calcXFoil:
+            solvers += ["Xfoil"]
+        if calcOpenFoam:
+            solvers += ["OpenFoam"]
+
+        axs, fig = plot_airfoil_polars(
+            airfoil_name=airfoil.name,
+            solvers=solvers,
+            size=(10, 9),
         )
     #   ############################### END LOOP ##############################################
 

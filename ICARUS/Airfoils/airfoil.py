@@ -73,8 +73,6 @@ class Airfoil(af.Airfoil):  # type: ignore
     """
     Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
-    # ! TODO DEPRECATE THE DEPENDANCE ON THE airfoil MODULE. SPECIFICALLY WE HAVE
-    # ! TO CHANGE THE MODULE SO THAT IT DOESNT NORMALIZE THE airfoil
 
     Args:
         af : Airfoil class from the airfoils module
@@ -112,7 +110,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.polars: dict[str, Any] | Struct = {}
 
         self.airfoil_to_selig()
-        self.fix_le()
+        # self.fix_le()
 
         # For Type Checking
         self._x_upper: FloatArray = self._x_upper
@@ -194,7 +192,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             return self
         elif re_4digits.match(naca):
             m: float = float(naca[0]) / 100
-            p = float(naca[1]) / 10 
+            p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
             upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
             self = cls(upper, lower, naca, n_points)

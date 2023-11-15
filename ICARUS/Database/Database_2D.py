@@ -9,7 +9,7 @@ from pandas import DataFrame
 
 from . import APPHOME
 from . import DB2D
-from . import XFLRDB
+from . import EXTERNAL_DB
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.struct import Struct
@@ -143,11 +143,10 @@ class Database_2D:
                     if verbose:
                         print(f"Loaded airfoil {airf} from DB2D")
                 except:
-                    # Try to load the airfoil from the XFLR5DB
                     #! TODO DEPRECATE THIS IT IS STUPID airfoilS SHOULD BE MORE ROBUST
 
-                    # list the folders in the XFLR5DB
-                    folders: list[str] = os.walk(XFLRDB).__next__()[1]
+                    # list the folders in the EXTERNAL DB
+                    folders: list[str] = os.walk(EXTERNAL_DB).__next__()[1]
                     flag = False
                     name: str = ""
                     for folder in folders:
@@ -170,16 +169,16 @@ class Database_2D:
 
                     if flag:
                         # list the files in the airfoil folder
-                        flap_files: list[str] = os.listdir(os.path.join(XFLRDB, name))
+                        flap_files: list[str] = os.listdir(os.path.join(EXTERNAL_DB, name))
                         # check if the airfoil is in the flap folder
                         if name + ".dat" in flap_files:
                             # load the airfoil from the flap folder
-                            filename = os.path.join(XFLRDB, name, name + ".dat")
+                            filename = os.path.join(EXTERNAL_DB, name, name + ".dat")
                             airfoils[airf] = Airfoil.load_from_file(filename)
                             if verbose:
-                                print(f"Loaded airfoil {airf} from XFLR5DB")
+                                print(f"Loaded airfoil {airf} from EXTERNAL DB")
                     else:
-                        raise FileNotFoundError(f"Couldnt Find airfoil {airf} in DB2D or XFLR5DB")
+                        raise FileNotFoundError(f"Couldnt Find airfoil {airf} in DB2D or EXTERNAL DB")
         return airfoils
 
     def get_airfoil_solvers(self, airfoil_name: str) -> list[str] | None:

@@ -29,7 +29,6 @@ def get_f2w_section() -> Solver:
             "All angles to run",
             list[float],
         ),
-        # "flap"
     }
 
     solver_options: dict[str, tuple[Any, str, Any]] = {
@@ -39,7 +38,7 @@ def get_f2w_section() -> Solver:
             int,
         ),
         "timestep": (
-            0.001,
+            0.05,
             "DT1 | Simulation timestep",
             float,
         ),
@@ -60,159 +59,34 @@ def get_f2w_section() -> Solver:
         ),
         "boundary_layer_solve_time": (
             100,
-            "NTIME_bl | When to start solving the boundary layer", 
+            "NTIME_bl | When to start solving the boundary layer",
             int,
         ),
-        "trailing_edge_angle":
-        (
-            0.0,
-            "TEANGLE (deg) | Trailing edge angle",
-            float
-        ),
-        "u_freestrem":
-        (
-            1.0,
-            "UINF | Freestream velocity",
-            float
-        ),
-        "Cuttoff_1":
-        (
-            0.025,
-            "EPS1 | ...",
-            float
-        ),
-        "Cuttoff_2":
-        (
-            0.025,
-            "EPS2 | ...",
-            float
-        ),
-        "EPSCOE":
-        (
-            1.0,
-            "EPSCOE | ...",
-            float
-        ),
-        "NWS":
-        (
-            3,
-            "NWS | ...",
-            int
-        ),
-        "CCC1":
-        (
-            0.015,
-            "CCC1 | ...",
-            float
-        ),
-        "CCC2":
-        (
-            0.015,
-            "CCC2 | ...",
-            float
-        ),
-        "CCGON1":
-        (
-            20.0,
-            "CCGON1 | ...",
-            float
-        ),
-        "CCGON2":
-        (
-            20.0,
-            "CCGON2 | ...",
-            float
-        ),
-        "IMOVE":
-        (
-            1,
-            "IMOVE | ...",
-            int
-        ),
-        "A0":
-        (
-            0.0,
-            "A0 | ...",
-            float
-        ),
-        "AMPL":
-        (
-            0.0,
-            "AMPL | ...",
-            float
-        ),
-        "APHASE":
-        (
-            0.0,
-            "APHASE | ...",
-            float
-        ),
-        "AKF":
-        (
-            0.0,
-            "AKF | ...",
-            float
-        ),
-        "Chord_hinge":
-        (
-            0.25,
-            "XC | Point from where to pitch the airfoil. 0.25 is the quarter chord",
-            float
-        ),
-        "ITEFLAP":
-        (
-            1,
-            "ITEFLAP | Whether to use flap or not. 1: use flap, 0: don't use flap",
-            int
-        ),
-        "XEXT":
-        (
-            0.9,
-            "XEXT | ...",
-            float
-        ),
-        "YEXT":
-        (
-            0.0,
-            "YEXT | ...",
-            float
-        ),
-        "NTEWT":
-        (
-            9,
-            "NTEWT | ...",
-            int
-        ),
-        "NTEST":
-        (
-            9,
-            "NTEST | ...",
-            int
-        ),
-        "IBOUNDL":
-        (
-            1,
-            "IBOUNDL | Whether to use solve the boundary layer or not. 1: solve, 0: don't solve",
-            int
-        ),
-        "IYNEXTERN":
-        (
-            0,
-            "IYNEXTERN | ...",
-            int
-        ),
-        "ITSEPAR":
-        (
-            0,
-            "ITSEPAR | ...",
-            int
-        ),
-        "ISTEADY":
-        (
-            1,
-            "ISTEADY | ...",
-            int
-        ),
+        "trailing_edge_angle": (0.0, "TEANGLE (deg) | Trailing edge angle", float),
+        "u_freestrem": (1.0, "UINF | Freestream velocity", float),
+        "Cuttoff_1": (0.050, "EPS1 | ...", float),
+        "Cuttoff_2": (0.050, "EPS2 | ...", float),
+        "EPSCOE": (1.0, "EPSCOE | ...", float),
+        "NWS": (3, "NWS | ...", int),
+        "CCC1": (0.03, "CCC1 | ...", float),
+        "CCC2": (0.03, "CCC2 | ...", float),
+        "CCGON1": (30.0, "CCGON1 | ...", float),
+        "CCGON2": (30.0, "CCGON2 | ...", float),
+        "IMOVE": (1, "IMOVE | ...", int),
+        "A0": (0.0, "A0 | ...", float),
+        "AMPL": (0.0, "AMPL | ...", float),
+        "APHASE": (0.0, "APHASE | ...", float),
+        "AKF": (0.0, "AKF | ...", float),
+        "Chord_hinge": (0.25, "XC | Point from where to pitch the airfoil. 0.25 is the quarter chord", float),
+        "ITEFLAP": (0, "ITEFLAP | Whether to use flap or not. 1: use flap, 0: don't use flap", int),
+        "XEXT": (0.0, "XEXT | ...", float),
+        "YEXT": (0.0, "YEXT | ...", float),
+        "NTEWT": (9, "NTEWT | ...", int),
+        "NTEST": (9, "NTEST | ...", int),
+        "IBOUNDL": (1, "IBOUNDL | Whether to use solve the boundary layer or not. 1: solve, 0: don't solve", int),
+        "IYNEXTERN": (0, "IYNEXTERN | ...", int),
+        "ITSEPAR": (0, "ITSEPAR | ...", int),
+        "ISTEADY": (1, "ISTEADY | ...", int),
     }
 
     multi_reyn_parallel: Analysis = Analysis(

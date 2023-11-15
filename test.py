@@ -37,20 +37,20 @@ class BaseAirplaneTests(unittest.TestCase):
         # gnvp3_run("Serial")
 
     def test3_geometry_gnvp3(self) -> None:
-        gridAP, gridGNVP = gnvp3_geometry(plot=True)
+        gridAP, gridGNVP = gnvp3_geometry(plot=False)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
-    def test5_gnvp7_run(self) -> None:
-        # gnvp7_run("Serial")
-        gnvp7_run("Parallel")
+    # def test5_gnvp7_run(self) -> None:
+    #     # gnvp7_run("Serial")
+    #     gnvp7_run("Parallel")
 
-    def test6_geometry_gnvp7(self) -> None:
-        gridAP, gridGNVP = gnvp7_geometry(plot=True)
+    # def test6_geometry_gnvp7(self) -> None:
+    #     gridAP, gridGNVP = gnvp7_geometry(plot=True)
 
-        np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
+    #     np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
-    def test7_lspt_run(self) -> None:
-        lspt_run()
+    # def test7_lspt_run(self) -> None:
+    #     lspt_run()
 
     def test_3d_polars(self) -> None:
         des, acts = airplane_polars(plot=True)

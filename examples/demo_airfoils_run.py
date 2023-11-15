@@ -8,7 +8,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
-from ICARUS.Database import XFLRDB
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Input_Output.OpenFoam.files.setup_case import MeshType
 from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Workers.solver import Solver
@@ -80,7 +80,7 @@ def main() -> None:
     start_time: float = time.time()
 
     # SETUP DB CONNECTION
-    read_polars_2d(XFLRDB)
+    read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
 

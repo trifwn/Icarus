@@ -50,6 +50,25 @@ def blankline(f: TextIOWrapper):
     f.write("                                                                <blank>\n")
 
 
+def file_name(input: str, file_ext: str) -> str:
+    """
+    Trim the input to 12 characters so as to be read by fortran
+
+    Args:
+        input (str): file name
+        file_ext (str): file extension
+
+    Returns:
+        str: trimmed file name
+    """
+    name_len = 12 - len(file_ext)
+    if len(input) > name_len:
+        input = input[0 : name_len - 1]
+    input += f".{file_ext}"
+
+    return input.ljust(12)
+
+
 def input_file() -> None:
     """
     Creates the input file for GNVP3
@@ -443,13 +462,13 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
                         f_wg.write("\n")
                         for m_point in n_strip:  # For each point in the strip
                             # Grid Coordinates
-                            f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
+                            f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
             blankline(f)
             f.write("IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n")
             f.write("0          0          1\n")
             blankline(f)
             f.write("NFILFL     NFILDS     NFILWG      [corresponding file names]\n")
-            f.write(f"{bod.name}.FL   {bod.name}.DS   {bod.name}.WG\n")
+            f.write(f"{file_name(bod.name,'FL')}{file_name(bod.name,'DS')}{file_name(bod.name,'OWG')}\n")
             blankline(f)
             f.write("XOO        YOO        ZOO\n")
             f.write(f"{ff4(bod.x_0)} {ff4(bod.y_0)} {ff4(bod.z_0)}\n")
@@ -478,8 +497,8 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             f.write("IEXTW      NFILTW      FCTW(1)    FCTW(2)   FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)\n")
             f.write(f"4                      0.        0         0.         0.         0.         0.\n")
             blankline(f)
-            f.write("IEXXO      NFILXO      FCXO(1)    FCXO(2)   FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)\n")
-            f.write(f"4                     {ff4(0.)} {ff4(offset)}     0.         0.         0.         0.\n")
+            f.write(f"IEXXO      NFILXO      FCXO(1)    FCXO(2)   FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)\n")
+            f.write(f"4                      {ff4(0.)} {ff4(offset)}     0.         0.         0.         0.\n")
             blankline(f)
             f.write("IEXZO      NFILZO      FCZO(1)    FCZO(2)   FCZO(3)    FCZO(4)    FCZO(5)    FCZO(6)\n")
             f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
