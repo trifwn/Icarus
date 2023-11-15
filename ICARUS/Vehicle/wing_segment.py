@@ -30,6 +30,8 @@ class Wing_Segment:
         chord_fun: Callable[[int, float, float], FloatArray],
         chord: FloatArray | list[float],
         span_fun: Callable[[float, int], FloatArray],
+        # twist_fun: Callable[[float, int], FloatArray],
+        # twist: FloatArray | list[float],
         N: int,
         M: int,
         mass: float = 1.0,

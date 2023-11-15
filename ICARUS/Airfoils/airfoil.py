@@ -193,8 +193,8 @@ class Airfoil(af.Airfoil):  # type: ignore
             self: "Airfoil" = cls(upper, lower, naca, n_points)
             return self
         elif re_4digits.match(naca):
-            p = float(naca[0]) / 10
-            m: float = float(naca[1]) / 100
+            m: float = float(naca[0]) / 100
+            p = float(naca[1]) / 10 
             xx = float(naca[2:4]) / 100
             upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
             self = cls(upper, lower, naca, n_points)
@@ -486,5 +486,10 @@ class Airfoil(af.Airfoil):  # type: ignore
         else:
             plt.plot(x[: self.n_points], y[: self.n_points], "r")
             plt.plot(x[self.n_points :], y[self.n_points :], "b")
+
+        if camber:
+            x = np.linspace(0, 1, 100)
+            y = self.camber_line(x)
+            plt.plot(x, y, "k--")
 
         plt.axis("scaled")

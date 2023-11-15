@@ -13,7 +13,7 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 ############################## AIRPLANE GENERATOR ########################################
 
 
-def airplane_generator(name: str, plotting=True) -> Airplane:
+def airplane_generator(name: str, plotting=False) -> Airplane:
     """
     Function to generate a conventional airplane, consisting of:
         1) main wing

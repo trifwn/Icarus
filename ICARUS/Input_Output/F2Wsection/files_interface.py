@@ -52,6 +52,7 @@ def sequential_run(
         ftrip_upper=f_trip_upper,
         Ncrit=Ncrit,
         name=name,
+        solver_options=solver_options,
     )
 
     # RUN Files

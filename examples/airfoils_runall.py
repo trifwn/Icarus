@@ -25,7 +25,7 @@ def main() -> None:
     # RUN SETUP
     calcF2W: bool = True
     calcOpenFoam: bool = False  # True
-    calcXFoil: bool = False  # True
+    calcXFoil: bool = True  # True
     print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
     print(f"\tXfoil: {calcXFoil}")
@@ -57,10 +57,10 @@ def main() -> None:
     # airfoils.append(naca64418_fl)
 
     # PARAMETERS FOR ESTIMATION
-    chord_max: float = 5.6
-    chord_min: float = 2.3
-    u_max: float = 100
-    u_min: float = 50
+    chord_max: float = 0.2
+    chord_min: float = 0.2
+    u_max: float = 5
+    u_min: float = 40
     viscosity: float = 1.56e-5
 
     # MACH ESTIMATION
@@ -124,8 +124,8 @@ def main() -> None:
             f2w_solver_parameters.f_trip_upper.value = ftrip_up["pos"]
             f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
-            f2w_solver_parameters.max_iter.value = 100
-            # f2w_solver_parameters.max_iter_bl.value = 300
+            f2w_solver_parameters.max_iter.value = 400
+            f2w_solver_parameters.boundary_layer_solve_time.value = 200
             f2w_solver_parameters.timestep.value = 0.001
 
             f2w_s.run()

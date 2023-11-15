@@ -71,7 +71,7 @@ def get_gnvp7() -> Solver:
             float,
         ),
         "Pot_Convergence_Tolerence": (
-            0.01,
+            1e-4,
             "EPSDS convergence tolerance of the potential calculations",
             float,
         ),

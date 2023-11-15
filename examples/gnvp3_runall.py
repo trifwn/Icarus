@@ -33,9 +33,8 @@ def main() -> None:
     # # Get Plane
     planes: list[Airplane] = []
 
-    from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
-
-    embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
+    # from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
+    # embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
     # planes.append(embraer_to)
 
     # from Vehicles.Planes.e190_cruise import e190_cruise
@@ -44,20 +43,24 @@ def main() -> None:
     # planes.append(embraer_cr)
     # planes.append(embraer_to)
 
-    from Vehicles.Planes.hermes import hermes
+    from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
+    filename: str = "Data/XFLR5/plane_titos.xml"
+    airplane = parse_xfl_project(filename)
+    airplane.name = 'plane_titos'
+    # from Vehicles.Planes.hermes import hermes
+    # hermes_3: Airplane = hermes(name="hermes_3_2")
 
-    hermes_3: Airplane = hermes(name="hermes_3_2")
-    planes.append(hermes_3)
+    planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "hermes_3_2": 1e-3}
-    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "hermes_3_2": 300}
-    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "hermes_3_2": 20}
-    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "hermes_3_2": 0}
+    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "plane_titos": 1e-3}
+    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "plane_titos": 300}
+    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "plane_titos": 20}
+    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "plane_titos": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "hermes_3_2": 273 + 15}
-    DYNAMICS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "hermes_3_2": True}
+    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "plane_titos": 273 + 15}
+    DYNAMICS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "plane_titos": True}
 
     for airplane in planes:
         print("--------------------------------------------------")
@@ -94,7 +97,7 @@ def main() -> None:
 
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
-        options.solver2D.value = "Foil2Wake"
+        options.solver2D.value = "XFLR"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = UINF[airplane.name]
@@ -158,7 +161,7 @@ def main() -> None:
         options.plane.value = airplane
         options.state.value = unstick
         options.environment.value = EARTH_ISA
-        options.solver2D.value = "Xfoil"
+        options.solver2D.value = "XFLR"
         options.maxiter.value = maxiter[airplane.name]
         options.timestep.value = timestep[airplane.name]
         options.u_freestream.value = unstick.trim["U"]

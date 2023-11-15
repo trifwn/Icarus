@@ -40,17 +40,17 @@ def get_f2w_section() -> Solver:
         ),
         "timestep": (
             0.001,
-            "Simulation timestep (DT1)",
+            "DT1 | Simulation timestep",
             float,
         ),
         "f_trip_low": (
             0.1,
-            "Transition points for positive and negative angles for the lower surface",
+            "TRANSLO | Transition points for positive and negative angles for the lower surface",
             float,
         ),
         "f_trip_upper": (
             0.1,
-            "Transition points for positive and negative angles for the upper surface",
+            "TRANSUP | Transition points for positive and negative angles for the upper surface",
             float,
         ),
         "Ncrit": (
@@ -58,41 +58,161 @@ def get_f2w_section() -> Solver:
             "N critical value for transition according to e to N method",
             float,
         ),
-        # 0.                       ! TEANGLE (deg)
-        # 1.                       ! UINF
-        # 201                      ! NTIMEM
-        # 0.010                    ! DT1
-        # 50000                    ! DT2
-        # 0.025                    ! EPS1
-        # 0.025                    ! EPS2
-        # 1.00                    ! EPSCOE
-        # 3                        ! NWS
-        # 0.015                    ! CCC1
-        # 0.015                    ! CCC2
-        # 20.                      ! CCGON1
-        # 20.                      ! CCGON2
-        # 1                        ! IMOVE
-        # 0.000                   ! A0
-        # 0.000                   ! AMPL
-        # 0.000                   ! APHASE
-        # 0.000                   ! AKF
-        # 0.25                     ! XC
-        # 1                        ! ITEFLAP
-        # 0.9                     ! XEXT
-        # 0.                      ! YEXT
-        # 7                        ! NTEWT
-        # 7                        ! NTEST
-        # 1                        ! IBOUNDL ---> DO NOT CHANGE
-        # 200                      ! NTIME_bl
-        # 0                        ! IYNEXTERN
-        # 1.96e+05                 ! Reynolds
-        # 0.08815750808110491      ! Mach     Number
-        # 0.1    1                 ! TRANSLO
-        # 0.2    2                 ! TRANSLO
-        # 9.                       ! AMPLUP_tr
-        # 9.                       ! AMPLLO_tr
-        # 0                        ! ITSEPAR (1: 2 wake calculation) ---> DO NOT CHANGE
-        # 1                        ! ISTEADY (1: steady calculation) ---> DO NOT CHANGE
+        "boundary_layer_solve_time": (
+            100,
+            "NTIME_bl | When to start solving the boundary layer", 
+            int,
+        ),
+        "trailing_edge_angle":
+        (
+            0.0,
+            "TEANGLE (deg) | Trailing edge angle",
+            float
+        ),
+        "u_freestrem":
+        (
+            1.0,
+            "UINF | Freestream velocity",
+            float
+        ),
+        "Cuttoff_1":
+        (
+            0.025,
+            "EPS1 | ...",
+            float
+        ),
+        "Cuttoff_2":
+        (
+            0.025,
+            "EPS2 | ...",
+            float
+        ),
+        "EPSCOE":
+        (
+            1.0,
+            "EPSCOE | ...",
+            float
+        ),
+        "NWS":
+        (
+            3,
+            "NWS | ...",
+            int
+        ),
+        "CCC1":
+        (
+            0.015,
+            "CCC1 | ...",
+            float
+        ),
+        "CCC2":
+        (
+            0.015,
+            "CCC2 | ...",
+            float
+        ),
+        "CCGON1":
+        (
+            20.0,
+            "CCGON1 | ...",
+            float
+        ),
+        "CCGON2":
+        (
+            20.0,
+            "CCGON2 | ...",
+            float
+        ),
+        "IMOVE":
+        (
+            1,
+            "IMOVE | ...",
+            int
+        ),
+        "A0":
+        (
+            0.0,
+            "A0 | ...",
+            float
+        ),
+        "AMPL":
+        (
+            0.0,
+            "AMPL | ...",
+            float
+        ),
+        "APHASE":
+        (
+            0.0,
+            "APHASE | ...",
+            float
+        ),
+        "AKF":
+        (
+            0.0,
+            "AKF | ...",
+            float
+        ),
+        "Chord_hinge":
+        (
+            0.25,
+            "XC | Point from where to pitch the airfoil. 0.25 is the quarter chord",
+            float
+        ),
+        "ITEFLAP":
+        (
+            1,
+            "ITEFLAP | Whether to use flap or not. 1: use flap, 0: don't use flap",
+            int
+        ),
+        "XEXT":
+        (
+            0.9,
+            "XEXT | ...",
+            float
+        ),
+        "YEXT":
+        (
+            0.0,
+            "YEXT | ...",
+            float
+        ),
+        "NTEWT":
+        (
+            9,
+            "NTEWT | ...",
+            int
+        ),
+        "NTEST":
+        (
+            9,
+            "NTEST | ...",
+            int
+        ),
+        "IBOUNDL":
+        (
+            1,
+            "IBOUNDL | Whether to use solve the boundary layer or not. 1: solve, 0: don't solve",
+            int
+        ),
+        "IYNEXTERN":
+        (
+            0,
+            "IYNEXTERN | ...",
+            int
+        ),
+        "ITSEPAR":
+        (
+            0,
+            "ITSEPAR | ...",
+            int
+        ),
+        "ISTEADY":
+        (
+            1,
+            "ISTEADY | ...",
+            int
+        ),
     }
 
     multi_reyn_parallel: Analysis = Analysis(

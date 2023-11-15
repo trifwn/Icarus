@@ -1,5 +1,5 @@
 import os
-import shutil
+from typing import Any
 
 import numpy as np
 
@@ -81,6 +81,7 @@ def input_file(
     ftrip_upper: float,
     Ncrit: float,
     name: str,
+    solver_options: dict[str, tuple[Any, str, Any]],
 ) -> None:
     """Creates the input file for section f2w program
 
@@ -98,30 +99,30 @@ def input_file(
         f.write(f"{max_iter}     ! NTIMEM\n")
         f.write(f"{timestep}     ! DT1\n")
         f.write(f"{timestep}     ! DT2\n")  # IS NOT IMPLEMENTED
-        f.write(f"0.001    ! EPS1\n")
-        f.write(f"0.001    ! EPS2\n")
-        f.write(f"3.00     ! EPSCOE\n")
-        f.write(f"0        ! NWS\n")
-        f.write(f"0.010    ! CCC1\n")
-        f.write(f"0.010    ! CCC2\n")
-        f.write(f"20.      ! CCGON1\n")
-        f.write(f"20.      ! CCGON2\n")
-        f.write(f"1        ! IMOVE\n")
-        f.write(f" 0.000   ! A0\n")
-        f.write(f" 0.000   ! AMPL\n")
-        f.write(f" 0.000   ! APHASE\n")
-        f.write(f" 0.000   ! AKF\n")
-        f.write(f"0.25     ! XC\n")
-        f.write(f"1        ! ITEFLAP\n")
-        f.write(f" 0.9     ! XEXT\n")
-        f.write(f" 0.      ! YEXT\n")
+        f.write(f"{solver_options['Cuttoff_1']}    ! EPS1\n")
+        f.write(f"{solver_options['Cuttoff_2']}    ! EPS2\n")
+        f.write(f"{solver_options['EPSCOE']}     ! EPSCOE\n")
+        f.write(f"{solver_options['NWS']}        ! NWS\n")
+        f.write(f"{solver_options['CCC1']}    ! CCC1\n")
+        f.write(f"{solver_options['CCC2']}    ! CCC2\n")
+        f.write(f"{solver_options['CCGON1']}      ! CCGON1\n")
+        f.write(f"{solver_options['CCGON2']}      ! CCGON2\n")
+        f.write(f"{solver_options['IMOVE']}        ! IMOVE\n")
+        f.write(f" {solver_options['A0']}   ! A0\n")
+        f.write(f" {solver_options['AMPL']}   ! AMPL\n")
+        f.write(f" {solver_options['APHASE']}   ! APHASE\n")
+        f.write(f" {solver_options['AKF']}   ! AKF\n")
+        f.write(f"{solver_options['Chord_hinge']}     ! XC\n")
+        f.write(f"{solver_options['ITEFLAP']}        ! ITEFLAP\n")
+        f.write(f"{solver_options['XEXT']}     ! XEXT\n")
+        f.write(f"{solver_options['YEXT']}      ! YEXT\n")
         f.write(f"\n")
-        f.write(f"9        ! NTEWT\n")
-        f.write(f"9        ! NTEST\n")
+        f.write(f"{solver_options['NTEWT']}        ! NTEWT\n")
+        f.write(f"{solver_options['NTEST']}        ! NTEST\n")
         f.write(f"\n")
-        f.write(f"1        ! IBOUNDL\n")
-        f.write(f"200      ! NTIME_bl\n")
-        f.write(f"0        ! IYNEXTERN\n")
+        f.write(f"{solver_options['IBOUNDL']}        ! IBOUNDL\n")
+        f.write(f"{solver_options['boundary_layer_solve_time']}      ! NTIME_bl\n")
+        f.write(f"{solver_options['IYNEXTERN']}        ! IYNEXTERN\n")
         f.write(f"\n")
         f.write(f"{np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(8)}  ! Reynolds\n")
         f.write(f"\n")
@@ -132,8 +133,8 @@ def input_file(
         f.write(f"{int(Ncrit)}\t\t  ! AMPLUP_tr\n")
         f.write(f"{int(Ncrit)}\t\t  ! AMPLUP_tr\n")
         f.write(f"\n")
-        f.write(f"0         ! ITSEPAR (1: 2 wake calculation)\n")
-        f.write(f"1         ! ISTEADY (1: steady calculation)\n")
+        f.write(f"{solver_options['ITSEPAR']}         ! ITSEPAR (1: 2 wake calculation)\n")
+        f.write(f"{solver_options['ISTEADY']}         ! ISTEADY (1: steady calculation)\n")
         f.write(f"\n")
         f.write(f"\n")
         f.write(f"\n")
