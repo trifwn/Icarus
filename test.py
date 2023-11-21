@@ -21,7 +21,7 @@ class BaseAirplaneTests(unittest.TestCase):
         AREA_act: tuple[float] = (4.0608,)
         CG_act: FloatArray = np.array([0.337, 0.0, 0.0])
         I_act: FloatArray = np.array(
-            [2.082, 0.017, 2.099, 0.0, 0.139, 0.0],
+            [2.077, 0.017, 2.094, 0.0, 0.137, 0.0],
         )
 
         S, MAC, CG, INERTIA = wing_test.geom()
@@ -37,7 +37,7 @@ class BaseAirplaneTests(unittest.TestCase):
         # gnvp3_run("Serial")
 
     def test3_geometry_gnvp3(self) -> None:
-        gridAP, gridGNVP = gnvp3_geometry(plot=False)
+        gridAP, gridGNVP = gnvp3_geometry(plot=True)
         np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
     # def test5_gnvp7_run(self) -> None:

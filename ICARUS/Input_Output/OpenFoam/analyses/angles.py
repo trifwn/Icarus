@@ -5,6 +5,7 @@ from threading import Thread
 from typing import Any
 
 from tqdm.auto import tqdm
+from ICARUS import CPU_TO_USE
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
@@ -43,7 +44,7 @@ def run_angles(
         REYNDIR (str): Reynolds Parent Directory
         ANGLEDIRS (list[str]): Angle Directory
     """
-    with Pool(processes=12) as pool:
+    with Pool(processes=CPU_TO_USE - 2) as pool:
         args_list: list[tuple[str, str]] = [(REYNDIR, angle_dir) for angle_dir in ANGLEDIRS]
         pool.starmap(run_angle, args_list)
 

@@ -5,6 +5,7 @@ from typing import Any
 from typing import Optional
 
 from tqdm.auto import tqdm
+from ICARUS import CPU_TO_USE
 
 from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output.GenuVP.post_process.progress import latest_time
@@ -57,7 +58,7 @@ def parallel_monitor(
     # Create a list to store progress bars
     progress_bars = []
 
-    with ThreadPoolExecutor(max_workers=len(variables)) as executor:
+    with ThreadPoolExecutor(max_workers=min(len(variables), CPU_TO_USE)) as executor:
         for i, var in enumerate(variables):
             pbar = tqdm(
                 total=max_iter,

@@ -42,7 +42,7 @@ def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
     df.pop("TTIME")
     df.pop("PSIB")
     df = df.sort_values("AoA").reset_index(drop=True)
-    df.to_csv(f"forces.gnvp{genu_version}", index=False)
+    df.to_csv(f"forces.gnvp{genu_version}", index=False, float_format="%.10f")
     os.chdir(HOMEDIR)
     # df = rotate_forces(df, df['AoA'])
     return df

@@ -25,6 +25,7 @@ def latest_time(
             data_b: list[bytes] = tail(f, 300)
         data: list[str] = [line.decode() for line in data_b]
     except FileNotFoundError:
+        # print(f"File {filename} not found")
         return None, False
 
     # ERROR
@@ -37,4 +38,5 @@ def latest_time(
         latest_t: int = max(times)
         return latest_t, error
     except ValueError:
+        # print(times, CASEDIR)
         return None, error

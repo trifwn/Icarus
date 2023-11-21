@@ -59,9 +59,9 @@ class Database_3D:
                         continue
                     if case.startswith("Sens"):
                         continue
-                    if "gnvp_3" in os.listdir(os.path.join(DB3D, plane, case)):
+                    if "gnvp3" in os.listdir(os.path.join(DB3D, plane, case)):
                         self.load_gnvp_case_convergence(plane, case, 3)
-                    if "gnvp_7" in os.listdir(os.path.join(DB3D, plane, case)):
+                    if "gnvp7" in os.listdir(os.path.join(DB3D, plane, case)):
                         self.load_gnvp_case_convergence(plane, case, 7)
 
             # Loading Forces from forces.* files

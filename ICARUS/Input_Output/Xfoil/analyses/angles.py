@@ -4,6 +4,7 @@ import numpy as np
 from tqdm.auto import tqdm
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
+from ICARUS import CPU_TO_USE
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
@@ -138,7 +139,7 @@ def multiple_reynolds_parallel(
 
     from multiprocessing import Pool
 
-    with Pool(processes=6) as pool:
+    with Pool(processes=CPU_TO_USE) as pool:
         args_list = [(reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
@@ -172,7 +173,7 @@ def multiple_reynolds_parallel_seq(
 
     from multiprocessing import Pool
 
-    with Pool(processes=6) as pool:
+    with Pool(processes=CPU_TO_USE) as pool:
         args_list = [(reyn, mach, angles, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(

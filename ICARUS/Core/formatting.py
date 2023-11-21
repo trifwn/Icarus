@@ -36,3 +36,31 @@ def ff4(num: float) -> str:
         return f"{num:1.4e}"
     else:
         return f"{num:1.3e}"
+
+
+def ff5(num: float, n_digits: int = 10) -> str:
+    """
+    Given a float, return a string of the number in scientific notation
+    that is n_digits characters long in total including the sign and decimal point.
+    e.g ff4(0.000000000) ->  "0.0000e+00"
+    e.g ff4(0.000000001) ->  "1.0000e-09"
+    e.g ff4(1)           ->  "1.0000e+00"
+    e.g ff4(10)          ->  "1.0000e+01"
+    e.g ff4(100)         ->  "1.0000e+02"
+    e.g ff4(538)         ->  "5.3800e+02"
+    e.g ff4(-538)        ->  "-5.380e+02"
+
+
+    Args:
+        num (float): Any float
+        n_digits (int): Number of characters in the string
+
+    Returns:
+        str: The float in scientific notation
+    """
+    if num == 0:
+        return f"{num:1.{n_digits - 7}e}"
+    elif num > 0:
+        return f"{num:1.{n_digits - 7}e}"
+    else:
+        return f"{num:1.{n_digits - 8}e}"

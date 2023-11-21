@@ -76,7 +76,7 @@ class GenuSurface:
         self.x_end: float = surf.origin[0] + surf._offset_dist[-1]
         self.y_end: float = surf.origin[1] + surf.span
         self.z_end: float = surf.origin[2] + surf._dihedral_dist[-1]
-        self.Root_chord: float = surf.chord[0]
-        self.Tip_chord: float = surf.chord[-1]
-        self.Offset: float = surf._offset_dist[-1]
-        self.Grid: FloatArray = surf.getGrid()
+        self.root_chord: float = surf.chord[0]
+        self.tip_chord: float = surf.chord[-1]
+        self.offset: float = surf._offset_dist[-1]
+        self.grid: FloatArray = surf.getGrid()

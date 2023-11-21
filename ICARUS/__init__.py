@@ -1,6 +1,13 @@
 """
 ICARUS: A Python package for the analysis, modelling and design of aircraft.
 """
+import multiprocessing
+CPU_COUNT: int = multiprocessing.cpu_count()
+if CPU_COUNT > 2:
+    CPU_TO_USE: int = CPU_COUNT - 2
+else:
+    CPU_TO_USE = 1
+    
 from . import Aerodynamics
 from . import Airfoils
 from . import Conceptual
@@ -34,3 +41,4 @@ __all__ = [
 ]
 
 __version__ = "0.3.0"
+

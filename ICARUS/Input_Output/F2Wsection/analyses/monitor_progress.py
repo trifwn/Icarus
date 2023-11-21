@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 from tqdm.auto import tqdm
+from ICARUS import CPU_TO_USE
 
 from ICARUS.Input_Output.F2Wsection.post_process.progress import latest_time
 
@@ -66,7 +67,7 @@ def parallel_monitor(
     # Create a list to store progress bars
     progress_bars = []
 
-    with ThreadPoolExecutor(max_workers=2 * len(reynolds)) as executor:
+    with ThreadPoolExecutor(max_workers= min(2 * len(reynolds), CPU_TO_USE)) as executor:
         for i, reyn in enumerate(reynolds):
             reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).zfill(8)
             for j, name in enumerate(["pos", "neg"]):

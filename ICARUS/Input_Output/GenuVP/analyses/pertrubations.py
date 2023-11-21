@@ -4,6 +4,7 @@ from typing import Any
 
 from pandas import DataFrame
 from tqdm.auto import tqdm
+from ICARUS import CPU_TO_USE
 
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import DB
@@ -254,9 +255,9 @@ def run_pertrubation_parallel(
 
     def run() -> None:
         if genu_version == 3:
-            num_processes = 3
+            num_processes =CPU_TO_USE 
         else:
-            num_processes = 12
+            num_processes = int(CPU_TO_USE / 3)
         with Pool(num_processes) as pool:
             args_list = [
                 (
@@ -423,9 +424,9 @@ def sensitivity_parallel(
     from multiprocessing import Pool
 
     if genu_version == 3:
-        num_processes = 12
+        num_processes =CPU_TO_USE 
     else:
-        num_processes = 3
+        num_processes = int(CPU_TO_USE/3)
     with Pool(num_processes) as pool:
         args_list = [
             (

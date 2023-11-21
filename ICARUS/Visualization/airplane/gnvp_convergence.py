@@ -69,8 +69,7 @@ def plot_convergence(
         solvers = ["", "2D", "DS2D"]
 
     cases = data[plane]
-    i = -1
-    j = -1
+    i = 0
     for ang in cases.keys():
         num = float("".join(c for c in ang if (c.isdigit() or c == ".")))
         if ang.startswith("m"):
@@ -108,8 +107,8 @@ def plot_convergence(
                     mz = np.abs(mz.iloc[1:].values - mz.iloc[:-1].values)
 
                 j += 1
-                c = colors_(1 / len(solvers))
-                m: MarkerStyle = markers[j].get_marker()
+                c = colors_(j / len(solvers))
+                m: MarkerStyle = markers[i].get_marker()
 
                 label: str = f"{plane} - {solver} - {ang_num}"
                 axs[0, 0].plot(it, fx, color=c, marker=m, label=label, markersize=2.0, linewidth=1)

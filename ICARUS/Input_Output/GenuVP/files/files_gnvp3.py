@@ -1,15 +1,16 @@
 import os
-import shutil
+from io import StringIO
 from io import TextIOWrapper
 from typing import Any
 
 import pandas as pd
 from pandas import DataFrame
-from regex import B
 
+from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
+from ICARUS.Core.formatting import ff5
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
@@ -294,8 +295,8 @@ def geo_body_header(data: list[str], body: GenuSurface, NB: int) -> None:
     data.append("               <blank>\n")
     data.append("2           NLIFT\n")
     data.append("0           IYNELSTB   \n")
-    data.append("1           NBAER2ELST \n")
-    data.append(f"{body.NNB}          NNBB\n")
+    data.append("0           NBAER2ELST \n")
+    data.append(f"{body.NNB}           NNBB\n")
     data.append(f"{body.NCWB}          NCWB\n")
     data.append("2           ISUBSCB\n")
     data.append("2\n")
@@ -304,7 +305,7 @@ def geo_body_header(data: list[str], body: GenuSurface, NB: int) -> None:
     data.append("0           IYNLES  \n")
     data.append("0           NELES   \n")
     data.append("0           IYNCONTW\n")
-    data.append("3           IDIRMOB  direction for the torque calculation\n")
+    data.append("2           IDIRMOB  direction for the torque calculation\n")
     data.append("               <blank>\n")
 
 
@@ -359,80 +360,52 @@ def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
         solver (str): preferred solver
     """
     for bod in bodies:
+        fname: str = f"{bod.cld_fname}"
         try:
             polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
         except KeyError:
             try:
                 polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
             except KeyError:
-                print(foil_dat.keys())
-                print(foil_dat[f"NACA{bod.airfoil_name}"].keys())
                 raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
-        fname: str = f"{bod.cld_fname}"
-        with open(fname, "w", encoding="UTF-8") as f:
-            f.write("------ CL and CD data input file for BO105 Rotor\n")
-            f.write("------ Mach number dependence included\n")
-            blankline(f)
-            line(2, "NSPAN", "Number of positions for which CL-CD data are given", f)
-            line(len(polars), "! NMACH", "Mach numbers for which CL-CD are given", f)
-            for i in range(0, len(polars)):
-                f.write(f"0.08\n")
-            f.write("! Reyn numbers for which CL-CD are given\n")
-            for reyn in polars.keys():
-                f.write(f"{reyn.zfill(5)}\n")
-            blankline(f)
-            # GET ALL 2D airfoil POLARS IN ONE TABLE
-            keys: list[str] = list(polars.keys())
-            df: DataFrame = polars[keys[0]].astype("float32").dropna(axis=0, how="all")
-            df.rename(
-                {"CL": f"CL_{keys[0]}", "CD": f"CD_{keys[0]}", "Cm": f"Cm_{keys[0]}"},
-                inplace=True,
-                axis="columns",
+        f_io = StringIO()
+        f_io.write(f"------ CL and CD data input file for {bod.airfoil_name}\n")
+        f_io.write("------ Mach number dependence included\n")
+        blankline(f_io)
+        line(2, "NSPAN", "Number of positions for which CL-CD data are given", f_io)
+        line(len(polars), "! NMACH", "Mach numbers for which CL-CD are given", f_io)
+        for _ in range(0, len(polars)):
+            f_io.write(f"0.08\n")
+        f_io.write("! Reyn numbers for which CL-CD are given\n")
+        for reyn in polars.keys():
+            f_io.write(f"{reyn.zfill(5)}\n")
+        blankline(f_io)
+
+        polar_obj = Polars(polars)
+        df: DataFrame = polar_obj.df
+        angles = polar_obj.angles
+
+        for radpos in [-100.0, 100.0]:
+            line(radpos, "RADPOS", "! Radial Position", f_io)
+            f_io.write(
+                f"{len(angles)}         ! Number of Angles / Airfoil NACA {bod.airfoil_name}\n",
             )
-            for reyn in keys[1:]:
-                df2: DataFrame = polars[reyn].astype("float32").dropna(axis=0, how="all")
-                try:
-                    df2 = df2.rename(
-                        {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}"},
-                        errors="raise",
-                        axis="columns",
-                    )
-                except KeyError as e:
-                    print("------------------------")
-                    print(f"KeyError: {e}")
-                    print(bod.cld_fname)
-                    print(reyn)
-                    continue
-                df = pd.merge(df, df2, on="AoA", how="outer")
-            # SORT BY AoA
-            df = df.sort_values("AoA")
-            # FILL NaN Values By neighbors
-            df = DB.foils_db.fill_polar_table(df)
-
-            # Get Angles
-            angles = df["AoA"].to_numpy()
-            anglenum: int = len(angles)
-
-            # FILL FILE
-            for radpos in 0, 1:
-                if radpos == 0:
-                    line(-100, "RADPOS", "! Radial Position", f)
-                else:
-                    line(100, "RADPOS", "! Radial Position", f)
-                f.write(
-                    f"{anglenum}         ! Number of Angles / Airfoil NACA {bod.airfoil_name}\n",
-                )
-                f.write(
-                    "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
-                )
-                for i, ang in enumerate(angles):
-                    string: str = ""
-                    nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
-                    for num in nums:
-                        string = string + ff2(num) + "  "
-                    f.write(f"{string}\n")
-                f.write("\n")
+            f_io.write(
+                "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
+            )
+            for i, ang in enumerate(angles):
+                string: str = ""
+                nums = df.loc[df["AoA"] == ang].to_numpy().squeeze()
+                for num in nums:
+                    string = string + ff2(num) + "  "
+                f_io.write(f"{string}\n")
+            f_io.write("\n")
+        f_io.write("------ End of CL and CD data input file\n")
+        # Write to File
+        contents: str = f_io.getvalue().expandtabs(4)
+        with open(fname, "w", encoding="utf-8") as file:
+            file.write(contents)
 
 
 def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
@@ -451,21 +424,23 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
 
             # Check Whether to split a symmetric body into two parts
             if not params.Use_Grid:
-                f.write(f'1          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n')
+                f.write(f'1          {"".join(char for char in bod.NACA if char.isdigit())}\n')
             else:
                 f.write(f'0          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n')
                 # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
                 # Specify option 0 to read the file
                 with open(f"{bod.name}.WG", "w") as f_wg:
-                    grid: FloatArray = bod.Grid
+                    grid: FloatArray = bod.grid
+                    f_wg.write("\n")
                     for n_strip in grid:  # For each strip
-                        f_wg.write("\n")
                         for m_point in n_strip:  # For each point in the strip
                             # Grid Coordinates
-                            f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
+                            # f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
+                            f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
+                        f_wg.write("\n")
             blankline(f)
             f.write("IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n")
-            f.write("0          0          1\n")
+            f.write("1          1          1\n")
             blankline(f)
             f.write("NFILFL     NFILDS     NFILWG      [corresponding file names]\n")
             f.write(f"{file_name(bod.name,'FL')}{file_name(bod.name,'DS')}{file_name(bod.name,'OWG')}\n")
@@ -477,21 +452,21 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             f.write(f"{ff4(bod.pitch)} {ff4(bod.cone)} {ff4(bod.wngang)}\n")
             blankline(f)
             f.write("IEXKS      NFILKS      AKSI(1)    AKSI(NNC)\n")
-            f.write("1          0           0.         0.\n")
+            f.write("1          0           0.         1.\n")
             blankline(f)
 
             step: float = round(
-                (bod.Root_chord - bod.Tip_chord) / (bod.y_end - bod.y_0),
+                (bod.root_chord - bod.tip_chord) / (bod.y_end - bod.y_0),
                 ndigits=5,
             )
-            offset: float = round(bod.Offset / (bod.y_end - bod.y_0), ndigits=5)
+            offset: float = round(bod.offset / (bod.y_end - bod.y_0), ndigits=5)
 
-            f.write("IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
-            f.write(f"1          0           0.         {bod.y_end - bod.y_0}\n")
+            f.write(f"IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
+            f.write(f"1          0           0.         {ff5(bod.y_end - bod.y_0,8)}\n")
             blankline(f)
             f.write("IEXCH      NFILCH      FCCH(1)    FCCH(2)   FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)\n")
             f.write(
-                f"4                      {ff4(bod.Root_chord)} {ff4(-step)}     0.         0.         0.         0.\n",
+                f"4                      {ff4(bod.root_chord)} {ff4(-step)}     0.         0.         0.         0.\n",
             )
             blankline(f)
             f.write("IEXTW      NFILTW      FCTW(1)    FCTW(2)   FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)\n")

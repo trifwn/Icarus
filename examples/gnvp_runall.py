@@ -52,8 +52,8 @@ def main() -> None:
     planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "plane_1": 3e-2}
-    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "plane_1": 70}
+    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "plane_1": 1e-3}
+    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "plane_1": 100}
     UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "plane_1": 20}
     ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "plane_1": 0}
 
@@ -97,7 +97,7 @@ def main() -> None:
             solver_parameters: Struct = gnvp.get_solver_parameters()
 
             AOA_MIN = -5
-            AOA_MAX = 6
+            AOA_MAX = 4
             NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
             angles: FloatArray = np.linspace(
                 AOA_MIN,
@@ -128,6 +128,22 @@ def main() -> None:
             polars: DataFrame | int = gnvp.get_results()
             airplane.save()
 
+            from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+
+            solvers = [
+                "GNVP3 Potential" if GNVP_VERSION == 3 else "GNVP7 Potential",
+                "GNVP3 2D" if GNVP_VERSION == 3 else "GNVP7 2D",
+                "GNVP3 ONERA" if GNVP_VERSION == 3 else "GNVP7 ONERA",
+            ]
+            axs, fig = plot_airplane_polars(
+                [airplane.name],
+                solvers,
+                plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
+                size=(6, 7),
+            )
+            # Pause to see the plots for 2 seconds
+            time.sleep(2)
+
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
@@ -137,7 +153,7 @@ def main() -> None:
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
 
             try:
-                unstick = State("Unstick", airplane, polars, EARTH_ISA, preffered_polar='Potential')
+                unstick = State("Unstick", airplane, polars, EARTH_ISA, preffered_polar="Potential")
             except Exception as error:
                 print(error)
                 continue

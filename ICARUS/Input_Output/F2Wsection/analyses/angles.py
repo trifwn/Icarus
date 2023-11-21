@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 from tqdm.auto import tqdm
+from ICARUS import CPU_TO_USE
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
@@ -152,7 +153,7 @@ def run_multiple_reynolds_parallel(
     max_iter: float = solver_options["max_iter"]
 
     def run() -> None:
-        with Pool(12) as pool:
+        with Pool(CPU_TO_USE) as pool:
             args_list = [
                 (
                     airfoil,

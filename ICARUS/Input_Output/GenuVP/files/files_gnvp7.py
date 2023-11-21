@@ -310,7 +310,7 @@ def geofile(
         f.write(contents)
 
 
-def grid_file(body_dict: GenuSurface) -> None:
+def grid_file(bod: GenuSurface) -> None:
     """
     Generates the grid file for a body.
 
@@ -318,8 +318,8 @@ def grid_file(body_dict: GenuSurface) -> None:
         body_dict (GenuSurface): Dictionary Containing the information about
             the body in GenuSurface format.
     """
-    with open(f"{body_dict.grid_fname}", "w") as file:
-        grid: FloatArray = body_dict.Grid
+    with open(f"{bod.grid_fname}", "w") as file:
+        grid: FloatArray = bod.grid
         file.write("\n")
         for n_strip in grid:  # For each strip
             for m_point in n_strip:  # For each point in the strip
