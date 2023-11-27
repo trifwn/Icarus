@@ -179,9 +179,14 @@ class Airfoil(af.Airfoil):  # type: ignore
         Returns:
             Airfoil: airfoil class object
         """
-        re_4digits: re.Pattern[str] = re.compile(r"^\d{4}$")
-        re_5digits: re.Pattern[str] = re.compile(r"^\d{5}$")
-
+        re_4digits: re.Pattern[str] = re.compile(r'\b(?:NACA\s*)?(\d{4})\b')
+        re_5digits: re.Pattern[str] = re.compile(r'\b(?:NACA\s*)?(\d{5})\b')
+        naca = naca.replace("naca", "")
+        naca = naca.replace("NACA", "")
+        naca = naca.replace(".", "")
+        naca = naca.replace("-", "")
+        naca = naca.replace("_", "")
+        naca = naca.replace(" ", "")
         if re_5digits.match(naca):
             l: float = float(naca[0]) / 10
             p: float = float(naca[1]) / 100
@@ -194,7 +199,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
-            upper, lower = af.gen_NACA4_airfoil(p, m, xx, n_points)
+            upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points)
             self = cls(upper, lower, naca, n_points)
             self.set_naca4_digits(p, m, xx)
             return self
@@ -389,6 +394,16 @@ class Airfoil(af.Airfoil):  # type: ignore
             else:
                 res[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
         return res
+
+    def camber_line(self,x):
+        ""
+        if hasattr(self, "l"):
+            return self.camber_line_naca5(x)
+        elif hasattr(self, "p"):
+                return self.camber_line_naca4(x)
+        else:
+            return super().camber_line(x)
+
 
     def airfoil_to_selig(self) -> None:
         """

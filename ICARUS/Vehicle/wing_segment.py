@@ -279,6 +279,7 @@ class Wing_Segment:
 
     def plot(
         self,
+        thin : bool = False,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         prev_movement: FloatArray | None = None,
@@ -310,7 +311,11 @@ class Wing_Segment:
 
         for i in np.arange(0, self.N - 1):
             for j in np.arange(0, self.M - 1):
-                for item in [self.panels_lower, self.panels_upper]:
+                if thin:
+                    items = [self.panels]
+                else:
+                    items = [self.panels_lower, self.panels_upper]
+                for item in items:
                     p1, p3, p4, p2 = item[i, j, :, :]
                     xs = np.reshape([p1[0], p2[0], p3[0], p4[0]], (2, 2)) + movement[0]
 

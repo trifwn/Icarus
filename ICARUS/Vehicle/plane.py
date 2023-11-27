@@ -218,6 +218,7 @@ class Airplane:
 
     def visualize(
         self,
+        thin: bool = False,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         movement: FloatArray | None = None,
@@ -259,7 +260,7 @@ class Airplane:
                     mov = np.zeros(3)
 
         for surface in self.surfaces:
-            surface.plot(fig, ax, mov)
+            surface.plot(thin, fig, ax, mov)
         # Add plot for masses
         for m, r in self.masses:
             ax.scatter(
