@@ -34,8 +34,8 @@ def main() -> None:
     # airfoil SETUP
     airfoils: list[Airfoil] = []
 
-    # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    airfoil_names: list[str] = ["2412"]
+    airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
+    # airfoil_names: list[str] = ["2412"]
     # Load From DB
     db_airfoils: Struct = DB.foils_db.set_available_airfoils()
     for airfoil_name in airfoil_names:
@@ -75,12 +75,12 @@ def main() -> None:
     reynolds: FloatArray = np.linspace(
         start=reynolds_min,
         stop=reynolds_max,
-        num=20,
+        num=5,
     )
 
     # ANGLE OF ATTACK SETUP
     aoa_min: float = -5
-    aoa_max: float = 5
+    aoa_max: float = 12
     num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
     angles: FloatArray = np.linspace(
         start=aoa_min,
@@ -123,9 +123,9 @@ def main() -> None:
             f2w_solver_parameters.f_trip_upper.value = ftrip_up["pos"]
             f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
-            f2w_solver_parameters.max_iter.value = 200
-            f2w_solver_parameters.boundary_layer_solve_time.value = 100
-            f2w_solver_parameters.timestep.value = 0.01
+            f2w_solver_parameters.max_iter.value = 400
+            f2w_solver_parameters.boundary_layer_solve_time.value = 399
+            f2w_solver_parameters.timestep.value = 0.02
 
             f2w_s.run()
 

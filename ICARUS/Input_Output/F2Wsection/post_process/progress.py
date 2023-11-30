@@ -49,6 +49,7 @@ def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float]
     angle: float | None = get_angle()
     # ERROR
     error: bool = any(re.search(r"forrtl", x) for x in data)
+    error: bool = error or any(re.search(r"Backtrace", x) for x in data)
 
     # ITERATION
     try:

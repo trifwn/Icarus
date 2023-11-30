@@ -155,4 +155,5 @@ def setup_f2w(HOMEDIR: str, CASEDIR: str) -> None:
         try:
             os.symlink(src, dst)
         except FileExistsError:
-            pass
+            os.remove(dst)
+            os.symlink(src, dst)

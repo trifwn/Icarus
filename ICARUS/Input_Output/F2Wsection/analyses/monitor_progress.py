@@ -21,7 +21,7 @@ def serial_monitor(
     last: float,
     refresh_progress: float = 2,
 ) -> None:
-    sleep(1 + (position + 1) / 10)
+    sleep(5 + (position + 1) / 10)
     angle_prev: float = 0
 
     while True:
@@ -35,7 +35,7 @@ def serial_monitor(
             progress_bars[position].desc = f"\t\t{reyn_str}-{name}-{angle} Progress"
 
         if error:
-            progress_bars[position].write(f"Analysis encountered Error at {angle}")
+            progress_bars[position].write(f"Analysis encountered Error at {reyn_str} {angle}")
             break
 
         if time is None:
