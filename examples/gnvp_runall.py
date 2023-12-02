@@ -11,10 +11,8 @@ from pandas import DataFrame
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
 
@@ -109,7 +107,7 @@ def main() -> None:
 
             options.plane.value = airplane
             options.environment.value = EARTH_ISA
-            options.solver2D.value = "Xfoil"
+            options.solver2D.value = "XFLR"
             options.maxiter.value = maxiter[airplane.name]
             options.timestep.value = timestep[airplane.name]
             options.u_freestream.value = UINF[airplane.name]

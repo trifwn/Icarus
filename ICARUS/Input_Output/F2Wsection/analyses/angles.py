@@ -7,8 +7,8 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 from tqdm.auto import tqdm
-from ICARUS import CPU_TO_USE
 
+from ICARUS import CPU_TO_USE
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB

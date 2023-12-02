@@ -35,7 +35,7 @@ def main() -> None:
     airfoils: list[Airfoil] = []
 
     airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    # airfoil_names: list[str] = ["2412"]
+    airfoil_names: list[str] = ["0012"]
     # Load From DB
     db_airfoils: Struct = DB.foils_db.set_available_airfoils()
     for airfoil_name in airfoil_names:
@@ -89,8 +89,8 @@ def main() -> None:
     )
 
     # Transition to turbulent Boundary Layer
-    ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 0.1}
-    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.1}
+    ftrip_up: dict[str, float] = {"pos": 0.2, "neg": 0.2}
+    ftrip_low: dict[str, float] = {"pos": 0.2, "neg": 0.2}
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
@@ -99,7 +99,7 @@ def main() -> None:
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
         # # Get airfoil
-        # airf.plotairfoil()
+        airfoil.plot()
 
         # Foil2Wake
         if calcF2W:

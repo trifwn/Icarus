@@ -279,7 +279,7 @@ class Wing_Segment:
 
     def plot(
         self,
-        thin : bool = False,
+        thin: bool = False,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         prev_movement: FloatArray | None = None,

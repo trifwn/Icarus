@@ -387,6 +387,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         p: float = self.p
         m: float = self.m
 
+        points = points.flatten()
         res: FloatArray = np.zeros_like(points)
         for i, x in enumerate(points):
             if x < p:
@@ -395,15 +396,14 @@ class Airfoil(af.Airfoil):  # type: ignore
                 res[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
         return res
 
-    def camber_line(self,x):
-        ""
+    def camber_line(self, x):
+        """"""
         if hasattr(self, "l"):
             return self.camber_line_naca5(x)
         elif hasattr(self, "p"):
-                return self.camber_line_naca4(x)
+            return self.camber_line_naca4(x)
         else:
             return super().camber_line(x)
-
 
     def airfoil_to_selig(self) -> None:
         """

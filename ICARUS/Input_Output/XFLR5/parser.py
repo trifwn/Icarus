@@ -170,6 +170,11 @@ def parse_xfl_project(filename: str) -> Airplane:
             if airfoil_prev is not None:
                 # if i  is in [2,3]:
                 # XFLR Positions c/4 points where as I position LE.
+                if N_prev > 10:
+                    N_prev = 10
+                if M_prev > 6:
+                    M_prev = 6
+
                 span = 2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
                 pos = origin + wing_position + section_position  # - np.array((chord_prev / 4, 0, 0))
                 surf = Wing_Segment(

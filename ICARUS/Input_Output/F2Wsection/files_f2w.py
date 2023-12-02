@@ -30,7 +30,7 @@ def io_file(airfile: str, name: str) -> None:
         f.write(f"BDLAYER.OUT\n")
         f.write(f"SOL{name}.INI\n")
         f.write(f"SOL{name}.TMP\n")
-        f.write(f"zx_{name}\n")
+        f.write(f"TMP_{name}\n")
         f.write(f"\n")
         f.write(f"\n")
 

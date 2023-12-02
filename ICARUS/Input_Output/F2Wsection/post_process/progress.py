@@ -5,7 +5,7 @@ from typing import Optional
 from ICARUS.Core.file_tail import tail
 
 
-def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float], bool]:
+def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float], bool, bool]:
     """Get the latest iteration of F2W
 
     Args:
@@ -22,6 +22,8 @@ def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float]
         angles: list[float] = []
         angle: float = 0
         for folder in folders:
+            if folder.startswith("TMP"):
+                continue
             if name == "pos.out" and folder.startswith("m"):
                 continue
             elif name == "pos.out" and not folder.startswith("m"):
@@ -43,18 +45,18 @@ def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float]
             data_b: list[bytes] = tail(f, 300)
         data: list[str] = [line.decode() for line in data_b]
     except FileNotFoundError:
-        return None, None, False
-
+        return None, None, False, False
     # ANGLE
     angle: float | None = get_angle()
     # ERROR
     error: bool = any(re.search(r"forrtl", x) for x in data)
-    error: bool = error or any(re.search(r"Backtrace", x) for x in data)
+    error = error or any(re.search(r"Backtrace", x) for x in data)
+    done: bool = any(re.search(r" FOIL2WAKE: DONE", x) for x in data)
 
     # ITERATION
     try:
         times: list[int] = [int(x[9:]) for x in data if re.search(r"^  NTIME", x)]
         latest_t: int = max(times)
-        return latest_t, angle, error
+        return latest_t, angle, error, done
     except ValueError:
-        return None, angle, error
+        return None, angle, error, done
