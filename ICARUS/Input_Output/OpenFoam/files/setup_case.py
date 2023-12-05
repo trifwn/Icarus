@@ -6,8 +6,8 @@ from typing import Any
 
 import numpy as np
 
+from ICARUS import APPHOME
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import APPHOME
 from ICARUS.Input_Output import setup_of_script
 
 OFBASE = os.path.join(APPHOME, "ICARUS", "Input_Output", "OpenFoam", "files")

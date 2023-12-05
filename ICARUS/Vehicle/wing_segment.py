@@ -152,6 +152,24 @@ class Wing_Segment:
         self.inertia: FloatArray = np.empty((6), dtype=float)
         self.calculate_inertia(self.mass, self.CG)
 
+    def change_discretization(self, N: int | None = None, M: int | None = None) -> None:
+        if N is not None:
+            self.N = N
+        if M is not None:
+            self.M = M
+        self.create_grid()
+        self.create_strips()
+        self.mean_chords()
+        self.find_area()
+        self.find_volume()
+        self.find_center_mass()
+        self.calculate_inertia(self.mass, self.CG)
+
+    def change_mass(self, mass: float) -> None:
+        """Change Wing Segment Mass"""
+        self.mass = mass
+        self.calculate_inertia(self.mass, self.CG)
+
     @property
     def tip(self) -> FloatArray:
         """Return Tip of Wing. We basically returns the tip strip of the wing."""

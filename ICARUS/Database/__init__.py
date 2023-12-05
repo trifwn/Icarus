@@ -35,13 +35,8 @@ The package is divided in the following files:
 import os
 import platform
 
-# 2D
-APPHOME: str = os.path.dirname(os.path.realpath(__file__))
-APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
-APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
+from ICARUS import APPHOME
 
-# MOCK CASES ###
-BASEOPENFOAM: str = os.path.join(APPHOME, "Data", "Mock", "BaseOF")
 
 ### SOLVER EXECUTABLES ###
 platform_os = platform.system()

@@ -3,12 +3,12 @@ from typing import TypeVar
 
 from ICARUS.Core.types import FloatArray
 
-T = TypeVar("T", float, FloatArray)
+T = TypeVar("T", FloatArray, float)
 
 
 class Trajectory:
-    def __init__(self, title: str, trajectory_function: Callable[..., T]) -> None:
-        self.fun: Callable[..., T] = trajectory_function
+    def __init__(self, title: str, trajectory_function: Callable[[T], T]) -> None:
+        self.fun: Callable[[T], T] = trajectory_function
         self.operating_floor: float = 10
         self.title: str = title
 
@@ -22,9 +22,11 @@ class Trajectory:
     def second_derivative_x_fd(self, x: T) -> T:
         # Second derivative
         h = 0.0001
-        return (self.fun(x + h) - 2 * self.fun(x) + self.fun(x - h)) / (h**2)
+        ret = (self.fun(x + h) - 2 * self.fun(x) + self.fun(x - h)) / (h**2)
+        return ret
 
     def third_derivative_x_fd(self, x: T) -> T:
         # Third derivative
         h = 0.0001
-        return (-self.fun(x - 2 * h) + 2 * self.fun(x - h) - 2 * self.fun(x + h) + self.fun(x + 2 * h)) / (2 * h**3)
+        ret = (-self.fun(x - 2 * h) + 2 * self.fun(x - h) - 2 * self.fun(x + h) + self.fun(x + 2 * h)) / (2 * h**3)
+        return ret

@@ -50,16 +50,16 @@ def main() -> None:
     planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "plane_1": 1e-3}
-    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "plane_1": 100}
-    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "plane_1": 20}
-    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "plane_1": 0}
+    timestep: dict[str, float] = {"plane_1": 1e-2}
+    maxiter: dict[str, int] = {"plane_1": 100}
+    UINF: dict[str, float] = {"plane_1": 20}
+    ALTITUDE: dict[str, int] = {"plane_1": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "plane_1": 273 + 15}
+    TEMPERATURE: dict[str, int] = {"plane_1": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "plane_1": True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "plane_1": True}
+    STATIC_ANALYSIS: dict[str, float] = {"plane_1": True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {"plane_1": True}
 
     # Get Solver
     GNVP_VERSION = 3

@@ -4,7 +4,10 @@ from typing import Callable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.axes import SubplotBase
 from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
 from numpy import dtype
 from numpy import floating
 from numpy import ndarray
@@ -236,7 +239,7 @@ class Wing_LSPT:
 
     def plot_grid(self, show_wake: bool = False, show_airfoils: bool = False) -> None:
         fig: Figure = plt.figure()
-        ax = fig.add_subplot(projection="3d")
+        ax: Axes3D = fig.add_subplot(projection="3d")
 
         dehidral_prev = 0
         offset_prev = 0
@@ -508,7 +511,10 @@ class Wing_LSPT:
             self.get_aerodynamic_loads(umag=20)
 
         fig = plt.figure()
-        ax = fig.subplots(1, 2)
+        ax: ndarray | Axes | SubplotBase = fig.subplots(1, 2)
+
+        if not isinstance(ax, np.ndarray):
+            raise ValueError("Expected a ndarray of Axes")
 
         ax[0].bar(self.span_dist[1:], np.mean(self.L_pan, axis=1))
         ax[0].set_title("Lift Distribution")
@@ -525,8 +531,11 @@ class Wing_LSPT:
         if self.L_pan is None:
             self.get_aerodynamic_loads(umag=umag)
 
-        fig = plt.figure()
-        ax = fig.subplots(1, 2)
+        fig: Figure = plt.figure()
+        ax: ndarray | Axes | SubplotBase = fig.subplots(1, 2)
+
+        if not isinstance(ax, np.ndarray):
+            raise ValueError("Expected a ndarray of Axes")
 
         ax[0].matshow(self.L_pan)
         ax[0].set_title("Lift Distribution")

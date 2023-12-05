@@ -218,10 +218,10 @@ class Airplane:
 
     def visualize(
         self,
-        thin: bool = False,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         movement: FloatArray | None = None,
+        thin: bool = False,
     ) -> None:
         """
         Visualize the plane
@@ -268,7 +268,7 @@ class Airplane:
                 r[1] + mov[1],
                 r[2] + mov[2],
                 marker="o",
-                s=m * 50.0,
+                s=int(m * 50.0),
                 color="r",
             )
         ax.scatter(
@@ -276,7 +276,7 @@ class Airplane:
             self.CG[1] + mov[1],
             self.CG[2] + mov[2],
             marker="o",
-            s=50.0,
+            s=50,
             color="b",
         )
         plt.show()
