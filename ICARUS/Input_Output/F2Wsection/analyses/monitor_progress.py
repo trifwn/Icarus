@@ -49,10 +49,11 @@ def serial_monitor(
             progress_bars[position].n = int(time)
             progress_bars[position].refresh(nolock=True)
 
-        if time >= max_iter and abs(angle) >= abs(last):
-            break
+        # if time >= max_iter and abs(angle) >= abs(last):
+            # break
 
         if done:
+            progress_bars[position].write(f"Analysis Finished {reyn_str} {angle}")
             break
 
 

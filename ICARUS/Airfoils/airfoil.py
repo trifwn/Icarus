@@ -199,7 +199,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
-            upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points)
+            upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points//2)
             self = cls(upper, lower, naca, n_points)
             self.set_naca4_digits(p, m, xx)
             return self

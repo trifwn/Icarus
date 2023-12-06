@@ -33,13 +33,11 @@ The package is divided in the following files:
 
 """
 import os
-import platform
 
 from ICARUS import APPHOME
-
+from ICARUS import platform_os
 
 ### SOLVER EXECUTABLES ###
-platform_os = platform.system()
 
 if platform_os == "Windows":
     GenuVP3_exe: str = os.path.join(APPHOME, "bin", "gnvp3.exe")

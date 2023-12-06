@@ -52,7 +52,6 @@ def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float]
     error: bool = any(re.search(r"forrtl", x) for x in data)
     error = error or any(re.search(r"Backtrace", x) for x in data)
     done: bool = any(re.search(r" FOIL2WAKE: DONE", x) for x in data)
-
     # ITERATION
     try:
         times: list[int] = [int(x[9:]) for x in data if re.search(r"^  NTIME", x)]

@@ -685,7 +685,7 @@ class Wing_Segment:
     def Iyz(self) -> float:
         return float(self.inertia[5])
 
-    def getGrid(self, which: str = "camber") -> FloatArray:
+    def get_grid(self, which: str = "camber") -> FloatArray:
         """
         Returns the Grid of the Wing.
 
@@ -714,6 +714,8 @@ class Wing_Segment:
             pass
         return grid
 
+    def __str__(self):
+        return f"Wing Segment: {self.name} with {self.N} Panels and {self.M} Panels"
 
 def define_linear_span(
     sp: float,

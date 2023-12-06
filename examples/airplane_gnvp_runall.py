@@ -50,8 +50,8 @@ def main() -> None:
     planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"plane_1": 1e-2}
-    maxiter: dict[str, int] = {"plane_1": 100}
+    timestep: dict[str, float] = {"plane_1": 1e-3}
+    maxiter: dict[str, int] = {"plane_1": 500}
     UINF: dict[str, float] = {"plane_1": 20}
     ALTITUDE: dict[str, int] = {"plane_1": 0}
 

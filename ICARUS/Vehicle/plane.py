@@ -56,7 +56,7 @@ class Airplane:
         found_wing: bool = False
         self.S: float = 0
         for surface in surfaces:
-            if surface.name.startswith("wing"):
+            if surface.name.capitalize().startswith("MAIN"):
                 self.main_wing: Wing_Segment = surface
                 self.S += surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
