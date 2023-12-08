@@ -32,7 +32,7 @@ class Wing_Segment:
         span_fun: Callable[[float, int], FloatArray],
         # twist_fun: Callable[[float, int], FloatArray],
         # twist: FloatArray | list[float],
-        N: int,
+        N: int,  
         M: int,
         mass: float = 1.0,
     ) -> None:
@@ -629,9 +629,12 @@ class Wing_Segment:
                 I_yy += self.volume_distribution[i, j] * (xd + zd)
                 I_zz += self.volume_distribution[i, j] * (xd + yd)
 
-                xd = np.sqrt(xd)
-                yd = np.sqrt(yd)
-                zd = np.sqrt(zd)
+                xd = (x_upp + x_low) / 2 - cog[0]
+                zd = (z_upp + z_low) / 2 - cog[2]
+                if self.is_symmetric:
+                    yd = 0
+                else:
+                    yd = ((y_upp + y_low) / 2 - cog[1])
 
                 I_xz += self.volume_distribution[i, j] * (xd * zd)
                 I_xy += self.volume_distribution[i, j] * (xd * yd)
