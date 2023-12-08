@@ -199,7 +199,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
-            upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points//2)
+            upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points // 2)
             self = cls(upper, lower, naca, n_points)
             self.set_naca4_digits(p, m, xx)
             return self
@@ -399,7 +399,9 @@ class Airfoil(af.Airfoil):  # type: ignore
     def camber_line(self, x):
         """"""
         if hasattr(self, "l"):
-            return self.camber_line_naca5(x)
+            # return self.camber_line_naca5(x)
+            print("NACA 5 camber analytical solution not implemented yet")
+            return super().camber_line(x)
         elif hasattr(self, "p"):
             return self.camber_line_naca4(x)
         else:
@@ -409,8 +411,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         """
         Returns the airfoil in the selig format
         """
-        x_points: FloatArray = np.hstack((self._x_upper[::-1], self._x_lower[1:])).T
-        y_points: FloatArray = np.hstack((self._y_upper[::-1], self._y_lower[1:])).T
+        x_points: FloatArray = np.hstack((self._x_lower[::-1], self._x_upper[1:])).T
+        y_points: FloatArray = np.hstack((self._y_lower[::-1], self._y_upper[1:])).T
         # y_points[0]=0
         # y_points[-1]=0
         self.selig: FloatArray = np.vstack((x_points, y_points))
@@ -465,8 +467,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         Args:
             directory (str, optional): Directory to save the airfoil. Defaults to None.
         """
-        x = [*self._x_lower[::-1], *self._x_upper[::-1]]
-        y = [*self._y_lower[::-1], *self._y_upper[::-1]]
+        x = [*self._x_lower[:], *self._x_upper[::-1]]
+        y = [*self._y_lower[:], *self._y_upper[::-1]]
 
         pts = np.vstack((x, y))
         if directory is not None:

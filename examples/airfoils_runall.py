@@ -23,9 +23,9 @@ def main() -> None:
     read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
-    calcF2W: bool = True
+    calcF2W: bool = False
     calcOpenFoam: bool = False  # True
-    calcXFoil: bool = False  # True
+    calcXFoil: bool = True
     print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
     print(f"\tXfoil: {calcXFoil}")
@@ -34,8 +34,8 @@ def main() -> None:
     # airfoil SETUP
     airfoils: list[Airfoil] = []
 
-    airfoil_names: list[str] = ["0015", "0008", "0012"]
-    airfoil_names: list[str] = ["2412", "4415"]
+    airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
+    # airfoil_names: list[str] = ["2412", "4415"]
     # Load From DB
     db_airfoils: Struct = DB.foils_db.set_available_airfoils()
     for airfoil_name in airfoil_names:
@@ -89,8 +89,8 @@ def main() -> None:
     )
 
     # Transition to turbulent Boundary Layer
-    ftrip_up: dict[str, float] = {"pos": 0.2, "neg": 0.2}
-    ftrip_low: dict[str, float] = {"pos": 0.2, "neg": 0.2}
+    ftrip_up: dict[str, float] = {"pos": 0.4, "neg": 0.4}
+    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.1}
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
@@ -124,7 +124,7 @@ def main() -> None:
             f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
             f2w_solver_parameters.max_iter.value = 400
-            f2w_solver_parameters.boundary_layer_solve_time.value = 399 # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            f2w_solver_parameters.boundary_layer_solve_time.value = 399  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
             f2w_solver_parameters.timestep.value = 0.1
 
             f2w_s.run()
@@ -162,7 +162,7 @@ def main() -> None:
 
             xfoil.print_analysis_options()
             # Set Solver Options
-            xfoil_solver_parameters.max_iter.value = 10000
+            xfoil_solver_parameters.max_iter.value = 1000
 
             xfoil_solver_parameters.Ncrit.value = Ncrit
             xfoil_solver_parameters.xtr.value = (ftrip_up["pos"], ftrip_low["pos"])

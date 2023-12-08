@@ -10,7 +10,7 @@ CPU_COUNT: int = multiprocessing.cpu_count()
 
 if CPU_COUNT > 2:
     if platform_os == "Windows":
-        CPU_TO_USE: int = CPU_COUNT//2
+        CPU_TO_USE: int = CPU_COUNT // 2
     else:
         CPU_TO_USE: int = CPU_COUNT - 2
 else:

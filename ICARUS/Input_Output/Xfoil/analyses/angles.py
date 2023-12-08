@@ -24,13 +24,15 @@ def single_reynolds_run(
     xf = XFoil()
     xf.Re = Reyn
     # xf.M = MACH
-
+    # xf.print = True
     for key, value in solver_options.items():
         setattr(xf, key, value)
 
     xpts, ypts = airfoil.selig
     naca = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = naca
+    if xf.max_iter > 1000:
+        xf.max_iter = 1000
 
     # If the values are both negative and positive split the into 2 run
     if AoAmin < 0 and AoAmax > 0:
@@ -141,7 +143,7 @@ def multiple_reynolds_parallel(
         args_list = [(reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
-                pool.starmap(single_reynolds_run, args_list),
+                pool.imap(single_reynolds_star_run, args_list),
                 total=len(reynolds),
                 bar_format="\t\tTotal Progres {l_bar}{bar:30}{r_bar}",
                 position=0,
@@ -173,7 +175,7 @@ def multiple_reynolds_parallel_seq(
         args_list = [(reyn, mach, angles, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
-                pool.starmap(single_reynolds_run_seq, args_list),
+                pool.imap(single_reynolds_star_run_seq, args_list),
                 total=len(args_list),
                 bar_format="\t\tTotal Progres {l_bar}{bar:30}{r_bar}",
                 position=0,

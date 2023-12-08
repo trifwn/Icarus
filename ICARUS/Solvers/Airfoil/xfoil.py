@@ -2,7 +2,6 @@ from typing import Any
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
 from ICARUS.Workers.analysis import Analysis
 from ICARUS.Workers.solver import Solver
 

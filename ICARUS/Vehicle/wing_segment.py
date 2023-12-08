@@ -717,6 +717,7 @@ class Wing_Segment:
     def __str__(self):
         return f"Wing Segment: {self.name} with {self.N} Panels and {self.M} Panels"
 
+
 def define_linear_span(
     sp: float,
     Ni: int,

@@ -16,9 +16,7 @@ def gnvp7_geometry(plot: bool = False) -> tuple[list[FloatArray], list[FloatArra
     return gnvp_geometry(gnvp_version=7, plot=plot)
 
 
-def gnvp_geometry(
-    gnvp_version: int, plot: bool = False
-) -> tuple[list[FloatArray], list[FloatArray]]:
+def gnvp_geometry(gnvp_version: int, plot: bool = False) -> tuple[list[FloatArray], list[FloatArray]]:
     """
     Get the geometry from the gnvp results and the airplane. Has to convert to meshgrid to be able to
     sort the data.
