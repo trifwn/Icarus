@@ -34,8 +34,8 @@ def main() -> None:
     # airfoil SETUP
     airfoils: list[Airfoil] = []
 
-    # airfoil_names: list[str] = ["2412", "0015", "0008", "4415", "0012"]
-    airfoil_names: list[str] = ["2412"]
+    airfoil_names: list[str] = ["0015", "0008", "0012"]
+    airfoil_names: list[str] = ["2412", "4415"]
     # Load From DB
     db_airfoils: Struct = DB.foils_db.set_available_airfoils()
     for airfoil_name in airfoil_names:
@@ -44,7 +44,7 @@ def main() -> None:
         except KeyError:
             print(f"Airfoil {airfoil_name} not found in database")
             print("Trying to Generate it")
-            airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=200))
+            airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=400))
 
     # # Load From File
     # for airfoil_name in airfoil_names:
@@ -75,12 +75,12 @@ def main() -> None:
     reynolds: FloatArray = np.linspace(
         start=reynolds_min,
         stop=reynolds_max,
-        num=20,
+        num=5,
     )
 
     # ANGLE OF ATTACK SETUP
     aoa_min: float = -5
-    aoa_max: float = 5
+    aoa_max: float = 12
     num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
     angles: FloatArray = np.linspace(
         start=aoa_min,
@@ -89,8 +89,8 @@ def main() -> None:
     )
 
     # Transition to turbulent Boundary Layer
-    ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 0.1}
-    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.1}
+    ftrip_up: dict[str, float] = {"pos": 0.2, "neg": 0.2}
+    ftrip_low: dict[str, float] = {"pos": 0.2, "neg": 0.2}
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
@@ -99,7 +99,7 @@ def main() -> None:
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
         # # Get airfoil
-        # airf.plotairfoil()
+        airfoil.plot()
 
         # Foil2Wake
         if calcF2W:
@@ -123,9 +123,9 @@ def main() -> None:
             f2w_solver_parameters.f_trip_upper.value = ftrip_up["pos"]
             f2w_solver_parameters.f_trip_low.value = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit.value = Ncrit
-            f2w_solver_parameters.max_iter.value = 200
-            f2w_solver_parameters.boundary_layer_solve_time.value = 100
-            f2w_solver_parameters.timestep.value = 0.01
+            f2w_solver_parameters.max_iter.value = 400
+            f2w_solver_parameters.boundary_layer_solve_time.value = 399 # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            f2w_solver_parameters.timestep.value = 0.1
 
             f2w_s.run()
 
@@ -214,22 +214,22 @@ def main() -> None:
             f"Airfoil {airfoil.name} completed in {airfoil_etime - airfoil_stime} seconds",
         )
 
-        from ICARUS.Visualization.airfoil.db_polars import plot_airfoil_polars
+        # from ICARUS.Visualization.airfoil.db_polars import plot_airfoil_polars
 
-        DB.foils_db.load_data()
-        solvers = []
-        if calcF2W:
-            solvers += ["Foil2Wake"]
-        if calcXFoil:
-            solvers += ["Xfoil"]
-        if calcOpenFoam:
-            solvers += ["OpenFoam"]
+        # DB.foils_db.load_data()
+        # solvers = []
+        # if calcF2W:
+        #     solvers += ["Foil2Wake"]
+        # if calcXFoil:
+        #     solvers += ["Xfoil"]
+        # if calcOpenFoam:
+        #     solvers += ["OpenFoam"]
 
-        axs, fig = plot_airfoil_polars(
-            airfoil_name=airfoil.name,
-            solvers=solvers,
-            size=(10, 9),
-        )
+        # axs, fig = plot_airfoil_polars(
+        #     airfoil_name=airfoil.name,
+        #     solvers=solvers,
+        #     size=(10, 9),
+        # )
     #   ############################### END LOOP ##############################################
 
     end_time = time.time()
@@ -240,4 +240,19 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # # parse command line options
+    # # Options are -n for number of processors
+    # from ICARUS import CPU_TO_USE
+
+    # from optparse import OptionParser
+    # parser = OptionParser()
+    # parser.add_option("-n", "--num_proc", type="int", dest="num_proc", default=CPU_TO_USE,
+    #                   help="Number of processors to use")
+    # (options, args) = parser.parse_args()
+    # num_proc = options.num_proc
+
+    # # if num proc is specified, set it
+    # if num_proc > 0:
+    #     CPU_TO_USE = num_proc
+
     main()

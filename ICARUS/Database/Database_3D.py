@@ -9,8 +9,8 @@ import pandas as pd
 from numpy import floating
 from pandas import DataFrame
 
-from . import APPHOME
 from . import DB3D
+from ICARUS import APPHOME
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Flight_Dynamics.state import State

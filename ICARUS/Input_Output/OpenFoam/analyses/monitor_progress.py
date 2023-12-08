@@ -4,8 +4,8 @@ from time import sleep
 from typing import Optional
 
 from tqdm.auto import tqdm
-from ICARUS import CPU_TO_USE
 
+from ICARUS import CPU_TO_USE
 from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output.OpenFoam.post_process.progress import latest_time
 

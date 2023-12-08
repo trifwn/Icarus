@@ -16,12 +16,12 @@ readme = "README.md"
 requires-python = ">=3"
 dependencies = [
     "pip",
-    "airfoils @git+https://github.com/trifwn/airfoils.git",
     "jsonpickle",
     "matplotlib",
     "numpy",
     "pandas",
     "ipykernel",
+    "ipywidgets",
     "ipython",
     "tabulate",
     "pre-commit",
@@ -30,8 +30,9 @@ dependencies = [
     "xmltodict",
     "inquirer",
     "pyfiglet",
-    #"xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
-    #"xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
+    "gitpython",
+    "airfoils @git+https://github.com/trifwn/airfoils.git",
+    "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
 ]
 dynamic = ["version"]
 

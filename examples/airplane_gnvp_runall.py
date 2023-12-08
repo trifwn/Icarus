@@ -11,10 +11,8 @@ from pandas import DataFrame
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Workers.solver import Solver
 
@@ -52,16 +50,16 @@ def main() -> None:
     planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"e190_to_3": 10, "e190_cr_3": 10, "plane_1": 1e-3}
-    maxiter: dict[str, int] = {"e190_to_3": 50, "e190_cr_3": 50, "plane_1": 100}
-    UINF: dict[str, float] = {"e190_to_3": 20, "e190_cr_3": 232, "plane_1": 20}
-    ALTITUDE: dict[str, int] = {"e190_cr_3": 12000, "e190_to_3": 0, "plane_1": 0}
+    timestep: dict[str, float] = {"plane_1": 1e-3}
+    maxiter: dict[str, int] = {"plane_1": 500}
+    UINF: dict[str, float] = {"plane_1": 20}
+    ALTITUDE: dict[str, int] = {"plane_1": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"e190_cr_3": 273 - 50, "e190_to_3": 273 + 15, "plane_1": 273 + 15}
+    TEMPERATURE: dict[str, int] = {"plane_1": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "plane_1": True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"e190_to_3": False, "e190_cr_3": False, "plane_1": True}
+    STATIC_ANALYSIS: dict[str, float] = {"plane_1": True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {"plane_1": True}
 
     # Get Solver
     GNVP_VERSION = 3
@@ -109,7 +107,7 @@ def main() -> None:
 
             options.plane.value = airplane
             options.environment.value = EARTH_ISA
-            options.solver2D.value = "Xfoil"
+            options.solver2D.value = "XFLR"
             options.maxiter.value = maxiter[airplane.name]
             options.timestep.value = timestep[airplane.name]
             options.u_freestream.value = UINF[airplane.name]

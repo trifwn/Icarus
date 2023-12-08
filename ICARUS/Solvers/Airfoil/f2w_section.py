@@ -33,12 +33,12 @@ def get_f2w_section() -> Solver:
 
     solver_options: dict[str, tuple[Any, str, Any]] = {
         "max_iter": (
-            200,
+            251,
             "NTIMEM | Maximum number of iterations",
             int,
         ),
         "timestep": (
-            0.05,
+            0.01,
             "DT1 | Simulation timestep",
             float,
         ),
@@ -58,14 +58,14 @@ def get_f2w_section() -> Solver:
             float,
         ),
         "boundary_layer_solve_time": (
-            100,
+            250,
             "NTIME_bl | When to start solving the boundary layer",
             int,
         ),
         "trailing_edge_angle": (0.0, "TEANGLE (deg) | Trailing edge angle", float),
         "u_freestrem": (1.0, "UINF | Freestream velocity", float),
-        "Cuttoff_1": (0.050, "EPS1 | ...", float),
-        "Cuttoff_2": (0.050, "EPS2 | ...", float),
+        "Cuttoff_1": (0.1, "EPS1 | ...", float),
+        "Cuttoff_2": (0.1, "EPS2 | ...", float),
         "EPSCOE": (1.0, "EPSCOE | ...", float),
         "NWS": (3, "NWS | ...", int),
         "CCC1": (0.03, "CCC1 | ...", float),
@@ -78,7 +78,7 @@ def get_f2w_section() -> Solver:
         "APHASE": (0.0, "APHASE | ...", float),
         "AKF": (0.0, "AKF | ...", float),
         "Chord_hinge": (0.25, "XC | Point from where to pitch the airfoil. 0.25 is the quarter chord", float),
-        "ITEFLAP": (0, "ITEFLAP | Whether to use flap or not. 1: use flap, 0: don't use flap", int),
+        "ITEFLAP": (1, "ITEFLAP | Whether to use flap or not. 1: use flap, 0: don't use flap", int),
         "XEXT": (0.0, "XEXT | ...", float),
         "YEXT": (0.0, "YEXT | ...", float),
         "NTEWT": (9, "NTEWT | ...", int),

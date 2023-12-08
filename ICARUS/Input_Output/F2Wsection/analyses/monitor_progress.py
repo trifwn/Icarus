@@ -5,8 +5,8 @@ from typing import Optional
 
 import numpy as np
 from tqdm.auto import tqdm
-from ICARUS import CPU_TO_USE
 
+from ICARUS import CPU_TO_USE
 from ICARUS.Input_Output.F2Wsection.post_process.progress import latest_time
 
 
@@ -21,12 +21,12 @@ def serial_monitor(
     last: float,
     refresh_progress: float = 2,
 ) -> None:
-    sleep(1 + (position + 1) / 10)
+    sleep(5 + (position + 1) / 10)
     angle_prev: float = 0
 
     while True:
         sleep(refresh_progress)
-        time, angle, error = latest_time(REYNDIR, f"{name}.out")
+        time, angle, error, done = latest_time(REYNDIR, f"{name}.out")
 
         if angle is None:
             angle = angle_prev
@@ -35,7 +35,7 @@ def serial_monitor(
             progress_bars[position].desc = f"\t\t{reyn_str}-{name}-{angle} Progress"
 
         if error:
-            progress_bars[position].write(f"Analysis encountered Error at {angle}")
+            progress_bars[position].write(f"Analysis encountered Error at {reyn_str} {angle}")
             break
 
         if time is None:
@@ -49,7 +49,11 @@ def serial_monitor(
             progress_bars[position].n = int(time)
             progress_bars[position].refresh(nolock=True)
 
-        if time >= max_iter and abs(angle) >= abs(last):
+        # if time >= max_iter and abs(angle) >= abs(last):
+            # break
+
+        if done:
+            progress_bars[position].write(f"Analysis Finished {reyn_str} {angle}")
             break
 
 
@@ -67,7 +71,7 @@ def parallel_monitor(
     # Create a list to store progress bars
     progress_bars = []
 
-    with ThreadPoolExecutor(max_workers= min(2 * len(reynolds), CPU_TO_USE)) as executor:
+    with ThreadPoolExecutor(max_workers=min(2 * len(reynolds), CPU_TO_USE)) as executor:
         for i, reyn in enumerate(reynolds):
             reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).zfill(8)
             for j, name in enumerate(["pos", "neg"]):

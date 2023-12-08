@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 
 from ICARUS.Database import Foil_Section_exe
+from ICARUS import platform_os
 
 
 def io_file(airfile: str, name: str) -> None:
@@ -30,7 +31,10 @@ def io_file(airfile: str, name: str) -> None:
         f.write(f"BDLAYER.OUT\n")
         f.write(f"SOL{name}.INI\n")
         f.write(f"SOL{name}.TMP\n")
-        f.write(f"zx_{name}\n")
+        if platform_os == 'Windows':
+            f.write(f"TMP_{name}\\ \n")
+        else:
+            f.write(f"TMP_{name}/\n")
         f.write(f"\n")
         f.write(f"\n")
 
@@ -62,7 +66,7 @@ def design_file(
                 f.write(str(ang)[::-1].zfill(7)[::-1])
             else:
                 f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1])
-            from ICARUS.Database import platform_os
+            from ICARUS import platform_os
 
             if platform_os == 'Windows':
                 f.write("\\ \n")
@@ -155,4 +159,5 @@ def setup_f2w(HOMEDIR: str, CASEDIR: str) -> None:
         try:
             os.symlink(src, dst)
         except FileExistsError:
-            pass
+            os.remove(dst)
+            os.symlink(src, dst)

@@ -35,7 +35,7 @@ def hermes(name: str) -> Airplane:
 
     main_wing = Wing_Segment(
         name="wing",
-        airfoil=DB.foils_db.data["NACA4415"],
+        airfoil="NACA4415",
         origin=origin + wing_position,
         orientation=wing_orientation,
         is_symmetric=True,
@@ -62,7 +62,7 @@ def hermes(name: str) -> Airplane:
 
     elevator = Wing_Segment(
         name="elevator",
-        airfoil=DB.foils_db.data["NACA0008"],
+        airfoil="NACA0008",
         origin=origin + elevator_pos,
         orientation=elevator_orientantion,
         is_symmetric=True,
@@ -89,7 +89,7 @@ def hermes(name: str) -> Airplane:
 
     rudder = Wing_Segment(
         name="rudder",
-        airfoil=DB.foils_db.data["NACA0008"],
+        airfoil="NACA0008",
         origin=origin + rudder_position,
         orientation=rudder_orientation,
         is_symmetric=False,

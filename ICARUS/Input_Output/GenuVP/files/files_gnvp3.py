@@ -3,7 +3,6 @@ from io import StringIO
 from io import TextIOWrapper
 from typing import Any
 
-import pandas as pd
 from pandas import DataFrame
 
 from ICARUS.Airfoils.airfoil_polars import Polars
@@ -11,7 +10,6 @@ from ICARUS.Core.formatting import ff2
 from ICARUS.Core.formatting import ff3
 from ICARUS.Core.formatting import ff4
 from ICARUS.Core.formatting import ff5
-from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import GenuVP3_exe
@@ -350,17 +348,18 @@ def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cldFiles(foil_dat: Struct, bodies: list[GenuSurface], solver: str) -> None:
+def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
     """
     Create Polars CL-CD-Cm files for each airfoil
 
     Args:
-        foil_dat (Struct): Foil Database Data containing all airfoils, solvers and reynolds
         bodies (list[GenuSurface]): list of bodies in GenuSurface format
         solver (str): preferred solver
     """
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
+
+        foil_dat = DB.foils_db.data
         try:
             polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
         except KeyError:
@@ -537,6 +536,10 @@ def make_input_files(
     params: GenuParameters,
     solver: str,
 ) -> None:
+    from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
+    from ICARUS.Database import EXTERNAL_DB
+
+    read_polars_2d(EXTERNAL_DB)
     os.chdir(ANGLEDIR)
 
     # Input File
@@ -550,7 +553,7 @@ def make_input_files(
     # BLD FILES
     bldFiles(bodies, params)
     # CLD FILES
-    cldFiles(DB.foils_db.data, bodies, solver)
+    cldFiles(bodies, solver)
     if "gnvp3" not in next(os.walk("."))[2]:
         src: str = GenuVP3_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp3")

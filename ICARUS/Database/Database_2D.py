@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from . import APPHOME
 from . import DB2D
 from . import EXTERNAL_DB
+from ICARUS import APPHOME
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.struct import Struct

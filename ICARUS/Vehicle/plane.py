@@ -56,7 +56,7 @@ class Airplane:
         found_wing: bool = False
         self.S: float = 0
         for surface in surfaces:
-            if surface.name.startswith("wing"):
+            if surface.name.capitalize().startswith("MAIN"):
                 self.main_wing: Wing_Segment = surface
                 self.S += surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
@@ -221,6 +221,7 @@ class Airplane:
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         movement: FloatArray | None = None,
+        thin: bool = False,
     ) -> None:
         """
         Visualize the plane
@@ -259,7 +260,7 @@ class Airplane:
                     mov = np.zeros(3)
 
         for surface in self.surfaces:
-            surface.plot(fig, ax, mov)
+            surface.plot(thin, fig, ax, mov)
         # Add plot for masses
         for m, r,_ in self.masses:
             ax.scatter(
@@ -267,7 +268,7 @@ class Airplane:
                 r[1] + mov[1],
                 r[2] + mov[2],
                 marker="o",
-                s=m * 50.0,
+                s=int(m * 50.0),
                 color="r",
             )
         ax.scatter(
@@ -275,7 +276,7 @@ class Airplane:
             self.CG[1] + mov[1],
             self.CG[2] + mov[2],
             marker="o",
-            s=50.0,
+            s=50,
             color="b",
         )
         plt.show()

@@ -152,6 +152,24 @@ class Wing_Segment:
         self.inertia: FloatArray = np.empty((6), dtype=float)
         self.calculate_inertia(self.mass, self.CG)
 
+    def change_discretization(self, N: int | None = None, M: int | None = None) -> None:
+        if N is not None:
+            self.N = N
+        if M is not None:
+            self.M = M
+        self.create_grid()
+        self.create_strips()
+        self.mean_chords()
+        self.find_area()
+        self.find_volume()
+        self.find_center_mass()
+        self.calculate_inertia(self.mass, self.CG)
+
+    def change_mass(self, mass: float) -> None:
+        """Change Wing Segment Mass"""
+        self.mass = mass
+        self.calculate_inertia(self.mass, self.CG)
+
     @property
     def tip(self) -> FloatArray:
         """Return Tip of Wing. We basically returns the tip strip of the wing."""
@@ -279,6 +297,7 @@ class Wing_Segment:
 
     def plot(
         self,
+        thin: bool = False,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         prev_movement: FloatArray | None = None,
@@ -310,7 +329,11 @@ class Wing_Segment:
 
         for i in np.arange(0, self.N - 1):
             for j in np.arange(0, self.M - 1):
-                for item in [self.panels_lower, self.panels_upper]:
+                if thin:
+                    items = [self.panels]
+                else:
+                    items = [self.panels_lower, self.panels_upper]
+                for item in items:
                     p1, p3, p4, p2 = item[i, j, :, :]
                     xs = np.reshape([p1[0], p2[0], p3[0], p4[0]], (2, 2)) + movement[0]
 
@@ -665,7 +688,7 @@ class Wing_Segment:
     def Iyz(self) -> float:
         return float(self.inertia[5])
 
-    def getGrid(self, which: str = "camber") -> FloatArray:
+    def get_grid(self, which: str = "camber") -> FloatArray:
         """
         Returns the Grid of the Wing.
 
@@ -694,6 +717,8 @@ class Wing_Segment:
             pass
         return grid
 
+    def __str__(self):
+        return f"Wing Segment: {self.name} with {self.N} Panels and {self.M} Panels"
 
 def define_linear_span(
     sp: float,

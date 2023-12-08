@@ -1,14 +1,14 @@
+from multiprocessing import Pool
 from typing import Any
 
 import numpy as np
 from tqdm.auto import tqdm
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
-from ICARUS import CPU_TO_USE
 
+from ICARUS import CPU_TO_USE
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
 from ICARUS.Input_Output.Xfoil.post_process.polars import save_multiple_reyn
 
 
@@ -137,14 +137,12 @@ def multiple_reynolds_parallel(
 ) -> None:
     data: list[FloatArray] = []
 
-    from multiprocessing import Pool
-
     with Pool(processes=CPU_TO_USE) as pool:
         args_list = [(reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
-                pool.imap(single_reynolds_star_run, args_list),
-                total=len(args_list),
+                pool.starmap(single_reynolds_run, args_list),
+                total=len(reynolds),
                 bar_format="\t\tTotal Progres {l_bar}{bar:30}{r_bar}",
                 position=0,
                 leave=True,
@@ -171,13 +169,11 @@ def multiple_reynolds_parallel_seq(
 ) -> None:
     data: list[FloatArray] = []
 
-    from multiprocessing import Pool
-
     with Pool(processes=CPU_TO_USE) as pool:
         args_list = [(reyn, mach, angles, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
-                pool.imap(single_reynolds_star_run_seq, args_list),
+                pool.starmap(single_reynolds_run_seq, args_list),
                 total=len(args_list),
                 bar_format="\t\tTotal Progres {l_bar}{bar:30}{r_bar}",
                 position=0,

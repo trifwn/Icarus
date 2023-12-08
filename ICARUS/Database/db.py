@@ -1,7 +1,7 @@
-from . import APPHOME
 from .AnalysesDB import AnalysesDB
 from .Database_2D import Database_2D
 from .Database_3D import Database_3D
+from ICARUS import APPHOME
 
 
 class Database:

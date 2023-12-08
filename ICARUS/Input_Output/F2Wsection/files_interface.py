@@ -65,9 +65,10 @@ def sequential_run(
                 stderr=fout,
             )
     try:
-        os.rmdir("TMP.dir")
-        os.remove("SOLOUTI*")
-    except (FileNotFoundError, OSError) as error:
+        # os.rmdir("TMP.dir")
+        pass
+        # os.remove("SOLOUTI*")
+    except [FileNotFoundError, OSError] as error:
         pass
 
     sleep(1)

@@ -5,8 +5,8 @@ from typing import Any
 from typing import Optional
 
 from tqdm.auto import tqdm
-from ICARUS import CPU_TO_USE
 
+from ICARUS import CPU_TO_USE
 from ICARUS.Core.types import FloatArray
 from ICARUS.Input_Output.GenuVP.post_process.progress import latest_time
 

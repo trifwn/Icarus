@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_3
@@ -43,7 +45,8 @@ def plot_gnvp_wake(
     A1, B1, C1 = get_wake_data(plane, case)
 
     fig: Figure = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(projection="3d")
+    ax: Axes3D = fig.add_subplot(projection="3d")
+
     ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case}")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
