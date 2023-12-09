@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
 
-def longitudal_stability(
+def longitudal_stability_fd(
     state: "State",
     mode: str = "2D",
 ) -> tuple[dict[Any, float], dict[Any, float], dict[Any, float]]:

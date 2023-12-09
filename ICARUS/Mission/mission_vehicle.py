@@ -5,8 +5,8 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Mission.Trajectory.trajectory import Trajectory
 from ICARUS.Propulsion.engine import Engine
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 class Mission_Vehicle:
@@ -15,7 +15,7 @@ class Mission_Vehicle:
         self.motor: Engine = engine
         self.cldata = DB.vehicles_db.data[airplane.name]
 
-        elevator: Wing_Segment | None = None
+        elevator: Lifting_Surface | None = None
         for surf in airplane.surfaces:
             if surf.name == "tail":
                 self.l_e = surf.origin[0]
@@ -23,7 +23,7 @@ class Mission_Vehicle:
         if elevator is None:
             raise Exception("Elevator not found")
 
-        self.elevator: Wing_Segment = elevator
+        self.elevator: Lifting_Surface = elevator
         self.elevator_max_deflection = 30
         self.Ixx: float = airplane.total_inertia[0]
         self.l_m: float = -0.4
@@ -54,7 +54,14 @@ class Mission_Vehicle:
         aoa = np.rad2deg(aoa)
         cl, cd, cm = self.interpolate_polars(
             aoa,
-            self.cldata[["GNVP7 Potential CL", "GNVP7 Potential CD", "GNVP7 Potential Cm", "AoA"]],
+            self.cldata[
+                [
+                    "GNVP7 Potential CL",
+                    "GNVP7 Potential CD",
+                    "GNVP7 Potential Cm",
+                    "AoA",
+                ]
+            ],
         )
         density = 1.225
         lift = cl * 0.5 * density * velocity**2 * self.airplane.S

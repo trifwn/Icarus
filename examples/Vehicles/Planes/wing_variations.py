@@ -5,10 +5,10 @@ import numpy as np
 from ICARUS.Core.types import DataDict
 from ICARUS.Core.types import FloatArray
 from ICARUS.Core.types import FloatOrListArray
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import define_linear_chord
-from ICARUS.Vehicle.wing_segment import define_linear_span
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Vehicle.utils import define_linear_chord
+from ICARUS.Vehicle.utils import define_linear_span
 
 
 def wing_var_chord_offset(
@@ -39,7 +39,7 @@ def wing_var_chord_offset(
         dtype=float,
     )
 
-    main_wing = Wing_Segment(
+    main_wing = Lifting_Surface(
         name="wing",
         airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
@@ -56,7 +56,7 @@ def wing_var_chord_offset(
         mass=0.670,
     )
     # main_wing.plotWing()
-    lifting_surfaces: list[Wing_Segment] = [main_wing]
+    lifting_surfaces: list[Lifting_Surface] = [main_wing]
     # main_wing.plotWing()
 
     addedMasses: list[tuple[float, FloatArray]] = [

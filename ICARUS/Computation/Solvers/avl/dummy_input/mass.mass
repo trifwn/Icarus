@@ -1,5 +1,5 @@
 #-------------------------------------------------
-#  SuperGee 
+#  SuperGee
 #
 #  Dimensional unit and parameter data.
 #  Mass & Inertia breakdown.
@@ -12,7 +12,7 @@ Lunit = 1 m
 Munit = 1 kg
 Tunit = 1.0 s
 
-#------------------------- 
+#-------------------------
 #  Gravity and density to be used as default values in trim setup (saves runtime typing).
 #  Must be in the unit names given above (m,kg,s).
 g   = 9.81
@@ -28,15 +28,10 @@ rho = 1.225
 #
 #  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz
 #
-   58.0   3.34  12.0  1.05   4400   180   4580    ! right wing       
-   58.0   3.34 -12.0  1.05   4400   180   4580    ! left wing        
+   58.0   3.34  12.0  1.05   4400   180   4580    ! right wing
+   58.0   3.34 -12.0  1.05   4400   180   4580    ! left wing
    16.0  -5.2   0.0   0.0       0    80     80    ! fuselage pod
    6.0  33.0   0.0   2.0      35    39      4    ! rudder
    6.0  33.0   0.0   2.0      35    39      4    ! elevator
    0.0  -8.3   0.0   0.0       0     0      0    ! motor
    0.0  -8.3   0.0   0.0       0     0      0    ! payload
-
-
-
-    
-

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
 
-def lateral_stability(
+def lateral_stability_fd(
     state: "State",
     mode: str = "2D",
 ) -> tuple[dict[str, float], dict[str, float], dict[str, float]]:

@@ -16,8 +16,8 @@ from tabulate import tabulate
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
-from .Stability.lateralFD import lateral_stability
-from .Stability.longitudalFD import longitudal_stability
+from .Stability.lateralFD import lateral_stability_fd
+from .Stability.longitudalFD import longitudal_stability_fd
 from .Stability.stability_derivatives import StabilityDerivativesDS
 from .trim import trim_state
 from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_forces
@@ -157,8 +157,8 @@ class State:
         self.stability_fd()
 
     def stability_fd(self, polar_name: str = "2D") -> None:
-        X, Z, M = longitudal_stability(self, polar_name)
-        Y, L, N = lateral_stability(self, polar_name)
+        X, Z, M = longitudal_stability_fd(self, polar_name)
+        Y, L, N = lateral_stability_fd(self, polar_name)
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
     def plot_eigenvalues(self) -> None:

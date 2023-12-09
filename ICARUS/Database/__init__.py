@@ -44,11 +44,13 @@ if platform_os == "Windows":
     GenuVP7_exe: str = os.path.join(APPHOME, "bin", "gnvp7.exe")
     F2W_exe: str = os.path.join(APPHOME, "bin", "f2w.exe")
     Foil_Section_exe: str = os.path.join(APPHOME, "bin", "foil_section.exe")
+    AVL_exe: str = os.path.join(APPHOME, "bin", "avl.exe")
 elif platform_os == "Linux":
     GenuVP3_exe = os.path.join(APPHOME, "bin", "gnvp3")
     GenuVP7_exe = os.path.join(APPHOME, "bin", "gnvp7")
     F2W_exe = os.path.join(APPHOME, "bin", "f2w")
     Foil_Section_exe = os.path.join(APPHOME, "bin", "foil_section")
+    AVL_exe = os.path.join(APPHOME, "bin", "avl.exe")
 
 # DATABASES ###
 DB2D: str = os.path.join(APPHOME, "Data", "2D")

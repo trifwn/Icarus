@@ -19,13 +19,12 @@ from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParamete
 from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Database.utils import disturbance_to_case
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
 from ICARUS.Flight_Dynamics.state import State
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def gnvp_disturbance_case(
@@ -36,7 +35,7 @@ def gnvp_disturbance_case(
     u_freestream: float,
     angle: float,
     environment: Environment,
-    surfaces: list[Wing_Segment],
+    surfaces: list[Lifting_Surface],
     bodies_dicts: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
@@ -64,7 +63,7 @@ def gnvp_disturbance_case(
         str: Case Done Message
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP_{genu_version}")
     airfoils: list[str] = plane.airfoils
 
     movements: list[list[Movement]] = define_movements(
@@ -152,7 +151,7 @@ def run_pertrubation_serial(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -190,7 +189,7 @@ def run_pertrubation_serial(
         )
         progress_bars.append(pbar)
         folder: str = disturbance_to_case(dst)
-        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP_{genu_version}")
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
         job_monitor = Thread(
             target=serial_monitor,
@@ -243,7 +242,7 @@ def run_pertrubation_parallel(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -282,7 +281,7 @@ def run_pertrubation_parallel(
 
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP_{genu_version}")
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, "Dynamics", folder) for folder in folders]
 
@@ -355,7 +354,7 @@ def sensitivity_serial(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -413,7 +412,7 @@ def sensitivity_parallel(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 

@@ -8,10 +8,10 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane as Plane
-from ICARUS.Vehicle.wing_segment import define_linear_chord
-from ICARUS.Vehicle.wing_segment import define_linear_span
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Vehicle.utils import define_linear_chord
+from ICARUS.Vehicle.utils import define_linear_span
 
 
 def get_bmark_plane(name: str):
@@ -28,7 +28,7 @@ def get_bmark_plane(name: str):
         dtype=float,
     )
 
-    Simplewing = Wing_Segment(
+    Simplewing = Lifting_Surface(
         name=name,
         airfoil=airfoils["NACA0015"],
         origin=origin + wing_position,

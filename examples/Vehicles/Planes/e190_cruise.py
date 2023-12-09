@@ -6,10 +6,10 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import define_linear_chord
-from ICARUS.Vehicle.wing_segment import define_linear_span
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Vehicle.utils import define_linear_chord
+from ICARUS.Vehicle.utils import define_linear_span
 
 
 def e190_cruise(name: str) -> Airplane:
@@ -42,7 +42,7 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_1 = Wing_Segment(
+    wing_1 = Lifting_Surface(
         name="wing_1",
         airfoil=naca64418,
         origin=origin + wing_position,
@@ -69,7 +69,7 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_2 = Wing_Segment(
+    wing_2 = Lifting_Surface(
         name="wing_2",
         airfoil=naca64418,
         origin=origin + wing_2_pos,
@@ -96,7 +96,7 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_3 = Wing_Segment(
+    wing_3 = Lifting_Surface(
         name="wing_3",
         airfoil=naca64418,
         origin=origin + wing_3_pos,
@@ -114,7 +114,7 @@ def e190_cruise(name: str) -> Airplane:
     )
     # rudder.plotWing()
 
-    lifting_surfaces: list[Wing_Segment] = [wing_1, wing_2, wing_3]
+    lifting_surfaces: list[Lifting_Surface] = [wing_1, wing_2, wing_3]
     airplane: Airplane = Airplane(name, lifting_surfaces)
 
     # Define the surface area of the main wing

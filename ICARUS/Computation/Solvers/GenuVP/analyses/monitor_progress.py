@@ -20,7 +20,7 @@ def serial_monitor(
     refresh_progress: float,
     genu_version: int,
 ) -> None:
-    sleep(secs=1 + (position + 1) / 10)
+    sleep(1 + (position + 1) / 10)
 
     while True:
         sleep(refresh_progress)

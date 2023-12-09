@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 
 
 class Merged_Wing:
@@ -19,7 +19,7 @@ class Merged_Wing:
     def __init__(
         self,
         name: str,
-        wing_segments: list[Wing_Segment],
+        wing_segments: list[Lifting_Surface],
         symmetries: list[bool] | None = None,
     ) -> None:
         """
@@ -27,7 +27,7 @@ class Merged_Wing:
 
         Args:
             name (str): Name of the wing e.g. Main Wing
-            wing_segments (list[Wing_Segment]): List of Wing_Segments
+            wing_segments (list[Lifting_Surface]): List of Wing_Segments
             symmetries (_type_): Symmetries that the wing has
         """
 
@@ -62,7 +62,7 @@ class Merged_Wing:
         """
 
         fig: Figure = plt.figure()
-        ax: Axes3D = fig.add_subplot(111, projection='3d')
+        ax: Axes3D = fig.add_subplot(111, projection="3d")
         ax.set_title("Wing")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -71,7 +71,7 @@ class Merged_Wing:
         ax.view_init(30, 150)
 
         # Plot the wing grid
-        for grid, c in zip([self.grid_lower, self.grid_upper], ['b', 'r']):
+        for grid, c in zip([self.grid_lower, self.grid_upper], ["b", "r"]):
             X = grid[:, 0]
             Y = grid[:, 1]
             Z = grid[:, 2]
@@ -82,7 +82,7 @@ class Merged_Wing:
     def export_grid(self, filename: str) -> None:
         "Writes the grid to a file"
 
-        with open(filename, 'w') as file:
+        with open(filename, "w") as file:
             file.write("X,Y,Z\n")
             for grid in [self.grid]:
                 for point in grid:

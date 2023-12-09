@@ -8,7 +8,7 @@ ICARUS Vehicles Package
     :noindex:
 
     ICARUS.Vehicle.strip
-    ICARUS.Vehicle.wing_segment
+    ICARUS.Vehicle.lifting_surface
     ICARUS.Vehicle.merged_wing
     ICARUS.Vehicle.plane
     ICARUS.Vehicle.surface_connections
@@ -36,7 +36,7 @@ Wing Segment
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Vehicle.wing_segment - Wing Segment class definition
+    ICARUS.Vehicle.lifting_surface - Wing Segment class definition
 
 Merged Wing
 ===========
@@ -64,6 +64,6 @@ Surface Connections
 
 """
 
-__all__ = ['strip', 'wing_segment', "merged_wing", "plane", "surface_connections"]
+__all__ = ["strip", "lifting_surface", "merged_wing", "plane", "surface_connections"]
 
-from . import strip, wing_segment, merged_wing, plane, surface_connections
+from . import strip, lifting_surface, merged_wing, plane, surface_connections

@@ -234,7 +234,7 @@ class Database_2D:
                 exists = True
         if not exists:
             airfoil.save_selig_te(AFDIR)
-            sleep(secs=0.1)
+            sleep(0.1)
 
         reynolds_str: str = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3)
 

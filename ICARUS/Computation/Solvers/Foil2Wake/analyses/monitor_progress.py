@@ -21,7 +21,7 @@ def serial_monitor(
     last: float,
     refresh_progress: float = 2,
 ) -> None:
-    sleep(secs=5 + (position + 1) / 10)
+    sleep(5 + (position + 1) / 10)
     angle_prev: float = 0
 
     while True:

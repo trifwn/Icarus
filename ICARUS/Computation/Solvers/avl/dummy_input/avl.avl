@@ -1,8 +1,8 @@
-# 
+#
 # Note : check consistency of area unit and length units in this file
 # Note : check consistency with inertia units of the .mass file
-# 
-# 
+#
+#
 hermes
 0.0                                 | Mach
 0     0     0.0                     | iYsym  iZsym  Zsym
@@ -51,7 +51,7 @@ NACA4415.dat
 SECTION                                                     |  (keyword)
    0.0000    1.1300    0.0000    0.0720   0.000   10    1   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]
 
-AFIL 
+AFIL
 NACA4415.dat
 
 
@@ -96,7 +96,7 @@ NACA0008.dat
 SECTION                                                     |  (keyword)
    0.5400    0.1690    0.0000    0.0300   0.000    8    1   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]
 
-AFIL 
+AFIL
 NACA0008.dat
 
 
@@ -138,9 +138,5 @@ NACA0008.dat
 SECTION                                                     |  (keyword)
    0.4700    0.0000    0.0100    0.2000   0.000    8    0   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]
 
-AFIL 
+AFIL
 NACA0008.dat
-
-
-
-

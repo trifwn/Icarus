@@ -21,8 +21,8 @@ from ICARUS.Database import DB
 from ICARUS.Database import DB3D
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Environment.definition import Environment
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def gnvp_angle_case(
@@ -57,7 +57,7 @@ def gnvp_angle_case(
         str: Case Done Message
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP{genu_version}")
     airfoils: list[str] = plane.airfoils
 
     folder: str = angle_to_case(angle)
@@ -131,7 +131,7 @@ def run_gnvp_angles(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -147,7 +147,7 @@ def run_gnvp_angles(
     )
     print("Running Angles in Sequential Mode")
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP{genu_version}")
     progress_bars: list[tqdm] = []
     for i, angle in enumerate(angles):
         folder: str = angle_to_case(angle)
@@ -227,7 +227,7 @@ def run_gnvp_angles_parallel(
     bodies_dict: list[GenuSurface] = []
 
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
     for i, surface in enumerate(surfaces):
@@ -268,7 +268,7 @@ def run_gnvp_angles_parallel(
             ]
             pool.starmap(gnvp_angle_case, args_list)
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP{genu_version}")
     folders: list[str] = [angle_to_case(angle) for angle in angles]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, folder) for folder in folders]
 

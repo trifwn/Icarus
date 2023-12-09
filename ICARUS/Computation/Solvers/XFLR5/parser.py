@@ -7,10 +7,10 @@ from xmltodict import parse
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import EXTERNAL_DB
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import define_linear_chord
-from ICARUS.Vehicle.wing_segment import define_linear_span
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Vehicle.utils import define_linear_chord
+from ICARUS.Vehicle.utils import define_linear_span
 
 
 def parse_xfl_project(filename: str) -> Airplane:
@@ -60,7 +60,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     else:
         wings_xflr = [plane["wing"]]
 
-    lifting_surfaces: list[Wing_Segment] = []
+    lifting_surfaces: list[Lifting_Surface] = []
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     for wing in wings_xflr:
         wing_position: FloatArray = np.array(
@@ -177,7 +177,7 @@ def parse_xfl_project(filename: str) -> Airplane:
 
                 span = 2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
                 pos = origin + wing_position + section_position  # - np.array((chord_prev / 4, 0, 0))
-                surf = Wing_Segment(
+                surf = Lifting_Surface(
                     name=f"{name}_{i}",
                     airfoil=airfoil_prev,  # Should interpolate. RN there is only taking the prev airfoil
                     origin=pos,
@@ -198,7 +198,11 @@ def parse_xfl_project(filename: str) -> Airplane:
                     section_position += np.array([0, span / 2, np.sin(dihedral_prev * np.pi / 180) * span / 2])
                 else:
                     section_position += np.array(
-                        [0, np.cos(dihedral * np.pi / 180) * span, np.sin(dihedral * np.pi / 180) * span],
+                        [
+                            0,
+                            np.cos(dihedral * np.pi / 180) * span,
+                            np.sin(dihedral * np.pi / 180) * span,
+                        ],
                     )
                 section_position[0] = offset
 

@@ -1,22 +1,45 @@
-import numpy as np
 import os
+import shutil
+import subprocess
+from genericpath import exists
+from math import e
 
-from numpy import deg2rad, rad2deg
+import numpy as np
+from numpy import deg2rad
+from numpy import floating
+from numpy import rad2deg
 
-from avl import Dir
+from ICARUS.Computation.Solvers.AVL import Dir
+from ICARUS.Core.types import FloatArray
+from ICARUS.Database import AVL_exe
+from ICARUS.Vehicle.plane import Airplane
+
+
+def split_file(input_file, output_prefix, delimiter):
+    with open(input_file) as infile:
+        data = infile.read()
+
+    parts = data.split(delimiter)
+
+    for i, part in enumerate(parts, start=1):
+        output_file = f"{output_prefix}_{i}.txt"
+        with open(output_file, "w") as outfile:
+            outfile.write(part)
 
 
 # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL
-def implicit_eigs(plane):
-    pl_dir = f"{plane.name}_genD"
-    polar_dir = f"{plane.name}_polarD"
-    eig_dir = f"{plane.name}_eigD"
-    log = f"{eig_dir}/{plane.name}_eiglog.txt"
-    os.system(f"mkdir {eig_dir}")
+def implicit_eigs(plane: Airplane):
+    PLANE_DIR = f"{plane.name}_genD"
+    CASEDIR = f"{plane.name}_polarD"
+    DYNAMICS_DIR = f"{plane.name}_eigD"
+    DIRNOW: str = os.getcwd()
+
+    log = f"{DYNAMICS_DIR}/{plane.name}_eiglog.txt"
+    os.makedirs(DYNAMICS_DIR, exist_ok=True)
 
     f_li = []
-    f_li.append(f"load {pl_dir}/{plane.name}.avl")
-    f_li.append(f"mass {pl_dir}/{plane.name}.mass")
+    f_li.append(f"load {PLANE_DIR}/{plane.name}.avl")
+    f_li.append(f"mass {PLANE_DIR}/{plane.name}.mass")
     f_li.append("MSET")
     f_li.append("0")
     f_li.append("oper")
@@ -37,19 +60,24 @@ def implicit_eigs(plane):
     f_li.append("    ")
     f_li.append("quit")
     ar = np.array(f_li)
-    np.savetxt(f"{eig_dir}/{plane.name}_mode_scr", ar, delimiter=" ", fmt="%s")
-    os.system(f"./avl.exe < {eig_dir}/{plane.name}_mode_scr > {log}")
+    np.savetxt(f"{DYNAMICS_DIR}/{plane.name}_mode_scr", ar, delimiter=" ", fmt="%s")
 
-    os.getcwd()
+    input_f = os.path.join(DYNAMICS_DIR, f"{plane.name}_mode_scr")
+    with open(input_f, encoding="utf-8") as fin:
+        with open(log, "w", encoding="utf-8") as fout:
+            res: int = subprocess.check_call(
+                [os.path.join(DYNAMICS_DIR, "avl")],
+                stdin=fin,
+                stdout=fout,
+                stderr=fout,
+            )
 
-    print(os.getcwd())
     char = "'{*}'"
-    os.system(f"csplit -z {log} /1:/ {char}")
+    split_file(log, "xx", char)
     p = "xx10"
-    f = open(p)
-    lines = f.readlines()
-    f.close()
-    print(os.getcwd())
+    with open(p, "w", encoding="utf-8") as f:
+        lines = f.readlines()
+
     long_li = []
     lat_li = []
     ind_li = np.arange(0, 8, 1) * 6
@@ -59,9 +87,14 @@ def implicit_eigs(plane):
             lat_li.append(vals[2])
         elif np.mean(np.abs(vals[1])) == 0:
             long_li.append(vals[2])
-    os.system("rm -rf xx*")
 
-    # )
+    # Remove the temporary files
+    # Get all the files in the directory
+    # Filter all files that contain the string 'xx'
+    files: list[str] = os.listdir(DIRNOW)
+    for file in files:
+        if file.startswith("xx"):
+            os.remove(file)
 
     return long_li, lat_li
 
@@ -70,15 +103,11 @@ def implicit_eigs(plane):
 def eigpro(st, lines):
     st = int(st)
     mode = np.array([float(lines[st][10:22]), float(lines[st][24:32])])
-    long_vecs = np.zeros((4, 2))
-    lat_vecs = np.zeros((4, 2))
+    long_vecs = np.zeros((4, 2), dtype=floating)
+    lat_vecs = np.zeros((4, 2), dtype=floating)
     for i in range(0, 4):
-        long_vecs[i, :] = np.array(
-            [float(lines[st + i + 1][9:15]), float(lines[st + i + 1][20:26])]
-        )
-        lat_vecs[i, :] = np.array(
-            [float(lines[st + i + 1][41:47]), float(lines[st + i + 1][52:58])]
-        )
+        long_vecs[i, :] = np.array([float(lines[st + i + 1][9:15]), float(lines[st + i + 1][20:26])])
+        lat_vecs[i, :] = np.array([float(lines[st + i + 1][41:47]), float(lines[st + i + 1][52:58])])
 
     return long_vecs, lat_vecs, mode
 
@@ -112,8 +141,8 @@ def trim_conditions(plane):
     trim_path = f"{plane.name}_trimD"
     pl_dir = f"{plane.name}_genD"
     if os.path.isdir(f"{plane.name}_trimD"):
-        os.system(f"rm -rf {trim_path}")
-    os.system(f"mkdir {trim_path}")
+        os.rmdir(trim_path)
+    os.makedirs(trim_path)
     li = []
 
     li.append(f"load {pl_dir}/{plane.name}.avl")
@@ -140,29 +169,97 @@ def trim_conditions(plane):
     ar = np.array(li)
     np.savetxt(f"{trim_path}/{plane.name}_trimmed_scr", ar, delimiter=" ", fmt="%s")
     log = f"{trim_path}/{plane.name}_trim_log.txt"
-    os.system(f"./avl.exe < {trim_path}/{plane.name}_trimmed_scr > {log}")
+
+    input_f = os.path.join(trim_path, f"{plane.name}_trimmed_scr")
+    with open(input_f, encoding="utf-8") as fin:
+        with open(log, "w", encoding="utf-8") as fout:
+            res = subprocess.check_call(
+                [AVL_exe],
+                stdin=fin,
+                stdout=fout,
+                stderr=fout,
+            )
 
     char = "'{*}'"
-    os.system(f"csplit -z {log} /Setup/ {char}")
-    p = f"xx02"
-    f = open(p)
-    lines = f.readlines()
-    f.close()
-    os.system("rm -rf xx*")
+    log = "your_log_file.txt"  # Replace with the actual log file path
+
+    # Split the log file using Python
+    with open(log) as infile:
+        data = infile.read()
+
+    parts = data.split("Setup")
+
+    for i, part in enumerate(parts, start=2):  # Start from 2 because the first part is empty
+        output_file = f"xx{i:02d}"
+        with open(output_file, "w") as outfile:
+            outfile.write(part)
+
+    # Read lines from xx02
+    p = "xx02"
+    with open(p) as f:
+        lines = f.readlines()
+
+    # Remove files starting with "xx"
+    for filename in os.listdir():
+        if filename.startswith("xx"):
+            os.remove(filename)
+
     V = float(lines[5][22:28])
     aoa = float(lines[68][10:19])
     return aoa, V
 
 
 # FUNCTION FOR THE CALCULATION OF STABILITY DERIVATIVES VIA FINITED DIFEERENCE METHOD
-def finite_difs(plane, u_ar, v_ar, w_ar, q_ar, p_ar, r_ar, trim_conditions):
+def finite_difs(
+    plane: Airplane,
+    u_ar: FloatArray,
+    v_ar: FloatArray,
+    w_ar: FloatArray,
+    q_ar: FloatArray,
+    p_ar: FloatArray,
+    r_ar: FloatArray,
+    trim_conditions: FloatArray,
+):
+    """
+    This function calculates the stability derivatives of the airplane using the finite difference method.
+    For each of the six degrees of freedom, the function calculates the stability derivatives for the
+    positive and negative perturbations of the state variable. The function then saves the results in
+    a file named after the perturbation and the state variable. Variables:
+        -u: Array of perturbations in the x-axis velocity.
+        -v: Array of perturbations in the y-axis velocity.
+        -w: Array of perturbations in the z-axis velocity.
+        -q: Array of perturbations in the pitch rate.
+        -p: Array of perturbations in the roll rate.
+        -r: Array of perturbations in the yaw rate.
+
+    Args:
+        plane (Airplane): Airplane object.
+        u_ar (FloatArray): Array of perturbations in the x-axis velocity. The perturbations are taken as central differences around the triim.
+        v_ar (FloatArray): Array of perturbations in the y-axis velocity. The perturbations are taken as central differences around the triim.
+        w_ar (FloatArray): Array of perturbations in the z-axis velocity. The perturbations are taken as central differences around the triim.
+        q_ar (FloatArray): Array of perturbations in the pitch rate. The perturbations are taken as central differences around the triim.
+        p_ar (FloatArray): Array of perturbations in the roll rate. The perturbations are taken as central differences around the triim.
+        r_ar (FloatArray): Array of perturbations in the yaw rate. The perturbations are taken as central differences around the triim.
+        trim_conditions (FloatArray): Array containing the trim conditions of the airplane. The array is of the form [alpha, V].
+    """
     pl_dir = f"{plane.name}_genD"
     dif_path = f"{plane.name}_difs"
     case_num = 0
 
-    if os.path.isdir(dif_path):
-        os.system(f"rm -rf {dif_path}")
-    os.system(f"mkdir {dif_path}")
+    u_ar = np.array(u_ar)
+    v_ar = np.array(v_ar)
+    w_ar = np.array(w_ar)
+    q_ar = np.array(q_ar)
+    p_ar = np.array(p_ar)
+    r_ar = np.array(r_ar)
+
+    # Check for empty arrays
+    for arr in [u_ar, v_ar, w_ar, q_ar, p_ar, r_ar]:
+        if arr.size == 0:
+            raise ValueError("Empty array")
+
+    os.makedirs(dif_path, exist_ok=True)
+
     for w in w_ar:
         li = []
         li.append(f"load {pl_dir}/{plane.name}.avl")
@@ -257,6 +354,7 @@ def finite_difs(plane, u_ar, v_ar, w_ar, q_ar, p_ar, r_ar, trim_conditions):
         li.append(b_q)
 
         ar_3 = np.array(li)
+
     for v in v_ar:
         li = []
 
@@ -371,21 +469,41 @@ def finite_difs(plane, u_ar, v_ar, w_ar, q_ar, p_ar, r_ar, trim_conditions):
         li.append("    ")
         li.append("quit")
         ar_6 = np.array(li)
+
     ar_6 = np.concatenate((ar_1, ar_2, ar_3, ar_4, ar_5, ar_6))
     np.savetxt(f"{plane.name}_difs_script", ar_6, delimiter=" ", fmt="%s")
 
-    os.system(f"./avl.exe < {plane.name}_difs_script ")
+    with open(f"{plane.name}_difs_script", encoding="utf-8") as fin:
+        res: int = subprocess.check_call(
+            [AVL_exe],
+            stdin=fin,
+        )
 
-    os.system(
-        f"mv {b_q} {f_q} {b_u} {f_u} {b_w} {f_w} {b_p} {f_p} {b_v} {f_v} {b_r} {f_r} {plane.name}_difs_script ./{dif_path}"
-    )
+    for item in [
+        b_q,
+        f_q,
+        b_u,
+        f_u,
+        b_w,
+        f_w,
+        b_p,
+        f_p,
+        b_v,
+        f_v,
+        b_r,
+        f_r,
+        f"{plane.name}_difs_script",
+    ]:
+        if os.path.isfile(item):
+            # copy the file to the dif_path
+            shutil.copy(item, dif_path)
+
+            os.remove(item)
 
 
 # LONGITUDAL STATE MATRIX USING FINITE DIFFERENCE STABILITY DERIVATIVES -
 # EXECUTION OF POSTPRROCESSING FUNCTION NECESSARY
-def long_mat(
-    plane, environment, aoa_trim, trim_Vel, u_dict, I_li, w_dict, q_dict, span=4.4
-):
+def long_mat(plane, environment, aoa_trim, trim_Vel, u_dict, I_li, w_dict, q_dict, span=4.4):
     mass = plane.M
     rho = environment.air_density
     g = environment.GRAVITY
@@ -479,9 +597,7 @@ def long_mat(
 
 
 # LATERAL STATE MATRIX USING FINITE DIFFERENCE STABILITY DERIVATIVES
-def lat_mat(
-    plane, environment, aoa_trim, trim_Vel, v_dict, I_li, p_dict, r_dict, span=4.4
-):
+def lat_mat(plane, environment, aoa_trim, trim_Vel, v_dict, I_li, p_dict, r_dict, span=4.4):
     # good inc = 0.005*U
 
     mass = plane.M
@@ -551,28 +667,16 @@ def lat_mat(
     state_mat = np.zeros((4, 4))
 
     state_mat[0, 0] = Y_v / mass
-    state_mat[1, 0] = (I_li[2] * l_v + (I_li[3]) * n_v) / (
-        I_li[0] * I_li[2] - I_li[3] ** 2
-    )
-    state_mat[2, 0] = (I_li[0] * n_v + (I_li[3]) * l_v) / (
-        I_li[0] * I_li[2] - I_li[3] ** 2
-    )
+    state_mat[1, 0] = (I_li[2] * l_v + (I_li[3]) * n_v) / (I_li[0] * I_li[2] - I_li[3] ** 2)
+    state_mat[2, 0] = (I_li[0] * n_v + (I_li[3]) * l_v) / (I_li[0] * I_li[2] - I_li[3] ** 2)
 
     state_mat[0, 1] = (Y_p + mass * W_e) / mass
-    state_mat[1, 1] = (I_li[2] * l_p + (I_li[3]) * n_p) / (
-        I_li[0] * I_li[2] - I_li[3] ** 2
-    )
-    state_mat[2, 1] = (I_li[0] * n_p + -(I_li[3]) * l_p) / (
-        I_li[0] * I_li[2] - I_li[3] ** 2
-    )
+    state_mat[1, 1] = (I_li[2] * l_p + (I_li[3]) * n_p) / (I_li[0] * I_li[2] - I_li[3] ** 2)
+    state_mat[2, 1] = (I_li[0] * n_p + -(I_li[3]) * l_p) / (I_li[0] * I_li[2] - I_li[3] ** 2)
 
     state_mat[0, 2] = (Y_r - mass * U_e) / mass
-    state_mat[1, 2] = (I_li[2] * l_r + (I_li[3]) * n_r) / (
-        I_li[0] * I_li[2] - I_li[3] ** 2
-    )
-    state_mat[2, 2] = (I_li[0] * n_r + (I_li[3]) * l_r) / (
-        I_li[0] * I_li[2] - I_li[3] ** 2
-    )
+    state_mat[1, 2] = (I_li[2] * l_r + (I_li[3]) * n_r) / (I_li[0] * I_li[2] - I_li[3] ** 2)
+    state_mat[2, 2] = (I_li[0] * n_r + (I_li[3]) * l_r) / (I_li[0] * I_li[2] - I_li[3] ** 2)
 
     state_mat[3, 0] = 0
     state_mat[3, 1] = 1

@@ -12,8 +12,8 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Core.types import FloatOrListArray
 from ICARUS.Flight_Dynamics.disturbances import Disturbance
 from ICARUS.Flight_Dynamics.state import State
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.surface_connections import Surface_Connection
-from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 jsonpickle_pd.register_handlers()
 
@@ -22,7 +22,7 @@ class Airplane:
     def __init__(
         self,
         name: str,
-        surfaces: list[Wing_Segment],
+        surfaces: list[Lifting_Surface],
         disturbances: list[Disturbance] | None = None,
         orientation: FloatOrListArray | None = None,
     ) -> None:
@@ -37,7 +37,7 @@ class Airplane:
         """
         self.name: str = name
         self.CASEDIR: str = name
-        self.surfaces: list[Wing_Segment] = surfaces
+        self.surfaces: list[Lifting_Surface] = surfaces
 
         if disturbances is None:
             self.disturbances: list[Disturbance] = []
@@ -57,7 +57,7 @@ class Airplane:
         self.S: float = 0
         for surface in surfaces:
             if surface.name.capitalize().startswith("MAIN"):
-                self.main_wing: Wing_Segment = surface
+                self.main_wing: Lifting_Surface = surface
                 self.S += surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
                 self.aspect_ratio: float = surface.aspect_ratio
@@ -72,12 +72,12 @@ class Airplane:
             self.span = surfaces[0].span
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.masses: list[tuple[float, FloatArray,str]] = []
+        self.masses: list[tuple[float, FloatArray, str]] = []
         self.moments: list[FloatArray] = []
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, FloatArray] = (surface.mass, surface.CG,surface.name)
+            mass: tuple[float, FloatArray] = (surface.mass, surface.CG, surface.name)
             mom = surface.inertia
 
             self.M += surface.mass
@@ -94,8 +94,8 @@ class Airplane:
         self.connections: dict[str, Surface_Connection] = {}
         self.register_connections()
 
-    def get_seperate_surfaces(self) -> list[Wing_Segment]:
-        surfaces: list[Wing_Segment] = []
+    def get_seperate_surfaces(self) -> list[Lifting_Surface]:
+        surfaces: list[Lifting_Surface] = []
         for surface in self.surfaces:
             if surface.is_symmetric:
                 l, r = surface.split_symmetric_wing()
@@ -138,7 +138,7 @@ class Airplane:
 
     def add_point_masses(
         self,
-        masses: list[tuple[float, FloatArray,str]],
+        masses: list[tuple[float, FloatArray, str]],
     ) -> None:
         """
         Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
@@ -192,7 +192,7 @@ class Airplane:
             I_xy += inertia[4]
             I_yz += inertia[5]
 
-        for m, r_bod , _ in self.masses:
+        for m, r_bod, _ in self.masses:
             r = point - r_bod
             I_xx += m * (r[1] ** 2 + r[2] ** 2)
             I_yy += m * (r[0] ** 2 + r[2] ** 2)
@@ -262,7 +262,7 @@ class Airplane:
         for surface in self.surfaces:
             surface.plot(thin, fig, ax, mov)
         # Add plot for masses
-        for m, r,_ in self.masses:
+        for m, r, _ in self.masses:
             ax.scatter(
                 r[0] + mov[0],
                 r[1] + mov[1],

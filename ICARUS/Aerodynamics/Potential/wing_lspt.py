@@ -16,8 +16,8 @@ from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Environment.definition import Environment
+from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 class Wing_LSPT:
@@ -43,7 +43,7 @@ class Wing_LSPT:
         self.visc: float = environment.air_dynamic_viscosity
 
         # Store the wing segments
-        self.wing_segments: list[Wing_Segment] = plane.surfaces
+        self.wing_segments: list[Lifting_Surface] = plane.surfaces
 
         # Add the ground effect distance ! NOT IMPLEMENTED AS OF NOW
         self.ground_effect_dist: float = ground_clearence
@@ -56,7 +56,7 @@ class Wing_LSPT:
         self.wake_geom_type: str = wake_geom_type
 
         self.N: int = 0
-        self._wing_segments: list[Wing_Segment] = plane.surfaces
+        self._wing_segments: list[Lifting_Surface] = plane.surfaces
         self.M: int = plane.surfaces[0].M
         self.is_symmetric: bool = True
 
@@ -84,22 +84,22 @@ class Wing_LSPT:
 
         # find maximum chord to set wake distance
         max_chord: float = 0
-        for wing_segment in self.wing_segments:
-            if np.max(wing_segment._chord_dist) > max_chord:
-                max_chord = float(np.max(wing_segment._chord_dist))
+        for lifting_surface in self.wing_segments:
+            if np.max(lifting_surface._chord_dist) > max_chord:
+                max_chord = float(np.max(lifting_surface._chord_dist))
         self.max_chord: float = max_chord
 
         # Get the angle of the trailing edge of each wing segment
         te_angle_dist: list[FloatArray] = []
-        for wing_segment in self.wing_segments:
-            airfoil: Airfoil = wing_segment.airfoil
+        for lifting_surface in self.wing_segments:
+            airfoil: Airfoil = lifting_surface.airfoil
             # The trailing edge is the last point of the airfoil
             # We will get the angle of the trailing edge by getting numerical derivative
             # of the airfoil coordinates.
             # We will use the last 3 points to get the derivative
             x: FloatArray = airfoil._x_lower[-3:]
             y: FloatArray = airfoil.camber_line(x)
-            dydx: FloatArray = np.repeat(np.gradient(y, x), wing_segment.N)
+            dydx: FloatArray = np.repeat(np.gradient(y, x), lifting_surface.N)
             te_angle_dist.append(np.arctan(dydx))
         self.te_angle_dist: FloatArray = np.concatenate(te_angle_dist)
 
