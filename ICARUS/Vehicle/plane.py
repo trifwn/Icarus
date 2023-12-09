@@ -72,12 +72,12 @@ class Airplane:
             self.span = surfaces[0].span
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.masses: list[tuple[float, FloatArray]] = []
+        self.masses: list[tuple[float, FloatArray,str]] = []
         self.moments: list[FloatArray] = []
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, FloatArray] = (surface.mass, surface.CG)
+            mass: tuple[float, FloatArray] = (surface.mass, surface.CG,surface.name)
             mom = surface.inertia
 
             self.M += surface.mass
@@ -138,7 +138,7 @@ class Airplane:
 
     def add_point_masses(
         self,
-        masses: list[tuple[float, FloatArray]],
+        masses: list[tuple[float, FloatArray,str]],
     ) -> None:
         """
         Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
@@ -162,7 +162,7 @@ class Airplane:
         y_cm = 0
         z_cm = 0
         self.M = 0
-        for m, r in self.masses:
+        for m, r, _ in self.masses:
             self.M += m
             x_cm += m * r[0]
             y_cm += m * r[1]
@@ -192,7 +192,7 @@ class Airplane:
             I_xy += inertia[4]
             I_yz += inertia[5]
 
-        for m, r_bod in self.masses:
+        for m, r_bod , _ in self.masses:
             r = point - r_bod
             I_xx += m * (r[1] ** 2 + r[2] ** 2)
             I_yy += m * (r[0] ** 2 + r[2] ** 2)
@@ -262,7 +262,7 @@ class Airplane:
         for surface in self.surfaces:
             surface.plot(thin, fig, ax, mov)
         # Add plot for masses
-        for m, r in self.masses:
+        for m, r,_ in self.masses:
             ax.scatter(
                 r[0] + mov[0],
                 r[1] + mov[1],
