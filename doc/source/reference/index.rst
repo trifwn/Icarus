@@ -9,13 +9,13 @@ ICARUS Documentation
    :titlesonly:
 
    ICARUS                  <main_namespace>
-   ICARUS.Workers          <ICARUS.Workers>
+   ICARUS.Computation          <ICARUS.Computation>
    ICARUS.Solvers          <ICARUS.Solvers>
    ICARUS.Airfoils         <ICARUS.Airfoils>
    ICARUS.Vehicle          <ICARUS.Vehicle>
    ICARUS.Environment      <ICARUS.Environment>
    ICARUS.Database         <ICARUS.Database>
-   ICARUS.Input_Output     <ICARUS.Input_Output>
+   ICARUS.Solvers     <ICARUS.Solvers>
    ICARUS.Aerodynamics     <ICARUS.Aerodynamics>
    ICARUS.Conceptual       <ICARUS.Conceptual>
    ICARUS.Flight_Dynamics  <ICARUS.Flight_Dynamics>
@@ -26,13 +26,13 @@ ICARUS Documentation
 
 The modules of ICARUS are organized in a hierarchical structure. The main namespace is `ICARUS` and it contains the following sub-namespaces:
 
-* :doc:`ICARUS.Workers`
+* :doc:`ICARUS.Computation`
 * :doc:`ICARUS.Solvers`
 * :doc:`ICARUS.Airfoils`
 * :doc:`ICARUS.Vehicle`
 * :doc:`ICARUS.Environment`
 * :doc:`ICARUS.Database`
-* :doc:`ICARUS.Input_Output`
+* :doc:`ICARUS.Solvers`
 * :doc:`ICARUS.Aerodynamics`
 * :doc:`ICARUS.Conceptual`
 * :doc:`ICARUS.Flight_Dynamics`

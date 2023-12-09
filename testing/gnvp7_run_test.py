@@ -2,10 +2,10 @@ import time
 
 import numpy as np
 
+from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Workers.solver import Solver
 
 
 def gnvp7_run(mode: str = "Parallel") -> None:
@@ -20,7 +20,7 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     from ICARUS.Environment.definition import EARTH_ISA
 
     # Get Solver
-    from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
+    from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
 
     gnvp7: Solver = get_gnvp7()
 

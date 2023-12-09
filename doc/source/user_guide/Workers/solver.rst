@@ -1,2 +1,2 @@
-ICARUS.Workers.solver module
+ICARUS.Computation.Solvers.solver module
 =============================

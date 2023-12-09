@@ -2,10 +2,10 @@ import time
 
 import numpy as np
 
+from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Workers.solver import Solver
 
 
 def lspt_run() -> None:
@@ -20,7 +20,7 @@ def lspt_run() -> None:
     from ICARUS.Environment.definition import EARTH_ISA
 
     # Get Solver
-    from ICARUS.Solvers.Airplane.lspt import get_lspt
+    from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
 
     lspt: Solver = get_lspt()
 

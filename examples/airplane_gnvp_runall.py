@@ -8,13 +8,13 @@ import time
 import numpy as np
 from pandas import DataFrame
 
+from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Workers.solver import Solver
 
 
 def main() -> None:
@@ -22,7 +22,7 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
+    from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
     from ICARUS.Database import EXTERNAL_DB
 
     read_polars_2d(EXTERNAL_DB)
@@ -40,7 +40,7 @@ def main() -> None:
     # planes.append(embraer_cr)
     # planes.append(embraer_to)
 
-    from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
+    from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
 
     filename: str = "Data/3d_Party/plane_1.xml"
     airplane = parse_xfl_project(filename)
@@ -64,11 +64,11 @@ def main() -> None:
     # Get Solver
     GNVP_VERSION = 3
     if GNVP_VERSION == 7:
-        from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
+        from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
 
         gnvp: Solver = get_gnvp7()
     elif GNVP_VERSION == 3:
-        from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
+        from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
 
         gnvp = get_gnvp3()
     else:

@@ -15,19 +15,23 @@ from inquirer import Text
 
 from .cli_home import cli_home
 from ICARUS.Airfoils.airfoil import Airfoil
+from ICARUS.Computation.Solvers.Foil2Wake.f2w_section import get_f2w_section
+from ICARUS.Computation.Solvers.OpenFoam.open_foam import get_open_foam
+from ICARUS.Computation.Solvers.solver import Solver
+from ICARUS.Computation.Solvers.Xfoil.xfoil import get_xfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
-from ICARUS.Solvers.Airfoil.f2w_section import get_f2w_section
-from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
-from ICARUS.Solvers.Airfoil.xfoil import get_xfoil
-from ICARUS.Workers.solver import Solver
 
 
 def ask_num_airfoils() -> int:
     no_question: list[Text] = [
-        Text("num_airfoils", message="How many airfoils Do you want to run", autocomplete=1),
+        Text(
+            "num_airfoils",
+            message="How many airfoils Do you want to run",
+            autocomplete=1,
+        ),
     ]
     answer: dict[Any, Any] | None = prompt(no_question)
     if answer is None:

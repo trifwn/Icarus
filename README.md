@@ -46,7 +46,7 @@ Storage Interface to save vehicles, airfoils, analyses, solvers and more. Curren
 
 Defines the mission of the airplane and the flight envelope.
 
-- Workers
+- Computation
 
 Abstraction Layer for the solvers and running of analyses.
 
@@ -58,7 +58,7 @@ Defines Airplane and other Vehicles. Defines an airplane as a part of wings that
 
 Defines Flight State as a trimmed airplane position. The intnent of the class is to one day integrate the control surface movement as well and also account for transient states.
 
-- Input_Output
+- Solvers
 
 Integration with 3d Party Software (solvers). Handles conversion between Icarus objects and input for different solvers. Also handles the output conversion and hamdling
 

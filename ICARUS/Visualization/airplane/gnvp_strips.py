@@ -8,7 +8,7 @@ from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from pandas import DataFrame
 
-from ICARUS.Input_Output.GenuVP.post_process.strips import get_strip_data
+from ICARUS.Computation.Solvers.GenuVP.post_process.strips import get_strip_data
 from ICARUS.Vehicle.plane import Airplane
 
 

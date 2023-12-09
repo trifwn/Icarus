@@ -1,2 +1,2 @@
-ICARUS.Workers.analysis module
+ICARUS.Computation.analysis module
 ================================

@@ -3,11 +3,11 @@ from typing import Any
 
 import numpy as np
 
+from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
 from ICARUS.Vehicle.plane import Airplane as Plane
 from ICARUS.Vehicle.wing_segment import define_linear_chord
 from ICARUS.Vehicle.wing_segment import define_linear_span

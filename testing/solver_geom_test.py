@@ -1,9 +1,9 @@
 import numpy as np
 
+from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_3
+from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database.utils import angle_to_case
-from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_3
-from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Visualization.airplane.gnvp_wake import plot_gnvp3_wake
 from ICARUS.Visualization.airplane.gnvp_wake import plot_gnvp7_wake
 

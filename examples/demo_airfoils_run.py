@@ -3,15 +3,15 @@ import time
 import numpy as np
 
 from ICARUS.Airfoils.airfoil import Airfoil
+from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
+from ICARUS.Computation.Solvers.solver import Solver
+from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Input_Output.OpenFoam.files.setup_case import MeshType
-from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
-from ICARUS.Workers.solver import Solver
 
 
 ########################################################################################
@@ -123,7 +123,7 @@ def main() -> None:
 
         if FOIL2WAKE:
             f2w_stime: float = time.time()
-            from ICARUS.Solvers.Airfoil.f2w_section import get_f2w_section
+            from ICARUS.Computation.Solvers.Foil2Wake.f2w_section import get_f2w_section
 
             f2w_s: Solver = get_f2w_section()
 
@@ -154,7 +154,7 @@ def main() -> None:
 
         if XFOIL:
             xfoil_stime: float = time.time()
-            from ICARUS.Solvers.Airfoil.xfoil import get_xfoil
+            from ICARUS.Computation.Solvers.Xfoil.xfoil import get_xfoil
 
             xfoil: Solver = get_xfoil()
 
@@ -196,7 +196,7 @@ def main() -> None:
             of_stime: float = time.time()
             for reyn in reynolds:
                 print(f"Running OpenFoam for Re={reyn}")
-                from ICARUS.Solvers.Airfoil.open_foam import get_open_foam
+                from ICARUS.Computation.Solvers.OpenFoam.open_foam import get_open_foam
 
                 open_foam: Solver = get_open_foam()
 

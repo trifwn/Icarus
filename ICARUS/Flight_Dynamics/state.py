@@ -20,10 +20,10 @@ from .Stability.lateralFD import lateral_stability
 from .Stability.longitudalFD import longitudal_stability
 from .Stability.stability_derivatives import StabilityDerivativesDS
 from .trim import trim_state
+from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_forces
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Environment.definition import Environment
-from ICARUS.Input_Output.GenuVP.post_process.forces import rotate_forces
 
 if TYPE_CHECKING:
     from ICARUS.Vehicle.plane import Airplane

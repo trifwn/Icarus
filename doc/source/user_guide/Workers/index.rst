@@ -1,20 +1,20 @@
-ICARUS.Workers package
+ICARUS.Computation package
 ======================
 
-The basic abstraction from which ICARUS derives most of its utility is the Workers module. The naming was chosen as a long term goal of the project is for computations to be distributed to different machines, and therefore the term worker is more appropriate than solver. A Worker is a process that takes some input and computes an outout based on a specified algorithm. Each worker, therefore, is in-terms of our workflow a solver that takes an engineering abstraction, translates it to proper input, performs computations, derives the output, and post-process it to a result we desire.
+The basic abstraction from which ICARUS derives most of its utility is the Computation module. The naming was chosen as a long term goal of the project is for computations to be distributed to different machines, and therefore the term worker is more appropriate than solver. A Worker is a process that takes some input and computes an outout based on a specified algorithm. Each worker, therefore, is in-terms of our workflow a solver that takes an engineering abstraction, translates it to proper input, performs computations, derives the output, and post-process it to a result we desire.
 
 For instance, when investigating the lift-drag characteristics of a wing: Our internal representation of the wing represents the object we want to study. The worker will need to employ a Solver, for instance GenuVP3, that has been developed to work with specific input and perform computations on it. The task of the worker is to translate our internal representation of a wing in the specific format that the solver expects it, manage the computation from a high level (allocate CPU-cores and memory), track its progress, and at the end collect the results and translate them back to a datatype that is convenient for us.
 
 Recapping the above, in ICARUS all computation is handled by workers which model Solvers that can perform computations, named Analyses, based on the Options we specify! These three abstract concepts are the basis of any workflow we specify and will now be examined separately.
 
 
-Workers.solver module
+Computation.Solvers.solver module
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 A solver is initialized by Calling the following function:
 
-.. literalinclude:: ../../../../ICARUS/Workers/solver.py
+.. literalinclude:: ../../../../ICARUS/Computation/solver.py
     :pyobject: Solver.__init__
 
 We specify the solver with:
@@ -38,7 +38,7 @@ For to define the xfoil solver object we call:
 
 After we have our Solver Object we can add analyses to it.
 
-Workers.analysis module
+Computation.analysis module
 --------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -50,7 +50,7 @@ An analysis is the bread-and-butter of computation it has to define:
 
 We initialize an analysis by calling the following:
 
-.. literalinclude:: ../../../../ICARUS/Workers/analysis.py
+.. literalinclude:: ../../../../ICARUS/Computation/analysis.py
     :pyobject: Analysis.__init__
 
 To define an analysis we need to specify:
@@ -155,7 +155,7 @@ In the same manner the solver_options are defined in the following section:
 
 .. highlight:: python
 
-Finnaly the function that is called when the analysis is run is defined in the following section (This function is defined in the Input_Output module):
+Finnaly the function that is called when the analysis is run is defined in the following section (This function is defined in the Solvers module):
 
 ::
 
@@ -174,11 +174,11 @@ Finnaly the function that is called when the analysis is run is defined in the f
     """
 
 
-Workers.options module
+Computation.options module
 -------------------------------------------------------------------------------------------
 
 
-.. literalinclude:: ../../../../ICARUS/Workers/options.py
+.. literalinclude:: ../../../../ICARUS/Computation/options.py
     :pyobject: Option.__init__
 
 In the above section we defined the options that are required for the analysis to run. We passed them in the options variable as a dictionary. These options will be converted to Option objects. Every Option therefore is defined by its:

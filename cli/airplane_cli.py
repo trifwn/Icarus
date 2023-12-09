@@ -20,23 +20,27 @@ from inquirer import prompt
 from inquirer import Text
 
 from .cli_home import cli_home
+from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
+from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
+from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
+from ICARUS.Computation.Solvers.solver import Solver
+from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Environment.definition import Environment
-from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
-from ICARUS.Solvers.Airplane.gnvp3 import get_gnvp3
-from ICARUS.Solvers.Airplane.gnvp7 import get_gnvp7
-from ICARUS.Solvers.Airplane.lspt import get_lspt
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Workers.solver import Solver
 
 jsonpickle_pd.register_handlers()
 
 
 def ask_num_airplanes() -> int:
     no_question: list[Text] = [
-        Text("num_airplanes", message="How many airplanes do you want to run", autocomplete=1),
+        Text(
+            "num_airplanes",
+            message="How many airplanes do you want to run",
+            autocomplete=1,
+        ),
     ]
     answer: dict[Any, Any] | None = prompt(no_question)
     if answer is None:
@@ -117,7 +121,12 @@ def select_airplane_source() -> Airplane:
         List(
             "airplane_source",
             message="Where do you want to get the airplane from",
-            choices=["File", "Database", "Load from XFLR5", "Load from AVL (NOT IMPLEMENTED YET)"],
+            choices=[
+                "File",
+                "Database",
+                "Load from XFLR5",
+                "Load from AVL (NOT IMPLEMENTED YET)",
+            ],
         ),
     ]
 

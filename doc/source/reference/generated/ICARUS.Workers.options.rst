@@ -1,7 +1,7 @@
-﻿ICARUS.Workers.options
+﻿ICARUS.Computation.options
 ======================
 
-.. automodule:: ICARUS.Workers.options
+.. automodule:: ICARUS.Computation.options
 
 
 

@@ -2,9 +2,9 @@ import os
 
 from pandas import DataFrame
 
+from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_3d
 from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Input_Output.XFLR5.polars import read_polars_3d
 
 
 def airplane_polars(plot: bool = False) -> tuple[DataFrame, list[DataFrame]]:
@@ -27,7 +27,14 @@ def airplane_polars(plot: bool = False) -> tuple[DataFrame, list[DataFrame]]:
 
         plot_airplane_polars(
             airplane_names=planenames,
-            solvers=["GNVP3 Potential", "GNVP3 2D", "GNVP7 2D", "GNVP7 Potential", "LSPT 2D", "LSPT Potential"],
+            solvers=[
+                "GNVP3 Potential",
+                "GNVP3 2D",
+                "GNVP7 2D",
+                "GNVP7 Potential",
+                "LSPT 2D",
+                "LSPT Potential",
+            ],
             size=(10, 10),
             title="Benchmark Airplane Polars",
         )

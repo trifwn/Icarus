@@ -33,7 +33,7 @@ class ConceptualPlane:
         Args:
             angle_of_attack (float): Angle of attack of the wing
         """
-        cl_3d = self.cl_2d(angle_of_attack) / (1 + (2 / self.aspect_ratio))
+        cl_3d = self.cl_2d(angle_of_attack) / (1 + (2 / self.AR))
 
         # cl = self.main_wing.cl_3d * (
         #     1
@@ -66,6 +66,7 @@ class ConceptualPlane:
         """
 
         cd = self.cd0 + self.cl(angle_of_attack) * velocity**2
+        return cd
 
     def trust(self, velocity: float, aoa: float, amperes: float):
         """Calculates the trust of the plane based on the the engine model

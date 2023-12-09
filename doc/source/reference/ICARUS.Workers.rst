@@ -1,6 +1,6 @@
-.. .. _ICARUS.Workers:
+.. .. _ICARUS.Computation:
 
-.. automodule:: ICARUS.Workers
+.. automodule:: ICARUS.Computation
    :noindex:
    :no-members:
    :no-inherited-members:

@@ -7,10 +7,10 @@ The ICARUS package is comprised of different modules that interact with each oth
 
 In this user guide we will cover the usage of the modules in an order that makes sense for a new user. The order of the modules is as follows:
 
-* `Workers`
-    - `Workers.solver`
-    - `Workers.analysis`
-    - `Workers.options`
+* `Computation`
+    - `Computation.Solvers.solver`
+    - `Computation.analysis`
+    - `Computation.options`
 
 * `Airfoils`
     - `Airfoils.airfoil`
@@ -31,10 +31,10 @@ In this user guide we will cover the usage of the modules in an order that makes
     :hidden:
     :titlesonly:
 
-    Workers                 <Workers/index>
-    Workers.Solver          <Workers/solver>
-    Workers.Analysis        <Workers/analysis>
-    Workers.Options         <Workers/options>
+    Computation                 <Computation/index>
+    Computation.Solver          <Computation/solver>
+    Computation.Analysis        <Computation/analysis>
+    Computation.Options         <Computation/options>
     Airfoils                <Airfoils/index>
     Airfoils.airfoil        <Airfoils/airfoil>
     Airfoils.airfoil_polars <Airfoils/airfoil_polars>

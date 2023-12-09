@@ -4,9 +4,9 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
+from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_3
+from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Database.utils import angle_to_case
-from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_3
-from ICARUS.Input_Output.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -56,9 +56,9 @@ def plot_gnvp_wake(
     ax.set_ylim(-plane.span / 2, plane.span / 2)
     ax.set_zlim(-1, 1)
 
-    ax.scatter(A1[:, 0], A1[:, 1], A1[:, 2], color="r", s=5.0)  # WAKE
-    ax.scatter(B1[:, 0], B1[:, 1], B1[:, 2], color="k", s=5.0)  # NEARWAKE
-    ax.scatter(C1[:, 0], C1[:, 1], C1[:, 2], color="g", s=5.0)  # GRID
+    ax.scatter(A1[:, 0], A1[:, 1], A1[:, 2], color="r", s=5)  # WAKE
+    ax.scatter(B1[:, 0], B1[:, 1], B1[:, 2], color="k", s=5)  # NEARWAKE
+    ax.scatter(C1[:, 0], C1[:, 1], C1[:, 2], color="g", s=5)  # GRID
 
     plane.visualize(fig, ax, movement=-np.array(plane.CG))
     if scale == "True":

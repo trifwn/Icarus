@@ -1,2 +1,2 @@
-ICARUS.Workers.options module
+ICARUS.Computation.options module
 ===============================

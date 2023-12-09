@@ -12,7 +12,7 @@ if CPU_COUNT > 2:
     if platform_os == "Windows":
         CPU_TO_USE: int = CPU_COUNT // 2
     else:
-        CPU_TO_USE: int = CPU_COUNT - 2
+        CPU_TO_USE = CPU_COUNT - 2
 else:
     CPU_TO_USE = 1
 
@@ -28,12 +28,10 @@ from . import Core
 from . import Database
 from . import Environment
 from . import Flight_Dynamics
-from . import Input_Output
 from . import Mission
-from . import Solvers
 from . import Vehicle
 from . import Visualization
-from . import Workers
+from . import Computation
 
 __all__ = [
     "Aerodynamics",
@@ -44,12 +42,10 @@ __all__ = [
     "Database",
     "Environment",
     "Flight_Dynamics",
-    "Input_Output",
     "Mission",
-    "Solvers",
     "Vehicle",
     "Visualization",
-    "Workers",
+    "Computation",
 ]
 
 __version__ = "0.3.0"

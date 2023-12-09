@@ -11,10 +11,12 @@ from pandas import DataFrame
 
 from . import DB3D
 from ICARUS import APPHOME
+from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
+    get_loads_convergence_3,
+)
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Input_Output.GenuVP.post_process.convergence import get_loads_convergence_3
 from ICARUS.Vehicle.plane import Airplane
 
 jsonpickle_pd.register_handlers()
@@ -154,10 +156,10 @@ class Database_3D:
             #     try:
             #         CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
             #         if genu_version == 3:
-            #             from ICARUS.Input_Output.GenuVP.files.gnvp3_interface import make_polars_3
+            #             from ICARUS.Solvers.GenuVP.files.gnvp3_interface import make_polars_3
             #             make_polars_3(CASEDIR, self.HOMEDIR)
             #         else:
-            #             from ICARUS.Input_Output.GenuVP.files.gnvp7_interface import make_polars_7
+            #             from ICARUS.Solvers.GenuVP.files.gnvp7_interface import make_polars_7
 
             #             make_polars_7(CASEDIR, self.HOMEDIR)
 

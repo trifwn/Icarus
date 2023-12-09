@@ -1,6 +1,6 @@
-.. .. _ICARUS.Input_Output:
+.. .. _ICARUS.Solvers:
 
-.. automodule:: ICARUS.Input_Output
+.. automodule:: ICARUS.Solvers
    :noindex:
    :no-members:
    :no-inherited-members:

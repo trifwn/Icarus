@@ -14,15 +14,15 @@ from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
 from Vehicles.Planes.hermes import hermes
 from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
+from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
+from ICARUS.Computation.Solvers.solver import Solver
+from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
+from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
-from ICARUS.Input_Output.XFLR5.polars import read_polars_2d
-from ICARUS.Solvers.Airplane.lspt import get_lspt
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Workers.solver import Solver
 
 
 def main() -> None:
@@ -40,7 +40,7 @@ def main() -> None:
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, Any] = {}
 
-    from ICARUS.Input_Output.XFLR5.parser import parse_xfl_project
+    from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
 
     filename: str = "Data/3D_Party/plane_titos.xml"
     airplane = parse_xfl_project(filename)

@@ -2,20 +2,12 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 from numpy import ndarray
-from pandas import DataFrame
-from pandas import Series
-from regex import F
 
-from ICARUS.Core.struct import Struct
 from ICARUS.Database import DB
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
 from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
 
 
@@ -113,7 +105,7 @@ def cg_investigation(
     cg_x: float = plane.CG[1]
 
     # Create a slider to change the CG
-    ax_cg = fig.add_axes([0.25, 0.1, 0.65, 0.03])
+    ax_cg = fig.add_axes((0.25, 0.1, 0.65, 0.03))
 
     cg_slider = Slider(ax=ax_cg, label="CG", valmin=-1, valmax=1, valinit=cg_x)
 
@@ -210,7 +202,7 @@ def cg_investigation(
     cg_slider.on_changed(update)
 
     # Create a `matplotlib.widgets.Button` to reset the sliders to initial values.
-    resetax = fig.add_axes([0.8, 0.025, 0.1, 0.04])
+    resetax = fig.add_axes((0.8, 0.025, 0.1, 0.04))
     button = Button(resetax, "Reset", hovercolor="0.975")
 
     def reset(event: Any) -> None:

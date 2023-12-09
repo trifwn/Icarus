@@ -108,7 +108,7 @@ def plot_convergence(
 
                 j += 1
                 c = colors_(j / len(solvers))
-                m: MarkerStyle = markers[i].get_marker()
+                m = markers[i].get_marker()
 
                 label: str = f"{plane} - {solver} - {ang_num}"
                 axs[0, 0].plot(it, fx, color=c, marker=m, label=label, markersize=2.0, linewidth=1)

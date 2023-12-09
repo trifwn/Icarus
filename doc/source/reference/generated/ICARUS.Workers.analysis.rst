@@ -1,7 +1,7 @@
-﻿ICARUS.Workers.analysis
+﻿ICARUS.Computation.analysis
 =======================
 
-.. automodule:: ICARUS.Workers.analysis
+.. automodule:: ICARUS.Computation.analysis
 
 
 

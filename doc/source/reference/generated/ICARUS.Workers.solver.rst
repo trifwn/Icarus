@@ -1,7 +1,7 @@
-﻿ICARUS.Workers.solver
+﻿ICARUS.Computation.Solvers.solver
 =====================
 
-.. automodule:: ICARUS.Workers.solver
+.. automodule:: ICARUS.Computation.Solvers.solver
 
 
 

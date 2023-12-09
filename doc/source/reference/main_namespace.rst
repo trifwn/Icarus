@@ -10,13 +10,13 @@ Submodules
 ----------------------
 
 ==============================  ======================================================================================================
-:doc:`ICARUS.Workers`           Abstract classes to enable computations. They model Solves, Analysis, and Options
+:doc:`ICARUS.Computation`           Abstract classes to enable computations. They model Solves, Analysis, and Options
 :doc:`ICARUS.Solvers`           Solvers that ship with ICARUS preconfigured with analyses
 :doc:`ICARUS.Airfoils`          Module to model airfoils
 :doc:`ICARUS.Vehicle`           Module to model vehicles
 :doc:`ICARUS.Environment`       Module to model the enviroment
 :doc:`ICARUS.Database`          Database of data and computations
-:doc:`ICARUS.Input_Output`      Module to handle input and output of data for interacting with 3d party software
+:doc:`ICARUS.Solvers`      Module to handle input and output of data for interacting with 3d party software
 :doc:`ICARUS.Aerodynamics`      Methods for Aerodynamic analyses
 :doc:`ICARUS.Conceptual`        Methods for Conceptual analyses
 :doc:`ICARUS.Flight_Dynamics`   Module to model flight dynamics
