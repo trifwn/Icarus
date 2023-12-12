@@ -29,8 +29,8 @@ class Database_3D:
     def __init__(self) -> None:
         self.HOMEDIR: str = APPHOME
         self.DATADIR: str = DB3D
-        self.raw_data = Struct()
-        self.data = Struct()
+        self.forces = Struct()
+        self.polars = Struct()
         self.planes = Struct()
         self.states = Struct()
         self.convergence_data = Struct()
@@ -43,36 +43,47 @@ class Database_3D:
             # print(f"Creating {DB3D} directory...")
             os.makedirs(DB3D, exist_ok=True)
 
-        planenames: list[str] = next(os.walk(DB3D))[1]
-        for plane in planenames:  # For each plane planename == folder
+        planefolders: list[str] = next(os.walk(DB3D))[1]
+        for plane in planefolders:  # For each plane plane == folder name
             # Load Plane object
             file_plane: str = os.path.join(DB3D, plane, f"{plane}.json")
             plane_found: bool = self.load_plane_from_file(plane, file_plane)
 
+            # Scan for Solver Directories
+            solver_directories = ["GenuVP3", "GenuVP7", "LSPT", "AVL"]
             if plane_found:
                 # Load Convergence Data
                 if plane not in self.convergence_data.keys():
                     self.convergence_data[plane] = Struct()
-                cases: list[str] = next(os.walk(os.path.join(DB3D, plane)))[1]
-                for case in cases:
-                    # Load States
-                    if case.startswith("Dyn"):
-                        self.states[plane] = self.load_plane_states(plane, case)
+
+                # Get Directories at plane folder
+                dirs = next(os.walk(os.path.join(DB3D, plane)))[1]
+                for directory in dirs:
+                    if directory not in solver_directories:
                         continue
-                    if case.startswith("Sens"):
-                        continue
-                    if "gnvp3" in os.listdir(os.path.join(DB3D, plane, case)):
-                        self.load_gnvp_case_convergence(plane, case, 3)
-                    if "gnvp7" in os.listdir(os.path.join(DB3D, plane, case)):
-                        self.load_gnvp_case_convergence(plane, case, 7)
+
+                    cases: list[str] = next(
+                        os.walk(os.path.join(DB3D, plane, directory)),
+                    )[1]
+                    for case in cases:
+                        # Load States
+                        if case == "Dynamics":
+                            self.states[plane] = self.load_plane_states(plane, case)
+                            continue
+
+                        if directory == "GenuVP3":
+                            self.load_gnvp_case_convergence(plane, case, 3)
+                        elif directory == "GenuVP7":
+                            self.load_gnvp_case_convergence(plane, case, 7)
 
             # Loading Forces from forces.* files
-            file_gnvp_7: str = os.path.join(DB3D, plane, "forces.gnvp7")
             file_gnvp_3: str = os.path.join(DB3D, plane, "forces.gnvp3")
-            file_lspt: str = os.path.join(DB3D, plane, "forces.lspt")
-
-            self.load_gnvp_forces(plane, file_gnvp_7, genu_version=7)
             self.load_gnvp_forces(plane, file_gnvp_3, genu_version=3)
+
+            file_gnvp_7: str = os.path.join(DB3D, plane, "forces.gnvp7")
+            self.load_gnvp_forces(plane, file_gnvp_7, genu_version=7)
+
+            file_lspt: str = os.path.join(DB3D, plane, "forces.lspt")
             self.load_lspt_forces(plane, file_lspt)
 
     def load_plane_states(self, plane: str, case: str) -> dict[str, Any]:
@@ -142,31 +153,12 @@ class Database_3D:
             genu_version (int): GNVP Version
         """
         try:
-            self.raw_data[planename] = pd.read_csv(file)
-            self.make_data_gnvp(planename, genu_version)
+            self.forces[planename] = pd.read_csv(file)
+            self.make_gnvp_polars(planename, genu_version)
             return
         except FileNotFoundError:
-            # print(f"No forces.gnvp3 file found in {planename} folder at {DB3D}!")
+            # print(f"No forces.gnvp{genu_version} file found in {planename} folder at {DB3D}!")
             pass
-            # if planename in self.planes.keys():
-            #     # print(
-            #     #     "Since plane object exists with that name trying to create polars...",
-            #     # )
-            #     pln: Airplane = self.planes[planename]
-            #     try:
-            #         CASEDIR: str = os.path.join(DB3D, pln.CASEDIR)
-            #         if genu_version == 3:
-            #             from ICARUS.Solvers.GenuVP.files.gnvp3_interface import make_polars_3
-            #             make_polars_3(CASEDIR, self.HOMEDIR)
-            #         else:
-            #             from ICARUS.Solvers.GenuVP.files.gnvp7_interface import make_polars_7
-
-            #             make_polars_7(CASEDIR, self.HOMEDIR)
-
-            #         self.raw_data[planename] = pd.read_csv(file)
-            #         self.make_data_gnvp(planename, genu_version)
-            #     except Exception as e:
-            #         print(f"Failed to create Polars! Got Error:\n{e}")
 
     def load_lspt_forces(self, planename: str, file: str) -> None:
         """
@@ -177,7 +169,7 @@ class Database_3D:
             file (str): _description_
         """
         try:
-            self.raw_data[f"{planename}_LSPT"] = pd.read_csv(file)
+            self.forces[f"{planename}_LSPT"] = pd.read_csv(file)
             self.make_data_lspt(planename)
         except FileNotFoundError:
             # print(f"No forces.lspt file found in {planename} folder at {DB3D}!")
@@ -201,14 +193,15 @@ class Database_3D:
             genu_version (int): GNVP Version
         """
         # Get Load Convergence Data from LOADS_aer.dat
-        file: str = os.path.join(DB3D, planename, case, "LOADS_aer.dat")
+        RESULTS_DIR = os.path.join(DB3D, planename, f"GenuVP{genu_version}", case)
+        loads_file: str = os.path.join(RESULTS_DIR, "LOADS_aer.dat")
+        loads: DataFrame | None = get_loads_convergence_3(loads_file)
 
-        loads: DataFrame | None = get_loads_convergence_3(file)
         if loads is not None:
             # Get Error Convergence Data from gnvp.out
-            file = os.path.join(DB3D, planename, case, f"gnvp{genu_version}.out")
+            log_file = os.path.join(RESULTS_DIR, f"gnvp{genu_version}.out")
             # self.Convergence[planename][case] = addErrorConvergence2df(file, loads) # IT OUTPUTS LOTS OF WARNINGS
-            with open(file, encoding="UTF-8") as f:
+            with open(log_file, encoding="UTF-8") as f:
                 lines: list[str] = f.readlines()
             time: list[int] = []
             error: list[float] = []
@@ -256,14 +249,14 @@ class Database_3D:
         """
         try:
             cols: list[str] = ["AoA", f"CL_{mode}", f"CD_{mode}", f"Cm_{mode}"]
-            return self.data[plane][cols].rename(
+            return self.polars[plane][cols].rename(
                 columns={f"CL_{mode}": "CL", f"CD_{mode}": "CD", f"Cm_{mode}": "Cm"},
             )
         except KeyError:
             print("Polar Doesn't exist! You should compute it first!")
         return None
 
-    def make_data_gnvp(self, plane: str, gnvp_version: int) -> None:
+    def make_gnvp_polars(self, plane: str, gnvp_version: int) -> None:
         """
         Args:
             plane (str): Plane name
@@ -272,17 +265,17 @@ class Database_3D:
         ! TODO: Should get deprecated in favor of analysis logic in the future. Handled by the unhook function.
         """
         pln: Airplane = self.planes[plane]
-        if plane not in self.raw_data.keys():
+        if plane not in self.forces.keys():
             return None
-        AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[plane]["AoA"] * np.pi / 180
+        AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.forces[plane]["AoA"] * np.pi / 180
 
         for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-            Fx: FloatArray = self.raw_data[plane][f"TFORC{enc}(1)"]
+            Fx: FloatArray = self.forces[plane][f"TFORC{enc}(1)"]
             # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-            Fz: FloatArray = self.raw_data[plane][f"TFORC{enc}(3)"]
+            Fz: FloatArray = self.forces[plane][f"TFORC{enc}(3)"]
 
             # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-            My: FloatArray = self.raw_data[plane][f"TAMOM{enc}(2)"]
+            My: FloatArray = self.forces[plane][f"TAMOM{enc}(2)"]
             # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
             Fx_new: FloatArray = Fx * np.cos(
@@ -315,19 +308,19 @@ class Database_3D:
                 S: float = pln.S
                 MAC: float = pln.mean_aerodynamic_chord
                 df = pd.DataFrame()
-                df["AoA"] = self.raw_data[plane]["AoA"].astype("float")
+                df["AoA"] = self.forces[plane]["AoA"].astype("float")
                 df[f"GNVP{gnvp_version} {name} CL"] = Fz_new / (Q * S)
                 df[f"GNVP{gnvp_version} {name} CD"] = Fx_new / (Q * S)
                 df[f"GNVP{gnvp_version} {name} Cm"] = My_new / (Q * S * MAC)
 
                 # Merge the new data with data from other solvers
-                if plane not in self.data.keys():
-                    self.data[plane] = df
+                if plane not in self.polars.keys():
+                    self.polars[plane] = df
                 else:
                     # If the data contain old data from a previous run, then delete the old data
                     # and replace it with the new one
-                    if f"GNVP{gnvp_version} {name} CL" in self.data[plane].columns:
-                        self.data[plane].drop(
+                    if f"GNVP{gnvp_version} {name} CL" in self.polars[plane].columns:
+                        self.polars[plane].drop(
                             columns=[
                                 f"GNVP{gnvp_version} {name} CL",
                                 f"GNVP{gnvp_version} {name} CD",
@@ -337,10 +330,10 @@ class Database_3D:
                         )
 
                     # Merge the data with the new one on the AoA column
-                    self.data[plane] = self.data[plane].merge(df, on="AoA", how="outer")
+                    self.polars[plane] = self.polars[plane].merge(df, on="AoA", how="outer")
 
                     # Sort the dataframe by AoA
-                    self.data[plane].sort_values(by="AoA", inplace=True)
+                    self.polars[plane].sort_values(by="AoA", inplace=True)
 
     def make_data_lspt(self, plane: str) -> None:
         """
@@ -351,17 +344,17 @@ class Database_3D:
         """
 
         pln: Airplane = self.planes[plane]
-        if f"{plane}_LSPT" not in self.raw_data.keys():
+        if f"{plane}_LSPT" not in self.forces.keys():
             return None
 
         for enc, name in zip(["", "_2D"], ["Potential", "2D"]):
-            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.raw_data[f"{plane}_LSPT"]["AoA"] * np.pi / 180
-            Fx: FloatArray = self.raw_data[f"{plane}_LSPT"][f"D{enc}"]
+            AoA: np.ndarray[Any, np.dtype[floating[Any]]] = self.forces[f"{plane}_LSPT"]["AoA"] * np.pi / 180
+            Fx: FloatArray = self.forces[f"{plane}_LSPT"][f"D{enc}"]
             # Fy = self.raw_data[plane][f"TFORC{enc}(2)"]
-            Fz: FloatArray = self.raw_data[f"{plane}_LSPT"][f"L{enc}"]
+            Fz: FloatArray = self.forces[f"{plane}_LSPT"][f"L{enc}"]
 
             # Mx = self.raw_data[plane][f"TAMOM{enc}(1)"]
-            My: FloatArray = self.raw_data[f"{plane}_LSPT"][f"My{enc}"]
+            My: FloatArray = self.forces[f"{plane}_LSPT"][f"My{enc}"]
             # Mz = self.raw_data[plane][f"TAMOM{enc}(3)"]
 
             Fx_new: FloatArray = Fx * np.cos(
@@ -393,12 +386,12 @@ class Database_3D:
             finally:
                 S: float = pln.S
                 MAC: float = pln.mean_aerodynamic_chord
-                if f"{plane}" not in self.data.keys():
-                    self.data[f"{plane}"] = pd.DataFrame()
-                    self.data[f"{plane}"][f"AoA"] = AoA * 180 / np.pi
-                    self.data[f"{plane}"][f"LSPT {name} CL"] = Fz_new / (Q * S)
-                    self.data[f"{plane}"][f"LSPT {name} CD"] = Fx_new / (Q * S)
-                    self.data[f"{plane}"][f"LSPT {name} Cm"] = My_new / (Q * S * MAC)
+                if f"{plane}" not in self.polars.keys():
+                    self.polars[f"{plane}"] = pd.DataFrame()
+                    self.polars[f"{plane}"][f"AoA"] = AoA * 180 / np.pi
+                    self.polars[f"{plane}"][f"LSPT {name} CL"] = Fz_new / (Q * S)
+                    self.polars[f"{plane}"][f"LSPT {name} CD"] = Fx_new / (Q * S)
+                    self.polars[f"{plane}"][f"LSPT {name} Cm"] = My_new / (Q * S * MAC)
                 else:
                     # Create a new dataframe with the new data and merge it with the old one
                     # on the AoA column
@@ -407,10 +400,14 @@ class Database_3D:
                     df[f"LSPT {name} CL"] = Fz_new / (Q * S)
                     df[f"LSPT {name} CD"] = Fx_new / (Q * S)
                     df[f"LSPT {name} Cm"] = My_new / (Q * S * MAC)
-                    self.data[f"{plane}"] = self.data[f"{plane}"].merge(df, on="AoA", how="outer")
+                    self.polars[f"{plane}"] = self.polars[f"{plane}"].merge(
+                        df,
+                        on="AoA",
+                        how="outer",
+                    )
 
                     # Sort the dataframe by AoA
-                    self.data[f"{plane}"].sort_values(by="AoA", inplace=True)
+                    self.polars[f"{plane}"].sort_values(by="AoA", inplace=True)
 
     def __str__(self) -> Literal["Vehicle Database"]:
         return "Vehicle Database"

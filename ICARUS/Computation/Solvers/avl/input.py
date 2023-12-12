@@ -1,68 +1,30 @@
 import os
 import subprocess
-from enum import Enum
+from io import StringIO
 
 import numpy as np
-import pandas as pd
-from regex import P
+from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.AVL import Dir
+from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Computation.Solvers.AVL import DUMMY_MASS_FILE
-from ICARUS.Computation.Solvers.AVL import geo_path
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
+from ICARUS.Database import DB
 from ICARUS.Environment.definition import Environment
 from ICARUS.Vehicle.plane import Airplane
-
-
-class DiscretizationType(Enum):
-    """
-    Discretization types for AVL
-     3.0        equal         |   |   |   |   |   |   |   |   |
-     2.0        sine          || |  |   |    |    |     |     |
-     1.0        cosine        ||  |    |      |      |    |  ||
-     0.0        equal         |   |   |   |   |   |   |   |   |
-    -1.0        cosine        ||  |    |      |      |    |  ||
-    -2.0       -sine          |     |     |    |    |   |  | ||
-    -3.0        equal         |   |   |   |   |   |   |   |   |
-    """
-
-    EQUAL = 3.0
-    COSINE = 1.0
-    SINE = 2.0
-    INV_SINE = -2.0
-    INV_COSINE = -1.0
+from ICARUS.Vehicle.utils import DiscretizationType
 
 
 def make_input_files(
-    PLANE_DIR: str,
+    PLANEDIR: str,
     plane: Airplane,
-    env: Environment,
-    wing_chord_spacing: DiscretizationType,
-    wing_span_spacing: DiscretizationType,
-    wing_airfoil_polar: FloatArray,
-    elevator_chord_spacing: DiscretizationType,
-    elevator_span_spacing: DiscretizationType,
-    elevator_airfoil_polar: FloatArray,
-    rudder_chord_spacing: DiscretizationType,
-    rudder_span_spacing: DiscretizationType,
-    rudder_airfoil_polar: FloatArray,
+    environment: Environment,
+    UINF: float,
+    solver2D: str = "Xfoil",
 ) -> None:
-    get_inertias(PLANE_DIR, plane)
-    avl_mass(PLANE_DIR, plane, env)
-    avl_geo(
-        PLANE_DIR,
-        plane,
-        wing_chord_spacing,
-        wing_span_spacing,
-        wing_airfoil_polar,
-        elevator_chord_spacing,
-        elevator_span_spacing,
-        elevator_airfoil_polar,
-        rudder_chord_spacing,
-        rudder_span_spacing,
-        rudder_airfoil_polar,
-    )
+    os.makedirs(PLANEDIR, exist_ok=True)
+    avl_mass(PLANEDIR, plane, environment)
+    avl_geo(PLANEDIR, plane, environment, UINF, solver2D)
 
 
 def avl_mass(
@@ -101,78 +63,125 @@ def avl_mass(
 def avl_geo(
     PLANE_DIR: str,
     plane: Airplane,
-    wing_chord_spacing: DiscretizationType,
-    wing_span_spacing: DiscretizationType,
-    wing_airfoil_polar: FloatArray,
-    elevator_chord_spacing: DiscretizationType,
-    elevator_span_spacing: DiscretizationType,
-    elevator_airfoil_polar: FloatArray,
-    rudder_chord_spacing: DiscretizationType,
-    rudder_span_spacing: DiscretizationType,
-    rudder_airfoil_polar: FloatArray,
+    environment: Environment,
+    u_inf: float,
+    solver2D: str = "Xfoil",
 ) -> None:
     if os.path.isfile(f"{PLANE_DIR}/{plane.name}.avl"):
         os.remove(f"{PLANE_DIR}/{plane.name}.avl")
-    df = pd.read_csv(geo_path, on_bad_lines="skip")
-    ar = df.to_numpy()
-    ar[4] = f"{plane.name}"
-    ar[7] = f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref"
-    ar[8] = f"  {plane.CG[0]}     {plane.CG[1]}     {plane.CG[2]}   | Xref   Yref   Zref"
-    ar[14] = f"{plane.surfaces[0].M}        {wing_chord_spacing}"
-    ar[
-        17
-    ] = f"{wing_airfoil_polar[0,0]}   {wing_airfoil_polar[1,0]}  {wing_airfoil_polar[0,1]}   {wing_airfoil_polar[1,1]}  {wing_airfoil_polar[0,2]}  {wing_airfoil_polar[1,2]}"
-    ar[27] = f"  {plane.surfaces[0].orientation[0]}                         | dAinc"
-    ar[
-        31
-    ] = f"   {plane.surfaces[0].strips[0].x0}    {plane.surfaces[0].strips[0].y0}    {plane.surfaces[0].strips[0].z0}    {plane.surfaces[0].chord[0]}   {0.0}   {plane.surfaces[0].N}    {wing_span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]"
-    ar[33] = f"{Dir}/NACA{plane.surfaces[0].airfoil.name}.txt"
-    ar[
-        36
-    ] = f"   {plane.surfaces[0].strips[-1].x1}    {plane.surfaces[0].strips[-1].y1}    {plane.surfaces[0].strips[-1].z1}    {plane.surfaces[0].chord[1]}   {0.0}   {plane.surfaces[0].N}    {wing_span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]"
-    ar[38] = f"{Dir}/NACA{plane.surfaces[0].airfoil.name}.txt"
 
-    ar[43] = f"{plane.surfaces[1].M}        {elevator_chord_spacing}"
-    ar[
-        46
-    ] = f"{elevator_airfoil_polar[0,0]}   {elevator_airfoil_polar[1,0]}  {elevator_airfoil_polar[0,1]}   {elevator_airfoil_polar[1,1]}  {elevator_airfoil_polar[0,2]}  {elevator_airfoil_polar[1,2]}"
-    ar[
-        60
-    ] = f"   {plane.surfaces[1].strips[0].x0}    {plane.surfaces[1].strips[0].y0}    {plane.surfaces[1].strips[0].z0}   {plane.surfaces[1].chord[0]}   {0.0}   {plane.surfaces[1].N}    {elevator_span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]"
-    ar[62] = f"{Dir}/NACA{plane.surfaces[1].airfoil.name}.txt"
-    ar[
-        65
-    ] = f"   {plane.surfaces[1].strips[-1].x1}    {plane.surfaces[1].strips[-1].y1}    {plane.surfaces[1].strips[-1].z1}    {plane.surfaces[1].chord[0]}   {0.0}   {plane.surfaces[1].N}    {elevator_span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]"
-    ar[67] = f"{Dir}/NACA{plane.surfaces[1].airfoil.name}.txt"
-    ar[72] = f"{plane.surfaces[2].M}        {rudder_chord_spacing}"
-    ar[
-        75
-    ] = f"{rudder_airfoil_polar[0,0]}   {rudder_airfoil_polar[1,0]}  {rudder_airfoil_polar[0,1]}   {rudder_airfoil_polar[1,1]}  {rudder_airfoil_polar[0,2]}  {rudder_airfoil_polar[1,2]}"
-    ar[
-        87
-    ] = f"   {plane.surfaces[2].strips[0].x0}    {plane.surfaces[2].strips[0].y0}    {plane.surfaces[2].strips[0].z0}    {plane.surfaces[2].chord[0]}   {0.0}   {plane.surfaces[2].N}    {rudder_span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]"
-    ar[89] = f"{Dir}/NACA{plane.surfaces[2].airfoil.name}.txt"
-    ar[
-        92
-    ] = f"   {plane.surfaces[2].strips[-1].x1}    {plane.surfaces[2].strips[-1].y1}    {plane.surfaces[2].strips[-1].z1}    {plane.surfaces[2].chord[0]}   {0.0}   {plane.surfaces[2].N}    {rudder_span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]"
-    ar[94] = f"{Dir}/NACA{plane.surfaces[2].airfoil.name}.txt"
+    f_io = StringIO()
+    f_io.write("# Note : check consistency of area unit and length units in this file\n")
+    f_io.write("# Note : check consistency with inertia units of the .mass file\n")
+    f_io.write("#\n")
+    f_io.write("#\n")
+    f_io.write(f"{plane.name}\n")
+    f_io.write("0.0                                 | Mach\n")
+    # !TODO : ADD SYMMETRY
+    f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
+    f_io.write(f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n")
+    f_io.write(f"  {plane.CG[0]}     {plane.CG[1]}     {plane.CG[2]}   | Xref   Yref   Zref\n")
+    f_io.write(f" 0.00                               | CDp  (optional)\n")
 
-    np.savetxt(f"{PLANE_DIR}/{plane.name}.avl", ar, delimiter=" ", fmt="%s")
+    for i, surf in enumerate(plane.surfaces):
+        f_io.write("\n")
+        f_io.write("\n")
+        f_io.write("\n")
+        f_io.write("#========TODO: REMOVE OR MODIFY MANUALLY DUPLICATE SECTIONS IN SURFACE DEFINITION=========\n")
+        f_io.write("SURFACE                      | (keyword)\n")
+        f_io.write(f"{surf.name}\n")
+        f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
+        if surf.chord_spacing == DiscretizationType.NOT_DEFINED:
+            chord_spacing = DiscretizationType.COSINE.value
+        else:
+            chord_spacing = surf.chord_spacing.value
+        f_io.write(f"{surf.M}        {chord_spacing}\n")
+        f_io.write("\n")
+        f_io.write("CDCL\n")
+
+        # Get the airfoil polar
+        foil_dat = DB.foils_db.data
+        try:
+            polars: dict[str, DataFrame] = foil_dat[surf.airfoil.name][solver2D]
+        except KeyError:
+            try:
+                polars = foil_dat[f"NACA{surf.airfoil.name}"][solver2D]
+            except KeyError:
+                raise KeyError(f"Airfoil {surf.airfoil.name} not found in database")
+
+        polar_obj = Polars(polars)
+        # Calculate average reynolds number
+        reynolds = surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
+
+        cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
+        f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
+        f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
+        f_io.write("\n")
+
+        f_io.write("INDEX                        | (keyword)\n")
+        f_io.write(f"{int(i+ 6679)}                         | Lsurf\n")
+
+        if surf.is_symmetric:
+            f_io.write("YDUPLICATE\n")
+            f_io.write("0.0\n")
+        f_io.write("SCALE\n")
+        f_io.write("1.0  1.0  1.0\n")
+        f_io.write("TRANSLATE\n")
+        f_io.write("0.0  0.0  0.0\n")
+        f_io.write("ANGLE\n")
+        f_io.write(f"  {surf.orientation[0]}                         | dAinc\n")
+        f_io.write("\n")
+        f_io.write("\n")
+        f_io.write("#____PANEL 1_______\n")
+        f_io.write("#______________\n")
+        f_io.write("SECTION                                                     |  (keyword)\n")
+
+        if surf.span_spacing == DiscretizationType.NOT_DEFINED:
+            span_spacing = DiscretizationType.COSINE.value
+        else:
+            span_spacing = surf.span_spacing.value
+
+        f_io.write(
+            f"   {surf.strips[0].x0}    {surf.strips[0].y0}    {surf.strips[0].z0}    {surf.chord[0]}   {0.0}   {surf.N}    {span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]\n",
+        )
+        f_io.write("\n")
+        f_io.write("AFIL 0.0 1.0\n")
+        f_io.write(f"{surf.airfoil.file_name}\n")
+        f_io.write("\n")
+        f_io.write("\n")
+        f_io.write("#______________\n")
+        f_io.write("SECTION                                                    |  (keyword)\n")
+        f_io.write(
+            f"{surf.strips[-1].x1}    {surf.strips[-1].y1}    {surf.strips[-1].z1}  {surf.chord[-1]}   {0.0}   {surf.N}    {span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]\n",
+        )
+        f_io.write("AFIL\n")
+
+        f_io.write(f"{surf.airfoil.file_name}\n")
+        f_io.write("\n")
+
+        # Save Airfoil file
+        surf.airfoil.save_selig_te(PLANE_DIR, header=True, inverse=True)
+
+    contents: str = f_io.getvalue().expandtabs(4)
+    fname = f"{PLANE_DIR}/{plane.name}.avl"
+    with open(fname, "w", encoding="utf-8") as file:
+        file.write(contents)
 
 
-def get_inertias(PLANE_DIR: str, plane: Airplane) -> FloatArray:
+def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     HOMEDIR = os.getcwd()
-    os.chdir(PLANE_DIR)
+    os.chdir(PLANEDIR)
 
-    li = []
-    li.append(f"mass {plane.name}.mass")
-    li.append(f"quit")
-    ar = np.array(li)
+    f_io = StringIO()
+    f_io.write(f"mass {plane.name}.mass\n")
+    f_io.write(f"quit\n")
+    contents: str = f_io.getvalue().expandtabs(4)
 
     input_fname: str = os.path.join(f"inertia_scr")
     log_fname = os.path.join(f"inertia_log.txt")
 
-    np.savetxt(input_fname, ar, delimiter=" ", fmt="%s")
+    with open(input_fname, 'w', encoding='utf-8') as f:
+        f.writelines(contents)
 
     with open(input_fname) as fin:
         with open(log_fname, "w") as fout:
@@ -188,28 +197,12 @@ def get_inertias(PLANE_DIR: str, plane: Airplane) -> FloatArray:
         lines = fout.readlines()
 
     Ixx = float(lines[38][21:28])
-    Iyy = float(lines[39][33:40])
-    Izz = float(lines[40][43:50])
-    Ixz = float(lines[38][43:50])
-    Ixy = float(lines[38][33:40])
-    Iyz = float(lines[39][43:50])
+    Iyy = float(lines[39][32:43])
+    Izz = float(lines[40][44:55])
+    Ixz = float(lines[38][44:55])
+    Ixy = float(lines[38][32:43])
+    Iyz = float(lines[39][44:55])
 
     os.chdir(HOMEDIR)
 
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
-
-
-# def prepro(plane):
-#     os.chdir(Dir)
-#     if os.path.isdir(f"{plane.name}_genD") == True:
-#         # Do the same in pure python
-#         files = os.listdir(f"{plane.name}_genD")
-#         for f in files:
-#             if f not in [
-#                 f"{plane.name}.avl",
-#                 f"{plane.name}.mass",
-#                 f"{plane.name}_x.txt",
-#                 f"{plane.name}_x.eigs",
-#             ]:
-#                 os.remove(f"{plane.name}_genD/{f}")
-#     os.makedirs(f"{plane.name}_genD", exist_ok=True)

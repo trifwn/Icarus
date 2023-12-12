@@ -29,7 +29,6 @@ def case_def(PLANEDIR: str, plane: Airplane, angles: FloatArray) -> None:
     np.savetxt(os.path.join(PLANEDIR, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
 
 
-# COREECT SETTING OF THE RUNS
 def case_setup(PLANEDIR: str, plane: Airplane) -> None:
     HOMEDIR = os.getcwd()
     os.chdir(PLANEDIR)
@@ -79,7 +78,7 @@ def case_run(PLANEDIR: str, plane: Airplane, angles: FloatArray) -> None:
         li_2.append(f"{angle_to_case(angle)}.txt")
 
         if os.path.isfile(f"{li_2[-1]}"):
-            li_2.append("y")
+            li_2.append("o")
 
         # li_2.append("y")
         # li.append(f"O")

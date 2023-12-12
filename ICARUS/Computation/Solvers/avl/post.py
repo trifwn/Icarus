@@ -1,16 +1,20 @@
 import os
 
 import numpy as np
+import pandas
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.AVL import Dir
+from ICARUS.Computation.Solvers.AVL import AVL_HOME
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
+from ICARUS.Database import DB3D
 from ICARUS.Database.utils import angle_to_case
+from ICARUS.Database.utils import disturbance_to_case
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
-#
-def polar_postprocess(PLANEDIR: str, angles: FloatArray) -> DataFrame:
+def process_avl_angle_run(RESULTS_DIR: str, plane: Airplane, angles: FloatArray) -> DataFrame:
     """POST-PROCESSING OF POLAR RUNS - RETURNS AN ARRAY WITH THE FOLLOWING ORDER OF VECTORS: AOA,CL,CD,CM
 
     Args:
@@ -26,10 +30,11 @@ def polar_postprocess(PLANEDIR: str, angles: FloatArray) -> DataFrame:
     CLs = []
     CDs = []
     Cms = []
+    RESULTS_DIR = os.path.join(DB3D, plane.directory, "AVL")
     for angle in angles:
-        p = os.path.join(PLANEDIR, f"{angle_to_case(angle)}.txt")
+        file = os.path.join(RESULTS_DIR, f"{angle_to_case(angle)}.txt")
 
-        with open(p, encoding="utf-8") as f:
+        with open(file, encoding="utf-8") as f:
             con = f.readlines()
 
         CL = con[23]
@@ -49,7 +54,13 @@ def polar_postprocess(PLANEDIR: str, angles: FloatArray) -> DataFrame:
             Cms.append(float(Cm[33:41]))
         else:
             Cms.append(float(Cm[34:41]))
-    polar_df = DataFrame(np.array([AoAs, CLs, CDs, Cms]).T, columns=["AOA", "CL", "CD", "Cm"])
+    polar_df = DataFrame(
+        np.array([AoAs, CLs, CDs, Cms]).T,
+        columns=["AoA", "AVL CL", "AVL CD", "AVL Cm"],
+    ).reset_index(drop=True)
+    file_2_save = os.path.join(DB3D, plane.directory, "polars.avl")
+    DB.vehicles_db.polars[plane.name] = polar_df
+    polar_df.to_csv(file_2_save)
     return polar_df
 
 
@@ -58,9 +69,10 @@ def polar_postprocess(PLANEDIR: str, angles: FloatArray) -> DataFrame:
 # USEFUL FOR SENSITIVITY ANALYSIS WITH RESPECT TO STATE VARIABLE INCREMENTS
 
 
-def finite_difs_post(plane: Airplane, inc_ar, var):
-    dif_path = f"{plane.M}_difs"
+def finite_difs_post(plane: Airplane, state: State):
+    DYNDIR = os.path.join(DB3D, plane.name, "AVL", "Dynamics")
 
+    pertrubation_df: DataFrame = DataFrame()
     CZ_li = []
     CX_li = []
     Cm_li = []
@@ -69,14 +81,19 @@ def finite_difs_post(plane: Airplane, inc_ar, var):
     Cn_li = []
 
     inc_dict = {
-        "plane": f"{plane.M}",
         "axes": "notyet",
         "var": f"{var}",
         "vals": np.concatenate((-inc_ar, inc_ar)),
     }
+
+    for dst in state.disturbances:
+        casefile = disturbance_to_case(dst)
+        with open(casefile, encoding='utf-8') as f:
+            lines = f.readlines()
+
     if var in ["w", "u", "q"]:
         for inc_v in inc_ar:
-            bp = f"{Dir}/{dif_path}/{plane.M}_dif_b_{var}_{inc_v}"
+            bp = os.path.join(DYNDIR, f"dif_b_{var}_{inc_v}")
             bf = open(bp)
             con = bf.readlines()
 
@@ -96,7 +113,7 @@ def finite_difs_post(plane: Airplane, inc_ar, var):
             bf.close()
 
         for inc_v in inc_ar:
-            fp = f"{Dir}/{dif_path}/{plane.M}_dif_f_{var}_{inc_v}"
+            fp = os.path.join(DYNDIR, f"dif_f_{var}_{inc_v}")
             ff = open(fp)
             con = ff.readlines()
 
@@ -121,7 +138,7 @@ def finite_difs_post(plane: Airplane, inc_ar, var):
             inc_dict["Cm"] = np.array(Cm_li)
     else:
         for inc_v in inc_ar:
-            bp = f"{Dir}/{dif_path}/{plane.M}_dif_b_{var}_{inc_v}"
+            bp = os.path.join(DYNDIR, f"dif_b_{var}_{inc_v}")
             bf = open(bp)
             con = bf.readlines()
 
@@ -141,7 +158,7 @@ def finite_difs_post(plane: Airplane, inc_ar, var):
             bf.close()
 
         for inc_v in inc_ar:
-            fp = f"{Dir}/{dif_path}/{plane.M}_dif_f_{var}_{inc_v}"
+            fp = os.path.join(DYNDIR, f"dif_f_{var}_{inc_v}")
             ff = open(fp)
             con = ff.readlines()
 

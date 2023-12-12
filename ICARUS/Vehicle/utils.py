@@ -22,6 +22,7 @@ class DiscretizationType(Enum):
     SINE = 2.0
     INV_SINE = -2.0
     INV_COSINE = -1.0
+    NOT_DEFINED = -1000
 
 
 class DistributionType(Enum):

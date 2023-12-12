@@ -12,6 +12,7 @@ from numpy import floating
 from .strip import Strip
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
+from ICARUS.Vehicle.utils import DiscretizationType
 
 
 class Lifting_Surface:
@@ -45,6 +46,9 @@ class Lifting_Surface:
 
         self.N: int = N
         self.M: int = M
+
+        self.chord_spacing: DiscretizationType = DiscretizationType.NOT_DEFINED
+        self.span_spacing: DiscretizationType = DiscretizationType.NOT_DEFINED
 
         self.name: str = name
         if isinstance(airfoil, str):

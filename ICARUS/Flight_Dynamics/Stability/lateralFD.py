@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 def lateral_stability_fd(
     state: "State",
-    mode: str = "2D",
 ) -> tuple[dict[str, float], dict[str, float], dict[str, float]]:
     """This Function Requires the results from perturbation analysis"""
     pertr: DataFrame = state.pertrubation_results.sort_values(
@@ -51,16 +50,16 @@ def lateral_stability_fd(
         back = rotate_forces(back, state.trim["AoA"])
         front = rotate_forces(front, state.trim["AoA"])
 
-        Yf = float(front[f"Fy_{mode}"].to_numpy())
-        Yb = float(back[f"Fy_{mode}"].to_numpy())
+        Yf = float(front[f"Fy"].to_numpy())
+        Yb = float(back[f"Fy"].to_numpy())
         Y[var] = (Yf - Yb) / de
 
-        Lf = float(front[f"L_{mode}"].to_numpy())
-        Lb = float(back[f"L_{mode}"].to_numpy())
+        Lf = float(front[f"L"].to_numpy())
+        Lb = float(back[f"L"].to_numpy())
         L[var] = (Lf - Lb) / de
 
-        Nf = float(front[f"N_{mode}"].to_numpy())
-        Nb = float(back[f"N_{mode}"].to_numpy())
+        Nf = float(front[f"N"].to_numpy())
+        Nb = float(back[f"N"].to_numpy())
         N[var] = (Nf - Nb) / de
 
     yv: float = Y["v"] / mass

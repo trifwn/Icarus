@@ -116,7 +116,7 @@ class Polars:
         self.data: Struct | dict[str, DataFrame] = data
 
         self.reynolds_keys: list[str] = list(data.keys())
-        self.reynolds_nums: list[float] = [float(reyn) for reyn in self.reynolds_keys]
+        self.reynolds_nums: list[float] = sorted([float(reyn) for reyn in self.reynolds_keys])
 
         # MERGE ALL POLARS INTO ONE DATAFRAME
         df: DataFrame = data[self.reynolds_keys[0]].astype("float32").dropna(axis=0, how="all")
@@ -133,7 +133,12 @@ class Polars:
         for reyn in self.reynolds_keys[1:]:
             df2: DataFrame = data[reyn].astype("float32").dropna(axis=0, how="all")
             df2.rename(
-                {"CL": f"CL_{reyn}", "CD": f"CD_{reyn}", "Cm": f"Cm_{reyn}", "CM": f"Cm_{reyn}"},
+                {
+                    "CL": f"CL_{reyn}",
+                    "CD": f"CD_{reyn}",
+                    "Cm": f"Cm_{reyn}",
+                    "CM": f"Cm_{reyn}",
+                },
                 inplace=True,
                 axis="columns",
             )
@@ -224,6 +229,25 @@ class Polars:
         return float(cl_linear.diff().mean())
 
     @staticmethod
+    def get_positive_stall_idx(cl_curve: pd.Series) -> int:
+        """Get Positive Stall Angle"""
+        return int(cl_curve.idxmax())
+
+    @staticmethod
+    def get_negative_stall_idx(cl_curve: pd.Series) -> int:
+        """Get Negative Stall Angle"""
+        return int(cl_curve.idxmin())
+
+    @staticmethod
+    def get_cl_cd_minimum_idx(cl_curve: pd.Series, cd_curve: pd.Series) -> int:
+        """Get Minimum CD/CL Ratio"""
+        cd_cl: pd.Series = cd_curve / cl_curve
+        slope_cd_cl = cd_cl.diff()
+
+        # Find the minimum slope
+        return int(slope_cd_cl.idxmin())
+
+    @staticmethod
     def fill_polar_table(df: DataFrame) -> DataFrame:
         """Fill Nan Values of Panda Dataframe Row by Row
         substituting first backward and then forward
@@ -254,3 +278,80 @@ class Polars:
             )
         df.dropna(axis=0, subset=df.columns[1:], how="all", inplace=True)
         return df
+
+    def get_cl_cd_parabolic(self, reynolds: float) -> tuple[FloatArray, FloatArray]:
+        """
+        A simple profile-drag CD(CL) function for this section.
+        The function is parabolic between CL1..CL2 and CL2..CL3,
+        with rapid increases in CD below CL1 and above CL3.
+
+        The CD-CL polar is based on a simple interpolation with four CL regions:
+        1) negative stall region
+        2) parabolic CD(CL) region between negative stall and the drag minimum
+        3) parabolic CD(CL) region between the drag minimum and positive stall
+        4) positive stall region
+
+                CLpos,CDpos       <-  Region 4 (quadratic above CLpos)
+        CL |   pt3--------
+        |    /
+        |   |                   <-  Region 3 (quadratic above CLcdmin)
+        | pt2 CLcdmin,CDmin
+        |   |
+        |    /                  <-  Region 2 (quadratic below CLcdmin)
+        |   pt1_________
+        |     CLneg,CDneg       <-  Region 1 (quadratic below CLneg)
+        |
+        -------------------------
+                        CD
+
+        The CD(CL) function is interpolated for stations in between
+        defining sections.  Hence, the CDCL declaration on any surface
+        must be used either for all sections or for none (unless the SURFACE
+        CDCL is specified).
+        """
+
+        # Interpolate Reynolds From Values Stored in the Class
+        if reynolds not in self.reynolds_nums:
+            reynolds_max = min(self.reynolds_nums)
+            reynolds_min = max(self.reynolds_nums)
+            for reyn in self.reynolds_nums:
+                if reyn > reynolds:
+                    reynolds_max = reyn
+                    break
+
+            for reyn in self.reynolds_nums[::-1]:
+                if reyn < reynolds:
+                    reynolds_min = reyn
+                    break
+
+            # Get CL and CD for the two Reynolds Numbers
+            curve_1 = self.get_reynolds_subtable(reynolds_min)
+            curve_2 = self.get_reynolds_subtable(reynolds_max)
+
+            # Interpolate curve based on relative distance between Reynolds Numbers
+            # (Linear Interpolation)
+            curve = curve_1 + (curve_2 - curve_1) * (reynolds - reynolds_min) / (reynolds_max - reynolds_min)
+
+        else:
+            curve = self.get_reynolds_subtable(reynolds)
+
+        pos_stall_idx = self.get_positive_stall_idx(curve["CL"])
+        neg_stall_idx = self.get_negative_stall_idx(curve["CL"])
+        min_cdcl_idx = self.get_cl_cd_minimum_idx(curve["CL"], curve["CD"])
+
+        # pos_stall_angle = curve["AoA"].loc[pos_stall_idx]
+        # neg_stall_angle = curve["AoA"].loc[neg_stall_idx]
+        # min_cdcl_angle = curve["AoA"].loc[min_cdcl_idx]
+
+        # From Indexes get CL and CD
+        cl1 = curve["CL"].loc[neg_stall_idx]
+        cd1 = curve["CD"].loc[neg_stall_idx]
+        cl2 = curve["CL"].loc[min_cdcl_idx]
+        cd2 = curve["CD"].loc[min_cdcl_idx]
+        cl3 = curve["CL"].loc[pos_stall_idx]
+        cd3 = curve["CD"].loc[pos_stall_idx]
+
+        cl = np.array([cl1, cl2, cl3])
+        cd = np.array([cd1, cd2, cd3])
+
+        return cl, cd

@@ -21,13 +21,15 @@ def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
     Returns:
         DataFrame: Resulting Polars
     """
-    os.chdir(CASEDIR)
+    GNVPDIR = os.path.join(CASEDIR, f"GenuVP{genu_version}")
+    print(f"CASEDIR ")
+    os.chdir(GNVPDIR)
 
     folders: list[str] = next(os.walk("."))[1]
     # print("Making Polars")
     pols: list[list[float]] = []
     for folder in folders:
-        os.chdir(os.path.join(CASEDIR, folder))
+        os.chdir(os.path.join(GNVPDIR, folder))
         files: list[str] = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
             name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
@@ -37,12 +39,14 @@ def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
             else:
                 a = [name, *dat]
             pols.append(a)
-        os.chdir(f"{CASEDIR}")
+        os.chdir(f"{GNVPDIR}")
     df: DataFrame = DataFrame(pols, columns=cols)
     df.pop("TTIME")
     df.pop("PSIB")
     df = df.sort_values("AoA").reset_index(drop=True)
-    df.to_csv(f"forces.gnvp{genu_version}", index=False, float_format="%.10f")
+
+    forces_file: str = os.path.join(CASEDIR, f"forces.gnvp{genu_version}")
+    df.to_csv(forces_file, index=False, float_format="%.10f")
     os.chdir(HOMEDIR)
     # df = rotate_forces(df, df['AoA'])
     return df
@@ -93,13 +97,16 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
 def rotate_forces(
     rawpolars: DataFrame,
     alpha_deg: float | Series | FloatArray,
-    preferred: str = "2D",
-    save: bool = False,
 ) -> DataFrame:
     data = pd.DataFrame()
     AoA: float | Series[float] | FloatArray = alpha_deg * np.pi / 180
 
+    key_in_df = rawpolars.columns[0]
+    name = None
     for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
+        if key_in_df != f"TFORC{enc}(1)":
+            continue
+
         f_x: Series[Any] = rawpolars[f"TFORC{enc}(1)"]
         f_y: Series[Any] = rawpolars[f"TFORC{enc}(2)"]
         f_z: Series[Any] = rawpolars[f"TFORC{enc}(3)"]
@@ -122,15 +129,17 @@ def rotate_forces(
         data[f"L_{name}"] = m_x_rot
         data[f"M_{name}"] = m_y_rot
         data[f"N_{name}"] = m_z_rot
-
+        break
+    if not name:
+        raise ValueError("ENCODING NOT FOUND")
     data["AoA"] = alpha_deg
     # print(f"Using {preferred} polars")
-    data["Fx"] = data[f"Fx_{preferred}"]
-    data["Fy"] = data[f"Fy_{preferred}"]
-    data["Fz"] = data[f"Fz_{preferred}"]
-    data["L"] = data[f"L_{preferred}"]
-    data["M"] = data[f"M_{preferred}"]
-    data["N"] = data[f"N_{preferred}"]
+    data["Fx"] = data[f"Fx_{name}"]
+    data["Fy"] = data[f"Fy_{name}"]
+    data["Fz"] = data[f"Fz_{name}"]
+    data["L"] = data[f"L_{name}"]
+    data["M"] = data[f"M_{name}"]
+    data["N"] = data[f"N_{name}"]
     # Reindex the dataframe sort by AoA
     data = data.sort_values(by="AoA").reset_index(drop=True)
     return data

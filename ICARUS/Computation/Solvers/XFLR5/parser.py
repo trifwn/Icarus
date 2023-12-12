@@ -39,7 +39,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     # units = dict["Units"]
     plane = dict["Plane"]
 
-    point_masses: list[tuple[float, FloatArray]] = []
+    point_masses: list[tuple[float, FloatArray, str]] = []
     if plane["Inertia"] is not None:
         if not isinstance(plane["Inertia"]["Point_Mass"], list):
             plane["Inertia"]["Point_Mass"] = [plane["Inertia"]["Point_Mass"]]
@@ -49,7 +49,7 @@ def parse_xfl_project(filename: str) -> Airplane:
                 pmass["coordinates"].replace(",", "").split(),
                 dtype=float,
             )
-            point_masses.append((m, coor))
+            point_masses.append((m, coor, ""))
 
     plane_name = plane["Name"]
     # description = plane["Description"]

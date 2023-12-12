@@ -22,7 +22,7 @@ def get_wake_data_3(
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
-    fname: str = os.path.join(DB3D, plane.CASEDIR, case, "YOURS.WAK")
+    fname: str = os.path.join(DB3D, plane.directory, "GenuVP3", case, "YOURS.WAK")
     with open(fname) as file:
         data: list[str] = file.readlines()
     a: list[list[float]] = []
@@ -71,13 +71,13 @@ def nwake_data_7(
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
     try:
-        fname: str = os.path.join(DB3D, plane.CASEDIR, case, "NWAKE_FINAL")
+        fname: str = os.path.join(DB3D, plane.directory, "GenuVP7", case, "NWAKE_FINAL")
 
         with open(fname) as file:
             data: list[str] = file.readlines()
 
     except FileNotFoundError:
-        fname = os.path.join(DB3D, plane.CASEDIR, case, "NWAKE00f")
+        fname = os.path.join(DB3D, plane.directory, "GenuVP7", case, "NWAKE00f")
         with open(fname) as file:
             data = file.readlines()
 
@@ -112,7 +112,7 @@ def wake_data_7(
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
-    fname: str = os.path.join(DB3D, plane.CASEDIR, case, "VORTPF")
+    fname: str = os.path.join(DB3D, plane.directory, "GenuVP7", case, "VORTPF")
 
     with open(fname) as file:
         data: list[str] = file.readlines()
@@ -149,11 +149,11 @@ def grid_data_7(
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
     try:
-        fname: str = os.path.join(DB3D, plane.CASEDIR, case, "GWING_FINAL")
+        fname: str = os.path.join(DB3D, plane.directory, "GenuVP7", case, "GWING_FINAL")
         with open(fname) as file:
             data: list[str] = file.readlines()
     except FileNotFoundError:
-        fname = os.path.join(DB3D, plane.CASEDIR, case, "GWING000")
+        fname = os.path.join(DB3D, plane.directory, case, "GenuVP7", "GWING000")
         with open(fname) as file:
             data = file.readlines()
     a: list[list[float]] = []

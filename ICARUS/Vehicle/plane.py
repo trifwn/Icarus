@@ -36,7 +36,7 @@ class Airplane:
             orientation (FloatOrListArray] | None, optional): Plane Orientation. Defaults to None.
         """
         self.name: str = name
-        self.CASEDIR: str = name
+        self.directory: str = name
         self.surfaces: list[Lifting_Surface] = surfaces
 
         if disturbances is None:
@@ -77,7 +77,7 @@ class Airplane:
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, FloatArray] = (surface.mass, surface.CG, surface.name)
+            mass: tuple[float, FloatArray, str] = (surface.mass, surface.CG, surface.name)
             mom = surface.inertia
 
             self.M += surface.mass
@@ -309,7 +309,7 @@ class Airplane:
         """
         from ICARUS.Database import DB3D
 
-        fname: str = os.path.join(DB3D, self.CASEDIR, f"{self.name}.json")
+        fname: str = os.path.join(DB3D, self.directory, f"{self.name}.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 

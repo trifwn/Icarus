@@ -22,7 +22,7 @@ def get_strip_data(
     Returns:
         tuple[DataFrame, DataFrame]: Returns a dataframe with all strip data and a dataframe with all strip data for the NBs
     """
-    directory: str = os.path.join(DB3D, plane.CASEDIR, case)
+    directory: str = os.path.join(DB3D, plane.directory, case)
     files: list[str] = os.listdir(directory)
     strip_data: list[list[Any]] = []
     for file in files:

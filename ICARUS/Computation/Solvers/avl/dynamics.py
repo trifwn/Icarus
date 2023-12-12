@@ -1,176 +1,176 @@
 import os
 import shutil
 import subprocess
-from genericpath import exists
-from math import e
+from io import StringIO
 
 import numpy as np
 from numpy import deg2rad
 from numpy import floating
 from numpy import rad2deg
 
-from ICARUS.Computation.Solvers.AVL import Dir
+from ICARUS.Computation.Solvers.AVL.input import make_input_files
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
+from ICARUS.Environment.definition import Environment
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
-def split_file(input_file, output_prefix, delimiter):
-    with open(input_file) as infile:
-        data = infile.read()
+def csplit(input_file: str, pattern: str) -> list[str]:
+    with open(input_file) as file:
+        content = file.read()
 
-    parts = data.split(delimiter)
+    import re
 
-    for i, part in enumerate(parts, start=1):
-        output_file = f"{output_prefix}_{i}.txt"
-        with open(output_file, "w") as outfile:
-            outfile.write(part)
+    sections = re.split(pattern, content)
+    sections = [section.strip() for section in sections if section.strip()]
+
+    return sections
 
 
 # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL
-def implicit_eigs(plane: Airplane):
-    PLANE_DIR = f"{plane.name}_genD"
-    CASEDIR = f"{plane.name}_polarD"
-    DYNAMICS_DIR = f"{plane.name}_eigD"
-    DIRNOW: str = os.getcwd()
-
-    log = f"{DYNAMICS_DIR}/{plane.name}_eiglog.txt"
+def implicit_eigs(
+    PLANEDIR: str,
+    plane: Airplane,
+    environment: Environment,
+    UINF: float,
+    solver2D: str = "Xfoil",
+):
+    DYNAMICS_DIR = os.path.join(PLANEDIR, "Dynamics")
+    HOMEDIR = os.getcwd()
+    make_input_files(
+        PLANEDIR=DYNAMICS_DIR,
+        plane=plane,
+        environment=environment,
+        UINF=UINF,
+        solver2D=solver2D,
+    )
+    log = os.path.join(DYNAMICS_DIR, "eig_log.txt")
     os.makedirs(DYNAMICS_DIR, exist_ok=True)
 
     f_li = []
-    f_li.append(f"load {PLANE_DIR}/{plane.name}.avl")
-    f_li.append(f"mass {PLANE_DIR}/{plane.name}.mass")
-    f_li.append("MSET")
-    f_li.append("0")
-    f_li.append("oper")
-    f_li.append("1")
-    f_li.append("a")
-    f_li.append("pm")
-    f_li.append("0")
-    f_li.append("x")
-    f_li.append("C1")
-    f_li.append("b")
-    f_li.append("0")
-    f_li.append("    ")
-    f_li.append("x")
-    f_li.append("    ")
-    f_li.append("mode")
-    f_li.append("1")
-    f_li.append("N")
-    f_li.append("    ")
-    f_li.append("quit")
-    ar = np.array(f_li)
-    np.savetxt(f"{DYNAMICS_DIR}/{plane.name}_mode_scr", ar, delimiter=" ", fmt="%s")
+    f_li.append(f"load {plane.name}.avl\n")
+    f_li.append(f"mass {plane.name}.mass\n")
+    f_li.append("MSET\n")
+    f_li.append("0\n")
+    f_li.append("oper\n")
+    f_li.append("1\n")
+    f_li.append("a\n")
+    f_li.append("pm\n")
+    f_li.append("0\n")
+    f_li.append("x\n")
+    f_li.append("C1\n")
+    f_li.append("b\n")
+    f_li.append("0\n")
+    f_li.append("    \n")
+    f_li.append("x\n")
+    f_li.append("    \n")
+    f_li.append("mode\n")
+    f_li.append("1\n")
+    f_li.append("N\n")
+    f_li.append("    \n")
+    f_li.append("quit\n")
 
-    input_f = os.path.join(DYNAMICS_DIR, f"{plane.name}_mode_scr")
+    input_f = os.path.join(DYNAMICS_DIR, f"eig_mode_scr")
+    os.chdir(DYNAMICS_DIR)
+    with open(input_f, "w", encoding="utf-8") as f:
+        f.writelines(f_li)
+
     with open(input_f, encoding="utf-8") as fin:
         with open(log, "w", encoding="utf-8") as fout:
             res: int = subprocess.check_call(
-                [os.path.join(DYNAMICS_DIR, "avl")],
+                [AVL_exe],
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
             )
+    os.chdir(HOMEDIR)
+    sections = csplit(log, "1:")
+    sec_2_use = sections[-1].splitlines()
+    sec_2_use[0] = "  mode 1:" + sec_2_use[0]
 
-    char = "'{*}'"
-    split_file(log, "xx", char)
-    p = "xx10"
-    with open(p, "w", encoding="utf-8") as f:
-        lines = f.readlines()
+    def get_matrix(
+        index: int,
+        lines: list[str],
+    ) -> tuple[FloatArray, FloatArray, FloatArray]:
+        """Extracts the EigenVector and EgienValue from AVL Output
 
-    long_li = []
-    lat_li = []
+        Args:
+            index (int): Index in Reading File
+            lines (list[str]): AVL output
+
+        Returns:
+            tuple[FloatArray, FloatArray, FloatArray]: Longitudal EigenVector, Lateral EigenVector, Mode
+        """
+        index = int(index)
+        mode = np.array([float(lines[index][10:22]), float(lines[index][24:36])])
+        long_vecs = np.zeros((4, 2), dtype=floating)
+        lat_vecs = np.zeros((4, 2), dtype=floating)
+        for i in range(0, 4):
+            long_vecs[i, :] = [
+                float(lines[index + i + 1][9:15]),
+                float(lines[index + i + 1][20:26]),
+            ]
+
+            lat_vecs[i, :] = [
+                float(lines[index + i + 1][41:47]),
+                float(lines[index + i + 1][52:58]),
+            ]
+
+        return long_vecs, lat_vecs, mode
+
+    longitudal_matrix = []
+    lateral_matrix = []
     ind_li = np.arange(0, 8, 1) * 6
     for i in ind_li:
-        vals = eigpro(i, lines)
-        if np.mean(np.abs(vals[0])) == 0:
-            lat_li.append(vals[2])
-        elif np.mean(np.abs(vals[1])) == 0:
-            long_li.append(vals[2])
+        long_vec, lat_vec, mode = get_matrix(i, sec_2_use)
+        if np.mean(np.abs(long_vec)) == 0:
+            lateral_matrix.append(mode)
+        elif np.mean(np.abs(lat_vec)) == 0:
+            longitudal_matrix.append(mode)
 
-    # Remove the temporary files
-    # Get all the files in the directory
-    # Filter all files that contain the string 'xx'
-    files: list[str] = os.listdir(DIRNOW)
-    for file in files:
-        if file.startswith("xx"):
-            os.remove(file)
-
-    return long_li, lat_li
+    return longitudal_matrix, lateral_matrix
 
 
-# NECESSARY FUNCTION FOR THE ABOVE
-def eigpro(st, lines):
-    st = int(st)
-    mode = np.array([float(lines[st][10:22]), float(lines[st][24:32])])
-    long_vecs = np.zeros((4, 2), dtype=floating)
-    lat_vecs = np.zeros((4, 2), dtype=floating)
-    for i in range(0, 4):
-        long_vecs[i, :] = np.array([float(lines[st + i + 1][9:15]), float(lines[st + i + 1][20:26])])
-        lat_vecs[i, :] = np.array([float(lines[st + i + 1][41:47]), float(lines[st + i + 1][52:58])])
+def trim_calculation(PLANE_DIR: str, plane: Airplane) -> tuple[float, float]:
+    """Calculates the trim conditions of the airplane.
 
-    return long_vecs, lat_vecs, mode
+    Args:
+        PLANE_DIR (str): Path to the directory containing the airplane files.
+        plane (Airplane): Airplane object.
+    """
+    f_io: StringIO = StringIO()
+    f_io.write(f"load {plane.name}.avl\n")
+    f_io.write(f"mass {plane.name}.mass\n")
+    f_io.write(f"MSET\n")
+    f_io.write("0\n")
+    f_io.write(f"oper\n")
+    f_io.write("1\n")
+    f_io.write(f"a\n")
+    f_io.write("pm\n")
+    f_io.write("0\n")
+    f_io.write("x\n")
+    f_io.write("c1\n")
+    f_io.write("b\n")
+    f_io.write("0\n")
+    f_io.write("    \n")
+    f_io.write("x\n")
+    f_io.write("FT\n")
+    f_io.write(f"trim_res.txt\n")
+    if os.path.isfile(os.path.join(PLANE_DIR, "trim_res.txt")):
+        f_io.write("O\n")
+    f_io.write("    \n")
+    f_io.write("quit\n")
 
+    input_f = os.path.join(PLANE_DIR, "trim_scr")
+    log = os.path.join(PLANE_DIR, "trim_log.txt")
 
-# FUCNTION OBTAINING EIGENVALUES FROM PRE-RUN XFLR5 DYNAMIC ANALYSIS (FOR COMPARISON)
-def xflr_eigs(plane):
-    p = f"{Dir}/{plane.name}_x.eigs"
-    f = open(p)
-    lines = f.readlines()
-    long_li = lines[105]
-    lat_li = lines[116]
-    eig_mat = np.zeros((5, 2))
-    eig_mat[0, 0] = float(long_li[22:38].partition("+")[0])
-    eig_mat[0, 1] = float(long_li[22:38].partition("+")[2].partition("i")[0])
-    eig_mat[1, 0] = float(long_li[74:92].partition("+")[0])
-    eig_mat[1, 1] = float(long_li[74:92].partition("+")[2].partition("i")[0])
-    eig_mat[2, 0] = float(lat_li[22:38].partition("+")[0])
-    eig_mat[2, 1] = float(lat_li[22:38].partition("+")[2].partition("i")[0])
-    eig_mat[3, 0] = float(lat_li[46:67].partition("+")[0])
-    eig_mat[3, 1] = float(lat_li[46:67].partition("+")[2].partition("i")[0])
-    eig_mat[4, 0] = float(lat_li[99:119].partition("+")[0])
-    eig_mat[4, 1] = float(lat_li[99:119].partition("+")[2].partition("i")[0])
+    contents: str = f_io.getvalue().expandtabs(4)
+    with open(input_f, "w", encoding="utf-8") as file:
+        file.write(contents)
 
-    f.close()
-    print("1) Short - Period, 2) Phygoid, 3) Roll-Damping, 4) Dutch Roll, 5) Spiral")
-    return eig_mat
-
-
-# CALCULATION OF AIRCRAFT TRIM AOA AND VELOCITY
-def trim_conditions(plane):
-    trim_path = f"{plane.name}_trimD"
-    pl_dir = f"{plane.name}_genD"
-    if os.path.isdir(f"{plane.name}_trimD"):
-        os.rmdir(trim_path)
-    os.makedirs(trim_path)
-    li = []
-
-    li.append(f"load {pl_dir}/{plane.name}.avl")
-    li.append(f"mass {pl_dir}/{plane.name}.mass")
-    li.append(f"MSET")
-    li.append("0")
-    li.append(f"oper")
-    li.append("1")
-    li.append(f"a")
-    li.append("pm")
-    li.append("0")
-    li.append("x")
-    li.append("c1")
-    li.append("b")
-    li.append("0")
-    li.append("    ")
-    li.append("x")
-    li.append("FT")
-    li.append(f"{trim_path}/{plane.name}_trimmed_res.txt")
-    if os.path.isfile(f"{trim_path}/{plane.name}_trimmed_res.txt"):
-        li.append("O")
-    li.append("    ")
-    li.append("quit")
-    ar = np.array(li)
-    np.savetxt(f"{trim_path}/{plane.name}_trimmed_scr", ar, delimiter=" ", fmt="%s")
-    log = f"{trim_path}/{plane.name}_trim_log.txt"
-
-    input_f = os.path.join(trim_path, f"{plane.name}_trimmed_scr")
+    HOMEDIR = os.getcwd()
+    os.chdir(PLANE_DIR)
     with open(input_f, encoding="utf-8") as fin:
         with open(log, "w", encoding="utf-8") as fout:
             res = subprocess.check_call(
@@ -179,91 +179,58 @@ def trim_conditions(plane):
                 stdout=fout,
                 stderr=fout,
             )
+    os.chdir(HOMEDIR)
 
-    char = "'{*}'"
-    log = "your_log_file.txt"  # Replace with the actual log file path
+    delimiter = "Setup"
+    sections = csplit(log, delimiter)
+    sec_2_use = sections[2].splitlines()
+    # Use the extracted values as needed
+    trim_velocity = float(sec_2_use[5][22:28])
+    trim_aoa = float(sec_2_use[68][10:19])
 
-    # Split the log file using Python
-    with open(log) as infile:
-        data = infile.read()
-
-    parts = data.split("Setup")
-
-    for i, part in enumerate(parts, start=2):  # Start from 2 because the first part is empty
-        output_file = f"xx{i:02d}"
-        with open(output_file, "w") as outfile:
-            outfile.write(part)
-
-    # Read lines from xx02
-    p = "xx02"
-    with open(p) as f:
-        lines = f.readlines()
-
-    # Remove files starting with "xx"
-    for filename in os.listdir():
-        if filename.startswith("xx"):
-            os.remove(filename)
-
-    V = float(lines[5][22:28])
-    aoa = float(lines[68][10:19])
-    return aoa, V
+    print("V:", trim_velocity)
+    print("aoa:", trim_aoa)
+    return trim_aoa, trim_velocity
 
 
 # FUNCTION FOR THE CALCULATION OF STABILITY DERIVATIVES VIA FINITED DIFEERENCE METHOD
-def finite_difs(
-    plane: Airplane,
-    u_ar: FloatArray,
-    v_ar: FloatArray,
-    w_ar: FloatArray,
-    q_ar: FloatArray,
-    p_ar: FloatArray,
-    r_ar: FloatArray,
-    trim_conditions: FloatArray,
-):
-    """
-    This function calculates the stability derivatives of the airplane using the finite difference method.
-    For each of the six degrees of freedom, the function calculates the stability derivatives for the
-    positive and negative perturbations of the state variable. The function then saves the results in
-    a file named after the perturbation and the state variable. Variables:
-        -u: Array of perturbations in the x-axis velocity.
-        -v: Array of perturbations in the y-axis velocity.
-        -w: Array of perturbations in the z-axis velocity.
-        -q: Array of perturbations in the pitch rate.
-        -p: Array of perturbations in the roll rate.
-        -r: Array of perturbations in the yaw rate.
+# This function calculates the stability derivatives of the airplane using the finite difference method.
+# For each of the six degrees of freedom, the function calculates the stability derivatives for the
+# positive and negative perturbations of the state variable. The function then saves the results in
+# a file named after the perturbation and the state variable. Variables:
+#     -u: Array of perturbations in the x-axis velocity.
+#     -v: Array of perturbations in the y-axis velocity.
+#     -w: Array of perturbations in the z-axis velocity.
+#     -q: Array of perturbations in the pitch rate.
+#     -p: Array of perturbations in the roll rate.
+#     -r: Array of perturbations in the yaw rate.
 
-    Args:
-        plane (Airplane): Airplane object.
-        u_ar (FloatArray): Array of perturbations in the x-axis velocity. The perturbations are taken as central differences around the triim.
-        v_ar (FloatArray): Array of perturbations in the y-axis velocity. The perturbations are taken as central differences around the triim.
-        w_ar (FloatArray): Array of perturbations in the z-axis velocity. The perturbations are taken as central differences around the triim.
-        q_ar (FloatArray): Array of perturbations in the pitch rate. The perturbations are taken as central differences around the triim.
-        p_ar (FloatArray): Array of perturbations in the roll rate. The perturbations are taken as central differences around the triim.
-        r_ar (FloatArray): Array of perturbations in the yaw rate. The perturbations are taken as central differences around the triim.
-        trim_conditions (FloatArray): Array containing the trim conditions of the airplane. The array is of the form [alpha, V].
-    """
-    pl_dir = f"{plane.name}_genD"
-    dif_path = f"{plane.name}_difs"
+
+def finite_difs(
+    PLANEDIR: str,
+    plane: Airplane,
+    u_ar,
+    v_ar,
+    w_ar,
+    q_ar,
+    p_ar,
+    r_ar,
+    trim_conditions,
+    state: State,
+):
+    DYNDIR = os.path.join(PLANEDIR, "Dynamics")
+    HOMEDIR = os.getcwd()
     case_num = 0
 
-    u_ar = np.array(u_ar)
-    v_ar = np.array(v_ar)
-    w_ar = np.array(w_ar)
-    q_ar = np.array(q_ar)
-    p_ar = np.array(p_ar)
-    r_ar = np.array(r_ar)
+    for i, dst in enumerate(state.disturbances):
+        print(dst.name, dst.amplitude, dst.axis)
 
-    # Check for empty arrays
-    for arr in [u_ar, v_ar, w_ar, q_ar, p_ar, r_ar]:
-        if arr.size == 0:
-            raise ValueError("Empty array")
-
-    os.makedirs(dif_path, exist_ok=True)
+    os.makedirs(DYNDIR, exist_ok=True)
 
     for w in w_ar:
         li = []
-        li.append(f"load {pl_dir}/{plane.name}.avl")
-        li.append(f"mass {pl_dir}/{plane.name}.mass")
+        li.append(f"load {plane.name}.avl")
+        li.append(f"mass {plane.name}.mass")
         li.append("MSET")
         li.append("0")
         li.append("oper")
@@ -276,7 +243,7 @@ def finite_difs(
         li.append(f"{f_ang}")
         li.append("x")
         li.append("FT")
-        f_w = f"{plane.name}_dif_f_w_{w}"
+        f_w = f"dif_f_w_{w}"
         li.append(f_w)
 
         li.append("+")
@@ -288,7 +255,7 @@ def finite_difs(
         li.append(f"{b_ang}")
         li.append("x")
         li.append("FT")
-        b_w = f"{plane.name}_dif_b_w_{w}"
+        b_w = f"dif_b_w_{w}"
         li.append(b_w)
 
         ar_1 = np.array(li)
@@ -306,7 +273,7 @@ def finite_difs(
         li.append(f"{f_u_ang}")
         li.append("x")
         li.append("FT")
-        f_u = f"{plane.name}_dif_f_u_{u}"
+        f_u = f"dif_f_u_{u}"
         li.append(f_u)
         li.append("+")
         li.append(f"{int(case_num+1)}")
@@ -316,7 +283,7 @@ def finite_difs(
         li.append(f"{b_u_ang}")
         li.append("x")
         li.append("FT")
-        b_u = f"{plane.name}_dif_b_u_{u}"
+        b_u = f"dif_b_u_{u}"
         li.append(b_u)
 
         ar_2 = np.array(li)
@@ -336,7 +303,7 @@ def finite_difs(
         li.append(f"{(q*plane.mean_aerodynamic_chord/(2*trim_conditions[1]))}")
         li.append("x")
         li.append("FT")
-        f_q = f"{plane.name}_dif_f_q_{q}"
+        f_q = f"dif_f_q_{q}"
         li.append(f_q)
 
         li.append("+")
@@ -350,7 +317,7 @@ def finite_difs(
         li.append(f"{-(q*plane.mean_aerodynamic_chord/(2*trim_conditions[1]))}")
         li.append("x")
         li.append("FT")
-        b_q = f"{plane.name}_dif_b_q_{q}"
+        b_q = f"dif_b_q_{q}"
         li.append(b_q)
 
         ar_3 = np.array(li)
@@ -374,7 +341,7 @@ def finite_difs(
         li.append(f"{f_ang}")
         li.append("x")
         li.append("FT")
-        f_v = f"{plane.name}_dif_f_v_{v}"
+        f_v = f"dif_f_v_{v}"
         li.append(f_v)
 
         li.append("+")
@@ -389,7 +356,7 @@ def finite_difs(
         li.append(f"{b_ang}")
         li.append("x")
         li.append("FT")
-        b_v = f"{plane.name}_dif_b_v_{v}"
+        b_v = f"dif_b_v_{v}"
         li.append(b_v)
         ar_4 = np.array(li)
 
@@ -409,7 +376,7 @@ def finite_difs(
         li.append(f"{(p*plane.span/(2*trim_conditions[1]))}")
         li.append("x")
         li.append("FT")
-        f_p = f"{plane.name}_dif_f_p_{p}"
+        f_p = f"dif_f_p_{p}"
         li.append(f_p)
         li.append("+")
         li.append(f"{int(case_num+1)}")
@@ -425,7 +392,7 @@ def finite_difs(
         li.append(f"{-(p*plane.span/(2*trim_conditions[1]))}")
         li.append("x")
         li.append("FT")
-        b_p = f"{plane.name}_dif_b_p_{p}"
+        b_p = f"dif_b_p_{p}"
         li.append(b_p)
         ar_5 = np.array(li)
 
@@ -448,7 +415,7 @@ def finite_difs(
         li.append(f"{(r*plane.span/(2*trim_conditions[1]))}")
         li.append("x")
         li.append("FT")
-        f_r = f"{plane.name}_dif_f_r_{r}"
+        f_r = f"dif_f_r_{r}"
         li.append(f_r)
         li.append("+")
         li.append(f"{int(case_num+1)}")
@@ -464,226 +431,23 @@ def finite_difs(
         li.append(f"{-(r*plane.span/(2*trim_conditions[1]))}")
         li.append("x")
         li.append("FT")
-        b_r = f"{plane.name}_dif_b_r_{r}"
+        b_r = f"dif_b_r_{r}"
         li.append(b_r)
         li.append("    ")
         li.append("quit")
         ar_6 = np.array(li)
 
-    ar_6 = np.concatenate((ar_1, ar_2, ar_3, ar_4, ar_5, ar_6))
-    np.savetxt(f"{plane.name}_difs_script", ar_6, delimiter=" ", fmt="%s")
+    all_arrays = np.concatenate((ar_1, ar_2, ar_3, ar_4, ar_5, ar_6))
+    input_f = os.path.join(DYNDIR, "diffs_script")
+    log = os.path.join(DYNDIR, "finite_diffs_log")
+    with open(input_f, "w", encoding="utf-8"):
+        np.savetxt(input_f, all_arrays, delimiter=" ", fmt="%s")
 
-    with open(f"{plane.name}_difs_script", encoding="utf-8") as fin:
-        res: int = subprocess.check_call(
-            [AVL_exe],
-            stdin=fin,
-        )
-
-    for item in [
-        b_q,
-        f_q,
-        b_u,
-        f_u,
-        b_w,
-        f_w,
-        b_p,
-        f_p,
-        b_v,
-        f_v,
-        b_r,
-        f_r,
-        f"{plane.name}_difs_script",
-    ]:
-        if os.path.isfile(item):
-            # copy the file to the dif_path
-            shutil.copy(item, dif_path)
-
-            os.remove(item)
-
-
-# LONGITUDAL STATE MATRIX USING FINITE DIFFERENCE STABILITY DERIVATIVES -
-# EXECUTION OF POSTPRROCESSING FUNCTION NECESSARY
-def long_mat(plane, environment, aoa_trim, trim_Vel, u_dict, I_li, w_dict, q_dict, span=4.4):
-    mass = plane.M
-    rho = environment.air_density
-    g = environment.GRAVITY
-    Area = plane.S
-    chord = plane.mean_aerodynamic_chord
-    span = plane.span
-    # good inc = 0.005*U
-
-    U_e = trim_Vel * np.cos(deg2rad(aoa_trim))
-    W_e = trim_Vel * np.sin(deg2rad(aoa_trim))
-
-    V_u_f = np.linalg.norm([u_dict["vals"][1] + U_e, W_e])
-    V_u_b = np.linalg.norm([u_dict["vals"][0] + U_e, W_e])
-
-    V_w_f = np.linalg.norm([U_e, W_e + w_dict["vals"][1]])
-    V_w_b = np.linalg.norm([U_e, W_e + w_dict["vals"][1]])
-
-    print(V_u_f**2 - V_u_b**2)
-
-    X_u = (
-        (u_dict["CX"][1] * V_u_f**2 - u_dict["CX"][0] * V_u_b**2)
-        * (0.5 * rho * Area)
-        / (u_dict["vals"][1] - u_dict["vals"][0])
-    )
-    Z_u = (
-        (u_dict["CZ"][1] * V_u_f**2 - u_dict["CZ"][0] * V_u_b**2)
-        * (0.5 * rho * Area)
-        / (u_dict["vals"][1] - u_dict["vals"][0])
-    )
-    M_u = (
-        (u_dict["Cm"][1] * V_u_f**2 - u_dict["Cm"][0] * V_u_b**2)
-        * (0.5 * rho * Area * chord)
-        / (u_dict["vals"][1] - u_dict["vals"][0])
-    )
-
-    X_w = (
-        (w_dict["CX"][1] * V_w_f**2 - w_dict["CX"][0] * V_w_b**2)
-        * (0.5 * rho * Area)
-        / (w_dict["vals"][1] - w_dict["vals"][0])
-    )
-    Z_w = (
-        (w_dict["CZ"][1] * V_w_f**2 - w_dict["CZ"][0] * V_w_b**2)
-        * (0.5 * rho * Area)
-        / (w_dict["vals"][1] - w_dict["vals"][0])
-    )
-    M_w = (
-        (w_dict["Cm"][1] * V_w_f**2 - w_dict["Cm"][0] * V_w_b**2)
-        * (0.5 * rho * Area * chord)
-        / (w_dict["vals"][1] - w_dict["vals"][0])
-    )
-
-    X_q = (
-        (q_dict["CX"][1] - q_dict["CX"][0])
-        * (0.5 * rho * trim_Vel**2 * Area)
-        / (q_dict["vals"][1] - q_dict["vals"][0])
-    )
-    Z_q = (
-        (q_dict["CZ"][1] - q_dict["CZ"][0])
-        * (0.5 * rho * trim_Vel**2 * Area)
-        / (q_dict["vals"][1] - q_dict["vals"][0])
-    )
-    M_q = (
-        (q_dict["Cm"][1] - q_dict["Cm"][0])
-        * (0.5 * rho * trim_Vel**2 * Area * chord)
-        / (q_dict["vals"][1] - q_dict["vals"][0])
-    )
-
-    state_mat = np.zeros((4, 4))
-
-    state_mat[0, 0] = X_u / mass
-    state_mat[1, 0] = Z_u / mass
-    state_mat[2, 0] = M_u / I_li[1]
-
-    state_mat[0, 1] = X_w / mass
-    state_mat[1, 1] = Z_w / mass
-    state_mat[2, 1] = M_w / I_li[1]
-
-    state_mat[0, 2] = (X_q - mass * W_e) / mass
-    state_mat[1, 2] = (Z_q + mass * U_e) / mass
-    state_mat[2, 2] = M_q / I_li[1]
-    state_mat[3, 0] = 0
-    state_mat[3, 1] = 0
-    state_mat[3, 2] = 1
-
-    state_mat[0, 3] = -g
-    state_mat[1, 3] = 0
-    # print(Z_q)
-    # print(-Z_q)
-
-    return state_mat
-
-
-# LATERAL STATE MATRIX USING FINITE DIFFERENCE STABILITY DERIVATIVES
-def lat_mat(plane, environment, aoa_trim, trim_Vel, v_dict, I_li, p_dict, r_dict, span=4.4):
-    # good inc = 0.005*U
-
-    mass = plane.M
-    rho = environment.air_density
-    g = environment.GRAVITY
-    Area = plane.S
-    chord = plane.mean_aerodynamic_chord
-    span = plane.span
-
-    U_e = trim_Vel * np.cos(deg2rad(aoa_trim))
-    W_e = trim_Vel * np.sin(deg2rad(aoa_trim))
-
-    Y_v = (
-        (v_dict["CY"][1] - v_dict["CY"][0])
-        * (0.5 * rho * Area * trim_Vel**2)
-        / (v_dict["vals"][1] - v_dict["vals"][0])
-    )
-
-    l_v = (
-        (v_dict["Cl"][1] - v_dict["Cl"][0])
-        * (0.5 * rho * Area * span * trim_Vel**2)
-        / (v_dict["vals"][1] - v_dict["vals"][0])
-    )
-
-    n_v = (
-        (v_dict["Cn"][1] - v_dict["Cn"][0])
-        * (0.5 * rho * Area * span * trim_Vel**2)
-        / (v_dict["vals"][1] - v_dict["vals"][0])
-    )
-
-    Y_p = (
-        (p_dict["CY"][1] - p_dict["CY"][0])
-        * (0.5 * rho * Area * trim_Vel**2)
-        / (p_dict["vals"][1] - p_dict["vals"][0])
-    )
-
-    l_p = (
-        (p_dict["Cl"][1] - p_dict["Cl"][0])
-        * (0.5 * rho * Area * span * trim_Vel**2)
-        / (p_dict["vals"][1] - p_dict["vals"][0])
-    )
-
-    n_p = (
-        (p_dict["Cn"][1] - p_dict["Cn"][0])
-        * (0.5 * rho * Area * span * trim_Vel**2)
-        / (p_dict["vals"][1] - p_dict["vals"][0])
-    )
-
-    Y_r = (
-        (r_dict["CY"][1] - r_dict["CY"][0])
-        * (0.5 * rho * Area * trim_Vel**2)
-        / (r_dict["vals"][1] - r_dict["vals"][0])
-    )
-
-    l_r = (
-        (r_dict["Cl"][1] - r_dict["Cl"][0])
-        * (0.5 * rho * Area * span * trim_Vel**2)
-        / (r_dict["vals"][1] - r_dict["vals"][0])
-    )
-
-    n_r = (
-        (r_dict["Cn"][1] - r_dict["Cn"][0])
-        * (0.5 * rho * Area * span * trim_Vel**2)
-        / (r_dict["vals"][1] - r_dict["vals"][0])
-    )
-
-    state_mat = np.zeros((4, 4))
-
-    state_mat[0, 0] = Y_v / mass
-    state_mat[1, 0] = (I_li[2] * l_v + (I_li[3]) * n_v) / (I_li[0] * I_li[2] - I_li[3] ** 2)
-    state_mat[2, 0] = (I_li[0] * n_v + (I_li[3]) * l_v) / (I_li[0] * I_li[2] - I_li[3] ** 2)
-
-    state_mat[0, 1] = (Y_p + mass * W_e) / mass
-    state_mat[1, 1] = (I_li[2] * l_p + (I_li[3]) * n_p) / (I_li[0] * I_li[2] - I_li[3] ** 2)
-    state_mat[2, 1] = (I_li[0] * n_p + -(I_li[3]) * l_p) / (I_li[0] * I_li[2] - I_li[3] ** 2)
-
-    state_mat[0, 2] = (Y_r - mass * U_e) / mass
-    state_mat[1, 2] = (I_li[2] * l_r + (I_li[3]) * n_r) / (I_li[0] * I_li[2] - I_li[3] ** 2)
-    state_mat[2, 2] = (I_li[0] * n_r + (I_li[3]) * l_r) / (I_li[0] * I_li[2] - I_li[3] ** 2)
-
-    state_mat[3, 0] = 0
-    state_mat[3, 1] = 1
-    state_mat[3, 2] = 0
-    state_mat[3, 3] = 0
-
-    state_mat[0, 3] = g
-    state_mat[1, 3] = 0
-
-    return state_mat
+    os.chdir(DYNDIR)
+    with open(input_f, encoding="utf-8") as fin:
+        with open(log, "w", encoding="utf-8") as fout:
+            res: int = subprocess.check_call(
+                [AVL_exe],
+                stdin=fin,  # stdout=fout, stderr=fout
+            )
+    os.chdir(HOMEDIR)

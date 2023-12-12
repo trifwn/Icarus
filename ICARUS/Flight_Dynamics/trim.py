@@ -28,35 +28,34 @@ def trim_state(state: "State") -> dict[str, float]:
     - Engine fuel remaining     ! NOT IMPLEMENTED YET
     """
 
-    # Index of interest in the Polar Dataframe
-    print(state.polars.keys())
-    trim_loc1 = np.argmin(np.abs(state.polars["Cm"]))
-    # Find the polar that is closest to the trim but positive
-    trim_loc2 = trim_loc1
-    if state.polars["Cm"][trim_loc1] < 0:
-        while state.polars["Cm"][trim_loc2] < 0:
-            trim_loc2 -= 1
-    else:
-        while state.polars["Cm"][trim_loc2] > 0:
-            trim_loc2 += 1
+    # Find the index of the closest positive value to zero
+    Cm = state.polar["Cm"]
+    try:
+        trim_loc1 = (Cm[Cm > 0] - 0).idxmin()
+
+        # Find the index of the closest negative value to zero
+        trim_loc2 = (Cm[Cm < 0] - 0).idxmin()
+    except ValueError as e:
+        print(Cm)
+        raise ValueError(e)
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
-    d_cm = state.polars["Cm"][trim_loc2] - state.polars["Cm"][trim_loc1]
-    d_aoa = state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1]
+    d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
+    d_aoa = state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1]
 
-    aoa_trim = state.polars["AoA"][trim_loc1] - state.polars["Cm"][trim_loc1] * d_aoa / d_cm
+    aoa_trim = state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
 
-    cm_trim = state.polars["Cm"][trim_loc1] + (state.polars["Cm"][trim_loc2] - state.polars["Cm"][trim_loc1]) * (
-        aoa_trim - state.polars["AoA"][trim_loc1]
-    ) / (state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1])
+    cm_trim = state.polar["Cm"][trim_loc1] + (state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]) * (
+        aoa_trim - state.polar["AoA"][trim_loc1]
+    ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
 
-    cl_trim = state.polars["CL"][trim_loc1] + (state.polars["CL"][trim_loc2] - state.polars["CL"][trim_loc1]) * (
-        aoa_trim - state.polars["AoA"][trim_loc1]
-    ) / (state.polars["AoA"][trim_loc2] - state.polars["AoA"][trim_loc1])
+    cl_trim = state.polar["CL"][trim_loc1] + (state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]) * (
+        aoa_trim - state.polar["AoA"][trim_loc1]
+    ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
 
     # Print How accurate is the trim
     print(
-        f"Cm is {state.polars['Cm'][trim_loc1]} instead of 0 at AoA = {state.polars['AoA'][trim_loc1]}",
+        f"Cm is {state.polar['Cm'][trim_loc1]} instead of 0 at AoA = {state.polar['AoA'][trim_loc1]}",
     )
     print(f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
 

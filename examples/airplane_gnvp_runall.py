@@ -145,13 +145,19 @@ def main() -> None:
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            polars = DB.vehicles_db.raw_data[airplane.name]
+            polars = DB.vehicles_db.polars[airplane.name]
             print(polars)
             if not isinstance(polars, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
 
             try:
-                unstick = State("Unstick", airplane, polars, EARTH_ISA, preffered_polar="Potential")
+                unstick = State(
+                    name="Unstick",
+                    airplane=airplane,
+                    environment=EARTH_ISA,
+                    polar=polars,
+                    polar_prefix="GNVP3 2D",
+                )
             except Exception as error:
                 print(error)
                 continue

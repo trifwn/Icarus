@@ -23,7 +23,7 @@ def hermes(name: str) -> Airplane:
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
 
     wing_position: FloatArray = np.array(
-        [0.0 - 0.159 / 4, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
         dtype=float,
     )
     wing_orientation: FloatArray = np.array(
@@ -50,7 +50,7 @@ def hermes(name: str) -> Airplane:
     # main_wing.plotWing()
 
     elevator_pos: FloatArray = np.array(
-        [0.54 - 0.130 / 4, 0.0, 0.0],
+        [0.54, 0.0, 0.0],
         dtype=float,
     )
     elevator_orientantion: FloatArray = np.array(
@@ -77,7 +77,7 @@ def hermes(name: str) -> Airplane:
     # elevator.plotWing()
 
     rudder_position: FloatArray = np.array(
-        [0.47 - 0.159 / 4, 0.0, 0.01],
+        [0.47, 0.0, 0.01],
         dtype=float,
     )
     rudder_orientation: FloatArray = np.array(
@@ -106,16 +106,12 @@ def hermes(name: str) -> Airplane:
     lifting_surfaces: list[Lifting_Surface] = [main_wing, elevator, rudder]
 
     point_masses = [
-        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Engine
-        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
-        (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Structure
-        (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload
+        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "engine"),  # Engine
+        (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "structure"),  # Structure
+        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"),  # Battery
+        (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
     ]
     airplane: Airplane = Airplane(name, lifting_surfaces)
-
-    # from ICARUS.Database import DB3D
-    # airplane.accessDB(HOMEDIR, DB3D)
-    # airplane.visAirplane()
     airplane.add_point_masses(point_masses)
 
     return airplane

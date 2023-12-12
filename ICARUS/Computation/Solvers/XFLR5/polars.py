@@ -170,7 +170,7 @@ def read_polars_3d(
     Returns:
         DataFrame | None: _description_
     """
-    if f"XFLR_{plane_name}" not in DB.vehicles_db.data.keys():
+    if f"XFLR_{plane_name}" not in DB.vehicles_db.polars.keys():
         # import csv into pandas Dataframe and skip first 7 rows
         df: DataFrame = pd.read_csv(
             filename,
@@ -183,7 +183,7 @@ def read_polars_3d(
 
         # convert to float
         df = df.astype(float)
-        DB.vehicles_db.data[f"XFLR_{plane_name}"] = df
+        DB.vehicles_db.polars[f"XFLR_{plane_name}"] = df
         return df
     else:
         print("Polar Already Exists!")

@@ -39,9 +39,9 @@ def airplane_polars(plot: bool = False) -> tuple[DataFrame, list[DataFrame]]:
             title="Benchmark Airplane Polars",
         )
 
-    desired: DataFrame = DB.vehicles_db.data["XFLR_bmark"]
+    desired: DataFrame = DB.vehicles_db.polars["XFLR_bmark"]
     actuals: list[DataFrame] = [
-        DB.vehicles_db.data["bmark"],
+        DB.vehicles_db.polars["bmark"],
     ]
 
     return desired, actuals

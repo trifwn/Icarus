@@ -13,7 +13,7 @@ class Mission_Vehicle:
     def __init__(self, airplane: Airplane, engine: Engine) -> None:
         self.airplane: Airplane = airplane
         self.motor: Engine = engine
-        self.cldata = DB.vehicles_db.data[airplane.name]
+        self.cldata = DB.vehicles_db.polars[airplane.name]
 
         elevator: Lifting_Surface | None = None
         for surf in airplane.surfaces:

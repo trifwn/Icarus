@@ -57,7 +57,7 @@ def gnvp_angle_case(
         str: Case Done Message
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP{genu_version}")
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     airfoils: list[str] = plane.airfoils
 
     folder: str = angle_to_case(angle)
@@ -147,7 +147,7 @@ def run_gnvp_angles(
     )
     print("Running Angles in Sequential Mode")
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP{genu_version}")
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     progress_bars: list[tqdm] = []
     for i, angle in enumerate(angles):
         folder: str = angle_to_case(angle)
@@ -268,7 +268,7 @@ def run_gnvp_angles_parallel(
             ]
             pool.starmap(gnvp_angle_case, args_list)
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP{genu_version}")
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     folders: list[str] = [angle_to_case(angle) for angle in angles]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, folder) for folder in folders]
 
@@ -315,21 +315,20 @@ def process_gnvp_angles_run(plane: Airplane, genu_version: int) -> DataFrame:
         DataFrame: Forces Calculated
     """
     HOMEDIR: str = DB.HOMEDIR
-    CASEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    CASEDIR: str = os.path.join(DB3D, plane.directory)
     forces: DataFrame = log_forces(CASEDIR, HOMEDIR, genu_version)
     plane.save()
 
     print("Adding Results to Database")
     # Add Plane to Database
-    file_plane: str = os.path.join(DB3D, plane.name, f"{plane.name}.json")
+    file_plane: str = os.path.join(DB3D, plane.directory, f"{plane.name}.json")
     _ = DB.vehicles_db.load_plane_from_file(name=plane.name, file=file_plane)
 
     # Add Forces to Database
-    file_gnvp: str = os.path.join(DB3D, plane.name, f"forces.gnvp{genu_version}")
+    file_gnvp: str = os.path.join(DB3D, plane.directory, f"forces.gnvp{genu_version}")
     DB.vehicles_db.load_gnvp_forces(planename=plane.name, file=file_gnvp, genu_version=genu_version)
 
     # Add Convergence to Database
-    cases = next(os.walk(CASEDIR))[1]
     DB.vehicles_db.load_gnvp_case_convergence(planename=plane.name, case=CASEDIR, genu_version=genu_version)
     # rotatedforces: DataFrame = rotate_forces(forces, forces["AoA"])
     return forces

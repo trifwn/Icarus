@@ -16,7 +16,12 @@ from ICARUS.Visualization import markers
 def plot_airplane_polars(
     airplane_names: list[str],
     solvers: list[str] = ["All"],
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [
+        ["AoA", "CL"],
+        ["AoA", "CD"],
+        ["AoA", "Cm"],
+        ["CL", "CD"],
+    ],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
 ) -> tuple[ndarray[Any, Any], Figure]:
@@ -53,13 +58,20 @@ def plot_airplane_polars(
         ax.axvline(x=0, color="k")
 
     if solvers == ["All"]:
-        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D"]
+        solvers = [
+            "GNVP3 Potential",
+            "GNVP3 2D",
+            "GNVP7 Potential",
+            "GNVP7 2D",
+            "LSPT Potential",
+            "LSPT 2D",
+        ]
 
     for i, airplane in enumerate(airplane_names):
         flag = False
         for j, solver in enumerate(solvers):
             try:
-                polar: DataFrame = DB.vehicles_db.data[airplane]
+                polar: DataFrame = DB.vehicles_db.polars[airplane]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if airplane.startswith("XFLR"):
                         key0 = f"{plot[0]}"
@@ -89,7 +101,16 @@ def plot_airplane_polars(
                         m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:
-                            ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                            ax.plot(
+                                x,
+                                y,
+                                ls="--",
+                                color=c,
+                                marker=m,
+                                label=label,
+                                markersize=3.5,
+                                linewidth=1,
+                            )
                         except ValueError as e:
                             raise e
                 if flag:

@@ -1,96 +1,109 @@
-import matplotlib.pyplot as plt
-import numpy as np
+import os
 
+import numpy as np
+from Vehicles.Planes.hermes import hermes
+
+import ICARUS.Computation.Solvers.AVL.dynamics as avldyn
 import ICARUS.Computation.Solvers.AVL.input as avlinp
 import ICARUS.Computation.Solvers.AVL.polars as avlpol
-from ICARUS.Computation.Solvers.AVL.post import polar_postprocess
+import ICARUS.Computation.Solvers.AVL.post as avlpst
+from ICARUS.Computation.Solvers.AVL.post import process_avl_angle_run
+from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_3d
+from ICARUS.Database import DB
+from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Flight_Dynamics.state import State
 
 
-mw = Lifting_Surface(
-    name="Main_Wing_1",
-    airfoil="2412",
-    origin=np.array([0.0, 0.0, 0.0]),
-    orientation=np.array([0.0, 0.0, 0.0]),
-    is_symmetric=True,
-    sweep_offset=0.1,
-    span=2.0,
-    dih_angle=0.0,
-    chord_fun=define_linear_chord,
-    chord=np.array([0.4, 0.4]),
-    span_fun=define_linear_span,
-    # twist_fun: Callable[[float, int], FloatArray],
-    N=30,
-    M=10,
-    mass=1.0,
-)
-el = Lifting_Surface(
-    name="Elevator",
-    airfoil="0012",
-    origin=np.array([1.25, 0, 0]),
-    orientation=np.array([0.0, 0.0, 0.0]),
-    is_symmetric=True,
-    sweep_offset=0.0,
-    span=1.0,
-    dih_angle=0.0,
-    chord_fun=define_linear_chord,
-    chord=np.array([0.2, 0.2]),
-    span_fun=define_linear_span,
-    # twist_fun: Callable[[float, int], FloatArray],
-    N=20,
-    M=5,
-    mass=1.0,
-)
-rud = Lifting_Surface(
-    name="Rudder",
-    airfoil="0012",
-    origin=np.array([1.3, 0, 0.2]),
-    orientation=np.array([0, 0.0, 90.0]),
-    is_symmetric=True,
-    sweep_offset=0.0,
-    span=1.0,
-    dih_angle=0.0,
-    chord_fun=define_linear_chord,
-    chord=np.array([0.1, 0.1]),
-    span_fun=define_linear_span,
-    # twist_fun: Callable[[float, int], FloatArray],
-    N=20,
-    M=5,
-    mass=1.0,
-)
-w_polar = np.array([[-1, 0.23, 1.375], [0.034, 0.0064, 0.04]])  # NACA 2412 at Re = 5e5
-el_polar = np.array([[-1.15, 0, 1.15], [0.038, 0.00768, 0.038]])  # NACA 0012 at Re = 3e5
-rud_polar = el_polar
-
-pl = Airplane("plane_100", [mw, el, rud])
-
+plane = hermes("hermes")
 
 env = EARTH_ISA
+UINF = 20
 
-pms = [(1.9, [-0.1, 0, 0.2], "payload"), (0.9, [-0.1, 0, 0.2], "pa2")]
-pl.add_point_masses(pms)
-
-import os
-from ICARUS.Database import DB
-
-PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, pl.CASEDIR, "AVL")
-os.makedirs(PLANEDIR, exist_ok=True)
-avlinp.make_input_files(PLANEDIR, pl, env, 1.0, 1.0, w_polar, 1.0, 1.0, el_polar, 1.0, 1.0, rud_polar)
-
+PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, "AVL")
 angles = np.linspace(-10, 10, 11)
-avlpol.case_def(PLANEDIR, pl, angles)
-avlpol.case_setup(PLANEDIR, pl)
-avlpol.case_run(PLANEDIR, pl, angles)
 
-pol_df = polar_postprocess(PLANEDIR, angles)
+avlinp.make_input_files(PLANEDIR, plane, env, UINF)
+avlpol.case_def(PLANEDIR, plane, angles)
+avlpol.case_setup(PLANEDIR, plane)
+avlpol.case_run(PLANEDIR, plane, angles)
+pol_df = process_avl_angle_run(PLANEDIR, plane, angles)
 
-fig, ax = plt.subplots(1, 1)
-ax.plot(pol_df["AOA"], pol_df["CL"], label="CL")
-ax.plot(pol_df["AOA"], pol_df["CD"], label="CD")
-ax.plot(pol_df["AOA"], pol_df["Cm"], label="Cm")
-ax.legend()
-plt.show()
+
+planenames = [plane.name]
+from ICARUS.Database import EXTERNAL_DB
+
+for name in planenames:
+    if name.startswith("XFLR"):
+        continue
+    if f"XFLR_{name}" not in planenames:
+        try:
+            XFLR5PLANEDIR: str = os.path.join(EXTERNAL_DB, f"{name}.txt")
+            read_polars_3d(XFLR5PLANEDIR, name)
+            print(f"Imported XFLR polar for {name}")
+            planenames.append(f"XFLR_{name}")
+        except FileNotFoundError:
+            pass
+
+from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+
+# plot_airplane_polars(
+#     planenames,
+#     solvers=["AVL"],
+#     plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
+#     size=(6, 7),
+# )
+impl_eigs = avldyn.implicit_eigs(
+    PLANEDIR,
+    plane,
+    EARTH_ISA,
+    UINF=UINF,
+)
+impl_long = np.array(impl_eigs[0]).reshape((4, 2))
+
+
+# aoa_trim, u_trim = avldyn.trim_conditions(PLANEDIR, plane)
+unstick = State(
+    name="Unstick",
+    airplane=plane,
+    environment=EARTH_ISA,
+    polar=pol_df,
+    polar_prefix="AVL",
+    is_dimensional=False,
+)
+
+# ### Pertrubations
+# epsilons = {
+#     "u": 0.01,
+#     "w": 0.01,
+#     "q": 0.001,
+#     "theta": 0.01 ,
+#     "v": 0.01,
+#     "p": 0.001,
+#     "r": 0.001,
+#     "phi": 0.001
+# }
+
+epsilons = None
+unstick.add_all_pertrubations("Central", epsilons)
+unstick.get_pertrub()
+
+
+u_inc = [1e-3]  # np.logspace(-3, -2, 1) * u_trim
+th_inc = [1e-3]  # np.logspace(-3, -2, 1)*u_trim/2
+u_ar = u_inc
+w_ar = u_inc
+v_ar = u_inc
+q_ar = th_inc
+p_ar = th_inc
+r_ar = th_inc
+
+from ICARUS.Computation.Solvers.AVL.fd2 import finite_difs
+
+finite_difs(
+    PLANEDIR=PLANEDIR,
+    plane=plane,
+    state=unstick,
+)
+
+w_dict = avlpst.finite_difs_post(plane, unstick)

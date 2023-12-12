@@ -39,6 +39,9 @@ def wing_var_chord_offset(
         dtype=float,
     )
 
+    if isinstance(chords, list):
+        chords = np.array(chords)
+
     main_wing = Lifting_Surface(
         name="wing",
         airfoil=airfoils["NACA4415"],
@@ -59,11 +62,11 @@ def wing_var_chord_offset(
     lifting_surfaces: list[Lifting_Surface] = [main_wing]
     # main_wing.plotWing()
 
-    addedMasses: list[tuple[float, FloatArray]] = [
-        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Motor
-        (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
-        (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload
+    added_masses: list[tuple[float, FloatArray, str]] = [
+        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "motor"),  # Motor
+        (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"),  # Battery
+        (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
     ]
     airplane = Airplane(name, lifting_surfaces)
-    airplane.add_point_masses(addedMasses)
+    airplane.add_point_masses(added_masses)
     return airplane

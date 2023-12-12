@@ -40,12 +40,19 @@ def setup_plot(
     axs[1, 1].set_xlabel("AoA")
 
     if solvers == ["All"]:
-        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D"]
+        solvers = [
+            "GNVP3 Potential",
+            "GNVP3 2D",
+            "GNVP7 Potential",
+            "GNVP7 2D",
+            "LSPT Potential",
+            "LSPT 2D",
+        ]
 
     for j, solver in enumerate(solvers):
         skip = False
         try:
-            polar = DB.vehicles_db.data[airplane]
+            polar = DB.vehicles_db.polars[airplane]
             aoa = polar["AoA"]
             if airplane.startswith("XFLR"):
                 cl = polar[f"{solver} CL"]

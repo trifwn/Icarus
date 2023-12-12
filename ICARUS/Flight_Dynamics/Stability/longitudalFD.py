@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 def longitudal_stability_fd(
     state: "State",
-    mode: str = "2D",
 ) -> tuple[dict[Any, float], dict[Any, float], dict[Any, float]]:
     """This Function Requires the results from perturbation analysis
     For the Longitudinal Motion, in addition to the state space variables
@@ -67,16 +66,16 @@ def longitudal_stability_fd(
 
         back = rotate_forces(back, state.trim["AoA"])
         front = rotate_forces(front, state.trim["AoA"])
-        Xf = float(front[f"Fx_{mode}"].to_numpy())
-        Xb = float(back[f"Fx_{mode}"].to_numpy())
+        Xf = float(front[f"Fx"].to_numpy())
+        Xb = float(back[f"Fx"].to_numpy())
         X[var] = (Xf - Xb) / de
 
-        Zf = float(front[f"Fz_{mode}"].to_numpy())
-        Zb = float(back[f"Fz_{mode}"].to_numpy())
+        Zf = float(front[f"Fz"].to_numpy())
+        Zb = float(back[f"Fz"].to_numpy())
         Z[var] = (Zf - Zb) / de
 
-        Mf = float(front[f"M_{mode}"].to_numpy())
-        Mb = float(back[f"M_{mode}"].to_numpy())
+        Mf = float(front[f"M"].to_numpy())
+        Mb = float(back[f"M"].to_numpy())
         M[var] = (Mf - Mb) / de
 
     X["w_dot"] = 0

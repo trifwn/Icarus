@@ -49,8 +49,8 @@ class BaseAirplaneTests(unittest.TestCase):
 
     #     np.testing.assert_almost_equal(gridAP, gridGNVP, decimal=3)
 
-    # def test7_lspt_run(self) -> None:
-    #     lspt_run()
+    def test7_lspt_run(self) -> None:
+        lspt_run()
 
     def test_3d_polars(self) -> None:
         des, acts = airplane_polars(plot=True)

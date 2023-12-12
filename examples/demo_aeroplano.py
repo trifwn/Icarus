@@ -135,10 +135,10 @@ def airplane_generator(name: str, plotting=False) -> Airplane:
 
     ########################## POINT MASSES ########################################
     point_masses = [
-        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Engine
-        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
-        (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Structure
-        (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload
+        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "engine"),  # Engine
+        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"), # Battery
+        (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "structure"),  # Structure
+        (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
     ]
 
     ########################## POINT MASSES ########################################

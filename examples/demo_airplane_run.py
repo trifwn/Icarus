@@ -4,7 +4,6 @@ It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
 import time
-from re import T
 
 import numpy as np
 from demo_aeroplano import airplane_generator
@@ -15,7 +14,6 @@ from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
@@ -142,7 +140,13 @@ def main() -> None:
         # # Dynamics
         # ### Define and Trim Plane
         try:
-            unstick = State("Unstick", airplane, polars, EARTH_ISA)
+            unstick = State(
+                name="Unstick",
+                airplane=airplane,
+                polar=polars,
+                environment=EARTH_ISA,
+                polar_prefix="GNVP3 2D",
+            )
         except Exception as error:
             print(error)
             continue

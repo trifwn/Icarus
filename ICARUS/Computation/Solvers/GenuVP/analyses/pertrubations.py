@@ -63,7 +63,7 @@ def gnvp_disturbance_case(
         str: Case Done Message
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP_{genu_version}")
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     airfoils: list[str] = plane.airfoils
 
     movements: list[list[Movement]] = define_movements(
@@ -189,7 +189,7 @@ def run_pertrubation_serial(
         )
         progress_bars.append(pbar)
         folder: str = disturbance_to_case(dst)
-        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP_{genu_version}")
+        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
         job_monitor = Thread(
             target=serial_monitor,
@@ -281,7 +281,7 @@ def run_pertrubation_parallel(
 
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, f"GenuVP_{genu_version}")
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, "Dynamics", folder) for folder in folders]
 
@@ -463,11 +463,11 @@ def proccess_pertrubation_res(plane: Airplane, state: State) -> DataFrame:
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
     HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, "Dynamics")
+    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, "Dynamics")
     forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR)
 
     state.set_pertrubation_results(forces)
-    state.stability_fd(polar_name="2D")
+    state.stability_fd()
     DB.vehicles_db.states[plane.name] = state
 
     return forces

@@ -45,9 +45,9 @@ class Database:
         print(f"|        {self.vehicles_db}             |")
         print("------------------------------------------------")
 
-        for vehicle in self.vehicles_db.data.keys():
+        for vehicle in self.vehicles_db.polars.keys():
             string = f"|{vehicle}\n"
-            for solver in self.vehicles_db.data[vehicle].keys():
+            for solver in self.vehicles_db.polars[vehicle].keys():
                 string += f"|\t - {solver}:"
                 string += "\n"
             string += "|\n|"

@@ -437,13 +437,14 @@ class Airfoil(af.Airfoil):  # type: ignore
         # y[-1]= 0
         self.selig_web: FloatArray = np.vstack((x, y))
 
-    def save_selig_te(self, directory: str | None = None, header: bool = False) -> None:
+    def save_selig_te(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
         """
         Saves the airfoil in the selig format.
 
         Args:
             directory (str, optional): Directory to save the airfoil. Defaults to None.
             header (bool, optional): Whether to include the header. Defaults to False.
+            inverse (bool, optional): Whether to save the airfoil in the reverse selig format. Defaults to False.
         """
 
         if directory is not None:
@@ -456,8 +457,13 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         with open(file_name, "w") as file:
             if header:
-                file.write(f"{self.name}\n\n")
-            for x, y in self.selig.T:
+                file.write(f"{self.name} with {self.n_points}\n")
+            if inverse:
+                pts = self.selig.T[::-1]
+            else:
+                pts = self.selig.T
+
+            for x, y in pts:
                 file.write(f" {x:.6f} {y:.6f}\n")
 
     def save_le(self, directory: str | None = None) -> None:

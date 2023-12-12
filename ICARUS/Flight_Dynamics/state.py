@@ -20,7 +20,6 @@ from .Stability.lateralFD import lateral_stability_fd
 from .Stability.longitudalFD import longitudal_stability_fd
 from .Stability.stability_derivatives import StabilityDerivativesDS
 from .trim import trim_state
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_forces
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Environment.definition import Environment
@@ -35,32 +34,44 @@ class State:
     def __init__(
         self,
         name: str,
-        pln: Airplane,
-        forces: DataFrame,
-        env: Environment,
-        preffered_polar: str = "2D",
+        airplane: Airplane,
+        environment: Environment,
+        polar: DataFrame,
+        polar_prefix=None,
+        is_dimensional: bool = True,
     ) -> None:
         # Set Basic State Variables
         self.name: str = name
         # self.vehicle: Airplane = pln
-        self.env: Environment = env
+        self.env: Environment = environment
         from ICARUS.Database import DB3D
 
-        self.dynamics_directory: str = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
+        self.dynamics_directory: str = os.path.join(DB3D, airplane.directory, "Dynamics")
 
         # Get Airplane Properties And State Variables
-        self.mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
-        self.S: float = pln.S
+        self.mean_aerodynamic_chord: float = airplane.mean_aerodynamic_chord
+        self.S: float = airplane.S
         self.dynamic_pressure: float = (
-            0.5 * env.air_density * 20**2
+            0.5 * environment.air_density * 20**2
         )  # VELOCITY IS ARBITRARY BECAUSE WE DO NOT KNOW THE TRIM YET
-        self.inertia: FloatArray = pln.total_inertia
-        self.mass: float = pln.M
+        self.inertia: FloatArray = airplane.total_inertia
+        self.mass: float = airplane.M
+
+        # Remove prefix from polar columns
+        if polar_prefix is not None:
+            cols: list[str] = list(polar.columns)
+            for i, col in enumerate(cols):
+                cols[i] = col.replace(f"{polar_prefix} ", "")
+            polar.columns = cols  # type: ignore
+
+        if is_dimensional:
+            self.polar: DataFrame = self.make_aero_coefficients(polar)
+        else:
+            self.polar = polar
 
         # GET TRIM STATE
-        self.polars: DataFrame = self.format_polars(forces, preffered_polar=preffered_polar)
         self.trim: dict[str, float] = trim_state(self)
-        self.dynamic_pressure = 0.5 * env.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
+        self.dynamic_pressure = 0.5 * environment.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
         self.disturbances: list[dst] = []
@@ -102,23 +113,19 @@ class State:
         self.lateral.eigenValues = eigvalLat
         self.lateral.eigenVectors = eigvecLat
 
-    def format_polars(self, forces: DataFrame, preffered_polar="2D") -> DataFrame:
-        forces_rotated: DataFrame = rotate_forces(forces, forces["AoA"], preferred=preffered_polar)
-        return self.make_aero_coefficients(forces_rotated)
-
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
-        Data: DataFrame = DataFrame()
+        data: DataFrame = DataFrame()
         S: float = self.S
         MAC: float = self.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
 
-        Data["CL"] = forces["Fz"] / (dynamic_pressure * S)
-        Data["CD"] = forces["Fx"] / (dynamic_pressure * S)
-        Data["Cm"] = forces["M"] / (dynamic_pressure * S * MAC)
-        Data["Cn"] = forces["N"] / (dynamic_pressure * S * MAC)
-        Data["Cl"] = forces["L"] / (dynamic_pressure * S * MAC)
-        Data["AoA"] = forces["AoA"]
-        return Data
+        data["CL"] = forces["Fz"] / (dynamic_pressure * S)
+        data["CD"] = forces["Fx"] / (dynamic_pressure * S)
+        data["Cm"] = forces["M"] / (dynamic_pressure * S * MAC)
+        data["Cn"] = forces["N"] / (dynamic_pressure * S * MAC)
+        data["Cl"] = forces["L"] / (dynamic_pressure * S * MAC)
+        data["AoA"] = forces["AoA"]
+        return data
 
     def add_all_pertrubations(
         self,
@@ -156,9 +163,9 @@ class State:
         self.pertrubation_results = pertrubation_results
         self.stability_fd()
 
-    def stability_fd(self, polar_name: str = "2D") -> None:
-        X, Z, M = longitudal_stability_fd(self, polar_name)
-        Y, L, N = lateral_stability_fd(self, polar_name)
+    def stability_fd(self) -> None:
+        X, Z, M = longitudal_stability_fd(self)
+        Y, L, N = lateral_stability_fd(self)
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
     def plot_eigenvalues(self) -> None:
