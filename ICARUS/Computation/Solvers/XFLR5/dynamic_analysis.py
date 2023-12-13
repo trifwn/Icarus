@@ -1,22 +1,24 @@
-import numpy as np
-
-
-def xflr_eigs(filename):
-    f = open(filename)
-    with open(filename, encoding='utf-8') as f:
+def xflr_eigs(filename: str) -> tuple[list[complex], list[complex]]:
+    with open(filename, errors="ignore") as f:
         lines = f.readlines()
-    long_li = lines[105]
-    lat_li = lines[116]
-    eig_mat = np.zeros((5, 2))
-    eig_mat[0, 0] = float(long_li[22:38].partition("+")[0])
-    eig_mat[0, 1] = float(long_li[22:38].partition("+")[2].partition("i")[0])
-    eig_mat[1, 0] = float(long_li[74:92].partition("+")[0])
-    eig_mat[1, 1] = float(long_li[74:92].partition("+")[2].partition("i")[0])
-    eig_mat[2, 0] = float(lat_li[22:38].partition("+")[0])
-    eig_mat[2, 1] = float(lat_li[22:38].partition("+")[2].partition("i")[0])
-    eig_mat[3, 0] = float(lat_li[46:67].partition("+")[0])
-    eig_mat[3, 1] = float(lat_li[46:67].partition("+")[2].partition("i")[0])
-    eig_mat[4, 0] = float(lat_li[99:119].partition("+")[0])
-    eig_mat[4, 1] = float(lat_li[99:119].partition("+")[2].partition("i")[0])
 
-    return eig_mat
+    long_eigenvalues_line = lines[23]
+    long_eig_1: str = long_eigenvalues_line[19:41].replace(" ", "").replace("+-", "-").replace("i", "j")
+    long_eig_2: str = long_eigenvalues_line[44:67].replace(" ", "").replace("+-", "-").replace("i", "j")
+    long_eig_3: str = long_eigenvalues_line[71:93].replace(" ", "").replace("+-", "-").replace("i", "j")
+    long_eig_4: str = long_eigenvalues_line[98:].replace(" ", "").replace("+-", "-").replace("i", "j")
+    long_eigs: list[complex] = []
+    for item in [long_eig_1, long_eig_2, long_eig_3, long_eig_4]:
+        long_eigs.append(complex(item))
+
+    late_eigenvalues_line = lines[34]
+    late_eig_1 = late_eigenvalues_line[19:41].replace(" ", "").replace("+-", "-").replace("i", "j")
+    late_eig_2 = late_eigenvalues_line[44:67].replace(" ", "").replace("+-", "-").replace("i", "j")
+    late_eig_3 = late_eigenvalues_line[71:93].replace(" ", "").replace("+-", "-").replace("i", "j")
+    late_eig_4 = late_eigenvalues_line[98:].replace(" ", "").replace("+-", "-").replace("i", "j")
+
+    late_eigs: list[complex] = []
+    for item in [late_eig_1, late_eig_2, late_eig_3, late_eig_4]:
+        late_eigs.append(complex(item))
+
+    return long_eigs, late_eigs

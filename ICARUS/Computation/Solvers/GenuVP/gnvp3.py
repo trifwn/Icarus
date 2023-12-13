@@ -5,7 +5,7 @@ from ICARUS.Computation.Solvers.GenuVP.analyses.angles import process_gnvp_angle
 from ICARUS.Computation.Solvers.GenuVP.analyses.angles import run_gnvp3_angles
 from ICARUS.Computation.Solvers.GenuVP.analyses.angles import run_gnvp3_angles_parallel
 from ICARUS.Computation.Solvers.GenuVP.analyses.pertrubations import (
-    proccess_pertrubation_res,
+    proccess_pertrubation_res_3,
 )
 from ICARUS.Computation.Solvers.GenuVP.analyses.pertrubations import (
     run_gnvp3_pertrubation_parallel,
@@ -271,13 +271,13 @@ def get_gnvp3() -> Solver:
         run_gnvp3_pertrubation_serial,
         options,
         solver_options,
-        unhook=proccess_pertrubation_res,
+        unhook=proccess_pertrubation_res_3,
     )
 
     pertrubation_parallel: Analysis = pertrubation_serial << {
         "name": "Pertrubation_Parallel",
         "execute": run_gnvp3_pertrubation_parallel,
-        "unhook": proccess_pertrubation_res,
+        "unhook": proccess_pertrubation_res_3,
     }
 
     gnvp3.add_analyses(

@@ -110,8 +110,6 @@ def main() -> None:
         options: Struct = gnvp3.get_analysis_options(verbose=False)
         solver_parameters: Struct = gnvp3.get_solver_parameters()
 
-        airplane.define_dynamic_pressure(UINF[airplane.name], EARTH_ISA.air_density)
-
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
         options.solver2D.value = airfoil_solver

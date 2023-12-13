@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_forces
-
 if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
@@ -23,16 +21,16 @@ def longitudal_stability_fd(
     induces on the tail wing
 
     Args:
-        mode (str, optional): Type of forces to be used "2D", "Onera", "Potential". Defaults to "2D".
+        State (State): State of the airplane
     """
 
     pert: DataFrame = state.pertrubation_results
     eps: dict[str, float] = state.epsilons
     m: float = state.mass
     trim_velocity: float = state.trim["U"]
-    trim_angle: float = state.trim["AoA"] * np.pi / 180
-    u_e: float = np.abs(trim_velocity * np.cos(trim_angle))
-    w_e: float = np.abs(trim_velocity * np.sin(trim_angle))
+    theta: float = state.trim["AoA"] * np.pi / 180
+    u_e: float = np.abs(trim_velocity * np.cos(theta))
+    w_e: float = np.abs(trim_velocity * np.sin(theta))
 
     G: float = -9.81
     Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
@@ -64,8 +62,8 @@ def longitudal_stability_fd(
         elif var == "q":
             de *= -np.pi / 180
 
-        back = rotate_forces(back, state.trim["AoA"])
-        front = rotate_forces(front, state.trim["AoA"])
+        # back = rotate_forces(back, state.trim["AoA"])
+        # front = rotate_forces(front, state.trim["AoA"])
         Xf = float(front[f"Fx"].to_numpy())
         Xb = float(back[f"Fx"].to_numpy())
         X[var] = (Xf - Xb) / de
@@ -85,7 +83,7 @@ def longitudal_stability_fd(
     xu = X["u"] / m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
     xw = X["w"] / m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
     xq = (X["q"] - m * w_e) / (m)
-    xth = G * np.cos(trim_angle)
+    xth = -G * np.cos(theta)
 
     # xq += (X["w_dot"] * (Z["q"] + m * Ue))/(m*(m-Z["w_dot"]))
     # xth += - (X["w_dot"]*G * np.sin(theta))/((m-Z["w_dot"]))
@@ -93,12 +91,12 @@ def longitudal_stability_fd(
     zu = Z["u"] / (m - Z["w_dot"])
     zw = Z["w"] / (m - Z["w_dot"])
     zq = (Z["q"] + m * u_e) / (m - Z["w_dot"])
-    zth = (m * G * np.sin(trim_angle)) / (m - Z["w_dot"])
+    zth = -(m * G * np.sin(theta)) / (m - Z["w_dot"])
 
-    mu = M["u"] / Iy + Z["u"] * M["w_dot"] / (Iy * (m - Z["w_dot"]))
-    mw = M["w"] / Iy + Z["w"] * M["w_dot"] / (Iy * (m - Z["w_dot"]))
-    mq = M["q"] / Iy + ((Z["q"] + m * u_e) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
-    mth = -(m * G * np.sin(trim_angle) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
+    mu = (M["u"] + Z["u"] * M["w_dot"] / (m - Z["w_dot"])) / Iy
+    mw = (M["w"] + Z["w"] * M["w_dot"] / (m - Z["w_dot"])) / Iy
+    mq = (M["q"] + M["w_dot"] * (Z["q"] + m * u_e) / (m - Z["w_dot"])) / Iy
+    mth = -(m * G * np.sin(theta) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
 
     state.longitudal.stateSpace.A = np.array(
         [

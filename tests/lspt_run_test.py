@@ -39,8 +39,6 @@ def lspt_run() -> None:
     angles: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     u_freestream = 20
 
-    airplane.define_dynamic_pressure(u_freestream, EARTH_ISA.air_density)
-
     options.plane.value = airplane
     options.environment.value = EARTH_ISA
     options.solver2D.value = "Xfoil"

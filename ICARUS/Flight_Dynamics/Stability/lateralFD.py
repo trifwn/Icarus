@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_forces
 
 if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
@@ -47,9 +46,6 @@ def lateral_stability_fd(
         if var != "v":
             de *= np.pi / 180
 
-        back = rotate_forces(back, state.trim["AoA"])
-        front = rotate_forces(front, state.trim["AoA"])
-
         Yf = float(front[f"Fy"].to_numpy())
         Yb = float(back[f"Fy"].to_numpy())
         Y[var] = (Yf - Yb) / de
@@ -77,7 +73,7 @@ def lateral_stability_fd(
     nr: float = (Ix * N["r"] + Ixz * L["r"]) / (Ix * Iz - Ixz**2)
     nph: float = 0
 
-    state.astar_lat = np.array(
+    state.lateral.stateSpace.A = np.array(
         [
             [Y["v"], Y["p"], Y["r"], Y["phi"]],
             [L["v"], L["p"], L["r"], L["phi"]],
@@ -86,8 +82,8 @@ def lateral_stability_fd(
         ],
     )
 
-    state.a_lat = np.array(
-        [[yv, yp, yr, yphi], [lv, lp, lr, lphi], [nv, n_p, nr, nph], [0, 1, 0, 0]],
+    state.lateral.stateSpace.A_DS = np.array(
+        [[yv, yp, yr, yphi], [lv, lp, lr, lphi], [nv, n_p, nr, nph], [0, 1, np.tan(theta), 0]],
     )
 
     return Y, L, N

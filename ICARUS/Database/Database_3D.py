@@ -11,9 +11,7 @@ from pandas import DataFrame
 
 from . import DB3D
 from ICARUS import APPHOME
-from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
-    get_loads_convergence_3,
-)
+from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import get_loads_convergence_3
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Flight_Dynamics.state import State
@@ -40,7 +38,7 @@ class Database_3D:
 
     def scan_and_make_data(self) -> None:
         if not os.path.isdir(DB3D):
-            # print(f"Creating {DB3D} directory...")
+            print(f"Creating DB3D directory at {DB3D}...")
             os.makedirs(DB3D, exist_ok=True)
 
         planefolders: list[str] = next(os.walk(DB3D))[1]
@@ -297,13 +295,9 @@ class Database_3D:
                 state: State = self.states[pln.name]["Unstick"]
                 Q = state.dynamic_pressure
             except KeyError:
-                try:
-                    Q = pln.dynamic_pressure
-                except AttributeError:
-                    print(
-                        f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
-                    )
-                    pass
+                print(
+                    f"Plane {plane} doesn't have loaded State! Using Default velocity of 20m/s",
+                )
             finally:
                 S: float = pln.S
                 MAC: float = pln.mean_aerodynamic_chord
@@ -411,9 +405,3 @@ class Database_3D:
 
     def __str__(self) -> Literal["Vehicle Database"]:
         return "Vehicle Database"
-
-    def __enter__(self) -> None:
-        pass
-
-    def __exit__(self) -> None:
-        pass

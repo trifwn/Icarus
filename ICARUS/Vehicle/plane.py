@@ -281,18 +281,6 @@ class Airplane:
         )
         plt.show()
 
-    def define_dynamic_pressure(self, u: float, dens: float) -> None:
-        """
-        Define the simulation parameters for the plane
-
-        Args:
-            u (float): Velocity Magnitude of the freestream
-            dens (float): Density of the freestream
-        """
-        self.u_freestream: float = u
-        self.dens: float = dens
-        self.dynamic_pressure: float = 0.5 * dens * u**2
-
     def to_json(self) -> str:
         """
         Pickle the plane object to a json string

@@ -13,6 +13,7 @@ from ICARUS.Computation.Solvers.GenuVP.files.gnvp7_interface import run_gnvp7_ca
 from ICARUS.Computation.Solvers.GenuVP.post_process.forces import (
     forces_to_pertrubation_results,
 )
+from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_gnvp_forces
 from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
@@ -451,20 +452,30 @@ def sensitivity_parallel(
         _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
 
-def proccess_pertrubation_res(plane: Airplane, state: State) -> DataFrame:
+def proccess_pertrubation_res_3(plane: Airplane, state: State) -> DataFrame:
+    return proccess_pertrubation_res(plane, state, 3)
+
+
+def proccess_pertrubation_res_7(plane: Airplane, state: State) -> DataFrame:
+    return proccess_pertrubation_res(plane, state, 7)
+
+
+def proccess_pertrubation_res(plane: Airplane, state: State, genu_version: int) -> DataFrame:
     """
     Process the pertrubation results from the GNVP solver
 
     Args:
         plane (Airplane): Airplane Object
         state (State): Plane State to load results to
+        genu_version (int): GenuVP version
 
     Returns:
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
     HOMEDIR: str = DB.HOMEDIR
     DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, "Dynamics")
-    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR)
+    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, genu_version)
+    forces = rotate_gnvp_forces(forces, forces["AoA"])
 
     state.set_pertrubation_results(forces)
     state.stability_fd()

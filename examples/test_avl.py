@@ -27,7 +27,7 @@ avlinp.make_input_files(PLANEDIR, plane, env, UINF)
 avlpol.case_def(PLANEDIR, plane, angles)
 avlpol.case_setup(PLANEDIR, plane)
 avlpol.case_run(PLANEDIR, plane, angles)
-pol_df = process_avl_angle_run(PLANEDIR, plane, angles)
+pol_df = process_avl_angle_run(plane, angles)
 
 
 planenames = [plane.name]
@@ -45,7 +45,7 @@ for name in planenames:
         except FileNotFoundError:
             pass
 
-from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+# from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
 
 # plot_airplane_polars(
 #     planenames,
@@ -53,13 +53,12 @@ from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
 #     plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
 #     size=(6, 7),
 # )
-impl_eigs = avldyn.implicit_eigs(
+impl_long, impl_late = avldyn.implicit_eigs(
     PLANEDIR,
     plane,
     EARTH_ISA,
     UINF=UINF,
 )
-impl_long = np.array(impl_eigs[0]).reshape((4, 2))
 
 
 # aoa_trim, u_trim = avldyn.trim_conditions(PLANEDIR, plane)
@@ -72,38 +71,57 @@ unstick = State(
     is_dimensional=False,
 )
 
-# ### Pertrubations
-# epsilons = {
-#     "u": 0.01,
-#     "w": 0.01,
-#     "q": 0.001,
-#     "theta": 0.01 ,
-#     "v": 0.01,
-#     "p": 0.001,
-#     "r": 0.001,
-#     "phi": 0.001
-# }
+### Pertrubations
+epsilons = {
+    "u": 0.01,
+    "w": 0.01,
+    "q": 0.001,
+    "theta": 0.01,
+    "v": 0.01,
+    "p": 0.001,
+    "r": 0.001,
+    "phi": 0.001,
+}
 
-epsilons = None
+# epsilons = None
 unstick.add_all_pertrubations("Central", epsilons)
 unstick.get_pertrub()
 
-
-u_inc = [1e-3]  # np.logspace(-3, -2, 1) * u_trim
-th_inc = [1e-3]  # np.logspace(-3, -2, 1)*u_trim/2
-u_ar = u_inc
-w_ar = u_inc
-v_ar = u_inc
-q_ar = th_inc
-p_ar = th_inc
-r_ar = th_inc
-
-from ICARUS.Computation.Solvers.AVL.fd2 import finite_difs
-
-finite_difs(
-    PLANEDIR=PLANEDIR,
+avldyn.finite_difs(
     plane=plane,
     state=unstick,
 )
 
-w_dict = avlpst.finite_difs_post(plane, unstick)
+df = avlpst.finite_difs_post(plane, unstick)
+from ICARUS.Computation.Solvers.XFLR5.dynamic_analysis import xflr_eigs
+
+eig_file = os.path.join(EXTERNAL_DB, "hermes_eig.txt")
+xflr_long, xflr_late = xflr_eigs(eig_file)
+
+unstick.set_pertrubation_results(df)
+unstick.stability_fd()
+unstick.eigenvalue_analysis()
+print(unstick)
+fig, ax = unstick.plot_eigenvalues(plot_lateral=False)
+
+# x = [ele.real for ele in xflr_late]
+# y = [ele.imag for ele in xflr_late]
+# ax.scatter(x, y, marker="x", label="XFLR LAT", color="k")
+
+x = [ele.real for ele in xflr_long]
+y = [ele.imag for ele in xflr_long]
+ax.scatter(x, y, marker="o", label="XFLR LONG", color="k")
+
+# x = [ele.real for ele in impl_late]
+# y = [ele.imag for ele in impl_late]
+# ax.scatter(x, y, marker="x", label="IMPL LATE", color="m")
+
+x = [ele.real for ele in impl_long]
+y = [ele.imag for ele in impl_long]
+ax.scatter(x, y, marker="o", label="IMPL LONG", color="m")
+
+ax.legend()
+import matplotlib.pyplot as plt
+
+print(xflr_late)
+plt.show()

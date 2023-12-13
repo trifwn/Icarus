@@ -4,14 +4,14 @@ from typing import Any
 import numpy as np
 from pandas import Series
 
-import testing.wing_test as wing_test
 from ICARUS.Core.types import FloatArray
-from testing.airplane_polars_test import airplane_polars
-from testing.gnvp3_run_test import gnvp3_run
-from testing.gnvp7_run_test import gnvp7_run
-from testing.lspt_run_test import lspt_run
-from testing.solver_geom_test import gnvp3_geometry
-from testing.solver_geom_test import gnvp7_geometry
+from tests.airplane_polars_test import airplane_polars
+from tests.gnvp3_run_test import gnvp3_run
+from tests.gnvp7_run_test import gnvp7_run
+from tests.lspt_run_test import lspt_run
+from tests.solver_geom_test import gnvp3_geometry
+from tests.solver_geom_test import gnvp7_geometry
+from tests.wing_test import geom
 
 
 class BaseAirplaneTests(unittest.TestCase):
@@ -24,7 +24,7 @@ class BaseAirplaneTests(unittest.TestCase):
             [2.077, 0.017, 2.094, 0.0, 0.137, 0.0],
         )
 
-        S, MAC, CG, INERTIA = wing_test.geom()
+        S, MAC, CG, INERTIA = geom()
 
         np.testing.assert_almost_equal(S, S_act, decimal=4)
         np.testing.assert_almost_equal(MAC, MAC_act, decimal=4)

@@ -329,6 +329,8 @@ def process_gnvp_angles_run(plane: Airplane, genu_version: int) -> DataFrame:
     DB.vehicles_db.load_gnvp_forces(planename=plane.name, file=file_gnvp, genu_version=genu_version)
 
     # Add Convergence to Database
+    print("HEERE")
     DB.vehicles_db.load_gnvp_case_convergence(planename=plane.name, case=CASEDIR, genu_version=genu_version)
+    print("HEEERE")
     # rotatedforces: DataFrame = rotate_forces(forces, forces["AoA"])
     return forces

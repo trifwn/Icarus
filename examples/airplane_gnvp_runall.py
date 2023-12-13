@@ -51,7 +51,7 @@ def main() -> None:
     # embraer.visualize()
 
     timestep: dict[str, float] = {"plane_1": 1e-3}
-    maxiter: dict[str, int] = {"plane_1": 500}
+    maxiter: dict[str, int] = {"plane_1": 100}
     UINF: dict[str, float] = {"plane_1": 20}
     ALTITUDE: dict[str, int] = {"plane_1": 0}
 
@@ -103,8 +103,6 @@ def main() -> None:
                 NO_AOA,
             )
 
-            airplane.define_dynamic_pressure(UINF[airplane.name], EARTH_ISA.air_density)
-
             options.plane.value = airplane
             options.environment.value = EARTH_ISA
             options.solver2D.value = "XFLR"
@@ -145,9 +143,9 @@ def main() -> None:
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            polars = DB.vehicles_db.polars[airplane.name]
-            print(polars)
-            if not isinstance(polars, DataFrame):
+            forces = DB.vehicles_db.polars[airplane.name]
+            print(forces)
+            if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
 
             try:
@@ -155,10 +153,11 @@ def main() -> None:
                     name="Unstick",
                     airplane=airplane,
                     environment=EARTH_ISA,
-                    polar=polars,
+                    polar=forces,
                     polar_prefix="GNVP3 2D",
                 )
             except Exception as error:
+                print("Got errro")
                 print(error)
                 continue
 

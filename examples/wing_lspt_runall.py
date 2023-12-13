@@ -81,8 +81,6 @@ def main() -> None:
             NO_AOA,
         )
 
-        airplane.define_dynamic_pressure(UINF[airplane.name], EARTH_ISA.air_density)
-
         options.plane.value = airplane
         options.environment.value = EARTH_ISA
         options.solver2D.value = "Xfoil"

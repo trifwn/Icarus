@@ -14,11 +14,10 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
-def process_avl_angle_run(RESULTS_DIR: str, plane: Airplane, angles: FloatArray) -> DataFrame:
+def process_avl_angle_run(plane: Airplane, angles: FloatArray) -> DataFrame:
     """POST-PROCESSING OF POLAR RUNS - RETURNS AN ARRAY WITH THE FOLLOWING ORDER OF VECTORS: AOA,CL,CD,CM
 
     Args:
-        PLANEDIR (str): Path to plane directory
         plane (Airplane): Airplane object
         angles (FloatArray): Array of angles of attack
 
@@ -64,122 +63,74 @@ def process_avl_angle_run(RESULTS_DIR: str, plane: Airplane, angles: FloatArray)
     return polar_df
 
 
-# POST PROCESSING OF FINITE DIFFERENCE RUNS - RETURNS PERTURBATION ANALYSIS RESULTS IN THE FORM OF DICTIONARIES
-# - NECESSARY FOR FINITE-DIFFERENCES BASED DYNAMIC ANALYSIS
-# USEFUL FOR SENSITIVITY ANALYSIS WITH RESPECT TO STATE VARIABLE INCREMENTS
-
-
-def finite_difs_post(plane: Airplane, state: State):
+def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
     DYNDIR = os.path.join(DB3D, plane.name, "AVL", "Dynamics")
-
-    pertrubation_df: DataFrame = DataFrame()
-    CZ_li = []
-    CX_li = []
-    Cm_li = []
-    CY_li = []
-    Cl_li = []
-    Cn_li = []
-
-    inc_dict = {
-        "axes": "notyet",
-        "var": f"{var}",
-        "vals": np.concatenate((-inc_ar, inc_ar)),
-    }
+    results = []
+    # pertrubation_df: DataFrame = DataFrame()
 
     for dst in state.disturbances:
-        casefile = disturbance_to_case(dst)
-        with open(casefile, encoding='utf-8') as f:
-            lines = f.readlines()
+        casefile = os.path.join(DYNDIR, disturbance_to_case(dst))
+        if dst.var == "phi" or dst.var == "theta":
+            Fx = 0.0
+            Fy = 0.0
+            Fz = 0.0
+            M = 0.0
+            N = 0.0
+            L = 0.0
+        else:
+            with open(casefile, encoding="utf-8") as f:
+                lines = f.readlines()
+            x_axis = lines[19]
+            y_axis = lines[20]
+            z_axis = lines[21]
 
-    if var in ["w", "u", "q"]:
-        for inc_v in inc_ar:
-            bp = os.path.join(DYNDIR, f"dif_b_{var}_{inc_v}")
-            bf = open(bp)
-            con = bf.readlines()
+            CX = float(x_axis[11:19])
+            Cl = float(x_axis[33:41])
+            CY = float(y_axis[11:19])
+            Cm = float(y_axis[33:41])
+            CZ = float(z_axis[11:19])
+            Cn = float(z_axis[33:41])
 
-            temp_CZ = con[21]
-            temp_CX = con[19]
-            temp_Cm = con[20]
-
-            CZ_li.append(float(temp_CZ[11:19]))
-
-            CX_li.append(float(temp_CX[11:19]))
-
-            if temp_Cm[33] == "-":
-                Cm_li.append(float(temp_Cm[33:41]))
+            if dst.var == "u":
+                dyn_pressure = float(
+                    0.5
+                    * state.env.air_density
+                    * np.linalg.norm(
+                        [
+                            state.trim["U"] * np.cos(state.trim["AoA"] * np.pi / 180) + dst.amplitude,
+                            state.trim["U"] * np.sin(state.trim["AoA"] * np.pi / 180),
+                        ],
+                    ),
+                )
+            elif dst.var == "w":
+                dyn_pressure = float(
+                    0.5
+                    * state.env.air_density
+                    * np.linalg.norm(
+                        [
+                            state.trim["U"] * np.cos(state.trim["AoA"] * np.pi / 180),
+                            state.trim["U"] * np.sin(state.trim["AoA"] * np.pi / 180) + dst.amplitude,
+                        ],
+                    ),
+                )
             else:
-                Cm_li.append(float(temp_Cm[34:41]))
+                dyn_pressure = state.dynamic_pressure
 
-            bf.close()
+            Fx = CX * dyn_pressure * plane.S
+            Fy = CY * dyn_pressure * plane.S
+            Fz = CZ * dyn_pressure * plane.S
+            M = Cm * dyn_pressure * plane.S * plane.mean_aerodynamic_chord
+            N = Cn * dyn_pressure * plane.S * plane.mean_aerodynamic_chord
+            L = Cl * dyn_pressure * plane.S * plane.mean_aerodynamic_chord
+        if dst.amplitude is None:
+            ampl = 0.0
+        else:
+            ampl = float(dst.amplitude)
+        results.append(np.array([ampl, dst.var, Fx, Fy, Fz, L, M, N]))
 
-        for inc_v in inc_ar:
-            fp = os.path.join(DYNDIR, f"dif_f_{var}_{inc_v}")
-            ff = open(fp)
-            con = ff.readlines()
+    pertrubation_df = DataFrame(results, columns=cols)
+    pertrubation_df["Epsilon"] = pertrubation_df["Epsilon"].astype(float)
+    return pertrubation_df
 
-            temp_CZ = con[21]
-            temp_CX = con[19]
-            temp_Cm = con[20]
 
-            CZ_li.append(float(temp_CZ[11:19]))
-
-            CX_li.append(float(temp_CX[11:19]))
-
-            if temp_Cm[33] == "-":
-                Cm_li.append(float(temp_Cm[33:41]))
-            else:
-                Cm_li.append(float(temp_Cm[34:41]))
-
-            ff.close()
-
-            inc_dict["axes"] = "longitudinal"
-            inc_dict["CX"] = np.array(CX_li)
-            inc_dict["CZ"] = np.array(CZ_li)
-            inc_dict["Cm"] = np.array(Cm_li)
-    else:
-        for inc_v in inc_ar:
-            bp = os.path.join(DYNDIR, f"dif_b_{var}_{inc_v}")
-            bf = open(bp)
-            con = bf.readlines()
-
-            temp_CY = con[20]
-            temp_Cl = con[19]
-            temp_Cn = con[21]
-
-            CY_li.append(float(temp_CY[11:19]))
-
-            Cl_li.append(float(temp_Cl[33:41]))
-
-            if temp_Cn[33] == "-":
-                Cn_li.append(float(temp_Cn[33:41]))
-            else:
-                Cn_li.append(float(temp_Cn[34:41]))
-
-            bf.close()
-
-        for inc_v in inc_ar:
-            fp = os.path.join(DYNDIR, f"dif_f_{var}_{inc_v}")
-            ff = open(fp)
-            con = ff.readlines()
-
-            temp_CY = con[20]
-            temp_Cl = con[19]
-            temp_Cn = con[21]
-
-            CY_li.append(float(temp_CY[11:19]))
-
-            Cl_li.append(float(temp_Cl[33:41]))
-
-            if temp_Cn[33] == "-":
-                Cn_li.append(float(temp_Cn[33:41]))
-            else:
-                Cn_li.append(float(temp_Cn[34:41]))
-
-            ff.close()
-
-            inc_dict["axes"] = "lateral"
-            inc_dict["CY"] = np.array(CY_li)
-            inc_dict["Cl"] = np.array(Cl_li)
-            inc_dict["Cn"] = np.array(Cn_li)
-
-    return inc_dict
+cols: list[str] = ["Epsilon", "Type", "Fx", "Fy", "Fz", "L", "M", "N"]

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import jsonpickle
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
@@ -105,11 +106,11 @@ class State:
 
     def eigenvalue_analysis(self) -> None:
         # Compute Eigenvalues and Eigenvectors
-        eigvalLong, eigvecLong = np.linalg.eig(self.a_long)
+        eigvalLong, eigvecLong = np.linalg.eig(self.astar_long)
         self.longitudal.eigenValues = eigvalLong
         self.longitudal.eigenVectors = eigvecLong
 
-        eigvalLat, eigvecLat = np.linalg.eig(self.a_lat)
+        eigvalLat, eigvecLat = np.linalg.eig(self.astar_lat)
         self.lateral.eigenValues = eigvalLat
         self.lateral.eigenVectors = eigvecLat
 
@@ -168,30 +169,33 @@ class State:
         Y, L, N = lateral_stability_fd(self)
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
-    def plot_eigenvalues(self) -> None:
+    def plot_eigenvalues(self, plot_lateral: bool = True, plot_longitudal: bool = True) -> tuple[Figure, Axes]:
         """
         Generate a plot of the eigenvalues.
         """
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        # extract real part
-        x: list[float] = [ele.real for ele in self.longitudal.eigenValues]
-        # extract imaginary part
-        y: list[float] = [ele.imag for ele in self.longitudal.eigenValues]
-        ax.scatter(x, y, color="r")
-
-        # extract real part
-        x = [ele.real for ele in self.lateral.eigenValues]
-        # extract imaginary part
-        y = [ele.imag for ele in self.lateral.eigenValues]
-        marker_x = MarkerStyle("x")
-        ax.scatter(x, y, color="b", marker=marker_x)
+        if plot_longitudal:
+            # extract real part
+            x: list[float] = [ele.real for ele in self.longitudal.eigenValues]
+            # extract imaginary part
+            y: list[float] = [ele.imag for ele in self.longitudal.eigenValues]
+            ax.scatter(x, y, label="Longitudal", color="r")
+        if plot_lateral:
+            # extract real part
+            x = [ele.real for ele in self.lateral.eigenValues]
+            # extract imaginary part
+            y = [ele.imag for ele in self.lateral.eigenValues]
+            marker_x = MarkerStyle("x")
+            ax.scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
         ax.set_ylabel("Imaginary")
         ax.set_xlabel("Real")
         ax.grid()
+        fig.legend()
         fig.show()
+        return fig, ax
 
     def __str__(self) -> str:
         ss = io.StringIO()
@@ -208,7 +212,7 @@ class State:
             ss.write(f"\t{[round(i,3) for i in item]}\n")
         ss.write("\nThe State Space Matrix:\n")
         ss.write(
-            tabulate(self.longitudal.stateSpace.A, tablefmt="github", floatfmt=".3f"),
+            tabulate(self.longitudal.stateSpace.A_DS, tablefmt="github", floatfmt=".3f"),
         )
 
         ss.write(f"\n\n{45*'--'}\n")
@@ -221,7 +225,7 @@ class State:
         for item in self.lateral.eigenVectors:
             ss.write(f"\t{[round(i,3) for i in item]}\n")
         ss.write("\nThe State Space Matrix:\n")
-        ss.write(tabulate(self.lateral.stateSpace.A, tablefmt="github", floatfmt=".3f"))
+        ss.write(tabulate(self.lateral.stateSpace.A_DS, tablefmt="github", floatfmt=".3f"))
         return ss.getvalue()
 
     def to_json(self) -> str:
