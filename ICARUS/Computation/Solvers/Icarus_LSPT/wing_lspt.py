@@ -3,7 +3,6 @@ from typing import Any
 from ICARUS.Aerodynamics.Potential.lifting_surfaces import run_lstp_angles
 from ICARUS.Computation.Analyses.analysis import Analysis
 from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
@@ -24,17 +23,13 @@ def get_lspt() -> Solver:
             "Plane Object",
             Airplane,
         ),
-        "environment": (
-            "Environment",
-            Environment,
+        "state": (
+            "State Object",
+            State,
         ),
         "solver2D": (
             "2D Solver",
             str,
-        ),
-        "u_freestream": (
-            "Velocity Magnitude",
-            float,
         ),
         "angles": (
             "Angles to run",

@@ -62,10 +62,9 @@ impl_long, impl_late = avldyn.implicit_eigs(
 
 
 # aoa_trim, u_trim = avldyn.trim_conditions(PLANEDIR, plane)
-unstick = State(
-    name="Unstick",
-    airplane=plane,
-    environment=EARTH_ISA,
+unstick = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestream=UINF)
+
+unstick.add_polar(
     polar=pol_df,
     polar_prefix="AVL",
     is_dimensional=False,

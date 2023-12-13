@@ -61,7 +61,7 @@ def trim_state(state: "State") -> dict[str, float]:
 
     # Find the trim velocity
     S: float = state.S
-    dens: float = state.env.air_density
+    dens: float = state.environment.air_density
     W: float = state.mass * 9.81
     U_CRUISE: float = np.sqrt(W / (0.5 * dens * cl_trim * S))
     print(f"Trim velocity is {U_CRUISE} m/s")

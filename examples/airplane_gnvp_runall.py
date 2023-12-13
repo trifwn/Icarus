@@ -81,6 +81,12 @@ def main() -> None:
 
         # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
+        state = State(
+            name="Unstick",
+            airplane=airplane,
+            environment=EARTH_ISA,
+            u_freestream=UINF[airplane.name],
+        )
         print(EARTH_ISA)
 
         if STATIC_ANALYSIS[airplane.name]:
@@ -93,7 +99,6 @@ def main() -> None:
             gnvp.set_analyses(analysis)
             options: Struct = gnvp.get_analysis_options(verbose=False)
             solver_parameters: Struct = gnvp.get_solver_parameters()
-
             AOA_MIN = -5
             AOA_MAX = 4
             NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
@@ -104,11 +109,10 @@ def main() -> None:
             )
 
             options.plane.value = airplane
-            options.environment.value = EARTH_ISA
             options.solver2D.value = "XFLR"
+            options.state.value = state
             options.maxiter.value = maxiter[airplane.name]
             options.timestep.value = timestep[airplane.name]
-            options.u_freestream.value = UINF[airplane.name]
             options.angles.value = angles
 
             solver_parameters.Use_Grid.value = True
@@ -149,13 +153,8 @@ def main() -> None:
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
 
             try:
-                unstick = State(
-                    name="Unstick",
-                    airplane=airplane,
-                    environment=EARTH_ISA,
-                    polar=forces,
-                    polar_prefix="GNVP3 2D",
-                )
+                state.add_polar(polar=forces, polar_prefix="GNVP3 2D", is_dimensional=True)
+                unstick = state
             except Exception as error:
                 print("Got errro")
                 print(error)
@@ -213,7 +212,6 @@ def main() -> None:
 
             # Get Results And Save
             _ = gnvp.get_results()
-            unstick.save()
 
             # Sensitivity ANALYSIS
             # ADD SENSITIVITY ANALYSIS

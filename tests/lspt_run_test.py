@@ -5,6 +5,7 @@ import numpy as np
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -19,6 +20,13 @@ def lspt_run() -> None:
     # Get Environment
     from ICARUS.Environment.definition import EARTH_ISA
 
+    u_freestream = 20
+    state = State(
+        name="Unstick",
+        airplane=airplane,
+        environment=EARTH_ISA,
+        u_freestream=u_freestream,
+    )
     # Get Solver
     from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
 
@@ -37,12 +45,10 @@ def lspt_run() -> None:
     AoAmax = 3
     NoAoA = (AoAmax - AoAmin) + 1
     angles: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
-    u_freestream = 20
 
     options.plane.value = airplane
-    options.environment.value = EARTH_ISA
+    options.state.value = state
     options.solver2D.value = "Xfoil"
-    options.u_freestream.value = u_freestream
     options.angles.value = angles
 
     solver_parameters.Ground_Effect.value = True

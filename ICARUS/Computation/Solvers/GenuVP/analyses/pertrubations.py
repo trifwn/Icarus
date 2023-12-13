@@ -460,7 +460,7 @@ def proccess_pertrubation_res_7(plane: Airplane, state: State) -> DataFrame:
     return proccess_pertrubation_res(plane, state, 7)
 
 
-def proccess_pertrubation_res(plane: Airplane, state: State, genu_version: int) -> DataFrame:
+def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) -> DataFrame:
     """
     Process the pertrubation results from the GNVP solver
 
@@ -474,8 +474,8 @@ def proccess_pertrubation_res(plane: Airplane, state: State, genu_version: int) 
     """
     HOMEDIR: str = DB.HOMEDIR
     DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, "Dynamics")
-    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, genu_version)
-    forces = rotate_gnvp_forces(forces, forces["AoA"])
+    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
+    forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 
     state.set_pertrubation_results(forces)
     state.stability_fd()

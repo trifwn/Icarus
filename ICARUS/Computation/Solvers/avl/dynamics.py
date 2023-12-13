@@ -229,13 +229,14 @@ def finite_difs(
         if dst.amplitude is None:
             pass
         elif dst.var == "u":
-            aoa = rad2deg(np.arctan(w_velocity / U + dst.amplitude))
+            aoa = rad2deg(np.arctan(w_velocity / (U + dst.amplitude)))
         elif dst.var == "w":
             aoa = aoa + rad2deg(np.arctan(dst.amplitude / U))
         elif dst.var == "q":
-            pitch_rate = deg2rad(dst.amplitude) * plane.mean_aerodynamic_chord / (2 * U)
+            pitch_rate = dst.amplitude * plane.mean_aerodynamic_chord / (2 * U)
         elif dst.var == "theta":
-            aoa = aoa + dst.amplitude
+            continue
+            # aoa = aoa + dst.amplitude
         elif dst.var == "v":
             beta = rad2deg(np.arctan(dst.amplitude / U))
         elif dst.var == "p":

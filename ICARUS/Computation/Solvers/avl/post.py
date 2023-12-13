@@ -94,7 +94,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
             if dst.var == "u":
                 dyn_pressure = float(
                     0.5
-                    * state.env.air_density
+                    * state.environment.air_density
                     * np.linalg.norm(
                         [
                             state.trim["U"] * np.cos(state.trim["AoA"] * np.pi / 180) + dst.amplitude,
@@ -105,7 +105,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
             elif dst.var == "w":
                 dyn_pressure = float(
                     0.5
-                    * state.env.air_density
+                    * state.environment.air_density
                     * np.linalg.norm(
                         [
                             state.trim["U"] * np.cos(state.trim["AoA"] * np.pi / 180),
@@ -114,7 +114,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
                     ),
                 )
             else:
-                dyn_pressure = state.dynamic_pressure
+                dyn_pressure = state.trim_dynamic_pressure
 
             Fx = CX * dyn_pressure * plane.S
             Fy = CY * dyn_pressure * plane.S

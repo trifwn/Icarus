@@ -23,6 +23,7 @@ from .Stability.stability_derivatives import StabilityDerivativesDS
 from .trim import trim_state
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB3D
 from ICARUS.Environment.definition import Environment
 
 if TYPE_CHECKING:
@@ -37,44 +38,26 @@ class State:
         name: str,
         airplane: Airplane,
         environment: Environment,
-        polar: DataFrame,
-        polar_prefix=None,
-        is_dimensional: bool = True,
+        u_freestream: float,
     ) -> None:
         # Set Basic State Variables
         self.name: str = name
-        # self.vehicle: Airplane = pln
-        self.env: Environment = environment
-        from ICARUS.Database import DB3D
-
-        self.dynamics_directory: str = os.path.join(DB3D, airplane.directory, "Dynamics")
+        self.environment: Environment = environment
+        self.u_freestream = u_freestream
 
         # Get Airplane Properties And State Variables
         self.mean_aerodynamic_chord: float = airplane.mean_aerodynamic_chord
         self.S: float = airplane.S
-        self.dynamic_pressure: float = (
-            0.5 * environment.air_density * 20**2
-        )  # VELOCITY IS ARBITRARY BECAUSE WE DO NOT KNOW THE TRIM YET
+        self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
         self.inertia: FloatArray = airplane.total_inertia
         self.mass: float = airplane.M
 
-        # Remove prefix from polar columns
-        if polar_prefix is not None:
-            cols: list[str] = list(polar.columns)
-            for i, col in enumerate(cols):
-                cols[i] = col.replace(f"{polar_prefix} ", "")
-            polar.columns = cols  # type: ignore
-
-        if is_dimensional:
-            self.polar: DataFrame = self.make_aero_coefficients(polar)
-        else:
-            self.polar = polar
-
-        # GET TRIM STATE
-        self.trim: dict[str, float] = trim_state(self)
-        self.dynamic_pressure = 0.5 * environment.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
+        # Initialize Trim
+        self.trim: dict[str, float] = {}
+        self.trim_dynamic_pressure = 0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
+        self.polar = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
         self.sensitivity = Struct()
@@ -104,6 +87,23 @@ class State:
         self.lateral.eigenValues = np.empty((4,), dtype=float)
         self.lateral.eigenVectors = np.empty((4, 4), dtype=float)
 
+    def add_polar(self, polar: DataFrame, polar_prefix=None, is_dimensional: bool = True):
+        # Remove prefix from polar columns
+        if polar_prefix is not None:
+            cols: list[str] = list(polar.columns)
+            for i, col in enumerate(cols):
+                cols[i] = col.replace(f"{polar_prefix} ", "")
+            polar.columns = cols  # type: ignore
+
+        if is_dimensional:
+            self.polar: DataFrame = self.make_aero_coefficients(polar)
+        else:
+            self.polar = polar
+
+        # GET TRIM STATE
+        self.trim: dict[str, float] = trim_state(self)
+        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
+
     def eigenvalue_analysis(self) -> None:
         # Compute Eigenvalues and Eigenvectors
         eigvalLong, eigvecLong = np.linalg.eig(self.astar_long)
@@ -118,7 +118,7 @@ class State:
         data: DataFrame = DataFrame()
         S: float = self.S
         MAC: float = self.mean_aerodynamic_chord
-        dynamic_pressure: float = self.dynamic_pressure
+        dynamic_pressure: float = self.trim_dynamic_pressure
 
         data["CL"] = forces["Fz"] / (dynamic_pressure * S)
         data["CD"] = forces["Fx"] / (dynamic_pressure * S)
@@ -238,11 +238,11 @@ class State:
         encoded: str = str(jsonpickle.encode(self))
         return encoded
 
-    def save(self) -> None:
+    def save(self, directory) -> None:
         """
         Save the state object to a json file.
         """
-        fname: str = os.path.join(self.dynamics_directory, f"{self.name}.json")
+        fname: str = os.path.join(directory, f"{self.name}_state.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 

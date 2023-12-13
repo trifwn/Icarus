@@ -4,8 +4,6 @@ Current BUILD IS UNSTABLE due to Major Refactoring for v1.0.0.
 
 ## TASKS
 
-- Merge and Integrate new AVL Dynamics
-- Databse Update to include new 3D folder Structure that has folder GenuVP3, GenuVP7, AVL
 - Create AVL interface (AVL SOLVER)
 - Deprecate Lifting Surface from examples USE Wing_Segment instead
 - Create Parametric Analysis Module (Computation of Sensitivity Derivatives for all solvers)

@@ -13,14 +13,14 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import DB3D
 from ICARUS.Environment.definition import Environment
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
 def run_lstp_angles(
     plane: Airplane,
-    environment: Environment,
+    state: State,
     solver2D: str,
-    u_freestream: float,
     angles: FloatArray | list[float],
     solver_options: dict[str, Any],
 ) -> None:
@@ -32,11 +32,12 @@ def run_lstp_angles(
         options (dict[str, Any]): Options
         solver_options (dict[str, Any]): Solver Options
     """
-
+    LSPTDIR = os.path.join(DB3D, plane.directory, "LSPT")
+    os.makedirs(LSPTDIR, exist_ok=True)
     # Generate the wing LLT solver
     wing = Wing_LSPT(
         plane=plane,
-        environment=environment,
+        environment=state.environment,
         alpha=0,
         beta=0,
     )
@@ -49,16 +50,17 @@ def run_lstp_angles(
     # Run the solver
     df: pd.DataFrame = wing.aseq(
         angles=angles,
-        umag=u_freestream,
+        umag=state.u_freestream,
         solver_fun=solve_fun,
     )
 
     # Save the results
-    save_results(plane, df)
+    save_results(plane, state, df)
 
 
 def save_results(
     plane: Airplane,
+    state: State,
     df: pd.DataFrame,
 ) -> None:
     plane_dir: str = os.path.join(DB.vehicles_db.DATADIR, plane.name)
@@ -78,8 +80,11 @@ def save_results(
     print("Adding Results to Database")
     # Add plane to database
     file_plane: str = os.path.join(DB3D, plane.name, f"{plane.name}.json")
-    _ = DB.vehicles_db.load_plane_from_file(name=plane.name, file=file_plane)
+    _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
 
     # Add Forces to Database
-    file_gnvp: str = os.path.join(DB3D, plane.name, f"forces.lspt")
-    DB.vehicles_db.load_lspt_forces(planename=plane.name, file=file_gnvp)
+    DB.vehicles_db.load_lspt_data(
+        plane=plane,
+        state=state,
+        vehicle_folder=plane.directory,
+    )

@@ -1,7 +1,6 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane

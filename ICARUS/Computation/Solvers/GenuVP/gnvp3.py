@@ -190,9 +190,9 @@ def get_gnvp3() -> Solver:
             "Plane Object",
             Airplane,
         ),
-        "environment": (
-            "Environment",
-            Environment,
+        "state": (
+            "State of the Ariplane",
+            State,
         ),
         "solver2D": (
             "2D Solver",
@@ -204,10 +204,6 @@ def get_gnvp3() -> Solver:
         ),
         "timestep": (
             "Timestep = 0.05 * chord / u_inf",
-            float,
-        ),
-        "u_freestream": (
-            "Velocity Magnitude",
             float,
         ),
         "angles": (
@@ -253,10 +249,6 @@ def get_gnvp3() -> Solver:
         ),
         "timestep": (
             "Timestep",
-            float,
-        ),
-        "u_freestream": (
-            "Velocity Magnitude",
             float,
         ),
         "angle": (

@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from venv import logger
 
 import numpy as np
 import pandas as pd
@@ -10,19 +11,19 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Flight_Dynamics.state import State
 
 
-def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
+def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
     """
     Convert the forces to polars and return a dataframe with them.
 
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
-        genu_version(int): Version of GNVP
+        gnvp_version(int): Version of GNVP
 
     Returns:
         DataFrame: Resulting Polars
     """
-    GNVPDIR = os.path.join(CASEDIR, f"GenuVP{genu_version}")
+    GNVPDIR = os.path.join(CASEDIR, f"GenuVP{gnvp_version}")
     print(f"CASEDIR ")
     os.chdir(GNVPDIR)
 
@@ -41,26 +42,26 @@ def log_forces(CASEDIR: str, HOMEDIR: str, genu_version: int) -> DataFrame:
                 a = [name, *dat]
             pols.append(a)
         os.chdir(f"{GNVPDIR}")
-    if genu_version == 7:
+    if gnvp_version == 7:
         cols = cols_7
-    elif genu_version == 3:
+    elif gnvp_version == 3:
         cols = cols_3
     else:
-        raise ValueError(f"GenuVP version {genu_version} does not exist")
+        raise ValueError(f"GenuVP version {gnvp_version} does not exist")
 
     df: DataFrame = DataFrame(pols, columns=cols)
     df.pop("TIME")
     df.pop("PSI")
     df = df.sort_values("AoA").reset_index(drop=True)
-    df = rotate_gnvp_forces(df, df["AoA"])
-
-    forces_file: str = os.path.join(CASEDIR, f"forces.gnvp{genu_version}")
+    df = rotate_gnvp_forces(df, df["AoA"], gnvp_version)
+    df = df.sort_values("AoA").reset_index(drop=True)
+    forces_file: str = os.path.join(CASEDIR, f"forces.gnvp{gnvp_version}")
     df.to_csv(forces_file, index=False, float_format="%.10f")
     os.chdir(HOMEDIR)
     return df
 
 
-def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, genu_version: int) -> DataFrame:
+def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, gnvp_version: int) -> DataFrame:
     os.chdir(DYNDIR)
     folders: list[str] = next(os.walk("."))[1]
     print("Logging Pertrubations")
@@ -93,19 +94,19 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, genu
             os.chdir(os.path.join(DYNDIR, folder))
         os.chdir(f"{DYNDIR}")
 
-    if genu_version == 7:
+    if gnvp_version == 7:
         cols = cols_7
-    elif genu_version == 3:
+    elif gnvp_version == 3:
         cols = cols_3
     else:
-        raise ValueError(f"GenuVP version {genu_version} does not exist")
+        raise ValueError(f"GenuVP version {gnvp_version} does not exist")
     df: DataFrame = DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
     df.pop("TTIME")
     df.pop("PSIB")
     df = df.sort_values("Type").reset_index(drop=True)
-    df = rotate_gnvp_forces(df, state.trim["AoA"])
+    df = rotate_gnvp_forces(df, state.trim["AoA"], gnvp_version)
 
-    df.to_csv(f"pertrubations.gnvp{genu_version}", index=False)
+    df.to_csv(f"pertrubations.gnvp{gnvp_version}", index=False)
     os.chdir(HOMEDIR)
     return df
 
@@ -113,51 +114,47 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, genu
 def rotate_gnvp_forces(
     rawforces: DataFrame,
     alpha_deg: float | Series | FloatArray,
+    gnvp_version: int,
     default_name_to_use: str = "2D",
 ) -> DataFrame:
-    data = pd.DataFrame()
+    data = DataFrame()
     AoA: float | Series[float] | FloatArray = alpha_deg * np.pi / 180
 
-    key_in_df = rawforces.columns[0]
     name = None
-    print(rawforces)
-    for enc, name in zip(["", "2D", "DS2D"], ["Potential", "2D", "ONERA"]):
-        if key_in_df != f"TFORC{enc}(1)":
-            continue
+    for name in ["Potential", "2D", "ONERA"]:
+        try:
+            f_x: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} Fx"]
+            f_y: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} Fy"]
+            f_z: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} Fz"]
 
-        f_x: Series[Any] = rawforces[f"TFORC{enc}(1)"]
-        f_y: Series[Any] = rawforces[f"TFORC{enc}(2)"]
-        f_z: Series[Any] = rawforces[f"TFORC{enc}(3)"]
+            m_x: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} Mx"]
+            m_y: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} My"]
+            m_z: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} Mz"]
 
-        m_x: Series[Any] = rawforces[f"TAMOM{enc}(1)"]
-        m_y: Series[Any] = rawforces[f"TAMOM{enc}(2)"]
-        m_z: Series[Any] = rawforces[f"TAMOM{enc}(3)"]
+            f_x_rot: Series[Any] = f_x * np.cos(-AoA) - f_z * np.sin(-AoA)
+            f_y_rot: Series[Any] = f_y
+            f_z_rot: Series[Any] = f_x * np.sin(-AoA) + f_z * np.cos(-AoA)
 
-        f_x_rot: Series[Any] = f_x * np.cos(-AoA) - f_z * np.sin(-AoA)
-        f_y_rot: Series[Any] = f_y
-        f_z_rot: Series[Any] = f_x * np.sin(-AoA) + f_z * np.cos(-AoA)
+            m_x_rot: Series[Any] = m_x * np.cos(-AoA) - m_z * np.sin(-AoA)
+            m_y_rot: Series[Any] = m_y
+            m_z_rot: Series[Any] = m_x * np.sin(-AoA) + m_z * np.cos(-AoA)
 
-        m_x_rot: Series[Any] = m_x * np.cos(-AoA) - m_z * np.sin(-AoA)
-        m_y_rot: Series[Any] = m_y
-        m_z_rot: Series[Any] = m_x * np.sin(-AoA) + m_z * np.cos(-AoA)
+            data[f"GenuVP{gnvp_version} {name} Fx"] = f_x_rot
+            data[f"GenuVP{gnvp_version} {name} Fy"] = f_y_rot
+            data[f"GenuVP{gnvp_version} {name} Fz"] = f_z_rot
+            data[f"GenuVP{gnvp_version} {name} Mx"] = m_x_rot
+            data[f"GenuVP{gnvp_version} {name} My"] = m_y_rot
+            data[f"GenuVP{gnvp_version} {name} Mz"] = m_z_rot
+        except KeyError as e:
+            logger.debug(f"Key error {e}")
 
-        data[f"Fx_{name}"] = f_x_rot
-        data[f"Fy_{name}"] = f_y_rot
-        data[f"Fz_{name}"] = f_z_rot
-        data[f"L_{name}"] = m_x_rot
-        data[f"M_{name}"] = m_y_rot
-        data[f"N_{name}"] = m_z_rot
-        break
-
-    print(data)
     data["AoA"] = alpha_deg
-    # print(f"Using {preferred} polars")
-    data["Fx"] = data[f"Fx_{default_name_to_use}"]
-    data["Fy"] = data[f"Fy_{default_name_to_use}"]
-    data["Fz"] = data[f"Fz_{default_name_to_use}"]
-    data["L"] = data[f"L_{default_name_to_use}"]
-    data["M"] = data[f"M_{default_name_to_use}"]
-    data["N"] = data[f"N_{default_name_to_use}"]
+    data["Fx"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fx"]
+    data["Fy"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fy"]
+    data["Fz"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fz"]
+    data["L"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mx"]
+    data["M"] = data[f"GenuVP{gnvp_version} {default_name_to_use} My"]
+    data["N"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mz"]
     # Reindex the dataframe sort by AoA
     data = data.sort_values(by="AoA").reset_index(drop=True)
     return data

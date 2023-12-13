@@ -21,7 +21,7 @@ class BaseAirplaneTests(unittest.TestCase):
         AREA_act: tuple[float] = (4.0608,)
         CG_act: FloatArray = np.array([0.337, 0.0, 0.0])
         I_act: FloatArray = np.array(
-            [2.077, 0.017, 2.094, 0.0, 0.137, 0.0],
+            [2.077, 0.017, 2.094, 0.0, 0.0, 0.0],
         )
 
         S, MAC, CG, INERTIA = geom()

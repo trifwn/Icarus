@@ -13,7 +13,6 @@ from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
@@ -96,6 +95,12 @@ def main() -> None:
         # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
         print(EARTH_ISA)
+        state = State(
+            name="Unstick",
+            airplane=airplane,
+            environment=EARTH_ISA,
+            u_freestream=UINF[airplane.name],
+        )
 
         # # Get Solver
         gnvp3: Solver = get_gnvp3()
@@ -111,11 +116,10 @@ def main() -> None:
         solver_parameters: Struct = gnvp3.get_solver_parameters()
 
         options.plane.value = airplane
-        options.environment.value = EARTH_ISA
+        options.state.value = state
         options.solver2D.value = airfoil_solver
         options.maxiter.value = MAXITER[airplane.name]
         options.timestep.value = TIMESTEP[airplane.name]
-        options.u_freestream.value = UINF[airplane.name]
         options.angles.value = angles
 
         solver_parameters.Use_Grid.value = True
@@ -138,13 +142,8 @@ def main() -> None:
         # # Dynamics
         # ### Define and Trim Plane
         try:
-            unstick = State(
-                name="Unstick",
-                airplane=airplane,
-                polar=polars,
-                environment=EARTH_ISA,
-                polar_prefix="GNVP3 2D",
-            )
+            state.add_polar(polar=polars, polar_prefix="GNVP3 2D", is_dimensional=True)
+            unstick = state
         except Exception as error:
             print(error)
             continue
@@ -187,7 +186,6 @@ def main() -> None:
 
         # Get Results And Save
         _ = gnvp3.get_results()
-        unstick.save()
 
         # Sensitivity ANALYSIS
         # ADD SENSITIVITY ANALYSIS

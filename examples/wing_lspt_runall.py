@@ -22,6 +22,7 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Environment.definition import EARTH_ISA
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
@@ -60,7 +61,7 @@ def main() -> None:
         # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
         print(EARTH_ISA)
-
+        state = State(name="Unstick", airplane=airplane, environment=EARTH_ISA, u_freestream=UINF[airplane.name])
         # # Get Solver
         lspt: Solver = get_lspt()
 
@@ -82,9 +83,8 @@ def main() -> None:
         )
 
         options.plane.value = airplane
-        options.environment.value = EARTH_ISA
+        options.state.value = state
         options.solver2D.value = "Xfoil"
-        options.u_freestream.value = UINF[airplane.name]
         options.angles.value = angles
 
         solver_parameters.Ground_Effect.value = True
