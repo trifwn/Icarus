@@ -101,8 +101,8 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, gnvp
     else:
         raise ValueError(f"GenuVP version {gnvp_version} does not exist")
     df: DataFrame = DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
-    df.pop("TTIME")
-    df.pop("PSIB")
+    df.pop("TIME")
+    df.pop("PSI")
     df = df.sort_values("Type").reset_index(drop=True)
     df = rotate_gnvp_forces(df, state.trim["AoA"], gnvp_version)
 
@@ -120,7 +120,10 @@ def rotate_gnvp_forces(
     data = DataFrame()
     AoA: float | Series[float] | FloatArray = alpha_deg * np.pi / 180
 
-    name = None
+    for name in ['Type', "Epsilon"]:
+        if name in rawforces.columns:
+            data[name] = rawforces[name]
+
     for name in ["Potential", "2D", "ONERA"]:
         try:
             f_x: Series[Any] = rawforces[f"GenuVP{gnvp_version} {name} Fx"]
@@ -152,37 +155,13 @@ def rotate_gnvp_forces(
     data["Fx"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fx"]
     data["Fy"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fy"]
     data["Fz"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fz"]
-    data["L"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mx"]
-    data["M"] = data[f"GenuVP{gnvp_version} {default_name_to_use} My"]
-    data["N"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mz"]
+    data["Mx"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mx"]
+    data["My"] = data[f"GenuVP{gnvp_version} {default_name_to_use} My"]
+    data["Mz"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mz"]
     # Reindex the dataframe sort by AoA
     data = data.sort_values(by="AoA").reset_index(drop=True)
     return data
 
-
-cols_old: list[str] = [
-    "AoA",
-    "TTIME",
-    "PSIB",
-    "TFORC(1)",
-    "TFORC(2)",
-    "TFORC(3)",
-    "TAMOM(1)",
-    "TAMOM(2)",
-    "TAMOM(3)",
-    "TFORC2D(1)",
-    "TFORC2D(2)",
-    "TFORC2D(3)",
-    "TAMOM2D(1)",
-    "TAMOM2D(2)",
-    "TAMOM2D(3)",
-    "TFORCDS2D(1)",
-    "TFORCDS2D(2)",
-    "TFORCDS2D(3)",
-    "TAMOMDS2D(1)",
-    "TAMOMDS2D(2)",
-    "TAMOMDS2D(3)",
-]
 
 cols_3: list[str] = [
     "AoA",
@@ -231,3 +210,27 @@ cols_7: list[str] = [
     "GenuVP7 ONERA My",
     "GenuVP7 ONERA Mz",
 ]
+
+# cols_old: list[str] = [
+#     "AoA",
+#     "TTIME",
+#     "PSIB",
+#     "TFORC(1)",
+#     "TFORC(2)",
+#     "TFORC(3)",
+#     "TAMOM(1)",
+#     "TAMOM(2)",
+#     "TAMOM(3)",
+#     "TFORC2D(1)",
+#     "TFORC2D(2)",
+#     "TFORC2D(3)",
+#     "TAMOM2D(1)",
+#     "TAMOM2D(2)",
+#     "TAMOM2D(3)",
+#     "TFORCDS2D(1)",
+#     "TFORCDS2D(2)",
+#     "TFORCDS2D(3)",
+#     "TAMOMDS2D(1)",
+#     "TAMOMDS2D(2)",
+#     "TAMOMDS2D(3)",
+# ]

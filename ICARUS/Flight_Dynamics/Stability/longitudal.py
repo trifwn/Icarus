@@ -1,16 +1,18 @@
 from typing import Any
 from typing import TYPE_CHECKING
 
-import numpy as np
 from pandas import DataFrame
+
+from ICARUS.Flight_Dynamics.Stability.state_space import LongitudalStateSpace
+from ICARUS.Flight_Dynamics.Stability.state_space import StateSpace
 
 if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
 
-def longitudal_stability_fd(
+def longitudal_stability_finite_differences(
     state: "State",
-) -> tuple[dict[Any, float], dict[Any, float], dict[Any, float]]:
+) -> "LongitudalStateSpace":
     """This Function Requires the results from perturbation analysis
     For the Longitudinal Motion, in addition to the state space variables
     an analysis with respect to the derivative of w perturbation is needed.
@@ -26,14 +28,6 @@ def longitudal_stability_fd(
 
     pert: DataFrame = state.pertrubation_results
     eps: dict[str, float] = state.epsilons
-    m: float = state.mass
-    trim_velocity: float = state.trim["U"]
-    theta: float = state.trim["AoA"] * np.pi / 180
-    u_e: float = np.abs(trim_velocity * np.cos(theta))
-    w_e: float = np.abs(trim_velocity * np.sin(theta))
-
-    G: float = 9.81
-    Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
 
     X: dict[Any, float] = {}
     Z: dict[Any, float] = {}
@@ -67,43 +61,13 @@ def longitudal_stability_fd(
         Zb = float(back[f"Fz"].to_numpy())
         Z[var] = (Zf - Zb) / de
 
-        Mf = float(front[f"M"].to_numpy())
-        Mb = float(back[f"M"].to_numpy())
+        Mf = float(front[f"My"].to_numpy())
+        Mb = float(back[f"My"].to_numpy())
         M[var] = (Mf - Mb) / de
 
     X["w_dot"] = 0
     Z["w_dot"] = 0
     M["w_dot"] = 0
 
-    xu = X["u"] / m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
-    xw = X["w"] / m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
-    xq = (X["q"] - m * w_e) / (m)
-    xth = -G * np.cos(theta)
-
-    # xq += (X["w_dot"] * (Z["q"] + m * Ue))/(m*(m-Z["w_dot"]))
-    # xth += - (X["w_dot"]*G * np.sin(theta))/((m-Z["w_dot"]))
-
-    zu = Z["u"] / (m - Z["w_dot"])
-    zw = Z["w"] / (m - Z["w_dot"])
-    zq = (Z["q"] + m * u_e) / (m - Z["w_dot"])
-    zth = -(m * G * np.sin(theta)) / (m - Z["w_dot"])
-
-    mu = (M["u"] + Z["u"] * M["w_dot"] / (m - Z["w_dot"])) / Iy
-    mw = (M["w"] + Z["w"] * M["w_dot"] / (m - Z["w_dot"])) / Iy
-    mq = (M["q"] + M["w_dot"] * (Z["q"] + m * u_e) / (m - Z["w_dot"])) / Iy
-    mth = -(m * G * np.sin(theta) * M["w_dot"]) / (Iy * (m - Z["w_dot"]))
-
-    state.longitudal.stateSpace.A = np.array(
-        [
-            [X["u"], X["w"], X["q"], X["theta"]],
-            [Z["u"], Z["w"], Z["q"], Z["theta"]],
-            [M["u"], M["w"], M["q"], M["theta"]],
-            [0, 0, 1, 0],
-        ],
-    )
-
-    state.longitudal.stateSpace.A_DS = np.array(
-        [[xu, xw, xq, xth], [zu, zw, zq, zth], [mu, mw, mq, mth], [0, 0, 1, 0]],
-    )
-
-    return X, Z, M
+    longitudal_state_space = LongitudalStateSpace(state, X, Z, M)
+    return longitudal_state_space

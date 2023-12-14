@@ -1,8 +1,10 @@
-import os
 from typing import Any
 
+import numpy as np
 from pandas import DataFrame
 
+from ICARUS.Computation.Solvers.AVL.analyses.polars import avl_angle_run
+from ICARUS.Computation.Solvers.AVL.analyses.polars import process_avl_angles_run
 from ICARUS.Computation.Solvers.AVL.files.dynamics import finite_difs
 from ICARUS.Computation.Solvers.AVL.files.dynamics import implicit_eigs
 from ICARUS.Computation.Solvers.AVL.post_process.post import finite_difs_post
@@ -22,6 +24,12 @@ def avl_dynamic_analysis_implicit(
 
 
 def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D, solver_options: dict[str, Any] = {}) -> None:
+    if state.trim == {}:
+        angles = np.linspace(-10, 10, 21)
+        avl_angle_run(plane, state, solver2D=solver2D, angles=angles)
+        polar_df = process_avl_angles_run(plane, state, angles)
+        state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True)
+
     finite_difs(plane=plane, state=state, solver2D=solver2D)
 
 

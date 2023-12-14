@@ -9,6 +9,16 @@ if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
 
+class TrimNotPossible(Exception):
+    "Raise when Trim is not Possible due to Negative CL At trim angle"
+    pass
+
+
+class TrimOutsidePolars(Exception):
+    "Raise when Trim can't be computed due to Cm not crossing zero at the imported polars"
+    pass
+
+
 def trim_state(state: "State", verbose=True) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
@@ -37,7 +47,7 @@ def trim_state(state: "State", verbose=True) -> dict[str, float]:
         trim_loc2 = (Cm[Cm < 0] - 0).idxmin()
     except ValueError as e:
         print(Cm)
-        raise ValueError(e)
+        raise TrimOutsidePolars()
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
     d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
@@ -52,7 +62,8 @@ def trim_state(state: "State", verbose=True) -> dict[str, float]:
     cl_trim = state.polar["CL"][trim_loc1] + (state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]) * (
         aoa_trim - state.polar["AoA"][trim_loc1]
     ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
-
+    if cl_trim < 0:
+        raise TrimNotPossible()
     # Find the trim velocity
     S: float = state.S
     dens: float = state.environment.air_density

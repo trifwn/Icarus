@@ -16,7 +16,6 @@ from ICARUS.Computation.Solvers.GenuVP.analyses.pertrubations import (
 from ICARUS.Computation.Solvers.GenuVP.files.gnvp3_interface import gnvp3_execute
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Database import DB
-from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
@@ -234,10 +233,6 @@ def get_gnvp3() -> Solver:
         "state": (
             "Dynamic State of the airplane",
             State,
-        ),
-        "environment": (
-            "Environment",
-            Environment,
         ),
         "solver2D": (
             "2D Solver",

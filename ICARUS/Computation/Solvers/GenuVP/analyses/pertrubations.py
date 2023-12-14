@@ -126,11 +126,9 @@ def run_gnvp7_pertrubation_parallel(*args: Any, **kwars: Any) -> None:
 def run_pertrubation_serial(
     plane: Airplane,
     state: State,
-    environment: Environment,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
     angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -145,9 +143,7 @@ def run_pertrubation_serial(
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float):  Freestream Velocity magnitude
         angle (float): Angle of attack in degrees
-        environment (Environment): Environment Object
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
@@ -169,9 +165,9 @@ def run_pertrubation_serial(
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
-                "u_freestream": u_freestream,
+                "u_freestream": state.u_freestream,
                 "angle": angle,
-                "environment": environment,
+                "environment": state.environment,
                 "surfaces": surfaces,
                 "bodies_dicts": bodies_dicts,
                 "dst": dst,
@@ -217,11 +213,9 @@ def run_pertrubation_serial(
 def run_pertrubation_parallel(
     plane: Airplane,
     state: State,
-    environment: Environment,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
     angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -233,11 +227,9 @@ def run_pertrubation_parallel(
     Args:
         plane (Airplane): Airplane Object
         state (State): Dynamic State of the airplane
-        environment (Environment): Environment Object
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float): Freestream Velocity magnitude
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
@@ -267,9 +259,9 @@ def run_pertrubation_parallel(
                     solver2D,
                     maxiter,
                     timestep,
-                    u_freestream,
+                    state.u_freestream,
                     angle,
-                    environment,
+                    state.environment,
                     surfaces,
                     bodies_dicts,
                     dst,
@@ -282,9 +274,9 @@ def run_pertrubation_parallel(
 
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
-    CASEDIRS: list[str] = [os.path.join(PLANEDIR, "Dynamics", folder) for folder in folders]
+    GENUDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
+    CASEDIRS: list[str] = [os.path.join(GENUDIR, "Dynamics", folder) for folder in folders]
 
     refresh_progress: float = 2
     job = Thread(target=run)
@@ -327,12 +319,10 @@ def run_gnvp7_sensitivity_parallel(*args: Any, **kwars: Any) -> None:
 def sensitivity_serial(
     plane: Airplane,
     state: State,
-    environment: Environment,
     var: str,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
     angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -344,12 +334,10 @@ def sensitivity_serial(
 
     Args:
         plane (Dynamic_Airplane): Dynamic Airplane Object
-        environment (Environment): Environment Object
         var (str): Variable to be perturbed
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float): Velocity Magnitude
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
@@ -369,9 +357,9 @@ def sensitivity_serial(
             solver2D,
             maxiter,
             timestep,
-            u_freestream,
+            state.u_freestream,
             angle,
-            environment,
+            state.environment,
             surfaces,
             bodies_dicts,
             dst,
@@ -385,12 +373,10 @@ def sensitivity_serial(
 def sensitivity_parallel(
     plane: Airplane,
     state: State,
-    environment: Environment,
     var: str,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
     angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -402,12 +388,10 @@ def sensitivity_parallel(
 
     Args:
         plane (Dynamic_Airplane): Dynamic Airplane Object
-        environment (Environment): Environment Object
         var (str): Variable to be perturbed
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float): Velocity Magnitude
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
@@ -436,9 +420,9 @@ def sensitivity_parallel(
                 solver2D,
                 maxiter,
                 timestep,
-                u_freestream,
+                state.u_freestream,
                 angle,
-                environment,
+                state.environment,
                 surfaces,
                 bodies_dicts,
                 dst,
@@ -473,7 +457,7 @@ def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) 
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
     HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{gnvp_version}" "Dynamics")
+    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{gnvp_version}", "Dynamics")
     forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
     forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 

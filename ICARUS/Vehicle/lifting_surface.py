@@ -417,8 +417,12 @@ class Lifting_Surface:
             for j in np.arange(0, self.N):
                 zs_upper[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.y_upper(i / (self.M - 1))
                 zs_lower[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.y_lower(i / (self.M - 1))
-                zs[i, j] = self._dihedral_dist[j] + self._chord_dist[j] * self.airfoil.camber_line(
-                    i / (self.M - 1),
+                zs[i, j] = (
+                    self._dihedral_dist[j]
+                    + self._chord_dist[j]
+                    * self.airfoil.camber_line(
+                        i / (self.M - 1),
+                    ).squeeze()
                 )
 
             # ROTATE ACCORDING TO R_MAT

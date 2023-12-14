@@ -1,5 +1,6 @@
 import logging
 import os
+from copy import deepcopy
 from typing import Any
 
 import jsonpickle
@@ -9,8 +10,12 @@ from pandas import DataFrame
 
 from . import DB3D
 from ICARUS import APPHOME
-from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import get_error_convergence
-from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import get_loads_convergence
+from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
+    get_error_convergence,
+)
+from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
+    get_loads_convergence,
+)
 from ICARUS.Core.struct import Struct
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
@@ -190,7 +195,7 @@ class Database_3D:
         for case in cases:
             # Load States
             if case == "Dynamics":
-                pass
+                continue
 
             # Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
@@ -227,19 +232,6 @@ class Database_3D:
                 self.add_polars_from_forces(plane=plane, state=state, forces=forces_df, prefix=name)
         except FileNotFoundError:
             logging.debug(f"No forces.lspt file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well")
-
-    def add_forces(self, planename: str, forces: DataFrame):
-        if f"{planename}" not in self.polars.keys():
-            self.forces[f"{planename}"] = forces
-        else:
-            # Merge the df with the old data on the AoA column
-            self.forces[f"{planename}"] = self.polars[f"{planename}"].merge(
-                forces,
-                on="AoA",
-                how="outer",
-            )
-            # Sort the dataframe by AoA
-            self.forces[f"{planename}"].sort_values(by="AoA", inplace=True)
 
     def load_avl_data(
         self,
@@ -289,19 +281,36 @@ class Database_3D:
         if plane.name not in self.polars.keys():
             self.polars[plane.name] = df
         else:
-            if f"{prefix} CL" in self.polars[plane.name].keys():
-                self.polars[plane.name][f"{prefix} CL"] = df[f"{prefix} CL"]
-                self.polars[plane.name][f"{prefix} CD"] = df[f"{prefix} CD"]
-                self.polars[plane.name][f"{prefix} Cm"] = df[f"{prefix} Cm"]
-            else:
-                # Merge the df with the old data on the AoA column
-                self.polars[plane.name] = self.polars[plane.name].merge(
-                    df,
-                    on="AoA",
-                    how="outer",
-                )
+            for col in df.keys():
+                if col in self.polars[plane.name].columns and col != "AoA":
+                    self.polars[plane.name].drop(col, axis=1, inplace=True)
+
+            # Merge the df with the old data on the AoA column
+            self.polars[plane.name] = self.polars[plane.name].merge(
+                df,
+                on="AoA",
+                how="outer",
+            )
             # Sort the dataframe by AoA
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
+
+    def add_forces(self, planename: str, forces: DataFrame):
+        if f"{planename}" not in self.forces.keys():
+            self.forces[f"{planename}"] = deepcopy(forces)
+        else:
+            for col in forces.columns:
+                # Drop old forces except AoA
+                if col in self.forces[planename].columns and col != "AoA":
+                    self.forces[planename].drop(col, axis=1, inplace=True)
+
+            # Merge the df with the old data on the AoA column
+            self.forces[f"{planename}"] = self.forces[f"{planename}"].merge(
+                forces,
+                on="AoA",
+                how="outer",
+            )
+            # Sort the dataframe by AoA
+            self.forces[f"{planename}"].sort_values(by="AoA", inplace=True)
 
     def __str__(self) -> str:
         return f"Vehicle Database at {DB3D}"

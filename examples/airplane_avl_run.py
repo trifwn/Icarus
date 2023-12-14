@@ -10,12 +10,9 @@ from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import process_avl_im
 from ICARUS.Computation.Solvers.AVL.analyses.polars import avl_angle_run
 from ICARUS.Computation.Solvers.AVL.analyses.polars import process_avl_angles_run
 from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_3d
-from ICARUS.Database import DB
-from ICARUS.Database import DB3D
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
-
 
 plane = hermes("hermes")
 
@@ -80,11 +77,10 @@ df = process_avl_fd_res(plane, unstick)
 
 unstick.set_pertrubation_results(df)
 unstick.stability_fd()
-unstick.eigenvalue_analysis()
 
 
 print(unstick)
-fig, ax = unstick.plot_eigenvalues(plot_longitudal=False)
+fig, ax = unstick.plot_eigenvalues()
 
 x = [ele.real for ele in xflr_late]
 y = [ele.imag for ele in xflr_late]

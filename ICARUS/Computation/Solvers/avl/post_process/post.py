@@ -68,13 +68,15 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
     Fx = np.array(CDs) * plane.S * state.dynamic_pressure
     My = np.array(Cms) * plane.S * state.dynamic_pressure * plane.mean_aerodynamic_chord
 
-    polar_df = DataFrame(
+    polar_df: DataFrame = DataFrame(
         np.array([AoAs, Fz, Fx, My]).T,
         columns=["AoA", "AVL Fz", "AVL Fx", "AVL My"],
-    ).reset_index(drop=True)
+    )
+    polar_df = polar_df.sort_values("AoA").reset_index(drop=True)
+
     file_2_save = os.path.join(DB3D, plane.directory, "forces.avl")
     DB.vehicles_db.polars[plane.name] = polar_df
-    polar_df.to_csv(file_2_save)
+    polar_df.to_csv(file_2_save, index=False, float_format="%.10f")
     return polar_df
 
 
@@ -201,4 +203,4 @@ def implicit_dynamics_post(plane: Airplane, state: State) -> tuple[list[complex]
     return longitudal_matrix, lateral_matrix
 
 
-cols: list[str] = ["Epsilon", "Type", "Fx", "Fy", "Fz", "L", "M", "N"]
+cols: list[str] = ["Epsilon", "Type", "Fx", "Fy", "Fz", "Mx", "My", "Mz"]

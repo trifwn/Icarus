@@ -332,5 +332,4 @@ def process_gnvp_angles_run(plane: Airplane, state: State, gvnp_version: int) ->
         gnvp_version=gvnp_version,
     )
 
-    # rotatedforces: DataFrame = rotate_forces(forces, forces["AoA"])
     return forces

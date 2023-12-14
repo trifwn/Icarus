@@ -1,6 +1,7 @@
 # ENVIROMENT
 *.mypy_cache/
 *.vscode/
+*.pytest_cache
 venv/
 setup.cfg
 *__pycache__
@@ -32,7 +33,6 @@ Data/3d_Party
 Data/Analyses
 
 # Playground
-test.ipynb
 *.fuse*
 
 # Docs

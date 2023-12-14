@@ -58,7 +58,7 @@ def main() -> None:
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, int] = {"plane_1": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"plane_1": True}
+    STATIC_ANALYSIS: dict[str, float] = {"plane_1": False}
     DYNAMIC_ANALYSIS: dict[str, float] = {"plane_1": True}
 
     # Get Solver
@@ -131,9 +131,9 @@ def main() -> None:
             from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
 
             solvers = [
-                "GNVP3 Potential" if GNVP_VERSION == 3 else "GNVP7 Potential",
-                "GNVP3 2D" if GNVP_VERSION == 3 else "GNVP7 2D",
-                "GNVP3 ONERA" if GNVP_VERSION == 3 else "GNVP7 ONERA",
+                "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",
+                "GenuVP3 2D" if GNVP_VERSION == 3 else "GenuVP7 2D",
+                "GenuVP3 ONERA" if GNVP_VERSION == 3 else "GenuVP7 ONERA",
             ]
             axs, fig = plot_airplane_polars(
                 [airplane.name],
@@ -147,13 +147,11 @@ def main() -> None:
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            forces = DB.vehicles_db.polars[airplane.name]
-            print(forces)
+            forces = DB.vehicles_db.forces[airplane.name]
             if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
-
             try:
-                state.add_polar(polar=forces, polar_prefix="GNVP3 2D", is_dimensional=True)
+                state.add_polar(polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True)
                 unstick = state
             except Exception as error:
                 print("Got errro")
@@ -193,11 +191,9 @@ def main() -> None:
             # Set Options
             options.plane.value = airplane
             options.state.value = unstick
-            options.environment.value = EARTH_ISA
             options.solver2D.value = "Xfoil"
             options.maxiter.value = maxiter[airplane.name]
             options.timestep.value = timestep[airplane.name]
-            options.u_freestream.value = unstick.trim["U"]
             options.angle.value = unstick.trim["AoA"]
 
             solver_parameters.Use_Grid.value = True
