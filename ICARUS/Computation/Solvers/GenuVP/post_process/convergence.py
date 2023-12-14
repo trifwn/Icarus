@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
@@ -15,9 +16,9 @@ def get_loads_convergence(file: str, genu_version: int) -> DataFrame:
         raise ValueError(f"GenuVP version {genu_version} not recognized")
 
 
-def get_error_convergence(file: str, gnvp_version: int) -> DataFrame:
+def get_error_convergence(file: str, df: DataFrame, gnvp_version: int) -> DataFrame:
     if gnvp_version == 3:
-        return get_error_convergence_3(file)
+        return add_error_convergence_3(file, df)
     elif gnvp_version == 7:
         print("Errpr Convergence for GenuVP7 not implemented")
         df = DataFrame()
@@ -37,9 +38,7 @@ def get_loads_convergence_3(file: str) -> DataFrame:
         return df
 
 
-def get_error_convergence_3(file: str) -> DataFrame:
-    df = DataFrame()
-    # print(file)
+def add_error_convergence_3(file: str, df: DataFrame) -> DataFrame:
     try:
         with open(file, encoding="UTF-8") as f:
             lines: list[str] = f.readlines()
@@ -61,15 +60,15 @@ def get_error_convergence_3(file: str) -> DataFrame:
             else:
                 error = error[-foo:]
                 errorm = errorm[-foo:]
-            df["ERROR"] = error
-            df["ERRORM"] = errorm
+            df.insert(3, "ERROR", np.array(error, dtype=float))
+            df.insert(3, "ERRORM", np.array(errorm, dtype=float))
         except ValueError as e:
+            print(e)
             logging.info(f"Some Run Had Problems! Could not add convergence data\n{e}")
 
     except FileNotFoundError:
         logging.info(f"No gnvp3.out or gnvp7.out file found in {file}!")
-    finally:
-        return df
+    return df
 
 
 cols: list[str] = [

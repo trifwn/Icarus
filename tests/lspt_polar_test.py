@@ -10,7 +10,7 @@ from ICARUS.Vehicle.plane import Airplane
 
 
 def lspt_run() -> None:
-    print("Testing GNVP Running...")
+    print("Testing LSPT Running...")
 
     # Get Plane, DB
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane

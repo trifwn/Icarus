@@ -87,7 +87,7 @@ class State:
         self.lateral.eigenValues = np.empty((4,), dtype=float)
         self.lateral.eigenVectors = np.empty((4, 4), dtype=float)
 
-    def add_polar(self, polar: DataFrame, polar_prefix=None, is_dimensional: bool = True):
+    def add_polar(self, polar: DataFrame, polar_prefix=None, is_dimensional: bool = True, verbose: bool = True) -> None:
         # Remove prefix from polar columns
         if polar_prefix is not None:
             cols: list[str] = list(polar.columns)
@@ -96,13 +96,13 @@ class State:
             polar.columns = cols  # type: ignore
 
         if is_dimensional:
-            self.polar: DataFrame = self.make_aero_coefficients(polar)
+            self.polar = self.make_aero_coefficients(polar)
         else:
             self.polar = polar
 
         # GET TRIM STATE
-        self.trim: dict[str, float] = trim_state(self)
-        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
+        self.trim = trim_state(self, verbose=verbose)
+        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
 
     def eigenvalue_analysis(self) -> None:
         # Compute Eigenvalues and Eigenvectors
@@ -118,13 +118,13 @@ class State:
         data: DataFrame = DataFrame()
         S: float = self.S
         MAC: float = self.mean_aerodynamic_chord
-        dynamic_pressure: float = self.trim_dynamic_pressure
+        dynamic_pressure: float = self.dynamic_pressure
 
         data["CL"] = forces["Fz"] / (dynamic_pressure * S)
         data["CD"] = forces["Fx"] / (dynamic_pressure * S)
-        data["Cm"] = forces["M"] / (dynamic_pressure * S * MAC)
-        data["Cn"] = forces["N"] / (dynamic_pressure * S * MAC)
-        data["Cl"] = forces["L"] / (dynamic_pressure * S * MAC)
+        data["Cm"] = forces["My"] / (dynamic_pressure * S * MAC)
+        # data["Cn"] = forces["Mz"] / (dynamic_pressure * S * MAC)
+        # data["Cl"] = forces["Mx"] / (dynamic_pressure * S * MAC)
         data["AoA"] = forces["AoA"]
         return data
 
@@ -169,33 +169,41 @@ class State:
         Y, L, N = lateral_stability_fd(self)
         self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
 
-    def plot_eigenvalues(self, plot_lateral: bool = True, plot_longitudal: bool = True) -> tuple[Figure, Axes]:
+    def plot_eigenvalues(self, plot_lateral: bool = True, plot_longitudal: bool = True) -> tuple[Figure, list[Axes]]:
         """
         Generate a plot of the eigenvalues.
         """
         fig = plt.figure()
-        ax = fig.add_subplot(111)
 
+        if plot_lateral and plot_longitudal:
+            axs = fig.subplots(1, 2)  # type: ignore
+        else:
+            axs = fig.subplots(1, 1)
+            axs: list[Axes] = [axs]
+        i = 0
         if plot_longitudal:
             # extract real part
             x: list[float] = [ele.real for ele in self.longitudal.eigenValues]
             # extract imaginary part
             y: list[float] = [ele.imag for ele in self.longitudal.eigenValues]
-            ax.scatter(x, y, label="Longitudal", color="r")
+            axs[i].scatter(x, y, label="Longitudal", color="r")
+            i += 1
+
         if plot_lateral:
             # extract real part
             x = [ele.real for ele in self.lateral.eigenValues]
             # extract imaginary part
             y = [ele.imag for ele in self.lateral.eigenValues]
             marker_x = MarkerStyle("x")
-            ax.scatter(x, y, label="Lateral", color="b", marker=marker_x)
+            axs[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
-        ax.set_ylabel("Imaginary")
-        ax.set_xlabel("Real")
-        ax.grid()
-        fig.legend()
+        for j in range(0, i):
+            axs[j].set_ylabel("Imaginary")
+            axs[j].set_xlabel("Real")
+            axs[j].grid()
+            axs[j].legend()
         fig.show()
-        return fig, ax
+        return fig, axs
 
     def __str__(self) -> str:
         ss = io.StringIO()

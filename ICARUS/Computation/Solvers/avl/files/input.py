@@ -1,30 +1,32 @@
+import logging
 import os
 import subprocess
 from io import StringIO
+from re import S
 
 import numpy as np
 from pandas import DataFrame
 
 from ICARUS.Airfoils.airfoil_polars import Polars
-from ICARUS.Computation.Solvers.AVL import DUMMY_MASS_FILE
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
 from ICARUS.Database import DB
+from ICARUS.Database import DB3D
 from ICARUS.Environment.definition import Environment
+from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.utils import DiscretizationType
 
 
 def make_input_files(
-    PLANEDIR: str,
+    directory: str,
     plane: Airplane,
-    environment: Environment,
-    UINF: float,
+    state: State,
     solver2D: str = "Xfoil",
 ) -> None:
-    os.makedirs(PLANEDIR, exist_ok=True)
-    avl_mass(PLANEDIR, plane, environment)
-    avl_geo(PLANEDIR, plane, environment, UINF, solver2D)
+    os.makedirs(directory, exist_ok=True)
+    avl_mass(directory, plane, state.environment)
+    avl_geo(directory, plane, state.environment, state.u_freestream, solver2D)
 
 
 def avl_mass(
@@ -34,30 +36,53 @@ def avl_mass(
 ) -> None:
     # This function creates an avl mass input file, its arguments include the masses, inertias and COGs of the various lifting and non lifting bodies-points
 
-    with open(DUMMY_MASS_FILE) as f:
-        con = f.readlines()
+    f_io = StringIO()
 
-    ar: list[str] = [c for c in con[:30]]
+    f_io.write("#-------------------------------------------------\n")
+    f_io.write(f"#  {plane.name}    n")
+    f_io.write("#\n")
+    f_io.write("#  Dimensional unit and parameter data.\n")
+    f_io.write("#  Mass & Inertia breakdown.\n")
+    f_io.write("#-------------------------------------------------\n")
+    f_io.write("\n")
+    f_io.write("#  Names and scalings for units to be used for trim and eigenmode calculations.\n")
+    f_io.write("#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n")
+    f_io.write("#  Lunit value will also scale all lengths and areas in the AVL input file.\n")
+    f_io.write("Lunit = 1 m\n")
+    f_io.write("Munit = 1 kg\n")
+    f_io.write("Tunit = 1.0 s\n")
+    f_io.write("\n")
+    f_io.write("#-------------------------\n")
+    f_io.write("#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n")
+    f_io.write("#  Must be in the unit names given above (m,kg,s).\n")
+    f_io.write(f"g   = {env.GRAVITY}\n")
+    f_io.write(f"rho = {env.air_density}\n")
+    f_io.write("\n")
+    f_io.write("#-------------------------\n")
+    f_io.write("#  Mass & Inertia breakdown.\n")
+    f_io.write("#  x y z  is location of item's own CG.\n")
+    f_io.write("#  Ixx... are item's inertias about item's own CG.\n")
+    f_io.write("#\n")
+    f_io.write("#  x,y,z system here must be exactly the same one used in the .avl input file\n")
+    f_io.write("#     (same orientation, same origin location, same length units)\n")
+    f_io.write("#\n")
+    f_io.write("#  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz\n")
+    f_io.write("#\n")
 
-    ar[1] = f"#  {plane.name} "
-    ar[18] = f"rho = {env.air_density}"
-    ar.append(
-        f"   {plane.surfaces[0].mass}   {plane.surfaces[0].CG[0]}  {plane.surfaces[0].CG[1]}  {plane.surfaces[0].CG[2]}   {plane.surfaces[0].Ixx}   {plane.surfaces[0].Iyy}   {plane.surfaces[0].Izz} {plane.surfaces[0].Ixy}   {plane.surfaces[0].Ixz}   {plane.surfaces[0].Iyz}   ! main wing       ",
-    )
-    ar.append(
-        f"   {plane.surfaces[2].mass}   {plane.surfaces[2].CG[0]}  {plane.surfaces[2].CG[1]}  {plane.surfaces[2].CG[2]}   {plane.surfaces[2].Ixx}   {plane.surfaces[2].Iyy}   {plane.surfaces[2].Izz} {plane.surfaces[2].Ixy}   {plane.surfaces[2].Ixz}   {plane.surfaces[2].Iyz}   ! rudder       ",
-    )
-    ar.append(
-        f"   {plane.surfaces[1].mass}   {plane.surfaces[1].CG[0]}  {plane.surfaces[1].CG[1]}  {plane.surfaces[1].CG[2]}   {plane.surfaces[1].Ixx}   {plane.surfaces[1].Iyy}   {plane.surfaces[1].Izz} {plane.surfaces[1].Ixy}   {plane.surfaces[1].Ixz}   {plane.surfaces[1].Iyz}   ! elevator     ",
-    )
-    for i, m in enumerate(plane.masses[3:]):
-        ar.append(
-            f"   {m[0]}   {m[1][0]}  {m[1][1]}  {m[1][2]}   {0.0}   {0.0}   {0.0} {0.0}   {0.0}   {0.0}   ! {m[2]}     ",
+    for surf in plane.surfaces:
+        f_io.write(
+            f"   {surf.mass}   {surf.CG[0]}  {surf.CG[1]}  {surf.CG[2]}   {surf.Ixx}   {surf.Iyy}   {surf.Izz} {surf.Ixy}   {surf.Ixz}   {surf.Iyz}   ! {surf.name}       \n",
         )
 
+    for i, m in enumerate(plane.masses[len(plane.surfaces) :]):
+        f_io.write(
+            f"   {m[0]}   {m[1][0]}  {m[1][1]}  {m[1][2]}   {0.0}   {0.0}   {0.0} {0.0}   {0.0}   {0.0}   ! {m[2]}     \n",
+        )
+
+    content = f_io.getvalue().expandtabs(4)
     mass_file = os.path.join(PLANE_DIR, f"{plane.name}.mass")
     with open(mass_file, "w") as massf:
-        np.savetxt(massf, ar, delimiter=" ", fmt="%s")
+        massf.write(content)
 
 
 def avl_geo(
@@ -180,7 +205,7 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     input_fname: str = os.path.join(f"inertia_scr")
     log_fname = os.path.join(f"inertia_log.txt")
 
-    with open(input_fname, 'w', encoding='utf-8') as f:
+    with open(input_fname, "w", encoding="utf-8") as f:
         f.writelines(contents)
 
     with open(input_fname) as fin:
@@ -191,7 +216,7 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
                 stdout=fout,
                 stderr=fout,
             )
-        print(f"AVL return code: {res}")
+        logging.debug(f"AVL return code: {res}")
 
     with open(log_fname) as fout:
         lines = fout.readlines()

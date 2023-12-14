@@ -473,7 +473,7 @@ def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) 
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
     HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, "Dynamics")
+    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{gnvp_version}" "Dynamics")
     forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
     forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
 
-def trim_state(state: "State") -> dict[str, float]:
+def trim_state(state: "State", verbose=True) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -53,18 +53,18 @@ def trim_state(state: "State") -> dict[str, float]:
         aoa_trim - state.polar["AoA"][trim_loc1]
     ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
 
-    # Print How accurate is the trim
-    print(
-        f"Cm is {state.polar['Cm'][trim_loc1]} instead of 0 at AoA = {state.polar['AoA'][trim_loc1]}",
-    )
-    print(f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
-
     # Find the trim velocity
     S: float = state.S
     dens: float = state.environment.air_density
     W: float = state.mass * 9.81
     U_CRUISE: float = np.sqrt(W / (0.5 * dens * cl_trim * S))
-    print(f"Trim velocity is {U_CRUISE} m/s")
+    # Print How accurate is the trim
+    if verbose:
+        print(
+            f"Cm is {state.polar['Cm'][trim_loc1]} instead of 0 at AoA = {state.polar['AoA'][trim_loc1]}",
+        )
+        print(f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
+        print(f"Trim velocity is {U_CRUISE} m/s")
     trim: dict[str, float] = {
         "U": U_CRUISE,
         "AoA": aoa_trim,

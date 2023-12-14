@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 
@@ -5,6 +6,7 @@ import numpy as np
 
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
+from ICARUS.Database import DB3D
 from ICARUS.Database.utils import angle_to_case
 from ICARUS.Vehicle.plane import Airplane
 
@@ -14,8 +16,9 @@ from ICARUS.Vehicle.plane import Airplane
 
 
 # DEFINING ALL AOA RUNS IN .RUN AVL FILE
-def case_def(PLANEDIR: str, plane: Airplane, angles: FloatArray) -> None:
+def case_def(plane: Airplane, angles: FloatArray | list[float]) -> None:
     li = []
+    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
     for i, angle in enumerate(angles):
         li.append("---------------------------------------------")
         li.append(f"Run case  {i+1}:  -{angle}_deg- ")
@@ -29,8 +32,9 @@ def case_def(PLANEDIR: str, plane: Airplane, angles: FloatArray) -> None:
     np.savetxt(os.path.join(PLANEDIR, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
 
 
-def case_setup(PLANEDIR: str, plane: Airplane) -> None:
+def case_setup(plane: Airplane) -> None:
     HOMEDIR = os.getcwd()
+    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
     os.chdir(PLANEDIR)
 
     li = []
@@ -62,8 +66,10 @@ def case_setup(PLANEDIR: str, plane: Airplane) -> None:
 
 
 # EXECUTION
-def case_run(PLANEDIR: str, plane: Airplane, angles: FloatArray) -> None:
+def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
     HOMEDIR = os.getcwd()
+    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
+
     os.chdir(PLANEDIR)
     li_2 = []
     li_2.append(f"load {plane.name}.avl")
@@ -96,5 +102,5 @@ def case_run(PLANEDIR: str, plane: Airplane, angles: FloatArray) -> None:
                 stdout=fout,
                 # stderr=fout,
             )
-    print(f"AVL return code: {res}")
+    logging.debug(f"AVL return code: {res}")
     os.chdir(HOMEDIR)

@@ -32,7 +32,7 @@ def longitudal_stability_fd(
     u_e: float = np.abs(trim_velocity * np.cos(theta))
     w_e: float = np.abs(trim_velocity * np.sin(theta))
 
-    G: float = -9.81
+    G: float = 9.81
     Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
 
     X: dict[Any, float] = {}
@@ -56,11 +56,6 @@ def longitudal_stability_fd(
             de = eps[var]
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
-
-        if var == "theta":
-            de *= -np.pi / 180
-        elif var == "q":
-            de *= -np.pi / 180
 
         # back = rotate_forces(back, state.trim["AoA"])
         # front = rotate_forces(front, state.trim["AoA"])

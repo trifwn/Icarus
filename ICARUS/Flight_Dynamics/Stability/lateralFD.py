@@ -19,7 +19,7 @@ def lateral_stability_fd(
     mass: float = state.mass
     U: float = state.trim["U"]
     theta: float = state.trim["AoA"] * np.pi / 180
-    G: float = -9.81
+    G: float = 9.81
 
     Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
 
@@ -42,9 +42,6 @@ def lateral_stability_fd(
             de = eps[var]
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
-
-        if var != "v":
-            de *= np.pi / 180
 
         Yf = float(front[f"Fy"].to_numpy())
         Yb = float(back[f"Fy"].to_numpy())

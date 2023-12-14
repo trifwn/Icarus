@@ -8,15 +8,15 @@ from ICARUS.Visualization.airplane.gnvp_wake import plot_gnvp3_wake
 from ICARUS.Visualization.airplane.gnvp_wake import plot_gnvp7_wake
 
 
-def gnvp3_geometry(plot: bool = False) -> tuple[list[FloatArray], list[FloatArray]]:
+def gnvp3_geometry(plot: bool = False) -> None:
     return gnvp_geometry(gnvp_version=3, plot=plot)
 
 
-def gnvp7_geometry(plot: bool = False) -> tuple[list[FloatArray], list[FloatArray]]:
+def gnvp7_geometry(plot: bool = False) -> None:
     return gnvp_geometry(gnvp_version=7, plot=plot)
 
 
-def gnvp_geometry(gnvp_version: int, plot: bool = False) -> tuple[list[FloatArray], list[FloatArray]]:
+def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     """
     Get the geometry from the gnvp results and the airplane. Has to convert to meshgrid to be able to
     sort the data.
@@ -67,4 +67,5 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> tuple[list[FloatArra
     )  # converts the array to a meshgrid
     if plot:
         plot_gnvp_wake(airplane, case)
-    return mesh_grid_plane, mesh_grid_gnvp
+
+    np.testing.assert_almost_equal(mesh_grid_plane, mesh_grid_gnvp, decimal=3)

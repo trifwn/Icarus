@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 from io import StringIO
 
@@ -7,12 +6,11 @@ import numpy as np
 from numpy import deg2rad
 from numpy import rad2deg
 
-from ICARUS.Computation.Solvers.AVL.input import make_input_files
+from .input import make_input_files
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
 from ICARUS.Database import DB3D
 from ICARUS.Database.utils import disturbance_to_case
-from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
@@ -31,19 +29,17 @@ def csplit(input_file: str, pattern: str) -> list[str]:
 
 # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL
 def implicit_eigs(
-    PLANEDIR: str,
     plane: Airplane,
-    environment: Environment,
-    UINF: float,
+    state: State,
     solver2D: str = "Xfoil",
-) -> tuple[list[complex], list[complex]]:
+) -> None:
+    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
     DYNAMICS_DIR = os.path.join(PLANEDIR, "Dynamics")
     HOMEDIR = os.getcwd()
     make_input_files(
-        PLANEDIR=DYNAMICS_DIR,
+        directory=DYNAMICS_DIR,
         plane=plane,
-        environment=environment,
-        UINF=UINF,
+        state=state,
         solver2D=solver2D,
     )
     log = os.path.join(DYNAMICS_DIR, "eig_log.txt")
@@ -86,47 +82,6 @@ def implicit_eigs(
                 stderr=fout,
             )
     os.chdir(HOMEDIR)
-    sections = csplit(log, "1:")
-    sec_2_use = sections[-1].splitlines()
-    sec_2_use[0] = "  mode 1:  " + sec_2_use[0]
-
-    def get_matrix(
-        index: int,
-        lines: list[str],
-    ) -> tuple[FloatArray, FloatArray, complex]:
-        """Extracts the EigenVector and EgienValue from AVL Output
-
-        Args:
-            index (int): Index in Reading File
-            lines (list[str]): AVL output
-
-        Returns:
-            tuple[FloatArray, FloatArray, FloatArray]: Longitudal EigenVector, Lateral EigenVector, Mode
-        """
-        mode = complex(float(lines[index][10:22]), float(lines[index][24:36]))
-        long_vecs = np.zeros((4), dtype=complex)
-        lat_vecs = np.zeros((4), dtype=complex)
-        for i in range(0, 4):
-            long_vecs[i] = complex(float(lines[index + i + 1][8:18]), float(lines[index + i + 1][19:28]))
-
-            lat_vecs[i] = complex(
-                float(lines[index + i + 1][40:50]),
-                float(lines[index + i + 1][51:60]),
-            )
-
-        return long_vecs, lat_vecs, mode
-
-    longitudal_matrix = []
-    lateral_matrix = []
-    indexes = np.arange(0, 8, 1) * 6
-    for i in indexes:
-        long_vec, lat_vec, mode = get_matrix(i, sec_2_use)
-        if np.mean(np.abs(long_vec)) < np.mean(np.abs(lat_vec)):
-            lateral_matrix.append(mode)
-        else:
-            longitudal_matrix.append(mode)
-
-    return longitudal_matrix, lateral_matrix
 
 
 def trim_calculation(PLANE_DIR: str, plane: Airplane) -> tuple[float, float]:
@@ -190,14 +145,18 @@ def trim_calculation(PLANE_DIR: str, plane: Airplane) -> tuple[float, float]:
     return trim_aoa, trim_velocity
 
 
-def finite_difs(
-    plane: Airplane,
-    state: State,
-):
-    DYNDIR = os.path.join(DB3D, plane.directory, "AVL", "Dynamics")
+def finite_difs(plane: Airplane, state: State, solver2D: str = "Xfoil"):
+    DYNAMICS_DIR = os.path.join(DB3D, plane.directory, "AVL", "Dynamics")
     HOMEDIR = os.getcwd()
-    os.makedirs(DYNDIR, exist_ok=True)
-    os.chdir(DYNDIR)
+    os.makedirs(DYNAMICS_DIR, exist_ok=True)
+    HOMEDIR = os.getcwd()
+    make_input_files(
+        directory=DYNAMICS_DIR,
+        plane=plane,
+        state=state,
+        solver2D=solver2D,
+    )
+    os.chdir(DYNAMICS_DIR)
 
     # FUNCTION FOR THE CALCULATION OF STABILITY DERIVATIVES VIA FINITED DIFEERENCE METHOD
     # This function calculates the stability derivatives of the airplane using the finite difference method.
@@ -217,7 +176,7 @@ def finite_difs(
     f_io.write("0\n")
     f_io.write("oper\n")
 
-    w_velocity = np.tan(rad2deg(state.trim["AoA"])) * state.trim["U"]
+    w_velocity = np.tan(deg2rad(state.trim["AoA"])) * state.trim["U"]
     U = state.trim["U"]
     for i, dst in enumerate(state.disturbances):
         aoa = state.trim["AoA"]
@@ -282,8 +241,8 @@ def finite_difs(
     f_io.write("    \n")
     f_io.write("quit\n")
 
-    input_f = os.path.join(DYNDIR, "diffs_script")
-    log = os.path.join(DYNDIR, "finite_diffs_log")
+    input_f = os.path.join(DYNAMICS_DIR, "diffs_script")
+    log = os.path.join(DYNAMICS_DIR, "finite_diffs_log")
     contents = f_io.getvalue().expandtabs(4)
     with open(input_f, "w", encoding="utf-8") as f:
         f.write(contents)

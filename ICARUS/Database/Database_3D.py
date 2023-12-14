@@ -95,8 +95,8 @@ class Database_3D:
                     )
                 elif solver_folder == "LSPT":
                     self.load_lspt_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
-                # elif solver_folder == "AVL":
-                #     self.load_avl_data(vehicle_name, gnvp_version=3)
+                elif solver_folder == "AVL":
+                    self.load_avl_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
                 # elif solver_folder == "XFLR5":
                 #     self.load_xflr5_data(vehicle_name, gnvp_version=3)
                 else:
@@ -202,9 +202,7 @@ class Database_3D:
 
             # Load Convergence
             load_convergence: DataFrame = get_loads_convergence(loads_file, gnvp_version)
-            error_convergence: DataFrame = get_error_convergence(log_file, gnvp_version)
-            convergence = load_convergence.join(error_convergence)
-            print(error_convergence)
+            convergence: DataFrame = get_error_convergence(log_file, load_convergence, gnvp_version)
             if vehicle_name not in self.convergence_data.keys():
                 self.convergence_data[vehicle_name] = Struct()
             self.convergence_data[vehicle_name][case] = convergence
@@ -215,13 +213,6 @@ class Database_3D:
         state: State | None,
         vehicle_folder: str,
     ) -> None:
-        """
-        Args:
-            vehicle_directory (str): Vehicle Directory
-            vehicle_name (str): Vehicke name
-
-        Formats Polars from Forces, calculates the aerodynamic coefficients and stores them in the data dict.
-        """
         if plane is None:
             vehicle_name = vehicle_folder
         else:
@@ -250,6 +241,27 @@ class Database_3D:
             # Sort the dataframe by AoA
             self.forces[f"{planename}"].sort_values(by="AoA", inplace=True)
 
+    def load_avl_data(
+        self,
+        plane: Airplane | None,
+        state: State | None,
+        vehicle_folder: str,
+    ) -> None:
+        if plane is None:
+            vehicle_name = vehicle_folder
+        else:
+            vehicle_name = plane.name
+
+        file_avl: str = os.path.join(DB3D, vehicle_folder, "forces.avl")
+        try:
+            forces_df = pd.read_csv(file_avl)
+            self.add_forces(vehicle_name, forces_df)
+            logging.info(f"Loading AVL Forces from {file_avl}")
+            for name in [f"AVL"]:
+                self.add_polars_from_forces(plane=plane, state=state, forces=forces_df, prefix=name)
+        except FileNotFoundError:
+            logging.debug(f"No forces.avl file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well")
+
     def add_polars_from_forces(
         self,
         plane: Airplane | None,
@@ -277,12 +289,17 @@ class Database_3D:
         if plane.name not in self.polars.keys():
             self.polars[plane.name] = df
         else:
-            # Merge the df with the old data on the AoA column
-            self.polars[plane.name] = self.polars[plane.name].merge(
-                df,
-                on="AoA",
-                how="outer",
-            )
+            if f"{prefix} CL" in self.polars[plane.name].keys():
+                self.polars[plane.name][f"{prefix} CL"] = df[f"{prefix} CL"]
+                self.polars[plane.name][f"{prefix} CD"] = df[f"{prefix} CD"]
+                self.polars[plane.name][f"{prefix} Cm"] = df[f"{prefix} Cm"]
+            else:
+                # Merge the df with the old data on the AoA column
+                self.polars[plane.name] = self.polars[plane.name].merge(
+                    df,
+                    on="AoA",
+                    how="outer",
+                )
             # Sort the dataframe by AoA
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
 
