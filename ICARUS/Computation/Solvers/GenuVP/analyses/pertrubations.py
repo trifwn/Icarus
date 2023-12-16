@@ -129,7 +129,6 @@ def run_pertrubation_serial(
     solver2D: str,
     maxiter: int,
     timestep: float,
-    angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
@@ -143,7 +142,6 @@ def run_pertrubation_serial(
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        angle (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
@@ -166,7 +164,7 @@ def run_pertrubation_serial(
                 "maxiter": maxiter,
                 "timestep": timestep,
                 "u_freestream": state.u_freestream,
-                "angle": angle,
+                "angle": state.trim['U'],
                 "environment": state.environment,
                 "surfaces": surfaces,
                 "bodies_dicts": bodies_dicts,
@@ -216,7 +214,6 @@ def run_pertrubation_parallel(
     solver2D: str,
     maxiter: int,
     timestep: float,
-    angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
@@ -230,7 +227,6 @@ def run_pertrubation_parallel(
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
@@ -260,7 +256,7 @@ def run_pertrubation_parallel(
                     maxiter,
                     timestep,
                     state.u_freestream,
-                    angle,
+                    state.trim['U'],
                     state.environment,
                     surfaces,
                     bodies_dicts,

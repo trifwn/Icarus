@@ -1,7 +1,6 @@
 import numpy as np
 
 from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.plane import Airplane
 
 
 def geom() -> None:
@@ -9,7 +8,7 @@ def geom() -> None:
 
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
-    bmark: Airplane = get_bmark_plane("bmark")
+    bmark, _ = get_bmark_plane("bmark")
 
     S = bmark.S
     MAC = bmark.mean_aerodynamic_chord

@@ -5,8 +5,6 @@ import numpy as np
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
 
 
 def lspt_run() -> None:
@@ -15,27 +13,17 @@ def lspt_run() -> None:
     # Get Plane, DB
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
-    airplane: Airplane = get_bmark_plane("bmark")
+    airplane, state = get_bmark_plane("bmark")
 
-    # Get Environment
-    from ICARUS.Environment.definition import EARTH_ISA
-
-    u_freestream = 20
-    state = State(
-        name="Unstick",
-        airplane=airplane,
-        environment=EARTH_ISA,
-        u_freestream=u_freestream,
-    )
     # Get Solver
-    from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
+    from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import LSPT
 
-    lspt: Solver = get_lspt()
+    lspt: Solver = LSPT()
 
     # Set Analysis
-    analysis: str = lspt.available_analyses_names()[0]
+    analysis: str = lspt.get_analyses_names()[0]
 
-    lspt.set_analyses(analysis)
+    lspt.select_analysis(analysis)
 
     # Set Options
     options: Struct = lspt.get_analysis_options(verbose=True)
@@ -46,18 +34,19 @@ def lspt_run() -> None:
     NoAoA = (AoAmax - AoAmin) + 1
     angles: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
 
-    options.plane.value = airplane
-    options.state.value = state
-    options.solver2D.value = "Xfoil"
-    options.angles.value = angles
+    options.plane = airplane
+    options.state = state
+    options.solver2D = "Xfoil"
+    options.angles = angles
 
-    solver_parameters.Ground_Effect.value = True
-    solver_parameters.Wake_Geom_Type.value = "TE-Geometrical"
+    solver_parameters.Ground_Effect = True
+    solver_parameters.Wake_Geom_Type = "TE-Geometrical"
 
+    lspt.define_analysis(options, solver_parameters)
     _ = lspt.get_analysis_options(verbose=True)
-    start_time: float = time.perf_counter()
 
-    lspt.run()
+    start_time: float = time.perf_counter()
+    lspt.execute()
 
     end_time: float = time.perf_counter()
     print(f"LSPT Run took: --- %s seconds ---" % (end_time - start_time))

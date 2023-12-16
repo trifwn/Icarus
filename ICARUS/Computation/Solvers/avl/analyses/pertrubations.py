@@ -23,7 +23,7 @@ def avl_dynamic_analysis_implicit(
     implicit_eigs(plane=plane, state=state, solver2D=solver2D)
 
 
-def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D, solver_options: dict[str, Any] = {}) -> None:
+def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D: str, solver_options: dict[str, Any] = {}) -> None:
     if state.trim == {}:
         angles = np.linspace(-10, 10, 21)
         avl_angle_run(plane, state, solver2D=solver2D, angles=angles)

@@ -236,7 +236,7 @@ class Airplane:
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")
+            ax = fig.add_subplot(projection="3d")  # type: ignore
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
@@ -288,7 +288,7 @@ class Airplane:
         Returns:
             str: Json String
         """
-        encoded: str = jsonpickle.encode(self)
+        encoded: str = str(jsonpickle.encode(self))
         return encoded
 
     def save(self) -> None:
@@ -311,3 +311,7 @@ class Airplane:
     def __str__(self) -> str:
         string: str = f"Plane Object: {self.name}"
         return string
+
+
+class PlaneDoesntContainAttr(Exception):
+    pass

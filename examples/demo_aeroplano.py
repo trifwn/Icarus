@@ -12,7 +12,7 @@ from ICARUS.Vehicle.utils import define_linear_span
 ############################## AIRPLANE GENERATOR ########################################
 
 
-def airplane_generator(name: str, plotting=False) -> Airplane:
+def airplane_generator(name: str, plotting: bool = False) -> Airplane:
     """
     Function to generate a conventional airplane, consisting of:
         1) main wing

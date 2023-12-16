@@ -145,7 +145,11 @@ def trim_calculation(PLANE_DIR: str, plane: Airplane) -> tuple[float, float]:
     return trim_aoa, trim_velocity
 
 
-def finite_difs(plane: Airplane, state: State, solver2D: str = "Xfoil"):
+def finite_difs(
+    plane: Airplane,
+    state: State,
+    solver2D: str = "Xfoil",
+) -> None:
     DYNAMICS_DIR = os.path.join(DB3D, plane.directory, "AVL", "Dynamics")
     HOMEDIR = os.getcwd()
     os.makedirs(DYNAMICS_DIR, exist_ok=True)

@@ -54,6 +54,7 @@ import os
 import re
 import urllib.request
 from typing import Any
+from typing import Union
 
 import airfoils as af
 import matplotlib.pyplot as plt
@@ -179,8 +180,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         Returns:
             Airfoil: airfoil class object
         """
-        re_4digits: re.Pattern[str] = re.compile(r'\b(?:NACA\s*)?(\d{4})\b')
-        re_5digits: re.Pattern[str] = re.compile(r'\b(?:NACA\s*)?(\d{5})\b')
+        re_4digits: re.Pattern[str] = re.compile(r"\b(?:NACA\s*)?(\d{4})\b")
+        re_5digits: re.Pattern[str] = re.compile(r"\b(?:NACA\s*)?(\d{5})\b")
         naca = naca.replace("naca", "")
         naca = naca.replace("NACA", "")
         naca = naca.replace(".", "")
@@ -331,10 +332,16 @@ class Airfoil(af.Airfoil):  # type: ignore
             self.plot()
 
         upper: FloatArray = np.array(
-            [[*self._x_upper[:idx_upper], *x_upper], [*self._y_upper[:idx_upper], *y_upper]],
+            [
+                [*self._x_upper[:idx_upper], *x_upper],
+                [*self._y_upper[:idx_upper], *y_upper],
+            ],
         )
         lower: FloatArray = np.array(
-            [[*self._x_lower[:idx_lower], *x_lower], [*self._y_lower[:idx_lower], *y_lower]],
+            [
+                [*self._x_lower[:idx_lower], *x_lower],
+                [*self._y_lower[:idx_lower], *y_lower],
+            ],
         )
         flapped = Airfoil(upper, lower, f"{self.name}_flapped", n_points=self.n_points)
 
@@ -372,7 +379,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
     def camber_line_naca4(
         self,
-        points: FloatArray,
+        points: float | FloatArray | list[float],
     ) -> FloatArray:
         """
         Function to generate the camber line for a NACA 4 digit airfoil.
@@ -387,16 +394,25 @@ class Airfoil(af.Airfoil):  # type: ignore
         p: float = self.p
         m: float = self.m
 
-        points = points.flatten()
-        res: FloatArray = np.zeros_like(points)
-        for i, x in enumerate(points):
+        if isinstance(points, float):
+            points_ = np.array([points])
+        if isinstance(points, list):
+            points_ = np.array(points)
+        elif isinstance(points, np.ndarray):
+            points_ = points
+            points_ = points_.flatten()
+        else:
+            points_ = np.array(points)
+
+        res: FloatArray = np.zeros_like(points_)
+        for i, x in enumerate(points_):
             if x < p:
                 res[i] = m / p**2 * (2 * p * x - x**2)
             else:
                 res[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
         return res
 
-    def camber_line(self, x):
+    def camber_line(self, x: Union[float, FloatArray]) -> FloatArray:
         """"""
         if hasattr(self, "l"):
             # return self.camber_line_naca5(x)

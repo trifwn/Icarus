@@ -2,6 +2,7 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 from numpy import ndarray
@@ -16,7 +17,7 @@ def setup_plot(
     solvers: list[str] = ["All"],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
-):
+) -> tuple[list[Axes], Any]:
     fig = plt.figure(figsize=size)
     axs: ndarray = fig.subplots(2, 2)  # type: ignore
 
@@ -96,7 +97,7 @@ def setup_plot(
     fig.canvas.flush_events()
     fig.show()
 
-    return axs, fig
+    return axs.flatten().tolist(), fig
 
 
 def cg_investigation(
@@ -117,29 +118,29 @@ def cg_investigation(
     cg_slider = Slider(ax=ax_cg, label="CG", valmin=-1, valmax=1, valinit=cg_x)
 
     ## CLS
-    lines = list(axs[1, 0].get_lines())
+    lines = list(axs[0].get_lines())
     CLs = {}
     for line in lines:
-        name = line.get_label()
+        name: str = str(line.get_label())
         if name.startswith("_"):
             continue
         CLs[name] = line.get_ydata()
 
     ## CDs
-    lines = list(axs[0, 1].get_lines())
+    lines = list(axs[1].get_lines())
     CDs = {}
     for line in lines:
-        name = line.get_label()
+        name = str(line.get_label())
         if name.startswith("_"):
             continue
         CDs[name] = line.get_ydata()
 
     ## CMs
-    lines = list(axs[0, 0].get_lines())
+    lines = list(axs[2].get_lines())
     CMs = {}
     AoAs = {}
     for line in lines:
-        name = line.get_label()
+        name = str(line.get_label())
         if name.startswith("_"):
             continue
         CMs[name] = line.get_ydata()
@@ -158,10 +159,10 @@ def cg_investigation(
         id = np.argmin(np.abs(cm))
         aoa = AoAs[name][id]
 
-        points_cm.append(axs[0, 0].scatter(aoa, cm[id], marker="x", color="k"))
-        points_cd.append(axs[0, 1].scatter(aoa, cd[id], marker="x", color="k"))
-        points_cl.append(axs[1, 0].scatter(aoa, cl[id], marker="x", color="k"))
-        points_clcd.append(axs[1, 1].scatter(aoa, cl[id] / cd[id], marker="x", color="k"))
+        points_cm.append(axs[0].scatter(aoa, cm[id], marker="x", color="k"))
+        points_cd.append(axs[1].scatter(aoa, cd[id], marker="x", color="k"))
+        points_cl.append(axs[2].scatter(aoa, cl[id], marker="x", color="k"))
+        points_clcd.append(axs[3].scatter(aoa, cl[id] / cd[id], marker="x", color="k"))
 
     # The function to be called anytime a slider's value changes
     def update(new_cg: float) -> None:
@@ -176,14 +177,14 @@ def cg_investigation(
 
         # Adjust the CM according to the new CG
         # Update the plot only for the CMs
-        axs[0, 0].clear()
-        axs[0, 0].set_title("Cm vs AoA")
-        axs[0, 0].set_ylabel("Cm")
-        axs[0, 0].set_xlabel("AoA")
-        axs[0, 0].grid()
+        axs[0].clear()
+        axs[0].set_title("Cm vs AoA")
+        axs[0].set_ylabel("Cm")
+        axs[0].set_xlabel("AoA")
+        axs[0].grid()
 
-        axs[0, 0].axhline(y=0, color="k")
-        axs[0, 0].axvline(x=0, color="k")
+        axs[0].axhline(y=0, color="k")
+        axs[0].axvline(x=0, color="k")
 
         for i, name in enumerate(CLs.keys()):
             cl = np.array(CLs[name])
@@ -193,7 +194,7 @@ def cg_investigation(
             CM_new = cm + (cg_x - new_cg) * cl / plane.mean_aerodynamic_chord
             CM_new = CM_new + (cg_x - new_cg) * cd / plane.mean_aerodynamic_chord
 
-            axs[0, 0].plot(AoAs[name], CM_new, label=name)
+            axs[0].plot(AoAs[name], CM_new, label=name)
 
             # Find the point where the CM = 0
             id = np.argmin(np.abs(CM_new))

@@ -1,6 +1,6 @@
+import logging
 import os
 from typing import Any
-from venv import logger
 
 import numpy as np
 import pandas as pd
@@ -149,7 +149,7 @@ def rotate_gnvp_forces(
             data[f"GenuVP{gnvp_version} {name} My"] = m_y_rot
             data[f"GenuVP{gnvp_version} {name} Mz"] = m_z_rot
         except KeyError as e:
-            logger.debug(f"Key error {e}")
+            logging.debug(f"Key error {e}")
 
     data["AoA"] = alpha_deg
     data["Fx"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fx"]

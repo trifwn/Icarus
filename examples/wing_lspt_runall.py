@@ -14,7 +14,7 @@ from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
 from Vehicles.Planes.hermes import hermes
 from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
-from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
+from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
 from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
@@ -61,15 +61,20 @@ def main() -> None:
         # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
         print(EARTH_ISA)
-        state = State(name="Unstick", airplane=airplane, environment=EARTH_ISA, u_freestream=UINF[airplane.name])
+        state = State(
+            name="Unstick",
+            airplane=airplane,
+            environment=EARTH_ISA,
+            u_freestream=UINF[airplane.name],
+        )
         # # Get Solver
-        lspt: Solver = get_lspt()
+        lspt: Solver = LSPT()
 
         # ## AoA Run
         # 0: Angles Sequential
 
-        analysis: str = lspt.available_analyses_names()[0]
-        lspt.set_analyses(analysis)
+        analysis: str = lspt.get_analyses_names()[0]
+        lspt.select_analysis(analysis)
         options: Struct = lspt.get_analysis_options(verbose=False)
         solver_parameters: Struct = lspt.get_solver_parameters()
 
@@ -82,18 +87,19 @@ def main() -> None:
             NO_AOA,
         )
 
-        options.plane.value = airplane
-        options.state.value = state
-        options.solver2D.value = "Xfoil"
-        options.angles.value = angles
+        options.plane = airplane
+        options.state = state
+        options.solver2D = "Xfoil"
+        options.angles = angles
 
-        solver_parameters.Ground_Effect.value = True
-        solver_parameters.Wake_Geom_Type.value = "TE-Geometrical"
+        solver_parameters.Ground_Effect = True
+        solver_parameters.Wake_Geom_Type = "TE-Geometrical"
 
+        lspt.define_analysis(options, solver_parameters)
         lspt.print_analysis_options()
 
         polars_time: float = time.time()
-        lspt.run()
+        lspt.execute()
         print(
             f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
         )

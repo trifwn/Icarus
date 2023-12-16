@@ -45,7 +45,7 @@ def plot_gnvp_wake(
     A1, B1, C1 = get_wake_data(plane, case)
 
     fig: Figure = plt.figure(figsize=figsize)
-    ax: Axes3D = fig.add_subplot(projection="3d")
+    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
     ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case}")
     ax.set_ylabel("y")
@@ -56,9 +56,9 @@ def plot_gnvp_wake(
     ax.set_ylim(-plane.span / 2, plane.span / 2)
     ax.set_zlim(-1, 1)
 
-    ax.scatter(A1[:, 0], A1[:, 1], A1[:, 2], color="r", s=5)  # WAKE
-    ax.scatter(B1[:, 0], B1[:, 1], B1[:, 2], color="k", s=5)  # NEARWAKE
-    ax.scatter(C1[:, 0], C1[:, 1], C1[:, 2], color="g", s=5)  # GRID
+    ax.scatter(xs=A1[:, 0], ys=A1[:, 1], zs=A1[:, 2], color="r", s=5)  # WAKE
+    ax.scatter(xs=B1[:, 0], ys=B1[:, 1], zs=B1[:, 2], color="k", s=5)  # NEARWAKE
+    ax.scatter(xs=C1[:, 0], ys=C1[:, 1], zs=C1[:, 2], color="g", s=5)  # GRID
 
     plane.visualize(fig, ax, movement=-np.array(plane.CG))
     if scale == "True":

@@ -14,23 +14,16 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     # Get Plane, DB
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
-    airplane: Airplane = get_bmark_plane("bmark")
-
-    # Get Environment
-    from ICARUS.Environment.definition import EARTH_ISA
+    airplane, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
+    from ICARUS.Computation.Solvers.GenuVP.gnvp7 import GenuVP7
 
-    gnvp7: Solver = get_gnvp7()
+    gnvp7: Solver = GenuVP7()
 
     # Set Analysis
-    if mode == "Parallel":
-        analysis: str = gnvp7.available_analyses_names()[2]
-    else:
-        analysis = gnvp7.available_analyses_names()[1]
-
-    gnvp7.set_analyses(analysis)
+    analysis: str = gnvp7.get_analyses_names()[0]
+    gnvp7.select_analysis(analysis)
 
     # Set Options
     options: Struct = gnvp7.get_analysis_options(verbose=True)
@@ -45,26 +38,27 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     maxiter = 30
     timestep = 0.004
 
-    options.plane.value = airplane
-    options.environment.value = EARTH_ISA
-    options.solver2D.value = "XFLR"
-    options.maxiter.value = maxiter
-    options.timestep.value = timestep
-    options.u_freestream.value = u_freestream
-    options.angles.value = angles
+    options.plane = airplane
+    options.state = state
+    options.solver2D = "XFLR"
+    options.maxiter = maxiter
+    options.timestep = timestep
+    options.angles = angles
 
-    solver_parameters.Split_Symmetric_Bodies.value = False
-    solver_parameters.Use_Grid.value = True
+    solver_parameters.Split_Symmetric_Bodies = False
+    solver_parameters.Use_Grid = True
 
     # DEFORMATION
-    solver_parameters.Bound_Vorticity_Cutoff.value = 0.003  # EPSFB
-    solver_parameters.Wake_Vorticity_Cutoff.value = 0.003  # EPSFW
-    solver_parameters.Vortex_Cutoff_Length_f.value = 1e-1  # EPSVR
-    solver_parameters.Vortex_Cutoff_Length_i.value = 1e-1  # EPSO
-    _ = gnvp7.get_analysis_options(verbose=True)
-    start_time: float = time.perf_counter()
+    solver_parameters.Bound_Vorticity_Cutoff = 0.003  # EPSFB
+    solver_parameters.Wake_Vorticity_Cutoff = 0.003  # EPSFW
+    solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
+    solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    gnvp7.run()
+    gnvp7.define_analysis(options, solver_parameters)
+    _ = gnvp7.get_analysis_options(verbose=True)
+
+    start_time: float = time.perf_counter()
+    gnvp7.execute(parallel=(mode == "Parallel"))
 
     end_time: float = time.perf_counter()
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))

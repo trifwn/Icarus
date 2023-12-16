@@ -15,13 +15,13 @@ class BaseAirplaneTests(unittest.TestCase):
         geom()
 
     def test2_gnvp3_run(self) -> None:
-        gnvp3_run("Parallel")
+        gnvp3_run(run_parallel=True)
 
     def test3_geometry_gnvp3(self) -> None:
-        gnvp3_geometry(plot=True)
+        gnvp3_geometry(plot=False)
 
     # def test5_gnvp7_run(self) -> None:
-    #     gnvp7_run("Parallel")
+    #     gnvp7_run(run_parallel= True)
 
     # def test6_geometry_gnvp7(self) -> None:
     #     gridAP, gridGNVP = gnvp7_geometry(plot=True)

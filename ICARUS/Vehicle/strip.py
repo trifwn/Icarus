@@ -194,7 +194,7 @@ class Strip:
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,
         movement: FloatArray | None = None,
-        color: tuple[Any, ...] | None = None,
+        color: tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
     ) -> None:
         pltshow = False
 
@@ -203,7 +203,7 @@ class Strip:
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")
+            ax = fig.add_subplot(projection="3d")  # type: ignore
             ax.set_title("Strip")
             ax.set_xlabel("x")
             ax.set_ylabel("y")

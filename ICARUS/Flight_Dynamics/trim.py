@@ -19,7 +19,7 @@ class TrimOutsidePolars(Exception):
     pass
 
 
-def trim_state(state: "State", verbose=True) -> dict[str, float]:
+def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -62,7 +62,7 @@ def trim_state(state: "State", verbose=True) -> dict[str, float]:
     cl_trim = state.polar["CL"][trim_loc1] + (state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]) * (
         aoa_trim - state.polar["AoA"][trim_loc1]
     ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
-    if cl_trim < 0:
+    if cl_trim <= 0:
         raise TrimNotPossible()
     # Find the trim velocity
     S: float = state.S

@@ -67,7 +67,7 @@ class State:
     def add_polar(
         self,
         polar: DataFrame,
-        polar_prefix=None,
+        polar_prefix: str | None = None,
         is_dimensional: bool = True,
         verbose: bool = True,
     ) -> None:
@@ -77,7 +77,7 @@ class State:
             if "Fz" not in cols and "CL" not in cols:
                 for i, col in enumerate(cols):
                     cols[i] = col.replace(f"{polar_prefix} ", "")
-                polar.columns = cols  # type: ignore
+                polar.columns = cols
 
         if is_dimensional:
             self.polar = self.make_aero_coefficients(polar)
@@ -150,10 +150,10 @@ class State:
         fig = plt.figure()
 
         if plot_lateral and plot_longitudal:
-            axs = fig.subplots(1, 2)  # type: ignore
+            axs: list[Axes] = fig.subplots(1, 2)  # type: ignore
         else:
-            axs = fig.subplots(1, 1)
-            axs: list[Axes] = [axs]
+            axs0 = fig.add_axes((0.1, 0.1, 0.8, 0.8))
+            axs = [axs0]
         i = 0
         if plot_longitudal:
             # extract real part
@@ -221,9 +221,13 @@ class State:
         encoded: str = str(jsonpickle.encode(self))
         return encoded
 
-    def save(self, directory) -> None:
+    def save(self, directory: str) -> None:
         """
         Save the state object to a json file.
+
+        Args:
+            directory (str): Directory to save the state to.
+
         """
         fname: str = os.path.join(directory, f"{self.name}_state.json")
         with open(fname, "w", encoding="utf-8") as f:

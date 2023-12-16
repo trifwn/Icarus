@@ -9,7 +9,7 @@ import numpy as np
 from demo_aeroplano import airplane_generator
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
+from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
@@ -103,32 +103,33 @@ def main() -> None:
         )
 
         # # Get Solver
-        gnvp3: Solver = get_gnvp3()
+        gnvp3: Solver = GenuVP3()
 
         # ## AoA Run
         # 0: Single Angle of Attack (AoA) Run
         # 1: Angles Sequential
         # 2: Angles Parallel
 
-        analysis: str = gnvp3.available_analyses_names()[2]
-        gnvp3.set_analyses(analysis)
+        analysis: str = gnvp3.get_analyses_names()[0]
+        gnvp3.select_analysis(analysis)
         options: Struct = gnvp3.get_analysis_options(verbose=False)
         solver_parameters: Struct = gnvp3.get_solver_parameters()
 
-        options.plane.value = airplane
-        options.state.value = state
-        options.solver2D.value = airfoil_solver
-        options.maxiter.value = MAXITER[airplane.name]
-        options.timestep.value = TIMESTEP[airplane.name]
-        options.angles.value = angles
+        options.plane = airplane
+        options.state = state
+        options.solver2D = airfoil_solver
+        options.maxiter = MAXITER[airplane.name]
+        options.timestep = TIMESTEP[airplane.name]
+        options.angles = angles
 
-        solver_parameters.Use_Grid.value = True
-        solver_parameters.Split_Symmetric_Bodies.value = False
+        solver_parameters.Use_Grid = True
+        solver_parameters.Split_Symmetric_Bodies = False
 
+        gnvp3.define_analysis(options, solver_parameters)
         gnvp3.print_analysis_options()
 
         polars_time: float = time.time()
-        gnvp3.run()
+        gnvp3.execute()
         print(
             f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
         )
@@ -158,30 +159,31 @@ def main() -> None:
         # 4 Pertrubations Parallel
         # 5 Sesitivity Analysis Serial
         # 6 Sesitivity Analysis Parallel
-        analysis = gnvp3.available_analyses_names()[4]  # Pertrubations PARALLEL
+        analysis = gnvp3.get_analyses_names()[1]  # Pertrubations PARALLEL
         print(f"Selecting Analysis: {analysis}")
-        gnvp3.set_analyses(analysis)
+        gnvp3.select_analysis(analysis)
 
         options = gnvp3.get_analysis_options(verbose=False)
 
         if options is None:
             raise ValueError("Options not set")
         # Set Options
-        options.plane.value = airplane
-        options.state.value = unstick
-        options.environment.value = EARTH_ISA
-        options.solver2D.value = "Xfoil"
-        options.maxiter.value = MAXITER[airplane.name]
-        options.timestep.value = TIMESTEP[airplane.name]
-        options.u_freestream.value = unstick.trim["U"]
-        options.angle.value = unstick.trim["AoA"]
+        options.plane = airplane
+        options.state = unstick
+        options.environment = EARTH_ISA
+        options.solver2D = "Xfoil"
+        options.maxiter = MAXITER[airplane.name]
+        options.timestep = TIMESTEP[airplane.name]
+        options.u_freestream = unstick.trim["U"]
+        options.angle = unstick.trim["AoA"]
 
         # Run Analysis
+        gnvp3.define_analysis(options, solver_parameters)
         gnvp3.print_analysis_options()
 
         pert_time: float = time.time()
         print("Running Pertrubations")
-        gnvp3.run()
+        gnvp3.execute()
         print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
         # Get Results And Save

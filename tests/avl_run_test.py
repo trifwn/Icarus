@@ -14,21 +14,15 @@ def avl_run() -> None:
     # Get Plane, DB
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
-    bmark: Airplane = get_bmark_plane("bmark")
-    # Get Environment
-    from ICARUS.Environment.definition import EARTH_ISA
-
-    # Set State
-    u_freestream = 20.0
-    state = State("Unstick", bmark, EARTH_ISA, u_freestream)
+    bmark, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.Computation.Solvers.AVL.avl import get_avl
+    from ICARUS.Computation.Solvers.AVL.avl import AVL
 
-    avl: Solver = get_avl()
-    analysis: str = avl.available_analyses_names()[0]
+    avl: Solver = AVL()
+    analysis: str = avl.get_analyses_names()[0]
 
-    avl.set_analyses(analysis)
+    avl.select_analysis(analysis)
 
     # Set Options
     options: Struct = avl.get_analysis_options(verbose=True)
@@ -39,15 +33,16 @@ def avl_run() -> None:
     angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all]
 
-    options.plane.value = bmark
-    options.state.value = state
-    options.solver2D.value = "XFLR"
-    options.angles.value = angles
+    options.plane = bmark
+    options.state = state
+    options.solver2D = "XFLR"
+    options.angles = angles
 
+    avl.set_analysis_options(options)
     _ = avl.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
 
-    avl.run()
+    avl.execute()
 
     end_time: float = time.perf_counter()
     print(f"AVL Run took: --- %s seconds ---" % (end_time - start_time))

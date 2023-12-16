@@ -43,7 +43,7 @@ class General_Optimizer:
         self._function_call_count: int = 0
         self._nit: int = 0
 
-    def f(self, x, tab=False):
+    def f(self, x: FloatArray, tab: bool = False) -> float:
         if self._function_call_count > self.max_function_call_count:
             raise StopIteration
         self._function_call_count += 1
@@ -53,7 +53,7 @@ class General_Optimizer:
             print(f"Calculating OBJ {self._nit}")
         return self.objective_fn(x)
 
-    def jac(self, pay_x):
+    def jac(self, pay_x: FloatArray) -> float:
         print(f"Calculating JAC {self._nit}")
         inc = 1e-3
 
@@ -62,7 +62,7 @@ class General_Optimizer:
         j = (O_f - O_b) / (2 * inc)
         return j
 
-    def callback(self, intermediate_result: OptimizeResult):
+    def callback(self, intermediate_result: OptimizeResult) -> None:
         # callback to terminate if maxtime_sec is exceeded
         self._nit += 1
         elapsed_time = time() - self.start_time
@@ -77,7 +77,7 @@ class General_Optimizer:
             # you could print elapsed iterations and time
             print(f"Iteration Number: {self._nit}")
 
-    def __call__(self):
+    def __call__(self) -> OptimizeResult:
         self.start_time = time()
         # set your initial guess to 'x0'
         # set your bounds to 'bounds'

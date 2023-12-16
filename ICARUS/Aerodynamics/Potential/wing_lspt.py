@@ -83,9 +83,9 @@ class Wing_LSPT:
         self.grid: FloatArray = np.empty((self.N, self.M + 1, 3))
 
         # find maximum chord to set wake distance
-        max_chord: float = 0
+        max_chord: float = 0.0
         for lifting_surface in self.wing_segments:
-            if np.max(lifting_surface._chord_dist) > max_chord:
+            if float(np.max(lifting_surface._chord_dist)) > max_chord:
                 max_chord = float(np.max(lifting_surface._chord_dist))
         self.max_chord: float = max_chord
 
@@ -239,7 +239,7 @@ class Wing_LSPT:
 
     def plot_grid(self, show_wake: bool = False, show_airfoils: bool = False) -> None:
         fig: Figure = plt.figure()
-        ax: Axes3D = fig.add_subplot(projection="3d")
+        ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
         dehidral_prev = 0
         offset_prev = 0
@@ -511,10 +511,10 @@ class Wing_LSPT:
             self.get_aerodynamic_loads(umag=20)
 
         fig = plt.figure()
-        ax: ndarray | Axes | SubplotBase = fig.subplots(1, 2)
+        ax: ndarray[Any, Any] | Axes | SubplotBase = fig.subplots(1, 2)
 
         if not isinstance(ax, np.ndarray):
-            raise ValueError("Expected a ndarray of Axes")
+            ax = np.array([ax])
 
         ax[0].bar(self.span_dist[1:], np.mean(self.L_pan, axis=1))
         ax[0].set_title("Lift Distribution")
@@ -532,7 +532,7 @@ class Wing_LSPT:
             self.get_aerodynamic_loads(umag=umag)
 
         fig: Figure = plt.figure()
-        ax: ndarray | Axes | SubplotBase = fig.subplots(1, 2)
+        ax: ndarray[Any, Any] | Axes | SubplotBase = fig.subplots(1, 2)
 
         if not isinstance(ax, np.ndarray):
             raise ValueError("Expected a ndarray of Axes")

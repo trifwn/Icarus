@@ -8,7 +8,9 @@ import time
 import numpy as np
 from pandas import DataFrame
 
+from ICARUS.Computation.Analyses.input import Input
 from ICARUS.Computation.Solvers.solver import Solver
+from ICARUS.Computation.Solvers.solver_parameters import Parameter
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
@@ -64,13 +66,13 @@ def main() -> None:
     # Get Solver
     GNVP_VERSION = 3
     if GNVP_VERSION == 7:
-        from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
+        from ICARUS.Computation.Solvers.GenuVP.gnvp7 import GenuVP7
 
-        gnvp: Solver = get_gnvp7()
+        gnvp: Solver = GenuVP7()
     elif GNVP_VERSION == 3:
-        from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
+        from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
 
-        gnvp = get_gnvp3()
+        gnvp = GenuVP3()
     else:
         raise ValueError("GNVP VERSION NOT FOUND")
 
@@ -95,9 +97,9 @@ def main() -> None:
             # 1: Angles Sequential
             # 2: Angles Parallel
 
-            analysis: str = gnvp.available_analyses_names()[2]
-            gnvp.set_analyses(analysis)
-            options: Struct = gnvp.get_analysis_options(verbose=False)
+            analysis: str = gnvp.get_analyses_names()[0]
+            gnvp.select_analysis(analysis)
+            options: Struct = gnvp.get_analysis_options()
             solver_parameters: Struct = gnvp.get_solver_parameters()
             AOA_MIN = -5
             AOA_MAX = 4
@@ -108,20 +110,21 @@ def main() -> None:
                 NO_AOA,
             )
 
-            options.plane.value = airplane
-            options.solver2D.value = "XFLR"
-            options.state.value = state
-            options.maxiter.value = maxiter[airplane.name]
-            options.timestep.value = timestep[airplane.name]
-            options.angles.value = angles
+            options.plane = airplane
+            options.solver2D = "XFLR"
+            options.state = state
+            options.maxiter = maxiter[airplane.name]
+            options.timestep = timestep[airplane.name]
+            options.angles = angles
 
-            solver_parameters.Use_Grid.value = True
-            solver_parameters.Split_Symmetric_Bodies.value = False
+            solver_parameters.Use_Grid = True
+            solver_parameters.Split_Symmetric_Bodies = False
 
+            gnvp.define_analysis(options, solver_parameters)
             gnvp.print_analysis_options()
 
             polars_time: float = time.time()
-            gnvp.run()
+            gnvp.execute()
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
@@ -179,31 +182,32 @@ def main() -> None:
             # 4 Pertrubations Parallel
             # 5 Sesitivity Analysis Serial
             # 6 Sesitivity Analysis Parallel
-            analysis = gnvp.available_analyses_names()[4]  # Pertrubations PARALLEL
+            analysis = gnvp.get_analyses_names()[1]  # Pertrubations PARALLEL
             print(f"Selecting Analysis: {analysis}")
-            gnvp.set_analyses(analysis)
+            gnvp.select_analysis(analysis)
 
             options = gnvp.get_analysis_options(verbose=False)
-            solver_parameters = gnvp.get_solver_parameters()
+            solver_parameters = gnvp.get_solver_parameters(verbose=False)
 
             if options is None:
                 raise ValueError("Options not set")
             # Set Options
-            options.plane.value = airplane
-            options.state.value = unstick
-            options.solver2D.value = "Xfoil"
-            options.maxiter.value = maxiter[airplane.name]
-            options.timestep.value = timestep[airplane.name]
-            options.angle.value = unstick.trim["AoA"]
+            options.plane = airplane
+            options.state = unstick
+            options.solver2D = "Xfoil"
+            options.maxiter = maxiter[airplane.name]
+            options.timestep = timestep[airplane.name]
+            options.angle = unstick.trim["AoA"]
 
-            solver_parameters.Use_Grid.value = True
-            solver_parameters.Split_Symmetric_Bodies.value = False
+            solver_parameters.Use_Grid = True
+            solver_parameters.Split_Symmetric_Bodies = False
             # Run Analysis
+            gnvp.define_analysis(options, solver_parameters)
             gnvp.print_analysis_options()
 
             pert_time: float = time.time()
             print("Running Pertrubations")
-            gnvp.run()
+            gnvp.execute()
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
             # Get Results And Save

@@ -12,7 +12,7 @@ def CubicSpline_factory(
 ) -> tuple[Callable[..., float | FloatArray], str]:
     cs = CubicSpline(x, y)
 
-    def spline(x) -> float | FloatArray:
+    def spline(x: float | FloatArray) -> float | FloatArray:
         return np.array(cs(x), dtype=np.float64)
 
     title = "Cubic Spline Passes Through\n$"

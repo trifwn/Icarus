@@ -62,7 +62,7 @@ class Merged_Wing:
         """
 
         fig: Figure = plt.figure()
-        ax: Axes3D = fig.add_subplot(111, projection="3d")
+        ax: Axes3D = fig.add_subplot(111, projection="3d")  # type: ignore
         ax.set_title("Wing")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")

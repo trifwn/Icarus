@@ -4,7 +4,6 @@ Current BUILD IS UNSTABLE due to Major Refactoring for v1.0.0.
 
 ## TASKS
 
-- Create AVL interface (AVL SOLVER)
 - Deprecate Lifting Surface from examples USE Wing_Segment instead
 - Create Parametric Analysis Module (Computation of Sensitivity Derivatives for all solvers)
 - Define Constrained Optimization Workflow

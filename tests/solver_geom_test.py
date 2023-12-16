@@ -30,9 +30,9 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     if gnvp_version == 3:
-        airplane = get_bmark_plane("bmark")
+        airplane, _ = get_bmark_plane("bmark")
     elif gnvp_version == 7:
-        airplane = get_bmark_plane("bmark")
+        airplane, _ = get_bmark_plane("bmark")
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
     # Get The correct wake data function

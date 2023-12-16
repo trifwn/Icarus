@@ -19,7 +19,7 @@ def plot_sensitivity(
     size: tuple[int, int] = (16, 7),
 ) -> None:
     fig: Figure = plt.figure(figsize=size)
-    axs: list[Axes] = fig.subplots(2, 3)
+    axs: list[Axes] = fig.subplots(2, 3).flatten()  # type: ignore
     fig.suptitle(f"{plane.name} Convergence", fontsize=16)
 
     axs[0].set_title("Fx vs epsilon")

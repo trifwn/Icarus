@@ -3,14 +3,14 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from numpy import ndarray
 
 from ICARUS.Core.types import FloatArray
 from ICARUS.Mission.Trajectory.trajectory import Trajectory
 
 
-def setup_plot() -> tuple[Figure, ndarray[Any, Any]]:
+def setup_plot() -> tuple[Figure, list[Axes]]:
     fig, axs = plt.subplots(2, 3, figsize=(10, 10))
     fig.show()
     fig.canvas.draw()
@@ -81,7 +81,7 @@ def update_plot(
     traj_xs: list[FloatArray],
     traj_vs: list[FloatArray],
     fig: Figure,
-    axs: ndarray,
+    axs: list[Axes],
 ) -> None:
     i = 0
     fig.canvas.flush_events()
@@ -98,7 +98,7 @@ def update_plot(
         y_goal = trajectory(x_goal)
 
         # Plot Trajectory
-        line1, line2 = list(axs[0, 0].get_lines())
+        line1, line2 = list(axs[0].get_lines())
 
         line1.set_xdata(x_goal)
         line1.set_ydata(y_goal)
@@ -108,30 +108,30 @@ def update_plot(
         line2.set_ydata([x[1] for x in xs])
         line2.set_color("blue")
         line2.set_label(f"Trajectory_{i}")
-        axs[0, 0].relim()
-        axs[0, 0].autoscale()
+        axs[0].relim()
+        axs[0].autoscale()
 
         # Plot Distance Travelled
-        line1 = list(axs[0, 1].get_lines())[0]
+        line1 = list(axs[1].get_lines())[0]
 
         line1.set_xdata(t)
         line1.set_ydata([x[0] for x in xs])
         # line1.set_color('blue')
         line1.set_label(f"Course_{i}")
 
-        axs[0, 1].relim()
-        axs[0, 1].autoscale()
+        axs[1].relim()
+        axs[1].autoscale()
 
         # # Plot Elevator Angle
-        # line1 = list(axs[0, 2].get_lines())[0]
+        # line1 = list(axs[2].get_lines())[0]
 
         # line1.set_xdata(t[: len(elev_angle)])
         # line1.set_ydata([np.rad2deg(a) for a in elev_angle])
-        # axs[0, 2].relim()
-        # axs[0, 2].autoscale()
+        # axs[2].relim()
+        # axs[2].autoscale()
 
         # Plot Velocity
-        line1, line2, line3 = list(axs[1, 0].get_lines())
+        line1, line2, line3 = list(axs[3].get_lines())
 
         line1.set_xdata(t)
         line1.set_ydata([np.linalg.norm(v) for v in vs])
@@ -146,11 +146,11 @@ def update_plot(
         line2.set_label(f"Vx_{i}")
         line3.set_label(f"Vy_{i}")
 
-        axs[1, 0].relim()
-        axs[1, 0].autoscale()
+        axs[3].relim()
+        axs[3].autoscale()
 
         # # Plot Thrust
-        # line1, line2, line3 = list(axs[1, 1].get_lines())
+        # line1, line2, line3 = list(axs[4].get_lines())
 
         # line1.set_xdata(t[: len(thrust_req)])
         # line1.set_ydata([x for x in thrust_req])
@@ -164,24 +164,24 @@ def update_plot(
         # line3.set_xdata(t)
         # line3.set_ydata(thrust_avail[:, 1])
         # line3.set_label(f"Max Available_{i}")
-        # axs[1, 1].relim()
-        # axs[1, 1].autoscale()
+        # axs[4].relim()
+        # axs[4].autoscale()
 
         # # Plot AOA
-        # line1 = list(axs[1, 2].get_lines())[0]
+        # line1 = list(axs[5].get_lines())[0]
 
         # line1.set_xdata(t)
         # line1.set_ydata([np.rad2deg(x[2]) for x in xs])
 
-        # axs[1, 2].relim()
-        # axs[1, 2].autoscale()
+        # axs[5].relim()
+        # axs[5].autoscale()
 
-    axs[0, 0].legend(loc="best")
-    axs[0, 1].legend()
-    axs[0, 2].legend()
-    axs[1, 1].legend()
-    axs[1, 0].legend()
-    axs[1, 2].legend()
+    axs[0].legend(loc="best")
+    axs[1].legend()
+    axs[2].legend()
+    axs[3].legend()
+    axs[4].legend()
+    axs[5].legend()
 
     fig.canvas.draw()
     time.sleep(0.1)

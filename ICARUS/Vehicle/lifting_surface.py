@@ -314,7 +314,7 @@ class Lifting_Surface:
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")
+            ax = fig.add_subplot(projection="3d")  # type: ignore
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
@@ -421,7 +421,7 @@ class Lifting_Surface:
                     self._dihedral_dist[j]
                     + self._chord_dist[j]
                     * self.airfoil.camber_line(
-                        i / (self.M - 1),
+                        float(i / (self.M - 1)),
                     ).squeeze()
                 )
 
@@ -504,7 +504,7 @@ class Lifting_Surface:
             _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
             _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
             self.S += 2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
-        self.S = float(self.S / np.max(self.airfoil._x_lower))
+        self.S = self.S / float(np.max(self.airfoil._x_lower))
 
         g_up = self.grid_upper
         g_low = self.grid_lower
@@ -516,7 +516,7 @@ class Lifting_Surface:
                 AD1 = g_up[i, j + 1, :] - g_up[i, j, :]
                 AD2 = g_up[i + 1, j + 1, :] - g_up[i + 1, j, :]
 
-                Area_up: floating[Any] = np.linalg.norm(
+                area_up: floating[Any] = np.linalg.norm(
                     np.cross((AB1 + AB2) / 2, (AD1 + AD2) / 2),
                 )
 
@@ -530,7 +530,7 @@ class Lifting_Surface:
                     np.cross((AB1 + AB2) / 2, (AD1 + AD2) / 2),
                 )
 
-                self.area += float(Area_up + area_low)
+                self.area += float(area_up) + float(area_low)
 
         # Find Aspect Ratio
         self.find_aspect_ratio()
@@ -575,7 +575,7 @@ class Lifting_Surface:
                 dx: float = (dx1 + dx2 + dx3 + dx4) / 4
 
                 # volume of the tetrahedron
-                self.volume_distribution[i, j] = 0.5 * (area_front + area_back) * dx
+                self.volume_distribution[i, j] = 0.5 * (float(area_front) + float(area_back)) * dx
 
         self.volume = float(np.sum(self.volume_distribution))
         if self.is_symmetric:
@@ -733,5 +733,5 @@ class Lifting_Surface:
             pass
         return grid
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Wing Segment: {self.name} with {self.N} Panels and {self.M} Panels"

@@ -11,6 +11,8 @@ from ICARUS.Core.struct import Struct
 
 Numeric = Union[int, float, np.number]
 DataDict = Union[dict[str, Any], Struct]
+
 FloatArray = ndarray[Any, dtype[floating[Any]]]
 ComplexArray = ndarray[Any, dtype[complexfloating[Any, Any]]]
 FloatOrListArray = Union[FloatArray, list[float]]
+AnyFloat = Union[float, int, np.number, FloatArray, list[float]]

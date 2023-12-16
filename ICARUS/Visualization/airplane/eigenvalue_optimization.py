@@ -1,12 +1,10 @@
 import time
-from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.figure import Figure
-from numpy import ndarray
 
 from ICARUS.Core.types import ComplexArray
 
@@ -16,7 +14,7 @@ def setup_scatter(
     goal_lateral: ComplexArray,
     zero_longitudal: ComplexArray,
     zero_lateral: ComplexArray,
-) -> tuple[Figure, ndarray[Any, Any], Collection, Collection]:
+) -> tuple[Figure, list[Axes], Collection, Collection]:
     fig, axs = plt.subplots(1, 2, figsize=(10, 10))
     fig.show()
     fig.canvas.draw()
@@ -56,7 +54,7 @@ def update_scatter(
     longitudal_points: Collection,
     iteration_num: int,
     fig: Figure,
-    axs: ndarray,
+    axs: list[Axes],
 ) -> None:
     fig.canvas.flush_events()
     title: str = f"Eigenvalues at {iteration_num} of optimization"

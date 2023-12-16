@@ -29,10 +29,10 @@ class Mission_Vehicle:
         self.l_m: float = -0.4
 
     @staticmethod
-    def interpolate_polars(aoa: float, cldata: DataFrame) -> tuple[FloatArray, FloatArray, FloatArray]:
-        cl = np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CL"])
-        cd = np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CD"])
-        cm = np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential Cm"])
+    def interpolate_polars(aoa: float, cldata: DataFrame) -> tuple[float, float, float]:
+        cl = float(np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CL"]))
+        cd = float(np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CD"]))
+        cm = float(np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential Cm"]))
         return cl, cd, cm
 
     def get_elevator_lift_over_cl(
@@ -50,7 +50,7 @@ class Mission_Vehicle:
         self,
         velocity: float,
         aoa: float,
-    ):
+    ) -> tuple[float, float, float]:
         aoa = np.rad2deg(aoa)
         cl, cd, cm = self.interpolate_polars(
             aoa,
@@ -78,10 +78,10 @@ class Mission_Vehicle:
         DX: FloatArray = V
         return DX
 
-    def dvdt(self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0):
-        dh_dx: float = trajectory.first_derivative_x_fd(X[0])
-        dh2_dx2: float = trajectory.second_derivative_x_fd(X[0])
-        dh_3_dx3: float = trajectory.third_derivative_x_fd(X[0])
+    def dvdt(self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0) -> FloatArray:
+        dh_dx: float = float(trajectory.first_derivative_x_fd(X[0]))
+        dh2_dx2: float = float(trajectory.second_derivative_x_fd(X[0]))
+        dh_3_dx3: float = float(trajectory.third_derivative_x_fd(X[0]))
 
         # alpha = X[2]
         # aoa: float = X[2] - dh_dx
@@ -149,7 +149,7 @@ class Mission_Vehicle:
         # Check if thrust can  be provided in the motor dataset. It should be between the minimum and
         # maximum thrust. If not, the motor is not able to provide the thrust required to maintain
         # course.
-        avail_thrust = self.motor.get_available_thrust(velocity=np.linalg.norm(V))
+        avail_thrust = self.motor.get_available_thrust(velocity=float(np.linalg.norm(V)))
         if thrust < avail_thrust[0]:
             if verbosity:
                 print(f"\tThrust too low {thrust}, {avail_thrust[1]}")

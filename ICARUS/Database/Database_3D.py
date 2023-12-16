@@ -163,7 +163,7 @@ class Database_3D:
         state: State | None,
         vehicle_folder: str,
         gnvp_version: int,
-    ):
+    ) -> None:
         genudir = os.path.join(DB3D, vehicle_folder, f"GenuVP{gnvp_version}")
         os.chdir(genudir)
         cases: list[str] = next(os.walk("."))[1]
@@ -260,7 +260,7 @@ class Database_3D:
         state: State | None,
         forces: DataFrame,
         prefix: str,
-    ):
+    ) -> None:
         if plane is None:
             logging.info("Could not Create Polars")
             return
@@ -294,7 +294,7 @@ class Database_3D:
             # Sort the dataframe by AoA
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
 
-    def add_forces(self, planename: str, forces: DataFrame):
+    def add_forces(self, planename: str, forces: DataFrame) -> None:
         if f"{planename}" not in self.forces.keys():
             self.forces[f"{planename}"] = deepcopy(forces)
         else:

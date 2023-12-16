@@ -9,32 +9,22 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
-def gnvp3_run(mode: str = "Parallel") -> None:
+def gnvp3_run(run_parallel: bool = True) -> None:
     print("Testing GNVP3 Running...")
 
     # Get Plane, DB
     from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
-    bmark: Airplane = get_bmark_plane("bmark")
-    # Get Environment
-    from ICARUS.Environment.definition import EARTH_ISA
-
-    # Set State
-    u_freestream = 20.0
-    state = State("Unstick", bmark, EARTH_ISA, u_freestream)
+    bmark, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
+    from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
 
-    gnvp3: Solver = get_gnvp3()
+    gnvp3: Solver = GenuVP3()
 
     # Set Analysis
-    if mode == "Parallel":
-        analysis: str = gnvp3.available_analyses_names()[2]
-    else:
-        analysis = gnvp3.available_analyses_names()[1]
-
-    gnvp3.set_analyses(analysis)
+    polar_analysis: str = gnvp3.get_analyses_names()[0]
+    gnvp3.select_analysis(polar_analysis)
 
     # Set Options
     options: Struct = gnvp3.get_analysis_options(verbose=True)
@@ -48,30 +38,39 @@ def gnvp3_run(mode: str = "Parallel") -> None:
     maxiter = 30
     timestep = 0.004
 
-    options.plane.value = bmark
-    options.state.value = state
-    options.solver2D.value = "XFLR"
-    options.maxiter.value = maxiter
-    options.timestep.value = timestep
-    options.angles.value = angles
+    options.plane = bmark
+    options.state = state
+    options.solver2D = "XFLR"
+    options.maxiter = maxiter
+    options.timestep = timestep
+    options.angles = angles
 
-    solver_parameters.Split_Symmetric_Bodies.value = False
-    solver_parameters.Use_Grid.value = True
+    solver_parameters.Split_Symmetric_Bodies = False
+    solver_parameters.Use_Grid = True
 
     # Deformation
-    solver_parameters.Bound_Vorticity_Cutoff.value = 0.003  # EPSFB
-    solver_parameters.Wake_Vorticity_Cutoff.value = 0.003  # EPSFW
-    solver_parameters.Vortex_Cutoff_Length_f.value = 1e-1  # EPSVR
-    solver_parameters.Vortex_Cutoff_Length_i.value = 1e-1  # EPSO
+    solver_parameters.Bound_Vorticity_Cutoff = 0.003  # EPSFB
+    solver_parameters.Wake_Vorticity_Cutoff = 0.003  # EPSFW
+    solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
+    solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
+    gnvp3.define_analysis(options, solver_parameters)
     _ = gnvp3.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
 
-    gnvp3.run()
+    gnvp3.execute(parallel=run_parallel)
 
     end_time: float = time.perf_counter()
+    if run_parallel:
+        mode = "Parallel"
+    else:
+        mode = "Serial"
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 
     _ = gnvp3.get_results()
     bmark.save()
+
+
+if __name__ == "__main__":
+    gnvp3_run()
