@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Callable
 
 import numpy as np
 
@@ -9,7 +8,6 @@ from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.utils import DistributionType
 from ICARUS.Vehicle.utils import equal_spacing_function
-from ICARUS.Vehicle.utils import equal_spacing_function_factory
 from ICARUS.Vehicle.utils import linear_distribution_function_factory
 from ICARUS.Vehicle.utils import SymmetryAxes
 
@@ -174,3 +172,4 @@ class Wing_Segment(Lifting_Surface):
         self.__dict__ = instance.__dict__
         self.span_spacing = span_spacing
         self.chord_spacing = chord_spacing
+        

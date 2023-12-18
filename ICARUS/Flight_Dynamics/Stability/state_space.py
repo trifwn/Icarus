@@ -147,7 +147,7 @@ class LongitudalStateSpace:
     def print_lateral_derivatives(
         self,
     ) -> None:
-        print("Lateral Derivatives")
+        print("Longitudal Derivatives")
         print(f"Xu=\t{self.X['u']}")
         print(f"Xw=\t{self.X['w']}")
         print(f"Xq=\t{self.X['q']}")

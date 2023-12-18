@@ -252,3 +252,30 @@ class Strip:
 
         if pltshow:
             plt.show()
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Compares two strips. They are considered equal if the leading edge points, the chord and the airfoil are the same.
+
+        Args:
+            __value (Strip): Strip to compare
+
+        Returns:
+            bool: True if the strips are equal, False otherwise.
+        """
+        if not isinstance(other, Strip):
+            return NotImplemented
+        if (
+            self.x0 == other.x0
+            and self.y0 == other.y0
+            and self.z0 == other.z0
+            and self.x1 == other.x1
+            and self.y1 == other.y1
+            and self.z1 == other.z1
+            and self.chord == other.chord
+            and self.airfoil1 == other.airfoil1
+            and self.airfoil2 == other.airfoil2
+        ):
+            return True
+        else:
+            return False

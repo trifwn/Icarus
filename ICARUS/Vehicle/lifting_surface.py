@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from calendar import c
-from typing import Any
 from typing import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import floating
 
 from .strip import Strip
 from ICARUS.Airfoils.airfoil import Airfoil
@@ -52,7 +49,13 @@ class Lifting_Surface:
         #   - The airfoil at that point. The airfoil is interpolated between the root and tip airfoil.
 
         # Check that the number of points is the same for all parameters if not raise an error
-        if not (len(spanwise_positions) == len(chord_lengths) == len(z_offsets) == len(x_offsets) == len(twists)):
+        if not (
+            len(spanwise_positions)
+            == len(chord_lengths)
+            == len(z_offsets)
+            == len(x_offsets)
+            == len(twists)
+        ):
             raise ValueError("The number of points must be the same for all parameters")
 
         self.name: str = name
@@ -90,7 +93,7 @@ class Lifting_Surface:
         if isinstance(symmetries, SymmetryAxes):
             symmetries = [symmetries]
         self.symmetries: list[SymmetryAxes] = symmetries
-        self.is_symmetric_y: bool = True if [SymmetryAxes.Y in symmetries] else False
+        self.is_symmetric_y: bool = True if SymmetryAxes.Y in symmetries else False
 
         # Define Discretization
         # TODO: Add logic to handle different discretization types
@@ -99,7 +102,9 @@ class Lifting_Surface:
         if chord_discretization_function is None:
             self.chord_spacing: DiscretizationType = DiscretizationType.EQUAL
             # Define Chord Discretization to be the identity function
-            self.chord_discretization_function: Callable[[int], float] = lambda x: x / (self.M - 1)
+            self.chord_discretization_function: Callable[[int], float] = lambda x: x / (
+                self.M - 1
+            )
         else:
             self.chord_discretization_function = chord_discretization_function
             self.chord_spacing = DiscretizationType.UNKNOWN
@@ -125,7 +130,11 @@ class Lifting_Surface:
         self.tip_airfoil: Airfoil = tip_airfoil
 
         # Store Origin Parameters
-        self.origin: FloatArray = origin
+        self._origin: FloatArray = origin
+        self._x_origin: float = origin[0]
+        self._y_origin: float = origin[1]
+        self._z_origin: float = origin[2]
+
         self.orientation: FloatArray = orientation
 
         # Define the segment's mass
@@ -150,7 +159,9 @@ class Lifting_Surface:
         self.grid_upper: FloatArray = np.empty((self.M, self.N, 3))
         self.grid_lower: FloatArray = np.empty((self.M, self.N, 3))
         # Initialize Panel Variables
-        self.panels: FloatArray = np.empty((self.N - 1, self.M - 1, 4, 3))  # Camber Line
+        self.panels: FloatArray = np.empty(
+            (self.N - 1, self.M - 1, 4, 3)
+        )  # Camber Line
         self.panels_upper: FloatArray = np.empty((self.N - 1, self.M - 1, 4, 3))
         self.panels_lower: FloatArray = np.empty((self.N - 1, self.M - 1, 4, 3))
 
@@ -165,17 +176,10 @@ class Lifting_Surface:
         # Initialize Areas
         self.S: float = 0.0
         self.area: float = 0.0
-        self.aspect_ratio: float = 0.0
 
         # Initialize Volumes
         self.volume_distribution: FloatArray = np.empty((self.N - 1, self.M - 1))
         self.volume: float = 0.0
-
-        # Initialize Center of Mass and Inertia
-        self.CG: FloatArray = np.empty(3, dtype=float)
-        self.inertia: FloatArray = np.empty((6), dtype=float)
-
-        ###### Variable Initialization ########
 
         ####### Calculate Wing Parameters #######
         self.calculate_wing_parameters()
@@ -252,7 +256,9 @@ class Lifting_Surface:
             eta = span_discretization_function(i)
             spanwise_positions[i] = eta * span
             chord_lengths[i] = real_chord_fun(eta)
-            z_offsets[i] = np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
+            z_offsets[i] = (
+                np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
+            )
             x_offsets[i] = x_offset_as_a_function_of_span_percentage(eta)
             twists[i] = twist_as_a_function_of_span_percentage(eta)
 
@@ -292,11 +298,62 @@ class Lifting_Surface:
         # Calculate Volumes
         self.find_volume()
 
-        # Find Center of Mass
-        self.find_center_mass()
+    @property
+    def origin(self) -> FloatArray:
+        return self._origin
+    
+    @origin.setter
+    def origin(self, value: FloatArray) -> None:
+        movement = value - self._origin
+        self._origin = value  
+        
+        # Move Grid
+        self.grid += movement[None, None, :]
+        self.grid_upper += movement[None, None, :]
+        self.grid_lower += movement[None, None, :]
 
-        # Calculate Moments
-        self.calculate_inertia(self.mass, self.CG)
+        # Move Panels
+        self.panels += movement[None, None, :]
+        self.panels_upper += movement[None, None, :]
+        self.panels_lower += movement[None, None, :]
+
+    @property
+    def x_origin(self) -> float:
+        return self._x_origin
+    
+    @x_origin.setter
+    def x_origin(self, value: float) -> None:
+        self._x_origin = value
+        origin = np.array([value, self._y_origin, self._z_origin], dtype=float)
+        self.origin = origin
+
+    @property
+    def y_origin(self) -> float:
+        return self._y_origin
+    
+    @y_origin.setter
+    def y_origin(self, value: float) -> None:
+        self._y_origin = value
+        origin = np.array([self._x_origin, value, self._z_origin], dtype=float)
+        self.origin = origin
+    
+    @property
+    def z_origin(self) -> float:
+        return self._z_origin
+    
+    @z_origin.setter
+    def z_origin(self, value: float) -> None:
+        self._z_origin = value
+        origin = np.array([self._x_origin, self._y_origin, value], dtype=float)
+        self.origin = origin
+
+    @property
+    def CG(self) -> FloatArray:
+        return self.find_center_mass()
+
+    @property
+    def inertia(self) -> FloatArray:
+        return self.calculate_inertia(self.mass, self.CG)
 
     def change_discretization(self, N: int | None = None, M: int | None = None) -> None:
         if N is not None:
@@ -308,7 +365,7 @@ class Lifting_Surface:
     def change_mass(self, mass: float) -> None:
         """Change Wing Segment Mass"""
         self.mass = mass
-        self.calculate_inertia(self.mass, self.CG)
+        self.inertial = self.calculate_inertia(self.mass, self.CG)
 
     @property
     def tip(self) -> FloatArray:
@@ -323,12 +380,12 @@ class Lifting_Surface:
     @property
     def leading_edge(self) -> FloatArray:
         """Return Leading Edge of Wing"""
-        return self.grid_upper[0, :, :] + self.origin
+        return self.grid_upper[0, :, :] + self._origin
 
     @property
     def trailing_edge(self) -> FloatArray:
         """Return Trailing Edge of Wing"""
-        return self.grid_upper[-1, :, :] + self.origin
+        return self.grid_upper[-1, :, :] + self._origin
 
     def change_airfoil(self, airfoil: Airfoil) -> None:
         """Change airfoil of Wing"""
@@ -343,14 +400,18 @@ class Lifting_Surface:
                 root_airfoil=self.tip_airfoil,
                 origin=np.array(
                     [
-                        self.origin[0] + self._zoffset_dist[-1],
-                        self.origin[1] - self.span / 2,
-                        self.origin[2],
+                        self._origin[0] + self._zoffset_dist[-1],
+                        self._origin[1] - self.span / 2,
+                        self._origin[2],
                     ],
                     dtype=float,
                 ),
                 orientation=self.orientation,
-                symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+                symmetries=[
+                    symmetry
+                    for symmetry in self.symmetries
+                    if symmetry != SymmetryAxes.Y
+                ],
                 chord_lengths=self._chord_dist[::-1],
                 spanwise_positions=self._span_dist[::-1],
                 x_offsets=self._xoffset_dist[::-1],
@@ -365,9 +426,13 @@ class Lifting_Surface:
             right = Lifting_Surface(
                 name=f"R{self.name}",
                 root_airfoil=self.root_airfoil,
-                origin=self.origin,
+                origin=self._origin,
                 orientation=self.orientation,
-                symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+                symmetries=[
+                    symmetry
+                    for symmetry in self.symmetries
+                    if symmetry != SymmetryAxes.Y
+                ],
                 chord_lengths=self._chord_dist,
                 spanwise_positions=self._span_dist,
                 x_offsets=self._xoffset_dist,
@@ -384,39 +449,47 @@ class Lifting_Surface:
 
     def create_strips(self) -> None:
         """Create Strips given the Grid and airfoil"""
-        strips: list[Strip] = []
-        symmetric_strips: list[Strip] = []
-        for i in np.arange(0, self.N - 1):
-            start_point: FloatArray = np.array(
-                [
-                    self._xoffset_dist[i],
-                    self._span_dist[i],
-                    self._zoffset_dist[i],
-                ],
-            )
-            start_point = np.matmul(self.R_MAT, start_point) + self.origin
+        strips = []
+        symmetric_strips = []
 
-            end_point: FloatArray = np.array(
-                [
-                    self._xoffset_dist[i + 1],
-                    self._span_dist[i + 1],
-                    self._zoffset_dist[i + 1],
-                ],
-            )
-            end_point = np.matmul(self.R_MAT, end_point) + self.origin
-            surf = Strip(
-                start_leading_edge=start_point,
-                end_leading_edge=end_point,
+        i_range = np.arange(0, self.N - 1)
+
+        start_points = np.array(
+            [
+                self._xoffset_dist[i_range],
+                self._span_dist[i_range],
+                self._zoffset_dist[i_range],
+            ],
+        )
+        start_points = np.matmul(self.R_MAT, start_points) + self._origin[:, None]
+
+        end_points = np.array(
+            [
+                self._xoffset_dist[i_range + 1],
+                self._span_dist[i_range + 1],
+                self._zoffset_dist[i_range + 1],
+            ],
+        )
+        end_points = np.matmul(self.R_MAT, end_points) + self._origin[:, None]
+
+        start_chords = np.array(self._chord_dist[i_range])
+        end_chords = np.array(self._chord_dist[i_range + 1])
+
+        strips = [
+            Strip(
+                start_leading_edge=start_points[:, j],
+                end_leading_edge=end_points[:, j],
                 start_airfoil=self.root_airfoil,
                 end_airfoil=self.root_airfoil,
-                start_chord=float(self._chord_dist[i]),
-                end_chord=float(self._chord_dist[i + 1]),
+                start_chord=start_chords[j],
+                end_chord=end_chords[j],
             )
-            if self.is_symmetric_y:
-                strips.append(surf)
-                symmetric_strips.append(surf.return_symmetric())
-            else:
-                strips.append(surf)
+            for j in range(self.N - 1)
+        ]
+
+        if self.is_symmetric_y:
+            symmetric_strips = [surf.return_symmetric() for surf in strips]
+
         self.strips = strips
         self.all_strips = [*strips, *symmetric_strips]
 
@@ -473,107 +546,108 @@ class Lifting_Surface:
         if show_plot:
             plt.show()
 
-    def grid_to_panels(self, grid: FloatArray) -> tuple[FloatArray, FloatArray, FloatArray]:
-        """
-        Convert Grid to Panels
+    def grid_to_panels(
+        self, grid: FloatArray
+    ) -> tuple[FloatArray, FloatArray, FloatArray]:
+        panels = np.empty((self.N - 1, self.M - 1, 4, 3), dtype=float)
+        control_points = np.empty((self.N - 1, self.M - 1, 3), dtype=float)
+        control_nj = np.empty((self.N - 1, self.M - 1, 3), dtype=float)
 
-        Args:
-            grid (FloatArray): Grid to convert
+        N = self.N
+        M = self.M
+        panels[:, :, 0, :] = grid[1:, : M - 1]
+        panels[:, :, 1, :] = grid[: N - 1, : M - 1]
+        panels[:, :, 2, :] = grid[: N - 1, 1:M]
+        panels[:, :, 3, :] = grid[1:, 1:M]
 
-        Returns:
-            tuple[FloatArray, FloatArray, FloatArray]: Panels, Control Points, Control Normal Vectors
-        """
-        panels: FloatArray = np.empty((self.N - 1, self.M - 1, 4, 3), dtype=float)
-        control_points: FloatArray = np.empty((self.N - 1, self.M - 1, 3), dtype=float)
-        control_nj: FloatArray = np.empty((self.N - 1, self.M - 1, 3), dtype=float)
-        for i in np.arange(0, self.N - 1):
-            for j in np.arange(0, self.M - 1):
-                panels[i, j, 0, :] = grid[i + 1, j]
-                panels[i, j, 1, :] = grid[i, j]
-                panels[i, j, 2, :] = grid[i, j + 1]
-                panels[i, j, 3, :] = grid[i + 1, j + 1]
+        control_points[:, :, 0] = (
+            self.grid[: N - 1, : M - 1, 0] + self.grid[1:N, : M - 1, 0]
+        ) / 2 + 3 / 4 * (
+            (self.grid[: N - 1, 1:M, 0] + self.grid[1:N, 1:M, 0]) / 2
+            - (self.grid[: N - 1, : M - 1, 0] + self.grid[1:N, : M - 1, 0]) / 2
+        )
 
-                control_points[i, j, 0] = (self.grid[i, j][0] + self.grid[i + 1, j][0]) / 2 + 3 / 4 * (
-                    (self.grid[i, j + 1][0] + self.grid[i + 1, j + 1][0]) / 2
-                    - (self.grid[i, j][0] + self.grid[i + 1, j][0]) / 2
-                )
-                control_points[i, j, 1] = (self.grid[i, j][1] + self.grid[i + 1, j][1]) / 2 + 1 / 2 * (
-                    (self.grid[i, j + 1][1] + self.grid[i + 1, j + 1][1]) / 2
-                    - (self.grid[i, j][1] + self.grid[i + 1, j][1]) / 2
-                )
-                control_points[i, j, 2] = (self.grid[i, j][2] + self.grid[i + 1, j][2]) / 2 + 1 / 2 * (
-                    (self.grid[i, j + 1][2] + self.grid[i + 1, j + 1][2]) / 2
-                    - (self.grid[i, j][2] + self.grid[i + 1, j][2]) / 2
-                )
-                Ak = panels[i, j, 0, :] - panels[i, j, 2, :]
-                Bk = panels[i, j, 1, :] - panels[i, j, 3, :]
-                cross_prod = np.cross(Ak, Bk)
-                control_nj[i, j, :] = cross_prod / np.linalg.norm(cross_prod)
+        control_points[:, :, 1] = (
+            self.grid[: N - 1, : M - 1, 1] + self.grid[1:N, : M - 1, 1]
+        ) / 2 + 1 / 2 * (
+            (self.grid[: N - 1, 1:M, 1] + self.grid[1:N, 1:M, 1]) / 2
+            - (self.grid[: N - 1, : M - 1, 1] + self.grid[1:N, : M - 1, 1]) / 2
+        )
+
+        control_points[:, :, 2] = (
+            self.grid[: N - 1, : M - 1, 2] + self.grid[1:N, : M - 1, 2]
+        ) / 2 + 1 / 2 * (
+            (self.grid[: N - 1, 1:M, 2] + self.grid[1:N, 1:M, 2]) / 2
+            - (self.grid[: N - 1, : M - 1, 2] + self.grid[1:N, : M - 1, 2]) / 2
+        )
+
+        Ak = panels[:, :, 0, :] - panels[:, :, 2, :]
+        Bk = panels[:, :, 1, :] - panels[:, :, 3, :]
+        cross_prod = np.cross(Ak, Bk)
+        control_nj[:, :, :] = (
+            cross_prod / np.linalg.norm(cross_prod, axis=2)[:, :, None]
+        )
+
         return panels, control_points, control_nj
 
     def create_grid(self) -> None:
-        """Create Grid for Wing"""
-        xs: FloatArray = np.empty((self.M, self.N), dtype=float)
-        xs_upper: FloatArray = np.empty((self.M, self.N), dtype=float)
-        xs_lower: FloatArray = np.empty((self.M, self.N), dtype=float)
+        chord_eta = [
+            self.chord_discretization_function(int(i)) for i in range(0, self.M)
+        ]
 
-        ys: FloatArray = np.empty((self.M, self.N), dtype=float)
-        ys_upper: FloatArray = np.empty((self.M, self.N), dtype=float)
-        ys_lower: FloatArray = np.empty((self.M, self.N), dtype=float)
+        xs = np.outer(chord_eta, self._chord_dist) + self._xoffset_dist
+        xs_upper = xs.copy()
+        xs_lower = xs.copy()
 
-        zs: FloatArray = np.empty((self.M, self.N), dtype=float)
-        zs_upper: FloatArray = np.empty((self.M, self.N), dtype=float)
-        zs_lower: FloatArray = np.empty((self.M, self.N), dtype=float)
+        ys = np.tile(self._span_dist, (self.M, 1))
+        ys_upper = ys.copy()
+        ys_lower = ys.copy()
 
-        for i in np.arange(0, self.M):
-            chord_eta = self.chord_discretization_function(i)
+        zs_upper = (
+            np.outer(self.root_airfoil.y_upper(chord_eta), self._chord_dist)
+            + self._zoffset_dist
+        )
+        zs_lower = (
+            np.outer(self.root_airfoil.y_lower(chord_eta), self._chord_dist)
+            + self._zoffset_dist
+        )
+        zs = (
+            np.outer(self.root_airfoil.camber_line(chord_eta), self._chord_dist)
+            + self._zoffset_dist
+        )
 
-            xpos: FloatArray = (self._chord_dist) * (chord_eta)
-            xs[i, :] = self._xoffset_dist + xpos
-            xs_lower[i, :] = xs[i, :]
-            xs_upper[i, :] = xs[i, :]
+        # print(xs.shape, ys.shape, zs.shape)
+        # Rotate according to R_MAT
+        coordinates = np.matmul(
+            self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs.flatten()])
+        )
+        coordinates = coordinates.reshape((3, self.M, self.N))
 
-            ys[i, :] = self._span_dist  # * np.cos(self.gamma)
-            ys_lower[i, :] = ys[i, :]
-            ys_upper[i, :] = ys[i, :]
+        coordinates_upper = np.matmul(
+            self.R_MAT,
+            np.vstack([xs_upper.flatten(), ys_upper.flatten(), zs_upper.flatten()]),
+        )
+        coordinates_upper = coordinates_upper.reshape((3, self.M, self.N))
 
-            for j in np.arange(0, self.N):
-                zs_upper[i, j] = self._zoffset_dist[j] + self._chord_dist[j] * self.root_airfoil.y_upper(chord_eta)
-                zs_lower[i, j] = self._zoffset_dist[j] + self._chord_dist[j] * self.root_airfoil.y_lower(chord_eta)
-                zs[i, j] = (
-                    self._zoffset_dist[j] + self._chord_dist[j] * self.root_airfoil.camber_line(chord_eta).squeeze()
-                )
+        coordinates_lower = np.matmul(
+            self.R_MAT,
+            np.vstack([xs_lower.flatten(), ys_lower.flatten(), zs_lower.flatten()]),
+        )
+        coordinates_lower = coordinates_lower.reshape((3, self.M, self.N))
 
-            # ROTATE ACCORDING TO R_MAT
-            xs[i, :], ys[i, :], zs[i, :] = np.matmul(
-                self.R_MAT,
-                [xs[i, :], ys[i, :], zs[i, :]],
-            )
+        # Add origin
+        coordinates += self._origin[:, None, None]
+        coordinates_upper += self._origin[:, None, None]
+        coordinates_lower += self._origin[:, None, None]
 
-            xs_lower[i, :], ys_lower[i, :], zs_lower[i, :] = np.matmul(
-                self.R_MAT,
-                [xs_lower[i, :], ys_lower[i, :], zs_lower[i, :]],
-            )
-
-            xs_upper[i, :], ys_upper[i, :], zs_upper[i, :] = np.matmul(
-                self.R_MAT,
-                [xs_upper[i, :], ys_upper[i, :], zs_upper[i, :]],
-            )
-
-        for item in [xs, xs_upper, xs_lower]:
-            item += self.origin[0]
-
-        for item in [ys, ys_upper, ys_lower]:
-            item += self.origin[1]
-
-        for item in [zs, zs_upper, zs_lower]:
-            item += self.origin[2]
-
-        self.grid = np.array((xs, ys, zs)).T
-        self.grid_upper = np.array((xs_upper, ys_upper, zs_upper)).T
-        self.grid_lower = np.array((xs_lower, ys_lower, zs_lower)).T
-
-        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(self.grid)
+        # The arrays are now in the form (3, M, N), we need to transpose them to (N, M, 3)
+        self.grid = coordinates.transpose(2, 1, 0)
+        self.grid_upper = coordinates_upper.transpose(2, 1, 0)
+        self.grid_lower = coordinates_lower.transpose(2, 1, 0)
+        # error
+        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(
+            self.grid
+        )
 
         (
             self.panels_lower,
@@ -589,215 +663,176 @@ class Lifting_Surface:
 
     def mean_chords(self) -> None:
         "Finds the Mean Aerodynamic Chord (mean_aerodynamic_chord) of the wing."
-        num: float = 0
-        denum: float = 0
-        for i in np.arange(0, self.N - 1):
-            num += float(
-                ((self._chord_dist[i] + self._chord_dist[i + 1]) / 2) ** 2
-                * (self._span_dist[i + 1] - self._span_dist[i]),
-            )
-            denum += float(
-                (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i]),
-            )
-        self.mean_aerodynamic_chord = num / denum
+        # Vectorized calculation for mean_aerodynamic_chord
+        num = np.sum(
+            ((self._chord_dist[:-1] + self._chord_dist[1:]) / 2) ** 2
+            * (self._span_dist[1:] - self._span_dist[:-1]),
+        )
+        denum = np.sum(
+            (self._chord_dist[:-1] + self._chord_dist[1:])
+            / 2
+            * (self._span_dist[1:] - self._span_dist[:-1]),
+        )
+        self.mean_aerodynamic_chord = float(num) / float(denum)
 
-        # Finds Standard Mean Chord
-        num = 0
-        denum = 0
-        for i in np.arange(0, self.N - 1):
-            num += float(
-                (self._chord_dist[i] + self._chord_dist[i + 1]) / 2 * (self._span_dist[i + 1] - self._span_dist[i]),
-            )
-            denum += float(self._span_dist[i + 1] - self._span_dist[i])
-        self.standard_mean_chord = num / denum
-
-    def find_aspect_ratio(self) -> None:
-        """Finds the Aspect Ratio of the wing."""
-        self.aspect_ratio = (self.span**2) / self.area
+        # Vectorized calculation for standard_mean_chord
+        num = np.sum(
+            (self._chord_dist[:-1] + self._chord_dist[1:])
+            / 2
+            * (self._span_dist[1:] - self._span_dist[:-1])
+        )
+        denum = np.sum(self._span_dist[1:] - self._span_dist[:-1])
+        self.standard_mean_chord = float(num) / float(denum)
 
     def find_area(self) -> None:
-        "Finds the area of the wing."
+        """Finds the area of the wing."""
 
-        rm1: FloatArray = np.linalg.inv(self.R_MAT)
-        for i in np.arange(0, self.N - 1):
-            _, y1, _ = np.matmul(rm1, self.grid_upper[i + 1, 0, :])
-            _, y2, _ = np.matmul(rm1, self.grid_upper[i, 0, :])
-            self.S += 2 * (y1 - y2) * (self._chord_dist[i] + self._chord_dist[i + 1]) / 2
+        rm1 = np.linalg.inv(self.R_MAT)
+
+        # Vectorized calculation for the upper surface
+        _, y1_upper, _ = np.matmul(rm1, self.grid_upper[1:, 0, :].T)
+        _, y2_upper, _ = np.matmul(rm1, self.grid_upper[:-1, 0, :].T)
+        chord_dist_upper = self._chord_dist[:-1] + self._chord_dist[1:]
+
+        self.S = 2 * np.sum((y1_upper - y2_upper) * chord_dist_upper / 2)
+        # Normalize by the maximum x value of the root airfoil
         self.S = self.S / float(np.max(self.root_airfoil._x_lower))
 
         g_up = self.grid_upper
         g_low = self.grid_lower
-        for i in np.arange(0, self.N - 1):
-            for j in np.arange(0, self.M - 1):
-                AB1 = g_up[i + 1, j, :] - g_up[i, j, :]
-                AB2 = g_up[i + 1, j + 1, :] - g_up[i, j + 1, :]
 
-                AD1 = g_up[i, j + 1, :] - g_up[i, j, :]
-                AD2 = g_up[i + 1, j + 1, :] - g_up[i + 1, j, :]
+        # Vectorized calculation for the lower surface
+        AB1_up = g_up[1:, :-1, :] - g_up[:-1, :-1, :]
+        AB2_up = g_up[1:, 1:, :] - g_up[:-1, 1:, :]
+        AD1_up = g_up[:-1, 1:, :] - g_up[:-1, :-1, :]
+        AD2_up = g_up[1:, 1:, :] - g_up[1:, :-1, :]
+        area_up = np.linalg.norm(
+            np.cross((AB1_up + AB2_up) / 2, (AD1_up + AD2_up) / 2), axis=-1
+        )
 
-                area_up: floating[Any] = np.linalg.norm(
-                    np.cross((AB1 + AB2) / 2, (AD1 + AD2) / 2),
-                )
+        AB1_low = g_low[1:, :-1, :] - g_low[:-1, :-1, :]
+        AB2_low = g_low[1:, 1:, :] - g_low[:-1, 1:, :]
+        AD1_low = g_low[:-1, 1:, :] - g_low[:-1, :-1, :]
+        AD2_low = g_low[1:, 1:, :] - g_low[1:, :-1, :]
+        area_low = np.linalg.norm(
+            np.cross((AB1_low + AB2_low) / 2, (AD1_low + AD2_low) / 2), axis=-1
+        )
 
-                AB1 = g_low[i + 1, j, :] - g_low[i, j, :]
-                AB2 = g_low[i + 1, j + 1, :] - g_low[i, j + 1, :]
-
-                AD1 = g_low[i, j + 1, :] - g_low[i, j, :]
-                AD2 = g_low[i + 1, j + 1, :] - g_low[i + 1, j, :]
-
-                area_low: floating[Any] = np.linalg.norm(
-                    np.cross((AB1 + AB2) / 2, (AD1 + AD2) / 2),
-                )
-
-                self.area += float(area_up) + float(area_low)
-
-        # Find Aspect Ratio
-        self.find_aspect_ratio()
+        self.area = float(np.sum(area_up) + np.sum(area_low))
 
     def find_volume(self) -> None:
-        """Finds the volume of the wing. This is done by finding the volume of the wing
-        as the sum of a series of panels."""
-
+        """Finds the volume of the wing using vectorized operations."""
         g_up = self.grid_upper
         g_low = self.grid_lower
-        # We divide the wing into a set of lower and upper panels that form
-        # a tetrahedron. We then find the volume of each tetrahedron and sum.
-        # This is equivalent to finding the area of the front and back faces of
-        # the tetrahedron taking the average and multiplying by the height.
-        # We then have to subtract the volume of the trianglular prism that is
-        # formed by the slanted edges of the tetrahedron.
-        for i in np.arange(0, self.N - 1):
-            for j in np.arange(0, self.M - 1):
-                # Area of the front face
-                AB1 = g_up[i + 1, j, :] - g_up[i, j, :]
-                AB2 = g_low[i + 1, j, :] - g_low[i, j, :]
 
-                AD1 = g_up[i, j, :] - g_low[i, j, :]
-                AD2 = g_up[i + 1, j, :] - g_low[i + 1, j, :]
-                area_front_v: FloatArray = np.cross((AB1 + AB2) / 2, (AD1 + AD2) / 2)
-                area_front: floating[Any] = np.linalg.norm(area_front_v)
+        AB1 = g_up[1:, :-1, :] - g_up[:-1, :-1, :]
+        AB2 = g_low[1:, :-1, :] - g_low[:-1, :-1, :]
+        AD1 = g_up[:-1, :-1, :] - g_low[:-1, :-1, :]
+        AD2 = g_up[1:, :-1, :] - g_low[1:, :-1, :]
+        area_front_v = np.cross((AB1 + AB2) / 2, (AD1 + AD2) / 2)
+        area_front = np.linalg.norm(area_front_v, axis=2)
 
-                # Area of the back face
-                AB3 = g_up[i + 1, j + 1, :] - g_up[i, j + 1, :]
-                AB4 = g_low[i + 1, j + 1, :] - g_low[i, j + 1, :]
+        AB3 = g_up[1:, 1:, :] - g_up[:-1, 1:, :]
+        AB4 = g_low[1:, 1:, :] - g_low[:-1, 1:, :]
+        AD3 = g_up[:-1, 1:, :] - g_low[:-1, 1:, :]
+        AD4 = g_up[1:, 1:, :] - g_low[1:, 1:, :]
+        area_back_v = np.cross((AB3 + AB4) / 2, (AD3 + AD4) / 2)
+        area_back = np.linalg.norm(area_back_v, axis=2)
 
-                AD3 = g_up[i, j + 1, :] - g_low[i, j + 1, :]
-                AD4 = g_up[i + 1, j + 1, :] - g_low[i + 1, j + 1, :]
-                area_back_v: FloatArray = np.cross((AB3 + AB4) / 2, (AD3 + AD4) / 2)
-                area_back: floating[Any] = np.linalg.norm(area_back_v)
+        dx1 = g_up[:-1, 1:, 0] - g_up[:-1, :-1, 0]
+        dx2 = g_up[1:, 1:, 0] - g_up[1:, :-1, 0]
+        dx3 = g_low[:-1, 1:, 0] - g_low[:-1, :-1, 0]
+        dx4 = g_low[1:, 1:, 0] - g_low[1:, :-1, 0]
+        dx = (dx1 + dx2 + dx3 + dx4) / 4
 
-                # Height of the tetrahedron
-                dx1: float = g_up[i, j + 1, 0] - g_up[i, j, 0]
-                dx2: float = g_up[i + 1, j + 1, 0] - g_up[i + 1, j, 0]
-                dx3: float = g_low[i, j + 1, 0] - g_low[i, j, 0]
-                dx4: float = g_low[i + 1, j + 1, 0] - g_low[i + 1, j, 0]
-                dx: float = (dx1 + dx2 + dx3 + dx4) / 4
-
-                # volume of the tetrahedron
-                self.volume_distribution[i, j] = 0.5 * (float(area_front) + float(area_back)) * dx
+        self.volume_distribution[:, :] = 0.5 * (area_front + area_back) * dx
 
         self.volume = float(np.sum(self.volume_distribution))
         if self.is_symmetric_y:
             self.volume = self.volume * 2
 
-    def find_center_mass(self) -> None:
-        """Finds the center of mass of the wing.
-        This is done by summing the volume of each panel
-        and dividing by the total volume."""
-        x_cm = 0
-        y_cm = 0
-        z_cm = 0
-
+    def find_center_mass(self) -> FloatArray:
+        """Finds the center of mass of the wing using vectorized operations."""
         g_up = self.grid_upper
         g_low = self.grid_lower
-        for i in np.arange(0, self.N - 1):
-            for j in np.arange(0, self.M - 1):
-                x_upp1 = (g_up[i, j + 1, 0] + g_up[i, j, 0]) / 2
-                x_upp2 = (g_up[i + 1, j + 1, 0] + g_up[i + 1, j, 0]) / 2
 
-                x_low1 = (g_low[i, j + 1, 0] + g_low[i, j, 0]) / 2
-                x_low2 = (g_low[i + 1, j + 1, 0] + g_low[i + 1, j, 0]) / 2
-                x = ((x_upp1 + x_upp2) / 2 + (x_low1 + x_low2) / 2) / 2
+        x_upp1 = (g_up[:-1, :-1, 0] + g_up[:-1, 1:, 0]) / 2
+        x_upp2 = (g_up[1:, :-1, 0] + g_up[1:, 1:, 0]) / 2
+        x_low1 = (g_low[:-1, :-1, 0] + g_low[:-1, 1:, 0]) / 2
+        x_low2 = (g_low[1:, :-1, 0] + g_low[1:, 1:, 0]) / 2
+        x = ((x_upp1 + x_upp2) / 2 + (x_low1 + x_low2) / 2) / 2
 
-                y_upp1 = (g_up[i + 1, j, 1] + g_up[i, j, 1]) / 2
-                y_upp2 = (g_up[i + 1, j + 1, 1] + g_up[i, j + 1, 1]) / 2
+        y_upp1 = (g_up[1:, :-1, 1] + g_up[:-1, :-1, 1]) / 2
+        y_upp2 = (g_up[1:, 1:, 1] + g_up[:-1, 1:, 1]) / 2
+        y_low1 = (g_low[1:, :-1, 1] + g_low[:-1, :-1, 1]) / 2
+        y_low2 = (g_low[1:, 1:, 1] + g_low[:-1, 1:, 1]) / 2
+        y = ((y_upp1 + y_upp2) / 2 + (y_low1 + y_low2) / 2) / 2
 
-                y_low1 = (g_low[i + 1, j, 1] + g_low[i, j, 1]) / 2
-                y_low2 = (g_low[i + 1, j + 1, 1] + g_low[i, j + 1, 1]) / 2
-                y = ((y_upp1 + y_upp2) / 2 + (y_low1 + y_low2) / 2) / 2
+        z_upp1 = (g_up[1:, :-1, 2] + g_up[1:, :-1, 2]) / 2
+        z_upp2 = (g_up[1:, :-1, 2] + g_up[1:, :-1, 2]) / 2
+        z_low1 = (g_low[1:, :-1, 2] + g_low[1:, :-1, 2]) / 2
+        z_low2 = (g_low[1:, :-1, 2] + g_low[1:, :-1, 2]) / 2
+        z = ((z_upp1 + z_upp2) / 2 + (z_low1 + z_low2) / 2) / 2
 
-                z_upp1 = (g_up[i + 1, j, 2] + g_up[i + 1, j, 2]) / 2
-                z_upp2 = (g_up[i + 1, j, 2] + g_up[i + 1, j, 2]) / 2
+        if self.is_symmetric_y:
+            x_cm = np.sum(self.volume_distribution[:, :] * 2 * x)
+            y_cm = 0
+            z_cm = np.sum(self.volume_distribution[:, :] * 2 * z)
+        else:
+            x_cm = np.sum(self.volume_distribution[:, :] * x)
+            y_cm = np.sum(self.volume_distribution[:, :] * y)
+            z_cm = np.sum(self.volume_distribution[:, :] * z)
 
-                z_low1 = (g_low[i + 1, j, 2] + g_low[i + 1, j, 2]) / 2
-                z_low2 = (g_low[i + 1, j, 2] + g_low[i + 1, j, 2]) / 2
-                z = ((z_upp1 + z_upp2) / 2 + (z_low1 + z_low2) / 2) / 2
+        return np.array((x_cm, y_cm, z_cm)) / self.volume
 
-                if self.is_symmetric_y:
-                    x_cm += self.volume_distribution[i, j] * 2 * x
-                    y_cm += 0
-                    z_cm += self.volume_distribution[i, j] * 2 * z
-                else:
-                    x_cm += self.volume_distribution[i, j] * x
-                    y_cm += self.volume_distribution[i, j] * y
-                    z_cm += self.volume_distribution[i, j] * z
-
-        self.CG = np.array((x_cm, y_cm, z_cm)) / self.volume
-
-    def calculate_inertia(self, mass: float, cog: FloatArray) -> None:
+    def calculate_inertia(self, mass: float, cog: np.ndarray) -> FloatArray:
         """
         Calculates the inertia of the wing about the center of gravity.
 
         Args:
             mass (float): Mass of the wing. Used to have dimensional inertia
-            cog (FloatArray): Center of Gravity of the wing.
+            cog (np.ndarray): Center of Gravity of the wing.
         """
-        I_xx = 0
-        I_yy = 0
-        I_zz = 0
-        I_xz = 0
-        I_xy = 0
-        I_yz = 0
+        x_upp = (self.grid_upper[:-1, :-1, 0] + self.grid_upper[:-1, 1:, 0]) / 2
+        x_low = (self.grid_lower[:-1, :-1, 0] + self.grid_lower[:-1, 1:, 0]) / 2
 
-        for i in np.arange(0, self.N - 1):
-            for j in np.arange(0, self.M - 1):
-                x_upp = (self.grid_upper[i, j + 1, 0] + self.grid_upper[i, j, 0]) / 2
-                x_low = (self.grid_lower[i, j + 1, 0] + self.grid_lower[i, j, 0]) / 2
+        y_upp = (self.grid_upper[1:, :-1, 1] + self.grid_upper[:-1, :-1, 1]) / 2
+        y_low = (self.grid_lower[1:, :-1, 1] + self.grid_lower[:-1, :-1, 1]) / 2
 
-                y_upp = (self.grid_upper[i + 1, j, 1] + self.grid_upper[i, j, 1]) / 2
-                y_low = (self.grid_lower[i + 1, j, 1] + self.grid_lower[i, j, 1]) / 2
+        z_upp = (self.grid_upper[1:, :-1, 2] + self.grid_upper[1:, :-1, 2]) / 2
+        z_low = (self.grid_lower[1:, :-1, 2] + self.grid_lower[1:, :-1, 2]) / 2
 
-                z_upp1 = (self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]) / 2
-                z_upp2 = (self.grid_upper[i + 1, j, 2] + self.grid_upper[i + 1, j, 2]) / 2
-                z_upp = (z_upp1 + z_upp2) / 2
+        xd = ((x_upp + x_low) / 2 - cog[0]) ** 2
+        zd = ((z_upp + z_low) / 2 - cog[2]) ** 2
 
-                z_low1 = (self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]) / 2
-                z_low2 = (self.grid_lower[i + 1, j, 2] + self.grid_lower[i + 1, j, 2]) / 2
-                z_low = (z_low1 + z_low2) / 2
+        if self.is_symmetric_y:
+            yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2 + (
+                (y_upp + y_low) / 2 - cog[1]
+            ) ** 2
+        else:
+            yd = ((y_upp + y_low) / 2 - cog[1]) ** 2
 
-                xd = ((x_upp + x_low) / 2 - cog[0]) ** 2
-                zd = ((z_upp + z_low) / 2 - cog[2]) ** 2
-                if self.is_symmetric_y:
-                    yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2
-                    yd += ((y_upp + y_low) / 2 - cog[1]) ** 2
-                else:
-                    yd = ((y_upp + y_low) / 2 - cog[1]) ** 2
+        I_xx = np.sum(self.volume_distribution[:, :] * (yd + zd))
+        I_yy = np.sum(self.volume_distribution[:, :] * (xd + zd))
+        I_zz = np.sum(self.volume_distribution[:, :] * (xd + yd))
 
-                I_xx += self.volume_distribution[i, j] * (yd + zd)
-                I_yy += self.volume_distribution[i, j] * (xd + zd)
-                I_zz += self.volume_distribution[i, j] * (xd + yd)
+        xd = (x_upp + x_low) / 2 - cog[0]
+        zd = (z_upp + z_low) / 2 - cog[2]
 
-                xd = (x_upp + x_low) / 2 - cog[0]
-                zd = (z_upp + z_low) / 2 - cog[2]
-                if self.is_symmetric_y:
-                    yd = 0
-                else:
-                    yd = (y_upp + y_low) / 2 - cog[1]
+        if self.is_symmetric_y:
+            yd = 0
+        else:
+            yd = (y_upp + y_low) / 2 - cog[1]
 
-                I_xz += self.volume_distribution[i, j] * (xd * zd)
-                I_xy += self.volume_distribution[i, j] * (xd * yd)
-                I_yz += self.volume_distribution[i, j] * (yd * zd)
-        self.inertia = np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
+        I_xz = np.sum(self.volume_distribution[:, :] * (xd * zd))
+        I_xy = np.sum(self.volume_distribution[:, :] * (xd * yd))
+        I_yz = np.sum(self.volume_distribution[:, :] * (yd * zd))
+
+        return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
+
+    @property
+    def aspect_ratio(self) -> float:
+        return (self.span**2) / self.area
 
     @property
     def Ixx(self) -> float:

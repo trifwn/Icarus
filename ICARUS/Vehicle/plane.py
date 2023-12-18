@@ -72,31 +72,45 @@ class Airplane:
             self.span = surfaces[0].span
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.masses: list[tuple[float, FloatArray, str]] = []
+        self.point_masses: list[tuple[float, FloatArray, str]] = []
         self.moments: list[FloatArray] = []
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, FloatArray, str] = (
-                surface.mass,
-                surface.CG,
-                surface.name,
-            )
             mom = surface.inertia
 
             self.M += surface.mass
             self.moments.append(mom)
-            self.masses.append(mass)
-
-        self.CG: FloatArray = self.find_cg()
-        self.total_inertia: FloatArray = self.find_inertia(self.CG)
 
         # Define Computed States
         self.states: list[State] = []
 
         # Define Connection Dictionary
         self.connections: dict[str, Surface_Connection] = {}
-        self.register_connections()
+        # self.register_connections()
+
+    @property
+    def CG(self) -> FloatArray:
+        return self.find_cg()
+
+    @property
+    def total_inertia(self):
+        return self.find_inertia(self.CG)
+
+    @property
+    def masses(self)-> list[tuple[float, FloatArray, str]]:
+        ret = []
+        for surface in self.surfaces:
+            mass: tuple[float, FloatArray, str] = (
+                surface.mass,
+                surface.CG,
+                surface.name,
+            )
+            ret.append(mass)
+        for point_mass in self.point_masses:
+            ret.append(point_mass)
+
+        return ret
 
     def get_seperate_surfaces(self) -> list[Lifting_Surface]:
         surfaces: list[Lifting_Surface] = []
@@ -151,9 +165,9 @@ class Airplane:
             masses (tuple[float, NDArray[Shape[&#39;3,&#39;], Float]]): (mass, position) eg (3, np.array([0,0,0])
         """
         for mass in masses:
-            self.masses.append(mass)
-        self.CG = self.find_cg()
-        self.total_inertia = self.find_inertia(self.CG)
+            self.point_masses.append(mass)
+        # self.CG = self.find_cg()
+        # self.total_inertia = self.find_inertia(self.CG)
 
     def find_cg(self) -> FloatArray:
         """

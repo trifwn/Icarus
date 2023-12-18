@@ -415,7 +415,7 @@ class Airfoil(af.Airfoil):  # type: ignore
                     results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
             return results
 
-    def camber_line(self, x: Union[float, FloatArray]) -> FloatArray:
+    def camber_line(self, x: Union[float, list[float], FloatArray]) -> FloatArray:
         """"""
         if hasattr(self, "l"):
             # return self.camber_line_naca5(x)
