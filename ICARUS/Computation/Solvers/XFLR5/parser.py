@@ -9,8 +9,8 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def parse_xfl_project(filename: str) -> Airplane:
@@ -177,18 +177,17 @@ def parse_xfl_project(filename: str) -> Airplane:
 
                 span = 2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
                 pos = origin + wing_position + section_position  # - np.array((chord_prev / 4, 0, 0))
-                surf = Lifting_Surface(
+                surf = Wing_Segment(
                     name=f"{name}_{i}",
-                    airfoil=airfoil_prev,  # Should interpolate. RN there is only taking the prev airfoil
+                    root_airfoil=airfoil_prev,  # Should interpolate. RN there is only taking the prev airfoil
                     origin=pos,
                     orientation=wing_orientation,
-                    is_symmetric=is_symmetric,
+                    symmetries=SymmetryAxes.Y if is_symmetric else SymmetryAxes.NONE,
                     span=span,
                     sweep_offset=offset - offset_prev,
-                    dih_angle=dihedral_prev,
-                    chord_fun=define_linear_chord,
-                    chord=np.array((chord_prev, chord), dtype=float),
-                    span_fun=define_linear_span,
+                    root_dihedral_angle=dihedral_prev,
+                    root_chord=chord_prev,
+                    tip_chord=chord,
                     N=N_prev,
                     M=M_prev,
                     mass=mass,

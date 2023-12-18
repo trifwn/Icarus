@@ -77,7 +77,11 @@ class Airplane:
 
         self.M: float = 0
         for surface in self.surfaces:
-            mass: tuple[float, FloatArray, str] = (surface.mass, surface.CG, surface.name)
+            mass: tuple[float, FloatArray, str] = (
+                surface.mass,
+                surface.CG,
+                surface.name,
+            )
             mom = surface.inertia
 
             self.M += surface.mass
@@ -97,8 +101,8 @@ class Airplane:
     def get_seperate_surfaces(self) -> list[Lifting_Surface]:
         surfaces: list[Lifting_Surface] = []
         for surface in self.surfaces:
-            if surface.is_symmetric:
-                l, r = surface.split_symmetric_wing()
+            if surface.is_symmetric_y:
+                l, r = surface.split_xz_symmetric_wing()
                 surfaces.append(l)
                 surfaces.append(r)
             else:
@@ -212,8 +216,8 @@ class Airplane:
         """
         airfoils: list[str] = []
         for surface in self.surfaces:
-            if f"NACA{surface.airfoil.name}" not in airfoils:
-                airfoils.append(f"NACA{surface.airfoil.name}")
+            if f"NACA{surface.root_airfoil.name}" not in airfoils:
+                airfoils.append(f"NACA{surface.root_airfoil.name}")
         return airfoils
 
     def visualize(

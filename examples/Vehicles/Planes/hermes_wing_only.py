@@ -4,8 +4,8 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
@@ -29,18 +29,16 @@ def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Lifting_Surface(
+    main_wing = Wing_Segment(
         name="wing",
-        airfoil=airfoils["NACA4415"],
+        root_airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
         orientation=wing_orientation,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 1.130,
         sweep_offset=0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.159, 0.072], dtype=float),
-        span_fun=define_linear_span,
+        root_chord=0.159,
+        tip_chord=0.072,
         N=20,
         M=5,
         mass=0.670,

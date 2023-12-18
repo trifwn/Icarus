@@ -116,7 +116,7 @@ def avl_geo(
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}\n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
-        if surf.chord_spacing == DiscretizationType.NOT_DEFINED:
+        if surf.chord_spacing == DiscretizationType.UNKNOWN:
             chord_spacing = DiscretizationType.COSINE.value
         else:
             chord_spacing = surf.chord_spacing.value
@@ -127,12 +127,12 @@ def avl_geo(
         # Get the airfoil polar
         foil_dat = DB.foils_db.data
         try:
-            polars: dict[str, DataFrame] = foil_dat[surf.airfoil.name][solver2D]
+            polars: dict[str, DataFrame] = foil_dat[surf.root_airfoil.name][solver2D]
         except KeyError:
             try:
-                polars = foil_dat[f"NACA{surf.airfoil.name}"][solver2D]
+                polars = foil_dat[f"NACA{surf.root_airfoil.name}"][solver2D]
             except KeyError:
-                raise KeyError(f"Airfoil {surf.airfoil.name} not found in database")
+                raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
 
         polar_obj = Polars(polars)
         # Calculate average reynolds number
@@ -146,7 +146,7 @@ def avl_geo(
         f_io.write("INDEX                        | (keyword)\n")
         f_io.write(f"{int(i+ 6679)}                         | Lsurf\n")
 
-        if surf.is_symmetric:
+        if surf.is_symmetric_y:
             f_io.write("YDUPLICATE\n")
             f_io.write("0.0\n")
         f_io.write("SCALE\n")
@@ -161,7 +161,7 @@ def avl_geo(
         f_io.write("#______________\n")
         f_io.write("SECTION                                                     |  (keyword)\n")
 
-        if surf.span_spacing == DiscretizationType.NOT_DEFINED:
+        if surf.span_spacing == DiscretizationType.UNKNOWN:
             span_spacing = DiscretizationType.COSINE.value
         else:
             span_spacing = surf.span_spacing.value
@@ -171,7 +171,7 @@ def avl_geo(
         )
         f_io.write("\n")
         f_io.write("AFIL 0.0 1.0\n")
-        f_io.write(f"{surf.airfoil.file_name}\n")
+        f_io.write(f"{surf.root_airfoil.file_name}\n")
         f_io.write("\n")
         f_io.write("\n")
         f_io.write("#______________\n")
@@ -181,11 +181,11 @@ def avl_geo(
         )
         f_io.write("AFIL\n")
 
-        f_io.write(f"{surf.airfoil.file_name}\n")
+        f_io.write(f"{surf.root_airfoil.file_name}\n")
         f_io.write("\n")
 
         # Save Airfoil file
-        surf.airfoil.save_selig_te(PLANE_DIR, header=True, inverse=True)
+        surf.root_airfoil.save_selig_te(PLANE_DIR, header=True, inverse=True)
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"

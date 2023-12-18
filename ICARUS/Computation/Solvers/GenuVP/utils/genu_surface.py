@@ -22,7 +22,7 @@ class GenuSurface:
         Returns:
             dict[str, Any]: Dict with the surface parameters
         """
-        if surf.is_symmetric:
+        if surf.is_symmetric_y:
             N: int = 2 * surf.N - 1
             M: int = surf.M
         else:
@@ -39,13 +39,13 @@ class GenuSurface:
         else:
             GenuSurface.surf_names[surf.name[:8]] += 1
         # Then we check if the airfoil name is unique
-        if surf.airfoil.name not in GenuSurface.airfoil_names.keys():
-            GenuSurface.airfoil_names[surf.airfoil.name[:8]] = 0
+        if surf.root_airfoil.name not in GenuSurface.airfoil_names.keys():
+            GenuSurface.airfoil_names[surf.root_airfoil.name[:8]] = 0
         else:
-            GenuSurface.airfoil_names[surf.airfoil.name[:8]] += 1
+            GenuSurface.airfoil_names[surf.root_airfoil.name[:8]] += 1
 
         name: str = f"{GenuSurface.surf_names[surf.name[:8]]}_{surf.name}"
-        airfoil_name: str = f"{GenuSurface.airfoil_names[surf.airfoil.name[:8]]}_{surf.airfoil.name}"
+        airfoil_name: str = f"{GenuSurface.airfoil_names[surf.root_airfoil.name[:8]]}_{surf.root_airfoil.name}"
 
         # Make the names valid for GenuVP and make sure they are unique
         # by adding a number to the end of the name
@@ -56,9 +56,9 @@ class GenuSurface:
         self.type: str = "thin"
         self.lifting: str = "yes"
         self.NB: int = idx
-        self.NACA: str = surf.airfoil.name
+        self.NACA: str = surf.root_airfoil.name
         self.name: str = surf.name
-        self.airfoil_name: str = surf.airfoil.name
+        self.airfoil_name: str = surf.root_airfoil.name
         self.bld_fname: str = f"{name}.bld"
         self.topo_fname: str = f"{name}.topo"
         self.wake_fname: str = f"{name}.wake"
@@ -73,10 +73,10 @@ class GenuSurface:
         self.pitch: float = surf.orientation[0]
         self.cone: float = surf.orientation[1]
         self.wngang: float = surf.orientation[2]
-        self.x_end: float = surf.origin[0] + surf._offset_dist[-1]
+        self.x_end: float = surf.origin[0] + surf._xoffset_dist[-1]
         self.y_end: float = surf.origin[1] + surf.span
-        self.z_end: float = surf.origin[2] + surf._dihedral_dist[-1]
+        self.z_end: float = surf.origin[2] + surf._zoffset_dist[-1]
         self.root_chord: float = surf.chord[0]
         self.tip_chord: float = surf.chord[-1]
-        self.offset: float = surf._offset_dist[-1]
+        self.offset: float = surf._xoffset_dist[-1]
         self.grid: FloatArray = surf.get_grid()

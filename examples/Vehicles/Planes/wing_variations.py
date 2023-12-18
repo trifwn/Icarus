@@ -4,17 +4,17 @@ import numpy as np
 
 from ICARUS.Core.types import DataDict
 from ICARUS.Core.types import FloatArray
-from ICARUS.Core.types import FloatOrListArray
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def wing_var_chord_offset(
     airfoils: DataDict,
     name: str,
-    chords: FloatOrListArray,
+    root_chord: float,
+    tip_chord: float,
     offset: float,
 ) -> Airplane:
     """Defines an airplane consisting only of a wing with a variable chord and offset.
@@ -39,21 +39,16 @@ def wing_var_chord_offset(
         dtype=float,
     )
 
-    if isinstance(chords, list):
-        chords = np.array(chords)
-
-    main_wing = Lifting_Surface(
+    main_wing = Wing_Segment(
         name="wing",
-        airfoil=airfoils["NACA4415"],
+        root_airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
         orientation=wing_orientation,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 1.130,
         sweep_offset=offset,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=chords,  # [0.159, 0.072],
-        span_fun=define_linear_span,
+        root_chord=root_chord,
+        tip_chord=tip_chord,
         N=25,
         M=5,
         mass=0.670,

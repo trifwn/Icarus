@@ -56,12 +56,11 @@ class Wing_LSPT:
         self.wake_geom_type: str = wake_geom_type
 
         self.N: int = 0
-        self._wing_segments: list[Lifting_Surface] = plane.surfaces
         self.M: int = plane.surfaces[0].M
         self.is_symmetric: bool = True
 
         for segment in plane.surfaces:
-            if not segment.is_symmetric:
+            if not segment.is_symmetric_y:
                 self.is_symmetric = False
             self.N += segment.N
             if segment.M != self.M:
@@ -92,7 +91,7 @@ class Wing_LSPT:
         # Get the angle of the trailing edge of each wing segment
         te_angle_dist: list[FloatArray] = []
         for lifting_surface in self.wing_segments:
-            airfoil: Airfoil = lifting_surface.airfoil
+            airfoil: Airfoil = lifting_surface.root_airfoil
             # The trailing edge is the last point of the airfoil
             # We will get the angle of the trailing edge by getting numerical derivative
             # of the airfoil coordinates.
@@ -247,22 +246,26 @@ class Wing_LSPT:
             for wing_seg in self.wing_segments:
                 for i in np.arange(0, wing_seg.N - 1):
                     ax.plot(
-                        wing_seg.airfoil._x_upper * wing_seg._chord_dist[i] + wing_seg._offset_dist[i] + offset_prev,
-                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.airfoil._y_upper)),
-                        wing_seg.airfoil._y_upper + wing_seg._dihedral_dist[i] + dehidral_prev,
+                        wing_seg.root_airfoil._x_upper * wing_seg._chord_dist[i]
+                        + wing_seg._xoffset_dist[i]
+                        + offset_prev,
+                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.root_airfoil._y_upper)),
+                        wing_seg.root_airfoil._y_upper + wing_seg._zoffset_dist[i] + dehidral_prev,
                         "-",
                         color="red",
                     )
 
                     ax.plot(
-                        wing_seg.airfoil._x_lower * wing_seg._chord_dist[i] + wing_seg._offset_dist[i] + offset_prev,
-                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.airfoil._y_lower)),
-                        wing_seg.airfoil._y_lower + wing_seg._dihedral_dist[i] + dehidral_prev,
+                        wing_seg.root_airfoil._x_lower * wing_seg._chord_dist[i]
+                        + wing_seg._xoffset_dist[i]
+                        + offset_prev,
+                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.root_airfoil._y_lower)),
+                        wing_seg.root_airfoil._y_lower + wing_seg._zoffset_dist[i] + dehidral_prev,
                         "-",
                         color="red",
                     )
-                dehidral_prev += wing_seg._dihedral_dist[-1]
-                offset_prev += wing_seg._offset_dist[-1]
+                dehidral_prev += wing_seg._zoffset_dist[-1]
+                offset_prev += wing_seg._xoffset_dist[-1]
         if show_wake:
             M: int = self.M
         else:
@@ -694,7 +697,7 @@ class Wing_LSPT:
         D: float = 0
         My_at_quarter_chord: float = 0
         for wing_seg in self.wing_segments:
-            airfoil: Airfoil = wing_seg.airfoil
+            airfoil: Airfoil = wing_seg.root_airfoil
             for j in np.arange(0, wing_seg.N - 1):
                 dy: float = float(np.mean(self.grid[N + j + 1, :, 1] - self.grid[N + j, :, 1]))
 

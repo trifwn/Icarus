@@ -30,7 +30,7 @@ viscosity: float = 1.56e-5
 
 # MACH ESTIMATION
 mach_max: float = 0.085
-mach_min: float = calc_mach(10, speed_of_sound=340.3)
+mach_min: float = calc_mach(velocity=10.0, speed_of_sound=340.3)
 mach: FloatArray = np.linspace(mach_max, mach_min, 10)
 MACH: float = mach_max
 

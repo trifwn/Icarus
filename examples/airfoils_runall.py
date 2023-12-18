@@ -25,7 +25,7 @@ def main() -> None:
     read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
-    calcF2W: bool = False
+    calcF2W: bool = True
     calcOpenFoam: bool = False  # True
     calcXFoil: bool = True
     print("Running:")
@@ -110,7 +110,7 @@ def main() -> None:
 
             f2w_s: Solver = Foil2Wake()
 
-            analysis: str = f2w_s.get_analyses_names()[0]  # ANGLES PARALLEL
+            analysis: str = f2w_s.get_analyses_names()[1]  # ANGLES PARALLEL
             f2w_s.select_analysis(analysis)
             f2w_options: Struct = f2w_s.get_analysis_options()
             f2w_solver_parameters: Struct = f2w_s.get_solver_parameters()
@@ -130,7 +130,7 @@ def main() -> None:
             f2w_solver_parameters.timestep = 0.1
 
             f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
-            f2w_s.execute()
+            f2w_s.execute(parallel=True)
 
             _ = f2w_s.get_results()
             f2w_etime: float = time.time()
@@ -144,9 +144,7 @@ def main() -> None:
 
             # Import Analysis
             # 0) Sequential Angle run for multiple reynolds in parallel,
-            # 1) Sequential Angle run for multiple reynolds in serial,
-            # 2) Sequential Angle run for multiple reynolds in parallel with zeroing of the boundary layer between angles,
-            # 3) Sequential Angle run for multiple reynolds in serial with zeroing of the boundary layer between angles,
+            # 1) Sequential Angle run for multiple reynolds in parallel with zeroing of the boundary layer between angles,
             analysis = xfoil.get_analyses_names()[0]  # Run
             xfoil.select_analysis(analysis)
 
@@ -174,7 +172,7 @@ def main() -> None:
 
             # RUN and SAVE
             xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-            xfoil.execute()
+            xfoil.execute(parallel=True)
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")
 

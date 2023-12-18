@@ -1,31 +1,35 @@
+from typing import Callable
+
 import numpy as np
 
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
-from ICARUS.Vehicle.utils import define_linear_twist
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.utils import DistributionType
+from ICARUS.Vehicle.utils import equal_spacing_function_factory
+from ICARUS.Vehicle.utils import linear_distribution_function_factory
+from ICARUS.Vehicle.utils import SymmetryAxes
 
 
 class Wing_Segment(Lifting_Surface):
     def __init__(
         self,
         name: str,
-        airfoil: str | Airfoil,
+        root_airfoil: str | Airfoil,
         origin: FloatArray,
         orientation: FloatArray,
         span: float,
-        sweep_offset: float,
         root_chord: float,
         tip_chord: float,
-        twist_root: float,
-        twist_tip: float,
-        root_dihedral_angle: float,
-        tip_dihedral_angle: float,
-        is_symmetric: bool = False,
+        sweepback_angle: float = 0.0,
+        sweep_offset: float = 0.0,
+        twist_root: float = 0.0,
+        twist_tip: float = 0.0,
+        root_dihedral_angle: float = 0.0,
+        tip_dihedral_angle: float = 0.0,
+        tip_airfoil: str | Airfoil | None = None,
+        symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
         # Geometry generation
         spanwise_chord_distribution: DistributionType = DistributionType.LINEAR,
         spanwise_dihedral_distibution: DistributionType = DistributionType.LINEAR,
@@ -37,9 +41,10 @@ class Wing_Segment(Lifting_Surface):
         M: int = 5,
         mass: float = 1.0,
     ):
-        """Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
+        """
+        Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
         is discretized into a number of panels in the spanwise and chordwise directions. The wing segment
-        is convrted into a lifting surface object.
+        is basically a constructor of a Lifting_Surface.
 
         Args:
             name (str): Name of the wing segment
@@ -53,8 +58,8 @@ class Wing_Segment(Lifting_Surface):
             twist_tip (float): Twist at the tip of the wing segment
             root_dihedral_angle (float): Dihedral angle at the root of the wing segment
             tip_dihedral_angle (float):  Dihedral angle at the tip of the wing segment
-            is_symmetric (bool, optional): Whethere the wing is symmetric along the y axis. Defaults to False.
             spanwise_chord_distribution (DistributionType, optional): Spanwise chord distribution. Defaults to DistributionType.LINEAR.
+            symmetries (list[SymmetryAxes] | SymmetryAxes, optional): Symmetries of the wing segment. Defaults to SymmetryAxes.NONE.
             spanwise_dihedral_distibution (DistributionType, optional): Spanwise dihedral distribution. Defaults to DistributionType.LINEAR.
             spanwise_twist_distribution (DistributionType, optional): Spanwise twist distribution. Defaults to DistributionType.LINEAR.
             span_spacing (DiscretizationType, optional): Discretization type for the spanwise direction. Defaults to DiscretizationType.EQUAL.
@@ -62,16 +67,35 @@ class Wing_Segment(Lifting_Surface):
             N (int, optional): Number of panels for the span . Defaults to 15.
             M (int, optional): Number of panels for the chord. Defaults to 5.
         """
+        # Define Symmetries
+        if not isinstance(symmetries, list):
+            symmetries = [symmetries]
+
+        # Define Sweepback
+        if SymmetryAxes.Y in symmetries:
+            span = span / 2
 
         # Define chord function based on distribution type
         if spanwise_chord_distribution == DistributionType.LINEAR:
-            chord_fun = define_linear_chord
+            chord_fun = linear_distribution_function_factory(
+                x0=0,
+                x1=1,
+                y0=root_chord,
+                y1=tip_chord,
+            )
         else:
             raise NotImplementedError(f"Spanwise chord distribution type {spanwise_chord_distribution} not implemented")
 
         # Define span function based on distribution type
         if spanwise_dihedral_distibution == DistributionType.LINEAR:
-            span_fun = define_linear_span
+            # Define Dihedral Angle
+            # Convert to dehidral angle to radians and then to a function of span
+            dehidral_fun = linear_distribution_function_factory(
+                x0=0,
+                x1=1,
+                y0=root_dihedral_angle * np.pi / 180,
+                y1=tip_dihedral_angle * np.pi / 180,
+            )
         else:
             raise NotImplementedError(
                 f"Spanwise dihedral distribution type {spanwise_dihedral_distibution} not implemented",
@@ -79,25 +103,65 @@ class Wing_Segment(Lifting_Surface):
 
         # Define twist function based on distribution type
         if spanwise_twist_distribution == DistributionType.LINEAR:
-            twist_fun = define_linear_twist
+            twist_fun = linear_distribution_function_factory(
+                x0=0,
+                x1=1,
+                y0=twist_root,
+                y1=twist_tip,
+            )
         else:
             raise NotImplementedError(f"Spanwise twist distribution type {spanwise_twist_distribution} not implemented")
 
-        super().__init__(
+        # Define X Offset
+        # We can either define the sweepback angle or the sweep offset
+        # If the sweep offset is defined, we can calculate the sweepback angle
+        if sweep_offset != 0:
+            sweepback_angle = np.arctan(sweep_offset / span) * 180 / np.pi
+        else:
+            sweep_offset = np.tan(sweepback_angle * np.pi / 180) * span
+
+        x_offset_fun = linear_distribution_function_factory(
+            x0=0,
+            x1=1,
+            y0=0,
+            y1=sweep_offset,
+        )
+
+        #### DESCRITIZATIONS ####
+        # Define spanwise discretization
+        if span_spacing == DiscretizationType.EQUAL:
+            # Define the spanwise discretization function
+            span_disc_fun = equal_spacing_function_factory(N)
+        else:
+            raise NotImplementedError(f"Spanwise discretization type {span_spacing} not implemented")
+
+        # Define chordwise discretization
+        if chord_spacing == DiscretizationType.EQUAL:
+            # Define the chordwise discretization function
+            chord_disc_fun = equal_spacing_function_factory(M)
+        else:
+            raise NotImplementedError(f"Chordwise discretization type {chord_spacing} not implemented")
+
+        # Create lifting surface object from the super().from_span_percentage_function constructor
+        instance = super().from_span_percentage_functions(
             name=name,
-            airfoil=airfoil,
             origin=origin,
             orientation=orientation,
-            is_symmetric=is_symmetric,
+            symmetries=symmetries,
+            root_airfoil=root_airfoil,
+            tip_airfoil=root_airfoil,
             span=span,
-            sweep_offset=0,
-            dih_angle=0,
-            chord_fun=chord_fun,
-            chord=np.array([root_chord, tip_chord]),
-            span_fun=span_fun,
+            # Discretization
+            span_discretization_function=span_disc_fun,
+            chord_discretization_function=chord_disc_fun,
+            # Geometry
+            chord_as_a_function_of_span_percentage=chord_fun,
+            x_offset_as_a_function_of_span_percentage=x_offset_fun,
+            dihedral_as_a_function_of_span_percentage=dehidral_fun,
+            twist_as_a_function_of_span_percentage=twist_fun,
             N=N,
             M=M,
             mass=mass,
-            twist=np.array([twist_root, twist_tip]),
-            twist_fun=twist_fun,
         )
+
+        self.__dict__ = instance.__dict__

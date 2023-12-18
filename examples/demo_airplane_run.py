@@ -22,7 +22,7 @@ from ICARUS.Vehicle.plane import Airplane
 ###################      PARAMETERS   ##################################################
 ########################################################################################
 
-name = "aeroplano"
+name: str = "aeroplano"
 aeroplano: Airplane = airplane_generator(name)
 
 # Angles to run Static Analysis for

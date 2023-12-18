@@ -7,10 +7,9 @@ from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Environment.definition import EARTH_ISA
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def get_bmark_plane(name: str) -> tuple[Airplane, State]:
@@ -27,18 +26,16 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         dtype=float,
     )
 
-    Simplewing = Lifting_Surface(
+    Simplewing = Wing_Segment(
         name=name,
-        airfoil=airfoils["NACA0015"],
+        root_airfoil=airfoils["NACA0015"],
         origin=origin + wing_position,
         orientation=wing_orientation,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 2.5,
         sweep_offset=0.0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.8, 0.8]),
-        span_fun=define_linear_span,
+        root_chord=0.8,
+        tip_chord=0.8,
         N=10,
         M=5,
         mass=1,

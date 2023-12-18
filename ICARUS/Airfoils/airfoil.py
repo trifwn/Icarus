@@ -395,22 +395,25 @@ class Airfoil(af.Airfoil):  # type: ignore
         m: float = self.m
 
         if isinstance(points, float):
-            points_ = np.array([points])
-        if isinstance(points, list):
-            points_ = np.array(points)
-        elif isinstance(points, np.ndarray):
-            points_ = points
-            points_ = points_.flatten()
-        else:
-            points_ = np.array(points)
-
-        res: FloatArray = np.zeros_like(points_)
-        for i, x in enumerate(points_):
+            x: float = float(points)
             if x < p:
-                res[i] = m / p**2 * (2 * p * x - x**2)
+                result: float = m / p**2 * (2 * p * x - x**2)
             else:
-                res[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
-        return res
+                result = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
+            return np.array(result)
+        else:
+            if isinstance(points, list):
+                points = np.array(points, dtype=float)
+            if isinstance(points, int):
+                points = np.array(float(points))
+
+            results: FloatArray = np.zeros_like(points)
+            for i, x in enumerate(points.tolist()):
+                if x < p:
+                    results[i] = m / p**2 * (2 * p * x - x**2)
+                else:
+                    results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
+            return results
 
     def camber_line(self, x: Union[float, FloatArray]) -> FloatArray:
         """"""

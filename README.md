@@ -4,11 +4,13 @@ Current BUILD IS UNSTABLE due to Major Refactoring for v1.0.0.
 
 ## TASKS
 
-- Deprecate Lifting Surface from examples USE Wing_Segment instead
+- Solve the issue that the Wing_Segment is unpickable as of now
 - Create Parametric Analysis Module (Computation of Sensitivity Derivatives for all solvers)
 - Define Constrained Optimization Workflow
 - Add Lower Order Models and Analytical Formulas for Stability
-- Deprecate Solver Class instead use input -> Solver -> Results -> Workflow
+- Create Results Class to handle Analysis output. Specify some results such as AirfoilPolars, AirplanePolars, AirplaneStates etc..
+- Create Workflow Class to combine Analyses Together
+- Create Optimization Class to optimize workflows based on input output
 
 ---
 

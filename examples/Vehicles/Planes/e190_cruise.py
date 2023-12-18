@@ -8,8 +8,8 @@ from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def e190_cruise(name: str) -> Airplane:
@@ -42,18 +42,18 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_1 = Lifting_Surface(
+    wing_1 = Wing_Segment(
         name="wing_1",
-        airfoil=naca64418,
+        root_airfoil=naca64418,
         origin=origin + wing_position,
         orientation=wing_orientation,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 4.180,
         sweep_offset=2.0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([5.6, 3.7], dtype=float),
-        span_fun=define_linear_span,
+        root_dihedral_angle=0,
+        tip_dihedral_angle=0,
+        root_chord=5.6,
+        tip_chord=3.7,
         N=15,
         M=10,
         mass=1,
@@ -69,18 +69,18 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_2 = Lifting_Surface(
+    wing_2 = Wing_Segment(
         name="wing_2",
-        airfoil=naca64418,
+        root_airfoil=naca64418,
         origin=origin + wing_2_pos,
         orientation=wing_2_or,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * (10.500 - 4.180),
         sweep_offset=5.00 - 2,
-        dih_angle=5,
-        chord_fun=define_linear_chord,
-        chord=np.array([3.7, 2.8]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=5,
+        tip_dihedral_angle=5,
+        root_chord=3.7,
+        tip_chord=2.8,
         N=15,
         M=10,
         mass=1,
@@ -96,18 +96,18 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_3 = Lifting_Surface(
+    wing_3 = Wing_Segment(
         name="wing_3",
-        airfoil=naca64418,
+        root_airfoil=naca64418,
         origin=origin + wing_3_pos,
         orientation=wing_3_or,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * (14.36 - 10.5),
         sweep_offset=6.75 - 5,
-        dih_angle=5,
-        chord_fun=define_linear_chord,
-        chord=np.array([2.8, 2.3]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=5.0,
+        tip_dihedral_angle=5.0,
+        root_chord=2.8,
+        tip_chord=2.3,
         N=15,
         M=10,
         mass=1.0,

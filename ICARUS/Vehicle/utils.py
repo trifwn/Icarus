@@ -1,4 +1,6 @@
 from enum import Enum
+from functools import partial
+from typing import Callable
 
 import numpy as np
 
@@ -22,7 +24,7 @@ class DiscretizationType(Enum):
     SINE = 2.0
     INV_SINE = -2.0
     INV_COSINE = -1.0
-    NOT_DEFINED = -1000
+    UNKNOWN = -1000
 
 
 class DistributionType(Enum):
@@ -43,27 +45,49 @@ class DistributionType(Enum):
     USER_DEFINED = 5.0
 
 
-def define_linear_span(
-    sp: float,
-    Ni: int,
-) -> FloatArray:
-    """Returns a linearly spaced span array."""
-    return np.linspace(0, sp, Ni).round(12)
+class SymmetryAxes(Enum):
+    """
+    Symmetry axes for ICARUS
+    XZ plane = "Y"
+    XY plane = "Z"
+    YZ plane = "X"
+    """
+
+    NONE = "None"
+    Y = "Y"
+    Z = "Z"
+    X = "X"
 
 
-def define_linear_chord(
-    Ni: int,
-    ch1: float,
-    ch2: float,
-) -> FloatArray:
-    """Returns a linearly spaced chord array."""
-    return np.linspace(ch1, ch2, Ni).round(12)
+############################
+# Descritization functions
+############################
+def equal_spacing_function_factory(N: int, stretching: float = 1) -> Callable[[int], float]:
+    """Returns a function that returns a linearly spaced array of length N."""
+
+    def equal_spacing_function(
+        Ni: int,
+    ) -> float:
+        """Returns a linearly spaced array of length N."""
+        return (Ni / (N - 1)) * stretching
+
+    return equal_spacing_function
 
 
-def define_linear_twist(
-    Ni: int,
-    twist1: float,
-    twist2: float,
-) -> FloatArray:
-    """Returns a linearly spaced twist array."""
-    return np.linspace(twist1, twist2, Ni).round(12)
+############################
+# Distribution functions
+############################
+
+
+def linear_distribution_function_factory(x0: float, x1: float, y0: float, y1: float) -> Callable[[float], float]:
+    """Returns a function that returns a linearly distributed array of length N."""
+
+    def linear_distribution_function(
+        x: float,
+    ) -> float:
+        if x0 == x1:
+            return y0
+        """Returns a linearly distributed array of length N."""
+        return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+
+    return linear_distribution_function

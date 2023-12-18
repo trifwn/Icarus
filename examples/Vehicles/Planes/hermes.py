@@ -4,8 +4,8 @@ import numpy as np
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import define_linear_chord
-from ICARUS.Vehicle.utils import define_linear_span
+from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def hermes(name: str) -> Airplane:
@@ -31,18 +31,16 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Lifting_Surface(
+    main_wing = Wing_Segment(
         name="wing",
-        airfoil="NACA4415",
+        root_airfoil="NACA4415",
         origin=origin + wing_position,
         orientation=wing_orientation,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 1.130,
         sweep_offset=0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.159, 0.072], dtype=float),
-        span_fun=define_linear_span,
+        root_chord=0.159,
+        tip_chord=0.072,
         N=25,
         M=5,
         mass=0.670,
@@ -58,18 +56,17 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
 
-    elevator = Lifting_Surface(
+    elevator = Wing_Segment(
         name="elevator",
-        airfoil="NACA0008",
+        root_airfoil="NACA0008",
         origin=origin + elevator_pos,
         orientation=elevator_orientantion,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 0.169,
         sweep_offset=0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.130, 0.03]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=0,
+        root_chord=0.130,
+        tip_chord=0.03,
         N=15,
         M=5,
         mass=0.06,
@@ -85,18 +82,17 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
 
-    rudder = Lifting_Surface(
+    rudder = Wing_Segment(
         name="rudder",
-        airfoil="NACA0008",
+        root_airfoil="NACA0008",
         origin=origin + rudder_position,
         orientation=rudder_orientation,
-        is_symmetric=False,
+        symmetries=SymmetryAxes.NONE,
         span=0.160,
         sweep_offset=0.1,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.2, 0.1]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=0,
+        root_chord=0.2,
+        tip_chord=0.1,
         N=15,
         M=5,
         mass=0.04,
