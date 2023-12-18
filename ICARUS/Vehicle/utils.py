@@ -62,6 +62,11 @@ class SymmetryAxes(Enum):
 ############################
 # Descritization functions
 ############################
+def equal_spacing_function(Ni: int, N: int, stretching: float) -> float:
+    """Returns a linearly spaced array of length N."""
+    return (Ni / (N - 1)) * stretching
+
+
 def equal_spacing_function_factory(N: int, stretching: float = 1) -> Callable[[int], float]:
     """Returns a function that returns a linearly spaced array of length N."""
 

@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Callable
 
 import numpy as np
@@ -7,6 +8,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.utils import DistributionType
+from ICARUS.Vehicle.utils import equal_spacing_function
 from ICARUS.Vehicle.utils import equal_spacing_function_factory
 from ICARUS.Vehicle.utils import linear_distribution_function_factory
 from ICARUS.Vehicle.utils import SymmetryAxes
@@ -131,16 +133,21 @@ class Wing_Segment(Lifting_Surface):
         # Define spanwise discretization
         if span_spacing == DiscretizationType.EQUAL:
             # Define the spanwise discretization function
-            span_disc_fun = equal_spacing_function_factory(N)
+            span_disc_fun = partial(equal_spacing_function, N=N, stretching=1.0)
+            # equal_spacing_function_factory(N)
         else:
             raise NotImplementedError(f"Spanwise discretization type {span_spacing} not implemented")
 
         # Define chordwise discretization
         if chord_spacing == DiscretizationType.EQUAL:
             # Define the chordwise discretization function
-            chord_disc_fun = equal_spacing_function_factory(M)
+            chord_disc_fun = partial(equal_spacing_function, N=M, stretching=1.0)
+            # equal_spacing_function_factory(M)
         else:
             raise NotImplementedError(f"Chordwise discretization type {chord_spacing} not implemented")
+
+        if tip_airfoil is None:
+            tip_airfoil = root_airfoil
 
         # Create lifting surface object from the super().from_span_percentage_function constructor
         instance = super().from_span_percentage_functions(
@@ -149,7 +156,7 @@ class Wing_Segment(Lifting_Surface):
             orientation=orientation,
             symmetries=symmetries,
             root_airfoil=root_airfoil,
-            tip_airfoil=root_airfoil,
+            tip_airfoil=tip_airfoil,
             span=span,
             # Discretization
             span_discretization_function=span_disc_fun,
@@ -165,3 +172,5 @@ class Wing_Segment(Lifting_Surface):
         )
 
         self.__dict__ = instance.__dict__
+        self.span_spacing = span_spacing
+        self.chord_spacing = chord_spacing
