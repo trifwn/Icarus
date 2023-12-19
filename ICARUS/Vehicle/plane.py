@@ -94,11 +94,11 @@ class Airplane:
         return self.find_cg()
 
     @property
-    def total_inertia(self):
+    def total_inertia(self) -> FloatArray:
         return self.find_inertia(self.CG)
 
     @property
-    def masses(self)-> list[tuple[float, FloatArray, str]]:
+    def masses(self) -> list[tuple[float, FloatArray, str]]:
         ret = []
         for surface in self.surfaces:
             mass: tuple[float, FloatArray, str] = (
