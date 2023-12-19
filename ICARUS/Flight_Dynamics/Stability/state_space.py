@@ -71,6 +71,8 @@ class LateralStateSpace:
         self.eigenvalues = np.empty((4,), dtype=float)
         self.eigenvectors = np.empty((4, 4), dtype=float)
         eigenvalue_analysis(self)
+        self.omegas = np.abs(self.eigenvalues)
+        self.zetas = -(self.eigenvalues.real) / (self.omegas)
 
     def print_lateral_derivatives(
         self,
@@ -143,6 +145,8 @@ class LongitudalStateSpace:
         self.eigenvalues = np.empty((4,), dtype=complex)
         self.eigenvectors = np.empty((4, 4), dtype=float)
         eigenvalue_analysis(self)
+        self.omegas = np.abs(self.eigenvalues)
+        self.zetas = -(self.eigenvalues.real) / (self.omegas)
 
     def print_lateral_derivatives(
         self,
