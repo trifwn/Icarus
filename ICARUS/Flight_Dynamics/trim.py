@@ -1,6 +1,7 @@
 """
 Trim module
 """
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -46,7 +47,9 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
         # Find the index of the closest negative value to zero
         trim_loc2 = (Cm[Cm < 0] - 0).idxmin()
     except ValueError as e:
-        print(Cm)
+        logging.debug("Trim not possible due to Cm not crossing zero at the imported polars")
+        logging.debug(e)
+        logging.debug(Cm)
         raise TrimOutsidePolars()
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0

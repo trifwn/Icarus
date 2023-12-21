@@ -55,7 +55,7 @@ class Database_3D:
 
         vehicle_folders: list[str] = next(os.walk(DB3D))[1]
         for vehicle_folder in vehicle_folders:  # For each plane vehicle == folder name
-            logging.debug(f"Adding Vehicle at {vehicle_folder}")
+            logging.info(f"Adding Vehicle at {vehicle_folder}")
             # Enter DB3D
             os.chdir(DB3D)
             vehicle_folder_path = os.path.join(DB3D, vehicle_folder)

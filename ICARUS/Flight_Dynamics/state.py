@@ -64,6 +64,23 @@ class State:
         # Initialize The Longitudal State Space Matrices
         # Initialize The Lateral State Space Matrices
 
+    def update_plane(self, airplane: Airplane) -> None:
+        self.mean_aerodynamic_chord = airplane.mean_aerodynamic_chord
+        self.S = airplane.S
+        self.inertia = airplane.total_inertia
+        self.mass = airplane.M
+
+        # Reset Trim
+        self.trim = {}
+        self.trim_dynamic_pressure = 0
+
+        # Reset Disturbances For Dynamic Analysis and Sensitivity Analysis
+        self.polar = DataFrame()
+        self.disturbances = []
+        self.pertrubation_results = DataFrame()
+        self.sensitivity = Struct()
+        self.sensitivity_results = Struct()
+
     def add_polar(
         self,
         polar: DataFrame,

@@ -1,3 +1,4 @@
+import logging
 import os
 from re import L
 from typing import Any
@@ -77,7 +78,7 @@ def save_results(
     # Save the Plane
     plane.save()
 
-    print("Adding Results to Database")
+    logging.info("Adding Results to Database")
     # Add plane to database
     file_plane: str = os.path.join(DB3D, plane.name, f"{plane.name}.json")
     _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)

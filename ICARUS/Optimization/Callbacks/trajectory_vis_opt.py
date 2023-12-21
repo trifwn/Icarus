@@ -10,6 +10,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Mission.Trajectory.trajectory import Trajectory
 
 
+#! TODO: Make Callback
 def setup_plot() -> tuple[Figure, list[Axes]]:
     fig, axs = plt.subplots(2, 3, figsize=(10, 10))
     fig.show()

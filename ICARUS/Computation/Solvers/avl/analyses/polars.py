@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any
 
@@ -48,7 +49,7 @@ def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | l
     plane.save()
     state.save(CASEDIR)
 
-    print("Adding Results to Database")
+    logging.info("Adding Results to Database")
     # Add Plane to Database
     file_plane: str = os.path.join(DB3D, plane.directory, f"{plane.name}.json")
     _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)

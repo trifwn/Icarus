@@ -235,7 +235,7 @@ class Wing_Segment(Lifting_Surface):
     # the wing segment and store the new values
     @staticmethod
     def recalculation(func: Callable[..., None]) -> Callable[..., None]:
-        def wrapper(self: Wing_Segment, *args: Any, **kwargs: Any) -> None:
+        def wrapper(self: "Wing_Segment", *args: Any, **kwargs: Any) -> None:
             # Call the function
             func(self, *args, **kwargs)
             # Recalculate the wing segment

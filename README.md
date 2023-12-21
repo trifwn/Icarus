@@ -4,13 +4,11 @@ Current BUILD IS UNSTABLE due to Major Refactoring for v1.0.0.
 
 ## TASKS
 
-- Solve the issue that the Wing_Segment is unpickable as of now
 - Create Parametric Analysis Module (Computation of Sensitivity Derivatives for all solvers)
 - Define Constrained Optimization Workflow
 - Add Lower Order Models and Analytical Formulas for Stability
 - Create Results Class to handle Analysis output. Specify some results such as AirfoilPolars, AirplanePolars, AirplaneStates etc..
 - Create Workflow Class to combine Analyses Together
-- Create Optimization Class to optimize workflows based on input output
 
 ---
 
@@ -41,6 +39,10 @@ Library for Aerodynamic calculations. Right now it contains a 3d lifting surface
 
 This library is used to handle and generate airfoils. It is an extension of the airfoils pip module (https://pypi.org/project/airfoils/).
 
+- Computation
+
+Abstraction Layer for the solvers and running of analyses.
+
 - Conceptual
 
 Module for conceptual Analysis and sizing of airplanes based on constrained optimization. The final goal is that a user will be able to size an aircraft by defining mission goals and constraints
@@ -53,33 +55,31 @@ Core functions for the program. Basically any operation that is not significant 
 
 Storage Interface to save vehicles, airfoils, analyses, solvers and more. Currently it works with the filesystem. Uses JSON to maybe one day integrate with frontend.
 
-- Mission
+- Environment
 
-Defines the mission of the airplane and the flight envelope.
-
-- Computation
-
-Abstraction Layer for the solvers and running of analyses.
-
-- Vehicle
-
-Defines Airplane and other Vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
+Abstraction for the Environment. Usefull for calculations of fluid and thermodynamical properties at different flight envelope points
 
 - Flight_Dynamics
 
 Defines Flight State as a trimmed airplane position. The intnent of the class is to one day integrate the control surface movement as well and also account for transient states.
 
-- Solvers
+- Mission
 
-Integration with 3d Party Software (solvers). Handles conversion between Icarus objects and input for different solvers. Also handles the output conversion and hamdling
+Defines the mission of the airplane and the flight envelope.
+
+- Optimization
+
+Defines Optimizers for Different Solvers, Integrators and other functions that are used to optimize aerodynamic performance
+
+- Vehicle
+
+Defines Airplane and other Vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
+
 
 - Visualization
 
 All Around visualization functions that are grouped according to their function
 
-- Environment
-
-Abstraction for the Environment. Usefull for calculations of fluid and thermodynamical properties at different flight envelope points
 
 ---
 

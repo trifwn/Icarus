@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from logging import root
 from math import pi
 from typing import Callable
 
@@ -60,7 +61,11 @@ class Lifting_Surface:
         origin = np.array(origin, dtype=float)
 
         # Define Orientation
-        self._pitch, self._yaw, self._roll = orientation * np.pi / 180
+        pitch, yaw, roll = orientation * np.pi / 180
+        self._pitch: float = pitch
+        self._yaw: float = yaw
+        self._roll: float = roll
+
         R_PITCH: FloatArray = np.array(
             [
                 [np.cos(self.pitch), 0, np.sin(self.pitch)],
@@ -230,17 +235,25 @@ class Lifting_Surface:
 
         # Define Airfoils
         if isinstance(root_airfoil, str):
-            root_airfoil = Airfoil.naca(root_airfoil)
+            root_airfoil_obj: Airfoil = Airfoil.naca(root_airfoil)
+        elif isinstance(root_airfoil, Airfoil):
+            root_airfoil_obj = root_airfoil
+        else:
+            raise ValueError("Root Airfoil must be a string or an Airfoil")
 
         if isinstance(tip_airfoil, str):
-            tip_airfoil = Airfoil.naca(tip_airfoil)
+            tip_airfoil_obj: Airfoil = Airfoil.naca(tip_airfoil)
+        elif isinstance(tip_airfoil, Airfoil):
+            tip_airfoil_obj = tip_airfoil
+        else:
+            raise ValueError("Tip Airfoil must be a string or an Airfoil")
 
         # Needed for when we have airfoils that are flapped and therefore have a different chord length
         def real_chord_fun(
             eta: float,
         ) -> float:
             # TODO: Add logic to handle interpolation between root and tip airfoil
-            const = float(np.max(root_airfoil._x_lower))
+            const = float(np.max(root_airfoil_obj._x_lower))
             return const * chord_as_a_function_of_span_percentage(eta)
 
         if isinstance(symmetries, SymmetryAxes):
@@ -262,8 +275,8 @@ class Lifting_Surface:
             name=name,
             origin=origin,
             orientation=orientation,
-            root_airfoil=root_airfoil,
-            tip_airfoil=tip_airfoil,
+            root_airfoil=root_airfoil_obj,
+            tip_airfoil=tip_airfoil_obj,
             spanwise_positions=spanwise_positions,
             chord_lengths=chord_lengths,
             z_offsets=z_offsets,
@@ -415,7 +428,7 @@ class Lifting_Surface:
 
     @pitch.setter
     def pitch(self, value: float) -> None:
-        self._pitch: float = value
+        self._pitch = value
         self.orientation = np.array([self._pitch, self._yaw, self._roll])
 
     @property
@@ -424,7 +437,7 @@ class Lifting_Surface:
 
     @yaw.setter
     def yaw(self, value: float) -> None:
-        self._yaw: float = value
+        self._yaw = value
         self.orientation = np.array([self._pitch, self._yaw, self._roll])
 
     @property
@@ -433,7 +446,7 @@ class Lifting_Surface:
 
     @roll.setter
     def roll(self, value: float) -> None:
-        self._roll: float = value
+        self._roll = value
         self.orientation = np.array([self._pitch, self._yaw, self._roll])
 
     @property
@@ -842,13 +855,13 @@ class Lifting_Surface:
 
         return np.array((x_cm, y_cm, z_cm)) / self.volume
 
-    def calculate_inertia(self, mass: float, cog: np.ndarray) -> FloatArray:
+    def calculate_inertia(self, mass: float, cog: FloatArray) -> FloatArray:
         """
         Calculates the inertia of the wing about the center of gravity.
 
         Args:
             mass (float): Mass of the wing. Used to have dimensional inertia
-            cog (np.ndarray): Center of Gravity of the wing.
+            cog (FloatArray): Center of Gravity of the wing.
         """
         x_upp = (self.grid_upper[:-1, :-1, 0] + self.grid_upper[:-1, 1:, 0]) / 2
         x_low = (self.grid_lower[:-1, :-1, 0] + self.grid_lower[:-1, 1:, 0]) / 2

@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ICARUS.Core.types import FloatArray
+
 if TYPE_CHECKING:
     from ICARUS.Flight_Dynamics.state import State
 
@@ -74,7 +76,7 @@ class LateralStateSpace:
         self.omegas = np.abs(self.eigenvalues)
         self.zetas = -(self.eigenvalues.real) / (self.omegas)
 
-    def print_lateral_derivatives(
+    def print_derivatives(
         self,
     ) -> None:
         print("Lateral Derivatives")
@@ -145,10 +147,10 @@ class LongitudalStateSpace:
         self.eigenvalues = np.empty((4,), dtype=complex)
         self.eigenvectors = np.empty((4, 4), dtype=float)
         eigenvalue_analysis(self)
-        self.omegas = np.abs(self.eigenvalues)
-        self.zetas = -(self.eigenvalues.real) / (self.omegas)
+        self.omegas: FloatArray = np.abs(self.eigenvalues)
+        self.zetas: FloatArray = -(self.eigenvalues.real) / (self.omegas)
 
-    def print_lateral_derivatives(
+    def print_derivatives(
         self,
     ) -> None:
         print("Longitudal Derivatives")
