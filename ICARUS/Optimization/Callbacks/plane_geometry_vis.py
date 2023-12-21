@@ -59,6 +59,10 @@ class PlaneGeometryVisualization(OptimizationCallback):
         # Add legend
         ax.legend()
 
+        # Update the figure
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
     def update(self, plane: Airplane) -> None:
         """
         Update the visualization.

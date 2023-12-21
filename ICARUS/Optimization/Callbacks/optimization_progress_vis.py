@@ -46,11 +46,33 @@ class OptimizationProgress(OptimizationCallback):
             [],
             [],
             color="orange",
-            label="Initial Value",
+            label="Best Encountered Objective Function Value",
         )
         ax.add_line(line)
-        self.lines["Objective Function Value"] = line
-        self.axes["Objective Function Value"] = ax
+        self.lines["Best Objective Function Value"] = line
+        self.axes["Best Objective Function Value"] = ax
+
+        line = Line2D(
+            [],
+            [],
+            color="blue",
+            label="Current Objective Function Value",
+        )
+        ax.add_line(line)
+        self.lines["Current Objective Function Value"] = line
+        self.axes["Current Objective Function Value"] = ax
+
+        # Add plot for penalty function
+        line = Line2D(
+            [],
+            [],
+            color="red",
+            label="Current Penalty Function Value",
+        )
+        ax.add_line(line)
+        self.lines["Current Penalty Function Value"] = line
+        self.axes["Current Penalty Function Value"] = ax
+
         # Add legend
         ax.legend()
 
@@ -96,10 +118,16 @@ class OptimizationProgress(OptimizationCallback):
             # Add legend
             ax.legend()
 
+        # Update the figure
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
     def update(
         self,
         result: OptimizeResult,
         iteration: int,
+        fitness: float,
+        penalty: float,
         **kwargs: Any,
     ) -> None:
         """
@@ -109,8 +137,8 @@ class OptimizationProgress(OptimizationCallback):
             self.setup()
 
         # Update the objective function value
-        line = self.lines["Objective Function Value"]
-        ax = self.axes["Objective Function Value"]
+        line = self.lines["Best Objective Function Value"]
+        ax = self.axes["Best Objective Function Value"]
 
         # Get the data of the line
         xdata, ydata = line.get_data()
@@ -119,6 +147,23 @@ class OptimizationProgress(OptimizationCallback):
         ydata = np.append(ydata, result.fun)
         # Set the new data of the line
         line.set_data(xdata, ydata)
+
+        # Update the best objective function value
+        line = self.lines["Current Objective Function Value"]
+        ax = self.axes["Current Objective Function Value"]
+        xdata, ydata = line.get_data()
+        xdata = np.append(xdata, iteration)
+        ydata = np.append(ydata, fitness)
+        line.set_data(xdata, ydata)
+
+        # Update the penalty function value
+        line = self.lines["Current Penalty Function Value"]
+        ax = self.axes["Current Penalty Function Value"]
+        xdata, ydata = line.get_data()
+        xdata = np.append(xdata, iteration)
+        ydata = np.append(ydata, penalty)
+        line.set_data(xdata, ydata)
+
         ax.relim()
         ax.autoscale()
 

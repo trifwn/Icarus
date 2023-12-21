@@ -50,6 +50,7 @@ class DesignVariableVisualizer(OptimizationCallback):
             sharex=True,
             gridspec_kw={"hspace": 0.5},
         )
+        self.fig.show()
 
         # Add subplots
         for i, var_name in enumerate(self.design_variables.keys()):
@@ -89,9 +90,11 @@ class DesignVariableVisualizer(OptimizationCallback):
             ncol=3,
         )
 
-        plt.tight_layout()  # Adjust the rect parameter to leave space at the top
+        # plt.tight_layout(rect=(0, 0, 1, 0.96))  # Adjust the rect parameter to leave space at the top
 
-        plt.show()
+        # Update the figure
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
 
     def update(
         self,

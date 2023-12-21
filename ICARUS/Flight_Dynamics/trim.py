@@ -42,10 +42,9 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     # Find the index of the closest positive value to zero
     Cm = state.polar["Cm"]
     try:
-        trim_loc1 = (Cm[Cm > 0] - 0).idxmin()
-
+        trim_loc1: int = int((Cm[Cm >= 0] - 0).idxmin())
         # Find the index of the closest negative value to zero
-        trim_loc2 = (Cm[Cm < 0] - 0).idxmin()
+        trim_loc2: int = int((-Cm[Cm < 0] - 0).idxmin())
     except ValueError as e:
         logging.debug("Trim not possible due to Cm not crossing zero at the imported polars")
         logging.debug(e)
@@ -53,18 +52,26 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
         raise TrimOutsidePolars()
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
-    d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
     d_aoa = state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1]
+    d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
+    d_cl = state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]
+    d_cd = state.polar["CD"][trim_loc2] - state.polar["CD"][trim_loc1]
+    if trim_loc1 < trim_loc2:
+        trim_loc3 = trim_loc1 - 1
+    else:
+        trim_loc3 = trim_loc1 + 1
+    d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
 
     aoa_trim = state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
 
-    cm_trim = state.polar["Cm"][trim_loc1] + (state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]) * (
-        aoa_trim - state.polar["AoA"][trim_loc1]
-    ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
+    cm_trim = state.polar["Cm"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cm / d_aoa
+    cl_trim = state.polar["CL"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cl / d_aoa
+    cd_trim = (
+        state.polar["CD"][trim_loc1]
+        + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cd / d_aoa
+        + (aoa_trim - state.polar["AoA"][trim_loc1]) ** 2 * d2_cd / (d_aoa**2)
+    )
 
-    cl_trim = state.polar["CL"][trim_loc1] + (state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]) * (
-        aoa_trim - state.polar["AoA"][trim_loc1]
-    ) / (state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1])
     if cl_trim <= 0:
         raise TrimNotPossible()
     # Find the trim velocity
@@ -72,6 +79,8 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     dens: float = state.environment.air_density
     W: float = state.mass * 9.81
     U_CRUISE: float = np.sqrt(W / (0.5 * dens * cl_trim * S))
+    CL_OVER_CD = cl_trim / cd_trim
+    CM0: float = float(state.polar[state.polar["AoA"] == 0.0]["Cm"].to_list()[0])
     # Print How accurate is the trim
     if verbose:
         print(
@@ -82,5 +91,9 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     trim: dict[str, float] = {
         "U": U_CRUISE,
         "AoA": aoa_trim,
+        "CL": cl_trim,
+        "CD": cd_trim,
+        "CL/CD": CL_OVER_CD,
+        "Cm0": CM0,
     }
     return trim

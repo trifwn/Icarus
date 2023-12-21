@@ -6,11 +6,11 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Optimization import MAX_FLOAT
 from ICARUS.Optimization import MAX_INT
 from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
-from ICARUS.Optimization.Optimizers.general_optimizer import General_Optimizer
+from ICARUS.Optimization.Optimizers.general_optimizer import General_SOO_Optimizer
 from ICARUS.Vehicle.plane import Airplane
 
 
-class Airplane_Optimizer(General_Optimizer):
+class Airplane_Optimizer(General_SOO_Optimizer):
     def __init__(
         self,
         # Optimization Parameters
@@ -21,6 +21,8 @@ class Airplane_Optimizer(General_Optimizer):
         # Objective Function
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
+        linear_constraints: list[dict[str, FloatArray | str | float]] = [],
+        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,
@@ -30,22 +32,24 @@ class Airplane_Optimizer(General_Optimizer):
         callback_list: list[OptimizationCallback] = [],
     ) -> None:
         super().__init__(
-            plane,
-            design_variables,
-            design_constants,
-            bounds,
-            f,
-            jac,
-            maxtime_sec,
-            max_iter,
-            max_function_call,
-            optimization_tolerance,
-            callback_list,
+            obj=plane,
+            design_variables=design_variables,
+            design_constants=design_constants,
+            bounds=bounds,
+            f=f,
+            jac=jac,
+            linear_constraints=linear_constraints,
+            non_linear_constraints=non_linear_constraints,
+            maxtime_sec=maxtime_sec,
+            max_iter=max_iter,
+            max_function_call=max_function_call,
+            optimization_tolerance=optimization_tolerance,
+            callback_list=callback_list,
         )
         self.current_obj: Airplane = deepcopy(plane)
         self.initial_obj: Airplane = deepcopy(plane)
         self.plane_name = plane.name
 
     def f(self, x: FloatArray) -> float:
-        self.current_obj.name = f'{self.plane_name}_{self._nit}'
+        self.current_obj.name = f"{self.plane_name}_{self._nit}"
         return super().f(x)

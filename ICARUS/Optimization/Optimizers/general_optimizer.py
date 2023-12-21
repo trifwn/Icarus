@@ -1,10 +1,16 @@
+import inspect
+import logging
+from calendar import c
 from copy import deepcopy
+from re import A
 from time import time
 from typing import Any
 from typing import Callable
 
 import numpy as np
+from scipy.optimize import LinearConstraint
 from scipy.optimize import minimize
+from scipy.optimize import NonlinearConstraint
 from scipy.optimize import OptimizeResult
 
 from ICARUS.Core.types import FloatArray
@@ -13,7 +19,7 @@ from ICARUS.Optimization import MAX_INT
 from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
 
 
-class General_Optimizer:
+class General_SOO_Optimizer:
     def __init__(
         self,
         # Optimization Parameters
@@ -24,6 +30,8 @@ class General_Optimizer:
         # Objective Function
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
+        linear_constraints: list[dict[str, FloatArray | str | float]] = [],
+        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,
@@ -44,7 +52,7 @@ class General_Optimizer:
             x0.append(self.initial_obj.__getattribute__(design_variable))
         self.x0 = np.array(x0)
 
-        # Constraints
+        # Bounds
         self.bounds = []
         for design_variable in self.design_variables.keys():
             self.bounds.append(bounds[design_variable])
@@ -63,10 +71,17 @@ class General_Optimizer:
         # Iteration Counters
         self._function_call_count: int = 0
         self._nit: int = 0
+        self.succesful_iteration: bool = False
 
         # Callback List
         self.callback_list = callback_list
         self.verbosity = verbosity
+
+        # Constraints
+        self.linear_constraints: list[dict[str, FloatArray | str | float]] = linear_constraints
+        self.non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = non_linear_constraints
+        self.fitness: list[float] = []
+        self.penalties: list[float] = []
 
     def f(self, x: FloatArray) -> float:
         if self._function_call_count > self.max_function_call_count:
@@ -83,7 +98,10 @@ class General_Optimizer:
             self.current_obj.__setattr__(design_variable, x[i])
             self.design_variables[design_variable] = x[i]
 
-        return self.objective_fn(self.current_obj, **self.design_constants)
+        # Calculate Fitness
+        fitness = self.objective_fn(self.current_obj, **self.design_constants)
+        self.fitness.append(fitness)
+        return fitness
 
     def jac(self, x: FloatArray) -> float:
         if self.jacobian is None:
@@ -97,8 +115,15 @@ class General_Optimizer:
         return self.jacobian(self.current_obj)
 
     def run_all_callbacks(self, intermediate_result: OptimizeResult) -> None:
+        if self.fitness[-1] > 1e9:
+            return
         for callback in self.callback_list:
-            callback.update(self.current_obj, intermediate_result, self._nit)
+            callback.update(
+                obj=self.current_obj,
+                result=intermediate_result,
+                iteration=self._nit,
+                fitness=self.fitness[-1],
+            )
 
     def iteration_callback(self, intermediate_result: OptimizeResult) -> None:
         # callback to terminate if maxtime_sec is exceeded
@@ -127,15 +152,128 @@ class General_Optimizer:
             print(f"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
     def __call__(self, solver: str = "Nelder-Mead", options: dict[str, Any] = {}) -> OptimizeResult:
+        # Setup Callbacks
+        s_time = time()
         for callback in self.callback_list:
             callback.setup()
+        e_time = time()
+        print(f"Callback Setup Time: {e_time - s_time}")
+
+        # If the solver is COBYLA, SLSQP or trust-constr we can add the constraints
+        # else we need to add the constraints to the objective function as a penalty
+        constraints = []
+        if solver in ["COBYLA", "SLSQP", "trust-constr"]:
+            for lin_constraint in self.linear_constraints:
+                if not (isinstance(lin_constraint["lb"], float) and isinstance(lin_constraint["ub"], float)):
+                    logging.warning(f"Linear Constraint {lin_constraint} has a non-float lb")
+                    continue
+
+                constraints.append(
+                    LinearConstraint(
+                        lin_constraint["A"],
+                        lin_constraint["lb"],
+                        lin_constraint["ub"],
+                    ),
+                )
+
+            for non_lin_constraint in self.non_linear_constraints:
+                if not (isinstance(non_lin_constraint["lb"], float) and isinstance(non_lin_constraint["ub"], float)):
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} has a non-float lb")
+                    continue
+
+                if "fun" not in non_lin_constraint.keys():
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} does not have a fun")
+                    continue
+
+                if not callable(non_lin_constraint["fun"]):
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} fun is not callable")
+                    continue
+                non_linear_fun: Callable[..., float] = non_lin_constraint["fun"]
+
+                def fun_wrapper(x: FloatArray) -> float:
+                    params = inspect.signature(non_linear_fun).parameters
+                    if "x" in params:
+                        # Add desing constants to the function call if they are in the function signature
+                        return non_linear_fun(x, **self.design_constants)
+                    else:
+                        return non_linear_fun(**self.design_constants)
+
+                constraints.append(
+                    NonlinearConstraint(
+                        fun_wrapper,
+                        non_lin_constraint["lb"] if "lb" in non_lin_constraint else -np.inf,
+                        non_lin_constraint["ub"] if "ub" in non_lin_constraint else np.inf,
+                    ),
+                )
+                print(f"Added Non-Linear Constraint {non_lin_constraint}")
+        elif solver in ["Nelder-Mead", "Newton-CG"]:
+            print("Adding Constraints as Penalties")
+            # Add Penalty for Linear Constraints
+            linear_penalties: list[Callable[[FloatArray], float]] = []
+            for lin_constraint in self.linear_constraints:
+                if not (isinstance(lin_constraint["lb"], float) and isinstance(lin_constraint["ub"], float)):
+                    logging.warning(f"Linear Constraint {lin_constraint} has a non-float lb")
+                    continue
+
+                A = lin_constraint["A"]
+                lb = lin_constraint["lb"]
+                ub = lin_constraint["ub"]
+                linear_penalties.append(lambda x: max(0, np.dot(A, x) - ub) ** 2 + max(0, lb - np.dot(A, x)) ** 2)
+
+            non_linear_penalties: list[Callable[[FloatArray], float]] = []
+            for non_lin_constraint in self.non_linear_constraints:
+                if not (isinstance(non_lin_constraint["lb"], float) and isinstance(non_lin_constraint["ub"], float)):
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} has a non-float lb")
+                    continue
+
+                if "fun" not in non_lin_constraint.keys():
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} does not have a fun")
+                    continue
+
+                if not callable(non_lin_constraint["fun"]):
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} fun is not callable")
+                    continue
+                non_linear_fun: Callable[..., float] = non_lin_constraint["fun"]
+
+                def fun_wrapper(x: FloatArray) -> float:
+                    params = inspect.signature(non_linear_fun).parameters
+                    if "x" in params:
+                        # Add desing constants to the function call if they are in the function signature
+                        return non_linear_fun(x, **self.design_constants)
+                    else:
+                        return non_linear_fun(**self.design_constants)
+
+                lb = non_lin_constraint["lb"] if "lb" in non_lin_constraint else -np.inf
+                ub = non_lin_constraint["ub"] if "ub" in non_lin_constraint else np.inf
+
+                non_linear_penalties.append(
+                    lambda x: max(0, fun_wrapper(x) - ub) ** 2 + max(0, lb - fun_wrapper(x)) ** 2,
+                )
+
+            def f_with_penalties(x: FloatArray) -> float:
+                O = self.f(x)
+                # Add Penalty for Linear Constraints
+                penalty: float = 0.0
+                for penalty_fun in linear_penalties:
+                    penalty += penalty_fun(x)
+                # Add Penalty for Non-Linear Constraints
+                for penalty_fun in non_linear_penalties:
+                    penalty += penalty_fun(x)
+
+                self.penalties.append(penalty)
+                return O + penalty
+
+            print(f"Added {len(linear_penalties)} Linear Penalties")
+            print(f"Added {len(non_linear_penalties)} Non Linear Penalties")
+
+        else:
+            raise NotImplementedError
 
         self.start_time = time()
-        # set your initial guess to 'x0'
-        # set your bounds to 'bounds'
         if solver == "Nelder-Mead":
+            # Check if f_with_penalties is defined
             opt = minimize(
-                self.f,
+                f_with_penalties if "f_with_penalties" in locals() else self.f,
                 x0=self.x0,
                 method="Nelder-Mead",
                 callback=self.iteration_callback,
@@ -145,7 +283,7 @@ class General_Optimizer:
             )
         elif solver == "Newton-CG":
             opt = minimize(
-                self.f,
+                f_with_penalties if "f_with_penalties" in locals() else self.f,
                 x0=self.x0,
                 jac=self.jac if self.jacobian is not None else None,
                 method="Newton-CG",
@@ -153,6 +291,26 @@ class General_Optimizer:
                 tol=self.tolerance,
                 options={"maxiter": 10, "disp": False},
                 bounds=self.bounds,
+            )
+        elif solver == "COBYLA":
+            opt = minimize(
+                self.f,
+                x0=self.x0,
+                method="COBYLA",
+                callback=self.iteration_callback,
+                tol=self.tolerance,
+                options={"maxiter": self.max_iter, "disp": True},
+                constraints=constraints,
+            )
+        elif solver == "SLSQP":
+            opt = minimize(
+                self.f,
+                x0=self.x0,
+                method="SLSQP",
+                callback=self.iteration_callback,
+                tol=self.tolerance,
+                options={"maxiter": self.max_iter, "disp": True},
+                constraints=constraints,
             )
         else:
             raise NotImplementedError

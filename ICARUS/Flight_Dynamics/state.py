@@ -114,6 +114,7 @@ class State:
         data["CL"] = forces["Fz"] / (dynamic_pressure * S)
         data["CD"] = forces["Fx"] / (dynamic_pressure * S)
         data["Cm"] = forces["My"] / (dynamic_pressure * S * MAC)
+        data["CL/CD"] = data["CL"] / data["CD"]
         # data["Cn"] = forces["Mz"] / (dynamic_pressure * S * span)
         # data["Cl"] = forces["Mx"] / (dynamic_pressure * S * span)
         data["AoA"] = forces["AoA"]
