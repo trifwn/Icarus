@@ -375,3 +375,12 @@ def ground_effect(x: float, y: float, z: float, i: int, j: int, panel: FloatArra
     U_ind = np.array([U1[0] + U2[0], U1[1] + U2[1], U1[2] - U2[2]])
     U_ind_st = np.array([U1st[0] + U2st[0], U1st[1] + U2st[1], U1st[2] - U2st[2]])
     return U_ind, U_ind_st
+
+
+# try:
+#     from jax import jit
+#     # Jit all functions
+
+
+# except ImportError:
+#     pass

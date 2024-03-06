@@ -23,5 +23,4 @@ def usefull_load_criterion(
     we_wg = 1 - u_parameter
     wg = w_p / (1 - we_wg - wf_wg)
 
-    # print(f"{w_p=}, {wg*wf_wg=}, {wg*we_wg=}")
     return wg

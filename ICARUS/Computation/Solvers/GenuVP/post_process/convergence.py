@@ -31,7 +31,7 @@ def get_error_convergence(file: str, df: DataFrame, gnvp_version: int) -> DataFr
 def get_loads_convergence_3(file: str) -> DataFrame:
     df = DataFrame()
     try:
-        df = pd.read_csv(file, delim_whitespace=True, names=cols)
+        df = pd.read_csv(file, sep=r'\s+', names=cols)
     except Exception as e:
         print(f"Cant Load {file} as Loads_Aero.dat!\nGot error {e}")
     finally:

@@ -54,7 +54,6 @@ def get_all_far_criteria(
     float,
     float,
 ]:
-    print(sigma)
     thrust_loading = np.linspace(0, clip[0], 500)  # thrust loading
     wing_loading = np.linspace(5, clip[1], 500)  # wing loading
     far_1 = far_1_landing(

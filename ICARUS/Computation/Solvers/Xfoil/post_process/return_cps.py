@@ -34,7 +34,6 @@ def return_cps(
     """
     xf = XFoil()
     xf.Re = Reyn
-    print(MACH)
     # xf.M = MACH
     xf.n_crit = Ncrit
     xf.xtr = (ftrip_low, ftrip_up)

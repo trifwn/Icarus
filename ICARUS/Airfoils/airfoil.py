@@ -160,8 +160,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_upper_new = y_upper_af1 * (1 - eta) + y_upper_af2 * eta
         y_lower_new = y_lower_af1 * (1 - eta) + y_lower_af2 * eta
 
-        upper = np.array([x, y_upper_new])
-        lower = np.array([x, y_lower_new])
+        upper = np.array([x, y_upper_new], dtype=float)
+        lower = np.array([x, y_lower_new], dtype=float)
 
         return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
 
@@ -420,11 +420,11 @@ class Airfoil(af.Airfoil):  # type: ignore
         if hasattr(self, "l"):
             # return self.camber_line_naca5(x)
             print("NACA 5 camber analytical solution not implemented yet")
-            return super().camber_line(x)
+            return np.array(super().camber_line(x), dtype=float)
         elif hasattr(self, "p"):
             return self.camber_line_naca4(x)
         else:
-            return super().camber_line(x)
+            return np.array(super().camber_line(x), dtype=float)
 
     def airfoil_to_selig(self) -> None:
         """

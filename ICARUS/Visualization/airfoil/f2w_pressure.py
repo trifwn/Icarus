@@ -31,7 +31,6 @@ def plot_angle_cp(angle: float) -> None:
 def plot_multiple_cps(angles: list[float]) -> None:
     fname = "COEFPRE.OUT"
     for angle in angles:
-        print(angle)
         if angle < 0:
             anglef: str = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
         else:

@@ -1,5 +1,5 @@
 def xflr_eigs(filename: str) -> tuple[list[complex], list[complex]]:
-    with open(filename, errors="ignore") as f:
+    with open(filename, errors="ignore", encoding='UTF-8') as f:
         lines = f.readlines()
 
     long_eigenvalues_line = lines[23]

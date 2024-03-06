@@ -17,7 +17,7 @@ class Mission_Vehicle:
 
         elevator: Lifting_Surface | None = None
         for surf in airplane.surfaces:
-            if surf.name == "tail":
+            if surf.name == "tail" or surf.name == "elevator" or surf.name == "horizontal_stabilizer":
                 self.l_e = surf.origin[0]
                 elevator = surf
         if elevator is None:

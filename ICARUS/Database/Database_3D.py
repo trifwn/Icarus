@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import logging
 import os
 from copy import deepcopy
 from typing import Any
+from typing import TYPE_CHECKING
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -18,7 +21,9 @@ from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
 )
 from ICARUS.Core.struct import Struct
 from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.Vehicle.plane import Airplane
 
 jsonpickle_pd.register_handlers()
 

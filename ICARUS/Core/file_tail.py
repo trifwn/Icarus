@@ -1,7 +1,9 @@
 from io import BufferedReader
+from typing import Any
+from typing import IO
 
 
-def tail(f: BufferedReader, lines: int = 20) -> list[bytes]:
+def tail(f: BufferedReader | IO[Any], lines: int = 20) -> list[bytes]:
     """
     Return The last N lines of a file
 

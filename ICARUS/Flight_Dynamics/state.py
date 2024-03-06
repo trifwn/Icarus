@@ -46,6 +46,7 @@ class State:
         # Get Airplane Properties And State Variables
         self.mean_aerodynamic_chord: float = airplane.mean_aerodynamic_chord
         self.S: float = airplane.S
+        self.span: float = airplane.span
         self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
         self.inertia: FloatArray = airplane.total_inertia
         self.mass: float = airplane.M
@@ -63,6 +64,14 @@ class State:
 
         # Initialize The Longitudal State Space Matrices
         # Initialize The Lateral State Space Matrices
+
+    def ground_effect(self) -> bool:
+        if self.environment.altitude == 0:
+            return False
+        if self.environment.altitude > 2 * self.span:
+            return False
+        else:
+            return True
 
     def update_plane(self, airplane: Airplane) -> None:
         self.mean_aerodynamic_chord = airplane.mean_aerodynamic_chord

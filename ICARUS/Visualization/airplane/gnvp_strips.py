@@ -91,7 +91,6 @@ def gnvp_strips_2d(
         return 0
 
     stripDat, data = get_strip_data(pln, case, [NB])
-    # print(data[category])
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")

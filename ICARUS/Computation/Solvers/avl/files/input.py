@@ -2,10 +2,10 @@ import logging
 import os
 import subprocess
 from io import StringIO
-from re import S
 
 import numpy as np
 from pandas import DataFrame
+from regex import F
 
 from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.types import FloatArray
@@ -16,6 +16,7 @@ from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.utils import DiscretizationType
+from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 
 def make_input_files(
@@ -23,10 +24,11 @@ def make_input_files(
     plane: Airplane,
     state: State,
     solver2D: str = "Xfoil",
+    solver_options: dict[str, float] = {},
 ) -> None:
     os.makedirs(directory, exist_ok=True)
     avl_mass(directory, plane, state.environment)
-    avl_geo(directory, plane, state.environment, state.u_freestream, solver2D)
+    avl_geo(directory, plane, state, state.u_freestream, solver2D, solver_options)
 
 
 def avl_mass(
@@ -88,10 +90,12 @@ def avl_mass(
 def avl_geo(
     PLANE_DIR: str,
     plane: Airplane,
-    environment: Environment,
+    state: State,
     u_inf: float,
     solver2D: str = "Xfoil",
+    solver_options: dict[str, float] = {},
 ) -> None:
+    environment = state.environment
     if os.path.isfile(f"{PLANE_DIR}/{plane.name}.avl"):
         os.remove(f"{PLANE_DIR}/{plane.name}.avl")
 
@@ -102,8 +106,12 @@ def avl_geo(
     f_io.write("#\n")
     f_io.write(f"{plane.name}\n")
     f_io.write("0.0                                 | Mach\n")
-    # !TODO : ADD SYMMETRY
-    f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
+    if state.ground_effect():
+        h = state.environment.altitude
+        f_io.write(f"0     1     {-h}                      | iYsym  iZsym  Zsym\n")
+    else:
+        f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
+
     f_io.write(f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n")
     f_io.write(f"  {plane.CG[0]}     {plane.CG[1]}     {plane.CG[2]}   | Xref   Yref   Zref\n")
     f_io.write(f" 0.00                               | CDp  (optional)\n")
@@ -116,32 +124,38 @@ def avl_geo(
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}\n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
-        if surf.chord_spacing == DiscretizationType.UNKNOWN:
+        if surf.chord_spacing == DiscretizationType.USER_DEFINED:
             chord_spacing = DiscretizationType.COSINE.value
         else:
             chord_spacing = surf.chord_spacing.value
         f_io.write(f"{surf.M}        {chord_spacing}\n")
         f_io.write("\n")
-        f_io.write("CDCL\n")
 
-        # Get the airfoil polar
-        foil_dat = DB.foils_db.data
-        try:
-            polars: dict[str, DataFrame] = foil_dat[surf.root_airfoil.name][solver2D]
-        except KeyError:
+        viscous = True
+        if "inviscid" in solver_options.keys():
+            if solver_options["inviscid"]:
+                viscous = False
+
+        if viscous:
+            f_io.write("CDCL\n")
+            # Get the airfoil polar
+            foil_dat = DB.foils_db.data
             try:
-                polars = foil_dat[f"NACA{surf.root_airfoil.name}"][solver2D]
+                polars: dict[str, DataFrame] = foil_dat[surf.root_airfoil.name][solver2D]
             except KeyError:
-                raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
+                try:
+                    polars = foil_dat[f"NACA{surf.root_airfoil.name}"][solver2D]
+                except KeyError:
+                    raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
 
-        polar_obj = Polars(polars)
-        # Calculate average reynolds number
-        reynolds = surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
+            polar_obj = Polars(polars)
+            # Calculate average reynolds number
+            reynolds = surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
 
-        cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
-        f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-        f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
-        f_io.write("\n")
+            cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
+            f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
+            f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
+            f_io.write("\n")
 
         f_io.write("INDEX                        | (keyword)\n")
         f_io.write(f"{int(i+ 6679)}                         | Lsurf\n")
@@ -161,10 +175,13 @@ def avl_geo(
         f_io.write("#______________\n")
         f_io.write("SECTION                                                     |  (keyword)\n")
 
-        if surf.span_spacing == DiscretizationType.UNKNOWN:
-            span_spacing = DiscretizationType.COSINE.value
+        if isinstance(surf, Wing_Segment):
+            if surf.span_spacing == DiscretizationType.USER_DEFINED:
+                span_spacing = DiscretizationType.COSINE.value
+            else:
+                span_spacing = surf.span_spacing.value
         else:
-            span_spacing = surf.span_spacing.value
+            span_spacing = DiscretizationType.COSINE.value
 
         f_io.write(
             f"   {surf.strips[0].x0}    {surf.strips[0].y0}    {surf.strips[0].z0}    {surf.chord[0]}   {0.0}   {surf.N}    {span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]\n",

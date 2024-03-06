@@ -192,6 +192,8 @@ class Wing_Segment(Lifting_Surface):
             # Define the spanwise discretization function
             span_disc_fun = partial(equal_spacing_function, N=self.N, stretching=1.0)
             # equal_spacing_function_factory(N)
+        elif self._span_spacing == DiscretizationType.USER_DEFINED:
+            pass
         else:
             raise NotImplementedError(f"Spanwise discretization type {self.span_spacing} not implemented")
 
@@ -200,6 +202,11 @@ class Wing_Segment(Lifting_Surface):
             # Define the chordwise discretization function
             chord_disc_fun = partial(equal_spacing_function, N=self.M, stretching=1.0)
             # equal_spacing_function_factory(M)
+        elif self._chord_spacing == DiscretizationType.USER_DEFINED:
+            try:
+                chord_disc_fun = self.chord_discretization_function
+            except AttributeError:
+                raise AttributeError("Chord discretization function not defined")
         else:
             raise NotImplementedError(f"Chordwise discretization type {self.chord_spacing} not implemented")
 

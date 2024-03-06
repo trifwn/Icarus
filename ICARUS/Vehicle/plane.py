@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
 from typing import Any
+from typing import TYPE_CHECKING
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -8,14 +11,15 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
-from zmq import has
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Core.types import FloatOrListArray
-from ICARUS.Flight_Dynamics.disturbances import Disturbance
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.surface_connections import Surface_Connection
+
+if TYPE_CHECKING:
+    from ICARUS.Core.types import FloatArray
+    from ICARUS.Core.types import FloatOrListArray
+    from ICARUS.Flight_Dynamics.disturbances import Disturbance
+    from ICARUS.Flight_Dynamics.state import State
+    from ICARUS.Vehicle.lifting_surface import Lifting_Surface
+    from ICARUS.Vehicle.surface_connections import Surface_Connection
 
 jsonpickle_pd.register_handlers()
 

@@ -14,7 +14,6 @@ def hermes(name: str) -> Airplane:
     Consisting of the main wing, elevator rudder and masses as constructed.
 
     Args:
-        airfoils (Struct): Struct containing the airfoils
         name (str): Name of the plane
 
     Returns:
@@ -41,6 +40,8 @@ def hermes(name: str) -> Airplane:
         sweep_offset=0,
         root_chord=0.159,
         tip_chord=0.072,
+        twist_root=0,
+        twist_tip=30,
         N=25,
         M=5,
         mass=0.670,

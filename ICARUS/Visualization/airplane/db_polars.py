@@ -97,8 +97,12 @@ def plot_airplane_polars(
 
                         x: Series = polar[f"{key0}"]
                         y: Series = polar[f"{key1}"]
-                        c = colors_(j / len(solvers))
-                        m = markers[i].get_marker()
+                        if len(solvers) == 1:
+                            c = colors_(i / len(airplane_names))
+                            m = markers[j].get_marker()
+                        else:
+                            c = colors_(j / len(solvers))
+                            m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:
                             ax.plot(

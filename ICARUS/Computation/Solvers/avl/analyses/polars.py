@@ -24,7 +24,7 @@ def avl_angle_run(
     solver_options: dict[str, Any] = {},
 ) -> None:
     planedir = os.path.join(DB3D, plane.directory, "AVL")
-    make_input_files(planedir, plane, state, solver2D)
+    make_input_files(planedir, plane, state, solver2D, solver_options)
     case_def(plane, angles)
     case_setup(plane)
     case_run(plane, angles)

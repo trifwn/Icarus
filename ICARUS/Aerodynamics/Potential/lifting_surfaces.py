@@ -1,11 +1,9 @@
 import logging
 import os
-from re import L
 from typing import Any
 from typing import Callable
 
 import pandas as pd
-from regex import D
 
 from ICARUS.Aerodynamics.Potential.vorticity import symm_wing_panels
 from ICARUS.Aerodynamics.Potential.vorticity import voring
@@ -13,7 +11,6 @@ from ICARUS.Aerodynamics.Potential.wing_lspt import Wing_LSPT
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import DB3D
-from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 

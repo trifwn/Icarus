@@ -82,8 +82,6 @@ if __name__ == "__main__":
     import os
 
     folder_name: str = os.path.basename(os.getcwd())
-    print(folder_name)
-
     from ICARUS.Database import DB
 
     print(DB.vehicles_db.get_planenames())

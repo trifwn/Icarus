@@ -655,7 +655,12 @@ def make_input_files(
     if "gnvp7" not in next(os.walk("."))[2]:
         src: str = GenuVP7_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp7")
-        os.symlink(src, dst)
+        try:
+            os.symlink(src, dst)
+        except OSError:
+            import shutil
+
+            shutil.copy(src, dst)
     os.chdir(HOMEDIR)
 
 

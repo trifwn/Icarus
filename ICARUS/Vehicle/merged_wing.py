@@ -44,7 +44,6 @@ class Merged_Wing:
 
         NM = 0
         for segment in wing_segments:
-            print(segment.M, segment.N, NM, segment.M * segment.N)
             self.grid[NM : NM + segment.M * segment.N, :] = np.reshape(segment.grid, (segment.M * segment.N, 3))
             self.grid_lower[NM : NM + segment.M * segment.N, :] = np.reshape(
                 segment.grid_upper,

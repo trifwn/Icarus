@@ -10,7 +10,6 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from .strip import Strip
-from ICARUS.Airfoils import airfoil
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
 from ICARUS.Vehicle.utils import DiscretizationType
@@ -30,7 +29,7 @@ class Lifting_Surface:
         chord_lengths: FloatArray,
         z_offsets: FloatArray,
         x_offsets: FloatArray,
-        twists: FloatArray,
+        twist_angles: FloatArray,
         N: int,
         M: int,
         mass: float = 1.0,
@@ -52,7 +51,7 @@ class Lifting_Surface:
         #   - The airfoil at that point. The airfoil is interpolated between the root and tip airfoil.
 
         # Check that the number of points is the same for all parameters if not raise an error
-        if not (len(spanwise_positions) == len(chord_lengths) == len(z_offsets) == len(x_offsets) == len(twists)):
+        if not (len(spanwise_positions) == len(chord_lengths) == len(z_offsets) == len(x_offsets) == len(twist_angles)):
             raise ValueError("The number of points must be the same for all parameters")
 
         self.name: str = name
@@ -105,17 +104,16 @@ class Lifting_Surface:
             self.chord_discretization_function: Callable[[int], float] = lambda x: x / (self.M - 1)
         else:
             self.chord_discretization_function = chord_discretization_function
-            self.chord_spacing = DiscretizationType.UNKNOWN
-        self.span_spacing: DiscretizationType = DiscretizationType.UNKNOWN
+            self.chord_spacing = DiscretizationType.USER_DEFINED
 
         # Define Chord
         self._root_chord: float = chord_lengths[0]
         self._tip_chord: float = chord_lengths[-1]
         self.chord = np.array([self._root_chord, self._tip_chord], dtype=float)
 
-        # Get the dihedral and twist distributions
+        # Get the twist distributions
         # These are defined in the local coordinate system at the quarter chord point of each wing strip
-        self.twists: FloatArray = twists
+        self.twist_angles: FloatArray = twist_angles
 
         # Define the airfoil
         if isinstance(root_airfoil, str):
@@ -203,7 +201,7 @@ class Lifting_Surface:
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
     ) -> Lifting_Surface:
         # Define the Lifting Surface from a set of functions instead of a set of points. We must Specify 3 kind of inputs
-        # 1) Basic information about the wing:
+        # 1) Basic information about the wi:g win thee ofng:
         #   - The name of the wing
         #   - The origin of the wing
         #   - The orientation of the wing
@@ -231,7 +229,7 @@ class Lifting_Surface:
         chord_lengths: FloatArray = np.empty(N, dtype=float)
         z_offsets: FloatArray = np.empty(N, dtype=float)
         x_offsets: FloatArray = np.empty(N, dtype=float)
-        twists: FloatArray = np.empty(N, dtype=float)
+        twist_angles: FloatArray = np.empty(N, dtype=float)
 
         # Define Airfoils
         if isinstance(root_airfoil, str):
@@ -269,7 +267,7 @@ class Lifting_Surface:
             chord_lengths[i] = real_chord_fun(eta)
             z_offsets[i] = np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
             x_offsets[i] = x_offset_as_a_function_of_span_percentage(eta)
-            twists[i] = twist_as_a_function_of_span_percentage(eta)
+            twist_angles[i] = twist_as_a_function_of_span_percentage(eta)
 
         self: Lifting_Surface = Lifting_Surface(
             name=name,
@@ -281,7 +279,7 @@ class Lifting_Surface:
             chord_lengths=chord_lengths,
             z_offsets=z_offsets,
             x_offsets=x_offsets,
-            twists=twists,
+            twist_angles=twist_angles,
             N=N,
             M=M,
             chord_discretization_function=chord_discretization_function,
@@ -479,7 +477,7 @@ class Lifting_Surface:
 
     @property
     def aspect_ratio(self) -> float:
-        return (self.span**2) / self.area
+        return (self.span**2) / self.S
 
     @property
     def Ixx(self) -> float:
@@ -579,7 +577,7 @@ class Lifting_Surface:
                 spanwise_positions=self._span_dist[::-1],
                 x_offsets=self._xoffset_dist[::-1],
                 z_offsets=self._zoffset_dist[::-1],
-                twists=self.twists[::-1],
+                twist_angles=self.twist_angles[::-1],
                 tip_airfoil=self.root_airfoil,
                 N=self.N,
                 M=self.M,
@@ -596,7 +594,7 @@ class Lifting_Surface:
                 spanwise_positions=self._span_dist,
                 x_offsets=self._xoffset_dist,
                 z_offsets=self._zoffset_dist,
-                twists=self.twists,
+                twist_angles=self.twist_angles,
                 tip_airfoil=self.tip_airfoil,
                 N=self.N,
                 M=self.M,
@@ -667,7 +665,6 @@ class Lifting_Surface:
         zs_lower = np.outer(self.root_airfoil.y_lower(chord_eta), self._chord_dist) + self._zoffset_dist
         zs = np.outer(self.root_airfoil.camber_line(chord_eta), self._chord_dist) + self._zoffset_dist
 
-        # print(xs.shape, ys.shape, zs.shape)
         # Rotate according to R_MAT
         coordinates = np.matmul(self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs.flatten()]))
         coordinates = coordinates.reshape((3, self.M, self.N))
@@ -684,10 +681,49 @@ class Lifting_Surface:
         )
         coordinates_lower = coordinates_lower.reshape((3, self.M, self.N))
 
+        # Rotate according to twist distribution:
+        # twist is a list of angles in degrees that are applied at the quarter chord point of each strip
+        # We need to rotate the grid points around the quarter chord point of each strip
+        # We first need to find the quarter chord point of each strip
+        # We then need to rotate the grid points around the quarter chord point of each strip
+        c_4 = coordinates[:, 0, :] + (coordinates[:, -1, :] - coordinates[:, 0, :]) / 4
+
+        rotated_coordinates = np.empty((3, self.M, self.N))
+        rotated_coordinates_upper = np.empty((3, self.M, self.N))
+        rotated_coordinates_lower = np.empty((3, self.M, self.N))
+
+        # For each strip, we rotate the grid points around the quarter chord point of the strip
+        for i in range(self.N):
+            # Rotate by the twist angle in the xz plane
+            R = np.array(
+                [
+                    [
+                        np.cos(self.twist_angles[i]),
+                        0,
+                        np.sin(self.twist_angles[i]),
+                    ],
+                    [0, 1, 0],
+                    [
+                        -np.sin(self.twist_angles[i]),
+                        0,
+                        np.cos(self.twist_angles[i]),
+                    ],
+                ],
+            )
+            rotated_coordinates[:, :, i] = (
+                np.matmul(R, (coordinates[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
+            )
+            rotated_coordinates_upper[:, :, i] = (
+                np.matmul(R, (coordinates_upper[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
+            )
+            rotated_coordinates_lower[:, :, i] = (
+                np.matmul(R, (coordinates_lower[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
+            )
+
         # Add origin
-        coordinates += self._origin[:, None, None]
-        coordinates_upper += self._origin[:, None, None]
-        coordinates_lower += self._origin[:, None, None]
+        coordinates = rotated_coordinates + self._origin[:, None, None]
+        coordinates_upper = rotated_coordinates_upper + self._origin[:, None, None]
+        coordinates_lower = rotated_coordinates_lower + self._origin[:, None, None]
 
         # The arrays are now in the form (3, M, N), we need to transpose them to (N, M, 3)
         self.grid = coordinates.transpose(2, 1, 0)

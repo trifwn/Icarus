@@ -4,6 +4,7 @@ Current BUILD IS UNSTABLE due to Major Refactoring for v1.0.0.
 
 ## TASKS
 
+- Add jax backend
 - Create Parametric Analysis Module (Computation of Sensitivity Derivatives for all solvers)
 - Define Constrained Optimization Workflow
 - Add Lower Order Models and Analytical Formulas for Stability
