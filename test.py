@@ -18,7 +18,7 @@ class BaseAirplaneTests(unittest.TestCase):
         gnvp3_run(run_parallel=True)
 
     def test3_geometry_gnvp3(self) -> None:
-        gnvp3_geometry(plot=False)
+        gnvp3_geometry(plot=True)
 
     # def test5_gnvp7_run(self) -> None:
     #     gnvp7_run(run_parallel= True)

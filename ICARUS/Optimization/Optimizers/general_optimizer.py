@@ -233,7 +233,7 @@ class General_SOO_Optimizer:
                 if not callable(non_lin_constraint["fun"]):
                     logging.warning(f"Non-Linear Constraint {non_lin_constraint} fun is not callable")
                     continue
-                non_linear_fun: Callable[..., float] = non_lin_constraint["fun"]
+                non_linear_fun = non_lin_constraint["fun"]
 
                 def fun_wrapper(x: FloatArray) -> float:
                     params = inspect.signature(non_linear_fun).parameters

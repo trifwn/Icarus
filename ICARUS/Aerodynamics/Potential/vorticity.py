@@ -1,8 +1,10 @@
+import jax
 import numpy as np
 
 from ICARUS.Core.types import FloatArray
 
 
+@jax.jit
 def vortexL(
     xp: float,
     yp: float,
@@ -59,6 +61,7 @@ def vortexL(
     return u, v, w
 
 
+@jax.jit
 def voring(
     x: float,
     y: float,
@@ -146,6 +149,7 @@ def voring(
     return U, Ustar
 
 
+@jax.jit
 def hshoe2(
     x: float,
     y: float,
@@ -221,6 +225,7 @@ def hshoe2(
     return U, Ustar
 
 
+@jax.jit
 def hshoeSL2(
     x: float,
     y: float,
@@ -319,6 +324,7 @@ def hshoeSL2(
     return U, Ustar
 
 
+@jax.jit
 def symm_wing_panels(
     x: float,
     y: float,
