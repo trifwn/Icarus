@@ -28,9 +28,11 @@ def single_reynolds_run(
     for key, value in solver_options.items():
         setattr(xf, key, value)
 
-    xpts, ypts = airfoil.selig
-    naca = XFAirfoil(x=xpts, y=ypts)
-    xf.airfoil = naca
+    pts = airfoil.selig
+    xpts = pts[0]
+    ypts = pts[1]
+    xf_airf_obj = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = xf_airf_obj
     if xf.max_iter > 1000:
         xf.max_iter = 1000
 

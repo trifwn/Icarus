@@ -69,6 +69,6 @@ from .db import Database
 
 cwd = os.getcwd()
 DB = Database()
-DB.load_data()
+# DB.load_data()
 # DB.inspect()
 os.chdir(cwd)

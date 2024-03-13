@@ -32,10 +32,10 @@ class NewmarkIntegrator(Integrator):
         a_old: jnp.ndarray,
         t: float,
     ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
-        M = self.system.M(t, jnp.concatenate([u_old, v_old]))
-        C = self.system.C(t, jnp.concatenate([u_old, v_old]))
-        K = self.system.f_int(t, jnp.concatenate([u_old, v_old]))
-        f_ext = self.system.f_ext(t, jnp.concatenate([u_old, v_old])).squeeze()
+        M = self.system.M(t, u_old)
+        C = self.system.C(t, u_old)
+        K = self.system.f_int(t, u_old)
+        f_ext = self.system.f_ext(t, u_old).squeeze()
 
         # Calculate predictors
         u_new = u_old + self.dt * v_old + (0.5 - self.beta) * self.dt**2 * a_old
@@ -48,8 +48,8 @@ class NewmarkIntegrator(Integrator):
             f_ext - K @ u_new - C @ v_new,
         )
         # Calculate Correctors
-        u_new += self.beta * self.dt**2 * a_new
         v_new += self.gamma * self.dt * a_new
+        u_new += self.beta * self.dt**2 * a_new
         return u_new, v_new, a_new
 
     def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
@@ -65,7 +65,10 @@ class NewmarkIntegrator(Integrator):
 
         # Simulate the system using the Newmark integrator
         # using lax.fori_loop
-        def body(i, args):
+        def body(
+            i: int,
+            args: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
             times, trajectory, accelaration = args
 
             u_old = trajectory[i - 1][: x0.shape[0] // 2].squeeze()

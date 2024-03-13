@@ -13,7 +13,7 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
     read_polars_2d(EXTERNAL_DB)
-    airfoils: Struct = DB.foils_db.set_available_airfoils()
+    airfoils: Struct = DB.foils_db.airfoils
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     wing_position: FloatArray = np.array(

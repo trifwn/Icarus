@@ -4,7 +4,7 @@ import jax.numpy as jnp
 from jax import jit
 from jax import lax
 
-from ..first_order_system import DynamicalSystem
+from ..base_system import DynamicalSystem
 from .base_integrator import Integrator
 
 
@@ -79,13 +79,15 @@ class RK45Integrator(Integrator):
         trajectory = [x0]
         times = [t0]
         x = x0
-        dt = self.dt
+        dt_o = self.dt
+        dt = dt_o
         t = t0
         itera = 0
 
         while t < tf:
             x, dt = self.step(t, x, dt)
-            t += dt
+            t += dt_o
+            dt_o = dt
             trajectory.append(x)
             times.append(t)
             itera += 1

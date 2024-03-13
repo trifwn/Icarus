@@ -159,10 +159,10 @@ def setup_f2w(HOMEDIR: str, CASEDIR: str) -> None:
         try:
             os.symlink(src, dst)
         except Exception as e:
-            if e == FileExistsError:
+            if isinstance(e, FileExistsError):
                 os.remove(dst)
                 os.symlink(src, dst)
-            elif e == OSError:
+            elif isinstance(e, OSError):
                 import shutil
 
                 # Permission Error so insted of symlink we do copy

@@ -96,7 +96,7 @@ solver_parameters: list[Parameter] = [
 class Xfoil(Solver):
     def __init__(self) -> None:
         super().__init__(
-            name="Foil2Wake",
+            name="XFoil",
             solver_type="2D-IBLM",
             fidelity=1,
             available_analyses=[

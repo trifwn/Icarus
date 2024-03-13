@@ -13,7 +13,7 @@ def save_multiple_reyn(
     polars: list[dict[str, FloatArray]],
     reynolds: list[float],
 ) -> None:
-    airfoil_dir: str = os.path.join(DB.foils_db.DATADIR, f"NACA{airfoil.name}")
+    airfoil_dir: str = os.path.join(DB.foils_db.DATADIR, f"{airfoil.name}")
     for i, reyn_data in enumerate(polars):
         if len(reyn_data) == 0:
             continue
@@ -39,3 +39,12 @@ def save_multiple_reyn(
         fname = "clcd.xfoil"
         df.to_csv(fname, sep="\t", index=True, index_label="AoA")
     airfoil.save_selig_te(airfoil_dir)
+
+    # Add Results to Database
+    # DB.foils_db.update_airfoil(airfoil)
+    # DB.vehicles_db.load_gnvp_data(
+    #     plane=plane,
+    #     state=state,
+    #     vehicle_folder=plane.directory,
+    #     gnvp_version=gvnp_version,
+    # )

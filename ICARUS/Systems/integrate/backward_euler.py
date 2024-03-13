@@ -32,7 +32,7 @@ class BackwardEulerIntegrator(Integrator):
         x_new = x + self.dt * self.system(t, x)
 
         # Define the loop body
-        def body(args):
+        def body(args: tuple[int, jnp.ndarray, jnp.ndarray]) -> tuple[int, jnp.ndarray, jnp.ndarray]:
             iteration, x_new, x_old = args
 
             # Calculate the update using the backward Euler method
@@ -45,12 +45,12 @@ class BackwardEulerIntegrator(Integrator):
             iteration += 1
             return iteration, x_new, x_old
 
-        def cond(args):
+        def cond(args: tuple[int, jnp.ndarray, jnp.ndarray]) -> jnp.bool_:
             iteration, x_new, x_old = args
             return (jnp.max(jnp.abs(x_new - x_old)) >= self.tol) & (iteration < self.max_iter)
 
         # Loop until convergence using lax.while_loop
-        iterations, x_new, _ = lax.while_loop(cond, body, (0, x_new, jnp.zeros_like(x_new)))
+        _, x_new, _ = lax.while_loop(cond, body, (0, x_new, jnp.zeros_like(x_new)))
         return x_new
 
     def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
@@ -65,7 +65,7 @@ class BackwardEulerIntegrator(Integrator):
     def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the backward Euler method and
         # stores the results in the trajectory array
-        def body(i, args):
+        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             t = times[i - 1] + self.dt
             x = trajectory[i - 1]

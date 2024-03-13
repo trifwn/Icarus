@@ -44,15 +44,15 @@ For the visualization of the results of the F2W solver, the following routines a
 from typing import Any
 from typing import Callable
 
-from . import db_polars
-from . import db_reynolds
+from . import airfoil_polars
+from . import airfoil_reynolds
 from . import f2w_pressure
 
-__all__ = ['db_polars', 'db_reynolds', 'f2w_pressure']
+__all__ = ['airfoil_polars', 'airfoil_reynolds', 'f2w_pressure']
 
 # Get all the visualization functions
-from .db_polars import plot_airfoil_polars
-from .db_reynolds import plot_airfoil_reynolds
+from .airfoil_polars import plot_airfoil_polars
+from .airfoil_reynolds import plot_airfoil_reynolds
 
 # from .f2w_pressure import plot_angle_cp, plot_multiple_cps < Deprecated
 

@@ -5,7 +5,7 @@ import numpy as np
 from jax import jit
 from jax import lax
 
-from ..first_order_system import DynamicalSystem
+from ..base_system import DynamicalSystem
 from .base_integrator import Integrator
 
 
@@ -39,7 +39,7 @@ class RK4Integrator(Integrator):
     def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the RK4 method and
         # stores the results in the trajectory array
-        def body(i, args):
+        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             x = trajectory[i - 1]
             t = times[i - 1]

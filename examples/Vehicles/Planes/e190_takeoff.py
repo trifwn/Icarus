@@ -30,7 +30,7 @@ def e190_takeoff_generator(
     read_polars_2d(EXTERNAL_DB)
     from ICARUS.Airfoils.airfoil import Airfoil
 
-    naca64418: Airfoil = DB.foils_db.set_available_airfoils()["NACA64418"]
+    naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]
     naca64418_fl: Airfoil = naca64418.flap_airfoil(
         flap_hinge=flap_hinge,
         chord_extension=chord_extension,

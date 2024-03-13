@@ -85,7 +85,7 @@ def get_airfoil_NACA() -> Airfoil:
 
 
 def get_airfoil_db() -> Airfoil:
-    airfoils: Struct = DB.foils_db.set_available_airfoils()
+    airfoils: Struct = DB.foils_db.airfoils
     airfoil_question: list[List] = [
         List(
             "airfoil",

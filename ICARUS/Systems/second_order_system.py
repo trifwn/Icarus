@@ -4,8 +4,9 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 from jax import jit
+from numpy import ndarray
 
-from .first_order_system import DynamicalSystem
+from .base_system import DynamicalSystem
 from .first_order_system import NonLinearSystem
 
 
@@ -20,9 +21,10 @@ class SecondOrderSystem(DynamicalSystem):
         M: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray,
         C: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray,
         K: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray,
-        f_ext: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray = lambda t, u: jnp.zeros_like(u),
+        f_ext: (Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray) = lambda t, u: jnp.zeros_like(u),
     ) -> None:
         if isinstance(M, jnp.ndarray):
+            print("Constant Mass Matrix: ", M)
             if M.shape == () or M.shape == (1,):
                 M = M.reshape(-1, 1)
             self.M = jit(lambda t, x: M)
@@ -30,6 +32,7 @@ class SecondOrderSystem(DynamicalSystem):
             self.M = jit(M)
 
         if isinstance(C, jnp.ndarray):
+            print("Constant Damping Matrix: ", C)
             if C.shape == () or C.shape == (1,):
                 C = C.reshape(-1, 1)
             self.C = jit(lambda t, x: C)
@@ -37,6 +40,7 @@ class SecondOrderSystem(DynamicalSystem):
             self.C = jit(C)
 
         if isinstance(K, jnp.ndarray):
+            print("Constant Stiffness Matrix: ", K)
             if K.shape == () or K.shape == (1,):
                 K = K.reshape(-1, 1)
             self.f_int = jit(lambda t, x: K)
@@ -44,9 +48,10 @@ class SecondOrderSystem(DynamicalSystem):
             self.f_int = jit(K)
 
         if isinstance(f_ext, jnp.ndarray):
+            print("Constant External Force: ", f_ext)
             if f_ext.shape == () or f_ext.shape == (1,):
                 f_ext = f_ext.reshape(-1, 1)
-            f_ext_fun = lambda t, x: f_ext
+            f_ext_fun: Callable[[float, jnp.ndarray], jnp.ndarray] = lambda t, x: f_ext
         else:
             f_ext_fun = f_ext
 
@@ -54,14 +59,19 @@ class SecondOrderSystem(DynamicalSystem):
         def f_ext_wrapped(t: float, x: jnp.ndarray) -> jnp.ndarray:
             return f_ext_fun(t, x).reshape(-1, 1)
 
-        self.f_ext = jit(f_ext_wrapped)
+        # self.f_ext = jit(f_ext_wrapped)
+        self.f_ext = f_ext_wrapped
 
     @partial(jit, static_argnums=(0,))
     def jacobian(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
-        return jax.jacobian(self.__call__, argnums=0)(t, x)
+        return jax.jacobian(self.__call__, argnums=1)(t, x)
 
     def convert_to_first_order(self) -> NonLinearSystem:
         return NonLinearSystem(f=self.__call__)
+
+    def eigenvalues(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
+        A, _ = self.linearize(t, x)
+        return jnp.linalg.eigvals(A)
 
     @partial(jit, static_argnums=(0,))
     def __call__(self, t: float, x: jnp.ndarray) -> jnp.ndarray:

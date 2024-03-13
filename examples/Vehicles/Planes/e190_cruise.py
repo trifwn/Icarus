@@ -24,11 +24,11 @@ def e190_cruise(name: str) -> Airplane:
         Airplane: hermes Airplane object
     """
     read_polars_2d(EXTERNAL_DB)
-    airfoils: Struct = DB.foils_db.set_available_airfoils()
+    airfoils: Struct = DB.foils_db.airfoils
 
     from ICARUS.Airfoils.airfoil import Airfoil
 
-    naca64418: Airfoil = DB.foils_db.set_available_airfoils()["NACA64418"]
+    naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]
     naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35, plotting=False)
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)

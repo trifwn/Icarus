@@ -94,7 +94,7 @@ def main() -> None:
 
     # airfoil_names: list[str] = ["0012"]
     # Load From DB
-    db_airfoils: Struct = DB.foils_db.set_available_airfoils()
+    db_airfoils: Struct = DB.foils_db.airfoils
     for airfoil_name in airfoil_names:
         try:
             airfoils.append(db_airfoils[airfoil_name])
@@ -234,7 +234,7 @@ def main() -> None:
             f"Airfoil {airfoil.name} completed in {airfoil_etime - airfoil_stime} seconds",
         )
 
-        from ICARUS.Visualization.airfoil.db_polars import plot_airfoil_polars
+        from ICARUS.Visualization.airfoil.airfoil_polars import plot_airfoil_polars
 
         DB.foils_db.load_data()
         axs, fig = plot_airfoil_polars(

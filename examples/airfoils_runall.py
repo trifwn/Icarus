@@ -39,7 +39,7 @@ def main() -> None:
     airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
     # airfoil_names: list[str] = ["2412", "4415"]
     # Load From DB
-    db_airfoils: Struct = DB.foils_db.set_available_airfoils()
+    db_airfoils: Struct = DB.foils_db.airfoils
     for airfoil_name in airfoil_names:
         try:
             airfoils.append(db_airfoils[airfoil_name])

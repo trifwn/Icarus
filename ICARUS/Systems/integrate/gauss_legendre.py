@@ -4,8 +4,9 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jit
 from jax import lax
+from jax.debug import print as jprint
 
-from ..first_order_system import DynamicalSystem
+from ..base_system import DynamicalSystem
 from .base_integrator import Integrator
 
 
@@ -32,7 +33,7 @@ class GaussLegendreIntegrator(Integrator):
 
         # Number of Gauss-Legendre nodes and weights
         self.n = n
-        self.nodes, self.weights = np.polynomial.legendre.leggauss(self.n)
+        self.nodes, self.weights = np.polynomial.legendre.leggauss(self.n)  # type: ignore
 
     @partial(jit, static_argnums=(0,))
     def step(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
@@ -44,11 +45,11 @@ class GaussLegendreIntegrator(Integrator):
         x1_guess = x + (1 / 2 - jnp.sqrt(3) / 6) * self.dt * k1
         k2 = self.system(t, x1_guess)
         a11 = 1 / 4
-        a12 = 1 / 4 - jnp.sqrt(3) / 6
-        a21 = 1 / 4 + jnp.sqrt(3) / 6
+        a12 = 1 / 4 - np.sqrt(3) / 6
+        a21 = 1 / 4 + np.sqrt(3) / 6
         a22 = 1 / 4
 
-        def error(k1, k2):
+        def error(k1: jnp.ndarray, k2: jnp.ndarray) -> jnp.ndarray:
             """Calculates the error for the current state estimates."""
             predicted_state1 = x + (a11 * self.dt * k1 + a12 * self.dt * k2)
             predicted_state2 = x + (a21 * self.dt * k1 + a22 * self.dt * k2)
@@ -59,12 +60,12 @@ class GaussLegendreIntegrator(Integrator):
                 ],
             )
 
-        def cond_fun(args):
+        def cond_fun(args: tuple[int, jnp.ndarray, jnp.ndarray]) -> bool:
             iteration, k1, k2 = args
             er = error(k1, k2)
             return (jnp.linalg.norm(er) > self.tol) & (iteration < self.max_iter)
 
-        def body_fun(args):
+        def body_fun(args: tuple[int, jnp.ndarray, jnp.ndarray]) -> tuple[int, jnp.ndarray, jnp.ndarray]:
             iteration, k1, k2 = args
             er = error(k1, k2)
             j1 = self.system.jacobian(t, x + (a11 * self.dt * k1 + a12 * self.dt * k2))
@@ -81,6 +82,7 @@ class GaussLegendreIntegrator(Integrator):
             k1 = k_next[:d]
             k2 = k_next[d:]
 
+            # jprint("Time step {x}, Iteration {i}, Error {e}",x=t, i=iteration, e=jnp.linalg.norm(er))
             return iteration + 1, k1, k2
 
         iteration, k1, k2 = lax.while_loop(cond_fun, body_fun, (0, k1, k2))

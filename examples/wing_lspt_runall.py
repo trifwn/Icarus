@@ -11,9 +11,9 @@ from typing import Any
 import numpy as np
 from Vehicles.Planes.e190_cruise import e190_cruise
 from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
-from Vehicles.Planes.hermes import hermes
 from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
+from examples.Vehicles.Planes.hermes_5 import hermes
 from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.Computation.Solvers.solver import Solver
 from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project

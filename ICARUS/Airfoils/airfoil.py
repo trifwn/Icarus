@@ -50,6 +50,7 @@ methods from the original airfoil class which include but are not limited to:
 
 
 """
+import logging
 import os
 import re
 import urllib.request
@@ -84,7 +85,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         upper: FloatArray,
         lower: FloatArray,
         name: str,
-        n_points: int,
+        n_points: int = 100,
     ) -> None:
         """
         Initialize the Airfoil class
@@ -97,28 +98,23 @@ class Airfoil(af.Airfoil):  # type: ignore
         """
         super().__init__(upper, lower)
         name = name.replace(" ", "")
-        name = name.replace(".dat", "")
-        name = name.replace("naca", "")
-        if name.lower().startswith("naca"):
-            self.file_name: str = name.upper()
-        else:
-            self.file_name = f"naca{name}"
-        # self.file_name: str = f"{name}"
-        name = name.replace("NACA", "")
         self.name: str = name
+        self.file_name: str = name
 
         self.n_points: int = n_points
         self.polars: dict[str, Any] | Struct = {}
 
-        self.airfoil_to_selig()
         # self.fix_le()
+        self.selig = self.to_selig()
 
         # For Type Checking
         self._x_upper: FloatArray = self._x_upper
         self._y_upper: FloatArray = self._y_upper
+
         self._x_lower: FloatArray = self._x_lower
         self._y_lower: FloatArray = self._y_lower
-        # self.getFromWeb()
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
 
     @classmethod
     def morph_new_from_two_foils(
@@ -230,23 +226,73 @@ class Airfoil(af.Airfoil):  # type: ignore
         #     sep=" ",
         #     on_bad_lines="skip",
         # )
+        logging.info(f"Loading airfoil from {filename}")
         with open(filename) as file:
             for line in file:
-                if line.startswith("NACA"):
-                    continue
+                line = line.strip()
+
                 if line == "\n":
                     continue
-                try:
-                    x.append(float(line.split()[0]))
-                    y.append(float(line.split()[1]))
-                except ValueError:
-                    continue
-        # find index of x = 0
-        idx: int = x.index(0)
 
-        upper: FloatArray = np.array([x[:idx], y[:idx]])
-        lower: FloatArray = np.array([x[idx:], y[idx:]])
-        self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
+                # Check if it contains two numbers
+                if len(line.split()) != 2:
+                    continue
+
+                try:
+                    x_i = float(line.split()[0])
+                    y_i = float(line.split()[1])
+                    if np.abs(x_i) > 2.0 or np.abs(y_i) > 2.0:
+                        continue
+                    x.append(x_i)
+                    y.append(y_i)
+                except (ValueError, IndexError):
+                    continue
+
+        # Remove duplicate points from the array
+        # A point is duplicated if it has the same x and y coordinates
+        # This is done to avoid issues with the interpolation
+        x_arr = np.array(x)
+        y_arr = np.array(y)
+
+        # Combine x and y coordinates into a single array of complex numbers
+        complex_coords = x_arr + 1j * y_arr
+        # Find unique complex coordinates
+        unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+
+        # Use the unique indices to get the unique x and y coordinates
+        x_clean = x_arr[unique_indices]
+        y_clean = y_arr[unique_indices]
+
+        # Find Where x_arr = 0
+        idxs = np.where(x_arr == 0)[0].flatten()
+        if len(idxs) == 0:
+            # Find where the x_arr is closest to 0
+            # Check if the min values is duplicated in the array
+            idx = np.argmin(np.abs(x_arr))
+            # If it is duplicated, take the last one
+            if len(np.where(x_arr == x_arr[idx])[0]) > 1:
+                idx = np.where(x_arr == x_arr[idx])[0][-1]
+        elif len(idxs) == 1:
+            idx = idxs[0] + 1
+        else:
+            idx = idxs[-1]
+
+        if idx == 1:
+            idx = np.argmin(np.abs(x_arr[1:]))
+            # If it is duplicated, take the last one
+            if len(np.where(x_arr[1:] == x_arr[idx])[0]) > 1:
+                idx = np.where(x_arr[1:] == x_arr[idx])[0][-1]
+
+        # Calibrate idx to account for removed duplicates
+        idx_int: int = int(unique_indices[unique_indices < idx].shape[0])
+
+        upper: FloatArray = np.array([x_clean[:idx_int], y_clean[:idx_int]])
+        lower: FloatArray = np.array([x_clean[idx_int:], y_clean[idx_int:]])
+        try:
+            self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
+        except ValueError as e:
+            print(f"Error loading airfoil from {filename}")
+            raise (ValueError(e))
         return self
 
     def fix_le(self) -> None:
@@ -426,15 +472,31 @@ class Airfoil(af.Airfoil):  # type: ignore
         else:
             return np.array(super().camber_line(x), dtype=float)
 
-    def airfoil_to_selig(self) -> None:
+    def to_selig(self) -> FloatArray:
         """
-        Returns the airfoil in the selig format
+        Returns the airfoil in the selig format.
+        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
+        back to the trailing edge in either direction:
         """
-        x_points: FloatArray = np.hstack((self._x_lower[::-1], self._x_upper[1:])).T
-        y_points: FloatArray = np.hstack((self._y_lower[::-1], self._y_upper[1:])).T
-        # y_points[0]=0
-        # y_points[-1]=0
-        self.selig: FloatArray = np.vstack((x_points, y_points))
+
+        if self._x_upper[0] < self._x_upper[-1]:
+            y_up = self._y_upper[::-1]
+            x_up = self._x_upper[::-1]
+        else:
+            x_up = self._x_upper
+            y_up = self._y_upper
+
+        if self._x_lower[0] > self._x_lower[-1]:
+            x_lo = self._x_lower[::-1]
+            y_lo = self._y_lower[::-1]
+        else:
+            x_lo = self._x_lower
+            y_lo = self._y_lower
+
+        x_points: FloatArray = np.hstack((x_up, x_lo)).T
+        y_points: FloatArray = np.hstack((y_up, y_lo)).T
+
+        return np.vstack((x_points, y_points))
 
     def load_from_web(self) -> None:
         """
@@ -521,11 +583,11 @@ class Airfoil(af.Airfoil):  # type: ignore
         pts = self.selig
         x, y = pts
         if scatter:
-            plt.scatter(x[: self.n_points], y[: self.n_points], s=1)
-            plt.scatter(x[self.n_points :], y[self.n_points :], s=1)
+            plt.scatter(x[: self.n_upper], y[: self.n_upper], s=1)
+            plt.scatter(x[self.n_upper :], y[self.n_upper :], s=1)
         else:
-            plt.plot(x[: self.n_points], y[: self.n_points], "r")
-            plt.plot(x[self.n_points :], y[self.n_points :], "b")
+            plt.plot(x[: self.n_upper // 2], y[: self.n_upper // 2], "r")
+            plt.plot(x[self.n_upper + 20 :], y[self.n_upper + 20 :], "b")
 
         if camber:
             x = np.linspace(0, 1, 100)

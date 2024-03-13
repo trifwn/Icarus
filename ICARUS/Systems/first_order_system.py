@@ -47,3 +47,7 @@ class NonLinearSystem(DynamicalSystem):
         # Linearize the system first and then use the linearized system to get the output
         linearized: LinearSystem = LinearSystem(*self.linearize(t, x))
         return linearized(t, x)
+
+    def eigenvalues(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
+        A, _ = self.linearize(t, x)
+        return jnp.linalg.eigvals(A)

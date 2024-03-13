@@ -7,7 +7,16 @@ from ICARUS import APPHOME
 class Database:
     """Master Database Class Containing other Databases and managing them."""
 
+    # Create only one instance of the database
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
+        """Initializes the Database"""
         self.HOMEDIR: str = APPHOME
         self.foils_db: Database_2D = Database_2D()
         self.vehicles_db: Database_3D = Database_3D()

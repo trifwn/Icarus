@@ -5,7 +5,7 @@ import numpy as np
 from jax import jit
 from jax import lax
 
-from ..first_order_system import DynamicalSystem
+from ..base_system import DynamicalSystem
 from .base_integrator import Integrator
 
 
@@ -19,18 +19,18 @@ class CrankNicolsonIntegrator(Integrator):
 
     @partial(jit, static_argnums=(0,))
     def step(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
-        def error(x1):
+        def error(x1: jnp.ndarray) -> jnp.ndarray:
             """Calculates the error for the current state estimate."""
             k1 = self.system(t, x)
             k2 = self.system(t + self.dt, x1)
             predicted_state = x + 0.5 * self.dt * (k1 + k2)
             return predicted_state - x - self.dt * self.system(t + 0.5 * self.dt, predicted_state)
 
-        def cond_fun(er):
+        def cond_fun(er: jnp.ndarray) -> jnp.bool_:
             """Loop condition based on error norm."""
             return jnp.linalg.norm(er) > self.tol
 
-        def body_fun(x1):
+        def body_fun(x1: jnp.ndarray) -> jnp.ndarray:
             """Iteratively solve for the full step solution."""
             j = self.system.jacobian(t + 0.5 * self.dt, x1)
             er = error(x1)
@@ -52,7 +52,7 @@ class CrankNicolsonIntegrator(Integrator):
     def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the Crank-Nicolson method and
         # stores the results in the trajectory array
-        def body(i, args):
+        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             t = times[i - 1] + self.dt
             x = trajectory[i - 1]

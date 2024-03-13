@@ -3,38 +3,33 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
+from .. import colors_
+from .. import markers
 from ICARUS.Core.struct import Struct
 from ICARUS.Database import DB
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
 
 
-def plot_airfoils_polars(
-    airfoil_names: list[str],
-    solvers: list[str] = ["All"],
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
-    reynolds: float = 1e6,
+def plot_airfoil_polars(
+    airfoil_name: str,
+    solvers: list[str] | str = "All",
+    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CD", "CL"]],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
 ) -> tuple[ndarray[Any, Any], Figure]:
-    """Function to plot airfoil polars for a given list of airfoils and solvers.
-
+    """
     Args:
-        airfoil_name (str): Airfoil name (e.g. naca0012)
-        reynolds (str): Reynolds number (e.g. 100000)
-        solvers (list[str], optional): Can be either all or individual solver names. Defaults to ["All"].
+        airfoil_name (str): Airfoil names
+        solvers (list[str] | str, optional): List of solver Names. Defaults to "All".
         plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
-        size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
+        size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
         aoa_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
         title (str, optional): Figure Title. Defaults to "Aero Coefficients".
     """
-
     number_of_plots = len(plots) + 1
 
     # Divide the plots equally
@@ -61,22 +56,20 @@ def plot_airfoils_polars(
     # Get the data from the database
     data: Struct = DB.foils_db.data
 
-    for j, airfoil_name in enumerate(airfoil_names):
-        try:
-            db_solvers = data[airfoil_name]
-        except KeyError:
-            db_solvers = data[f"NACA{airfoil_name}"]
+    try:
+        db_solvers = data[airfoil_name]
+    except KeyError:
+        db_solvers = data[f"NACA{airfoil_name}"]
 
-        for i, solver in enumerate(db_solvers):
-            if solver not in solvers:
-                print(f"Skipping {solver} is not in {solvers}")
-                continue
+    for i, solver in enumerate(db_solvers):
+        if solver not in solvers:
+            print(f"Skipping {solver} is not in {solvers}")
+            continue
 
-            available_reynolds = db_solvers[solver].keys()
-            # Find the closest reynolds number to the given reynolds
-            reyn = min(available_reynolds, key=lambda x: abs(float(x) - reynolds))
+        for j, reynolds in enumerate(db_solvers[solver].keys()):
+            print(reynolds, solver)
             try:
-                polar: DataFrame = db_solvers[solver][reyn]
+                polar: DataFrame = db_solvers[solver][reynolds]
 
                 # Sort the data by AoA
                 polar = polar.sort_values(by="AoA")
@@ -94,9 +87,9 @@ def plot_airfoils_polars(
 
                     x: Series = polar[f"{key0}"]
                     y: Series = polar[f"{key1}"]
-                    c = colors_(j / len(airfoil_names))
+                    c = colors_(j / len(db_solvers[solver].keys()))
                     m = markers[i].get_marker()
-                    label: str = f"{airfoil_name}: {reyn} - {solver}"
+                    label: str = f"{airfoil_name}: {reynolds} - {solver}"
                     try:
                         ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
                     except ValueError as e:

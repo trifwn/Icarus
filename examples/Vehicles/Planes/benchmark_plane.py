@@ -14,7 +14,7 @@ from ICARUS.Vehicle.wing_segment import Wing_Segment
 
 def get_bmark_plane(name: str) -> tuple[Airplane, State]:
     read_polars_2d(EXTERNAL_DB)
-    airfoils: Struct = DB.foils_db.set_available_airfoils()
+    airfoils: Struct = DB.foils_db.airfoils
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     wing_position: FloatArray = np.array(

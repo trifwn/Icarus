@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-from Vehicles.Planes.hermes import hermes
 
+from examples.Vehicles.Planes.hermes_5 import hermes
 from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import avl_dynamic_analysis_fd
 from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import avl_dynamic_analysis_implicit
 from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import process_avl_fd_res

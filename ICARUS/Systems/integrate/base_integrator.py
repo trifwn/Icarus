@@ -2,7 +2,7 @@ from typing import Any
 
 import jax.numpy as jnp
 
-from ..first_order_system import DynamicalSystem
+from ..base_system import DynamicalSystem
 
 
 class Integrator:
@@ -11,7 +11,7 @@ class Integrator:
         self.type: str = "None"
         raise NotImplementedError
 
-    def step(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
+    def step(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError
 
     def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
