@@ -17,7 +17,12 @@ from ICARUS.Visualization import markers
 def plot_airfoils_polars(
     airfoil_names: list[str],
     solvers: list[str] = ["All"],
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [
+        ["AoA", "CL"],
+        ["AoA", "CD"],
+        ["AoA", "Cm"],
+        ["CL", "CD"],
+    ],
     reynolds: float = 1e6,
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
@@ -82,8 +87,30 @@ def plot_airfoils_polars(
                 polar = polar.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
+                    polar = polar.loc[
+                        (polar["AoA"] >= aoa_bounds[0])
+                        & (polar["AoA"] <= aoa_bounds[1])
+                    ]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+                    if plot[1] == "CL/CD" or plot[1] == "CL/CD":
+                        polar["CL/CD"] = polar["CL"] / polar["CD"]
+                        # Get the index of the values that are greater than 200
+                        idx = polar[polar["CL/CD"] > 200].index
+                        idx2 = polar[polar["CL/CD"] < -200].index
+                        # Replace the values with 0
+                        polar.loc[idx, "CL/CD"] = 0
+                        polar.loc[idx2, "CL/CD"] = 0
+
+                    if plot[1] == "CD/CL" or plot[1] == "CD/CL":
+                        polar["CD/CL"] = polar["CD"] / polar["CL"]
+                        # If any value is infinite (or greater than 200), replace it with 0
+                        # Get the index of the values that are greater than 200
+                        idx = polar[polar["CD/CL"] > 200].index
+                        idx2 = polar[polar["CD/CL"] < -200].index
+                        # Replace the values with 0
+                        polar.loc[idx, "CD/CL"] = 0
+                        polar.loc[idx2, "CD/CL"] = 0
+
                     key0 = f"{plot[0]}"
                     key1 = f"{plot[1]}"
 
@@ -98,7 +125,16 @@ def plot_airfoils_polars(
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reyn} - {solver}"
                     try:
-                        ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                        ax.plot(
+                            x,
+                            y,
+                            ls="--",
+                            color=c,
+                            marker=m,
+                            label=label,
+                            markersize=3.5,
+                            linewidth=1,
+                        )
                     except ValueError as e:
                         raise e
             except (KeyError, ValueError) as solv:

@@ -41,7 +41,7 @@ class Xfoil_Aseq_PolarAnalysis(Analysis):
     ) -> None:
         super().__init__(
             solver_name="Xfoil",
-            analysis_name="Airfoil Polar Analysis For a multiple Reynolds zeroing BL",
+            analysis_name="Airfoil Polar Analysis For a multiple Reynolds using aseq",
             options=[
                 AirfoilInput(),
                 mach_option,

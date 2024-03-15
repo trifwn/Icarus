@@ -35,6 +35,9 @@ moment, and the slope of the Cl vs Alpha curve by calling:
 >>> polars.get_cl_slope(cl_curve)
 
 """
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -56,9 +59,8 @@ def interpolate_series_index(xval: float, series: pd.Series) -> float:
         series (pd.Series): Series to interpolate from
 
     Returns:
-        float: Interpolated Value
+        float: Interpolated Index
     """
-
     return float(np.interp([xval], series.to_numpy(), series.index.to_numpy())[0])
 
 
@@ -106,13 +108,14 @@ def get_linear_series(series: pd.Series) -> pd.Series:
 class Polars:
     """
     Airfoil Polars Class
-
     """
 
     def __init__(
         self,
+        name: str,
         data: Struct | dict[str, DataFrame],
     ) -> None:
+        self.name = name
         self.data: Struct | dict[str, DataFrame] = data
 
         self.reynolds_keys: list[str] = list(data.keys())
@@ -166,7 +169,7 @@ class Polars:
             potential_cl.index = Index(df["AoA"].astype("float32"))
             potential_cm = df[f"Cm_{self.reynolds_keys[least_idx]}"]
             potential_cm.index = Index(df["AoA"].astype("float32"))
-        self.a_zero_pot: float = self.get_zero_lift(potential_cl)
+        self.a_zero_pot: float = self.get_zero_lift_angle(potential_cl)
 
         # Potential Cm at Zero Lift Angle
         self.cm_pot: float = self.get_zero_lift_cm(potential_cm, self.a_zero_pot)
@@ -175,7 +178,7 @@ class Polars:
         max_idx: int = self.reynolds_nums.index(max(self.reynolds_nums))
         viscous: pd.Series = df[f"CL_{self.reynolds_keys[max_idx]}"]
         viscous.index = Index(df["AoA"].astype("float32"))
-        self.a_zero_visc: float = self.get_zero_lift(viscous)
+        self.a_zero_visc: float = self.get_zero_lift_angle(viscous)
 
         # Slope of Cl vs Alpha (viscous)
         self.cl_slope_visc: float = self.get_cl_slope(viscous)
@@ -211,15 +214,103 @@ class Polars:
 
         return df
 
+    def get_reynolds_zero_lift_angle(self, reynolds: float | str) -> float:
+        """Get Reynolds Zero Lift Angle"""
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cl_curve: pd.Series = df["CL"]
+        cl_curve.index = Index(df["AoA"].astype("float32"))
+        return self.get_zero_lift_angle(cl_curve)
+
+    def get_reynolds_cl_slope(self, reynolds: float | str) -> float:
+        """Get Reynolds Cl Slope"""
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cl_curve: pd.Series = df["CL"]
+        cl_curve.index = Index(df["AoA"].astype("float32"))
+        return self.get_cl_slope(cl_curve)
+
+    def plot_reynolds_cl_curve(
+        self,
+        reynolds: float | str,
+        fig=None,
+        ax=None,
+    ) -> None: 
+        """Plot Reynolds Cl Curve"""
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cl = df["CL"]
+        cl.index = Index(df["AoA"].astype("float32"))
+        aoa = df["AoA"]
+
+        if fig is None or ax is None:
+            fig, ax = plt.subplots()
+
+        ax.plot(aoa, cl, label=f"Reynolds {reynolds}")
+        ax.set_xlabel("Angle of Attack [deg]")
+        ax.set_ylabel("Lift Coefficient")
+        ax.set_title(f"Reynolds {reynolds} Cl Curve")
+        ax.legend()
+        ax.grid(True)
+        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--", label="Zero Lift Angle")
+        ax.axhline(0.0, color="k", linestyle="--")
+    
+    def plot_reynolds_cd_curve(
+        self,
+        reynolds: float | str,
+        fig=None,
+        ax=None,
+    ) -> None:
+        """Plot Reynolds Cd Curve"""
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cd = df["CD"]
+        cl = df["CL"]
+        cl.index = Index(df["AoA"].astype("float32"))
+        aoa = df["AoA"]
+
+        if fig is None or ax is None:
+            fig, ax = plt.subplots()
+
+        ax.plot(aoa, cd, label=f"Reynolds {reynolds}")
+        ax.set_xlabel("Angle of Attack [deg]")
+        ax.set_ylabel("Drag Coefficient")
+        ax.set_title(f"Reynolds {reynolds} Cd Curve")
+        ax.legend()
+        ax.grid(True)
+        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--", label="Zero Lift Angle")
+        ax.axhline(0.0, color="k", linestyle="--")
+    
+    def plot_reynolds_cl_over_cd_curve(
+        self,
+        reynolds: float | str,
+        fig=None,
+        ax=None,
+    ) -> None:
+        """Plot Reynolds Cl Over Cd Curve"""
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cl = df["CL"]
+        cd = df["CD"]
+        cl.index = Index(df["AoA"].astype("float32"))
+        cd.index = Index(df["AoA"].astype("float32"))
+        aoa = df["AoA"]
+
+        if fig is None or ax is None:
+            fig, ax = plt.subplots()
+        ax.plot(aoa, cl / cd, label=f"Reynolds {reynolds}")
+        ax.set_xlabel("Angle of Attack [deg]")
+        ax.set_ylabel("Lift to Drag Ratio")
+        ax.set_title(f"Reynolds {reynolds} Cl/Cd Curve")
+        ax.legend()
+        ax.grid(True)
+        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--", label="Zero Lift Angle")
+        ax.axhline(0.0, color="k", linestyle="--")
+
     @staticmethod
-    def get_zero_lift(cl_curve: pd.Series) -> float:
+    def get_zero_lift_angle(cl_curve: pd.Series) -> float:
         """Get Zero Lift Angle from Cl Curve"""
         return interpolate_series_index(0.0, cl_curve)
 
     @staticmethod
     def get_zero_lift_cm(cm_curve: pd.Series, zero_lift_angle: float) -> float:
-        """Get Zero Lift Angle from Cl Curve"""
-        return interpolate_series_value(zero_lift_angle, cm_curve)
+        """Get Zero Lift Cm from Cl Curve"""
+        return interpolate_series_index(zero_lift_angle, cm_curve)
 
     @staticmethod
     def get_cl_slope(cl_curve: pd.Series) -> float:

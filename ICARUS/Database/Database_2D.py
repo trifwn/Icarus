@@ -100,7 +100,9 @@ class Database_2D:
                 # Create Polar Object
                 self.polars[airfoil_folder] = Struct()
                 for solver in self.data[airfoil_folder].keys():
-                    self.polars[airfoil_folder][solver] = Polars(self.data[airfoil_folder][solver])
+                    self.polars[airfoil_folder][solver] = Polars(
+                        name=airfoil_folder, data=self.data[airfoil_folder][solver],
+                    )
         os.chdir(self.HOMEDIR)
 
     # def update_data()
@@ -239,8 +241,8 @@ class Database_2D:
         angles: list[float] | FloatArray,
     ) -> tuple[str, str, str, list[str]]:
         AFDIR: str = os.path.join(
-            DB3D,
-            f"NACA{airfoil.name}",
+            DB2D,
+            f"{airfoil.name.upper()}",
         )
         os.makedirs(AFDIR, exist_ok=True)
         exists = False

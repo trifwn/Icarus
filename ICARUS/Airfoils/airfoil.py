@@ -58,6 +58,7 @@ from typing import Any
 from typing import Union
 
 import airfoils as af
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -115,6 +116,41 @@ class Airfoil(af.Airfoil):  # type: ignore
         self._y_lower: FloatArray = self._y_lower
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
+
+    def thickness(self, x) -> FloatArray:
+        """
+        Returns the thickness of the airfoil at the given x coordinates
+
+        Args:
+            x (FloatArray): X coordinates
+
+        Returns:
+            FloatArray: _description_
+        """
+        thickness = self.y_upper(x) - self.y_lower(x)
+        # Remove Nan
+        thickness: FloatArray = thickness[~np.isnan(thickness)]
+        return thickness
+
+    def max_thickness(self) -> float:
+        """
+        Returns the maximum thickness of the airfoil
+
+        Returns:
+            float: Maximum thickness
+        """
+        thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
+        return float(np.max(thickness))
+    
+    def max_thickness_location(self) -> float:
+        """
+        Returns the location of the maximum thickness of the airfoil
+
+        Returns:
+            float: Location of the maximum thickness
+        """
+        thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
+        return float(np.argmax(thickness) / self.n_points)
 
     @classmethod
     def morph_new_from_two_foils(
@@ -572,26 +608,48 @@ class Airfoil(af.Airfoil):  # type: ignore
             for x, y in pts.T:
                 file.write(f" {x:.6f} {y:.6f}\n")
 
-    def plot(self, camber: bool = False, scatter: bool = False) -> None:
+    def plot(
+        self, 
+        camber: bool = False, 
+        scatter: bool = False,
+        max_thickness: bool = False,  
+        ax: Axes | None =None
+    ) -> None: 
         """
         Plots the airfoil in the selig format
 
         Args:
             camber (bool, optional): Whether to plot the camber line. Defaults to False.
             scatter (bool, optional): Whether to plot the airfoil as a scatter plot. Defaults to False.
+            max_thickness (bool, optional): Whether to plot the max thickness. Defaults to False.
         """
         pts = self.selig
         x, y = pts
-        if scatter:
-            plt.scatter(x[: self.n_upper], y[: self.n_upper], s=1)
-            plt.scatter(x[self.n_upper :], y[self.n_upper :], s=1)
+
+        if ax is None:
+            fig, _ax = plt.subplots()
         else:
-            plt.plot(x[: self.n_upper // 2], y[: self.n_upper // 2], "r")
-            plt.plot(x[self.n_upper + 20 :], y[self.n_upper + 20 :], "b")
+            _ax: Axes = ax
+
+        if scatter:
+            _ax.scatter(x[: self.n_upper], y[: self.n_upper], s=1)
+            _ax.scatter(x[self.n_upper :], y[self.n_upper :], s=1)
+        else:
+            _ax.plot(x[: self.n_upper], y[: self.n_upper], "r")
+            _ax.plot(x[self.n_upper:], y[self.n_upper:], "b")
 
         if camber:
             x = np.linspace(0, 1, 100)
             y = self.camber_line(x)
-            plt.plot(x, y, "k--")
+            _ax.plot(x, y, "k--")
 
-        plt.axis("scaled")
+        if max_thickness:
+            x = self.max_thickness_location()
+            thick = self.max_thickness() 
+            y_up = self.y_upper(x)
+            y_lo = self.y_lower(x)
+            # Plot a line from the upper to the lower surface
+            _ax.plot([x, x], [y_up, y_lo], "k--")
+            # Add a text with the thickness
+            _ax.text(x, y_lo, f"{thick:.3f}", ha="right", va="bottom")
+        _ax.axis("scaled")

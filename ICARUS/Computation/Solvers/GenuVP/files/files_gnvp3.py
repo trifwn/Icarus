@@ -473,7 +473,7 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
             f_io.write(f"{reyn.zfill(5)}\n")
         blankline(f_io)
 
-        polar_obj = Polars(polars)
+        polar_obj = Polars(name=bod.airfoil_name, data=polars)
         df: DataFrame = polar_obj.df
         angles = polar_obj.angles
 

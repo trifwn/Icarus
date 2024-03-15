@@ -193,6 +193,7 @@ def run_multiple_reynolds_sequentially(
     solver_options: dict[str, float],
 ) -> None:
     for i, reyn in enumerate(reynolds):
+        print("Running Reynolds number: ", reyn)
         run_single_reynolds(airfoil, reyn, mach, angles, solver_options, i)
 
 
@@ -218,7 +219,7 @@ def process_f2w_run(
 
         CASEDIR: str = os.path.join(
             DB.foils_db.DATADIR,
-            f"NACA{airfoil.name}",
+            f"{airfoil.name.upper()}",
             f"Reynolds_{reynolds_str}",
         )
 

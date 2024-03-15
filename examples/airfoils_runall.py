@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 
+from ICARUS.Airfoils import airfoil
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Computation.Analyses.input import Input
 from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
@@ -25,7 +26,7 @@ def main() -> None:
     read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
-    calcF2W: bool = True
+    calcF2W: bool = False
     calcOpenFoam: bool = False  # True
     calcXFoil: bool = True
     print("Running:")
@@ -33,20 +34,31 @@ def main() -> None:
     print(f"\tXfoil: {calcXFoil}")
     print(f"\tOpenfoam: {calcOpenFoam}")
 
-    # airfoil SETUP
-    airfoils: list[Airfoil] = []
+    # LOAD AIRFOILS
 
-    airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
+    # airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
     # airfoil_names: list[str] = ["2412", "4415"]
+
     # Load From DB
-    db_airfoils: Struct = DB.foils_db.airfoils
-    for airfoil_name in airfoil_names:
-        try:
-            airfoils.append(db_airfoils[airfoil_name])
-        except KeyError:
-            print(f"Airfoil {airfoil_name} not found in database")
-            print("Trying to Generate it")
-            airfoils.append(Airfoil.naca(naca=airfoil_name, n_points=400))
+    DB.foils_db.load_data()
+    all_airfoils = list(DB.foils_db.airfoils.keys())
+
+    airfoils_to_compute = [
+        airfoil
+        for airfoil in all_airfoils
+        if (
+            airfoil.upper().startswith("S")
+            or airfoil.upper().startswith("AG")
+            or airfoil.upper().startswith("CLARK")
+            or airfoil.upper().startswith("DAE")
+            or airfoil.upper().startswith("E")
+            or airfoil.upper().startswith("H")
+            or airfoil.upper().startswith("M")
+            or airfoil.upper().startswith("N")
+            or airfoil.upper().startswith("O")
+            or airfoil.upper().startswith("W")
+        )
+    ]
 
     # # Load From File
     # for airfoil_name in airfoil_names:
@@ -59,9 +71,9 @@ def main() -> None:
     # airfoils.append(naca64418_fl)
 
     # PARAMETERS FOR ESTIMATION
-    chord_max: float = 0.4
-    chord_min: float = 0.4
-    u_max: float = 40
+    chord_max: float = 0.5
+    chord_min: float = 0.1
+    u_max: float = 35
     u_min: float = 5
     viscosity: float = 1.56e-5
 
@@ -96,12 +108,13 @@ def main() -> None:
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
-    for airfoil in airfoils:
+    for airfoil_name in airfoils_to_compute:
+        airfoil: Airfoil = DB.foils_db.airfoils[airfoil_name]
         print(airfoil.name)
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
         # # Get airfoil
-        airfoil.plot()
+        # airfoil.plot()
 
         # Foil2Wake
         if calcF2W:
@@ -126,7 +139,9 @@ def main() -> None:
             f2w_solver_parameters.f_trip_low = ftrip_low["pos"]
             f2w_solver_parameters.Ncrit = Ncrit
             f2w_solver_parameters.max_iter = 400
-            f2w_solver_parameters.boundary_layer_solve_time = 399  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            f2w_solver_parameters.boundary_layer_solve_time = (
+                399  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            )
             f2w_solver_parameters.timestep = 0.1
 
             f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
@@ -143,9 +158,9 @@ def main() -> None:
             xfoil: Solver = Xfoil()
 
             # Import Analysis
-            # 0) Sequential Angle run for multiple reynolds in parallel,
-            # 1) Sequential Angle run for multiple reynolds in parallel with zeroing of the boundary layer between angles,
-            analysis = xfoil.get_analyses_names()[0]  # Run
+            # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
+            # 1) Sequential Angle run for multiple reynolds
+            analysis = xfoil.get_analyses_names()[1]  # Run
             xfoil.select_analysis(analysis)
 
             # Get Options
@@ -217,22 +232,6 @@ def main() -> None:
             f"Airfoil {airfoil.name} completed in {airfoil_etime - airfoil_stime} seconds",
         )
 
-        # from ICARUS.Visualization.airfoil.db_polars import plot_airfoil_polars
-
-        # DB.foils_db.load_data()
-        # solvers = []
-        # if calcF2W:
-        #     solvers += ["Foil2Wake"]
-        # if calcXFoil:
-        #     solvers += ["Xfoil"]
-        # if calcOpenFoam:
-        #     solvers += ["OpenFoam"]
-
-        # axs, fig = plot_airfoil_polars(
-        #     airfoil_name=airfoil.name,
-        #     solvers=solvers,
-        #     size=(10, 9),
-        # )
     #   ############################### END LOOP ##############################################
 
     end_time = time.time()

@@ -148,7 +148,7 @@ def avl_geo(
                 except KeyError:
                     raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
 
-            polar_obj = Polars(polars)
+            polar_obj = Polars(name=surf.root_airfoil.name, data=polars)
             # Calculate average reynolds number
             reynolds = surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
 

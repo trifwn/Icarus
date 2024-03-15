@@ -523,7 +523,7 @@ def cld_files(
         f_io.write("\n")
 
         # GET ALL 2D Airfoil POLARS IN ONE TABLE
-        polar_obj = Polars(polars)
+        polar_obj = Polars(name=bod.airfoil_name, data=polars)
         df: DataFrame = polar_obj.df
         # Get Angles
         angles: FloatArray = polar_obj.angles
