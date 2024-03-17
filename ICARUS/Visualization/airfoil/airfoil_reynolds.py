@@ -17,7 +17,12 @@ def plot_airfoil_reynolds(
     airfoil_name: str,
     reynolds: str,
     solvers: list[str] = ["All"],
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [
+        ["AoA", "CL"],
+        ["AoA", "CD"],
+        ["AoA", "Cm"],
+        ["CL", "CD"],
+    ],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
@@ -58,14 +63,16 @@ def plot_airfoil_reynolds(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
-    data: Struct = DB.foils_db.data
+    data: Struct = DB.foils_db._data
 
     for j, solver in enumerate(solvers):
         try:
             polar = data[airfoil_name][solver][reynolds]
             if aoa_bounds is not None:
                 # Get data where AoA is in AoA bounds
-                polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
+                polar = polar.loc[
+                    (polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])
+                ]
             for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                 key0 = f"{plot[0]}"
                 key1 = f"{plot[1]}"
@@ -81,7 +88,16 @@ def plot_airfoil_reynolds(
                 m = markers[i].get_marker()
                 label: str = f"{airfoil_name}: {reynolds} - {solver}"
                 try:
-                    ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                    ax.plot(
+                        x,
+                        y,
+                        ls="--",
+                        color=c,
+                        marker=m,
+                        label=label,
+                        markersize=3.5,
+                        linewidth=1,
+                    )
                 except ValueError as e:
                     raise e
         except KeyError as solver:

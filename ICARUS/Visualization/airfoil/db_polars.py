@@ -64,7 +64,7 @@ def plot_airfoils_polars(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
-    data: Struct = DB.foils_db.data
+    data: Struct = DB.foils_db._data
 
     for j, airfoil_name in enumerate(airfoil_names):
         try:

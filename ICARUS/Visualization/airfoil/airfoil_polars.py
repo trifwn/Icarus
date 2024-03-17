@@ -16,7 +16,12 @@ from ICARUS.Database import DB
 def plot_airfoil_polars(
     airfoil_name: str,
     solvers: list[str] | str = "All",
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CD", "CL"]],
+    plots: list[list[str]] = [
+        ["AoA", "CL"],
+        ["AoA", "CD"],
+        ["AoA", "Cm"],
+        ["CD", "CL"],
+    ],
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
@@ -54,7 +59,7 @@ def plot_airfoil_polars(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
-    data: Struct = DB.foils_db.data
+    data: Struct = DB.foils_db._data
 
     try:
         db_solvers = data[airfoil_name]
@@ -75,7 +80,10 @@ def plot_airfoil_polars(
                 polar = polar.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
+                    polar = polar.loc[
+                        (polar["AoA"] >= aoa_bounds[0])
+                        & (polar["AoA"] <= aoa_bounds[1])
+                    ]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     key0 = f"{plot[0]}"
                     key1 = f"{plot[1]}"
@@ -91,7 +99,16 @@ def plot_airfoil_polars(
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reynolds} - {solver}"
                     try:
-                        ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                        ax.plot(
+                            x,
+                            y,
+                            ls="--",
+                            color=c,
+                            marker=m,
+                            label=label,
+                            markersize=3.5,
+                            linewidth=1,
+                        )
                     except ValueError as e:
                         raise e
             except (KeyError, ValueError) as solv:

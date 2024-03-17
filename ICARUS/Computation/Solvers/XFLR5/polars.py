@@ -43,8 +43,8 @@ def read_polars_2d(XFLRdir: str) -> None:
 
         if airf.startswith("NACA"):
             name = "NACA" + name
-        if name not in foils_db.data.keys():
-            foils_db.data[name] = {}
+        if name not in foils_db._data.keys():
+            foils_db._data[name] = {}
 
         if airf.startswith("NACA"):
             os.chdir(airf)
@@ -88,14 +88,16 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db.data[name].keys():
-                        foils_db.data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._data[name].keys():
+                        foils_db._data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                    reyn_str = np.format_float_scientific(
+                        reyn, sign=False, precision=3, min_digits=3
+                    ).replace(
                         "+",
                         "",
                     )
-                    foils_db.data[name]["XFLR"][reyn_str] = dat
+                    foils_db._data[name]["XFLR"][reyn_str] = dat
                     dat = pd.read_csv(
                         file,
                         sep="  ",
@@ -117,14 +119,16 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db.data[name].keys():
-                        foils_db.data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._data[name].keys():
+                        foils_db._data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                    reyn_str = np.format_float_scientific(
+                        reyn, sign=False, precision=3, min_digits=3
+                    ).replace(
                         "+",
                         "",
                     )
-                    foils_db.data[name]["XFLR"][reyn_str] = dat
+                    foils_db._data[name]["XFLR"][reyn_str] = dat
 
                     dat = pd.read_csv(
                         file,
@@ -147,11 +151,13 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db.data[name].keys():
-                        foils_db.data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._data[name].keys():
+                        foils_db._data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
-                    foils_db.data[name]["XFLR"][reyn_str] = dat
+                    reyn_str = np.format_float_scientific(
+                        reyn, sign=False, precision=3, min_digits=3
+                    ).replace("+", "")
+                    foils_db._data[name]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 

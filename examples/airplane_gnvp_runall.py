@@ -3,14 +3,13 @@ Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
+
 import time
 
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Computation.Analyses.input import Input
 from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
@@ -44,24 +43,26 @@ def main() -> None:
 
     from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
 
-    filename: str = "Data/3d_Party/plane_1.xml"
-    airplane = parse_xfl_project(filename)
-    # from Vehicles.Planes.hermes import hermes
-    # hermes_3: Airplane = hermes(name="hermes_3_2")
+    # filename: str = "Data/3d_Party/plane_1.xml"
+    # airplane = parse_xfl_project(filename)
+    from Vehicles.Planes.e190_cruise import e190_cruise
 
-    planes.append(airplane)
+    hermes_3: Airplane = e190_cruise(name="E190")
+    planes.append(hermes_3)
+
+    # planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"plane_1": 1e-3}
-    maxiter: dict[str, int] = {"plane_1": 100}
-    UINF: dict[str, float] = {"plane_1": 20}
-    ALTITUDE: dict[str, int] = {"plane_1": 0}
+    timestep: dict[str, float] = {"E190": 1e-3}
+    maxiter: dict[str, int] = {"E190": 100}
+    UINF: dict[str, float] = {"E190": 20}
+    ALTITUDE: dict[str, int] = {"E190": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"plane_1": 273 + 15}
+    TEMPERATURE: dict[str, int] = {"E190": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"plane_1": False}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"plane_1": True}
+    STATIC_ANALYSIS: dict[str, float] = {"E190": True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {"E190": False}
 
     # Get Solver
     GNVP_VERSION = 3
@@ -82,7 +83,9 @@ def main() -> None:
         print("--------------------------------------------------")
 
         # # Import Environment
-        EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
+        EARTH_ISA._set_pressure_from_altitude_and_temperature(
+            ALTITUDE[airplane.name], TEMPERATURE[airplane.name]
+        )
         state = State(
             name="Unstick",
             airplane=airplane,
@@ -154,7 +157,9 @@ def main() -> None:
             if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
             try:
-                state.add_polar(polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True)
+                state.add_polar(
+                    polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True
+                )
                 unstick = state
             except Exception as error:
                 print("Got errro")

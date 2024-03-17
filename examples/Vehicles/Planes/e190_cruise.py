@@ -1,4 +1,5 @@
 """This module defines the hermes plane object."""
+
 import numpy as np
 
 from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
@@ -7,6 +8,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
 from ICARUS.Database import EXTERNAL_DB
 from ICARUS.Vehicle.lifting_surface import Lifting_Surface
+from ICARUS.Vehicle.merged_wing import MergedWing
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.utils import SymmetryAxes
 from ICARUS.Vehicle.wing_segment import Wing_Segment
@@ -28,8 +30,7 @@ def e190_cruise(name: str) -> Airplane:
 
     from ICARUS.Airfoils.airfoil import Airfoil
 
-    naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]
-    naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35, plotting=False)
+    naca64418: Airfoil = DB.get_airfoil("NACA64418")
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
 
@@ -112,16 +113,16 @@ def e190_cruise(name: str) -> Airplane:
         M=10,
         mass=1.0,
     )
-    # rudder.plotWing()
 
-    lifting_surfaces: list[Lifting_Surface] = [wing_1, wing_2, wing_3]
-    airplane: Airplane = Airplane(name, lifting_surfaces)
+    main_wing = MergedWing(
+        "Main Wing",
+        [wing_1, wing_2, wing_3],
+    )
 
-    # Define the surface area of the main wing
-    airplane.S = wing_1.S + wing_2.S + wing_3.S
-
-    # from ICARUS.Database import DB3D
-    # airplane.accessDB(HOMEDIR, DB3D)
-    # airplane.visAirplane()
-
+    airplane: Airplane = Airplane(name, [main_wing])
     return airplane
+
+
+if __name__ == "__main__":
+    plane = e190_cruise("e190_cruise")
+    plane.main_wing.plot()

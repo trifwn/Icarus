@@ -1,6 +1,7 @@
 """
 GNVP7 input files generation
 """
+
 import os
 from io import StringIO
 from typing import Any
@@ -59,7 +60,9 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"1{tabs(3)}NSYMF{sps(6)}=1,2,3 (no-symm, axi-symm, Y-symm)\n")
     f_io.write(f"{nbodt}{tabs(3)}NBODT{sps(6)}number of bodies\n")
     f_io.write(f"{nblades}{tabs(3)}SymLevels=old NBLADE{tabs(1)} number of blades\n")
-    f_io.write(f"1{tabs(3)}IAXISRF{sps(4)}=1,2,3 gives the axis of rotation if IABSREF=1\n")
+    f_io.write(
+        f"1{tabs(3)}IAXISRF{sps(4)}=1,2,3 gives the axis of rotation if IABSREF=1\n"
+    )
     f_io.write(f"{params.NLEVELT}{tabs(3)}NLEVELT{sps(4)}number of movement levels\n")
     f_io.write(f"0.{tabs(3)}OMEGAR{sps(5)}is the rotation speed of the RCS\n")
 
@@ -76,27 +79,47 @@ def dfile(params: GenuParameters) -> None:
 
     # Time parameters
     f_io.write(f"** Read the TIME parameters{tabs(10)}<blank>\n")
-    f_io.write(f"1{tabs(3)}OMEGAT{sps(5)}the rotation speed for the definition of the PERIOD\n")
-    f_io.write(f"{params.NMETH}{tabs(3)}NMETHT{sps(5)}=1 for Euler =2 for Adams Bashford time integrat. scheme\n")
+    f_io.write(
+        f"1{tabs(3)}OMEGAT{sps(5)}the rotation speed for the definition of the PERIOD\n"
+    )
+    f_io.write(
+        f"{params.NMETH}{tabs(3)}NMETHT{sps(5)}=1 for Euler =2 for Adams Bashford time integrat. scheme\n"
+    )
 
     # Tip emission parameters
-    f_io.write(f"{params.NEMTIP}{tabs(3)}NEMTIP{sps(5)}=0,1. The latter means that tip-emission takes place\n")
-    f_io.write(f"{ff2(params.NTIMET)}{tabs(2)}NTIMET{sps(5)}time step that tip-emission begins\n")
-    f_io.write(f"{params.NEMSLE}{tabs(3)}NEMSLE{sps(5)}=0(no action), 1(leading-edge separ. takes place)\n")
-    f_io.write(f"{ff2(params.NTIMEL)}{tabs(2)}NTIMEL{sps(5)}time step that leading-edge separation starts\n")
+    f_io.write(
+        f"{params.NEMTIP}{tabs(3)}NEMTIP{sps(5)}=0,1. The latter means that tip-emission takes place\n"
+    )
+    f_io.write(
+        f"{ff2(params.NTIMET)}{tabs(2)}NTIMET{sps(5)}time step that tip-emission begins\n"
+    )
+    f_io.write(
+        f"{params.NEMSLE}{tabs(3)}NEMSLE{sps(5)}=0(no action), 1(leading-edge separ. takes place)\n"
+    )
+    f_io.write(
+        f"{ff2(params.NTIMEL)}{tabs(2)}NTIMEL{sps(5)}time step that leading-edge separation starts\n"
+    )
 
     # Root emission parameters
-    f_io.write(f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n")
+    f_io.write(
+        f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n"
+    )
     f_io.write(f"0{tabs(3)}NTIMERO{sps(4)}time step that root emission starts\n")
     f_io.write(f"0.{tabs(3)}AZIMIN{sps(5)}the initial azimuthal angle\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # Solution parameters
     f_io.write(f"** Read the SOLUTION parameters{tabs(9)}<blank>\n")
-    f_io.write(f"0{tabs(3)}IMAT{sps(7)}=0 AS is calculated every timestep, =1 only once\n")
+    f_io.write(
+        f"0{tabs(3)}IMAT{sps(7)}=0 AS is calculated every timestep, =1 only once\n"
+    )
     f_io.write(f"200{tabs(3)}ITERM{sps(6)}maximum number of potential iterations\n")
-    f_io.write(f"{params.RELAXS}{tabs(3)}RELAXS{sps(5)}relaxation factor for the singularity distributions\n")
-    f_io.write(f"{params.EPSDS}{tabs(2)}EPSDS{sps(6)}convergence tolerance of the potential calculations\n")
+    f_io.write(
+        f"{params.RELAXS}{tabs(3)}RELAXS{sps(5)}relaxation factor for the singularity distributions\n"
+    )
+    f_io.write(
+        f"{params.EPSDS}{tabs(2)}EPSDS{sps(6)}convergence tolerance of the potential calculations\n"
+    )
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # Inflow parameters
@@ -112,18 +135,28 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"0.{tabs(3)}UREF{tabs(2)}reference velocity\n")
     f_io.write(f"{ff2(u_inf)}{tabs(3)}AUINF{tabs(2)}wind velocity\n")
     f_io.write(f" {ff2(yaw)}{tabs(2)}YawAngle{tabs(1)}Yaw Angle [deg]  ! in Z always\n")
-    f_io.write(f" {ff2(inc)}{tabs(2)}IncAngle{tabs(1)}Inclination Angle [deg]  ! in Y always\n")
-    f_io.write(f" 0.0{tabs(2)}VertShear{tabs(1)}Shear effect in the vertical direction wrt hub height (exponential)\n")
+    f_io.write(
+        f" {ff2(inc)}{tabs(2)}IncAngle{tabs(1)}Inclination Angle [deg]  ! in Y always\n"
+    )
+    f_io.write(
+        f" 0.0{tabs(2)}VertShear{tabs(1)}Shear effect in the vertical direction wrt hub height (exponential)\n"
+    )
     f_io.write(f" 0.0{tabs(2)}HorzShear{tabs(1)}DUMMY at the moment\n")
-    f_io.write(f" 0.0{tabs(2)}WindVeer{tabs(1)}slope of yaw angle / m wrt hub height [deg/m]\n")
+    f_io.write(
+        f" 0.0{tabs(2)}WindVeer{tabs(1)}slope of yaw angle / m wrt hub height [deg/m]\n"
+    )
     f_io.write(
         f" 0{tabs(3)}IWINDC{tabs(2)}wind case 0: uniform wind, 1: defined wind scenario, 2: EOG, 3x: ECD, 4x: EDC, 5x: EWS\n",
     )
-    f_io.write(f" 0.0{tabs(2)}TIME_GUST{tabs(1)}Time to initiate the extreme event [2<=IWINDC<=5x]\n")
+    f_io.write(
+        f" 0.0{tabs(2)}TIME_GUST{tabs(1)}Time to initiate the extreme event [2<=IWINDC<=5x]\n"
+    )
     f_io.write(f" 0.0{tabs(2)}TIREF_GUST{tabs(1)}TI for gust [see IEC]\n")
     f_io.write(f" 0.0{tabs(2)}VREF_GUST{tabs(1)}Vref for gust [see IEC]\n")
     f_io.write(f" 0{tabs(3)}ITURB{tabs(2)}0: no turb, 1: disk, 2: rectangular\n")
-    f_io.write(f" 0.0{tabs(2)}TIME_turb{tabs(1)}Time after which the turbulent wind starts [sec]\n")
+    f_io.write(
+        f" 0.0{tabs(2)}TIME_turb{tabs(1)}Time after which the turbulent wind starts [sec]\n"
+    )
     f_io.write(f" 0{tabs(3)}ISHADOW{tabs(2)}Include Tower Shadow: 1: Y, 0: N\n")
     f_io.write(f"  0{tabs(3)}BotTowerR{tabs(1)}R tower bottom{tabs(1)}[m]\n")
     f_io.write(f"  0{tabs(3)}TopTowerR{tabs(1)}R tower top{tabs(2)}[m]\n")
@@ -141,9 +174,15 @@ def dfile(params: GenuParameters) -> None:
 
     # EMISSION parameters
     f_io.write(f"** Read the EMISSION parameters{tabs(9)}<blank>\n")
-    f_io.write(f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP0     per near-wake element of a thin wing\n")
-    f_io.write(f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP1     per near-wake element of a thick wing\n")
-    f_io.write(f"{ff2(params.RELAXU)}{tabs(3)}RELAXU     relaxation factor for the emission velocity\n")
+    f_io.write(
+        f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP0     per near-wake element of a thin wing\n"
+    )
+    f_io.write(
+        f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP1     per near-wake element of a thick wing\n"
+    )
+    f_io.write(
+        f"{ff2(params.RELAXU)}{tabs(3)}RELAXU     relaxation factor for the emission velocity\n"
+    )
     f_io.write(f"{ff2(params.NEMIS)}{tabs(2)}NEMISS     =0,1 (See CREATE)\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
@@ -153,24 +192,54 @@ def dfile(params: GenuParameters) -> None:
     # DX = 0.003
 
     f_io.write(f"** Read the DEFORMATION parameters{tabs(8)}<blank>\n")
-    f_io.write(f"{ff2(params.EPSFB)}{tabs(2)}EPSFB      Cut-off length for the bound vorticity\n")
-    f_io.write(f"{ff2(params.EPSFW)}{tabs(2)}EPSFW      Cut-off length for the near-wake vorticity\n")
-    f_io.write(f"{ff2(params.EPSSR)}{tabs(2)}EPSSRC     Cut-off length for source distributions\n")
-    f_io.write(f"{ff2(params.EPSDI)}{tabs(2)}EPSDIP     Cut-off length for dipole distributions\n")
-    f_io.write(f"{ff2(params.EPSVR)}{tabs(2)}EPSVR      Cut-off length for the free vortex particles (final)\n")
-    f_io.write(f"{ff2(params.EPSO)}{tabs(2)}EPSO       Cut-off length for the free vortex particles (init.)\n")
-    f_io.write(f"{ff2(params.EPSINT)}{tabs(2)}EPSINTbas  Cut-off length for VORTEX SOLID INTERACTION\n")
-    f_io.write(f"{ff2(params.COEF)}{tabs(2)}COEF       Factor for the dissipation of particles\n")
-    f_io.write(f"{ff2(params.RMETM)}{tabs(2)}RMETM      Upper bound of the deformation rate\n")
-    f_io.write(f"{ff2(params.IDEFW)} {tabs(2)}IDEFW      Parameter for the deformation induced by the near wake\n")
+    f_io.write(
+        f"{ff2(params.EPSFB)}{tabs(2)}EPSFB      Cut-off length for the bound vorticity\n"
+    )
+    f_io.write(
+        f"{ff2(params.EPSFW)}{tabs(2)}EPSFW      Cut-off length for the near-wake vorticity\n"
+    )
+    f_io.write(
+        f"{ff2(params.EPSSR)}{tabs(2)}EPSSRC     Cut-off length for source distributions\n"
+    )
+    f_io.write(
+        f"{ff2(params.EPSDI)}{tabs(2)}EPSDIP     Cut-off length for dipole distributions\n"
+    )
+    f_io.write(
+        f"{ff2(params.EPSVR)}{tabs(2)}EPSVR      Cut-off length for the free vortex particles (final)\n"
+    )
+    f_io.write(
+        f"{ff2(params.EPSO)}{tabs(2)}EPSO       Cut-off length for the free vortex particles (init.)\n"
+    )
+    f_io.write(
+        f"{ff2(params.EPSINT)}{tabs(2)}EPSINTbas  Cut-off length for VORTEX SOLID INTERACTION\n"
+    )
+    f_io.write(
+        f"{ff2(params.COEF)}{tabs(2)}COEF       Factor for the dissipation of particles\n"
+    )
+    f_io.write(
+        f"{ff2(params.RMETM)}{tabs(2)}RMETM      Upper bound of the deformation rate\n"
+    )
+    f_io.write(
+        f"{ff2(params.IDEFW)} {tabs(2)}IDEFW      Parameter for the deformation induced by the near wake\n"
+    )
     f_io.write(
         f"{ff2(params.REFLEN)}{tabs(2)}REFLEN     Length used in VELEF for suppressing far-particle calculations\n",
     )
-    f_io.write(f"{ff2(params.IDIVVRP)} {tabs(2)}IDIVVRP    Parameter for the subdivision of particles\n")
-    f_io.write(f"{ff2(params.FLENSC)}{tabs(2)}FLENSC     Length scale for the subdivision of particles\n")
-    f_io.write(f"{ff2(params.NREWAK)}{tabs(2)}NREWAK     Parameter for merging of particles\n")
-    f_io.write(f"{ff2(params.NMER)}{tabs(2)}NMER       Parameter for merging of particles\n")
-    f_io.write(f"{ff2(params.XREWAK)}{tabs(2)}XREWAK     X starting distance of merging\n")
+    f_io.write(
+        f"{ff2(params.IDIVVRP)} {tabs(2)}IDIVVRP    Parameter for the subdivision of particles\n"
+    )
+    f_io.write(
+        f"{ff2(params.FLENSC)}{tabs(2)}FLENSC     Length scale for the subdivision of particles\n"
+    )
+    f_io.write(
+        f"{ff2(params.NREWAK)}{tabs(2)}NREWAK     Parameter for merging of particles\n"
+    )
+    f_io.write(
+        f"{ff2(params.NMER)}{tabs(2)}NMER       Parameter for merging of particles\n"
+    )
+    f_io.write(
+        f"{ff2(params.XREWAK)}{tabs(2)}XREWAK     X starting distance of merging\n"
+    )
     f_io.write(f"{ff2(params.RADMER)}{tabs(2)}RADMER     Radius for merging\n")
     f_io.write(f"{tabs(16)}<blank>\n")
 
@@ -181,7 +250,9 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"{name}.TOT{tabs(1)}OFILE\n")
     f_io.write(f"{name}.SAS{tabs(1)}SUPAS\n")
     f_io.write(f"{name}.CHW{tabs(1)}CHWAK\n")
-    f_io.write(f"100{tabs(3)}ITERCHW    Check the wake calculations every ... time steps\n")
+    f_io.write(
+        f"100{tabs(3)}ITERCHW    Check the wake calculations every ... time steps\n"
+    )
     f_io.write(f"{name}.WAK{tabs(1)}OWAKE\n")
     f_io.write(f"100{tabs(3)}ITERWAK    Write wake geometry every ... time steps\n")
     f_io.write(f"{name}.PRE{tabs(1)}OPRES\n")
@@ -204,7 +275,9 @@ def dfile(params: GenuParameters) -> None:
 
     # APPLICATION parameters
     f_io.write(f"** Read the APPLICATION parameters{tabs(8)}<blank>\n")
-    f_io.write(f"0{tabs(3)}IAPPLIC    = 0(no action), 1(------------------------------)\n")
+    f_io.write(
+        f"0{tabs(3)}IAPPLIC    = 0(no action), 1(------------------------------)\n"
+    )
     f_io.write(f"0{tabs(3)}IDEX_APPLIC\n")
     f_io.write(f"{tabs(3)}FILE_APPLIC\n")
     f_io.write(f"{params.IYNELST}{tabs(3)}IYNELAST    aeroelastic coupling\n")
@@ -254,7 +327,9 @@ def geofile(
         f_io.write(f"{tabs(3)}<blank>\n")
         f_io.write(f"{bod.name}{tabs(2)}BodyName\n")
         f_io.write(f"{NB}{tabs(3)}IndBodyB\n")
-        f_io.write(f"{type_bod}{tabs(3)}TypBodyB   1 2 (thin) 3 (thick) 4 (tip) 5 (spoiler)\n")
+        f_io.write(
+            f"{type_bod}{tabs(3)}TypBodyB   1 2 (thin) 3 (thick) 4 (tip) 5 (spoiler)\n"
+        )
         f_io.write(f"{type_lift}{tabs(3)}YNLiftB    0 1        1         0/1     1\n")
         f_io.write(f"1{tabs(3)}YNxyTerm\n")
         f_io.write(f"{NNB}{tabs(3)}NBB\n")
@@ -275,8 +350,12 @@ def geofile(
         f_io.write(f"{tabs(16)}<blank>\n")
 
         # Write the load parameters
-        f_io.write(f"1 1 0{tabs(2)}LoadViscCor  0= No, 1[1,2]=a_ci[a_ci,a_f] 2[1,2]=a_f[a_ci,a_f]\n")
-        f_io.write(f"{bod.cld_fname}{tabs(2)}FLCLCDB     file name wherefrom Cl, Cd are read\n")
+        f_io.write(
+            f"1 1 0{tabs(2)}LoadViscCor  0= No, 1[1,2]=a_ci[a_ci,a_f] 2[1,2]=a_f[a_ci,a_f]\n"
+        )
+        f_io.write(
+            f"{bod.cld_fname}{tabs(2)}FLCLCDB     file name wherefrom Cl, Cd are read\n"
+        )
         f_io.write(f"{tabs(16)}<blank>\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
@@ -298,7 +377,9 @@ def geofile(
         # one body move each new rot_center will be updated to reflect the movement, but the new CG will NOT!
         cg: list[float] = params.CG.tolist()
         # f_io.write(f"{ff4(cg[0])} {ff4(cg[1])} {ff4(cg[2])}{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n")
-        f_io.write(f"{ff4(0)} {ff4(0)} {ff4(0)}{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n")
+        f_io.write(
+            f"{ff4(0)} {ff4(0)} {ff4(0)}{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n"
+        )
         # f_io.write(f"{u_y/u_inf} {u_z/u_inf} {u_x/u_inf}{tabs(2)}ROTOR AXIS\n")
         f_io.write(f"1 0 0{tabs(2)}ROTOR AXIS\n")
         f_io.write("\n")
@@ -418,15 +499,21 @@ def body_movements(
     f_io.write("            SpanFl1  SpanFl2\n")
     f_io.write("72.016   82.304    ! =0.7*RTIP, 0.8*RTIP, RTIP=102.88m\n")
     f_io.write("            AKSIo  AFlap  Freq  Phase\n")
-    f_io.write("0.9  10. 6.0318576  0.     ! AKSIo[]  AFLap[deg]  Freq[rad/s]  Phase[deg]\n")
+    f_io.write(
+        "0.9  10. 6.0318576  0.     ! AKSIo[]  AFLap[deg]  Freq[rad/s]  Phase[deg]\n"
+    )
     f_io.write("-------------------------------------------------------------------\n")
     f_io.write("Give  data for every level\n")
 
     for j, mov in enumerate(movements):
-        f_io.write(f"NB={NB}, lev={NB-j}  ({mov.translation_axis} axis {mov.name} rotation)\n")
+        f_io.write(
+            f"NB={NB}, lev={NB-j}  ({mov.translation_axis} axis {mov.name} rotation)\n"
+        )
         f_io.write("Rotation\n")
         f_io.write(f"{int(mov.rotation_type)}           IMOVEAB  type of movement\n")
-        f_io.write(f"{int(mov.rotation_axis)}           NAXISA   =1,2,3 axis of rotation\n")
+        f_io.write(
+            f"{int(mov.rotation_axis)}           NAXISA   =1,2,3 axis of rotation\n"
+        )
         f_io.write(f"{ff4(mov.rot_t1)}    TMOVEAB  -1  1st time step\n")
         f_io.write(f"{ff4(mov.rot_t2)}    TMOVEAB  -2  2nd time step\n")
         f_io.write("0.          TMOVEAB  -3  3d  time step\n")
@@ -438,13 +525,19 @@ def body_movements(
         f_io.write("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
         f_io.write("Translation\n")
         f_io.write(f"{int(mov.translation_type)}           IMOVEUB  type of movement\n")
-        f_io.write(f"{int(mov.translation_axis)}           NAXISU   =1,2,3 axis of translation\n")
+        f_io.write(
+            f"{int(mov.translation_axis)}           NAXISU   =1,2,3 axis of translation\n"
+        )
         f_io.write(f"{ff4(mov.translation_t1)}    TMOVEUB  -1  1st time step\n")
         f_io.write(f"{ff4(mov.translation_t2)}    TMOVEUB  -2  2nd time step\n")
         f_io.write("0.          TMOVEUB  -3  3d  time step\n")
         f_io.write("0.          TMOVEUB  -4  4th time step\n")
-        f_io.write(f"{ff4(mov.translation_a1)}    AMOVEUB  -1  1st value of amplitude\n")
-        f_io.write(f"{ff4(mov.translation_a2)}    AMOVEUB  -2  2nd value of amplitude\n")
+        f_io.write(
+            f"{ff4(mov.translation_a1)}    AMOVEUB  -1  1st value of amplitude\n"
+        )
+        f_io.write(
+            f"{ff4(mov.translation_a2)}    AMOVEUB  -2  2nd value of amplitude\n"
+        )
         f_io.write("0.          AMOVEUB  -3  3d  value of amplitude\n")
         f_io.write("0.          AMOVEUB  -4  4th value of amplitude\n")
         f_io.write("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
@@ -530,7 +623,9 @@ def cld_files(
         # FILL FILE
         for radpos in [-100.0, 100.0]:
             f_io.write(f"!profile: {radpos}\n")
-            f_io.write(f"{radpos}{tabs(1)}{0.25}{tabs(1)}{1}{tabs(7)}Span AerCentr NumFlap\n")
+            f_io.write(
+                f"{radpos}{tabs(1)}{0.25}{tabs(1)}{1}{tabs(7)}Span AerCentr NumFlap\n"
+            )
 
             anglenum: int = len(angles)
             flap_angle: float = polar_obj.flap_angle  # Flap Angle
@@ -648,9 +743,9 @@ def make_input_files(
     # WAKE Files
     wake_files(bodies_dicts)
     # ANGLES File
-    angles_inp(DB.foils_db.data, airfoils, solver)
+    angles_inp(DB.foils_db._data, airfoils, solver)
     # CLD FILES
-    cld_files(DB.foils_db.data, bodies_dicts, solver)
+    cld_files(DB.foils_db._data, bodies_dicts, solver)
 
     if "gnvp7" not in next(os.walk("."))[2]:
         src: str = GenuVP7_exe

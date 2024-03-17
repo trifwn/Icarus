@@ -39,13 +39,15 @@ class GenuSurface:
         else:
             GenuSurface.surf_names[surf.name[:8]] += 1
         # Then we check if the airfoil name is unique
-        if surf.root_airfoil.name not in GenuSurface.airfoil_names.keys():
-            GenuSurface.airfoil_names[surf.root_airfoil.name[:8]] = 0
-        else:
-            GenuSurface.airfoil_names[surf.root_airfoil.name[:8]] += 1
+        for airfoil in surf.airfoils:
+            if airfoil.name[:8] not in GenuSurface.airfoil_names.keys():
+                GenuSurface.airfoil_names[airfoil.name[:8]] = 0
+            else:
+                GenuSurface.airfoil_names[airfoil.name[:8]] += 1
 
         name: str = f"{GenuSurface.surf_names[surf.name[:8]]}_{surf.name}"
-        airfoil_name: str = f"{GenuSurface.airfoil_names[surf.root_airfoil.name[:8]]}_{surf.root_airfoil.name}"
+        
+        airfoil_name: str = f"{GenuSurface.airfoil_names[surf.airfoils[0].name[:8]]}_{surf.airfoils[0].name}"
 
         # Make the names valid for GenuVP and make sure they are unique
         # by adding a number to the end of the name
@@ -56,9 +58,8 @@ class GenuSurface:
         self.type: str = "thin"
         self.lifting: str = "yes"
         self.NB: int = idx
-        self.NACA: str = surf.root_airfoil.name
         self.name: str = surf.name
-        self.airfoil_name: str = surf.root_airfoil.name
+        self.airfoil_name: str = surf.airfoils[0].name
         self.bld_fname: str = f"{name}.bld"
         self.topo_fname: str = f"{name}.topo"
         self.wake_fname: str = f"{name}.wake"
@@ -76,7 +77,7 @@ class GenuSurface:
         self.x_end: float = surf.origin[0] + surf._xoffset_dist[-1]
         self.y_end: float = surf.origin[1] + surf.span
         self.z_end: float = surf.origin[2] + surf._zoffset_dist[-1]
-        self.root_chord: float = surf.chord[0]
-        self.tip_chord: float = surf.chord[-1]
+        self.root_chord: float = surf.chords[0]
+        self.tip_chord: float = surf.chords[-1]
         self.offset: float = surf._xoffset_dist[-1]
         self.grid: FloatArray = surf.get_grid()

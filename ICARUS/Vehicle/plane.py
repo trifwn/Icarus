@@ -431,8 +431,9 @@ class Airplane:
         """
         airfoils: list[str] = []
         for surface in self.surfaces:
-            if f"NACA{surface.root_airfoil.name}" not in airfoils:
-                airfoils.append(f"NACA{surface.root_airfoil.name}")
+            for airfoil in surface.airfoils:
+                if f"{airfoil.name}" not in airfoils:
+                    airfoils.append(f"{airfoil.name}")
         return airfoils
 
     def visualize(

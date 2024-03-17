@@ -47,8 +47,8 @@ def single_reynolds_run(
         cpXF = np.concatenate((cpXF1, cpXF2[1:]))
     else:
         aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
-
-    return np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
+    df = np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
+    return df
 
 
 def single_reynolds_run_seq(
@@ -76,7 +76,7 @@ def single_reynolds_run_seq(
 
     for angle in angles:
         aXF.append(angle)
-        xf.max_iter = 100
+        xf.xtr = (0.1, 0.1)
         cl, cd, cm, cp = xf.a(angle)
         clXF.append(cl)
         cdXF.append(cd)

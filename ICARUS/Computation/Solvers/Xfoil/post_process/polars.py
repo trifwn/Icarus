@@ -41,6 +41,7 @@ def save_multiple_reyn(
     airfoil.save_selig_te(airfoil_dir)
 
     # Add Results to Database
+    DB.foils_db.add_airfoil_data(airfoil_dir)
     # DB.foils_db.update_airfoil(airfoil)
     # DB.vehicles_db.load_gnvp_data(
     #     plane=plane,

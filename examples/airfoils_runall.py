@@ -47,16 +47,16 @@ def main() -> None:
         airfoil
         for airfoil in all_airfoils
         if (
-            airfoil.upper().startswith("S")
-            or airfoil.upper().startswith("AG")
-            or airfoil.upper().startswith("CLARK")
-            or airfoil.upper().startswith("DAE")
-            or airfoil.upper().startswith("E")
-            or airfoil.upper().startswith("H")
-            or airfoil.upper().startswith("M")
-            or airfoil.upper().startswith("N")
-            or airfoil.upper().startswith("O")
-            or airfoil.upper().startswith("W")
+            # airfoil.upper().startswith("S") or
+            # airfoil.upper().startswith("AG") or
+            # airfoil.upper().startswith("CLARK") or
+            # airfoil.upper().startswith("DAE") or
+            # airfoil.upper().startswith("E") or
+            # airfoil.upper().startswith("H") or
+            airfoil.upper().startswith("M") or
+            airfoil.upper().startswith("N") or
+            airfoil.upper().startswith("O") or
+            airfoil.upper().startswith("W")
         )
     ]
 

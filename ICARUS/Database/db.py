@@ -1,3 +1,4 @@
+from ICARUS.Airfoils.airfoil import Airfoil
 from .AnalysesDB import AnalysesDB
 from .Database_2D import Database_2D
 from .Database_3D import Database_3D
@@ -27,6 +28,12 @@ class Database:
         self.foils_db.load_data()
         self.vehicles_db.load_data()
 
+    def get_airfoil(self, name: str) -> Airfoil:
+        return self.foils_db.get_airfoil(name)
+
+    # def get_vehicle(self, name: str)-> Airplane:
+    #     return self.vehicles_db.get_vehicle(name)
+
     def __str__(self) -> str:
         return "Master Database"
 
@@ -37,11 +44,11 @@ class Database:
         print("------------------------------------------------")
         print(f"|        {self.foils_db}                          |")
         print("------------------------------------------------")
-        for foil in self.foils_db.data.keys():
+        for foil in self.foils_db._data.keys():
             string = f"|{foil}\t\t\t\t\t|\n"
-            for solver in self.foils_db.data[foil].keys():
+            for solver in self.foils_db._data[foil].keys():
                 string += f"|  - {solver}:"
-                reyns = list(self.foils_db.data[foil][solver].keys())
+                reyns = list(self.foils_db._data[foil][solver].keys())
                 reyns_num = [float(reyn) for reyn in reyns]
                 string += f"\t Re: {min(reyns_num)} - {max(reyns_num)} "
                 string += "\t|\n"
