@@ -87,10 +87,7 @@ def plot_airfoils_polars(
                 polar = polar.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar = polar.loc[
-                        (polar["AoA"] >= aoa_bounds[0])
-                        & (polar["AoA"] <= aoa_bounds[1])
-                    ]
+                    polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[1] == "CL/CD" or plot[1] == "CL/CD":
                         polar["CL/CD"] = polar["CL"] / polar["CD"]

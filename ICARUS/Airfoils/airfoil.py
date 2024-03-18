@@ -50,7 +50,6 @@ methods from the original airfoil class which include but are not limited to:
 
 
 """
-
 import logging
 import os
 import re
@@ -59,9 +58,9 @@ from typing import Any
 from typing import Union
 
 import airfoils as af
-from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 
 from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
 from ICARUS.Core.struct import Struct
@@ -263,9 +262,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         """
 
         if not 0 <= eta <= 1:
-            raise ValueError(
-                f"'eta' must be in range [0,1], given eta is {float(eta):.3f}"
-            )
+            raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
 
         x = np.linspace(0, 1, n_points)
 
@@ -280,9 +277,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         upper = np.array([x, y_upper_new], dtype=float)
         lower = np.array([x, y_lower_new], dtype=float)
 
-        return cls(
-            upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points
-        )
+        return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
 
     @classmethod
     def naca(cls, naca: str, n_points: int = 200) -> "Airfoil":
@@ -653,9 +648,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         """
         Fetches the airfoil data from the web. Specifically from the UIUC airfoil database.
         """
-        link: str = (
-            "https://m-selig.ae.illinois.edu/ads/coord/naca" + self.name + ".dat"
-        )
+        link: str = "https://m-selig.ae.illinois.edu/ads/coord/naca" + self.name + ".dat"
         with urllib.request.urlopen(link) as url:
             site_data: str = url.read().decode("UTF-8")
         s: list[str] = site_data.split()
@@ -671,9 +664,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         # y[-1]= 0
         self.selig_web: FloatArray = np.vstack((x, y))
 
-    def save_selig_te(
-        self, directory: str | None = None, header: bool = False, inverse: bool = False
-    ) -> None:
+    def save_selig_te(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
         """
         Saves the airfoil in the selig format.
 

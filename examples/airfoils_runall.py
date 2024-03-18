@@ -3,18 +3,15 @@ import time
 
 import numpy as np
 
-from ICARUS.Airfoils import airfoil
 from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Analyses.input import Input
 from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
 from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
 from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
-from ICARUS.Core.units import calc_mach
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
+from ICARUS.Database import DB2D
 from ICARUS.Database import EXTERNAL_DB
 
 
@@ -26,9 +23,10 @@ def main() -> None:
     read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
-    calcF2W: bool = False
-    calcOpenFoam: bool = False  # True
     calcXFoil: bool = True
+    calcF2W: bool = False
+    calcOpenFoam: bool = False
+
     print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
     print(f"\tXfoil: {calcXFoil}")
@@ -40,41 +38,35 @@ def main() -> None:
     # airfoil_names: list[str] = ["2412", "4415"]
 
     # Load From DB
-    DB.foils_db.load_data()
-    all_airfoils = list(DB.foils_db.airfoils.keys())
+    DB.load_data()
 
+    all_airfoils = list(DB.foils_db.airfoils.keys())
     airfoils_to_compute = [
         airfoil
         for airfoil in all_airfoils
         if (
-            # airfoil.upper().startswith("S") or
-            # airfoil.upper().startswith("AG") or
-            # airfoil.upper().startswith("CLARK") or
-            # airfoil.upper().startswith("DAE") or
-            # airfoil.upper().startswith("E") or
-            # airfoil.upper().startswith("H") or
-            airfoil.upper().startswith("M") or
-            airfoil.upper().startswith("N") or
-            airfoil.upper().startswith("O") or
-            airfoil.upper().startswith("W")
+            airfoil.upper().startswith('AG')
+            or airfoil.upper().startswith('CLARK')
+            or airfoil.upper().startswith('DAE')
+            or airfoil.upper().startswith('E')
+            or airfoil.upper().startswith('H')
+            or airfoil.upper().startswith('M')
+            or airfoil.upper().startswith('N')
+            or airfoil.upper().startswith('O')
+            or airfoil.upper().startswith('S')
+            or airfoil.upper().startswith('W')
         )
     ]
-
-    # # Load From File
-    # for airfoil_name in airfoil_names:
-    #     airfoils.append(airfoil.naca(naca=airfoil_name, n_points=200))
-
-    # naca64418: Airfoil = Airfoil.load_from_file(os.path.join(XFLRDB, "NACA64418", "naca64418.dat"))
-    # airfoils.append(naca64418)
-
-    # naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35)
-    # airfoils.append(naca64418_fl)
+    print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
+    print(f"Total number of computed airfoil data {len(list(DB.foils_db._data.keys()))}")
+    print(f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}")
+    print(f"Computing: {len(airfoils_to_compute)}")
 
     # PARAMETERS FOR ESTIMATION
     chord_max: float = 0.5
     chord_min: float = 0.1
-    u_max: float = 35
-    u_min: float = 5
+    u_max: float = 35.0
+    u_min: float = 5.0
     viscosity: float = 1.56e-5
 
     # MACH ESTIMATION
@@ -93,8 +85,8 @@ def main() -> None:
     )
 
     # ANGLE OF ATTACK SETUP
-    aoa_min: float = -5
-    aoa_max: float = 12
+    aoa_min: float = -8
+    aoa_max: float = 14
     num_of_angles: int = int((aoa_max - aoa_min) * 2 + 1)
     angles: FloatArray = np.linspace(
         start=aoa_min,
@@ -103,18 +95,18 @@ def main() -> None:
     )
 
     # Transition to turbulent Boundary Layer
-    ftrip_up: dict[str, float] = {"pos": 0.4, "neg": 0.4}
-    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.1}
+    ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 1.0}
+    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 1.0}
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
     for airfoil_name in airfoils_to_compute:
+        # Get airfoil
         airfoil: Airfoil = DB.foils_db.airfoils[airfoil_name]
-        print(airfoil.name)
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
-        # # Get airfoil
         # airfoil.plot()
+        airfoil.repanel(100, distribution='cosine')
 
         # Foil2Wake
         if calcF2W:
@@ -123,7 +115,7 @@ def main() -> None:
 
             f2w_s: Solver = Foil2Wake()
 
-            analysis: str = f2w_s.get_analyses_names()[1]  # ANGLES PARALLEL
+            analysis: str = f2w_s.get_analyses_names()[1]  # Multiple Reynolds
             f2w_s.select_analysis(analysis)
             f2w_options: Struct = f2w_s.get_analysis_options()
             f2w_solver_parameters: Struct = f2w_s.get_solver_parameters()
@@ -135,13 +127,11 @@ def main() -> None:
             f2w_options.angles = angles
             f2w_s.print_analysis_options()
 
-            f2w_solver_parameters.f_trip_upper = ftrip_up["pos"]
-            f2w_solver_parameters.f_trip_low = ftrip_low["pos"]
+            f2w_solver_parameters.f_trip_upper = 0.1
+            f2w_solver_parameters.f_trip_low = 0
             f2w_solver_parameters.Ncrit = Ncrit
-            f2w_solver_parameters.max_iter = 400
-            f2w_solver_parameters.boundary_layer_solve_time = (
-                399  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
-            )
+            f2w_solver_parameters.max_iter = 250
+            f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
             f2w_solver_parameters.timestep = 0.1
 
             f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
@@ -149,6 +139,16 @@ def main() -> None:
 
             _ = f2w_s.get_results()
             f2w_etime: float = time.time()
+
+            try:
+                # Get polar
+                polar = DB.foils_db.get_polars(airfoil.name, "Foil2Wake")
+
+                airfoil_folder = os.path.join("Data/images/")
+                polar.save_polar_plot_img(airfoil_folder, 'f2w')
+            except Exception as e:
+                print(f"Error saving polar plot. Got: {e}")
+
             print(f"Foil2Wake completed in {f2w_etime - f2w_stime} seconds")
         # XFoil
         if calcXFoil:
@@ -181,13 +181,23 @@ def main() -> None:
             xfoil_solver_parameters.max_iter = 1000
 
             xfoil_solver_parameters.Ncrit = Ncrit
-            xfoil_solver_parameters.xtr = (ftrip_up["pos"], ftrip_low["pos"])
+            xfoil_solver_parameters.xtr = (0.1, 1.0)
             xfoil_solver_parameters.print = False
             # xfoil.print_solver_options()
 
             # RUN and SAVE
             xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
             xfoil.execute(parallel=True)
+
+            try:
+                # Get polar
+                polar = DB.foils_db.get_polars(airfoil.name, "Xfoil")
+
+                airfoil_folder = os.path.join("Data/images/")
+                polar.save_polar_plot_img(airfoil_folder, 'xfoil')
+            except Exception as e:
+                print(f"Error saving polar plot. Got: {e}")
+
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")
 

@@ -3,7 +3,6 @@ Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
-
 import time
 
 import numpy as np
@@ -83,9 +82,7 @@ def main() -> None:
         print("--------------------------------------------------")
 
         # # Import Environment
-        EARTH_ISA._set_pressure_from_altitude_and_temperature(
-            ALTITUDE[airplane.name], TEMPERATURE[airplane.name]
-        )
+        EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
         state = State(
             name="Unstick",
             airplane=airplane,
@@ -157,9 +154,7 @@ def main() -> None:
             if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
             try:
-                state.add_polar(
-                    polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True
-                )
+                state.add_polar(polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True)
                 unstick = state
             except Exception as error:
                 print("Got errro")

@@ -17,10 +17,12 @@ from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 
+
 class AirfoilNotFoundError(Exception):
     """
     Exception raised when an airfoil is not found in the database.
     """
+
     def __init__(self, airfoil_name: str) -> None:
         """
         Initialize the AirfoilNotFoundError class.
@@ -30,6 +32,7 @@ class AirfoilNotFoundError(Exception):
         """
         message = f"Airfoil {airfoil_name} not found in database!"
         super().__init__(message)
+
 
 class Database_2D:
     """
@@ -58,7 +61,7 @@ class Database_2D:
             list[str]: List of airfoil names
         """
         return list(self.airfoils.keys())
-    
+
     def get_airfoil(self, airfoil_name: str) -> Airfoil:
         """
         Returns the airfoil object from the database.
@@ -78,7 +81,7 @@ class Database_2D:
                 return self.airfoils[airfoil_name]
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)
-    
+
     def get_polars(self, airfoil_name: str, solver: str) -> Polars:
         """
         Returns the polars object from the database.
@@ -90,19 +93,25 @@ class Database_2D:
         Returns:
             Polars: Polars object
         """
-        if airfoil_name not in self.polars.keys():
+        if airfoil_name.upper() not in self.polars.keys():
             try:
                 # Try to load the airfoil from the DB or EXTERNAL DB
                 self.add_airfoil(airfoil_name)
+                airfoil_folder_path = os.path.join(DB2D, airfoil_name.upper())
+                self.add_airfoil_data(airfoil_folder_path)
+                if airfoil_name not in self.polars.keys():
+                    raise AirfoilNotFoundError(airfoil_name)
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)
-        
-        if solver not in self.polars[airfoil_name].keys():
-            raise ValueError(f"Solver {solver} not found in database!")
-        polar: Polars = self.polars[airfoil_name][solver]
+
+        if solver not in self.polars[airfoil_name.upper()].keys():
+            raise ValueError(
+                f"Solver {solver} not found in database! The available solvers are {list(self.polars[airfoil_name.upper()].keys())}",
+            )
+        polar: Polars = self.polars[airfoil_name.upper()][solver]
         return polar
-        
-    def get_data(self, airfoil_name: str, solver: str) -> dict[str,DataFrame]:
+
+    def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
         """
         Returns the data object from the database.
 
@@ -119,22 +128,16 @@ class Database_2D:
                 self.add_airfoil(airfoil_name)
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)
-            
-        if solver not in self._data[airfoil_name].keys():    
+
+        if solver not in self._data[airfoil_name].keys():
             raise ValueError(f"Solver {solver} not found in database!")
-        
-        data: dict[str,DataFrame] = self._data[airfoil_name][solver]
+
+        data: dict[str, DataFrame] = self._data[airfoil_name][solver]
         return data
 
     def load_data(self) -> None:
         """
         Scans the filesystem and load all the data.
-        """
-        # Read all the data
-        self.read_all_data()
-
-    def read_all_data(self) -> None:
-        """
         Scans the filesystem and loads data if not already loaded.
         """
         # Accessing Database Directory
@@ -151,10 +154,6 @@ class Database_2D:
             airfoil_folder_path = os.path.join(DB2D, airfoil_folder)
             os.chdir(airfoil_folder_path)
 
-            # Load Airfoil Data
-            if not self.add_airfoil_data(airfoil_folder):
-                continue
-
             # Load Airfoil Object
             try:
                 self.add_airfoil(airfoil_folder)
@@ -162,9 +161,12 @@ class Database_2D:
                 logging.error(f"Airfoil {airfoil_folder} not found in DB2D or EXTERNAL DB")
                 print(f"Airfoil {airfoil_folder} not found in DB2D or EXTERNAL DB")
                 continue
+
+            # Load Airfoil Data
+            self.add_airfoil_data(airfoil_folder)
         os.chdir(self.HOMEDIR)
 
-    def add_airfoil_data(self, airfoil_folder: str):
+    def add_airfoil_data(self, airfoil_folder: str) -> None:
         data = Struct()
         # Load Computed Data
         data[airfoil_folder] = self.read_airfoil_data_folder(airfoil_folder)
@@ -172,7 +174,7 @@ class Database_2D:
         # Check if the data is empty
         if not data[airfoil_folder]:
             logging.info(f"No data found for airfoil {airfoil_folder}")
-            return False        
+            return
 
         # If not Create Data and Polars
         else:
@@ -188,9 +190,10 @@ class Database_2D:
             self.polars[airfoil_folder] = Struct()
             for solver in self._data[airfoil_folder].keys():
                 self.polars[airfoil_folder][solver] = Polars(
-                    name=airfoil_folder, data=self._data[airfoil_folder][solver]
+                    name=airfoil_folder,
+                    data=self._data[airfoil_folder][solver],
                 )
-            return True
+            return
 
     def read_airfoil_data_folder(self, airfoil_folder: str) -> Struct:
         """

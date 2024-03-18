@@ -21,6 +21,7 @@ from ICARUS.Computation.Solvers.Foil2Wake.post_process.polars import make_polars
 from ICARUS.Computation.Solvers.Foil2Wake.utils import separate_angles
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import DB
+from ICARUS.Database import DB2D
 
 
 def f2w_single_reynolds(
@@ -224,6 +225,6 @@ def process_f2w_run(
         )
 
         polars[reynolds_str] = make_polars(CASEDIR, DB.HOMEDIR)
-
-    DB.foils_db.load_data()
+    resutls_folder = os.path.join(DB2D, airfoil.name.upper())
+    DB.foils_db.add_airfoil_data(resutls_folder)
     return polars

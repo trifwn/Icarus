@@ -3,7 +3,6 @@
 Merged Wing Class
 ==================
 """
-
 import numpy as np
 
 from ICARUS.Airfoils.airfoil import Airfoil
@@ -74,12 +73,7 @@ class MergedWing(Lifting_Surface):
             if symmetries == SymmetryAxes.NONE:
                 # Check if all wing segments share same symmetries
                 for symmetry_type in SymmetryAxes.__members__.values():
-                    if all(
-                        [
-                            symmetry_type in segment.symmetries
-                            for segment in wing_segments
-                        ]
-                    ):
+                    if all([symmetry_type in segment.symmetries for segment in wing_segments]):
                         merged_wing_symmetries.append(symmetry_type)
             else:
                 merged_wing_symmetries = [symmetries]
@@ -99,9 +93,7 @@ class MergedWing(Lifting_Surface):
         self._tip_chord = wing_segments[-1]._tip_chord
 
         # Get the twist distributions
-        self.twist_angles = np.array(
-            [segment.twist_angles for segment in wing_segments]
-        )
+        self.twist_angles = np.array([segment.twist_angles for segment in wing_segments])
 
         # Define the airfoils
         airfoils: list[Airfoil] = []
@@ -196,9 +188,7 @@ class MergedWing(Lifting_Surface):
         NM = 0
         # Stack all the grid points of the wing segments
         for segment in self.wing_segments:
-            grid[NM : NM + segment.M * segment.N, :] = np.reshape(
-                segment.grid, (segment.M * segment.N, 3)
-            )
+            grid[NM : NM + segment.M * segment.N, :] = np.reshape(segment.grid, (segment.M * segment.N, 3))
             grid_lower[NM : NM + segment.M * segment.N, :] = np.reshape(
                 segment.grid_upper,
                 (segment.M * segment.N, 3),
@@ -302,11 +292,7 @@ class MergedWing(Lifting_Surface):
         for segment in self.wing_segments:
             segment.calculate_volume()
             volume += segment.volume
-            volume_distribution.append(
-                np.reshape(
-                    segment.volume_distribution, ((segment.N - 1) * (segment.M - 1))
-                )
-            )
+            volume_distribution.append(np.reshape(segment.volume_distribution, ((segment.N - 1) * (segment.M - 1))))
 
         self.volume = volume
         self.volume_distribution = np.array(volume_distribution).flatten()
@@ -318,7 +304,7 @@ class MergedWing(Lifting_Surface):
         # Divide the mass of the wing among the segments based on their area
         # This is done to calculate the inertia of each segment
 
-        inertia = np.zeros((6))
+        inertia = np.zeros(6)
         for segment in self.wing_segments:
             mass_segment = (segment.area / self.area) * mass
             inertia += segment.calculate_inertia(mass_segment, cog)
@@ -342,7 +328,7 @@ class MergedWing(Lifting_Surface):
         cog[1] = y_cm / self.M
         cog[2] = z_cm / self.M
         return cog
-    
+
     def get_grid(self, which: str = "camber") -> FloatArray:
         """
         Returns the grid of the wing
@@ -370,7 +356,7 @@ class MergedWing(Lifting_Surface):
         for segment in self.wing_segments:
             mass += segment.mass
         return mass
-    
+
     @property
     def orientation(self) -> FloatArray:
         return self._orientation

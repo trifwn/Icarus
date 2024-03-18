@@ -35,14 +35,17 @@ moment, and the slope of the Cl vs Alpha curve by calling:
 >>> polars.get_cl_slope(cl_curve)
 
 """
+import os
 from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 from pandas import DataFrame
 from pandas import Index
 
+from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 
@@ -226,21 +229,39 @@ class Polars:
         df: DataFrame = self.get_reynolds_subtable(reynolds)
         cl_curve: pd.Series = df["CL"]
         cl_curve.index = Index(df["AoA"].astype("float32"))
-        return self.get_cl_slope(cl_curve)
+        cl_vector = cl_curve.to_numpy()
+        aoa_vector = np.deg2rad(df["AoA"].to_numpy())
+        zero_lift_angle = self.get_zero_lift_angle(cl_curve)
+        max_angle = zero_lift_angle + 3
+        min_angle = zero_lift_angle - 3
+        min_index = int(np.argmin(np.abs(aoa_vector - np.deg2rad(min_angle))))
+        max_index = int(np.argmin(np.abs(aoa_vector - np.deg2rad(max_angle))))
+
+        cl_slope = np.poly1d(np.polyfit(aoa_vector[min_index:max_index], cl_vector[min_index:max_index], 1))[1]
+        return cl_slope
+        # return self.get_cl_slope(cl_curve)
+
+    def reynolds_examine_run(self, reynolds: float | str) -> tuple[bool, str]:
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cl_curve: pd.Series = df["CL"]
+        cd_curve: pd.Series = df["CD"]
+        cl_curve.index = Index(df["AoA"].astype("float32"))
+        zero_lift = self.get_zero_lift_angle(cl_curve)
+        return self.examine_run(cl_curve, cd_curve, zero_lift)
 
     def plot_reynolds_cl_curve(
         self,
         reynolds: float | str,
-        fig=None,
         ax=None,
-    ) -> None: 
+        add_zero_lift: bool = True,
+    ) -> None:
         """Plot Reynolds Cl Curve"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
         cl = df["CL"]
         cl.index = Index(df["AoA"].astype("float32"))
         aoa = df["AoA"]
 
-        if fig is None or ax is None:
+        if ax is None:
             fig, ax = plt.subplots()
 
         ax.plot(aoa, cl, label=f"Reynolds {reynolds}")
@@ -249,13 +270,13 @@ class Polars:
         ax.set_title(f"Reynolds {reynolds} Cl Curve")
         ax.legend()
         ax.grid(True)
-        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--", label="Zero Lift Angle")
         ax.axhline(0.0, color="k", linestyle="--")
-    
+        if add_zero_lift:
+            ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--")
+
     def plot_reynolds_cd_curve(
         self,
         reynolds: float | str,
-        fig=None,
         ax=None,
     ) -> None:
         """Plot Reynolds Cd Curve"""
@@ -265,7 +286,7 @@ class Polars:
         cl.index = Index(df["AoA"].astype("float32"))
         aoa = df["AoA"]
 
-        if fig is None or ax is None:
+        if ax is None:
             fig, ax = plt.subplots()
 
         ax.plot(aoa, cd, label=f"Reynolds {reynolds}")
@@ -274,33 +295,85 @@ class Polars:
         ax.set_title(f"Reynolds {reynolds} Cd Curve")
         ax.legend()
         ax.grid(True)
-        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--", label="Zero Lift Angle")
+        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--")
         ax.axhline(0.0, color="k", linestyle="--")
-    
+
     def plot_reynolds_cl_over_cd_curve(
         self,
         reynolds: float | str,
-        fig=None,
         ax=None,
     ) -> None:
         """Plot Reynolds Cl Over Cd Curve"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
+
         cl = df["CL"]
         cd = df["CD"]
         cl.index = Index(df["AoA"].astype("float32"))
         cd.index = Index(df["AoA"].astype("float32"))
         aoa = df["AoA"]
+        df["CL/CD"] = df["CL"] / df["CD"]
 
-        if fig is None or ax is None:
+        idx = df[df["CL/CD"] > 200].index
+        idx2 = df[df["CL/CD"] < -200].index
+
+        df.loc[idx, "CL/CD"] = 0
+        df.loc[idx2, "CL/CD"] = 0
+
+        if ax is None:
             fig, ax = plt.subplots()
-        ax.plot(aoa, cl / cd, label=f"Reynolds {reynolds}")
+
+        ax.plot(aoa, df["CL/CD"], label=f"Reynolds {reynolds}")
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Lift to Drag Ratio")
         ax.set_title(f"Reynolds {reynolds} Cl/Cd Curve")
         ax.legend()
         ax.grid(True)
-        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--", label="Zero Lift Angle")
+        ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--")
         ax.axhline(0.0, color="k", linestyle="--")
+
+    def plot(self) -> Figure:
+        reyn_min = self.reynolds_nums[0]
+        reyn_max = self.reynolds_nums[-1]
+        # Create 2 subplots and unpack the output array immediately
+        fig, axs = plt.subplots(2, 2, figsize=(19.2, 10.8))
+
+        fig.suptitle(f"{self.name} Polars")
+        for reyn in self.reynolds_nums:
+            self.plot_reynolds_cl_curve(reyn, axs[0, 0])
+            self.plot_reynolds_cd_curve(reyn, axs[0, 1])
+            self.plot_reynolds_cl_over_cd_curve(reyn, axs[1, 0])
+
+        # Plot the airfoil on the second subplot
+        from ICARUS.Database import DB
+
+        airfoil: Airfoil = DB.get_airfoil(self.name)
+        airfoil.plot(ax=axs[1, 1], camber=True, max_thickness=True, scatter=False)
+
+        # Add text for the slopes
+        axs[0, 0].text(
+            0.7,
+            0.2,
+            f"Cl slope at {float(reyn_min):.1e}: {self.get_reynolds_cl_slope(reyn_min)* 180/np.pi:.3f} ",
+            fontsize=12,
+            transform=axs[0, 0].transAxes,
+        )
+        axs[0, 0].text(
+            0.7,
+            0.1,
+            f"Cl slope at {float(reyn_max):.1e}: {self.get_reynolds_cl_slope(reyn_max)* 180/np.pi:.3f} ",
+            fontsize=12,
+            transform=axs[0, 0].transAxes,
+        )
+        fig.tight_layout()
+        return fig
+
+    def save_polar_plot_img(self, folder: str, desc: str | None = None) -> None:
+        fig = self.plot()
+        desc = f"_{desc}" if desc else ""
+        filename = os.path.join(folder, f"{self.name}_polars{desc}.png")
+        fig.savefig(filename)
+        plt.close(fig)
+        print(f"Saved {filename}")
 
     @staticmethod
     def get_zero_lift_angle(cl_curve: pd.Series) -> float:
@@ -317,6 +390,7 @@ class Polars:
         """Get Slope of Cl Curve"""
         cl_linear: pd.Series = get_linear_series(cl_curve)
         # cl_linear.plot()
+
         return float(cl_linear.diff().mean())
 
     @staticmethod
@@ -370,6 +444,42 @@ class Polars:
         df.dropna(axis=0, subset=df.columns[1:], how="all", inplace=True)
         return df
 
+    @staticmethod
+    def examine_run(cl_curve: pd.Series, cd_curve: pd.Series, zero_lift_angle: float) -> tuple[bool, str]:
+        is_bad = False
+        cl_array = cl_curve.to_numpy()
+        cd_array = cd_curve.to_numpy()
+        aoa_array = np.deg2rad(cl_curve.index.to_numpy())
+        cl_slopes = np.gradient(cl_array, aoa_array)
+        cd_slopes = np.gradient(cd_array, aoa_array)
+        max_angle = zero_lift_angle + 4
+        min_angle = zero_lift_angle
+        min_index = np.argmin(np.abs(aoa_array - np.deg2rad(min_angle)))
+        max_index = np.argmin(np.abs(aoa_array - np.deg2rad(max_angle)))
+        max_positive_CL_slope = 3 * (2 * np.pi)
+        min_negative_CL_slope = -0.2 * (2 * np.pi)
+        max_positive_CD_slope = 0.9
+        min_negative_CD_slope = -(0.9)
+
+        CL_cond = np.any(np.greater(cl_slopes[min_index:max_index], max_positive_CL_slope)) or np.any(
+            np.less(cl_slopes[min_index:max_index], min_negative_CL_slope),
+        )
+        CD_cond = np.any(np.greater(cd_slopes[min_index:max_index], max_positive_CD_slope)) or np.any(
+            np.less(cd_slopes[min_index:max_index], min_negative_CD_slope),
+        )
+        is_bad: bool = False
+        problem: str = "None"
+        if CL_cond and not CD_cond:
+            is_bad = True
+            problem = "CL problem"
+        elif CD_cond and not CL_cond:
+            is_bad = True
+            problem = "CD problem"
+        elif CD_cond and CL_cond:
+            problem = "both"
+            is_bad = True
+        return is_bad, problem
+
     def get_cl_cd_parabolic(self, reynolds: float) -> tuple[FloatArray, FloatArray]:
         """
         A simple profile-drag CD(CL) function for this section.
@@ -403,8 +513,8 @@ class Polars:
 
         # Interpolate Reynolds From Values Stored in the Class
         if reynolds not in self.reynolds_nums:
-            reynolds_max = min(self.reynolds_nums)
-            reynolds_min = max(self.reynolds_nums)
+            reynolds_max = max(self.reynolds_nums)
+            reynolds_min = min(self.reynolds_nums)
             for reyn in self.reynolds_nums:
                 if reyn > reynolds:
                     reynolds_max = reyn

@@ -46,7 +46,7 @@ class GenuSurface:
                 GenuSurface.airfoil_names[airfoil.name[:8]] += 1
 
         name: str = f"{GenuSurface.surf_names[surf.name[:8]]}_{surf.name}"
-        
+
         airfoil_name: str = f"{GenuSurface.airfoil_names[surf.airfoils[0].name[:8]]}_{surf.airfoils[0].name}"
 
         # Make the names valid for GenuVP and make sure they are unique

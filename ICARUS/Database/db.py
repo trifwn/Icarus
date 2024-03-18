@@ -1,8 +1,8 @@
-from ICARUS.Airfoils.airfoil import Airfoil
 from .AnalysesDB import AnalysesDB
 from .Database_2D import Database_2D
 from .Database_3D import Database_3D
 from ICARUS import APPHOME
+from ICARUS.Airfoils.airfoil import Airfoil
 
 
 class Database:

@@ -1,5 +1,4 @@
 """This module defines the hermes plane object."""
-
 import numpy as np
 
 from ICARUS.Core.types import FloatArray
@@ -54,8 +53,7 @@ def hermes(
         M=5,
         mass=0.670,
     )
-    
-    
+
     # main_wing.plotWing()
 
     elevator_pos: FloatArray = np.array(
@@ -123,21 +121,13 @@ def hermes(
         (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
     ]
     for i in range(0, 5):
-        point_masses.append(
-            (0.175, np.array([0.06 * i, 0.04, 0.0], dtype=float), f"ball_{i+1}")
-        )
+        point_masses.append((0.175, np.array([0.06 * i, 0.04, 0.0], dtype=float), f"ball_{i+1}"))
     for i in range(0, 5):
-        point_masses.append(
-            (0.175, np.array([0.06 * i, -0.04, 0.0], dtype=float), f"ball_{5+i+1}")
-        )
+        point_masses.append((0.175, np.array([0.06 * i, -0.04, 0.0], dtype=float), f"ball_{5+i+1}"))
     for i in range(0, 4):
-        point_masses.append(
-            (0.175, np.array([-0.06 * i, 0.04, 0.0], dtype=float), f"ball_{i+1+10}")
-        )
+        point_masses.append((0.175, np.array([-0.06 * i, 0.04, 0.0], dtype=float), f"ball_{i+1+10}"))
     for i in range(0, 4):
-        point_masses.append(
-            (0.175, np.array([-0.06 * i, -0.04, 0.0], dtype=float), f"ball_{14+i+1}")
-        )
+        point_masses.append((0.175, np.array([-0.06 * i, -0.04, 0.0], dtype=float), f"ball_{14+i+1}"))
     airplane: Airplane = Airplane(name, lifting_surfaces)
     airplane.add_point_masses(point_masses)
 

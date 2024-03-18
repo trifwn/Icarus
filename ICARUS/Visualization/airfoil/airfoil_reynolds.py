@@ -70,9 +70,7 @@ def plot_airfoil_reynolds(
             polar = data[airfoil_name][solver][reynolds]
             if aoa_bounds is not None:
                 # Get data where AoA is in AoA bounds
-                polar = polar.loc[
-                    (polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])
-                ]
+                polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
             for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                 key0 = f"{plot[0]}"
                 key1 = f"{plot[1]}"

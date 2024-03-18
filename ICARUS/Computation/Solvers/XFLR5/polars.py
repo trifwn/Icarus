@@ -91,9 +91,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                     if "XFLR" not in foils_db._data[name].keys():
                         foils_db._data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(
-                        reyn, sign=False, precision=3, min_digits=3
-                    ).replace(
+                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
@@ -122,9 +120,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                     if "XFLR" not in foils_db._data[name].keys():
                         foils_db._data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(
-                        reyn, sign=False, precision=3, min_digits=3
-                    ).replace(
+                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
@@ -154,9 +150,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                     if "XFLR" not in foils_db._data[name].keys():
                         foils_db._data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(
-                        reyn, sign=False, precision=3, min_digits=3
-                    ).replace("+", "")
+                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
                     foils_db._data[name]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)

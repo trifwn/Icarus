@@ -514,7 +514,9 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             if not params.Use_Grid:
                 f.write(f'1          {"".join(char for char in bod.airfoil_name if char.isdigit())}\n')
             else:
-                f.write(f'0          {"".join(char for char in bod.airfoil_name if char.isdigit())}       {bod.name}.WG\n')
+                f.write(
+                    f'0          {"".join(char for char in bod.airfoil_name if char.isdigit())}       {bod.name}.WG\n',
+                )
                 # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
                 # Specify option 0 to read the file
                 with open(f"{bod.name}.WG", "w") as f_wg:
@@ -533,7 +535,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
                                 # f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
                                 f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
                             f_wg.write("\n")
-    
+
             blankline(f)
             f.write("IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n")
             f.write("1          1          1\n")
