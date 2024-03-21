@@ -93,7 +93,7 @@ class MergedWing(Lifting_Surface):
         self._tip_chord = wing_segments[-1]._tip_chord
 
         # Get the twist distributions
-        self.twist_angles = np.array([segment.twist_angles for segment in wing_segments])
+        self.twist_angles = np.hstack([segment.twist_angles for segment in wing_segments])
 
         # Define the airfoils
         airfoils: list[Airfoil] = []
@@ -295,7 +295,7 @@ class MergedWing(Lifting_Surface):
             volume_distribution.append(np.reshape(segment.volume_distribution, ((segment.N - 1) * (segment.M - 1))))
 
         self.volume = volume
-        self.volume_distribution = np.array(volume_distribution).flatten()
+        self.volume_distribution = np.hstack(volume_distribution).flatten()
 
     def calculate_inertia(self, mass: float, cog: FloatArray) -> FloatArray:
         """
@@ -333,7 +333,7 @@ class MergedWing(Lifting_Surface):
         """
         Returns the grid of the wing
         """
-        grids = []
+        grids: list[FloatArray] = []
         for segment in self.wing_segments:
             if which == "camber":
                 grids.append(segment.get_grid(which))
@@ -368,6 +368,22 @@ class MergedWing(Lifting_Surface):
 
         for segment in self.wing_segments:
             segment.orientation = value + segment.orientation
+
+    @property
+    def root_airfoil(self) -> Airfoil:
+        return self.wing_segments[0].root_airfoil
+
+    @root_airfoil.setter
+    def root_airfoil(self, value: Airfoil) -> None:
+        self.wing_segments[0].root_airfoil = value
+
+    @property
+    def tip_airfoil(self) -> Airfoil:
+        return self.wing_segments[-1].tip_airfoil
+
+    @tip_airfoil.setter
+    def tip_airfoil(self, value: Airfoil) -> None:
+        self.wing_segments[-1].tip_airfoil = value
 
     # def change_segment_discretization(self, N: int, M: int) -> None:
     #     """

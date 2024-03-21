@@ -18,37 +18,36 @@ class SecondOrderSystem(DynamicalSystem):
 
     def __init__(
         self,
-        M: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray,
-        C: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray,
-        K: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray,
-        f_ext: (Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray) = lambda t, u: jnp.zeros_like(u),
+        M: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | ndarray,
+        C: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | ndarray,
+        K: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | ndarray,
+        f_ext: (Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | ndarray) = lambda t, u: jnp.zeros_like(u),
     ) -> None:
-        if isinstance(M, jnp.ndarray):
-            print("Constant Mass Matrix: ", M)
+        if isinstance(M, jnp.ndarray) or isinstance(M, ndarray):
             if M.shape == () or M.shape == (1,):
                 M = M.reshape(-1, 1)
             self.M = jit(lambda t, x: M)
         else:
             self.M = jit(M)
 
-        if isinstance(C, jnp.ndarray):
-            print("Constant Damping Matrix: ", C)
+        if isinstance(C, jnp.ndarray) or isinstance(C, ndarray):
             if C.shape == () or C.shape == (1,):
                 C = C.reshape(-1, 1)
             self.C = jit(lambda t, x: C)
         else:
             self.C = jit(C)
 
-        if isinstance(K, jnp.ndarray):
-            print("Constant Stiffness Matrix: ", K)
+        if isinstance(K, jnp.ndarray) or isinstance(K, ndarray):
             if K.shape == () or K.shape == (1,):
                 K = K.reshape(-1, 1)
             self.f_int = jit(lambda t, x: K)
         else:
             self.f_int = jit(K)
 
+        if isinstance(f_ext, ndarray):
+            f_ext = jnp.array(f_ext)
+
         if isinstance(f_ext, jnp.ndarray):
-            print("Constant External Force: ", f_ext)
             if f_ext.shape == () or f_ext.shape == (1,):
                 f_ext = f_ext.reshape(-1, 1)
             f_ext_fun: Callable[[float, jnp.ndarray], jnp.ndarray] = lambda t, x: f_ext

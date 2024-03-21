@@ -501,10 +501,7 @@ def cld_files(
             polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
 
         except KeyError:
-            try:
-                polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
-            except KeyError:
-                raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
+            raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         f_io = StringIO()
         f_io.write(f"CL-CD POLARS by {solver}\n")

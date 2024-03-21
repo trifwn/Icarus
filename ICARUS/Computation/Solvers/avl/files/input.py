@@ -124,10 +124,13 @@ def avl_geo(
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}\n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
-        if surf.chord_spacing == DiscretizationType.USER_DEFINED:
+        try:
+            if surf.chord_spacing == DiscretizationType.USER_DEFINED:
+                chord_spacing = DiscretizationType.COSINE.value
+            else:
+                chord_spacing = surf.chord_spacing.value
+        except AttributeError:
             chord_spacing = DiscretizationType.COSINE.value
-        else:
-            chord_spacing = surf.chord_spacing.value
         f_io.write(f"{surf.M}        {chord_spacing}\n")
         f_io.write("\n")
 
@@ -143,10 +146,7 @@ def avl_geo(
             try:
                 polars: dict[str, DataFrame] = foil_dat[surf.root_airfoil.name][solver2D]
             except KeyError:
-                try:
-                    polars = foil_dat[f"NACA{surf.root_airfoil.name}"][solver2D]
-                except KeyError:
-                    raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
+                raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
 
             polar_obj = Polars(name=surf.root_airfoil.name, data=polars)
             # Calculate average reynolds number

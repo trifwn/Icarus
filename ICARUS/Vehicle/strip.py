@@ -102,7 +102,7 @@ class Strip:
         """
         strip: list[FloatArray] = [
             self.x0 + self.chord[0] * np.hstack((self.airfoil1._x_upper, self.airfoil1._x_lower)),
-            self.y0 + np.repeat(0, 2 * self.airfoil1.n_points),
+            self.y0 + np.repeat(0, self.airfoil1.n_points),
             self.z0 + self.chord[0] * np.hstack((self.airfoil1._y_upper, self.airfoil1._y_lower)),
         ]
         return np.array(strip)
@@ -116,7 +116,7 @@ class Strip:
         """
         strip: list[FloatArray] = [
             self.x1 + self.chord[1] * np.hstack((self.airfoil2._x_upper, self.airfoil2._x_lower)),
-            self.y1 + np.repeat(0, 2 * self.airfoil1.n_points),
+            self.y1 + np.repeat(0, self.airfoil1.n_points),
             self.z1 + self.chord[1] * np.hstack((self.airfoil2._y_upper, self.airfoil2._y_lower)),
         ]
         return np.array(strip)

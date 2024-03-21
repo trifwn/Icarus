@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from .strip import Strip
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.utils import SymmetryAxes
 
@@ -120,12 +121,12 @@ class Lifting_Surface:
 
         # Define the airfoil
         if isinstance(root_airfoil, str):
-            root_airfoil = Airfoil.naca(root_airfoil)
+            root_airfoil = DB.get_airfoil(root_airfoil)
         self._root_airfoil: Airfoil = root_airfoil
         if tip_airfoil is None:
             tip_airfoil = root_airfoil
         elif isinstance(tip_airfoil, str):
-            tip_airfoil = Airfoil.naca(tip_airfoil)
+            tip_airfoil = DB.get_airfoil(tip_airfoil)
         self._tip_airfoil: Airfoil = tip_airfoil
         self.airfoils: list[Airfoil] = [root_airfoil, tip_airfoil]
 
@@ -237,14 +238,14 @@ class Lifting_Surface:
 
         # Define Airfoils
         if isinstance(root_airfoil, str):
-            root_airfoil_obj: Airfoil = Airfoil.naca(root_airfoil)
+            root_airfoil_obj: Airfoil = DB.get_airfoil(root_airfoil)
         elif isinstance(root_airfoil, Airfoil):
             root_airfoil_obj = root_airfoil
         else:
             raise ValueError("Root Airfoil must be a string or an Airfoil")
 
         if isinstance(tip_airfoil, str):
-            tip_airfoil_obj: Airfoil = Airfoil.naca(tip_airfoil)
+            tip_airfoil_obj: Airfoil = DB.get_airfoil(tip_airfoil)
         elif isinstance(tip_airfoil, Airfoil):
             tip_airfoil_obj = tip_airfoil
         else:
@@ -522,9 +523,10 @@ class Lifting_Surface:
     @root_airfoil.setter
     def root_airfoil(self, value: str | Airfoil) -> None:
         if isinstance(value, str):
-            value = Airfoil.naca(value)
+            value = DB.get_airfoil(value)
         self._root_airfoil = value
         self.calculate_wing_parameters()
+        return None
 
     @property
     def tip_airfoil(self) -> Airfoil:
@@ -533,9 +535,25 @@ class Lifting_Surface:
     @tip_airfoil.setter
     def tip_airfoil(self, value: str | Airfoil) -> None:
         if isinstance(value, str):
-            value = Airfoil.naca(value)
+            value = DB.get_airfoil(value)
         self._tip_airfoil = value
         self.calculate_wing_parameters()
+
+    @property
+    def mean_airfoil(self) -> Airfoil:
+        # Calcultate the area weighted mean airfoil by the chord
+        dspan = self._span_dist[1:] - self._span_dist[:-1]
+        mchord = (self._chord_dist[1:] + self._chord_dist[:-1]) / 2
+        area_approx = dspan * mchord
+        mean_area = np.mean(dspan * mchord)
+        mean_area_pos = np.argmin(np.abs(area_approx - mean_area))
+        heta = (self._span_dist[mean_area_pos] - self._span_dist[0]) / (self._span_dist[-1] - self._span_dist[0])
+        return Airfoil.morph_new_from_two_foils(
+            self.root_airfoil,
+            self.tip_airfoil,
+            heta,
+            self.root_airfoil.n_points,
+        )
 
     def calculate_wing_parameters(self) -> None:
         """Calculate Wing Parameters"""
@@ -636,20 +654,41 @@ class Lifting_Surface:
         start_chords = np.array(self._chord_dist[i_range])
         end_chords = np.array(self._chord_dist[i_range + 1])
 
-        strips = [
-            Strip(
-                start_leading_edge=start_points[:, j],
-                end_leading_edge=end_points[:, j],
-                start_airfoil=self.root_airfoil,
-                end_airfoil=self.root_airfoil,
-                start_chord=start_chords[j],
-                end_chord=end_chords[j],
+        strips: list[Strip] = []
+        for j in range(self.N - 1):
+            if self.root_airfoil == self.tip_airfoil:
+                strip_root_af = self.root_airfoil
+                strip_tip_af = self.root_airfoil
+            else:
+                # Calculate the heta position of the strip
+                root_eta = j / (self.N - 1)
+                tip_eta = (j + 1) / (self.N - 1)
+                strip_root_af = Airfoil.morph_new_from_two_foils(
+                    self.root_airfoil,
+                    self.tip_airfoil,
+                    root_eta,
+                    self.root_airfoil.n_points,
+                )
+                strip_tip_af = Airfoil.morph_new_from_two_foils(
+                    self.root_airfoil,
+                    self.tip_airfoil,
+                    tip_eta,
+                    self.tip_airfoil.n_points,
+                )
+
+            strips.append(
+                Strip(
+                    start_leading_edge=start_points[:, j],
+                    end_leading_edge=end_points[:, j],
+                    start_airfoil=strip_root_af,
+                    end_airfoil=strip_tip_af,
+                    start_chord=start_chords[j],
+                    end_chord=end_chords[j],
+                ),
             )
-            for j in range(self.N - 1)
-        ]
 
         if self.is_symmetric_y:
-            symmetric_strips = [surf.return_symmetric() for surf in strips]
+            symmetric_strips = [strip.return_symmetric() for strip in strips]
 
         self.strips = strips
         self.all_strips = [*strips, *symmetric_strips]
@@ -851,8 +890,8 @@ class Lifting_Surface:
 
     def calculate_volume(self) -> None:
         """Finds the volume of the wing using vectorized operations."""
-        g_up = self.grid_upper.reshape(self.M, self.N, 3)
-        g_low = self.grid_lower.reshape(self.M, self.N, 3)
+        g_up = self.grid_upper.reshape(self.N, self.M, 3)
+        g_low = self.grid_lower.reshape(self.N, self.M, 3)
 
         AB1 = g_up[1:, :-1, :] - g_up[:-1, :-1, :]
         AB2 = g_low[1:, :-1, :] - g_low[:-1, :-1, :]

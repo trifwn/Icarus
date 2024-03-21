@@ -23,7 +23,7 @@ def single_reynolds_run(
 ) -> FloatArray:
     xf = XFoil()
     xf.Re = Reyn
-    # xf.M = MACH
+    xf.M = 0.0
     # xf.print = True
     for key, value in solver_options.items():
         setattr(xf, key, value)
@@ -33,20 +33,22 @@ def single_reynolds_run(
     ypts = pts[1]
     xf_airf_obj = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = xf_airf_obj
-    if xf.max_iter > 1000:
-        xf.max_iter = 1000
+
+    # xf.repanel(160)
+    # xf.filter()
+    # xf.max_iter = 500
 
     # If the values are both negative and positive split the into 2 run
-    if AoAmin < 0 and AoAmax > 0:
-        aXF1, clXF1, cdXF1, cmXF1, cpXF1 = xf.aseq(0, AoAmin, -AoAstep)
-        aXF2, clXF2, cdXF2, cmXF2, cpXF2 = xf.aseq(0, AoAmax, AoAstep)
-        aXF = np.concatenate((aXF1, aXF2[1:]))
-        clXF = np.concatenate((clXF1, clXF2[1:]))
-        cdXF = np.concatenate((cdXF1, cdXF2[1:]))
-        cmXF = np.concatenate((cmXF1, cmXF2[1:]))
-        cpXF = np.concatenate((cpXF1, cpXF2[1:]))
-    else:
-        aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
+    # if AoAmin < 0 and AoAmax > 0:
+    #     aXF1, clXF1, cdXF1, cmXF1, cpXF1 = xf.aseq(0, AoAmin, -AoAstep)
+    #     aXF2, clXF2, cdXF2, cmXF2, cpXF2 = xf.aseq(0, AoAmax, AoAstep)
+    #     aXF = np.concatenate((aXF1, aXF2[1:]))
+    #     clXF = np.concatenate((clXF1, clXF2[1:]))
+    #     cdXF = np.concatenate((cdXF1, cdXF2[1:]))
+    #     cmXF = np.concatenate((cmXF1, cmXF2[1:]))
+    #     cpXF = np.concatenate((cpXF1, cpXF2[1:]))
+    # else:
+    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
     df = np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
     return df
 
@@ -65,8 +67,10 @@ def single_reynolds_run_seq(
         setattr(xf, key, value)
 
     xpts, ypts = airfoil.selig
-    naca = XFAirfoil(x=xpts, y=ypts)
-    xf.airfoil = naca
+    airfoil_obj = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = airfoil_obj
+    # xf.repanel()
+    # xf.filter()
 
     aXF = []
     clXF = []
@@ -76,7 +80,6 @@ def single_reynolds_run_seq(
 
     for angle in angles:
         aXF.append(angle)
-        xf.xtr = (0.1, 0.1)
         cl, cd, cm, cp = xf.a(angle)
         clXF.append(cl)
         cdXF.append(cd)

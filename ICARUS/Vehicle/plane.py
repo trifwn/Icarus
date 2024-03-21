@@ -482,7 +482,7 @@ class Airplane:
         for surface in self.surfaces:
             surface.plot(thin, fig, ax, mov)
         # Add plot for masses
-        for m, r, _ in self.masses:
+        for m, r, desc in self.masses:
             ax.scatter(
                 r[0] + mov[0],
                 r[1] + mov[1],
@@ -491,6 +491,10 @@ class Airplane:
                 s=int(m * 50.0),
                 color="r",
             )
+            # Add label to indicate point mass name
+            # Text
+            ax.text(r[0] + mov[0], r[1] + mov[1], r[2] + mov[2], '%s' % (desc), size=9, zorder=1, color='k')
+
         ax.scatter(
             self.CG[0] + mov[0],
             self.CG[1] + mov[1],

@@ -53,6 +53,42 @@ class Database_3D:
     def load_data(self) -> None:
         self.read_all_data()
 
+    def get_state(self, vehicle: str, state: str) -> State:
+        if vehicle not in self.states.keys():
+            # Try to Load Vehicle object
+            self.get_vehicle(vehicle)
+            self.states[vehicle] = {}
+
+        if state in self.states[vehicle].keys():
+            return self.states[vehicle][state]
+        else:
+            try:
+                self.read_plane_data(vehicle)
+                return self.states[vehicle][state]
+            except KeyError:
+                raise ValueError(f"No State found for {state}")
+
+    def get_polars(self, name: str) -> DataFrame:
+        if name in self.polars.keys():
+            return self.polars[name]
+        else:
+            self.read_plane_data(name)
+            try:
+                return self.polars[name]
+            except KeyError:
+                raise ValueError(f"No Polars found for {name}")
+
+    def get_vehicle(self, name: str) -> Airplane:
+        if name in self.planes.keys():
+            return self.planes[name]
+        else:
+            # Try to Load Vehicle object
+            file_plane: str = os.path.join(DB3D, name, f"{name}.json")
+            plane_obj: Airplane | None = self.load_plane(name, file_plane)
+            if plane_obj is None:
+                raise ValueError(f"No Vehicle Object Found at {file_plane}")
+            return plane_obj
+
     def read_all_data(self) -> None:
         if not os.path.isdir(DB3D):
             print(f"Creating DB3D directory at {DB3D}...")
@@ -60,60 +96,63 @@ class Database_3D:
 
         vehicle_folders: list[str] = next(os.walk(DB3D))[1]
         for vehicle_folder in vehicle_folders:  # For each plane vehicle == folder name
-            logging.info(f"Adding Vehicle at {vehicle_folder}")
-            # Enter DB3D
-            os.chdir(DB3D)
-            vehicle_folder_path = os.path.join(DB3D, vehicle_folder)
+            self.read_plane_data(vehicle_folder)
+
+    def read_plane_data(self, vehicle_folder: str) -> None:
+        logging.info(f"Adding Vehicle at {vehicle_folder}")
+        # Enter DB3D
+        os.chdir(DB3D)
+        vehicle_folder_path = os.path.join(DB3D, vehicle_folder)
+        os.chdir(vehicle_folder_path)
+
+        # Load Vehicle object
+        file_plane: str = os.path.join(DB3D, vehicle_folder, f"{vehicle_folder}.json")
+        plane_obj: Airplane | None = self.load_plane(vehicle_folder, file_plane)
+        if plane_obj is None:
+            vehicle_name = vehicle_folder
+            logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
+        else:
+            vehicle_name = plane_obj.name
+
+        # Load Vehicle State
+        state_obj: State | None = self.load_plane_state(vehicle_folder_path)
+        if state_obj is None:
+            logging.debug(f"No State Object Found at {vehicle_folder_path}")
+        else:
+            try:
+                self.states[vehicle_name][state_obj.name] = state_obj
+            except KeyError:
+                self.states[vehicle_name] = {}
+                self.states[vehicle_name][state_obj.name] = state_obj
+
+        solver_folders = next(os.walk(os.path.join(DB3D, vehicle_folder)))[1]
+        for solver_folder in solver_folders:
+            logging.debug(f"Entering {solver_folder}")
+            if solver_folder == "GenuVP3":
+                self.load_gnvp_data(
+                    plane=plane_obj,
+                    state=state_obj,
+                    vehicle_folder=vehicle_folder,
+                    gnvp_version=3,
+                )
+            elif solver_folder == "GenuVP7":
+                self.load_gnvp_data(
+                    plane=plane_obj,
+                    state=state_obj,
+                    vehicle_folder=vehicle_folder,
+                    gnvp_version=7,
+                )
+            elif solver_folder == "LSPT":
+                self.load_lspt_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
+            elif solver_folder == "AVL":
+                self.load_avl_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
+            # elif solver_folder == "XFLR5":
+            #     self.load_xflr5_data(vehicle_name, gnvp_version=3)
+            else:
+                logging.debug(f"Unknow Solver directory {solver_folder}")
+                pass
+
             os.chdir(vehicle_folder_path)
-
-            # Load Vehicle object
-            file_plane: str = os.path.join(DB3D, vehicle_folder, f"{vehicle_folder}.json")
-            plane_obj: Airplane | None = self.load_plane(vehicle_folder, file_plane)
-            if plane_obj is None:
-                vehicle_name = vehicle_folder
-                logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
-            else:
-                vehicle_name = plane_obj.name
-
-            # Load Vehicle State
-            state_obj: State | None = self.load_plane_state(vehicle_folder_path)
-            if state_obj is None:
-                logging.debug(f"No State Object Found at {vehicle_folder_path}")
-            else:
-                try:
-                    self.states[vehicle_name][state_obj.name] = state_obj
-                except KeyError:
-                    self.states[vehicle_name] = {}
-                    self.states[vehicle_name][state_obj.name] = state_obj
-
-            solver_folders = next(os.walk(os.path.join(DB3D, vehicle_folder)))[1]
-            for solver_folder in solver_folders:
-                logging.debug(f"Entering {solver_folder}")
-                if solver_folder == "GenuVP3":
-                    self.load_gnvp_data(
-                        plane=plane_obj,
-                        state=state_obj,
-                        vehicle_folder=vehicle_folder,
-                        gnvp_version=3,
-                    )
-                elif solver_folder == "GenuVP7":
-                    self.load_gnvp_data(
-                        plane=plane_obj,
-                        state=state_obj,
-                        vehicle_folder=vehicle_folder,
-                        gnvp_version=7,
-                    )
-                elif solver_folder == "LSPT":
-                    self.load_lspt_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
-                elif solver_folder == "AVL":
-                    self.load_avl_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
-                # elif solver_folder == "XFLR5":
-                #     self.load_xflr5_data(vehicle_name, gnvp_version=3)
-                else:
-                    logging.debug(f"Unknow Solver directory {solver_folder}")
-                    pass
-
-                os.chdir(vehicle_folder_path)
 
     def load_plane(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.
@@ -152,7 +191,8 @@ class Database_3D:
         state: State | None = None
         for file in files:
             if file.endswith("_state.json"):
-                with open(file, encoding="UTF-8") as f:
+                file_path = os.path.join(directory, file)
+                with open(file_path, encoding="UTF-8") as f:
                     json_obj: str = f.read()
 
                 obj: Any = jsonpickle.decode(json_obj)

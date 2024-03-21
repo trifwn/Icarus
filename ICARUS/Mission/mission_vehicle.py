@@ -15,24 +15,24 @@ class Mission_Vehicle:
         self.motor: Engine = engine
         self.cldata = DB.vehicles_db.polars[airplane.name]
 
-        elevator: Lifting_Surface | None = None
-        for surf in airplane.surfaces:
-            if surf.name == "tail" or surf.name == "elevator" or surf.name == "horizontal_stabilizer":
-                self.l_e = surf.origin[0]
-                elevator = surf
-        if elevator is None:
-            raise Exception("Elevator not found")
+        # elevator: Lifting_Surface | None = None
+        # for surf in airplane.surfaces:
+        #     if surf.name == "tail" or surf.name == "elevator" or surf.name == "horizontal_stabilizer":
+        #         self.l_e = surf.origin[0]
+        #         elevator = surf
+        # if elevator is None:
+        #     raise Exception("Elevator not found")
 
-        self.elevator: Lifting_Surface = elevator
-        self.elevator_max_deflection = 30
-        self.Ixx: float = airplane.total_inertia[0]
-        self.l_m: float = -0.4
+        # self.elevator: Lifting_Surface = elevator
+        # self.elevator_max_deflection = 30
+        # self.Ixx: float = airplane.total_inertia[0]
+        # self.l_m: float = -0.4
 
     @staticmethod
     def interpolate_polars(aoa: float, cldata: DataFrame) -> tuple[float, float, float]:
-        cl = float(np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CL"]))
-        cd = float(np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CD"]))
-        cm = float(np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential Cm"]))
+        cl = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential CL"]))
+        cd = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential CD"]))
+        cm = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential Cm"]))
         return cl, cd, cm
 
     def get_elevator_lift_over_cl(
@@ -56,9 +56,9 @@ class Mission_Vehicle:
             aoa,
             self.cldata[
                 [
-                    "GNVP7 Potential CL",
-                    "GNVP7 Potential CD",
-                    "GNVP7 Potential Cm",
+                    "GenuVP3 Potential CL",
+                    "GenuVP3 Potential CD",
+                    "GenuVP3 Potential Cm",
                     "AoA",
                 ]
             ],

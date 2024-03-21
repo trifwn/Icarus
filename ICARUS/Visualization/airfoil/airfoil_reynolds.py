@@ -52,7 +52,7 @@ def plot_airfoil_reynolds(
 
     if title == "Aero Coefficients":
         fig.suptitle(
-            f"NACA {airfoil_name[4:]}- Reynolds={reynolds}\n Aero Coefficients",
+            f"{airfoil_name}- Reynolds={reynolds}\n Aero Coefficients",
             fontsize=16,
         )
     else:

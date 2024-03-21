@@ -48,7 +48,7 @@ def plot_airfoils_polars(
     j: int = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(j, i)  # type: ignore
+    axs: ndarray = fig.subplots(2, 2)  # type: ignore
 
     fig.suptitle(f"{title}", fontsize=16)
 
@@ -67,10 +67,7 @@ def plot_airfoils_polars(
     data: Struct = DB.foils_db._data
 
     for j, airfoil_name in enumerate(airfoil_names):
-        try:
-            db_solvers = data[airfoil_name]
-        except KeyError:
-            db_solvers = data[f"NACA{airfoil_name}"]
+        db_solvers = data[airfoil_name]
 
         for i, solver in enumerate(db_solvers):
             if solver not in solvers:

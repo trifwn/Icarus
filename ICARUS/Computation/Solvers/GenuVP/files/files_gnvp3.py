@@ -477,7 +477,7 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
         for radpos in [-100.0, 100.0]:
             line(radpos, "RADPOS", "! Radial Position", f_io)
             f_io.write(
-                f"{len(angles)}         ! Number of Angles / Airfoil NACA {bod.airfoil_name}\n",
+                f"{len(angles)}         ! Number of Angles / Airfoil      {bod.airfoil_name}\n",
             )
             f_io.write(
                 "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",

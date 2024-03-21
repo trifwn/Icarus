@@ -60,11 +60,7 @@ def plot_airfoil_polars(
 
     # Get the data from the database
     data: Struct = DB.foils_db._data
-
-    try:
-        db_solvers = data[airfoil_name]
-    except KeyError:
-        db_solvers = data[f"NACA{airfoil_name}"]
+    db_solvers = data[airfoil_name]
 
     for i, solver in enumerate(db_solvers):
         if solver not in solvers:

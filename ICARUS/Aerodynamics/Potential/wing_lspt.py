@@ -106,7 +106,7 @@ class Wing_LSPT:
         N_start: int = 0
         for segment in self.wing_segments:
             N_end: int = N_start + segment.N
-            self.grid[N_start:N_end, :-1, :] = segment.grid
+            self.grid[N_start:N_end, :-1, :] = segment.grid.reshape(segment.N, segment.M, 3)
             N_start = N_end + 0
 
         # THIS CALCULATIONS DEPEND ON THE ORIENTATION OF THE INFLOW

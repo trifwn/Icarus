@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 
+from ICARUS import APPHOME
 from ICARUS.Airfoils.airfoil import Airfoil
 from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
 from ICARUS.Computation.Solvers.solver import Solver
@@ -45,16 +46,16 @@ def main() -> None:
         airfoil
         for airfoil in all_airfoils
         if (
-            airfoil.upper().startswith('AG')
-            or airfoil.upper().startswith('CLARK')
-            or airfoil.upper().startswith('DAE')
-            or airfoil.upper().startswith('E')
-            or airfoil.upper().startswith('H')
-            or airfoil.upper().startswith('M')
-            or airfoil.upper().startswith('N')
-            or airfoil.upper().startswith('O')
-            or airfoil.upper().startswith('S')
-            or airfoil.upper().startswith('W')
+            airfoil.upper().startswith("AG")
+            or airfoil.upper().startswith("CLARK")
+            or airfoil.upper().startswith("DAE")
+            or airfoil.upper().startswith("E")
+            # or airfoil.upper().startswith('H')
+            # or airfoil.upper().startswith('M')
+            # or airfoil.upper().startswith('N')
+            # or airfoil.upper().startswith('O')
+            # or airfoil.upper().startswith('S')
+            # or airfoil.upper().startswith('W')
         )
     ]
     print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
@@ -103,10 +104,11 @@ def main() -> None:
     for airfoil_name in airfoils_to_compute:
         # Get airfoil
         airfoil: Airfoil = DB.foils_db.airfoils[airfoil_name]
+        airfoil.repanel(600)
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
         # airfoil.plot()
-        airfoil.repanel(100, distribution='cosine')
+        # airfoil.repanel(100, distribution="cosine")
 
         # Foil2Wake
         if calcF2W:
@@ -145,7 +147,7 @@ def main() -> None:
                 polar = DB.foils_db.get_polars(airfoil.name, "Foil2Wake")
 
                 airfoil_folder = os.path.join("Data/images/")
-                polar.save_polar_plot_img(airfoil_folder, 'f2w')
+                polar.save_polar_plot_img(airfoil_folder, "f2w")
             except Exception as e:
                 print(f"Error saving polar plot. Got: {e}")
 
@@ -178,10 +180,10 @@ def main() -> None:
 
             xfoil.print_analysis_options()
             # Set Solver Options
-            xfoil_solver_parameters.max_iter = 1000
+            xfoil_solver_parameters.max_iter = 300
 
             xfoil_solver_parameters.Ncrit = Ncrit
-            xfoil_solver_parameters.xtr = (0.1, 1.0)
+            xfoil_solver_parameters.xtr = (1.0, 1.0)
             xfoil_solver_parameters.print = False
             # xfoil.print_solver_options()
 
@@ -193,8 +195,8 @@ def main() -> None:
                 # Get polar
                 polar = DB.foils_db.get_polars(airfoil.name, "Xfoil")
 
-                airfoil_folder = os.path.join("Data/images/")
-                polar.save_polar_plot_img(airfoil_folder, 'xfoil')
+                airfoil_folder = os.path.join(APPHOME, "Data", "images")
+                polar.save_polar_plot_img(airfoil_folder, "xfoil")
             except Exception as e:
                 print(f"Error saving polar plot. Got: {e}")
 

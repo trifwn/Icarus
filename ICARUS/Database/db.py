@@ -1,8 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .AnalysesDB import AnalysesDB
 from .Database_2D import Database_2D
 from .Database_3D import Database_3D
 from ICARUS import APPHOME
-from ICARUS.Airfoils.airfoil import Airfoil
+
+if TYPE_CHECKING:
+    from ICARUS.Vehicle.plane import Airplane
+    from ICARUS.Airfoils.airfoil import Airfoil
 
 
 class Database:
@@ -31,8 +38,8 @@ class Database:
     def get_airfoil(self, name: str) -> Airfoil:
         return self.foils_db.get_airfoil(name)
 
-    # def get_vehicle(self, name: str)-> Airplane:
-    #     return self.vehicles_db.get_vehicle(name)
+    def get_vehicle(self, name: str) -> Airplane:
+        return self.vehicles_db.get_vehicle(name)
 
     def __str__(self) -> str:
         return "Master Database"

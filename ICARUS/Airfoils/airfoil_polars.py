@@ -38,6 +38,7 @@ moment, and the slope of the Cl vs Alpha curve by calling:
 import os
 from typing import Any
 
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -46,6 +47,7 @@ from pandas import DataFrame
 from pandas import Index
 
 from ICARUS.Airfoils.airfoil import Airfoil
+from ICARUS.Computation.Solvers.OpenFoam.post_process import get_aero_coefficients
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 
@@ -64,7 +66,7 @@ def interpolate_series_index(xval: float, series: pd.Series) -> float:
     Returns:
         float: Interpolated Index
     """
-    return float(np.interp([xval], series.to_numpy(), series.index.to_numpy())[0])
+    return jnp.interp(xval, series.to_numpy(), series.index.to_numpy())
 
 
 def interpolate_series_value(xval: float, series: pd.Series) -> float:
@@ -80,7 +82,7 @@ def interpolate_series_value(xval: float, series: pd.Series) -> float:
     """
     # compute xval as the linear interpolation of xval where df is a dataframe and
     #  df.x are the x coordinates, and df.y are the y coordinates. df.x is expected to be sorted.
-    return float(np.interp([xval], series.index.to_numpy(), series.to_numpy())[0])
+    return jnp.interp(xval, series.index.to_numpy(), series.to_numpy())
 
 
 def get_linear_series(series: pd.Series) -> pd.Series:
@@ -240,6 +242,21 @@ class Polars:
         cl_slope = np.poly1d(np.polyfit(aoa_vector[min_index:max_index], cl_vector[min_index:max_index], 1))[1]
         return cl_slope
         # return self.get_cl_slope(cl_curve)
+
+    def get_aero_coefficients(self, reynolds: float | str, aoa: float) -> tuple[float, float, float]:
+        """Get Aero Coefficients"""
+        df: DataFrame = self.get_reynolds_subtable(reynolds)
+        cl_curve: pd.Series = df["CL"]
+        cd_curve: pd.Series = df["CD"]
+        cm_curve: pd.Series = df["Cm"]
+        cl_curve.index = Index(df["AoA"].astype("float32"))
+        cd_curve.index = Index(df["AoA"].astype("float32"))
+        cm_curve.index = Index(df["AoA"].astype("float32"))
+
+        cl = interpolate_series_value(aoa, cl_curve)
+        cd = interpolate_series_value(aoa, cd_curve)
+        cm = interpolate_series_value(aoa, cm_curve)
+        return cl, cd, cm
 
     def reynolds_examine_run(self, reynolds: float | str) -> tuple[bool, str]:
         df: DataFrame = self.get_reynolds_subtable(reynolds)

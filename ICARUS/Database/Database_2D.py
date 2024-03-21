@@ -335,7 +335,7 @@ class Database_2D:
         os.makedirs(AFDIR, exist_ok=True)
         exists = False
         for i in os.listdir():
-            if i.startswith("naca"):
+            if i == airfoil.file_name:
                 exists = True
         if not exists:
             airfoil.save_selig_te(AFDIR)

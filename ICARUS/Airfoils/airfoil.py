@@ -97,6 +97,67 @@ class Airfoil(af.Airfoil):  # type: ignore
             naca (str): NACA 4 digit identifier (e.g. 0012)
             n_points (int): Number of points to be used to generate the airfoil. It interpolates between upper and lower
         """
+
+        lower, upper = self.close_airfoil(lower, upper)
+        super().__init__(upper, lower)
+        name = name.replace(" ", "")
+        self.name: str = name
+        self.file_name: str = name
+
+        self.n_points: int = n_points
+        # Repanel the airfoil
+        # self.repanel(n_points=n_points, distribution="cosine")
+        self.selig = self.to_selig()
+
+        self.polars: dict[str, Any] | Struct = {}
+
+        # For Type Checking
+        self._x_upper: FloatArray = self._x_upper
+        self._y_upper: FloatArray = self._y_upper
+
+        self._x_lower: FloatArray = self._x_lower
+        self._y_lower: FloatArray = self._y_lower
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
+
+    def repanel(self, n_points: int, distribution="cosine") -> None:
+        """
+        Repanels the airfoil to have n_points
+
+        Args:
+            n_points (int): Number of points to generate
+        """
+        if distribution == "cosine":
+            beta = np.linspace(0, np.pi, int(n_points // 2))
+            # apply cosine spacing to xsi
+            xsi = 0.5 * (1 - np.cos(beta))
+        elif distribution == "tanh":
+            xsi = np.tanh(np.linspace(-3, 3, n_points))
+            xsi = (xsi - np.min(xsi)) / (np.max(xsi) - np.min(xsi))
+        else:
+            xsi = np.linspace(0, 1, int(n_points // 2))
+
+        _x_upper = xsi
+        _x_lower = xsi
+        _y_upper = self.y_upper(xsi)
+        _y_lower = self.y_lower(xsi)
+
+        lower = np.array([_x_lower, _y_lower], dtype=float)
+        upper = np.array([_x_upper, _y_upper], dtype=float)
+
+        lower, upper = self.close_airfoil(lower, upper)
+
+        self._x_lower = lower[0]
+        self._y_lower = lower[1]
+        self._x_upper = upper[0]
+        self._y_upper = upper[1]
+
+        self.n_points = n_points
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
+        self.selig = self.to_selig()
+
+    def close_airfoil(self, lower, upper):
         # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
         # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
         # Identify the upper surface trailing edge and leading edge
@@ -148,56 +209,15 @@ class Airfoil(af.Airfoil):  # type: ignore
             pass
         elif trailing_upper > trailing_lower:
             if te_idx_lower == -1:
-                lower = np.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
-            else:
                 lower = np.hstack((lower, upper[:, te_idx_upper].reshape(2, 1)))
+            elif te_idx_lower == 0:
+                lower = np.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
         elif trailing_upper < trailing_lower:
             if te_idx_upper == -1:
-                upper = np.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
-            else:
                 upper = np.hstack((upper, lower[:, te_idx_lower].reshape(2, 1)))
-
-        super().__init__(upper, lower)
-        name = name.replace(" ", "")
-        self.name: str = name
-        self.file_name: str = name
-
-        self.n_points: int = n_points
-        # Repanel the airfoil
-        self.repanel(n_points=120, distribution="cosine")
-        self.selig = self.to_selig()
-
-        self.polars: dict[str, Any] | Struct = {}
-
-        # For Type Checking
-        self._x_upper: FloatArray = self._x_upper
-        self._y_upper: FloatArray = self._y_upper
-
-        self._x_lower: FloatArray = self._x_lower
-        self._y_lower: FloatArray = self._y_lower
-        self.n_upper = self._x_upper.shape[0]
-        self.n_lower = self._x_lower.shape[0]
-
-    def repanel(self, n_points: int, distribution="cosine") -> None:
-        """
-        Repanels the airfoil to have n_points
-
-        Args:
-            n_points (int): Number of points to generate
-        """
-        beta = np.linspace(0, np.pi, n_points // 2)
-        if distribution == "cosine":
-            # apply cosine spacing to xsi
-            xsi = 0.5 * (1 - np.cos(beta))
-        elif distribution == "uniform":
-            xsi = np.linspace(0, 1, n_points // 2)
-
-        self._x_upper = xsi
-        self._x_lower = xsi
-        self._y_upper = self.y_upper(xsi)
-        self._y_lower = self.y_lower(xsi)
-        self.n_points = n_points
-        self.selig = self.to_selig()
+            elif te_idx_upper == 0:
+                upper = np.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
+        return lower, upper
 
     def thickness(self, x) -> FloatArray:
         """
@@ -308,14 +328,14 @@ class Airfoil(af.Airfoil):  # type: ignore
             q: float = float(naca[2]) / 1000
             xx: float = float(naca[3:5]) / 1000
             upper, lower = gen_NACA5_airfoil(naca, n_points)
-            self: "Airfoil" = cls(upper, lower, naca, n_points)
+            self: "Airfoil" = cls(upper, lower, f"NACA{naca}", n_points)
             return self
         elif re_4digits.match(naca):
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
             upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points // 2)
-            self = cls(upper, lower, naca, n_points)
+            self = cls(upper, lower, f"NACA{naca}", n_points)
             self.set_naca4_digits(p, m, xx)
             return self
         else:
@@ -381,8 +401,6 @@ class Airfoil(af.Airfoil):  # type: ignore
         x_clean = x_arr[unique_indices]
         y_clean = y_arr[unique_indices]
         # Locate the trailing edge
-        le_idx = np.argmin(x_clean)
-        te_idx = np.argmax(x_clean)
 
         # Find Where x_arr = 0
         idxs = np.where(x_arr == 0)[0].flatten()
@@ -414,29 +432,6 @@ class Airfoil(af.Airfoil):  # type: ignore
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
         return self
-
-    def fix_le(self) -> None:
-        if self._x_upper[0] < 0:
-            # remove the first point
-            self._x_upper = self._x_upper[1:]
-            self._y_upper = self._y_upper[1:]
-            self.fix_le()
-        elif self._x_lower[0] > 0:
-            # remove the first point
-            self._x_lower = self._x_lower[1:]
-            self._y_lower = self._y_lower[1:]
-            self.fix_le()
-        elif self._x_upper[0] != 0:
-            # add a point at 0
-            self._x_upper = np.hstack((0, self._x_upper))
-            self._y_upper = np.hstack((0, self._y_upper))
-            self.fix_le()
-        elif self._x_lower[0] != 0:
-            # add a point at 0
-            self._x_lower = np.hstack((0, self._x_lower))
-            self._y_lower = np.hstack((0, self._y_lower))
-            self.fix_le()
-        return None
 
     def flap_airfoil(
         self,
@@ -613,23 +608,6 @@ class Airfoil(af.Airfoil):  # type: ignore
             x_lo = self._x_lower
             y_lo = self._y_lower
 
-        upper_trailing_edge: int = 0
-        upper_leading_edge: int = -1
-        lower_leading_edge: int = 0
-        lower_trailing_edge: int = -1
-
-        # If the upper and lower surfaces share points at the leading edge, remove the duplicate point
-        if x_up[upper_leading_edge] == x_lo[lower_leading_edge]:
-            if (y_up[upper_leading_edge] - y_lo[lower_leading_edge]) < 1e-5:
-                x_up = np.delete(x_up, upper_leading_edge)
-                y_up = np.delete(y_up, upper_leading_edge)
-
-        # If the upper and lower surfaces share points at the trailing edge, remove the duplicate point
-        if x_up[upper_trailing_edge] == x_lo[lower_trailing_edge]:
-            if (y_up[upper_trailing_edge] - y_lo[lower_trailing_edge]) < 1e-5:
-                x_up = np.delete(x_up, upper_trailing_edge)
-                y_up = np.delete(y_up, upper_trailing_edge)
-
         # Remove NaN values
         idx_nan = np.isnan(x_up) | np.isnan(y_up)
         x_up = x_up[~idx_nan]
@@ -638,6 +616,17 @@ class Airfoil(af.Airfoil):  # type: ignore
         idx_nan = np.isnan(x_lo) | np.isnan(y_lo)
         x_lo = x_lo[~idx_nan]
         y_lo = y_lo[~idx_nan]
+
+        upper = np.array([x_up, y_up], dtype=float)
+        lower = np.array([x_lo, y_lo], dtype=float)
+
+        lower, upper = self.close_airfoil(lower, upper)
+
+        x_up = upper[0]
+        y_up = upper[1]
+
+        x_lo = lower[0]
+        y_lo = lower[1]
 
         x_points: FloatArray = np.hstack((x_up, x_lo)).T
         y_points: FloatArray = np.hstack((y_up, y_lo)).T
