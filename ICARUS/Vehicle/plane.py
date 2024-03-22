@@ -119,7 +119,9 @@ class Airplane:
                 elif axis == "xyz":
                     return mass[1]
                 else:
-                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
+                    raise PlaneDoesntContainAttr(
+                        f"Plane doesn't contain attribute {axis}"
+                    )
 
         for surf in self.surfaces:
             if surf.name == name:
@@ -132,7 +134,9 @@ class Airplane:
                 elif axis == "xyz":
                     return surf.origin
                 else:
-                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
+                    raise PlaneDoesntContainAttr(
+                        f"Plane doesn't contain attribute {axis}"
+                    )
 
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
@@ -171,7 +175,9 @@ class Airplane:
                     p = value
                     self.point_masses[i] = (m, p, name)
                 else:
-                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
+                    raise PlaneDoesntContainAttr(
+                        f"Plane doesn't contain attribute {axis}"
+                    )
                 return
 
         for surf in self.surfaces:
@@ -197,7 +203,9 @@ class Airplane:
                     else:
                         raise ValueError("Value must be a ndarray")
                 else:
-                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
+                    raise PlaneDoesntContainAttr(
+                        f"Plane doesn't contain attribute {axis}"
+                    )
                 return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
@@ -259,7 +267,9 @@ class Airplane:
                 if "surfaces" in self.__dict__.keys():
                     for surface in self.surfaces:
                         if name.startswith(f"{surface.name}_"):
-                            return surface.__getattribute__(name.replace(surface.name, ""))
+                            return surface.__getattribute__(
+                                name.replace(surface.name, "")
+                            )
                 raise AttributeError(f"Plane doesn't contain attribute {name}")
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -377,17 +387,15 @@ class Airplane:
         Returns:
             Array : X,Y,Z coordinates of the center of gravity
         """
-        x_cm = 0.
-        y_cm = 0.
-        z_cm = 0.
-        self.M = 0.
+        x_cm = 0.0
+        y_cm = 0.0
+        z_cm = 0.0
+        self.M = 0.0
         for m, r, desc in self.masses:
             self.M += m
             x_cm += m * r[0]
             y_cm += m * r[1]
             z_cm += m * r[2]
-            print(m, r[0], r[1], r[2], desc)
-            print(x_cm, y_cm, z_cm, self.M)
         return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
     def find_inertia(self, point: FloatArray) -> FloatArray:
@@ -495,7 +503,15 @@ class Airplane:
             )
             # Add label to indicate point mass name
             # Text
-            ax.text(r[0] + mov[0], r[1] + mov[1], r[2] + mov[2], '%s' % (desc), size=9, zorder=1, color='k')
+            ax.text(
+                r[0] + mov[0],
+                r[1] + mov[1],
+                r[2] + mov[2],
+                "%s" % (desc),
+                size=9,
+                zorder=1,
+                color="k",
+            )
 
         ax.scatter(
             self.CG[0] + mov[0],

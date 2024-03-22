@@ -50,6 +50,7 @@ class MergedWing(Lifting_Surface):
                 [0, 1, 0],
                 [-np.sin(self.pitch), 0, np.cos(self.pitch)],
             ],
+            dtype=float,
         )
         R_YAW: FloatArray = np.array(
             [
@@ -57,6 +58,7 @@ class MergedWing(Lifting_Surface):
                 [np.sin(self.yaw), np.cos(self.yaw), 0],
                 [0, 0, 1],
             ],
+            dtype=float,
         )
         R_ROLL: FloatArray = np.array(
             [
@@ -64,6 +66,7 @@ class MergedWing(Lifting_Surface):
                 [0, np.cos(self.roll), -np.sin(self.roll)],
                 [0, np.sin(self.roll), np.cos(self.roll)],
             ],
+            dtype=float,
         )
         self.R_MAT: FloatArray = R_YAW.dot(R_PITCH).dot(R_ROLL)
 
@@ -93,7 +96,7 @@ class MergedWing(Lifting_Surface):
         self._tip_chord = wing_segments[-1]._tip_chord
 
         # Get the twist distributions
-        self.twist_angles = np.hstack([segment.twist_angles for segment in wing_segments])
+        self.twist_angles = np.hstack([segment.twist_angles for segment in wing_segments], dtype=float).flatten()
 
         # Define the airfoils
         airfoils: list[Airfoil] = []
@@ -123,10 +126,10 @@ class MergedWing(Lifting_Surface):
             self._xoffset_dist.extend(segment._xoffset_dist.tolist())
             self._zoffset_dist.extend(segment._zoffset_dist.tolist())
 
-        self._chord_dist = np.array(self._chord_dist)
-        self._span_dist = np.array(self._span_dist)
-        self._xoffset_dist = np.array(self._xoffset_dist)
-        self._zoffset_dist = np.array(self._zoffset_dist)
+        self._chord_dist = np.array(self._chord_dist, dtype = float)
+        self._span_dist = np.array(self._span_dist, dtype = float)
+        self._xoffset_dist = np.array(self._xoffset_dist, dtype = float)
+        self._zoffset_dist = np.array(self._zoffset_dist, dtype = float)
 
         # Variable Initialization
         NM = 0
@@ -134,9 +137,9 @@ class MergedWing(Lifting_Surface):
             NM += (segment.N) * (segment.M)
         self.num_grid_points: int = NM
         # Grid Variables
-        self.grid: FloatArray = np.empty((NM, 3))  # Camber Line
-        self.grid_lower: FloatArray = np.empty((NM, 3))
-        self.grid_upper: FloatArray = np.empty((NM, 3))
+        self.grid: FloatArray = np.empty((NM, 3), dtype = float)  # Camber Line
+        self.grid_lower: FloatArray = np.empty((NM, 3), dtype = float)
+        self.grid_upper: FloatArray = np.empty((NM, 3), dtype = float)
 
         # Panel Variables
         NM = 0
@@ -144,9 +147,9 @@ class MergedWing(Lifting_Surface):
             NM += (segment.N - 1) * (segment.M - 1)
         self.num_panels: int = NM
 
-        self.panels: FloatArray = np.empty((NM, 4, 3))
-        self.panels_lower: FloatArray = np.empty((NM, 4, 3))
-        self.panels_upper: FloatArray = np.empty((NM, 4, 3))
+        self.panels: FloatArray = np.empty((NM, 4, 3), dtype = float)
+        self.panels_lower: FloatArray = np.empty((NM, 4, 3), dtype = float)
+        self.panels_upper: FloatArray = np.empty((NM, 4, 3), dtype = float)
 
         # Initialize Strips
         self.strips: list[Strip] = []
@@ -161,7 +164,7 @@ class MergedWing(Lifting_Surface):
         self.S: float = 0.0
 
         # Initialize Volumes
-        self.volume_distribution: FloatArray = np.empty(self.num_panels)
+        self.volume_distribution: FloatArray = np.empty(self.num_panels, dtype = float)
         self.volume: float = 0.0
 
         ####### Calculate Wing Parameters #######
@@ -181,9 +184,9 @@ class MergedWing(Lifting_Surface):
             segment.create_grid()
             NM += segment.N * segment.M
 
-        grid: FloatArray = np.empty((NM, 3))
-        grid_lower: FloatArray = np.empty((NM, 3))
-        grid_upper: FloatArray = np.empty((NM, 3))
+        grid: FloatArray = np.empty((NM, 3), dtype = float)
+        grid_lower: FloatArray = np.empty((NM, 3), dtype = float)
+        grid_upper: FloatArray = np.empty((NM, 3), dtype = float)
 
         NM = 0
         # Stack all the grid points of the wing segments
@@ -207,17 +210,17 @@ class MergedWing(Lifting_Surface):
         for segment in self.wing_segments:
             NM += (segment.N - 1) * (segment.M - 1)
 
-        panels: FloatArray = np.empty((NM, 4, 3))
-        control_points: FloatArray = np.empty((NM, 3))
-        control_nj: FloatArray = np.empty((NM, 3))
+        panels: FloatArray = np.empty((NM, 4, 3), dtype = float)
+        control_points: FloatArray = np.empty((NM, 3), dtype = float)
+        control_nj: FloatArray = np.empty((NM, 3), dtype = float)
 
-        panels_lower: FloatArray = np.empty((NM, 4, 3))
-        control_points_lower: FloatArray = np.empty((NM, 3))
-        control_nj_lower: FloatArray = np.empty((NM, 3))
+        panels_lower: FloatArray = np.empty((NM, 4, 3), dtype = float)
+        control_points_lower: FloatArray = np.empty((NM, 3), dtype = float)
+        control_nj_lower: FloatArray = np.empty((NM, 3), dtype = float)
 
-        panels_upper: FloatArray = np.empty((NM, 4, 3))
-        control_points_upper: FloatArray = np.empty((NM, 3))
-        control_nj_upper: FloatArray = np.empty((NM, 3))
+        panels_upper: FloatArray = np.empty((NM, 4, 3), dtype = float)
+        control_points_upper: FloatArray = np.empty((NM, 3), dtype = float)
+        control_nj_upper: FloatArray = np.empty((NM, 3), dtype = float)
 
         NM = 0
         for segment in self.wing_segments:
@@ -295,7 +298,7 @@ class MergedWing(Lifting_Surface):
             volume_distribution.append(np.reshape(segment.volume_distribution, ((segment.N - 1) * (segment.M - 1))))
 
         self.volume = volume
-        self.volume_distribution = np.hstack(volume_distribution).flatten()
+        self.volume_distribution = np.hstack(volume_distribution, dtype=float).flatten()
 
     def calculate_inertia(self, mass: float, cog: FloatArray) -> FloatArray:
         """
@@ -356,6 +359,10 @@ class MergedWing(Lifting_Surface):
         for segment in self.wing_segments:
             mass += segment.mass
         return mass
+    
+    @property
+    def CG(self) -> FloatArray:
+        return self.calculate_center_mass()
 
     @property
     def orientation(self) -> FloatArray:

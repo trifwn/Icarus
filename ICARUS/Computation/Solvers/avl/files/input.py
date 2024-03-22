@@ -161,10 +161,10 @@ def avl_geo(
         if viscous:
             # Get the airfoil polar
             try:
-                f_io.write("CDCL\n")
                 polar_obj: Polars = DB.foils_db.get_polars(
                     surf.root_airfoil.name, solver2D
                 )
+                f_io.write("CDCL\n")
                 # Calculate average reynolds number
                 reynolds = (
                     surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity

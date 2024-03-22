@@ -60,6 +60,7 @@ from typing import Union
 import airfoils as af
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import splprep, splev
 from matplotlib.axes import Axes
 
 from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
@@ -80,7 +81,6 @@ class Airfoil(af.Airfoil):  # type: ignore
     Args:
         af : Airfoil class from the airfoils module
     """
-
     def __init__(
         self,
         upper: FloatArray,
@@ -120,7 +120,38 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
 
-    def repanel(self, n_points: int, distribution="cosine") -> None:
+    def repanel_spl(self, n_points: int = 200, smoothing= 0.0) -> None:
+        pts = self.to_selig()
+        x = pts[0,:]
+        y = pts[1,:]
+        # Combine x and y coordinates into a single array of complex numbers
+        complex_coords = x + 1j * y
+        # Find unique complex coordinates
+        unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+        # Use the unique indices to get the unique x and y coordinates
+        x = x[unique_indices]
+        y = y[unique_indices]
+        # x = np.hstack((x, x[0]))
+        # y = np.hstack((y, y[0]))
+
+        tck, u = splprep([x, y], s=smoothing)
+    
+        tnew = np.linspace(0,1,n_points)
+        self.spline = splev(tnew, tck)
+        lower, upper = self.split_sides(self.spline[0], self.spline[1])
+        lower, upper = self.close_airfoil(lower, upper)
+
+        self._x_upper = upper[0]
+        self._y_upper = upper[1]
+        self._x_lower = lower[0]
+        self._y_lower = lower[1]
+        #update for plot
+        self.n_points = n_points
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
+        self.selig = self.to_selig()
+
+    def repanel_from_internal(self, n_points: int, distribution="cosine") -> None:
         """
         Repanels the airfoil to have n_points
 
@@ -145,7 +176,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         lower = np.array([_x_lower, _y_lower], dtype=float)
         upper = np.array([_x_upper, _y_upper], dtype=float)
 
-        lower, upper = self.close_airfoil(lower, upper)
+        #lower, upper = self.close_airfoil(lower, upper)
 
         self._x_lower = lower[0]
         self._y_lower = lower[1]
@@ -254,6 +285,51 @@ class Airfoil(af.Airfoil):  # type: ignore
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
         return float(np.argmax(thickness) / self.n_points)
 
+    @staticmethod
+    def split_sides(x,y):
+        
+        # Remove duplicate points from the array
+        # A point is duplicated if it has the same x and y coordinates
+        # This is done to avoid issues with the interpolation
+        x_arr = np.array(x)
+        y_arr = np.array(y)
+
+        # Combine x and y coordinates into a single array of complex numbers
+        complex_coords = x_arr + 1j * y_arr
+        # Find unique complex coordinates
+        unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+
+        # Use the unique indices to get the unique x and y coordinates
+        x_clean = x_arr[unique_indices]
+        y_clean = y_arr[unique_indices]
+        # Locate the trailing edge
+
+        # Find Where x_arr = 0
+        idxs = np.where(x_arr == 0)[0].flatten()
+        if len(idxs) == 0:
+            # Find where the x_arr is closest to 0
+            # Check if the min values is duplicated in the array
+            idx = np.argmin(np.abs(x_arr))
+            # If it is duplicated, take the last one
+            if len(np.where(x_arr == x_arr[idx])[0]) > 1:
+                idx = np.where(x_arr == x_arr[idx])[0][-1]
+        elif len(idxs) == 1:
+            idx = idxs[0] + 1
+        else:
+            idx = idxs[-1]
+
+        if idx == 1:
+            idx = np.argmin(np.abs(x_arr[1:]))
+            # If it is duplicated, take the last one
+            if len(np.where(x_arr[1:] == x_arr[idx])[0]) > 1:
+                idx = np.where(x_arr[1:] == x_arr[idx])[0][-1]
+        # Calibrate idx to account for removed duplicates
+        idx_int: int = int(unique_indices[unique_indices < idx].shape[0])
+        lower: FloatArray = np.array([x_clean[idx_int:], y_clean[idx_int:]])
+        upper: FloatArray = np.array([x_clean[:idx_int], y_clean[:idx_int]])
+
+        return lower, upper
+
     @classmethod
     def morph_new_from_two_foils(
         cls,
@@ -284,8 +360,9 @@ class Airfoil(af.Airfoil):  # type: ignore
         if not 0 <= eta <= 1:
             raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
 
-        ksi = np.linspace(0, 2*np.pi, n_points)
+        ksi = np.linspace(0, np.pi, n_points//2)
         x = 0.5 * (1 - np.cos(ksi))
+
         y_upper_af1 = airfoil1.y_upper(x)
         y_lower_af1 = airfoil1.y_lower(x)
         y_upper_af2 = airfoil2.y_upper(x)
@@ -297,10 +374,12 @@ class Airfoil(af.Airfoil):  # type: ignore
         upper = np.array([x, y_upper_new], dtype=float)
         lower = np.array([x, y_lower_new], dtype=float)
 
-        # Create a spline that passes through the points
-        # upper = CubicSpline(x, y_upper_new)
-        # lower = CubicSpline(x, y_lower_new)
+        # Remove nan values and duplicates
+        nan_upper_idx = np.isnan(upper[1])
+        upper = upper[:, ~nan_upper_idx]
 
+        nan_lower_idx = np.isnan(lower[1])
+        lower = lower[:, ~nan_lower_idx]
         return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
 
     @classmethod
@@ -389,54 +468,14 @@ class Airfoil(af.Airfoil):  # type: ignore
                     y.append(y_i)
                 except (ValueError, IndexError):
                     continue
-
-        # Remove duplicate points from the array
-        # A point is duplicated if it has the same x and y coordinates
-        # This is done to avoid issues with the interpolation
-        x_arr = np.array(x)
-        y_arr = np.array(y)
-
-        # Combine x and y coordinates into a single array of complex numbers
-        complex_coords = x_arr + 1j * y_arr
-        # Find unique complex coordinates
-        unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
-
-        # Use the unique indices to get the unique x and y coordinates
-        x_clean = x_arr[unique_indices]
-        y_clean = y_arr[unique_indices]
-        # Locate the trailing edge
-
-        # Find Where x_arr = 0
-        idxs = np.where(x_arr == 0)[0].flatten()
-        if len(idxs) == 0:
-            # Find where the x_arr is closest to 0
-            # Check if the min values is duplicated in the array
-            idx = np.argmin(np.abs(x_arr))
-            # If it is duplicated, take the last one
-            if len(np.where(x_arr == x_arr[idx])[0]) > 1:
-                idx = np.where(x_arr == x_arr[idx])[0][-1]
-        elif len(idxs) == 1:
-            idx = idxs[0] + 1
-        else:
-            idx = idxs[-1]
-
-        if idx == 1:
-            idx = np.argmin(np.abs(x_arr[1:]))
-            # If it is duplicated, take the last one
-            if len(np.where(x_arr[1:] == x_arr[idx])[0]) > 1:
-                idx = np.where(x_arr[1:] == x_arr[idx])[0][-1]
-
-        # Calibrate idx to account for removed duplicates
-        idx_int: int = int(unique_indices[unique_indices < idx].shape[0])
-        upper: FloatArray = np.array([x_clean[:idx_int], y_clean[:idx_int]])
-        lower: FloatArray = np.array([x_clean[idx_int:], y_clean[idx_int:]])
+        lower,upper = cls.split_sides(x,y)
         try:
             self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
         return self
-
+    
     def flap_airfoil(
         self,
         flap_hinge: float,

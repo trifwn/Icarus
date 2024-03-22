@@ -87,6 +87,7 @@ class Database_3D:
             plane_obj: Airplane | None = self.load_plane(name, file_plane)
             if plane_obj is None:
                 raise ValueError(f"No Vehicle Object Found at {file_plane}")
+            self.planes[name] = plane_obj
             return plane_obj
 
     def read_all_data(self) -> None:
@@ -107,11 +108,13 @@ class Database_3D:
 
         # Load Vehicle object
         file_plane: str = os.path.join(DB3D, vehicle_folder, f"{vehicle_folder}.json")
-        plane_obj: Airplane | None = self.load_plane(vehicle_folder, file_plane)
+        plane_obj: Airplane | None = self.load_plane(name= vehicle_folder, file = file_plane)
         if plane_obj is None:
             vehicle_name = vehicle_folder
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
         else:
+            self.planes[plane_obj.name] = plane_obj
+            print(plane_obj)
             vehicle_name = plane_obj.name
 
         # Load Vehicle State
@@ -172,11 +175,13 @@ class Database_3D:
                     plane: Airplane | None = jsonpickle.decode(json_obj)  # type: ignore
                     if plane is not None:
                         self.planes[plane.name] = plane
+                    else:
+                        raise ValueError(f"Error Decoding Plane object {name}")
                 except Exception as error:
                     logging.debug(f"Error decoding Plane object {name}! Got error {error}")
-                    pass
+                    print(f"Error decoding Plane object {name}! Got error {error}")
         except FileNotFoundError:
-            logging.debug(f"No Plane object found in {name} folder at {file}!")
+            logging.debug(f"FileNotFound No Plane object found in {name} folder at {file}!")
         return plane
 
     def load_plane_state(self, directory: str) -> State | None:
