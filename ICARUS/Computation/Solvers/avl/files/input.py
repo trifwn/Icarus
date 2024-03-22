@@ -12,6 +12,7 @@ from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
 from ICARUS.Database import DB
 from ICARUS.Database import DB3D
+from ICARUS.Database.Database_2D import AirfoilNotFoundError
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
@@ -47,15 +48,23 @@ def avl_mass(
     f_io.write("#  Mass & Inertia breakdown.\n")
     f_io.write("#-------------------------------------------------\n")
     f_io.write("\n")
-    f_io.write("#  Names and scalings for units to be used for trim and eigenmode calculations.\n")
-    f_io.write("#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n")
-    f_io.write("#  Lunit value will also scale all lengths and areas in the AVL input file.\n")
+    f_io.write(
+        "#  Names and scalings for units to be used for trim and eigenmode calculations.\n"
+    )
+    f_io.write(
+        "#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n"
+    )
+    f_io.write(
+        "#  Lunit value will also scale all lengths and areas in the AVL input file.\n"
+    )
     f_io.write("Lunit = 1 m\n")
     f_io.write("Munit = 1 kg\n")
     f_io.write("Tunit = 1.0 s\n")
     f_io.write("\n")
     f_io.write("#-------------------------\n")
-    f_io.write("#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n")
+    f_io.write(
+        "#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n"
+    )
     f_io.write("#  Must be in the unit names given above (m,kg,s).\n")
     f_io.write(f"g   = {env.GRAVITY}\n")
     f_io.write(f"rho = {env.air_density}\n")
@@ -65,7 +74,9 @@ def avl_mass(
     f_io.write("#  x y z  is location of item's own CG.\n")
     f_io.write("#  Ixx... are item's inertias about item's own CG.\n")
     f_io.write("#\n")
-    f_io.write("#  x,y,z system here must be exactly the same one used in the .avl input file\n")
+    f_io.write(
+        "#  x,y,z system here must be exactly the same one used in the .avl input file\n"
+    )
     f_io.write("#     (same orientation, same origin location, same length units)\n")
     f_io.write("#\n")
     f_io.write("#  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz\n")
@@ -100,7 +111,9 @@ def avl_geo(
         os.remove(f"{PLANE_DIR}/{plane.name}.avl")
 
     f_io = StringIO()
-    f_io.write("# Note : check consistency of area unit and length units in this file\n")
+    f_io.write(
+        "# Note : check consistency of area unit and length units in this file\n"
+    )
     f_io.write("# Note : check consistency with inertia units of the .mass file\n")
     f_io.write("#\n")
     f_io.write("#\n")
@@ -112,15 +125,21 @@ def avl_geo(
     else:
         f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
 
-    f_io.write(f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n")
-    f_io.write(f"  {plane.CG[0]}     {plane.CG[1]}     {plane.CG[2]}   | Xref   Yref   Zref\n")
+    f_io.write(
+        f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n"
+    )
+    f_io.write(
+        f"  {plane.CG[0]}     {plane.CG[1]}     {plane.CG[2]}   | Xref   Yref   Zref\n"
+    )
     f_io.write(f" 0.00                               | CDp  (optional)\n")
 
     for i, surf in enumerate(plane.surfaces):
         f_io.write("\n")
         f_io.write("\n")
         f_io.write("\n")
-        f_io.write("#========TODO: REMOVE OR MODIFY MANUALLY DUPLICATE SECTIONS IN SURFACE DEFINITION=========\n")
+        f_io.write(
+            "#========TODO: REMOVE OR MODIFY MANUALLY DUPLICATE SECTIONS IN SURFACE DEFINITION=========\n"
+        )
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}\n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
@@ -140,22 +159,27 @@ def avl_geo(
                 viscous = False
 
         if viscous:
-            f_io.write("CDCL\n")
             # Get the airfoil polar
-            foil_dat = DB.foils_db._data
             try:
-                polars: dict[str, DataFrame] = foil_dat[surf.root_airfoil.name][solver2D]
-            except KeyError:
-                raise KeyError(f"Airfoil {surf.root_airfoil.name} not found in database")
+                f_io.write("CDCL\n")
+                polar_obj: Polars = DB.foils_db.get_polars(
+                    surf.root_airfoil.name, solver2D
+                )
+                # Calculate average reynolds number
+                reynolds = (
+                    surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
+                )
 
-            polar_obj = Polars(name=surf.root_airfoil.name, data=polars)
-            # Calculate average reynolds number
-            reynolds = surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
+                cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
+                f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
+                f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
+                f_io.write("\n")
+            except AirfoilNotFoundError:
+                print(
+                    f"Airfoil {surf.root_airfoil.name} not found in database"
+                )
+                pass
 
-            cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
-            f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-            f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
-            f_io.write("\n")
 
         f_io.write("INDEX                        | (keyword)\n")
         f_io.write(f"{int(i+ 6679)}                         | Lsurf\n")
@@ -173,7 +197,9 @@ def avl_geo(
         f_io.write("\n")
         f_io.write("#____PANEL 1_______\n")
         f_io.write("#______________\n")
-        f_io.write("SECTION                                                     |  (keyword)\n")
+        f_io.write(
+            "SECTION                                                     |  (keyword)\n"
+        )
 
         if isinstance(surf, Wing_Segment):
             if surf.span_spacing == DiscretizationType.USER_DEFINED:
@@ -192,7 +218,9 @@ def avl_geo(
         f_io.write("\n")
         f_io.write("\n")
         f_io.write("#______________\n")
-        f_io.write("SECTION                                                    |  (keyword)\n")
+        f_io.write(
+            "SECTION                                                    |  (keyword)\n"
+        )
         f_io.write(
             f"{surf.strips[-1].x1}    {surf.strips[-1].y1}    {surf.strips[-1].z1}  {surf.chords[-1]}   {0.0}   {surf.N}    {span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]\n",
         )

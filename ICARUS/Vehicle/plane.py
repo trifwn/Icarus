@@ -214,9 +214,9 @@ class Airplane:
         Returns:
             float: Mass of the point mass
         """
-        for mass in self.point_masses:
-            if mass[2] == name:
-                return mass[0]
+        for m_mass, m_pos, m_name in self.point_masses:
+            if m_name == name:
+                return m_mass
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     def change_mass(self, name: str, new_mass: float) -> None:
@@ -377,15 +377,17 @@ class Airplane:
         Returns:
             Array : X,Y,Z coordinates of the center of gravity
         """
-        x_cm = 0
-        y_cm = 0
-        z_cm = 0
-        self.M = 0
-        for m, r, _ in self.masses:
+        x_cm = 0.
+        y_cm = 0.
+        z_cm = 0.
+        self.M = 0.
+        for m, r, desc in self.masses:
             self.M += m
             x_cm += m * r[0]
             y_cm += m * r[1]
             z_cm += m * r[2]
+            print(m, r[0], r[1], r[2], desc)
+            print(x_cm, y_cm, z_cm, self.M)
         return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
     def find_inertia(self, point: FloatArray) -> FloatArray:

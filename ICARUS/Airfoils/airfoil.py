@@ -284,8 +284,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         if not 0 <= eta <= 1:
             raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
 
-        x = np.linspace(0, 1, n_points)
-
+        ksi = np.linspace(0, 2*np.pi, n_points)
+        x = 0.5 * (1 - np.cos(ksi))
         y_upper_af1 = airfoil1.y_upper(x)
         y_lower_af1 = airfoil1.y_lower(x)
         y_upper_af2 = airfoil2.y_upper(x)
@@ -296,6 +296,10 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         upper = np.array([x, y_upper_new], dtype=float)
         lower = np.array([x, y_lower_new], dtype=float)
+
+        # Create a spline that passes through the points
+        # upper = CubicSpline(x, y_upper_new)
+        # lower = CubicSpline(x, y_lower_new)
 
         return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
 

@@ -93,13 +93,14 @@ class Database_2D:
         Returns:
             Polars: Polars object
         """
+        airfoil_name = airfoil_name.upper()
         if airfoil_name.upper() not in self.polars.keys():
             try:
                 # Try to load the airfoil from the DB or EXTERNAL DB
                 self.add_airfoil(airfoil_name)
                 airfoil_folder_path = os.path.join(DB2D, airfoil_name.upper())
-                self.add_airfoil_data(airfoil_folder_path)
-                if airfoil_name not in self.polars.keys():
+                self.add_airfoil_data(airfoil_name.upper())
+                if airfoil_name.upper() not in self.polars.keys():
                     raise AirfoilNotFoundError(airfoil_name)
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)

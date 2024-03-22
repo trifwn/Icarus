@@ -694,7 +694,7 @@ class Lifting_Surface:
         self.all_strips = [*strips, *symmetric_strips]
 
     def create_grid(self) -> None:
-        chord_eta = [self.chord_discretization_function(int(i)) for i in range(0, self.M)]
+        chord_eta = np.array([self.chord_discretization_function(int(i)) for i in range(0, self.M)])
 
         xs = np.outer(chord_eta, self._chord_dist) + self._xoffset_dist
         xs_upper = xs.copy()
@@ -703,7 +703,7 @@ class Lifting_Surface:
         ys = np.tile(self._span_dist, (self.M, 1))
         ys_upper = ys.copy()
         ys_lower = ys.copy()
-
+        
         zs_upper = np.outer(self.root_airfoil.y_upper(chord_eta), self._chord_dist) + self._zoffset_dist
         zs_lower = np.outer(self.root_airfoil.y_lower(chord_eta), self._chord_dist) + self._zoffset_dist
         zs = np.outer(self.root_airfoil.camber_line(chord_eta), self._chord_dist) + self._zoffset_dist

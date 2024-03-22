@@ -25,6 +25,7 @@ def avl_dynamic_analysis_implicit(
 
 def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D: str, solver_options: dict[str, Any] = {}) -> None:
     if state.trim == {}:
+        print("Trimming the plane")
         angles = np.linspace(-10, 10, 21)
         avl_angle_run(plane, state, solver2D=solver2D, angles=angles)
         polar_df = process_avl_angles_run(plane, state, angles)
