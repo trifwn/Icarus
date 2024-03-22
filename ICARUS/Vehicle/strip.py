@@ -21,10 +21,15 @@ class Strip:
         self,
         start_leading_edge: FloatArray | list[float],
         start_chord: float,
+        start_twist: float,
         start_airfoil: Airfoil,
+
         end_leading_edge: FloatArray | list[float],
         end_chord: float,
+        end_twist: float,
         end_airfoil: Airfoil | None = None,
+
+        eta: float = 0.,
     ) -> None:
         """
         Initialize the Strip class.
@@ -45,13 +50,24 @@ class Strip:
         self.y1: float = end_leading_edge[1]
         self.z1: float = end_leading_edge[2]
 
-        self.airfoil1: Airfoil = start_airfoil
+        self.airfoil_start: Airfoil = start_airfoil
         if end_airfoil is None:
-            self.airfoil2: Airfoil = start_airfoil
+            self.airfoil_end: Airfoil = start_airfoil
         else:
-            self.airfoil2 = end_airfoil
+            self.airfoil_end = end_airfoil
 
-        self.chord: list[float] = [start_chord, end_chord]
+        # Morph the airfoils to the new shape
+        if self.airfoil_start is not self.airfoil_end:
+            self.mean_airfoil = Airfoil.morph_new_from_two_foils(
+                self.airfoil_start, self.airfoil_end, eta, self.airfoil_start.n_points
+            )
+        else:
+            self.mean_airfoil = self.airfoil_start
+
+        self.chords: list[float] = [start_chord, end_chord]
+        self.mean_chord: float = (start_chord + end_chord) / 2
+        self.twists: list[float] = [start_twist, end_twist]
+        self.mean_twist = (start_twist + end_twist) / 2
 
     def return_symmetric(
         self,
@@ -71,11 +87,13 @@ class Strip:
 
         symm_strip: Strip = Strip(
             start_leading_edge=start_point,
-            start_chord=self.chord[1],
-            start_airfoil=self.airfoil1,
+            start_chord=self.chords[1],
+            start_airfoil=self.airfoil_start,
+            start_twist=self.twists[0],
             end_leading_edge=end_point,
-            end_chord=self.chord[0],
-            end_airfoil=self.airfoil2,
+            end_chord=self.chords[0],
+            end_twist=self.twists[1],
+            end_airfoil=self.airfoil_end,
         )
         return symm_strip
 
@@ -87,11 +105,11 @@ class Strip:
             airfoil (Airfoil): Airfoil for the starting section.
             airfoil2 (Airfoil, optional): Airfoil for the ending section. Defaults to None. If None, the starting airfoil is used.
         """
-        self.airfoil1 = airfoil
+        self.airfoil_start = airfoil
         if airfoil2 is not None:
-            self.airfoil2 = airfoil2
+            self.airfoil_end = airfoil2
         else:
-            self.airfoil2 = airfoil
+            self.airfoil_end = airfoil
 
     def get_root_strip(self) -> FloatArray:
         """
@@ -101,9 +119,13 @@ class Strip:
             FloatArray: Array of points defining the root.
         """
         strip: list[FloatArray] = [
-            self.x0 + self.chord[0] * np.hstack((self.airfoil1._x_upper, self.airfoil1._x_lower)),
-            self.y0 + np.repeat(0, self.airfoil1.n_points),
-            self.z0 + self.chord[0] * np.hstack((self.airfoil1._y_upper, self.airfoil1._y_lower)),
+            self.x0
+            + self.chords[0]
+            * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
+            self.y0 + np.repeat(0, self.airfoil_start.n_points),
+            self.z0
+            + self.chords[0]
+            * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
         ]
         return np.array(strip)
 
@@ -115,9 +137,13 @@ class Strip:
             FloatArray: Array of points defining the tip.
         """
         strip: list[FloatArray] = [
-            self.x1 + self.chord[1] * np.hstack((self.airfoil2._x_upper, self.airfoil2._x_lower)),
-            self.y1 + np.repeat(0, self.airfoil1.n_points),
-            self.z1 + self.chord[1] * np.hstack((self.airfoil2._y_upper, self.airfoil2._y_lower)),
+            self.x1
+            + self.chords[1]
+            * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
+            self.y1 + np.repeat(0, self.airfoil_start.n_points),
+            self.z1
+            + self.chords[1]
+            * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
         ]
         return np.array(strip)
 
@@ -150,15 +176,17 @@ class Strip:
             n_points_span,
         )
         c: FloatArray = np.linspace(
-            self.chord[0],
-            self.chord[1],
+            self.chords[0],
+            self.chords[1],
             n_points_span,
         )
 
         # Relative position of the point wrt to the start and end of the strip
         heta: float = (idx + 1) / (n_points_span + 1)
 
-        airfoil: Airfoil = Airfoil.morph_new_from_two_foils(self.airfoil1, self.airfoil2, heta, self.airfoil1.n_points)
+        airfoil: Airfoil = Airfoil.morph_new_from_two_foils(
+            self.airfoil_start, self.airfoil_end, heta, self.airfoil_start.n_points
+        )
 
         camber_line: FloatArray = np.array(
             [
@@ -272,9 +300,9 @@ class Strip:
             and self.x1 == other.x1
             and self.y1 == other.y1
             and self.z1 == other.z1
-            and self.chord == other.chord
-            and self.airfoil1 == other.airfoil1
-            and self.airfoil2 == other.airfoil2
+            and self.chords == other.chords
+            and self.airfoil_start == other.airfoil_start
+            and self.airfoil_end == other.airfoil_end
         ):
             return True
         else:

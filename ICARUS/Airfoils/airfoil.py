@@ -134,11 +134,11 @@ class Airfoil(af.Airfoil):  # type: ignore
         # x = np.hstack((x, x[0]))
         # y = np.hstack((y, y[0]))
 
-        tck, u = splprep([x, y], s=smoothing)
+        tck, _ = splprep([x, y], s=smoothing)
     
         tnew = np.linspace(0,1,n_points)
-        self.spline = splev(tnew, tck)
-        lower, upper = self.split_sides(self.spline[0], self.spline[1])
+        spline = splev(tnew, tck)
+        lower, upper = self.split_sides(spline[0], spline[1])
         lower, upper = self.close_airfoil(lower, upper)
 
         self._x_upper = upper[0]
@@ -380,7 +380,23 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         nan_lower_idx = np.isnan(lower[1])
         lower = lower[:, ~nan_lower_idx]
-        return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
+        # Create the name
+        name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{100*eta}%"
+        if airfoil1.name.startswith("morphed_") and airfoil2.name.startswith("morphed_"):
+            # Check if the airfoils are coming from the same morphing
+            airfoil1_parent_1 = airfoil1.name.split("_")[1]
+            airfoil1_parent_2 = airfoil1.name.split("_")[2]
+            airfoil1_eta = airfoil1.name.split("_")[4][:-1]
+
+            airfoil2_parent_1 = airfoil2.name.split("_")[1]
+            airfoil2_parent_2 = airfoil2.name.split("_")[2]
+            airfoil2_eta = airfoil2.name.split("_")[4][:-1]
+
+            if airfoil1_parent_1 == airfoil2_parent_1 and airfoil1_parent_2 == airfoil2_parent_2:
+                new_eta = eta*(1-float(airfoil1_eta)) + (eta)*float(airfoil2_eta)
+                name = f"morphed_{airfoil1_parent_1}_{airfoil1_parent_2}_at_{100*new_eta}%"
+
+        return cls(upper, lower, name, n_points)
 
     @classmethod
     def naca(cls, naca: str, n_points: int = 200) -> "Airfoil":
@@ -694,9 +710,9 @@ class Airfoil(af.Airfoil):  # type: ignore
             y.append(temp)
         # y[0] = 0
         # y[-1]= 0
-        self.selig_web: FloatArray = np.vstack((x, y))
+        self.selig: FloatArray = np.vstack((x, y))
 
-    def save_selig_te(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
+    def save_selig(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
         """
         Saves the airfoil in the selig format.
 
@@ -721,9 +737,29 @@ class Airfoil(af.Airfoil):  # type: ignore
                 pts = self.selig.T[::-1]
             else:
                 pts = self.selig.T
+            x = pts[:, 0]
+            y = pts[:, 1]
+            # Remove NaN values and duplicates
+            x_arr = np.array(x)
+            y_arr = np.array(y)
 
-            for x, y in pts:
-                file.write(f" {x:.6f} {y:.6f}\n")
+            # Combine x and y coordinates into a single array of complex numbers
+            complex_coords = x_arr + 1j * y_arr
+            # Find unique complex coordinates
+            unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+
+            # Use the unique indices to get the unique x and y coordinates
+            x_clean = x_arr[unique_indices]
+            y_clean = y_arr[unique_indices]
+
+            # Remove NaN values
+            idx_nan = np.isnan(x_clean) | np.isnan(y_clean)
+            x_clean = x_clean[~idx_nan]
+            y_clean = y_clean[~idx_nan]
+
+            for x, y in zip(x_clean, y_clean):
+                file.write(f"{x:.6f} {y:.6f}\n")
+
 
     def save_le(self, directory: str | None = None) -> None:
         """

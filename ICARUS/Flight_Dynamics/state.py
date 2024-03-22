@@ -198,10 +198,11 @@ class State:
             marker_x = MarkerStyle("x")
             axs[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
-        for j in range(0, i):
+        for j in range(0, i+1):
             axs[j].set_ylabel("Imaginary")
             axs[j].set_xlabel("Real")
             axs[j].grid()
+            axs[j].axvline(0, color="black", lw=2)
             axs[j].legend()
         fig.show()
         return fig, axs

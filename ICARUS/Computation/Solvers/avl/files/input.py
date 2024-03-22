@@ -4,20 +4,17 @@ import subprocess
 from io import StringIO
 
 import numpy as np
-from pandas import DataFrame
-from regex import F
 
-from ICARUS.Airfoils.airfoil_polars import Polars
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
 from ICARUS.Database import DB
-from ICARUS.Database import DB3D
 from ICARUS.Database.Database_2D import AirfoilNotFoundError
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Airfoils.airfoil_polars import Polars
 
 
 def make_input_files(
@@ -111,12 +108,8 @@ def avl_geo(
         os.remove(f"{PLANE_DIR}/{plane.name}.avl")
 
     f_io = StringIO()
-    f_io.write(
-        "# Note : check consistency of area unit and length units in this file\n"
-    )
-    f_io.write("# Note : check consistency with inertia units of the .mass file\n")
-    f_io.write("#\n")
-    f_io.write("#\n")
+
+    # PLANE DEFINITION
     f_io.write(f"{plane.name}\n")
     f_io.write("0.0                                 | Mach\n")
     if state.ground_effect():
@@ -129,7 +122,7 @@ def avl_geo(
         f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n"
     )
     f_io.write(
-        f"  {plane.CG[0]}     {plane.CG[1]}     {plane.CG[2]}   | Xref   Yref   Zref\n"
+        f"  {0}     {0}     {0}   | Xref   Yref   Zref\n"
     )
     f_io.write(f" 0.00                               | CDp  (optional)\n")
 
@@ -137,11 +130,13 @@ def avl_geo(
         f_io.write("\n")
         f_io.write("\n")
         f_io.write("\n")
+
+        # SURFACE DEFINITION
         f_io.write(
-            "#========TODO: REMOVE OR MODIFY MANUALLY DUPLICATE SECTIONS IN SURFACE DEFINITION=========\n"
+            f"#-------------Surface {i+1} of {len(plane.surfaces)}-----------------\n"
         )
         f_io.write("SURFACE                      | (keyword)\n")
-        f_io.write(f"{surf.name}\n")
+        f_io.write(f"{surf.name}                 | surface name string \n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
         try:
             if surf.chord_spacing == DiscretizationType.USER_DEFINED:
@@ -150,56 +145,6 @@ def avl_geo(
                 chord_spacing = surf.chord_spacing.value
         except AttributeError:
             chord_spacing = DiscretizationType.COSINE.value
-        f_io.write(f"{surf.M}        {chord_spacing}\n")
-        f_io.write("\n")
-
-        viscous = True
-        if "inviscid" in solver_options.keys():
-            if solver_options["inviscid"]:
-                viscous = False
-
-        if viscous:
-            # Get the airfoil polar
-            try:
-                polar_obj: Polars = DB.foils_db.get_polars(
-                    surf.root_airfoil.name, solver2D
-                )
-                f_io.write("CDCL\n")
-                # Calculate average reynolds number
-                reynolds = (
-                    surf.mean_aerodynamic_chord * u_inf / environment.air_dynamic_viscosity
-                )
-
-                cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
-                f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-                f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
-                f_io.write("\n")
-            except AirfoilNotFoundError:
-                print(
-                    f"Airfoil {surf.root_airfoil.name} not found in database"
-                )
-                pass
-
-
-        f_io.write("INDEX                        | (keyword)\n")
-        f_io.write(f"{int(i+ 6679)}                         | Lsurf\n")
-
-        if surf.is_symmetric_y:
-            f_io.write("YDUPLICATE\n")
-            f_io.write("0.0\n")
-        f_io.write("SCALE\n")
-        f_io.write("1.0  1.0  1.0\n")
-        f_io.write("TRANSLATE\n")
-        f_io.write("0.0  0.0  0.0\n")
-        f_io.write("ANGLE\n")
-        f_io.write(f"  {surf.orientation[0]}                         | dAinc\n")
-        f_io.write("\n")
-        f_io.write("\n")
-        f_io.write("#____PANEL 1_______\n")
-        f_io.write("#______________\n")
-        f_io.write(
-            "SECTION                                                     |  (keyword)\n"
-        )
 
         if isinstance(surf, Wing_Segment):
             if surf.span_spacing == DiscretizationType.USER_DEFINED:
@@ -209,28 +154,70 @@ def avl_geo(
         else:
             span_spacing = DiscretizationType.COSINE.value
 
-        f_io.write(
-            f"   {surf.strips[0].x0}    {surf.strips[0].y0}    {surf.strips[0].z0}    {surf.chords[0]}   {0.0}   {surf.N}    {span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]\n",
-        )
-        f_io.write("\n")
-        f_io.write("AFIL 0.0 1.0\n")
-        f_io.write(f"{surf.root_airfoil.file_name}\n")
-        f_io.write("\n")
-        f_io.write("\n")
-        f_io.write("#______________\n")
-        f_io.write(
-            "SECTION                                                    |  (keyword)\n"
-        )
-        f_io.write(
-            f"{surf.strips[-1].x1}    {surf.strips[-1].y1}    {surf.strips[-1].z1}  {surf.chords[-1]}   {0.0}   {surf.N}    {span_spacing}   | Xle Yle Zle   Chord Ainc   [ Nspan Sspace ]\n",
-        )
-        f_io.write("AFIL\n")
-
-        f_io.write(f"{surf.root_airfoil.file_name}\n")
+        f_io.write(f"{surf.M}        {chord_spacing} \n")
         f_io.write("\n")
 
-        # Save Airfoil file
-        surf.root_airfoil.save_selig_te(PLANE_DIR, header=True, inverse=True)
+        viscous = True
+        if "inviscid" in solver_options.keys():
+            if solver_options["inviscid"]:
+                viscous = False
+
+        f_io.write("INDEX                        | (keyword)\n")
+        f_io.write(f"{int(i)}                    | SURFACE INDEX \n")
+
+        if surf.is_symmetric_y:
+            f_io.write("YDUPLICATE\n")
+            f_io.write("0.0\n")
+        f_io.write("SCALE\n")
+        f_io.write("1.0  1.0  1.0\n")
+        f_io.write("TRANSLATE\n")
+        f_io.write("0.0  0.0  0.0\n")
+        f_io.write("ANGLE\n")
+        f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
+        f_io.write("\n")
+        f_io.write("\n")
+
+        for j, strip in enumerate(surf.strips):
+            f_io.write(
+                f"#------------ {surf.name} SECTION---{j+1} of {len(surf.strips)} of---------------------|  (keyword)\n"
+            )
+            f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
+            f_io.write(f"SECTION\n")
+            f_io.write(
+                f"   {strip.x0}    {strip.y0}    {strip.z0}    {strip.mean_chord}   {strip.mean_twist*180/np.pi}   {1}    {span_spacing}   \n",
+            )
+            f_io.write("\n")
+            f_io.write("AFILE \n")
+            f_io.write(f"{strip.mean_airfoil.file_name}\n")
+            f_io.write("\n")
+            f_io.write("\n")
+            # Save Airfoil file
+            print(f"Saving airfoil {strip.mean_airfoil.file_name} in {PLANE_DIR}")
+            strip.mean_airfoil.repanel_spl(100)
+            strip.mean_airfoil.save_selig(PLANE_DIR)
+            if viscous:
+                # Get the airfoil polar
+                try:
+                    polar_obj: Polars = DB.foils_db.get_polars(
+                        strip.mean_airfoil.name, solver2D
+                    )
+                    f_io.write("CDCL\n")
+                    # Calculate average reynolds number
+                    reynolds = (
+                        surf.mean_aerodynamic_chord
+                        * u_inf
+                        / environment.air_dynamic_viscosity
+                    )
+
+                    cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
+                    f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
+                    f_io.write(
+                        f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
+                    )
+                    f_io.write("\n")
+                except AirfoilNotFoundError:
+                    print(f"Airfoil {surf.root_airfoil.name} not found in database")
+                    pass
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"

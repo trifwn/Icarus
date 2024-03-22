@@ -1,3 +1,4 @@
+import logging
 import os
 
 import numpy as np
@@ -41,7 +42,14 @@ def save_multiple_reyn(
 
         fname = "clcd.xfoil"
         df.to_csv(fname, sep="\t", index=True, index_label="AoA")
-    # airfoil.save_selig_te(airfoil_dir)
+    # If the airfoil doesn't exist in the DB, save it
+    files_in_folder = os.listdir(airfoil_dir)
+    if airfoil.file_name in files_in_folder:
+        logging.info(
+            f"{airfoil.name.upper()} already exists in the database. We do not need to save it."
+        )
+    else:
+        airfoil.save_selig(airfoil_dir)
 
     # Add Results to Database
     print(f"Adding {airfoil.name.upper()} to the database")

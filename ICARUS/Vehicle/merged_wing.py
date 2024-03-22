@@ -84,8 +84,8 @@ class MergedWing(Lifting_Surface):
         self.is_symmetric_y: bool = True if SymmetryAxes.Y in self.symmetries else False
 
         # Define Discretization
-        self.N = np.sum([segment.N for segment in wing_segments])
-        self.M = np.sum([segment.M for segment in wing_segments])
+        self.N = np.max([segment.N for segment in wing_segments])
+        self.M = np.max([segment.M for segment in wing_segments])
 
         # Define Choord Lengths
         chords: list[float] = []
@@ -324,12 +324,12 @@ class MergedWing(Lifting_Surface):
 
         for segment in self.wing_segments:
             cog_segment = segment.calculate_center_mass()
-            x_cm += cog_segment[0] * segment.M
-            y_cm += cog_segment[1] * segment.M
-            z_cm += cog_segment[2] * segment.M
-        cog[0] = x_cm / self.M
-        cog[1] = y_cm / self.M
-        cog[2] = z_cm / self.M
+            x_cm += cog_segment[0] * segment.mass
+            y_cm += cog_segment[1] * segment.mass
+            z_cm += cog_segment[2] * segment.mass
+        cog[0] = x_cm / self.mass
+        cog[1] = y_cm / self.mass
+        cog[2] = z_cm / self.mass
         return cog
 
     def get_grid(self, which: str = "camber") -> FloatArray:

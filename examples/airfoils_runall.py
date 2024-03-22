@@ -104,7 +104,7 @@ def main() -> None:
     for airfoil_name in airfoils_to_compute:
         # Get airfoil
         airfoil: Airfoil = DB.foils_db.airfoils[airfoil_name]
-        airfoil.repanel(600)
+        airfoil.repanel_spl(200)
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
         # airfoil.plot()

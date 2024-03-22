@@ -66,7 +66,7 @@ def interpolate_series_index(xval: float, series: pd.Series) -> float:
     Returns:
         float: Interpolated Index
     """
-    return jnp.interp(xval, series.to_numpy(), series.index.to_numpy())
+    return float(np.interp(xval, series.to_numpy(), series.index.to_numpy()))
 
 
 def interpolate_series_value(xval: float, series: pd.Series) -> float:
@@ -82,7 +82,7 @@ def interpolate_series_value(xval: float, series: pd.Series) -> float:
     """
     # compute xval as the linear interpolation of xval where df is a dataframe and
     #  df.x are the x coordinates, and df.y are the y coordinates. df.x is expected to be sorted.
-    return jnp.interp(xval, series.index.to_numpy(), series.to_numpy())
+    return float(np.interp(xval, series.index.to_numpy(), series.to_numpy()))
 
 
 def get_linear_series(series: pd.Series) -> pd.Series:
