@@ -250,6 +250,7 @@ class Lifting_Surface:
         elif isinstance(root_airfoil, Airfoil):
             root_airfoil_obj = root_airfoil
         else:
+            print(root_airfoil)
             raise ValueError("Root Airfoil must be a string or an Airfoil")
 
         if isinstance(tip_airfoil, str):
@@ -312,15 +313,31 @@ class Lifting_Surface:
         movement = value - self._origin
         self._origin = value
 
+        grid =  self.grid.reshape(self.N, self.M, 3)
+        grid_upper = self.grid_upper.reshape(self.N, self.M, 3)
+        grid_lower = self.grid_lower.reshape(self.N, self.M, 3)
+
         # Move Grid
-        self.grid += movement[None, None, :]
-        self.grid_upper += movement[None, None, :]
-        self.grid_lower += movement[None, None, :]
+        grid += movement[None, None, :]
+        grid_upper += movement[None, None, :]
+        grid_lower += movement[None, None, :]
+
+        self.grid = grid.reshape(-1, 3)
+        self.grid_upper = grid_upper.reshape(-1, 3)
+        self.grid_lower = grid_lower.reshape(-1, 3)
 
         # Move Panels
-        self.panels += movement[None, None, :]
-        self.panels_upper += movement[None, None, :]
-        self.panels_lower += movement[None, None, :]
+        panels = self.panels.reshape(self.num_panels, 4, 3)
+        panels_upper = self.panels_upper.reshape(self.num_panels, 4, 3)
+        panels_lower = self.panels_lower.reshape(self.num_panels, 4, 3)
+
+        panels += movement[None, None, :]
+        panels_upper += movement[None, None, :]
+        panels_lower += movement[None, None, :]
+
+        self.panels = panels.reshape(-1, 4, 3)
+        self.panels_upper = panels_upper.reshape(-1, 4, 3)
+        self.panels_lower = panels_lower.reshape(-1, 4, 3)
 
         # Create New Strips
         self.create_strips()
@@ -697,9 +714,17 @@ class Lifting_Surface:
                     tip_eta,
                     self.tip_airfoil.n_points,
                 )
+            # Based on the shape (area) of the strip, we can calculate the eta position of the strip
+            # We can then calculate the mean aerodynamic chord of the strip
+            strip_mean_aerodynamic_chord = (
+                (start_chords[j] + end_chords[j]) / 2
+            )
+            strip_half_span = (self._span_dist[j + 1] - self._span_dist[j]) / 2
+            eta = 1/2* strip_half_span * (start_chords[j] + strip_mean_aerodynamic_chord) / (
+                strip_half_span * (start_chords[j] + end_chords[j])
+            )
 
-            strips.append(
-                Strip(
+            strip = Strip(
                     # Define left part of the strip
                     start_leading_edge=start_points[:, j],
                     start_airfoil=strip_root_af,
@@ -710,9 +735,9 @@ class Lifting_Surface:
                     end_airfoil=strip_tip_af,
                     end_chord=end_chords[j],
                     end_twist=self.twist_angles[j + 1],
-                    eta=0,
-                ),
-            )
+                    eta=eta,
+                )
+            strips.append(strip)
 
         if self.is_symmetric_y:
             symmetric_strips = [strip.return_symmetric() for strip in strips]

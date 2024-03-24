@@ -50,6 +50,7 @@ methods from the original airfoil class which include but are not limited to:
 
 
 """
+from calendar import c
 import logging
 import os
 import re
@@ -119,9 +120,10 @@ class Airfoil(af.Airfoil):  # type: ignore
         self._y_lower: FloatArray = self._y_lower
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
+        self.selig_original = self.selig
 
     def repanel_spl(self, n_points: int = 200, smoothing= 0.0) -> None:
-        pts = self.to_selig()
+        pts = self.selig_original
         x = pts[0,:]
         y = pts[1,:]
         # Combine x and y coordinates into a single array of complex numbers
@@ -187,6 +189,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
         self.selig = self.to_selig()
+        self.selig_original = self.selig
 
     def close_airfoil(self, lower, upper):
         # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
@@ -359,6 +362,8 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         if not 0 <= eta <= 1:
             raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
+        # Round to 2 decimals
+        eta = round(eta, 2)
 
         ksi = np.linspace(0, np.pi, n_points//2)
         x = 0.5 * (1 - np.cos(ksi))
@@ -381,20 +386,27 @@ class Airfoil(af.Airfoil):  # type: ignore
         nan_lower_idx = np.isnan(lower[1])
         lower = lower[:, ~nan_lower_idx]
         # Create the name
-        name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{100*eta}%"
+        # Round eta to 2 decimals in string format
+        eta_perc = int(eta * 100)
+        eta_str = f"{eta_perc}"
+        name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta_str}%"
         if airfoil1.name.startswith("morphed_") and airfoil2.name.startswith("morphed_"):
             # Check if the airfoils are coming from the same morphing
             airfoil1_parent_1 = airfoil1.name.split("_")[1]
             airfoil1_parent_2 = airfoil1.name.split("_")[2]
-            airfoil1_eta = airfoil1.name.split("_")[4][:-1]
+            airfoil1_eta = float(airfoil1.name.split("_")[4][:-1])/100
 
             airfoil2_parent_1 = airfoil2.name.split("_")[1]
             airfoil2_parent_2 = airfoil2.name.split("_")[2]
-            airfoil2_eta = airfoil2.name.split("_")[4][:-1]
-
+            airfoil2_eta = float(airfoil2.name.split("_")[4][:-1])/100
+            
             if airfoil1_parent_1 == airfoil2_parent_1 and airfoil1_parent_2 == airfoil2_parent_2:
-                new_eta = eta*(1-float(airfoil1_eta)) + (eta)*float(airfoil2_eta)
-                name = f"morphed_{airfoil1_parent_1}_{airfoil1_parent_2}_at_{100*new_eta}%"
+                new_eta = airfoil1_eta*(1-eta) + (airfoil2_eta)*(eta)
+                # ROUND TO 2 DECIMALS
+                new_eta = int(100*new_eta)
+                # Round to 2 decimals in string format
+                new_eta_str = f"{new_eta}"
+                name = f"morphed_{airfoil1_parent_1}_{airfoil1_parent_2}_at_{new_eta_str}%"
 
         return cls(upper, lower, name, n_points)
 
@@ -427,14 +439,14 @@ class Airfoil(af.Airfoil):  # type: ignore
             q: float = float(naca[2]) / 1000
             xx: float = float(naca[3:5]) / 1000
             upper, lower = gen_NACA5_airfoil(naca, n_points)
-            self: "Airfoil" = cls(upper, lower, f"NACA{naca}", n_points)
+            self: "Airfoil" = cls(upper, lower, f"naca{naca}", n_points)
             return self
         elif re_4digits.match(naca):
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
             upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points // 2)
-            self = cls(upper, lower, f"NACA{naca}", n_points)
+            self = cls(upper, lower, f"naca{naca}", n_points)
             self.set_naca4_digits(p, m, xx)
             return self
         else:
@@ -679,6 +691,9 @@ class Airfoil(af.Airfoil):  # type: ignore
         upper = np.array([x_up, y_up], dtype=float)
         lower = np.array([x_lo, y_lo], dtype=float)
 
+        # Remove duplicates
+
+
         lower, upper = self.close_airfoil(lower, upper)
 
         x_up = upper[0]
@@ -745,6 +760,9 @@ class Airfoil(af.Airfoil):  # type: ignore
 
             # Combine x and y coordinates into a single array of complex numbers
             complex_coords = x_arr + 1j * y_arr
+            # Round all the values to 6 decimals
+            complex_coords = np.round(complex_coords, 5)
+
             # Find unique complex coordinates
             unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
 

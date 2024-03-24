@@ -3,6 +3,7 @@ from turtle import st
 from typing import Any
 
 import matplotlib.pyplot as plt
+from matplotlib.text import Text
 import numpy as np
 from matplotlib import lines
 from matplotlib.axes import Axes
@@ -15,7 +16,7 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
 
 
-class AirplanePolarOptimizationVisualizert(OptimizationCallback):
+class AirplanePolarOptimizationVisualizer(OptimizationCallback):
     def __init__(
         self,
         initial_state: State,
@@ -23,6 +24,7 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
         self.initial_state: State = initial_state
         self.lines: dict[str, Line2D] = {}
         self.collections: dict[str, Collection] = {}
+        self.text: Text = None
 
     def setup(
         self,
@@ -45,10 +47,10 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
         Cm = self.initial_state.polar["Cm"]
 
         #
-        axs[0].plot(aoa, CL, label="Initial", color='b', linestyle="--", linewidth=1)
+        axs[0].plot(aoa, CL, label="Initial", color="b", linestyle="--", linewidth=1)
         # Set origin axies lines
-        axs[0].axhline(0, color='k', linewidth=0.5)
-        axs[0].axvline(0, color='k', linewidth=0.5)
+        axs[0].axhline(0, color="k", linewidth=0.5)
+        axs[0].axvline(0, color="k", linewidth=0.5)
         line = Line2D(
             aoa,
             CL,
@@ -63,9 +65,9 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
         axs[0].legend()
         axs[0].grid()
 
-        axs[1].plot(aoa, CD, label="Initial", color='b', linestyle="--", linewidth=1)
-        axs[1].axhline(0, color='k', linewidth=0.5)
-        axs[1].axvline(0, color='k', linewidth=0.5)
+        axs[1].plot(aoa, CD, label="Initial", color="b", linestyle="--", linewidth=1)
+        axs[1].axhline(0, color="k", linewidth=0.5)
+        axs[1].axvline(0, color="k", linewidth=0.5)
         line = Line2D(
             aoa,
             CD,
@@ -80,9 +82,9 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
         axs[1].legend()
         axs[1].grid()
 
-        axs[2].plot(aoa, Cm, label="Initial", color='b', linestyle="--", linewidth=1)
-        axs[2].axhline(0, color='k', linewidth=0.5)
-        axs[2].axvline(0, color='k', linewidth=0.5)
+        axs[2].plot(aoa, Cm, label="Initial", color="b", linestyle="--", linewidth=1)
+        axs[2].axhline(0, color="k", linewidth=0.5)
+        axs[2].axvline(0, color="k", linewidth=0.5)
         line = Line2D(
             aoa,
             Cm,
@@ -97,27 +99,49 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
         axs[2].legend()
         axs[2].grid()
 
-        axs[3].plot(CD, CL, label="Initial", color='b', linestyle="--", linewidth=1)
-        axs[3].axhline(0, color='k', linewidth=0.5)
-        axs[3].axvline(0, color='k', linewidth=0.5)
+        axs[3].plot(aoa, CL/CD, label="Initial", color="b", linestyle="--", linewidth=1)
+        axs[3].axhline(0, color="k", linewidth=0.5)
+        axs[3].axvline(0, color="k", linewidth=0.5)
         line = Line2D(
-            CD,
-            CL,
+            aoa,
+            CL/CD,
             color="r",
             label="Current",
         )
         self.lines["CL_CD"] = line
         axs[3].add_line(line)
-        axs[3].set_xlabel("CD")
-        axs[3].set_ylabel("CL")
+        axs[3].set_xlabel("AoA")
+        axs[3].set_ylabel("CL / CD")
         axs[3].set_title("CL vs CD")
         axs[3].legend()
         axs[3].grid()
 
-        # Add scatter points for the trim values
-        axs[0].scatter(self.initial_state.trim["AoA"], self.initial_state.trim["CL"], label="Initial Trim")
-        axs[1].scatter(self.initial_state.trim["AoA"], self.initial_state.trim["CD"], label="Initial Trim")
-        axs[3].scatter(self.initial_state.trim["CD"], self.initial_state.trim["CL"], label="Initial Trim")
+        if "AoA" in self.initial_state.trim:
+            text: Text = axs[0].text(
+                x = self.initial_state.trim['AoA'],
+                y = self.initial_state.trim['CL'],
+                s = f"AoA: {self.initial_state.trim['AoA']:.2f} with V: {self.initial_state.trim['U']:.2f}",
+                ha="center",
+                va="center",
+            )
+            self.text = text
+
+            # Add scatter points for the trim values
+            axs[0].scatter(
+                self.initial_state.trim["AoA"],
+                self.initial_state.trim["CL"],
+                label="Initial Trim",
+            )
+            axs[1].scatter(
+                self.initial_state.trim["AoA"],
+                self.initial_state.trim["CD"],
+                label="Initial Trim",
+            )
+            axs[3].scatter(
+                self.initial_state.trim["AoA"],
+                self.initial_state.trim["CL"] / self.initial_state.trim["CD"],
+                label="Initial Trim",
+            )
 
         # Add dummy scatter points for the current values
         collection = axs[0].scatter(0, 0, label="Current")
@@ -169,8 +193,8 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
 
         # Update the CL vs CD plot
         line = self.lines["CL_CD"]
-        line.set_xdata(state.polar["CD"])
-        line.set_ydata(state.polar["CL"])
+        line.set_xdata(state.polar["AoA"])
+        line.set_ydata(state.polar["CL"] / state.polar["CD"])
         axs[3].relim()
         axs[3].autoscale_view()
 
@@ -181,7 +205,10 @@ class AirplanePolarOptimizationVisualizert(OptimizationCallback):
             collection = self.collections["CD"]
             collection.set_offsets(np.array([state.trim["AoA"], state.trim["CD"]]))
             collection = self.collections["CL_CD"]
-            collection.set_offsets(np.array([state.trim["CD"], state.trim["CL"]]))
+            collection.set_offsets(np.array([state.trim["AoA"], state.trim["CL"] / state.trim["CD"]]))
+            # Add text annotations for state trim velocity and aoa
+            self.text.set_text(f"AoA: {state.trim['AoA']:.2f} with V: {state.trim['U']:.2f}")
+
 
         # Update the figure
         fig.canvas.draw()

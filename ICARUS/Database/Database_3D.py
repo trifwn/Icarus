@@ -113,6 +113,8 @@ class Database_3D:
             vehicle_name = vehicle_folder
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
         else:
+            print(f"Loaded Plane {plane_obj}")
+            plane_obj.visualize()
             self.planes[plane_obj.name] = plane_obj
             print(plane_obj)
             vehicle_name = plane_obj.name

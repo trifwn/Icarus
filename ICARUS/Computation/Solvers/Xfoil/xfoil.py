@@ -90,6 +90,11 @@ solver_parameters: list[Parameter] = [
         False,
         "Print xfoil output",
     ),
+    IntParameter(
+        "repanel_n",
+        100,
+        "Number of panels to repanel the airfoil",
+    )
 ]
 
 

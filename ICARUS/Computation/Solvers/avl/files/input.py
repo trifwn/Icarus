@@ -8,13 +8,13 @@ import numpy as np
 from ICARUS.Core.types import FloatArray
 from ICARUS.Database import AVL_exe
 from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import AirfoilNotFoundError
+from ICARUS.Database.Database_2D import AirfoilNotFoundError, PolarsNotFoundError
 from ICARUS.Environment.definition import Environment
 from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.wing_segment import Wing_Segment
-from ICARUS.Airfoils.airfoil_polars import Polars
+from ICARUS.Airfoils.airfoil_polars import PolarNotAccurate, Polars, ReynoldsNotIncluded
 
 
 def make_input_files(
@@ -94,7 +94,6 @@ def avl_mass(
     with open(mass_file, "w") as massf:
         massf.write(content)
 
-
 def avl_geo(
     PLANE_DIR: str,
     plane: Airplane,
@@ -161,6 +160,7 @@ def avl_geo(
         if "inviscid" in solver_options.keys():
             if solver_options["inviscid"]:
                 viscous = False
+        # viscous = False
 
         f_io.write("INDEX                        | (keyword)\n")
         f_io.write(f"{int(i)}                    | SURFACE INDEX \n")
@@ -192,32 +192,92 @@ def avl_geo(
             f_io.write("\n")
             f_io.write("\n")
             # Save Airfoil file
-            print(f"Saving airfoil {strip.mean_airfoil.file_name} in {PLANE_DIR}")
-            strip.mean_airfoil.repanel_spl(100)
+            strip.mean_airfoil.repanel_spl(180, 1e-7)
             strip.mean_airfoil.save_selig(PLANE_DIR)
             if viscous:
+                # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
+                # Calculate average reynolds number
+                reynolds = (
+                    strip.mean_chord
+                    * u_inf
+                    / environment.air_kinematic_viscosity
+                )
                 # Get the airfoil polar
                 try:
                     polar_obj: Polars = DB.foils_db.get_polars(
                         strip.mean_airfoil.name, solver2D
                     )
-                    f_io.write("CDCL\n")
-                    # Calculate average reynolds number
-                    reynolds = (
-                        surf.mean_aerodynamic_chord
-                        * u_inf
-                        / environment.air_dynamic_viscosity
-                    )
+                    reyns_computed  = polar_obj.reynolds_nums
 
+                    # print("We have computed polars for the following reynolds numbers:")
+                    # print(reyns_computed)
+                    # print(f"Reynolds number for this strip: {reynolds}")
+
+                    RE_MIN = 8e4
+                    RE_MAX = 1.5e6
+                    NUM_BINS = 12
+                    REYNOLDS_BINS = (np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN) 
+                    DR_REYNOLDS = np.diff(REYNOLDS_BINS)
+
+                    # Check if the reynolds number is within the range of the computed polars
+                    # To be within the range of the computed polars the reynolds number must be 
+                    # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]
+                    # If the reynolds number is not within the range of the computed polars, the polar is recomputed
+                    
+                    # Find the bin corresponding to the each computed reynolds number
+                    reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 1
+                    # print(REYNOLDS_BINS)
+                    # print(f"Reynolds bin: {reyns_bin}")
+                    cond = False
+                    for i, reyns in enumerate(reyns_computed):
+                        if reyns - DR_REYNOLDS[reyns_bin] < reynolds < reyns + DR_REYNOLDS[reyns_bin]:
+                            cond = True
+                            # print(f"\tReynolds number {reynolds} is within the range of the computed polars")
+                            # print(f"   Reynolds number: {reyns} +/- {DR_REYNOLDS[reyns_bin]}")
+                            break
+
+                    if not cond:
+                        DB.foils_db.compute_polars(
+                            airfoil = strip.mean_airfoil,
+                            solvers = [solver2D],
+                            reynolds = reynolds,
+                            angles = np.linspace(-10, 20, 31),
+                        )
+                        polar_obj: Polars = DB.foils_db.get_polars(
+                            strip.mean_airfoil.name, solver2D
+                        )                       
+
+                    f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
                     f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
                     f_io.write(
                         f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
                     )
                     f_io.write("\n")
-                except AirfoilNotFoundError:
-                    print(f"Airfoil {surf.root_airfoil.name} not found in database")
-                    pass
+                except (AirfoilNotFoundError,PolarsNotFoundError, PolarNotAccurate, ReynoldsNotIncluded):
+                    print(f"\tPolar for {strip.mean_airfoil.name} not found in database. Trying to recompute")
+                    DB.foils_db.compute_polars(
+                        airfoil = strip.mean_airfoil,
+                        solvers = [solver2D],
+                        reynolds = reynolds,
+                        angles = np.linspace(-10, 20, 31),
+                    )
+                    
+                    try:
+                        polar_obj: Polars = DB.foils_db.get_polars(
+                            strip.mean_airfoil.name, solver2D
+                        )
+
+                        f_io.write("CDCL\n")
+                        cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
+                        f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
+                        f_io.write(
+                            f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
+                        )
+                        f_io.write("\n")
+                    except (PolarsNotFoundError):
+                        print(f"\tCould not compute polar for {strip.mean_airfoil.name}")
+                        pass                 
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"

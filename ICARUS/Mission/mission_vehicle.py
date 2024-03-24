@@ -66,7 +66,14 @@ class Mission_Vehicle:
         density = 1.225
         lift = cl * 0.5 * density * velocity**2 * self.airplane.S
         drag = cd * 0.5 * density * velocity**2 * self.airplane.S
-        torque = cm * 0.5 * density * velocity**2 * self.airplane.S * self.airplane.mean_aerodynamic_chord
+        torque = (
+            cm
+            * 0.5
+            * density
+            * velocity**2
+            * self.airplane.S
+            * self.airplane.mean_aerodynamic_chord
+        )
 
         return lift, drag, torque
 
@@ -78,7 +85,9 @@ class Mission_Vehicle:
         DX: FloatArray = V
         return DX
 
-    def dvdt(self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0) -> FloatArray:
+    def dvdt(
+        self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0
+    ) -> FloatArray:
         dh_dx: float = float(trajectory.first_derivative_x_fd(X[0]))
         dh2_dx2: float = float(trajectory.second_derivative_x_fd(X[0]))
         dh_3_dx3: float = float(trajectory.third_derivative_x_fd(X[0]))
@@ -149,7 +158,7 @@ class Mission_Vehicle:
         # Check if thrust can  be provided in the motor dataset. It should be between the minimum and
         # maximum thrust. If not, the motor is not able to provide the thrust required to maintain
         # course.
-        avail_thrust = self.motor.get_available_thrust(velocity=float(np.linalg.norm(V)))
+        avail_thrust = self.motor.thrust(velocity=float(np.linalg.norm(V)))
         if thrust < avail_thrust[0]:
             if verbosity:
                 print(f"\tThrust too low {thrust}, {avail_thrust[1]}")
@@ -197,7 +206,9 @@ class Mission_Vehicle:
         if verbosity > 1:
             print(f"\talpha: {np.rad2deg(alpha)}")
             print(f"\tThrust_x = {thrust_x}\n\tThrust_y = {thrust_y}")
-            print(f"\tThrust: {thrust}\n\tLift = {lift}\n\tDrag = {drag}\n\tWeight = {m * G}\n\n")
+            print(
+                f"\tThrust: {thrust}\n\tLift = {lift}\n\tDrag = {drag}\n\tWeight = {m * G}\n\n"
+            )
 
         F: FloatArray = np.array([Fx, Fy])
         return F  # , thrust, elevator_angle

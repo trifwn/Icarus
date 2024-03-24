@@ -17,9 +17,9 @@ from . import EXTERNAL_DB
 from ICARUS import APPHOME
 from ICARUS.Core.struct import Struct
 from ICARUS.Airfoils.airfoil import Airfoil
+from ICARUS.Airfoils.airfoil_polars import Polars
 
 if TYPE_CHECKING:
-    from ICARUS.Airfoils.airfoil_polars import Polars
     from ICARUS.Core.types import FloatArray
 
 
@@ -36,6 +36,26 @@ class AirfoilNotFoundError(Exception):
             airfoil_name (str): Airfoil name
         """
         message = f"Airfoil {airfoil_name} not found in database!"
+        super().__init__(message)
+
+
+class PolarsNotFoundError(Exception):
+    """
+    Exception raised when polars are not found in the database.
+    """
+
+    def __init__(self, airfoil_name: str, solver=None, solvers_found=None) -> None:
+        """
+        Initialize the PolarsNotFoundError class.
+
+        Args:
+            airfoil_name (str): Airfoil name
+            solver (str): Solver name
+        """
+        if solver:
+            message = f"Polars for airfoil {airfoil_name} not found in database for solver {solver}! The available solvers are {solvers_found}"
+        else:
+            message = f"Polars for airfoil {airfoil_name} not found in database!"
         super().__init__(message)
 
 
@@ -98,24 +118,78 @@ class Database_2D:
         Returns:
             Polars: Polars object
         """
+        if airfoil_name not in self.airfoils.keys():
+            self.add_airfoil(airfoil_name)
+
         airfoil_name = airfoil_name.upper()
         if airfoil_name.upper() not in self.polars.keys():
             try:
                 # Try to load the airfoil from the DB or EXTERNAL DB
-                self.add_airfoil(airfoil_name)
-                airfoil_folder_path = os.path.join(DB2D, airfoil_name.upper())
                 self.add_airfoil_data(airfoil_name.upper())
                 if airfoil_name.upper() not in self.polars.keys():
-                    raise AirfoilNotFoundError(airfoil_name)
-            except FileNotFoundError:
+                    raise PolarsNotFoundError(airfoil_name)
+            except (FileNotFoundError, StopIteration):
                 raise AirfoilNotFoundError(airfoil_name)
 
         if solver not in self.polars[airfoil_name.upper()].keys():
-            raise ValueError(
-                f"Solver {solver} not found in database! The available solvers are {list(self.polars[airfoil_name.upper()].keys())}",
+            raise PolarsNotFoundError(
+                airfoil_name, solver, list(self.polars[airfoil_name.upper()].keys())
             )
         polar: Polars = self.polars[airfoil_name.upper()][solver]
         return polar
+
+    def compute_polars(
+        self,
+        airfoil: Airfoil,
+        reynolds: list[float] | float,
+        angles: list[float] | FloatArray,
+        solvers: list[str] | str = ["Xfoil"],
+    ) -> None:
+        """
+        Computes the polars for an airfoil at a given reynolds number and angles of attack.
+
+        Args:
+            airfoil (Airfoil): Airfoil object
+            reynolds (float): Reynolds number
+            angles (list[float]): List of angles of attack
+        """
+        min_angle = min(angles)
+        max_angle = max(angles)
+
+        if isinstance(reynolds, float):
+            reynolds = [reynolds]
+
+        from ICARUS.Computation.Solvers.Xfoil.xfoil import Xfoil
+
+        xfoil = Xfoil()
+
+        analysis = xfoil.get_analyses_names()[1]  # Run
+        xfoil.select_analysis(analysis)
+
+        # Get Options
+        xfoil_options: Struct = xfoil.get_analysis_options()
+        xfoil_solver_parameters: Struct = xfoil.get_solver_parameters()
+
+        # Set Options
+        xfoil_options.airfoil = airfoil
+        xfoil_options.reynolds = reynolds
+        xfoil_options.mach = 0.0
+        xfoil_options.max_aoa = max_angle
+        xfoil_options.min_aoa = min_angle
+        xfoil_options.aoa_step = 0.25
+        # xfoil_options.angles = angles  # For options 2 and 3
+
+        # Set Solver Options
+        xfoil_solver_parameters.max_iter = 300
+        xfoil_solver_parameters.Ncrit = 9
+        xfoil_solver_parameters.repanel_n = 80
+        xfoil_solver_parameters.xtr = (0.2, 1.0)
+        xfoil_solver_parameters.print = False
+
+        # RUN and SAVE
+        xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
+        xfoil.print_analysis_options()
+        xfoil.execute(parallel=False)
 
     def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
         """
@@ -305,6 +379,7 @@ class Database_2D:
             os.path.join(DB2D, airfoil_folder.upper())
         ):
             try:
+                print(f"Loading airfoil {airfoil_folder} from DB2D")
                 filename = os.path.join(
                     DB2D, airfoil_folder.upper(), airfoil_folder.lower()
                 )

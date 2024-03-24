@@ -12,7 +12,6 @@ from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
 from ICARUS.Core.units import calc_reynolds
 from ICARUS.Database import DB
-from ICARUS.Database import DB2D
 from ICARUS.Database import EXTERNAL_DB
 
 
@@ -40,27 +39,49 @@ def main() -> None:
 
     # Load From DB
     DB.load_data()
-
-    all_airfoils = list(DB.foils_db.airfoils.keys())
-    airfoils_to_compute = [
-        airfoil
-        for airfoil in all_airfoils
-        if (
-            airfoil.upper().startswith("AG")
-            or airfoil.upper().startswith("CLARK")
-            or airfoil.upper().startswith("DAE")
-            or airfoil.upper().startswith("E")
-            # or airfoil.upper().startswith('H')
-            # or airfoil.upper().startswith('M')
-            # or airfoil.upper().startswith('N')
-            # or airfoil.upper().startswith('O')
-            # or airfoil.upper().startswith('S')
-            # or airfoil.upper().startswith('W')
-        )
-    ]
     print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
-    print(f"Total number of computed airfoil data {len(list(DB.foils_db._data.keys()))}")
-    print(f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}")
+    print(
+        f"Total number of computed airfoil data {len(list(DB.foils_db._data.keys()))}"
+    )
+    print(
+        f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}"
+    )
+
+    # all_airfoils = list(DB.foils_db.airfoils.keys())
+    # airfoils_to_compute = [
+    #     airfoil
+    #     for airfoil in all_airfoils
+    #     if (
+    #         airfoil.upper().startswith("AG")
+    #         or airfoil.upper().startswith("CLARK")
+    #         or airfoil.upper().startswith("DAE")
+    #         or airfoil.upper().startswith("E")
+    #         # or airfoil.upper().startswith('H')
+    #         # or airfoil.upper().startswith('M')
+    #         # or airfoil.upper().startswith('N')
+    #         # or airfoil.upper().startswith('O')
+    #         # or airfoil.upper().startswith('S')
+    #         # or airfoil.upper().startswith('W')
+    #     )
+    # ]
+    airfoil_root = DB.get_airfoil("S4062")
+    airfoil_root.repanel_spl(160)
+    airfoil_tip = DB.get_airfoil("S4320")
+    airfoil_tip.repanel_spl(160)
+
+    airfoils_to_compute = [
+        Airfoil.morph_new_from_two_foils(
+            airfoil_root,
+            airfoil_tip,
+            heta,
+            160,
+        )
+        for heta in np.linspace(0, 1, 11)
+    ]
+    airfoils_to_compute.append(DB.get_airfoil("NACA0008"))
+    for airfoil in airfoils_to_compute:
+        airfoil.repanel_spl(160)
+
     print(f"Computing: {len(airfoils_to_compute)}")
 
     # PARAMETERS FOR ESTIMATION
@@ -101,9 +122,8 @@ def main() -> None:
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################
-    for airfoil_name in airfoils_to_compute:
+    for airfoil in airfoils_to_compute:
         # Get airfoil
-        airfoil: Airfoil = DB.foils_db.airfoils[airfoil_name]
         airfoil.repanel_spl(200)
         airfoil_stime: float = time.time()
         print(f"\nRunning airfoil {airfoil.name}\n")
@@ -133,7 +153,9 @@ def main() -> None:
             f2w_solver_parameters.f_trip_low = 0
             f2w_solver_parameters.Ncrit = Ncrit
             f2w_solver_parameters.max_iter = 250
-            f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            f2w_solver_parameters.boundary_layer_solve_time = (
+                249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            )
             f2w_solver_parameters.timestep = 0.1
 
             f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
@@ -183,7 +205,7 @@ def main() -> None:
             xfoil_solver_parameters.max_iter = 300
 
             xfoil_solver_parameters.Ncrit = Ncrit
-            xfoil_solver_parameters.xtr = (1.0, 1.0)
+            xfoil_solver_parameters.xtr = (0.1, 1.0)
             xfoil_solver_parameters.print = False
             # xfoil.print_solver_options()
 

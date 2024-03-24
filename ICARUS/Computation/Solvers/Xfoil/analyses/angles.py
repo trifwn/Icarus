@@ -24,17 +24,20 @@ def single_reynolds_run(
     xf = XFoil()
     xf.Re = Reyn
     xf.M = 0.0
-    # xf.print = True
-    for key, value in solver_options.items():
-        setattr(xf, key, value)
 
     pts = airfoil.selig
     xpts = pts[0]
     ypts = pts[1]
     xf_airf_obj = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = xf_airf_obj
+    # xf.print = True
+    for key, value in solver_options.items():
+        if key == "repanel_n":
+            print(f"Repaneling Airfoil with {value}")
+            xf.repanel(value)
+        else:
+            setattr(xf, key, value)
 
-    # xf.repanel(160)
     # xf.filter()
     # xf.max_iter = 500
 
@@ -63,13 +66,17 @@ def single_reynolds_run_seq(
     xf = XFoil()
     xf.Re = Reyn
 
-    for key, value in solver_options.items():
-        setattr(xf, key, value)
-
     xpts, ypts = airfoil.selig
     airfoil_obj = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = airfoil_obj
-    # xf.repanel()
+
+    for key, value in solver_options.items():
+        if key == "repanel_n":
+            print(f"Repaneling Airfoil with {value}")
+            xf.repanel(value)
+        else:
+            setattr(xf, key, value)
+
     # xf.filter()
 
     aXF = []
@@ -145,7 +152,10 @@ def multiple_reynolds_parallel(
     data: list[FloatArray] = []
 
     with Pool(processes=CPU_TO_USE) as pool:
-        args_list = [(reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options) for reyn in reynolds]
+        args_list = [
+            (reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options)
+            for reyn in reynolds
+        ]
         data = list(
             tqdm(
                 pool.imap(single_reynolds_star_run, args_list),

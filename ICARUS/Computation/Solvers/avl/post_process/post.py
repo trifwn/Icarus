@@ -12,6 +12,9 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 
 
+class AVLPostReadError(Exception):
+    pass
+
 def csplit(input_file: str, pattern: str) -> list[str]:
     with open(input_file) as file:
         content = file.read()
@@ -52,18 +55,21 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
         Cm = con[20]
 
         AoAs.append(angle)
-        if CL[11] == "-":
-            CLs.append(float(CL[11:19]))
-        else:
-            CLs.append(float(CL[12:19]))
-        if CD[11] == "-":
-            CDs.append(float(CD[11:19]))
-        else:
-            CDs.append(float(CD[12:19]))
-        if Cm[33] == "-":
-            Cms.append(float(Cm[33:41]))
-        else:
-            Cms.append(float(Cm[34:41]))
+        try:
+            if CL[11] == "-":
+                CLs.append(float(CL[11:19]))
+            else:
+                CLs.append(float(CL[12:19]))
+            if CD[11] == "-":
+                CDs.append(float(CD[11:19]))
+            else:
+                CDs.append(float(CD[12:19]))
+            if Cm[33] == "-":
+                Cms.append(float(Cm[33:41]))
+            else:
+                Cms.append(float(Cm[34:41]))
+        except ValueError:
+            raise AVLPostReadError(f"Error reading file {file}") 
     Fz = np.array(CLs) * plane.S * state.dynamic_pressure
     Fx = np.array(CDs) * plane.S * state.dynamic_pressure
     My = np.array(Cms) * plane.S * state.dynamic_pressure * plane.mean_aerodynamic_chord
@@ -100,12 +106,15 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
             y_axis = lines[20]
             z_axis = lines[21]
 
-            CX = float(x_axis[11:19])
-            Cl = float(x_axis[33:41])
-            CY = float(y_axis[11:19])
-            Cm = float(y_axis[33:41])
-            CZ = float(z_axis[11:19])
-            Cn = float(z_axis[33:41])
+            try:
+                CX = float(x_axis[11:19])
+                Cl = float(x_axis[33:41])
+                CY = float(y_axis[11:19])
+                Cm = float(y_axis[33:41])
+                CZ = float(z_axis[11:19])
+                Cn = float(z_axis[33:41])
+            except ValueError:
+                raise AVLPostReadError(f"Error reading file {casefile}")
 
             if dst.var == "u":
                 dyn_pressure = float(
