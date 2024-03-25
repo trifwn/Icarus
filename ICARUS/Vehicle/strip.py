@@ -216,6 +216,9 @@ class Strip:
         )
 
         return suction_side, camber_line, pressure_side
+    
+    def __str__(self) -> str:
+        return f"Strip: with airfoil {self.airfoil_start.name}"
 
     def plot(
         self,

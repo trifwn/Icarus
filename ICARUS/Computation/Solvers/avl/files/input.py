@@ -94,6 +94,7 @@ def avl_mass(
     with open(mass_file, "w") as massf:
         massf.write(content)
 
+
 def avl_geo(
     PLANE_DIR: str,
     plane: Airplane,
@@ -120,10 +121,8 @@ def avl_geo(
     f_io.write(
         f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n"
     )
-    f_io.write(
-        f"  {0}     {0}     {0}   | Xref   Yref   Zref\n"
-    )
-    f_io.write(f" 0.00                               | CDp  (optional)\n")
+    f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
+    f_io.write(f" 0.045                               | CDp  (optional)\n")
 
     for i, surf in enumerate(plane.surfaces):
         f_io.write("\n")
@@ -183,31 +182,52 @@ def avl_geo(
             )
             f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
             f_io.write(f"SECTION\n")
-            f_io.write(
-                f"   {strip.x0}    {strip.y0}    {strip.z0}    {strip.mean_chord}   {strip.mean_twist*180/np.pi}   {1}    {span_spacing}   \n",
-            )
-            f_io.write("\n")
-            f_io.write("AFILE \n")
-            f_io.write(f"{strip.mean_airfoil.file_name}\n")
-            f_io.write("\n")
-            f_io.write("\n")
+
+            if j == 0:
+                f_io.write(
+                    f"   {strip.x0}    {strip.y0}    {strip.z0}    {strip.chords[0]}   {strip.twists[0]*180/np.pi}   {1}    {span_spacing}   \n"
+                )
+                f_io.write("\n")
+                f_io.write("AFILE \n")
+                f_io.write(f"{strip.airfoil_start.file_name}\n")
+                f_io.write("\n")
+                f_io.write("\n")
+                strip_airfoil = strip.airfoil_start
+            elif j == len(surf.strips) - 1:
+                f_io.write(
+                    f"   {strip.x1}    {strip.y1}    {strip.z1}    {strip.chords[1]}   {strip.twists[1]*180/np.pi}   {1}    {span_spacing}   \n"
+                )
+                f_io.write("\n")
+                f_io.write("AFILE \n")
+                f_io.write(f"{strip.airfoil_end.file_name}\n")
+                f_io.write("\n")
+                f_io.write("\n")
+                strip_airfoil = strip.airfoil_end
+            else:
+                f_io.write(
+                    f"   {(strip.x0 + strip.x1)/2}    {(strip.y0+strip.y1)/2}    {(strip.z0+strip.z1)/2}    {strip.mean_chord}   {strip.mean_twist*180/np.pi}   {1}    {span_spacing}   \n"
+                )
+                f_io.write("\n")
+                f_io.write("AFILE \n")
+                f_io.write(f"{strip.mean_airfoil.file_name}\n")
+                f_io.write("\n")
+                f_io.write("\n")
+                strip_airfoil = strip.mean_airfoil
             # Save Airfoil file
-            strip.mean_airfoil.repanel_spl(180, 1e-7)
-            strip.mean_airfoil.save_selig(PLANE_DIR)
+            strip_airfoil.repanel_spl(180, 1e-7)
+            strip_airfoil.save_selig(PLANE_DIR)
             if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
                 reynolds = (
-                    strip.mean_chord
-                    * u_inf
-                    / environment.air_kinematic_viscosity
+                    strip.mean_chord * u_inf / environment.air_kinematic_viscosity
                 )
                 # Get the airfoil polar
                 try:
                     polar_obj: Polars = DB.foils_db.get_polars(
-                        strip.mean_airfoil.name, solver2D
+                        strip_airfoil.name, solver2D
                     )
-                    reyns_computed  = polar_obj.reynolds_nums
+                    reyns_computed = polar_obj.reynolds_nums
 
                     # print("We have computed polars for the following reynolds numbers:")
                     # print(reyns_computed)
@@ -216,21 +236,27 @@ def avl_geo(
                     RE_MIN = 8e4
                     RE_MAX = 1.5e6
                     NUM_BINS = 12
-                    REYNOLDS_BINS = (np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN) 
+                    REYNOLDS_BINS = (
+                        np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
+                    )
                     DR_REYNOLDS = np.diff(REYNOLDS_BINS)
 
                     # Check if the reynolds number is within the range of the computed polars
-                    # To be within the range of the computed polars the reynolds number must be 
+                    # To be within the range of the computed polars the reynolds number must be
                     # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]
                     # If the reynolds number is not within the range of the computed polars, the polar is recomputed
-                    
+
                     # Find the bin corresponding to the each computed reynolds number
                     reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 1
                     # print(REYNOLDS_BINS)
                     # print(f"Reynolds bin: {reyns_bin}")
                     cond = False
                     for i, reyns in enumerate(reyns_computed):
-                        if reyns - DR_REYNOLDS[reyns_bin] < reynolds < reyns + DR_REYNOLDS[reyns_bin]:
+                        if (
+                            reyns - DR_REYNOLDS[reyns_bin]
+                            < reynolds
+                            < reyns + DR_REYNOLDS[reyns_bin]
+                        ):
                             cond = True
                             # print(f"\tReynolds number {reynolds} is within the range of the computed polars")
                             # print(f"   Reynolds number: {reyns} +/- {DR_REYNOLDS[reyns_bin]}")
@@ -238,14 +264,14 @@ def avl_geo(
 
                     if not cond:
                         DB.foils_db.compute_polars(
-                            airfoil = strip.mean_airfoil,
-                            solvers = [solver2D],
-                            reynolds = reynolds,
-                            angles = np.linspace(-10, 20, 31),
+                            airfoil=strip_airfoil,
+                            solvers=[solver2D],
+                            reynolds=reynolds,
+                            angles=np.linspace(-8, 20, 29),
                         )
                         polar_obj: Polars = DB.foils_db.get_polars(
-                            strip.mean_airfoil.name, solver2D
-                        )                       
+                            strip_airfoil.name, solver2D
+                        )
 
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
@@ -254,18 +280,26 @@ def avl_geo(
                         f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
                     )
                     f_io.write("\n")
-                except (AirfoilNotFoundError,PolarsNotFoundError, PolarNotAccurate, ReynoldsNotIncluded):
-                    print(f"\tPolar for {strip.mean_airfoil.name} not found in database. Trying to recompute")
-                    DB.foils_db.compute_polars(
-                        airfoil = strip.mean_airfoil,
-                        solvers = [solver2D],
-                        reynolds = reynolds,
-                        angles = np.linspace(-10, 20, 31),
+                except (
+                    AirfoilNotFoundError,
+                    PolarsNotFoundError,
+                    PolarNotAccurate,
+                    ReynoldsNotIncluded,
+                    FileNotFoundError,
+                ):
+                    print(
+                        f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute"
                     )
-                    
+                    DB.foils_db.compute_polars(
+                        airfoil=strip_airfoil,
+                        solvers=[solver2D],
+                        reynolds=reynolds,
+                        angles=np.linspace(-10, 20, 31),
+                    )
+
                     try:
                         polar_obj: Polars = DB.foils_db.get_polars(
-                            strip.mean_airfoil.name, solver2D
+                            strip_airfoil.name, solver2D
                         )
 
                         f_io.write("CDCL\n")
@@ -275,9 +309,11 @@ def avl_geo(
                             f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
                         )
                         f_io.write("\n")
-                    except (PolarsNotFoundError):
-                        print(f"\tCould not compute polar for {strip.mean_airfoil.name}")
-                        pass                 
+                    except PolarsNotFoundError:
+                        print(
+                            f"\tCould not compute polar for {strip_airfoil.name}"
+                        )
+                        pass
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"

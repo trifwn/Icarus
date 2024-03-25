@@ -251,6 +251,7 @@ class Lifting_Surface:
             root_airfoil_obj = root_airfoil
         else:
             print(root_airfoil)
+            print(type(root_airfoil))
             raise ValueError("Root Airfoil must be a string or an Airfoil")
 
         if isinstance(tip_airfoil, str):
@@ -258,6 +259,8 @@ class Lifting_Surface:
         elif isinstance(tip_airfoil, Airfoil):
             tip_airfoil_obj = tip_airfoil
         else:
+            print(tip_airfoil)
+            print(type(tip_airfoil))
             raise ValueError("Tip Airfoil must be a string or an Airfoil")
 
         # Needed for when we have airfoils that are flapped and therefore have a different chord length
@@ -714,6 +717,7 @@ class Lifting_Surface:
                     tip_eta,
                     self.tip_airfoil.n_points,
                 )
+                
             # Based on the shape (area) of the strip, we can calculate the eta position of the strip
             # We can then calculate the mean aerodynamic chord of the strip
             strip_mean_aerodynamic_chord = (
@@ -734,11 +738,10 @@ class Lifting_Surface:
                     end_leading_edge=end_points[:, j],
                     end_airfoil=strip_tip_af,
                     end_chord=end_chords[j],
-                    end_twist=self.twist_angles[j + 1],
+                    end_twist=self.twist_angles[j+1],
                     eta=eta,
                 )
             strips.append(strip)
-
         if self.is_symmetric_y:
             symmetric_strips = [strip.return_symmetric() for strip in strips]
 

@@ -452,6 +452,7 @@ class Airplane:
         prev_ax: Axes3D | None = None,
         movement: FloatArray | None = None,
         thin: bool = False,
+        annotate: bool = False,
     ) -> None:
         """
         Visualize the plane
@@ -503,15 +504,16 @@ class Airplane:
             )
             # Add label to indicate point mass name
             # Text
-            ax.text(
-                r[0] + mov[0],
-                r[1] + mov[1],
-                r[2] + mov[2],
-                "%s" % (desc),
-                size=9,
-                zorder=1,
-                color="k",
-            )
+            if annotate:
+                ax.text(
+                    r[0] + mov[0],
+                    r[1] + mov[1],
+                    r[2] + mov[2],
+                    "%s" % (desc),
+                    size=9,
+                    zorder=1,
+                    color="k",
+                )
 
         ax.scatter(
             self.CG[0] + mov[0],
@@ -521,6 +523,16 @@ class Airplane:
             s=50,
             color="b",
         )
+        if annotate:
+            ax.text(
+                self.CG[0] + mov[0],
+                self.CG[1] + mov[1],
+                self.CG[2] + mov[2],
+                "CG",
+                size=9,
+                zorder=1,
+                color="k",
+            )
         plt.show()
 
     def to_json(self) -> str:

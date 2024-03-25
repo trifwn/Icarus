@@ -360,6 +360,7 @@ class Database_2D:
         Raises:
             FileNotFoundError: If the airfoil is not found in the DB2D or EXTERNAL DB and cant be generated from NACA Digits.
         """
+        print(f"Searching for airfoil {airfoil_folder} in DB2D")
         # Handle NACA airfoils first since we have analytical expressions for them
         if airfoil_folder.upper().startswith("NACA") and (
             len(airfoil_folder) == (4 + 4) or len(airfoil_folder) == (5 + 4)

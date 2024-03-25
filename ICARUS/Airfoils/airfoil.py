@@ -389,25 +389,50 @@ class Airfoil(af.Airfoil):  # type: ignore
         # Round eta to 2 decimals in string format
         eta_perc = int(eta * 100)
         eta_str = f"{eta_perc}"
-        name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta_str}%"
-        if airfoil1.name.startswith("morphed_") and airfoil2.name.startswith("morphed_"):
+
+
+        if airfoil1.name.startswith("morphed_") :
             # Check if the airfoils are coming from the same morphing
             airfoil1_parent_1 = airfoil1.name.split("_")[1]
             airfoil1_parent_2 = airfoil1.name.split("_")[2]
             airfoil1_eta = float(airfoil1.name.split("_")[4][:-1])/100
+        else:
+            airfoil1_parent_1 = airfoil1.name
+            airfoil1_parent_2 = None
+            airfoil1_eta = None
 
+        if airfoil2.name.startswith("morphed_"):
             airfoil2_parent_1 = airfoil2.name.split("_")[1]
             airfoil2_parent_2 = airfoil2.name.split("_")[2]
             airfoil2_eta = float(airfoil2.name.split("_")[4][:-1])/100
+        else:
+            airfoil2_parent_1 = None
+            airfoil2_parent_2 = airfoil2.name
+            airfoil2_eta = None
             
-            if airfoil1_parent_1 == airfoil2_parent_1 and airfoil1_parent_2 == airfoil2_parent_2:
+        name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta_str}%"
+        airfoil_parents = set([airfoil1_parent_1, airfoil1_parent_2, airfoil2_parent_1, airfoil2_parent_2])
+        # Remove None values
+        airfoil_parents = {x for x in airfoil_parents if x is not None}
+        if len(airfoil_parents) <= 2:
+            # If the airfoils are coming from the same morphing
+            if airfoil1_eta is not None and airfoil2_eta is not None:
                 new_eta = airfoil1_eta*(1-eta) + (airfoil2_eta)*(eta)
-                # ROUND TO 2 DECIMALS
-                new_eta = int(100*new_eta)
-                # Round to 2 decimals in string format
-                new_eta_str = f"{new_eta}"
-                name = f"morphed_{airfoil1_parent_1}_{airfoil1_parent_2}_at_{new_eta_str}%"
+            
+            if airfoil1_eta is None and airfoil2_eta is None:
+                new_eta = eta
 
+            if airfoil1_eta is not None and airfoil2_eta is None:
+                new_eta = airfoil1_eta*(1-eta) 
+
+            if airfoil1_eta is None and airfoil2_eta is not None:
+                new_eta = (airfoil2_eta)*(eta)
+
+            # ROUND TO 2 DECIMALS
+            new_eta = int(100*new_eta)
+            # Round to 2 decimals in string format
+            new_eta_str = f"{new_eta}"
+            name = f"morphed_{airfoil1_parent_1}_{airfoil2_parent_2}_at_{new_eta_str}%"
         return cls(upper, lower, name, n_points)
 
     @classmethod

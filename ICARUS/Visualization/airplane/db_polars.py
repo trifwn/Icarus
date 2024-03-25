@@ -24,6 +24,7 @@ def plot_airplane_polars(
     ],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
+    operating_point: dict[str, float] = {}
 ) -> tuple[ndarray[Any, Any], Figure]:
     """Function to plot airplane polars for a given list of airplanes and solvers
 
@@ -73,6 +74,11 @@ def plot_airplane_polars(
             try:
                 polar: DataFrame = DB.vehicles_db.polars[airplane]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+                    if plot[0] == "CL/CD" or plot[1] == "CL/CD":
+                        polar[f"{solver} CL/CD"] = polar[f"{solver} CL"] / polar[f"{solver} CD"]
+                    if plot[0] == "CD/CL" or plot[1] == "CD/CL":
+                        polar[f"{solver} CD/CL"] = polar[f"{solver} CD"] / polar[f"{solver} CL"]
+
                     if airplane.startswith("XFLR"):
                         key0 = f"{plot[0]}"
                         key1 = f"{plot[1]}"
@@ -117,6 +123,14 @@ def plot_airplane_polars(
                             )
                         except ValueError as e:
                             raise e
+                        
+                    if plot[0] == "AoA":
+                        # Annotate the operating points in the plots
+                        for op in operating_point:
+                            ax.axvline(x=operating_point[op], color="r", linestyle="--" , label=f"{op}")
+                    elif plot[1] == "AoA":
+                        for op in operating_point:
+                            ax.axhline(y=operating_point[op], color="r", linestyle="--" , label=f"{op}")
                 if flag:
                     break
             except KeyError as e:

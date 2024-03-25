@@ -41,10 +41,18 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
         axs.append(fig.add_subplot(2, 2, 3))
         axs.append(fig.add_subplot(2, 2, 4))
 
-        aoa = self.initial_state.polar["AoA"]
-        CL = self.initial_state.polar["CL"]
-        CD = self.initial_state.polar["CD"]
-        Cm = self.initial_state.polar["Cm"]
+        try:
+            aoa = self.initial_state.polar["AoA"]
+            CL = self.initial_state.polar["CL"]
+            CD = self.initial_state.polar["CD"]
+            Cm = self.initial_state.polar["Cm"]
+            cl_over_cd = CL / CD
+        except:
+            aoa = []
+            CL = []
+            CD = []
+            Cm = []
+            cl_over_cd = []
 
         #
         axs[0].plot(aoa, CL, label="Initial", color="b", linestyle="--", linewidth=1)
@@ -99,12 +107,12 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
         axs[2].legend()
         axs[2].grid()
 
-        axs[3].plot(aoa, CL/CD, label="Initial", color="b", linestyle="--", linewidth=1)
+        axs[3].plot(aoa, cl_over_cd, label="Initial", color="b", linestyle="--", linewidth=1)
         axs[3].axhline(0, color="k", linewidth=0.5)
         axs[3].axvline(0, color="k", linewidth=0.5)
         line = Line2D(
             aoa,
-            CL/CD,
+            cl_over_cd,
             color="r",
             label="Current",
         )

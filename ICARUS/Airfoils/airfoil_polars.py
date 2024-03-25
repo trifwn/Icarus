@@ -584,15 +584,25 @@ class Polars:
                     if reyn < reynolds:
                         reynolds_min = reyn
                         break
+                
+                diff_reynolds = reynolds_max - reyn
+                diff_reynolds_max = reyn - reynolds_min
+                if diff_reynolds < diff_reynolds_max:
+                    curve = self.get_reynolds_subtable(reynolds_max)
+                else:
+                    curve = self.get_reynolds_subtable(reynolds_min)
 
                 # Get CL and CD for the two Reynolds Numbers
-                curve_1 = self.get_reynolds_subtable(reynolds_min)
-                curve_2 = self.get_reynolds_subtable(reynolds_max)
+                # curve_1 = self.get_reynolds_subtable(reynolds_min)
+                # curve_2 = self.get_reynolds_subtable(reynolds_max)
                 # Interpolate curve based on relative distance between Reynolds Numbers
                 # (Linear Interpolation)
-                curve = curve_1 + (curve_2 - curve_1) * (reynolds - reynolds_min) / (
-                    reynolds_max - reynolds_min
-                )
+
+
+
+                # curve = curve_1 + (curve_2 - curve_1) * (reynolds - reynolds_min) / (
+                #     reynolds_max - reynolds_min
+                # )
 
         else:
             curve = self.get_reynolds_subtable(reynolds)
