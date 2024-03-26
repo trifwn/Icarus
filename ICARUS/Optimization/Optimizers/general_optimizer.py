@@ -137,7 +137,7 @@ class General_SOO_Optimizer:
         if self.verbosity > 0:
             print(f"Design Variables: ")
             for i, design_variable in enumerate(self.design_variables):
-                print(f"\t{design_variable}: {intermediate_result.x[i]}")
+                print(f"\t{design_variable}= {intermediate_result.x[i]},")
 
             # Print Objective Function
             print(f"Fun: {intermediate_result.fun}")

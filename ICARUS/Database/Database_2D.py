@@ -376,9 +376,8 @@ class Database_2D:
                 )
 
         # Read the airfoil from the DB2D if it exists
-        elif airfoil_folder.lower() in os.listdir(
-            os.path.join(DB2D, airfoil_folder.upper())
-        ):
+        path_exists = os.path.exists(os.path.join(DB2D, airfoil_folder.upper()))
+        if path_exists:
             try:
                 print(f"Loading airfoil {airfoil_folder} from DB2D")
                 filename = os.path.join(
@@ -390,40 +389,54 @@ class Database_2D:
                 print(
                     f"Error loading airfoil {airfoil_folder} from DB2D. Got error: {e}"
                 )
-
-        # Search for the airfoil in the EXTERNAL DB
+        # Try to load from the WEB
         else:
-            folders: list[str] = os.walk(EXTERNAL_DB).__next__()[1]
-            flag = False
-            name: str = ""
-            for folder in folders:
-                pattern = r"\([^)]*\)|[^0-9a-zA-Z]+"
-                cleaned_string: str = re.sub(pattern, " ", folder)
-                # Split the cleaned string into numeric and text parts
-                foil: str = "".join(filter(str.isdigit, cleaned_string))
-                text_part: str = "".join(filter(str.isalpha, cleaned_string))
-                if text_part.find("flap") != -1:
-                    name = f"{foil + 'fl'}"
-                else:
-                    name = foil
+            try:
+                self.airfoils[airfoil_folder] = Airfoil.load_from_web(airfoil_folder.lower())
+                logging.info(f"Loaded airfoil {airfoil_folder} from web and saved to DB")
+            except FileNotFoundError:
+                raise FileNotFoundError()
 
-                if name == airfoil_folder:
-                    flag = True
-                    name = folder
+        # # Search for the airfoil in the EXTERNAL DB
+        # else:
+        #     try:
+        #         # Try to load from web
+        #         self.airfoils[airfoil_folder] = Airfoil.load_from_web(airfoil_folder.lower())
+        #         logging.info(f"Loaded airfoil {airfoil_folder} from WEB")
+        #         return
+        #     except FileNotFoundError:
+        #         pass
+        #     folders: list[str] = os.walk(EXTERNAL_DB).__next__()[1]
+        #     flag = False
+        #     name: str = ""
+        #     for folder in folders:
+        #         pattern = r"\([^)]*\)|[^0-9a-zA-Z]+"
+        #         cleaned_string: str = re.sub(pattern, " ", folder)
+        #         # Split the cleaned string into numeric and text parts
+        #         foil: str = "".join(filter(str.isdigit, cleaned_string))
+        #         text_part: str = "".join(filter(str.isalpha, cleaned_string))
+        #         if text_part.find("flap") != -1:
+        #             name = f"{foil + 'fl'}"
+        #         else:
+        #             name = foil
 
-            if flag:
-                # list the files in the airfoil folder
-                flap_files: list[str] = os.listdir(os.path.join(EXTERNAL_DB, name))
-                # check if the airfoil is in the flap folder
-                if name + ".dat" in flap_files:
-                    # load the airfoil from the flap folder
-                    filename = os.path.join(EXTERNAL_DB, name, name + ".dat")
-                    self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
-                    logging.info(f"Loaded airfoil {airfoil_folder} from EXTERNAL DB")
-            else:
-                raise FileNotFoundError(
-                    f"Couldnt Find airfoil {airfoil_folder} in DB2D or EXTERNAL DB"
-                )
+        #         if name == airfoil_folder:
+        #             flag = True
+        #             name = folder
+
+        #     if flag:
+        #         # list the files in the airfoil folder
+        #         flap_files: list[str] = os.listdir(os.path.join(EXTERNAL_DB, name))
+        #         # check if the airfoil is in the flap folder
+        #         if name + ".dat" in flap_files:
+        #             # load the airfoil from the flap folder
+        #             filename = os.path.join(EXTERNAL_DB, name, name + ".dat")
+        #             self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
+        #             logging.info(f"Loaded airfoil {airfoil_folder} from EXTERNAL DB")
+        # else:
+        #     raise FileNotFoundError(
+        #         f"Couldnt Find airfoil {airfoil_folder} in DB2D or EXTERNAL DB"
+        #     )
 
     @staticmethod
     def generate_airfoil_directories(

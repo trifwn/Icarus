@@ -54,7 +54,8 @@ from calendar import c
 import logging
 import os
 import re
-import urllib.request
+from jax import debug_infs
+import requests
 from typing import Any
 from typing import Union
 
@@ -67,6 +68,7 @@ from matplotlib.axes import Axes
 from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
 from ICARUS.Core.struct import Struct
 from ICARUS.Core.types import FloatArray
+from ICARUS.Database import DB2D
 
 # # Airfoil
 # ##### 0 = Read from python module
@@ -418,6 +420,10 @@ class Airfoil(af.Airfoil):  # type: ignore
         airfoil_parents = set([airfoil1_parent_1, airfoil1_parent_2, airfoil2_parent_1, airfoil2_parent_2])
         # Remove None values
         airfoil_parents = {x for x in airfoil_parents if x is not None}
+        if len(airfoil_parents) == 1:
+            return airfoil1
+        # Remove None values
+        airfoil_parents = {x for x in airfoil_parents if x is not None}
         if len(airfoil_parents) <= 2:
             # If the airfoils are coming from the same morphing
             if airfoil1_eta is not None and airfoil2_eta is not None:
@@ -736,25 +742,53 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         return np.vstack((x_points, y_points))
 
-    def load_from_web(self) -> None:
+    @classmethod
+    def load_from_web(cls, name: str) -> "Airfoil":
         """
         Fetches the airfoil data from the web. Specifically from the UIUC airfoil database.
         """
-        link: str = "https://m-selig.ae.illinois.edu/ads/coord/naca" + self.name + ".dat"
-        with urllib.request.urlopen(link) as url:
-            site_data: str = url.read().decode("UTF-8")
-        s: list[str] = site_data.split()
-        s = s[2:]
-        x: list[float] = []
-        y: list[float] = []
-        for i in range(int(len(s) / 2)):
-            temp: float = float(s[2 * i])
-            x.append(temp)
-            temp = float(s[2 * i + 1])
-            y.append(temp)
-        # y[0] = 0
-        # y[-1]= 0
-        self.selig: FloatArray = np.vstack((x, y))
+
+        db_url = "https://m-selig.ae.illinois.edu/ads/coord_database.html"
+        base_url = "https://m-selig.ae.illinois.edu/ads/"
+        response = requests.get(db_url)
+        if response.status_code == 200:
+            # Find all lines containing .dat filenames
+            lines = response.text.split("\n")
+            filenames = []
+            for line in lines:
+                match = re.search(r'href="(.*?)\.dat"', line)
+                if match:
+                    filenames.append(f"{match.group(1)}.dat")
+
+            for filename in filenames:
+                download_url = base_url + filename
+
+                # Get the Airfoil name from the filename
+                airfoil_name = filename.split(".")[0].split("/")[-1]
+                if airfoil_name.upper() != name.upper():
+                    continue
+
+                # Download the file (handle potential errors)
+                try:
+                    response = requests.get(download_url)
+                    if response.status_code == 200:
+                        # Remove the .dat extension
+                        filename = airfoil_name.lower()
+                        # Save the downloaded data locally with the filename
+                        dirname = airfoil_name.upper()
+
+                        os.makedirs(os.path.join(DB2D, dirname), exist_ok=True)
+                        filename = os.path.join(DB2D, dirname, filename)
+                        with open(filename, "wb") as f:
+                            f.write(response.content)
+                        print(f"Downloaded: {filename} from {download_url}")
+                        return cls.load_from_file(filename)
+                    else:
+                        raise FileNotFoundError(f"Error downloading {filename}: {response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    raise FileNotFoundError(f"Error downloading {filename}: {e}")
+        raise FileNotFoundError(f"Error fetching {db_url}: {response.status_code}")
+
 
     def save_selig(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
         """

@@ -26,9 +26,6 @@ if response.status_code == 200:
 
         # Get the Airfoil name from the filename
         airfoil_name = filename.split(".")[0].split("/")[-1]
-        if airfoil_name.upper() not in ["DAE11", "DAE21", "DAE31"]:
-            continue
-
         # Download the file (handle potential errors)
         try:
             response = requests.get(download_url)
@@ -42,7 +39,7 @@ if response.status_code == 200:
                 filename = os.path.join(DB2D, dirname, filename)
                 with open(filename, "wb") as f:
                     f.write(response.content)
-                print(f"Downloaded: {filename}")
+                print(f"Downloaded: {filename} from {download_url}")
             else:
                 print(f"Error downloading {filename} (status: {response.status_code})")
         except requests.exceptions.RequestException as e:
