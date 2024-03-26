@@ -86,6 +86,7 @@ class Airplane:
 
             self.M += surface.mass
             self.moments.append(mom)
+        self.m = self.M
 
         # Define Computed States
         self.states: list[State] = []

@@ -124,6 +124,14 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
         axs[3].legend()
         axs[3].grid()
 
+        self.text = axs[0].text(
+            0,
+            0,
+            "",
+            ha="center",
+            va="center",
+        )
+        
         if "AoA" in self.initial_state.trim:
             text: Text = axs[0].text(
                 x = self.initial_state.trim['AoA'],

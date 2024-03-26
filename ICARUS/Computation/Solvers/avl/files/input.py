@@ -216,6 +216,7 @@ def avl_geo(
             # Save Airfoil file
             strip_airfoil.repanel_spl(180, 1e-7)
             strip_airfoil.save_selig(PLANE_DIR)
+
             if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
@@ -310,9 +311,7 @@ def avl_geo(
                         )
                         f_io.write("\n")
                     except PolarsNotFoundError:
-                        print(
-                            f"\tCould not compute polar for {strip_airfoil.name}"
-                        )
+                        print(f"\tCould not compute polar for {strip_airfoil.name}")
                         pass
 
     contents: str = f_io.getvalue().expandtabs(4)

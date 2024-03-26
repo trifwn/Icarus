@@ -26,7 +26,7 @@ if response.status_code == 200:
 
         # Get the Airfoil name from the filename
         airfoil_name = filename.split(".")[0].split("/")[-1]
-        if airfoil_name.upper() not in ["S4062", "S4320"]:
+        if airfoil_name.upper() not in ["DAE11", "DAE21", "DAE31"]:
             continue
 
         # Download the file (handle potential errors)

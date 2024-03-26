@@ -364,6 +364,10 @@ class Airfoil(af.Airfoil):  # type: ignore
             raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
         # Round to 2 decimals
         eta = round(eta, 2)
+        if eta == 0.:
+            return airfoil1
+        elif eta == 1.:
+            return airfoil1
 
         ksi = np.linspace(0, np.pi, n_points//2)
         x = 0.5 * (1 - np.cos(ksi))

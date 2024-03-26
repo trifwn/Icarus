@@ -176,14 +176,14 @@ class Database_2D:
         xfoil_options.mach = 0.0
         xfoil_options.max_aoa = max_angle
         xfoil_options.min_aoa = min_angle
-        xfoil_options.aoa_step = 0.25
+        xfoil_options.aoa_step = 0.5
         # xfoil_options.angles = angles  # For options 2 and 3
 
         # Set Solver Options
-        xfoil_solver_parameters.max_iter = 300
+        xfoil_solver_parameters.max_iter = 400
         xfoil_solver_parameters.Ncrit = 9
-        xfoil_solver_parameters.repanel_n = 80
-        xfoil_solver_parameters.xtr = (0.2, 1.0)
+        xfoil_solver_parameters.repanel_n = 90
+        xfoil_solver_parameters.xtr = (1.0, 1.0)
         xfoil_solver_parameters.print = False
 
         # RUN and SAVE
