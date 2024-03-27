@@ -217,7 +217,7 @@ def avl_geo(
             strip_airfoil.repanel_spl(180, 1e-7)
             strip_airfoil.save_selig(PLANE_DIR)
 
-            if viscous:
+            if viscous and j >= 4:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
                 reynolds = (

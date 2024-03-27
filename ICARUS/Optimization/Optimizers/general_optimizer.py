@@ -135,6 +135,7 @@ class General_SOO_Optimizer:
                 result=intermediate_result,
                 iteration=self._nit,
                 fitness=self.fitness[-1],
+                bounds = self.bounds,
             )
 
     def iteration_callback(self, intermediate_result: OptimizeResult) -> None:
@@ -149,7 +150,8 @@ class General_SOO_Optimizer:
         if self.verbosity > 0:
             print(f"Design Variables: ")
             for i, design_variable in enumerate(self.design_variables):
-                print(f"\t{design_variable}= {intermediate_result.x[i]},")
+                x_denorm = intermediate_result.x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
+                print(f"\t{design_variable}= {x_denorm},")
 
             # Print Objective Function
             print(f"Fun: {intermediate_result.fun}")
@@ -317,6 +319,7 @@ class General_SOO_Optimizer:
             )
         elif solver == "SLSQP":
             opt = minimize(
+                # f_with_penalties if "f_with_penalties" in locals() else self.f,
                 self.f,
                 x0=self.x0_norm,
                 method="SLSQP",

@@ -49,6 +49,7 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         axs[0].legend()
         # x=0 line
         axs[0].axhline(0, color="k", linewidth=0.5)
+        axs[0].axvline(0, color="k", linewidth=0.5)
 
         # Lateral Mode
         x = [ele.real for ele in self.goal_lateral]
@@ -62,6 +63,7 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         axs[1].set_title("Lateral Eigenvalues")
         axs[1].legend()
         # x=0 line
+        axs[1].axvline(0, color="k", linewidth=0.5)
         axs[1].axhline(0, color="k", linewidth=0.5)
 
         # Update the figure

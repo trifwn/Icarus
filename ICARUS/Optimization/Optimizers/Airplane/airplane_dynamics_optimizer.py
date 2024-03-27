@@ -65,4 +65,5 @@ class Airplane_Dynamics_Optimizer(Airplane_Optimizer):
                 result=intermediate_result,
                 fitness=self.fitness[-1],
                 penalty=self.penalties[-1],
+                bounds = self.bounds,
             )

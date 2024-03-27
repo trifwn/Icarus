@@ -38,6 +38,7 @@ class Lifting_Surface:
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
         chord_discretization_function: Callable[[int], float] | None = None,
         tip_airfoil: str | Airfoil | None = None,
+        has_lift: bool = True,
     ) -> None:
         # Constructor for the Lifting Surface Class
         # The lifting surface is defined by providing the information on a number of points on the wing.
@@ -62,6 +63,7 @@ class Lifting_Surface:
             raise ValueError("The number of points must be the same for all parameters")
 
         self.name: str = name
+        self.has_lift: bool = has_lift  
         # Define Coordinate System
         orientation = np.array(orientation, dtype=float)
         origin = np.array(origin, dtype=float)
