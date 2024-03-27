@@ -357,18 +357,19 @@ class Polars:
         cl.index = Index(df["AoA"].astype("float32"))
         cd.index = Index(df["AoA"].astype("float32"))
         aoa = df["AoA"]
-        df["CL/CD"] = df["CL"] / df["CD"]
+        cl_over_cd = df["CL"] / df["CD"]
+        cl_over_cd.index = Index(df["AoA"].astype("float32"))
 
-        idx = df[df["CL/CD"] > 200].index
-        idx2 = df[df["CL/CD"] < -200].index
+        # idx = df[df["CL/CD"] > 200].index
+        # idx2 = df[df["CL/CD"] < -200].index
 
-        df.loc[idx, "CL/CD"] = 0
-        df.loc[idx2, "CL/CD"] = 0
+        # df.loc[idx, "CL/CD"] = 0
+        # df.loc[idx2, "CL/CD"] = 0
 
         if ax is None:
             fig, ax = plt.subplots()
 
-        ax.plot(aoa, df["CL/CD"], label=f"Reynolds {reynolds}")
+        ax.plot(aoa, cl_over_cd, label=f"Reynolds {reynolds}")
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Lift to Drag Ratio")
         ax.set_title(f"Reynolds {reynolds} Cl/Cd Curve")

@@ -48,14 +48,22 @@ class General_SOO_Optimizer:
         self.current_obj: object = deepcopy(obj)
 
         x0 = []
+        x0_norm = []
         for design_variable in self.design_variables.keys():
             x0.append(self.initial_obj.__getattribute__(design_variable))
+            x0_norm.append(
+                (x0[-1] - bounds[design_variable][0]) / (bounds[design_variable][1] - bounds[design_variable][0])
+            )
         self.x0 = np.array(x0)
+        self.x0_norm = np.array(x0_norm)
 
         # Bounds
         self.bounds = []
+        self.bounds_norm = []
         for design_variable in self.design_variables.keys():
             self.bounds.append(bounds[design_variable])
+            self.bounds_norm.append((0,1))
+
 
         # Stop Parameters
         self.maxtime_sec: float = maxtime_sec
@@ -94,12 +102,15 @@ class General_SOO_Optimizer:
             print(f"Calculating OBJ {self._nit}")
 
         # Update Current Object
+        
         for i, design_variable in enumerate(self.design_variables.keys()):
-            self.current_obj.__setattr__(design_variable, x[i])
-            self.design_variables[design_variable] = x[i]
+            x_denorm = x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
+            self.current_obj.__setattr__(design_variable, x_denorm)
+            self.design_variables[design_variable] = x_denorm
 
         # Calculate Fitness
         fitness = self.objective_fn(self.current_obj, **self.design_constants)
+        print(f"Fitness is {fitness}")
         self.fitness.append(fitness)
         return fitness
 
@@ -111,7 +122,8 @@ class General_SOO_Optimizer:
             print(f"\tCalculating J {self._nit}")
         # Update Current Object
         for i, design_variable in enumerate(self.design_variables.keys()):
-            self.current_obj.__setattr__(design_variable, x[i])
+            x_denorm = x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
+            self.current_obj.__setattr__(design_variable, x_denorm)
         return self.jacobian(self.current_obj)
 
     def run_all_callbacks(self, intermediate_result: OptimizeResult) -> None:
@@ -274,43 +286,45 @@ class General_SOO_Optimizer:
             # Check if f_with_penalties is defined
             opt = minimize(
                 f_with_penalties if "f_with_penalties" in locals() else self.f,
-                x0=self.x0,
+                x0=self.x0_norm,
                 method="Nelder-Mead",
                 callback=self.iteration_callback,
                 tol=self.tolerance,
                 options={"maxiter": self.max_iter, "disp": True},
-                bounds=self.bounds,
+                bounds=self.bounds_norm,
             )
         elif solver == "Newton-CG":
             opt = minimize(
                 f_with_penalties if "f_with_penalties" in locals() else self.f,
-                x0=self.x0,
+                x0=self.x0_norm,
                 jac=self.jac if self.jacobian is not None else None,
                 method="Newton-CG",
                 callback=self.iteration_callback,
                 tol=self.tolerance,
                 options={"maxiter": 10, "disp": False},
-                bounds=self.bounds,
+                bounds=self.bounds_norm,
             )
         elif solver == "COBYLA":
             opt = minimize(
                 self.f,
-                x0=self.x0,
+                x0=self.x0_norm,
                 method="COBYLA",
                 callback=self.iteration_callback,
                 tol=self.tolerance,
                 options={"maxiter": self.max_iter, "disp": True},
                 constraints=constraints,
+                bounds = self.bounds_norm
             )
         elif solver == "SLSQP":
             opt = minimize(
                 self.f,
-                x0=self.x0,
+                x0=self.x0_norm,
                 method="SLSQP",
                 callback=self.iteration_callback,
                 tol=self.tolerance,
                 options={"maxiter": self.max_iter, "disp": True},
                 constraints=constraints,
+                bounds = self.bounds_norm
             )
         else:
             raise NotImplementedError

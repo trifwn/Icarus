@@ -122,7 +122,7 @@ def avl_geo(
         f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n"
     )
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
-    f_io.write(f" 0.045                               | CDp  (optional)\n")
+    f_io.write(f" 0.0010                               | CDp  (optional)\n")
 
     for i, surf in enumerate(plane.surfaces):
         f_io.write("\n")

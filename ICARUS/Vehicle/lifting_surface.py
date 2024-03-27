@@ -953,10 +953,16 @@ class Lifting_Surface:
         _, y1_upper, _ = np.matmul(rm1, grid_upper[1:, 0, :].T)
         _, y2_upper, _ = np.matmul(rm1, grid_upper[:-1, 0, :].T)
         chord_dist_upper = self._chord_dist[:-1] + self._chord_dist[1:]
+        # self.S = 2 * np.sum((y1_upper - y2_upper) * chord_dist_upper / 2)
 
-        self.S = 2 * np.sum((y1_upper - y2_upper) * chord_dist_upper / 2)
+        dspan = self._span_dist[1:] - self._span_dist[:-1]
+        ave_chord = (self._chord_dist[1:] + self._chord_dist[:-1])/2
+        self.S = float(np.sum(dspan * ave_chord))
+        if self.is_symmetric_y:
+            self.S = self.S * 2
+
         # Normalize by the maximum x value of the root airfoil
-        self.S = self.S / float(np.max(self.root_airfoil._x_lower))
+        # self.S = self.S / float(np.max(self.root_airfoil._x_lower))
 
         g_up = self.grid_upper.reshape(self.N, self.M, 3)
         g_low = self.grid_lower.reshape(self.N, self.M, 3)

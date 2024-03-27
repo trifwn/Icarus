@@ -139,8 +139,13 @@ class Airfoil(af.Airfoil):  # type: ignore
         # y = np.hstack((y, y[0]))
 
         tck, _ = splprep([x, y], s=smoothing)
+        
+        ksi = np.linspace(0, np.pi,n_points//2)
+        # Apply cosine spacing to ksi
+        tnew_1 = 0.5 * (1 - np.cos(ksi))/2
+        tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) /2 
+        tnew = np.hstack((tnew_1, tnew_2))
     
-        tnew = np.linspace(0,1,n_points)
         spline = splev(tnew, tck)
         lower, upper = self.split_sides(spline[0], spline[1])
         lower, upper = self.close_airfoil(lower, upper)
@@ -781,7 +786,7 @@ class Airfoil(af.Airfoil):  # type: ignore
                         filename = os.path.join(DB2D, dirname, filename)
                         with open(filename, "wb") as f:
                             f.write(response.content)
-                        print(f"Downloaded: {filename} from {download_url}")
+                        print(f"Downloaded: {filename} from {download_url}. Creating Airfoil obj...")
                         return cls.load_from_file(filename)
                     else:
                         raise FileNotFoundError(f"Error downloading {filename}: {response.status_code}")
