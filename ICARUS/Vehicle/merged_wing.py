@@ -121,8 +121,9 @@ class MergedWing(Lifting_Surface):
         self._zoffset_dist = []
 
         for segment in wing_segments:
+            seg_span_dist = segment._span_dist + segment.origin[1]
             self._chord_dist.extend(segment._chord_dist.tolist())
-            self._span_dist.extend(segment._span_dist.tolist())
+            self._span_dist.extend(seg_span_dist.tolist())
             self._xoffset_dist.extend(segment._xoffset_dist.tolist())
             self._zoffset_dist.extend(segment._zoffset_dist.tolist())
 

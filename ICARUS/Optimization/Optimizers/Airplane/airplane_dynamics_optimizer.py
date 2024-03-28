@@ -28,7 +28,9 @@ class Airplane_Dynamics_Optimizer(Airplane_Optimizer):
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
         linear_constraints: list[dict[str, FloatArray | str | float]] = [],
-        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
+        non_linear_constraints: list[
+            dict[str, Callable[..., float] | str | float]
+        ] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,
@@ -65,5 +67,5 @@ class Airplane_Dynamics_Optimizer(Airplane_Optimizer):
                 result=intermediate_result,
                 fitness=self.fitness[-1],
                 penalty=self.penalties[-1],
-                bounds = self.bounds,
+                bounds=self.bounds,
             )

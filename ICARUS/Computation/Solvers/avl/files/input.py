@@ -14,6 +14,7 @@ from ICARUS.Flight_Dynamics.state import State
 from ICARUS.Vehicle.plane import Airplane
 from ICARUS.Vehicle.utils import DiscretizationType
 from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.Vehicle.merged_wing import MergedWing
 from ICARUS.Airfoils.airfoil_polars import PolarNotAccurate, Polars, ReynoldsNotIncluded
 
 
@@ -123,15 +124,30 @@ def avl_geo(
     )
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
     f_io.write(f" 0.0010                               | CDp  (optional)\n")
+    
+    surfaces = []
+    surfaces_ids = []
+    i = 0
+    for surface in plane.surfaces:
+        i+= 1
+        if isinstance(surface, MergedWing):
+            for sub_surface in surface.wing_segments:
+                surfaces.append(sub_surface)
+                surfaces_ids.append(i)
+        else:
+            surfaces.append(surface)
+            surfaces_ids.append(i)
+    for i, surf in enumerate(surfaces):
+        f_io.write(f"#SURFACE {i} name {surf.name}\n")
 
-    for i, surf in enumerate(plane.surfaces):
+    for i, surf in enumerate(surfaces):
         f_io.write("\n")
         f_io.write("\n")
         f_io.write("\n")
 
         # SURFACE DEFINITION
         f_io.write(
-            f"#-------------Surface {i+1} of {len(plane.surfaces)}-----------------\n"
+            f"#-------------Surface {i+1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n"
         )
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}                 | surface name string \n")
@@ -159,10 +175,15 @@ def avl_geo(
         if "inviscid" in solver_options.keys():
             if solver_options["inviscid"]:
                 viscous = False
-        # viscous = False
+        
+        if surf.name == "padding":
+            viscous = False
+            f_io.write("\n")
+            f_io.write("NOWAKE\n")
+            f_io.write("\n")
 
         f_io.write("INDEX                        | (keyword)\n")
-        f_io.write(f"{int(i)}                    | SURFACE INDEX \n")
+        f_io.write(f"{int(surfaces_ids[i])}                    | SURFACE INDEX \n")
 
         if surf.is_symmetric_y:
             f_io.write("YDUPLICATE\n")
@@ -217,7 +238,7 @@ def avl_geo(
             strip_airfoil.repanel_spl(180, 1e-7)
             strip_airfoil.save_selig(PLANE_DIR)
 
-            if viscous and j >= 4:
+            if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
                 reynolds = (
@@ -358,3 +379,46 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     os.chdir(HOMEDIR)
 
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
+
+
+# ayto mpainei sto input
+def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]):
+    # for i, s in enumerate(plane.surfaces)
+    #     if i0
+    #         start += plane.surfaces[i-1].N2
+    #         inds.append(start+np.arange(1,s.N+1))
+    #         print(plane.surfaces[i-1].name)
+    #     else
+    #         inds.append(np.arange(1,s.N+1))
+  
+
+    dfs = []    
+    from ICARUS.Database.utils import angle_to_case
+
+    import pandas as pd
+    for i,angle in enumerate(angles):
+            path = os.path.join(
+                DB.vehicles_db.DATADIR,
+                plane.name,
+                "AVL",
+                f"fs_{angle_to_case(angle)}.txt"
+            )
+            file=open(path)
+            lines = file.readlines()
+            file.close()
+            head = []
+  
+            surfs = []
+
+            for j,l in enumerate(lines):
+                if l.startswith(f"    j     Xle "):
+                    head.append(j)
+                elif l[47].isdigit() or l[46].isdigit() or l[56].isdigit():
+                    surfs.append(j)
+            surfs = np.array(surfs)
+            head = np.array([head[0]])
+            specific_rows = np.concatenate((head,surfs))
+            df = pd.read_csv(path,delim_whitespace=True,skiprows=lambda x: x not in specific_rows)
+            dfs.append(df)
+ 
+    return dfs

@@ -85,6 +85,10 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
 
         if os.path.isfile(f"{li_2[-1]}"):
             li_2.append("o")
+        li_2.append("fs")
+        li_2.append((f"fs_{angle_to_case(angle)}.txt"))
+        if os.path.isfile(f"fs_{angle_to_case(angle)}.txt"):
+                    li_2.append("o")
 
         # li_2.append("y")
         # li.append(f"O")
@@ -104,3 +108,4 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
             )
     logging.debug(f"AVL return code: {res}")
     os.chdir(HOMEDIR)
+

@@ -139,14 +139,16 @@ class OptimizationProgress(OptimizationCallback):
         # Update the objective function value
         line = self.lines["Best Objective Function Value"]
         ax = self.axes["Best Objective Function Value"]
-
+        try:
         # Get the data of the line
-        xdata, ydata = line.get_data()
-        # Append the new data
-        xdata = np.append(xdata, iteration)
-        ydata = np.append(ydata, result.fun)
-        # Set the new data of the line
-        line.set_data(xdata, ydata)
+            xdata, ydata = line.get_data()
+            # Append the new data
+            xdata = np.append(xdata, iteration)
+            ydata = np.append(ydata, result.fun)
+            # Set the new data of the line
+            line.set_data(xdata, ydata)
+        except:
+            pass
 
         # Update the best objective function value
         line = self.lines["Current Objective Function Value"]
