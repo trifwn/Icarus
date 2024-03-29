@@ -1,6 +1,6 @@
-.. .. _ICARUS.Mission:
+.. .. _ICARUS.mission:
 
-.. automodule:: ICARUS.Mission
+.. automodule:: ICARUS.mission
    :noindex:
    :no-members:
    :no-inherited-members:

@@ -9,19 +9,19 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.Foil2Wake.analyses.monitor_progress import (
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.Foil2Wake.analyses.monitor_progress import (
     parallel_monitor,
 )
-from ICARUS.Computation.Solvers.Foil2Wake.analyses.monitor_progress import (
+from ICARUS.computation.solvers.Foil2Wake.analyses.monitor_progress import (
     serial_monitor,
 )
-from ICARUS.Computation.Solvers.Foil2Wake.files_interface import sequential_run
-from ICARUS.Computation.Solvers.Foil2Wake.post_process.polars import make_polars
-from ICARUS.Computation.Solvers.Foil2Wake.utils import separate_angles
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import DB2D
+from ICARUS.computation.solvers.Foil2Wake.files_interface import sequential_run
+from ICARUS.computation.solvers.Foil2Wake.post_process.polars import make_polars
+from ICARUS.computation.solvers.Foil2Wake.utils import separate_angles
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import DB2D
 
 
 def f2w_single_reynolds(

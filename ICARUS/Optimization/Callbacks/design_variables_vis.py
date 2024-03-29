@@ -5,8 +5,8 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from ICARUS.vehicle.plane import Airplane
 
 
 class DesignVariableVisualizer(OptimizationCallback):
@@ -41,7 +41,7 @@ class DesignVariableVisualizer(OptimizationCallback):
         have a title with the design variable name, and a line with the initial
         design variable value.
         """
-        px = 1 / plt.rcParams['figure.dpi']  # pixel in inches
+        px = 1 / plt.rcParams["figure.dpi"]  # pixel in inches
 
         self.fig, axes = plt.subplots(
             len(self.design_variables),
@@ -85,7 +85,7 @@ class DesignVariableVisualizer(OptimizationCallback):
         self.fig.legend(
             handles=legend_handles,
             labels=legend_labels,
-            loc='upper center',
+            loc="upper center",
             bbox_to_anchor=(0.5, 0.97),
             ncol=3,
         )

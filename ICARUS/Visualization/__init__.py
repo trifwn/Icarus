@@ -7,24 +7,22 @@ ICARUS Visualization Module
     :hidden:
     :noindex:
 
-    ICARUS.Visualization.airfoil
-    ICARUS.Visualization.airplane
-    ICARUS.Visualization.mission
+    ICARUS.visualization.airfoil
+    ICARUS.visualization.airplane
 
-.. module:: ICARUS.Visualization
+.. module:: ICARUS.visualization
     :platform: Unix, Windows
     :synopsis: This module contains classes and routines for visualization.
 
-.. currentmodule:: ICARUS.Visualization
+.. currentmodule:: ICARUS.visualization
 
 This module contains classes and routines for visualization. The module is divided in two modules:
 
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Visualization.airfoil - Airfoil visualization
-    ICARUS.Visualization.airplane - Airplane visualization
-    ICARUS.Visualization.mission - Mission visualization
+    ICARUS.visualization.airfoil - Airfoil visualization
+    ICARUS.visualization.airplane - Airplane visualization
 
 """
 from typing import Literal

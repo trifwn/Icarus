@@ -6,17 +6,17 @@ ICARUS Database package
 .. toctree: generated/
     :hidden:
 
-    ICARUS.Database.db
-    ICARUS.Database.Database_2D
-    ICARUS.Database.Database_3D
-    ICARUS.Database.AnalysesDB
-    ICARUS.Database.utils
+    ICARUS.database.db
+    ICARUS.database.Database_2D
+    ICARUS.database.Database_3D
+    ICARUS.database.AnalysesDB
+    ICARUS.database.utils
 
-.. module:: ICARUS.Database
+.. module:: ICARUS.database
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for defining the ICARUS Database.
 
-.. currentmodule:: ICARUS.Database
+.. currentmodule:: ICARUS.database
 
 This package contains class and routines for defining the ICARUS Database.
 The ICARUS Database is used in order to have data and workflow persistency.
@@ -25,11 +25,11 @@ The package is divided in the following files:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Database.db
-    ICARUS.Database.Database_2D
-    ICARUS.Database.Database_3D
-    ICARUS.Database.AnalysesDB
-    ICARUS.Database.utils
+    ICARUS.database.db
+    ICARUS.database.Database_2D
+    ICARUS.database.Database_3D
+    ICARUS.database.AnalysesDB
+    ICARUS.database.utils
 
 """
 import os

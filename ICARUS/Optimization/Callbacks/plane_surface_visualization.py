@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+from typing import Any
 from typing import TYPE_CHECKING
-from matplotlib.axes import Axes
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import OptimizeResult
 
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 
 if TYPE_CHECKING:
-    from ICARUS.Vehicle.plane import Airplane
+    from ICARUS.vehicle.plane import Airplane
 
 
 class PlaneSurfaceVisCallback(OptimizationCallback):
@@ -34,7 +36,7 @@ class PlaneSurfaceVisCallback(OptimizationCallback):
         Create a 3D plot to visualize the plane geometry.
         """
         self.fig = plt.figure(figsize=(10, 10))
-        ax: Axes = self.fig.subplots(1)
+        ax: Axes = self.fig.subplots(1)  # type: ignore
         self.ax = ax
         self.fig.show()
 
@@ -64,9 +66,7 @@ class PlaneSurfaceVisCallback(OptimizationCallback):
 
         # Add a l
         self.up_line = ax.plot(spans, chords, color="r", label="Current Plane Geometry")
-        self.down_line = ax.plot(
-            spans, np.zeros_like(spans), "r"
-        )
+        self.down_line = ax.plot(spans, np.zeros_like(spans), "r")
         self.left_line = ax.plot(
             np.ones_like(spans) * spans[-1],
             np.linspace(0, chords[-1], spans.shape[0]),
@@ -84,7 +84,7 @@ class PlaneSurfaceVisCallback(OptimizationCallback):
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
 
-    def update(self, plane: Airplane, *args, **kwargs) -> None:
+    def update(self, plane: Airplane, *args: Any, **kwargs: Any) -> None:
         """
         Update the visualization.
         """
@@ -119,6 +119,7 @@ class PlaneSurfaceVisCallback(OptimizationCallback):
         self.right_line[0].set_data(xdata, ydata)
 
         self.ax.relim()
+        self.ax.autoscale_view()
         self.ax.set_aspect("equal", "box")
         # Update the figure
         self.fig.canvas.draw()

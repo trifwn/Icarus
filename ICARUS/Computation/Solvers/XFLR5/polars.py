@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.Database_3D import Database_3D
+from ICARUS.database import DB
+from ICARUS.database.Database_2D import Database_2D
+from ICARUS.database.Database_3D import Database_3D
 
 
 def read_polars_2d(XFLRdir: str) -> None:

@@ -6,18 +6,18 @@ ICARUS Mission Modelling Package
 .. toctree: generated/
     :hidden:
 
-    ICARUS.Mission.Segment
-    ICARUS.Mission.Trajectory
-    ICARUS.Mission.mission_analysis
-    ICARUS.Mission.mission_definition
-    ICARUS.Mission.mission_performance
-    ICARUS.Mission.mission_vehicle
+    ICARUS.mission.segment
+    ICARUS.mission.trajectory
+    ICARUS.mission.mission_analysis
+    ICARUS.mission.mission_definition
+    ICARUS.mission.mission_performance
+    ICARUS.mission.mission_vehicle
 
-.. module:: ICARUS.Mission
+.. module:: ICARUS.mission
     :platform: Unix, Windows
     :synopsis: This package contains classes and routines for mission modelling.
 
-.. currentmodule:: ICARUS.Mission
+.. currentmodule:: ICARUS.mission
 
 This package contains classes and routines for mission modelling. The package defines 3 basic components:
 
@@ -34,8 +34,8 @@ Additionally, the package contains the following modules:
 .. autosummary::
     :toctree: generated/
 
-    Segment
-    Trajectory
+    segment
+    trajectory
 
 
 
@@ -44,7 +44,14 @@ from . import mission_analysis
 from . import mission_definition
 from . import mission_performance
 from . import mission_vehicle
-from . import Segment
-from . import Trajectory
+from . import segment
+from . import trajectory
 
-__all__ = ["mission_analysis", "mission_definition", "Segment", "Trajectory", "mission_performance", "mission_vehicle"]
+__all__ = [
+    "mission_analysis",
+    "mission_definition",
+    "segment",
+    "trajectory",
+    "mission_performance",
+    "mission_vehicle",
+]

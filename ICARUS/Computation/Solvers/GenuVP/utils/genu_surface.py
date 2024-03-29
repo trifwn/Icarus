@@ -2,15 +2,15 @@
 Genu Surface Class
 A class to define lifting surfaces for the GenuVP solvers.
 """
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.surface import WingSurface
 
 
 class GenuSurface:
     surf_names: dict[str, int] = {}
     airfoil_names: dict[str, int] = {}
 
-    def __init__(self, surf: Lifting_Surface, idx: int) -> None:
+    def __init__(self, surf: WingSurface, idx: int) -> None:
         """
         Converts a Wing Object to an object that can be used
         for making the input files of GNVP3 and GNVP7

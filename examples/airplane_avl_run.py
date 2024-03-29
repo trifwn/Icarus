@@ -2,17 +2,21 @@ import os
 
 import numpy as np
 
-from examples.Vehicles.Planes.hermes import hermes
-from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import avl_dynamic_analysis_fd
-from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import avl_dynamic_analysis_implicit
-from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import process_avl_fd_res
-from ICARUS.Computation.Solvers.AVL.analyses.pertrubations import process_avl_impl_res
-from ICARUS.Computation.Solvers.AVL.analyses.polars import avl_angle_run
-from ICARUS.Computation.Solvers.AVL.analyses.polars import process_avl_angles_run
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_3d
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Flight_Dynamics.state import State
+from examples.vehicles.Planes.hermes import hermes
+from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
+    avl_dynamic_analysis_fd,
+)
+from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
+    avl_dynamic_analysis_implicit,
+)
+from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd_res
+from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
+from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+from ICARUS.computation.solvers.AVL.analyses.polars import process_avl_angles_run
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_3d
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.flight_dynamics.state import State
 
 plane = hermes("hermes")
 
@@ -26,12 +30,12 @@ angles = np.linspace(-10, 10, 11)
 avl_angle_run(plane, state, solver2D, angles)
 pol_df = process_avl_angles_run(plane, state, angles)
 
-from ICARUS.Database import EXTERNAL_DB
+from ICARUS.database import EXTERNAL_DB
 
 XFLR5PLANEDIR: str = os.path.join(EXTERNAL_DB, f"{plane.name}.txt")
 read_polars_3d(XFLR5PLANEDIR, plane.name)
 
-# from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+# from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 # planenames = [plane.name]
 # plot_airplane_polars(
 #     planenames,
@@ -39,7 +43,7 @@ read_polars_3d(XFLR5PLANEDIR, plane.name)
 #     plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
 #     size=(6, 7),
 # )
-from ICARUS.Computation.Solvers.XFLR5.dynamic_analysis import xflr_eigs
+from ICARUS.computation.solvers.XFLR5.dynamic_analysis import xflr_eigs
 
 eig_file = os.path.join(EXTERNAL_DB, "hermes_eig.txt")
 xflr_long, xflr_late = xflr_eigs(eig_file)

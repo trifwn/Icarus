@@ -1,13 +1,13 @@
 from typing import Any
 
-from ICARUS.Aerodynamics.Potential.lifting_surfaces import run_lstp_angles
-from ICARUS.Computation.Analyses.airplane_polar_analysis import (
+from ICARUS.aerodynamics.potential.lifting_surfaces import run_lstp_angles
+from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.solver_parameters import IntOrNoneParameter
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
-from ICARUS.Computation.Solvers.solver_parameters import StrParameter
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.solver_parameters import IntOrNoneParameter
+from ICARUS.computation.solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers.solver_parameters import StrParameter
 
 
 class LSPT_PolarAnalysis(BaseAirplanePolarAnalysis):
@@ -47,8 +47,8 @@ class LSPT(Solver):
 # # EXAMPLE USAGE
 if __name__ == "__main__":
     pass
-    # from ICARUS.Database.utils import angle_to_case
-    # from ICARUS.Database import DB
+    # from ICARUS.database.utils import angle_to_case
+    # from ICARUS.database import DB
     # import os
 
     # HOMEDIR = os.getcwd()

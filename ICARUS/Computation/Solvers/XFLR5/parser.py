@@ -4,13 +4,13 @@ import re
 import numpy as np
 from xmltodict import parse
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def parse_xfl_project(filename: str) -> Airplane:
@@ -60,7 +60,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     else:
         wings_xflr = [plane["wing"]]
 
-    lifting_surfaces: list[Lifting_Surface] = []
+    lifting_surfaces: list[WingSurface] = []
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     for wing in wings_xflr:
         wing_position: FloatArray = np.array(
@@ -177,7 +177,7 @@ def parse_xfl_project(filename: str) -> Airplane:
 
                 span = 2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
                 pos = origin + wing_position + section_position  # - np.array((chord_prev / 4, 0, 0))
-                surf = Wing_Segment(
+                surf = WingSegment(
                     name=f"{name}_{i}",
                     root_airfoil=airfoil_prev,  # Should interpolate. RN there is only taking the prev airfoil
                     origin=pos,

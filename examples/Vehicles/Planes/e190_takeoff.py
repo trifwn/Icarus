@@ -1,14 +1,14 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def e190_takeoff_generator(
@@ -28,7 +28,7 @@ def e190_takeoff_generator(
         Airplane: hermes Airplane object
     """
     read_polars_2d(EXTERNAL_DB)
-    from ICARUS.Airfoils.airfoil import Airfoil
+    from ICARUS.airfoils.airfoil import Airfoil
 
     naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]
     naca64418_fl: Airfoil = naca64418.flap_airfoil(
@@ -49,7 +49,7 @@ def e190_takeoff_generator(
         dtype=float,
     )
 
-    wing_1 = Wing_Segment(
+    wing_1 = WingSegment(
         name="wing_1",
         root_airfoil=naca64418_fl,
         origin=origin + wing_position,
@@ -74,7 +74,7 @@ def e190_takeoff_generator(
         dtype=float,
     )
 
-    wing_2 = Wing_Segment(
+    wing_2 = WingSegment(
         name="wing_2",
         root_airfoil=naca64418_fl,
         origin=origin + wing_2_pos,
@@ -101,7 +101,7 @@ def e190_takeoff_generator(
         dtype=float,
     )
 
-    wing_3 = Wing_Segment(
+    wing_3 = WingSegment(
         name="wing_3",
         root_airfoil=naca64418,
         origin=origin + wing_3_pos,
@@ -119,13 +119,13 @@ def e190_takeoff_generator(
     )
     # rudder.plotWing()
 
-    lifting_surfaces: list[Lifting_Surface] = [wing_1, wing_2, wing_3]
+    lifting_surfaces: list[WingSurface] = [wing_1, wing_2, wing_3]
     airplane: Airplane = Airplane(name, lifting_surfaces)
 
     # Define the surface area of the main wing
     airplane.S = wing_1.S + wing_2.S + wing_3.S
 
-    # from ICARUS.Database import DB3D
+    # from ICARUS.database import DB3D
     # airplane.accessDB(HOMEDIR, DB3D)
     # airplane.visAirplane()
 

@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 
 from ICARUS import platform_os
-from ICARUS.Database import Foil_Section_exe
+from ICARUS.database import Foil_Section_exe
 
 
 def io_file(airfile: str, name: str) -> None:

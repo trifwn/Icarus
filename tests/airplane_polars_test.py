@@ -4,9 +4,9 @@ import numpy as np
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_3d
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_3d
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
 
 
 def airplane_polars(plot: bool = False) -> None:
@@ -27,7 +27,7 @@ def airplane_polars(plot: bool = False) -> None:
     planenames.append("XFLR_bmark")
     if plot:
         print(DB.vehicles_db.polars["bmark"].keys())
-        from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+        from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
         plot_airplane_polars(
             airplane_names=planenames,

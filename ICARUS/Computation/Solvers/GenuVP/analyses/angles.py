@@ -7,24 +7,24 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Computation.Solvers.GenuVP.analyses.monitor_progress import parallel_monitor
-from ICARUS.Computation.Solvers.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.Computation.Solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
-from ICARUS.Computation.Solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import log_forces
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import define_movements
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import DB3D
-from ICARUS.Database.utils import angle_to_case
-from ICARUS.Environment.definition import Environment
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import parallel_monitor
+from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_monitor
+from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
+from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
+from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import DB3D
+from ICARUS.database.utils import angle_to_case
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 
 
 def gnvp_angle_case(
@@ -132,7 +132,7 @@ def run_gnvp_angles(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
+        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -226,7 +226,7 @@ def run_gnvp_angles_parallel(
     bodies_dict: list[GenuSurface] = []
 
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Lifting_Surface] = plane.get_seperate_surfaces()
+        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
     for i, surface in enumerate(surfaces):

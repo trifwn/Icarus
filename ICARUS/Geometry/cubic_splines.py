@@ -3,7 +3,7 @@ from typing import Callable
 import numpy as np
 from scipy.interpolate import CubicSpline
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 def CubicSpline_factory(

@@ -1,14 +1,14 @@
 import numpy as np
 
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import DiscretizationType
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.utils import DiscretizationType
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
@@ -25,7 +25,7 @@ def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
         dtype=float,
     )
 
-    box_wing = Wing_Segment(
+    box_wing = WingSegment(
         name=name,
         root_airfoil=airfoils[f"NACA{naca}"],
         origin=origin + wing_position,

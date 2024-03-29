@@ -1,13 +1,13 @@
-from ICARUS.Computation.Analyses.airfoil_polar_analysis import (
+from ICARUS.computation.analyses.airfoil_polar_analysis import (
     BaseAirfoil_MultiReyn_PolarAnalysis,
 )
-from ICARUS.Computation.Solvers.OpenFoam.analyses.angles import angles_parallel
-from ICARUS.Computation.Solvers.OpenFoam.analyses.angles import angles_serial
-from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.solver_parameters import BoolParameter
-from ICARUS.Computation.Solvers.solver_parameters import IntParameter
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers.OpenFoam.analyses.angles import angles_parallel
+from ICARUS.computation.solvers.OpenFoam.analyses.angles import angles_serial
+from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.solver_parameters import BoolParameter
+from ICARUS.computation.solvers.solver_parameters import IntParameter
+from ICARUS.computation.solvers.solver_parameters import Parameter
 
 
 class OpenFoam_MultiReyn_PolarAnanlysis(BaseAirfoil_MultiReyn_PolarAnalysis):

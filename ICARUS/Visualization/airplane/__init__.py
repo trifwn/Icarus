@@ -7,17 +7,17 @@ ICARUS Airplane Visualization and Graphics Module
     :hidden:
     :noindex:
 
-    ICARUS.Visualization.gnvp_convergence
-    ICARUS.Visualization.db_polars
-    ICARUS.Visualization.gnvp_sensitivity
-    ICARUS.Visualization.gnvp_strips
-    ICARUS.Visualization.gnvp_wake
+    ICARUS.visualization.airplane.gnvp_convergence
+    ICARUS.visualization.airplane.db_polars
+    ICARUS.visualization.airplane.gnvp_sensitivity
+    ICARUS.visualization.airplane.gnvp_strips
+    ICARUS.visualization.airplane.gnvp_wake
 
-.. module:: ICARUS.Visualization.airplane
+.. module:: ICARUS.visualization.airplane
     :platform: Unix, Windows
     :synopsis: This module contains classes and routines for visualization of airplane data.
 
-.. currentmodule:: ICARUS.Visualization.airfoil
+.. currentmodule:: ICARUS.visualization.airplane
 
 This module contains classes and routines for visualization of airplane data.
 
@@ -29,7 +29,7 @@ To see the results stored in the database, the following routines are available:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Visualization.airplane.db_polars - Plots the polars from the database
+    ICARUS.visualization.airplane.db_polars - Plots the polars from the database
 
 GNVP Visualization
 -------------------
@@ -39,10 +39,10 @@ There are also routines for the visualization of the results of the GNVP results
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Visualization.airplane.gnvp_convergence - Plots the convergence of the GNVP algorithm
-    ICARUS.Visualization.airplane.gnvp_sensitivity - Plots the sensitivity of the GNVP algorithm
-    ICARUS.Visualization.airplane.gnvp_strips - Plots the strip analysis of the GNVP algorithm
-    ICARUS.Visualization.airplane.gnvp_wake - Plots the wake analysis of the GNVP algorithm
+    ICARUS.visualization.airplane.gnvp_convergence - Plots the convergence of the GNVP algorithm
+    ICARUS.visualization.airplane.gnvp_sensitivity - Plots the sensitivity of the GNVP algorithm
+    ICARUS.visualization.airplane.gnvp_strips - Plots the strip analysis of the GNVP algorithm
+    ICARUS.visualization.airplane.gnvp_wake - Plots the wake analysis of the GNVP algorithm
 
 
 """
@@ -52,7 +52,13 @@ from . import gnvp_sensitivity
 from . import gnvp_strips
 from . import gnvp_wake
 
-__all__ = ["db_polars", "gnvp_convergence", "gnvp_sensitivity", "gnvp_strips", "plot_gnvp_wake"]
+__all__ = [
+    "db_polars",
+    "gnvp_convergence",
+    "gnvp_sensitivity",
+    "gnvp_strips",
+    "plot_gnvp_wake",
+]
 
 # Get all the visualization functions
 from typing import Any, Callable

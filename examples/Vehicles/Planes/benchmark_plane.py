@@ -1,15 +1,15 @@
 import numpy as np
 
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def get_bmark_plane(name: str) -> tuple[Airplane, State]:
@@ -26,7 +26,7 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         dtype=float,
     )
 
-    Simplewing = Wing_Segment(
+    Simplewing = WingSegment(
         name=name,
         root_airfoil=DB.get_airfoil("NACA0015"),
         origin=origin + wing_position,

@@ -1,6 +1,6 @@
 from typing import Any
 
-from ..Trajectory.mission_path import Path
+from ..trajectory.mission_path import Path
 
 
 class MissionSegment:

@@ -1,15 +1,22 @@
 # ICARUS
 
-Current BUILD IS UNSTABLE due to Major Refactoring for v1.0.0.
+Current BUILD IS the first stable ICARUS version.
 
 ## TASKS
 
-- Add jax backend
-- Create Parametric Analysis Module (Computation of Sensitivity Derivatives for all solvers)
-- Define Constrained Optimization Workflow
+- Finish Documentation
+- Write Examples
+- Add jax backend to handle all computations and provide derivatives
 - Add Lower Order Models and Analytical Formulas for Stability
 - Create Results Class to handle Analysis output. Specify some results such as AirfoilPolars, AirplanePolars, AirplaneStates etc..
 - Create Workflow Class to combine Analyses Together
+- Add doctests
+- Add the control parameters
+- Make Mission Class and Module to cover and model a flight envelope
+- Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
+- Add GUI
+- Have the grid/meshing run on julia
+- Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
 
 ---
 
@@ -21,7 +28,7 @@ Code and Tools to analyze the performance of low speed aircraft using different 
 
 ## How to run
 
-More information on how to run and compile dependencies will be availabe in the future. This project depends on the following 3d Party Software:
+More information on how to run and compile dependencies will be availabe in the future. This project depends on the following 3d Party Software for aerodynamic calculations:
 
 - OpenFoam (by OpenFoam.org)
 - Foil2Wake (National Technical University of Athens Laboratory of Aerodynamics)
@@ -42,7 +49,7 @@ This library is used to handle and generate airfoils. It is an extension of the 
 
 - Computation
 
-Abstraction Layer for the solvers and running of analyses.
+Abstraction Layer for the solvers and running of analyses. Handles the translation of internal objects to solver specific formats. It contains the solvers and analyses
 
 - Conceptual
 
@@ -74,7 +81,7 @@ Defines Optimizers for Different Solvers, Integrators and other functions that a
 
 - Vehicle
 
-Defines Airplane and other Vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
+Defines Airplane and other vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
 
 
 - Visualization
@@ -110,16 +117,3 @@ If the installation fails change the comments on  `pyproject.toml` at the root o
 The end goal of the project is to come packaged with all 3d party software. Right now it is difficult fore to automate the bulding process or wrap the libraries.
 
 ---
-
-## Tasks To-Do
-
-- Add __init__ includes to all modules
-- Add __init__ rst description to all modules
-- Add doctests
-- Add the control parameters
-- Make Mission Class and Module the whole flight envelope
-- Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
-- Integrate AVL
-- Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
-- Have the grid/meshing run on julia
-- Add GUI

@@ -3,8 +3,8 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.Database import DB3D
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.database import DB3D
+from ICARUS.vehicle.plane import Airplane
 
 
 def get_strip_data(

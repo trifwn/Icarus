@@ -1,12 +1,12 @@
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Mission.Trajectory.trajectory import Trajectory
-from ICARUS.Propulsion.engine import Engine
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.mission.trajectory.trajectory import Trajectory
+from ICARUS.propulsion.engine import Engine
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 
 
 class Mission_Vehicle:
@@ -35,16 +35,16 @@ class Mission_Vehicle:
         cm = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential Cm"]))
         return cl, cd, cm
 
-    def get_elevator_lift_over_cl(
-        self,
-        velocity: float,
-        aoa: float,
-    ) -> float:
-        aoa = np.rad2deg(aoa)
-        density = 1.225
-        lift_over_cl = np.pi * density * velocity**2 * self.elevator.S
+    # def get_elevator_lift_over_cl(
+    #     self,
+    #     velocity: float,
+    #     aoa: float,
+    # ) -> float:
+    #     aoa = np.rad2deg(aoa)
+    #     density = 1.225
+    #     lift_over_cl = np.pi * density * velocity**2 * self.elevator.S
 
-        return lift_over_cl
+    #     return lift_over_cl
 
     def get_lift_drag_torque(
         self,
@@ -66,14 +66,7 @@ class Mission_Vehicle:
         density = 1.225
         lift = cl * 0.5 * density * velocity**2 * self.airplane.S
         drag = cd * 0.5 * density * velocity**2 * self.airplane.S
-        torque = (
-            cm
-            * 0.5
-            * density
-            * velocity**2
-            * self.airplane.S
-            * self.airplane.mean_aerodynamic_chord
-        )
+        torque = cm * 0.5 * density * velocity**2 * self.airplane.S * self.airplane.mean_aerodynamic_chord
 
         return lift, drag, torque
 
@@ -85,9 +78,7 @@ class Mission_Vehicle:
         DX: FloatArray = V
         return DX
 
-    def dvdt(
-        self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0
-    ) -> FloatArray:
+    def dvdt(self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0) -> FloatArray:
         dh_dx: float = float(trajectory.first_derivative_x_fd(X[0]))
         dh2_dx2: float = float(trajectory.second_derivative_x_fd(X[0]))
         dh_3_dx3: float = float(trajectory.third_derivative_x_fd(X[0]))
@@ -158,16 +149,16 @@ class Mission_Vehicle:
         # Check if thrust can  be provided in the motor dataset. It should be between the minimum and
         # maximum thrust. If not, the motor is not able to provide the thrust required to maintain
         # course.
-        avail_thrust = self.motor.thrust(velocity=float(np.linalg.norm(V)))
-        if thrust < avail_thrust[0]:
-            if verbosity:
-                print(f"\tThrust too low {thrust}, {avail_thrust[1]}")
-            # thrust = avail_thrust[0]
+        # avail_thrust = self.motor.thrust(velocity=float(np.linalg.norm(V)))
+        # if thrust < avail_thrust[0]:
+        #     if verbosity:
+        #         print(f"\tThrust too low {thrust}, {avail_thrust[1]}")
+        #     # thrust = avail_thrust[0]
 
-        if thrust > avail_thrust[1]:
-            if verbosity:
-                print(f"\tThrust too high {thrust},{avail_thrust[1]}")
-            # thrust = avail_thrust[1]
+        # if thrust > avail_thrust[1]:
+        #     if verbosity:
+        #         print(f"\tThrust too high {thrust},{avail_thrust[1]}")
+        #     # thrust = avail_thrust[1]
 
         thrust_x = thrust * np.cos(alpha)
         thrust_y = thrust * np.sin(alpha)
@@ -206,9 +197,7 @@ class Mission_Vehicle:
         if verbosity > 1:
             print(f"\talpha: {np.rad2deg(alpha)}")
             print(f"\tThrust_x = {thrust_x}\n\tThrust_y = {thrust_y}")
-            print(
-                f"\tThrust: {thrust}\n\tLift = {lift}\n\tDrag = {drag}\n\tWeight = {m * G}\n\n"
-            )
+            print(f"\tThrust: {thrust}\n\tLift = {lift}\n\tDrag = {drag}\n\tWeight = {m * G}\n\n")
 
         F: FloatArray = np.array([Fx, Fy])
         return F  # , thrust, elevator_angle

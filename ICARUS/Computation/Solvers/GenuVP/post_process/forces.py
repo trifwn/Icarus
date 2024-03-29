@@ -7,8 +7,8 @@ import pandas as pd
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Flight_Dynamics.state import State
+from ICARUS.core.types import FloatArray
+from ICARUS.flight_dynamics.state import State
 
 
 def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
@@ -120,7 +120,7 @@ def rotate_gnvp_forces(
     data = DataFrame()
     AoA: float | Series[float] | FloatArray = alpha_deg * np.pi / 180
 
-    for name in ['Type', "Epsilon"]:
+    for name in ["Type", "Epsilon"]:
         if name in rawforces.columns:
             data[name] = rawforces[name]
 

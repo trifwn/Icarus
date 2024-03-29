@@ -1,11 +1,11 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 ############################## AIRPLANE GENERATOR ########################################
 # The code below is a demo function used to generate a conventional airplane.
@@ -49,7 +49,7 @@ def airplane_generator(name: str, plotting: bool = False) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Wing_Segment(
+    main_wing = WingSegment(
         name="wing",  # Name of the wing
         root_airfoil="4415",  # Airfoil name
         origin=origin + wing_position,  # Position of the wing in the coordinate system
@@ -83,7 +83,7 @@ def airplane_generator(name: str, plotting: bool = False) -> Airplane:
         dtype=float,
     )
 
-    elevator = Wing_Segment(
+    elevator = WingSegment(
         name="elevator",  # Name of the wing
         root_airfoil="0008",  # Airfoil name
         origin=origin + elevator_pos,  # Position of the wing in the coordinate system
@@ -118,7 +118,7 @@ def airplane_generator(name: str, plotting: bool = False) -> Airplane:
     )
 
     # Rudder Definition
-    rudder = Wing_Segment(
+    rudder = WingSegment(
         name="rudder",
         root_airfoil="0008",
         origin=origin + rudder_position,
@@ -146,7 +146,7 @@ def airplane_generator(name: str, plotting: bool = False) -> Airplane:
 
     ########################## POINT MASSES ########################################
 
-    lifting_surfaces: list[Lifting_Surface] = [main_wing, elevator, rudder]
+    lifting_surfaces: list[WingSurface] = [main_wing, elevator, rudder]
     airplane: Airplane = Airplane(name, lifting_surfaces)
     airplane.add_point_masses(point_masses)
 

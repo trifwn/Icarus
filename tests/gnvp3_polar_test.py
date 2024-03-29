@@ -2,23 +2,23 @@ import time
 
 import numpy as np
 
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def gnvp3_run(run_parallel: bool = True) -> None:
     print("Testing GNVP3 Running...")
 
     # Get Plane, DB
-    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
+    from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
 
     gnvp3: Solver = GenuVP3()
 

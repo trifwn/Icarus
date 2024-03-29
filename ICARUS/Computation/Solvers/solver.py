@@ -3,9 +3,9 @@ from typing import Any
 from pandas import DataFrame
 from tabulate import tabulate
 
-from ICARUS.Computation.Analyses.analysis import Analysis
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
-from ICARUS.Core.struct import Struct
+from ICARUS.computation.analyses.analysis import Analysis
+from ICARUS.computation.solvers.solver_parameters import Parameter
+from ICARUS.core.struct import Struct
 
 
 class Solver:
@@ -148,7 +148,11 @@ class Solver:
             if key in self.solver_parameters:
                 self.solver_parameters[key].value = parameters[key]
 
-    def define_analysis(self, options: Struct | dict[str, Any], solver_parameters: Struct | dict[str, Any]) -> None:
+    def define_analysis(
+        self,
+        options: Struct | dict[str, Any],
+        solver_parameters: Struct | dict[str, Any],
+    ) -> None:
         """
         Set the options of the selected analysis.
 

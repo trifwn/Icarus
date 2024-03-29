@@ -5,8 +5,8 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
 
 
 class Strip:
@@ -23,13 +23,11 @@ class Strip:
         start_chord: float,
         start_twist: float,
         start_airfoil: Airfoil,
-
         end_leading_edge: FloatArray | list[float],
         end_chord: float,
         end_twist: float,
         end_airfoil: Airfoil | None = None,
-
-        eta: float = 0.,
+        eta: float = 0.0,
     ) -> None:
         """
         Initialize the Strip class.
@@ -59,7 +57,10 @@ class Strip:
         # Morph the airfoils to the new shape
         if self.airfoil_start is not self.airfoil_end:
             self.mean_airfoil = Airfoil.morph_new_from_two_foils(
-                self.airfoil_start, self.airfoil_end, eta, self.airfoil_start.n_points
+                self.airfoil_start,
+                self.airfoil_end,
+                eta,
+                self.airfoil_start.n_points,
             )
         else:
             self.mean_airfoil = self.airfoil_start
@@ -119,13 +120,9 @@ class Strip:
             FloatArray: Array of points defining the root.
         """
         strip: list[FloatArray] = [
-            self.x0
-            + self.chords[0]
-            * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
+            self.x0 + self.chords[0] * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
             self.y0 + np.repeat(0, self.airfoil_start.n_points),
-            self.z0
-            + self.chords[0]
-            * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
+            self.z0 + self.chords[0] * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
         ]
         return np.array(strip)
 
@@ -137,13 +134,9 @@ class Strip:
             FloatArray: Array of points defining the tip.
         """
         strip: list[FloatArray] = [
-            self.x1
-            + self.chords[1]
-            * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
+            self.x1 + self.chords[1] * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
             self.y1 + np.repeat(0, self.airfoil_start.n_points),
-            self.z1
-            + self.chords[1]
-            * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
+            self.z1 + self.chords[1] * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
         ]
         return np.array(strip)
 
@@ -185,7 +178,10 @@ class Strip:
         heta: float = (idx + 1) / (n_points_span + 1)
 
         airfoil: Airfoil = Airfoil.morph_new_from_two_foils(
-            self.airfoil_start, self.airfoil_end, heta, self.airfoil_start.n_points
+            self.airfoil_start,
+            self.airfoil_end,
+            heta,
+            self.airfoil_start.n_points,
         )
 
         camber_line: FloatArray = np.array(
@@ -216,7 +212,7 @@ class Strip:
         )
 
         return suction_side, camber_line, pressure_side
-    
+
     def __str__(self) -> str:
         return f"Strip: with airfoil {self.airfoil_start.name}"
 

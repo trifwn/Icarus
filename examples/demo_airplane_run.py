@@ -9,13 +9,13 @@ import numpy as np
 from demo_aeroplano import airplane_generator
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 ########################################################################################
 ########################################################################################
@@ -71,8 +71,8 @@ def main() -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
 
-    from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-    from ICARUS.Database import EXTERNAL_DB
+    from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+    from ICARUS.database import EXTERNAL_DB
 
     read_polars_2d(EXTERNAL_DB)
 

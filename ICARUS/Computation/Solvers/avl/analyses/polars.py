@@ -4,16 +4,16 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.AVL.files.input import make_input_files
-from ICARUS.Computation.Solvers.AVL.files.polars import case_def
-from ICARUS.Computation.Solvers.AVL.files.polars import case_run
-from ICARUS.Computation.Solvers.AVL.files.polars import case_setup
-from ICARUS.Computation.Solvers.AVL.post_process.post import collect_avl_polar_forces
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import DB3D
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.AVL.files.input import make_input_files
+from ICARUS.computation.solvers.AVL.files.polars import case_def
+from ICARUS.computation.solvers.AVL.files.polars import case_run
+from ICARUS.computation.solvers.AVL.files.polars import case_setup
+from ICARUS.computation.solvers.AVL.post_process.post import collect_avl_polar_forces
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import DB3D
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def avl_angle_run(

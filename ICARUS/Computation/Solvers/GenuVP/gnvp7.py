@@ -1,28 +1,28 @@
-from ICARUS.Computation.Analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
-from ICARUS.Computation.Analyses.airplane_polar_analysis import (
+from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
+from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.Computation.Analyses.input import FloatInput
-from ICARUS.Computation.Analyses.input import IntInput
-from ICARUS.Computation.Analyses.rerun_analysis import BaseRerunAnalysis
-from ICARUS.Computation.Solvers.GenuVP.analyses.angles import process_gnvp_angles_run_7
-from ICARUS.Computation.Solvers.GenuVP.analyses.angles import run_gnvp7_angles
-from ICARUS.Computation.Solvers.GenuVP.analyses.angles import run_gnvp7_angles_parallel
-from ICARUS.Computation.Solvers.GenuVP.analyses.pertrubations import (
+from ICARUS.computation.analyses.input import FloatInput
+from ICARUS.computation.analyses.input import IntInput
+from ICARUS.computation.analyses.rerun_analysis import BaseRerunAnalysis
+from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run_7
+from ICARUS.computation.solvers.GenuVP.analyses.angles import run_gnvp7_angles
+from ICARUS.computation.solvers.GenuVP.analyses.angles import run_gnvp7_angles_parallel
+from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
     proccess_pertrubation_res_7,
 )
-from ICARUS.Computation.Solvers.GenuVP.analyses.pertrubations import (
+from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
     run_gnvp7_pertrubation_parallel,
 )
-from ICARUS.Computation.Solvers.GenuVP.analyses.pertrubations import (
+from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
     run_gnvp7_pertrubation_serial,
 )
-from ICARUS.Computation.Solvers.GenuVP.files.gnvp7_interface import gnvp7_execute
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.solver_parameters import BoolParameter
-from ICARUS.Computation.Solvers.solver_parameters import FloatParameter
-from ICARUS.Computation.Solvers.solver_parameters import IntParameter
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import gnvp7_execute
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.solver_parameters import BoolParameter
+from ICARUS.computation.solvers.solver_parameters import FloatParameter
+from ICARUS.computation.solvers.solver_parameters import IntParameter
+from ICARUS.computation.solvers.solver_parameters import Parameter
 
 
 timestep_option = FloatInput(

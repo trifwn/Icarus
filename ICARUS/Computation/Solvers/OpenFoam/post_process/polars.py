@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.OpenFoam.post_process.get_aero_coefficients import (
+from ICARUS.computation.solvers.OpenFoam.post_process.get_aero_coefficients import (
     get_coefficients,
 )
 

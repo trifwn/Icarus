@@ -1,16 +1,16 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.merged_wing import MergedWing
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def e190_cruise(name: str) -> Airplane:
@@ -27,7 +27,7 @@ def e190_cruise(name: str) -> Airplane:
     read_polars_2d(EXTERNAL_DB)
     airfoils: Struct = DB.foils_db.airfoils
 
-    from ICARUS.Airfoils.airfoil import Airfoil
+    from ICARUS.airfoils.airfoil import Airfoil
 
     naca64418: Airfoil = DB.get_airfoil("NACA64418")
 
@@ -42,7 +42,7 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_1 = Wing_Segment(
+    wing_1 = WingSegment(
         name="wing_1",
         root_airfoil=naca64418,
         origin=origin + wing_position,
@@ -69,7 +69,7 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_2 = Wing_Segment(
+    wing_2 = WingSegment(
         name="wing_2",
         root_airfoil=naca64418,
         origin=origin + wing_2_pos,
@@ -96,7 +96,7 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_3 = Wing_Segment(
+    wing_3 = WingSegment(
         name="wing_3",
         root_airfoil=naca64418,
         origin=origin + wing_3_pos,

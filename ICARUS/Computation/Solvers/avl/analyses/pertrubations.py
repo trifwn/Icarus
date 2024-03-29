@@ -3,15 +3,15 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.AVL.analyses.polars import avl_angle_run
-from ICARUS.Computation.Solvers.AVL.analyses.polars import process_avl_angles_run
-from ICARUS.Computation.Solvers.AVL.files.dynamics import finite_difs
-from ICARUS.Computation.Solvers.AVL.files.dynamics import implicit_eigs
-from ICARUS.Computation.Solvers.AVL.post_process.post import finite_difs_post
-from ICARUS.Computation.Solvers.AVL.post_process.post import implicit_dynamics_post
-from ICARUS.Database import DB
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+from ICARUS.computation.solvers.AVL.analyses.polars import process_avl_angles_run
+from ICARUS.computation.solvers.AVL.files.dynamics import finite_difs
+from ICARUS.computation.solvers.AVL.files.dynamics import implicit_eigs
+from ICARUS.computation.solvers.AVL.post_process.post import finite_difs_post
+from ICARUS.computation.solvers.AVL.post_process.post import implicit_dynamics_post
+from ICARUS.database import DB
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def avl_dynamic_analysis_implicit(
@@ -32,7 +32,7 @@ def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D: str, solver
         # angles = np.linspace(aoa_min, aoa_max, num_aoa)
         angles = np.linspace(-10, 10, 21)
 
-        avl_angle_run(plane = plane, state= state, solver2D=solver2D, angles=angles)
+        avl_angle_run(plane=plane, state=state, solver2D=solver2D, angles=angles)
         polar_df = process_avl_angles_run(plane, state, angles)
         state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 

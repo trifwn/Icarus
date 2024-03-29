@@ -4,10 +4,10 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_3
-from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_7
-from ICARUS.Database.utils import angle_to_case
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_3
+from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
+from ICARUS.database.utils import angle_to_case
+from ICARUS.vehicle.plane import Airplane
 
 
 def plot_gnvp3_wake(plane: Airplane, case: str, scale: str = "True", figsize: tuple[int, int] = (16, 7)) -> None:
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     import os
 
     folder_name: str = os.path.basename(os.getcwd())
-    from ICARUS.Database import DB
+    from ICARUS.database import DB
 
     print(DB.vehicles_db.get_planenames())
     if folder_name in DB.vehicles_db.get_planenames():

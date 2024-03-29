@@ -2,7 +2,7 @@ import os
 
 from . import ANALYSESDB
 from ICARUS import APPHOME
-from ICARUS.Core.struct import Struct
+from ICARUS.core.struct import Struct
 
 
 class AnalysesDB:

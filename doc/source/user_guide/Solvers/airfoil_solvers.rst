@@ -1,4 +1,4 @@
-Airfoil Solvers
+Airfoil solvers
 =======================================
 
 The airfoil solvers are a set of tools for solving the flow around airfoils. The solvers currently available are:
@@ -7,24 +7,24 @@ The airfoil solvers are a set of tools for solving the flow around airfoils. The
 * `Xfoil`: An IBLM solver for solving the 2D flow around subsonic airfoils. The software was developed at MIT by proffessor Mark Drela and is available at http://web.mit.edu/drela/Public/web/xfoil/. In ICARUS a wrapped version of the software is used, which is available at https://github.com/DARcorporation/xfoil-python
 * `Foil2Wake`: A 2D IBLM solver for solving the flow around airfoils. The software was developed at NTUA and is available upon request.
 
-For each of the solvers we will examine their configuration files that are found in the ICARUS/Solvers/Airfoil folders
+For each of the solvers we will examine their configuration files that are found in the ICARUS/solvers/Airfoil folders
 
 OpenFoam
 --------------------------------------
 
-.. include:: ../../../../ICARUS/Solvers/Airfoil/open_foam.py
+.. include:: ../../../../ICARUS/solvers/Airfoil/open_foam.py
    :literal:
 
 
 Xfoil
 --------------------------------------
 
-.. include:: ../../../../ICARUS/Solvers/Airfoil/xfoil.py
+.. include:: ../../../../ICARUS/solvers/Airfoil/xfoil.py
    :literal:
 
 
 Foil2Wake
 --------------------------------------
 
-.. include:: ../../../../ICARUS/Solvers/Airfoil/f2w_section.py
+.. include:: ../../../../ICARUS/solvers/Airfoil/f2w_section.py
    :literal:

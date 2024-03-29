@@ -5,14 +5,14 @@ from typing import Callable
 
 import pandas as pd
 
-from ICARUS.Aerodynamics.Potential.vorticity import symm_wing_panels
-from ICARUS.Aerodynamics.Potential.vorticity import voring
-from ICARUS.Aerodynamics.Potential.wing_lspt import Wing_LSPT
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import DB3D
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.aerodynamics.potential.vorticity import symm_wing_panels
+from ICARUS.aerodynamics.potential.vorticity import voring
+from ICARUS.aerodynamics.potential.wing_lspt import Wing_LSPT
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import DB3D
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def run_lstp_angles(

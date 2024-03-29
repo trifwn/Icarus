@@ -4,11 +4,11 @@ import subprocess
 
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import AVL_exe
-from ICARUS.Database import DB3D
-from ICARUS.Database.utils import angle_to_case
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.core.types import FloatArray
+from ICARUS.database import AVL_exe
+from ICARUS.database import DB3D
+from ICARUS.database.utils import angle_to_case
+from ICARUS.vehicle.plane import Airplane
 
 
 # FUNCTIONS FOR POLAR RUN - AFTER THE USER DEFINES ARRAY OF ANGLES
@@ -86,9 +86,9 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
         if os.path.isfile(f"{li_2[-1]}"):
             li_2.append("o")
         li_2.append("fs")
-        li_2.append((f"fs_{angle_to_case(angle)}.txt"))
+        li_2.append(f"fs_{angle_to_case(angle)}.txt")
         if os.path.isfile(f"fs_{angle_to_case(angle)}.txt"):
-                    li_2.append("o")
+            li_2.append("o")
 
         # li_2.append("y")
         # li.append(f"O")
@@ -108,4 +108,3 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
             )
     logging.debug(f"AVL return code: {res}")
     os.chdir(HOMEDIR)
-

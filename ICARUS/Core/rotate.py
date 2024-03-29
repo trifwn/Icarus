@@ -1,6 +1,6 @@
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 def y_rotation_stability_axes(angle: float) -> FloatArray:

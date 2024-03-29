@@ -8,8 +8,8 @@ from .Database_3D import Database_3D
 from ICARUS import APPHOME
 
 if TYPE_CHECKING:
-    from ICARUS.Vehicle.plane import Airplane
-    from ICARUS.Airfoils.airfoil import Airfoil
+    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.airfoils.airfoil import Airfoil
 
 
 class Database:

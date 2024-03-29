@@ -1,9 +1,11 @@
 from typing import Callable
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
-def h_polynomial_factory(coeffs: list[float] | FloatArray) -> Callable[..., float | FloatArray]:
+def h_polynomial_factory(
+    coeffs: list[float] | FloatArray,
+) -> Callable[..., float | FloatArray]:
     def h_polynomial(x: float | FloatArray) -> float | FloatArray:
         h = 0
         for i, c in enumerate(coeffs):

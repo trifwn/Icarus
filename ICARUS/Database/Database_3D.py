@@ -13,17 +13,17 @@ from pandas import DataFrame
 
 from . import DB3D
 from ICARUS import APPHOME
-from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
+from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
     get_error_convergence,
 )
-from ICARUS.Computation.Solvers.GenuVP.post_process.convergence import (
+from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
     get_loads_convergence,
 )
-from ICARUS.Core.struct import Struct
-from ICARUS.Flight_Dynamics.state import State
+from ICARUS.core.struct import Struct
+from ICARUS.flight_dynamics.state import State
 
 if TYPE_CHECKING:
-    from ICARUS.Vehicle.plane import Airplane
+    from ICARUS.vehicle.plane import Airplane
 
 jsonpickle_pd.register_handlers()
 
@@ -108,7 +108,7 @@ class Database_3D:
 
         # Load Vehicle object
         file_plane: str = os.path.join(DB3D, vehicle_folder, f"{vehicle_folder}.json")
-        plane_obj: Airplane | None = self.load_plane(name= vehicle_folder, file = file_plane)
+        plane_obj: Airplane | None = self.load_plane(name=vehicle_folder, file=file_plane)
         if plane_obj is None:
             vehicle_name = vehicle_folder
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")

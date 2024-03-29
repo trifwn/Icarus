@@ -1,8 +1,8 @@
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Mission.mission_vehicle import Mission_Vehicle
-from ICARUS.Mission.Trajectory.trajectory import Trajectory
+from ICARUS.core.types import FloatArray
+from ICARUS.mission.mission_vehicle import Mission_Vehicle
+from ICARUS.mission.trajectory.trajectory import Trajectory
 
 
 def RK4systems(

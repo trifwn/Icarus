@@ -7,8 +7,8 @@ from typing import Optional
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Computation.Solvers.GenuVP.post_process.progress import latest_time
-from ICARUS.Core.types import FloatArray
+from ICARUS.computation.solvers.GenuVP.post_process.progress import latest_time
+from ICARUS.core.types import FloatArray
 
 
 def serial_monitor(

@@ -9,8 +9,8 @@ from pandas import Series
 
 from .. import colors_
 from .. import markers
-from ICARUS.Core.struct import Struct
-from ICARUS.Database import DB
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
 
 
 def plot_airfoil_polars(

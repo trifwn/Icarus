@@ -8,13 +8,13 @@ import time
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def main() -> None:
@@ -22,29 +22,29 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-    from ICARUS.Database import EXTERNAL_DB
+    from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+    from ICARUS.database import EXTERNAL_DB
 
     read_polars_2d(EXTERNAL_DB)
 
     # # Get Plane
     planes: list[Airplane] = []
 
-    # from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
+    # from vehicles.Planes.e190_takeoff import e190_takeoff_generator
     # embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
     # planes.append(embraer_to)
 
-    # from Vehicles.Planes.e190_cruise import e190_cruise
+    # from vehicles.Planes.e190_cruise import e190_cruise
 
     # embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
     # planes.append(embraer_cr)
     # planes.append(embraer_to)
 
-    from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
+    from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 
     # filename: str = "Data/3d_Party/plane_1.xml"
     # airplane = parse_xfl_project(filename)
-    from Vehicles.Planes.e190_cruise import e190_cruise
+    from vehicles.Planes.e190_cruise import e190_cruise
 
     hermes_3: Airplane = e190_cruise(name="E190")
     planes.append(hermes_3)
@@ -66,11 +66,11 @@ def main() -> None:
     # Get Solver
     GNVP_VERSION = 3
     if GNVP_VERSION == 7:
-        from ICARUS.Computation.Solvers.GenuVP.gnvp7 import GenuVP7
+        from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
 
         gnvp: Solver = GenuVP7()
     elif GNVP_VERSION == 3:
-        from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
+        from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
 
         gnvp = GenuVP3()
     else:
@@ -131,7 +131,7 @@ def main() -> None:
             polars: DataFrame | int = gnvp.get_results()
             airplane.save()
 
-            from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+            from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
             solvers = [
                 "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",

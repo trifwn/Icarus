@@ -1,7 +1,7 @@
-.. .. _ICARUS.Aerodynamics:
+.. .. _ICARUS.aerodynamics:
 
 
-.. automodule:: ICARUS.Aerodynamics
+.. automodule:: ICARUS.aerodynamics
    :noindex:
    :no-members:
    :no-inherited-members:

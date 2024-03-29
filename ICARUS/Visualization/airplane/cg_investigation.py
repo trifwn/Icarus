@@ -7,9 +7,9 @@ from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 from numpy import ndarray
 
-from ICARUS.Database import DB
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+from ICARUS.database import DB
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
 
 def setup_plot(

@@ -13,10 +13,10 @@ from scipy.optimize import minimize
 from scipy.optimize import NonlinearConstraint
 from scipy.optimize import OptimizeResult
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Optimization import MAX_FLOAT
-from ICARUS.Optimization import MAX_INT
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
+from ICARUS.core.types import FloatArray
+from ICARUS.optimization import MAX_FLOAT
+from ICARUS.optimization import MAX_INT
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 
 
 class General_SOO_Optimizer:
@@ -31,9 +31,7 @@ class General_SOO_Optimizer:
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
         linear_constraints: list[dict[str, FloatArray | str | float]] = [],
-        non_linear_constraints: list[
-            dict[str, Callable[..., float] | str | float]
-        ] = [],
+        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,
@@ -44,9 +42,7 @@ class General_SOO_Optimizer:
         verbosity: int = 1,
     ) -> None:
         # Basic Objects
-        self.design_variables: dict[str, Any] = {
-            design_variable: 0 for design_variable in design_variables
-        }
+        self.design_variables: dict[str, Any] = {design_variable: 0 for design_variable in design_variables}
         self.design_constants = design_constants
         self.initial_obj: object = deepcopy(obj)
         self.current_obj: object = deepcopy(obj)
@@ -56,8 +52,7 @@ class General_SOO_Optimizer:
         for design_variable in self.design_variables.keys():
             x0.append(self.initial_obj.__getattribute__(design_variable))
             x0_norm.append(
-                (x0[-1] - bounds[design_variable][0])
-                / (bounds[design_variable][1] - bounds[design_variable][0])
+                (x0[-1] - bounds[design_variable][0]) / (bounds[design_variable][1] - bounds[design_variable][0]),
             )
         self.x0 = np.array(x0)
         self.x0_norm = np.array(x0_norm)
@@ -90,12 +85,8 @@ class General_SOO_Optimizer:
         self.verbosity = verbosity
 
         # Constraints
-        self.linear_constraints: list[dict[str, FloatArray | str | float]] = (
-            linear_constraints
-        )
-        self.non_linear_constraints: list[
-            dict[str, Callable[..., float] | str | float]
-        ] = non_linear_constraints
+        self.linear_constraints: list[dict[str, FloatArray | str | float]] = linear_constraints
+        self.non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = non_linear_constraints
         self.fitness: list[float] = []
         self.penalties: list[float] = [0.0]
 
@@ -113,9 +104,7 @@ class General_SOO_Optimizer:
         print()
         print("Updating Current Object")
         for i, design_variable in enumerate(self.design_variables.keys()):
-            x_denorm = (
-                x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
-            )
+            x_denorm = x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
             self.current_obj.__setattr__(design_variable, x_denorm)
             self.design_variables[design_variable] = x_denorm
 
@@ -133,9 +122,7 @@ class General_SOO_Optimizer:
             print(f"\tCalculating J {self._nit}")
         # Update Current Object
         for i, design_variable in enumerate(self.design_variables.keys()):
-            x_denorm = (
-                x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
-            )
+            x_denorm = x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
             self.current_obj.__setattr__(design_variable, x_denorm)
         return self.jacobian(self.current_obj)
 
@@ -170,9 +157,7 @@ class General_SOO_Optimizer:
         if self.verbosity > 0:
             print(f"Design Variables: ")
             for i, design_variable in enumerate(self.design_variables):
-                x_denorm = (
-                    xs[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
-                )
+                x_denorm = xs[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]
                 print(f"\t{design_variable}= {x_denorm},")
 
             # Print Objective Function
@@ -190,9 +175,7 @@ class General_SOO_Optimizer:
             print(f"Iteration Number: {self._nit}")
             print(f"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
-    def __call__(
-        self, solver: str = "Nelder-Mead", options: dict[str, Any] = {}
-    ) -> OptimizeResult:
+    def __call__(self, solver: str = "Nelder-Mead", options: dict[str, Any] = {}) -> OptimizeResult:
         # Setup Callbacks
         s_time = time()
         for callback in self.callback_list:
@@ -205,13 +188,8 @@ class General_SOO_Optimizer:
         constraints = []
         if solver in ["COBYLA", "SLSQP", "trust-constr"]:
             for lin_constraint in self.linear_constraints:
-                if not (
-                    isinstance(lin_constraint["lb"], float)
-                    and isinstance(lin_constraint["ub"], float)
-                ):
-                    logging.warning(
-                        f"Linear Constraint {lin_constraint} has a non-float lb"
-                    )
+                if not (isinstance(lin_constraint["lb"], float) and isinstance(lin_constraint["ub"], float)):
+                    logging.warning(f"Linear Constraint {lin_constraint} has a non-float lb")
                     continue
 
                 constraints.append(
@@ -223,25 +201,16 @@ class General_SOO_Optimizer:
                 )
 
             for non_lin_constraint in self.non_linear_constraints:
-                if not (
-                    isinstance(non_lin_constraint["lb"], float)
-                    and isinstance(non_lin_constraint["ub"], float)
-                ):
-                    logging.warning(
-                        f"Non-Linear Constraint {non_lin_constraint} has a non-float lb"
-                    )
+                if not (isinstance(non_lin_constraint["lb"], float) and isinstance(non_lin_constraint["ub"], float)):
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} has a non-float lb")
                     continue
 
                 if "fun" not in non_lin_constraint.keys():
-                    logging.warning(
-                        f"Non-Linear Constraint {non_lin_constraint} does not have a fun"
-                    )
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} does not have a fun")
                     continue
 
                 if not callable(non_lin_constraint["fun"]):
-                    logging.warning(
-                        f"Non-Linear Constraint {non_lin_constraint} fun is not callable"
-                    )
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} fun is not callable")
                     continue
                 non_linear_fun: Callable[..., float] = non_lin_constraint["fun"]
 
@@ -256,16 +225,8 @@ class General_SOO_Optimizer:
                 constraints.append(
                     NonlinearConstraint(
                         fun_wrapper,
-                        (
-                            non_lin_constraint["lb"]
-                            if "lb" in non_lin_constraint
-                            else -np.inf
-                        ),
-                        (
-                            non_lin_constraint["ub"]
-                            if "ub" in non_lin_constraint
-                            else np.inf
-                        ),
+                        (non_lin_constraint["lb"] if "lb" in non_lin_constraint else -np.inf),
+                        (non_lin_constraint["ub"] if "ub" in non_lin_constraint else np.inf),
                     ),
                 )
                 print(f"Added Non-Linear Constraint {non_lin_constraint}")
@@ -274,44 +235,27 @@ class General_SOO_Optimizer:
             # Add Penalty for Linear Constraints
             linear_penalties: list[Callable[[FloatArray], float]] = []
             for lin_constraint in self.linear_constraints:
-                if not (
-                    isinstance(lin_constraint["lb"], float)
-                    and isinstance(lin_constraint["ub"], float)
-                ):
-                    logging.warning(
-                        f"Linear Constraint {lin_constraint} has a non-float lb"
-                    )
+                if not (isinstance(lin_constraint["lb"], float) and isinstance(lin_constraint["ub"], float)):
+                    logging.warning(f"Linear Constraint {lin_constraint} has a non-float lb")
                     continue
 
                 A = lin_constraint["A"]
                 lb = lin_constraint["lb"]
                 ub = lin_constraint["ub"]
-                linear_penalties.append(
-                    lambda x: max(0, np.dot(A, x) - ub) ** 2
-                    + max(0, lb - np.dot(A, x)) ** 2
-                )
+                linear_penalties.append(lambda x: max(0, np.dot(A, x) - ub) ** 2 + max(0, lb - np.dot(A, x)) ** 2)
 
             non_linear_penalties: list[Callable[[FloatArray], float]] = []
             for non_lin_constraint in self.non_linear_constraints:
-                if not (
-                    isinstance(non_lin_constraint["lb"], float)
-                    and isinstance(non_lin_constraint["ub"], float)
-                ):
-                    logging.warning(
-                        f"Non-Linear Constraint {non_lin_constraint} has a non-float lb"
-                    )
+                if not (isinstance(non_lin_constraint["lb"], float) and isinstance(non_lin_constraint["ub"], float)):
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} has a non-float lb")
                     continue
 
                 if "fun" not in non_lin_constraint.keys():
-                    logging.warning(
-                        f"Non-Linear Constraint {non_lin_constraint} does not have a fun"
-                    )
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} does not have a fun")
                     continue
 
                 if not callable(non_lin_constraint["fun"]):
-                    logging.warning(
-                        f"Non-Linear Constraint {non_lin_constraint} fun is not callable"
-                    )
+                    logging.warning(f"Non-Linear Constraint {non_lin_constraint} fun is not callable")
                     continue
                 non_linear_fun = non_lin_constraint["fun"]
 
@@ -327,8 +271,7 @@ class General_SOO_Optimizer:
                 ub = non_lin_constraint["ub"] if "ub" in non_lin_constraint else np.inf
 
                 non_linear_penalties.append(
-                    lambda x: max(0, fun_wrapper(x) - ub) ** 2
-                    + max(0, lb - fun_wrapper(x)) ** 2,
+                    lambda x: max(0, fun_wrapper(x) - ub) ** 2 + max(0, lb - fun_wrapper(x)) ** 2,
                 )
 
             def f_with_penalties(x: FloatArray) -> float:
@@ -399,4 +342,8 @@ class General_SOO_Optimizer:
             )
         else:
             raise NotImplementedError
+        print(f"Optimization Effort Returned")
+        for design_variable, value in self.design_variables.items():
+            print(f"{design_variable}: {value}")
+
         return opt

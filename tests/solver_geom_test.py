@@ -1,11 +1,11 @@
 import numpy as np
 
-from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_3
-from ICARUS.Computation.Solvers.GenuVP.post_process.wake import get_wake_data_7
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database.utils import angle_to_case
-from ICARUS.Visualization.airplane.gnvp_wake import plot_gnvp3_wake
-from ICARUS.Visualization.airplane.gnvp_wake import plot_gnvp7_wake
+from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_3
+from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
+from ICARUS.core.types import FloatArray
+from ICARUS.database.utils import angle_to_case
+from ICARUS.visualization.airplane.gnvp_wake import plot_gnvp3_wake
+from ICARUS.visualization.airplane.gnvp_wake import plot_gnvp7_wake
 
 
 def gnvp3_geometry(plot: bool = False) -> None:
@@ -27,7 +27,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     Returns:
         tuple[list[FloatArray], list[FloatArray]]: Meshgrid of the geometry from the gnvp results and the airplane.
     """
-    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
 
     if gnvp_version == 3:
         airplane, _ = get_bmark_plane("bmark")
@@ -56,7 +56,12 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     # Get the grid data from the airplane
     lgrid_plane: list[FloatArray] = []
     for surface in airplane.surfaces:
-        lgrid_plane.append(surface.get_grid())  # loads the grid data from each surface
+        surf_grid = surface.get_grid()
+        if isinstance(surf_grid, list):
+            for grid in surf_grid:
+                lgrid_plane.append(grid)
+        else:
+            lgrid_plane.append(surf_grid)  # loads the grid data from each surface
     grid_plane: FloatArray = np.array(lgrid_plane)  # converts the list to a numpy array
     shape = grid_plane.shape  # gets the shape of the array
     grid_plane = (

@@ -5,10 +5,10 @@ from inquirer import prompt
 
 from cli.options import get_option
 from cli.options import input_options
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.struct import Struct
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.core.struct import Struct
+from ICARUS.vehicle.plane import Airplane
 
 
 def set_analysis(solver: Solver) -> None:

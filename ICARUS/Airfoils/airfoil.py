@@ -6,7 +6,7 @@ constructors to generate airfoils from NACA 4 and 5 digit identifiers.
 
 To initialize the Airfoil class, you need to pass the upper and lower surface coordinates.
 
->>> from ICARUS.Airfoils.airfoil import Airfoil
+>>> from ICARUS.airfoils.airfoil import Airfoil
 >>> naca0012 = Airfoil.naca("0012", n_points=200)
 >>> naca0012.plot()
 
@@ -50,25 +50,25 @@ methods from the original airfoil class which include but are not limited to:
 
 
 """
-from calendar import c
 import logging
 import os
 import re
-from jax import debug_infs
-import requests
+from calendar import c
 from typing import Any
 from typing import Union
 
 import airfoils as af
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import splprep, splev
+import requests
+from jax import debug_infs
 from matplotlib.axes import Axes
+from scipy.interpolate import splev
+from scipy.interpolate import splprep
 
-from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB2D
+from ICARUS.airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
 
 # # Airfoil
 # ##### 0 = Read from python module
@@ -84,6 +84,7 @@ class Airfoil(af.Airfoil):  # type: ignore
     Args:
         af : Airfoil class from the airfoils module
     """
+
     def __init__(
         self,
         upper: FloatArray,
@@ -124,10 +125,10 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.n_lower = self._x_lower.shape[0]
         self.selig_original = self.selig
 
-    def repanel_spl(self, n_points: int = 200, smoothing= 0.0) -> None:
+    def repanel_spl(self, n_points: int = 200, smoothing=0.0) -> None:
         pts = self.selig_original
-        x = pts[0,:]
-        y = pts[1,:]
+        x = pts[0, :]
+        y = pts[1, :]
         # Combine x and y coordinates into a single array of complex numbers
         complex_coords = x + 1j * y
         # Find unique complex coordinates
@@ -139,13 +140,13 @@ class Airfoil(af.Airfoil):  # type: ignore
         # y = np.hstack((y, y[0]))
 
         tck, _ = splprep([x, y], s=smoothing)
-        
-        ksi = np.linspace(0, np.pi,n_points//2)
+
+        ksi = np.linspace(0, np.pi, n_points // 2)
         # Apply cosine spacing to ksi
-        tnew_1 = 0.5 * (1 - np.cos(ksi))/2
-        tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) /2 
+        tnew_1 = 0.5 * (1 - np.cos(ksi)) / 2
+        tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) / 2
         tnew = np.hstack((tnew_1, tnew_2))
-    
+
         spline = splev(tnew, tck)
         lower, upper = self.split_sides(spline[0], spline[1])
         lower, upper = self.close_airfoil(lower, upper)
@@ -154,7 +155,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self._y_upper = upper[1]
         self._x_lower = lower[0]
         self._y_lower = lower[1]
-        #update for plot
+        # update for plot
         self.n_points = n_points
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
@@ -185,7 +186,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         lower = np.array([_x_lower, _y_lower], dtype=float)
         upper = np.array([_x_upper, _y_upper], dtype=float)
 
-        #lower, upper = self.close_airfoil(lower, upper)
+        # lower, upper = self.close_airfoil(lower, upper)
 
         self._x_lower = lower[0]
         self._y_lower = lower[1]
@@ -198,7 +199,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.selig = self.to_selig()
         self.selig_original = self.selig
 
-    def close_airfoil(self, lower, upper):
+    def close_airfoil(self, lower: FloatArray, upper: FloatArray) -> tuple[FloatArray, FloatArray]:
         # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
         # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
         # Identify the upper surface trailing edge and leading edge
@@ -270,9 +271,9 @@ class Airfoil(af.Airfoil):  # type: ignore
         Returns:
             FloatArray: _description_
         """
-        thickness = self.y_upper(x) - self.y_lower(x)
+        thickness: FloatArray = self.y_upper(x) - self.y_lower(x)
         # Remove Nan
-        thickness: FloatArray = thickness[~np.isnan(thickness)]
+        thickness = thickness[~np.isnan(thickness)]
         return thickness
 
     def max_thickness(self) -> float:
@@ -296,8 +297,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         return float(np.argmax(thickness) / self.n_points)
 
     @staticmethod
-    def split_sides(x,y):
-        
+    def split_sides(x: FloatArray, y: FloatArray) -> tuple[FloatArray, FloatArray]:
         # Remove duplicate points from the array
         # A point is duplicated if it has the same x and y coordinates
         # This is done to avoid issues with the interpolation
@@ -371,12 +371,12 @@ class Airfoil(af.Airfoil):  # type: ignore
             raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
         # Round to 2 decimals
         eta = round(eta, 2)
-        if eta == 0.:
+        if eta == 0.0:
             return airfoil1
-        elif eta == 1.:
+        elif eta == 1.0:
             return airfoil1
 
-        ksi = np.linspace(0, np.pi, n_points//2)
+        ksi = np.linspace(0, np.pi, n_points // 2)
         x = 0.5 * (1 - np.cos(ksi))
 
         y_upper_af1 = airfoil1.y_upper(x)
@@ -401,12 +401,11 @@ class Airfoil(af.Airfoil):  # type: ignore
         eta_perc = int(eta * 100)
         eta_str = f"{eta_perc}"
 
-
-        if airfoil1.name.startswith("morphed_") :
+        if airfoil1.name.startswith("morphed_"):
             # Check if the airfoils are coming from the same morphing
             airfoil1_parent_1 = airfoil1.name.split("_")[1]
             airfoil1_parent_2 = airfoil1.name.split("_")[2]
-            airfoil1_eta = float(airfoil1.name.split("_")[4][:-1])/100
+            airfoil1_eta = float(airfoil1.name.split("_")[4][:-1]) / 100
         else:
             airfoil1_parent_1 = airfoil1.name
             airfoil1_parent_2 = None
@@ -415,14 +414,19 @@ class Airfoil(af.Airfoil):  # type: ignore
         if airfoil2.name.startswith("morphed_"):
             airfoil2_parent_1 = airfoil2.name.split("_")[1]
             airfoil2_parent_2 = airfoil2.name.split("_")[2]
-            airfoil2_eta = float(airfoil2.name.split("_")[4][:-1])/100
+            airfoil2_eta = float(airfoil2.name.split("_")[4][:-1]) / 100
         else:
             airfoil2_parent_1 = None
             airfoil2_parent_2 = airfoil2.name
             airfoil2_eta = None
-            
+
         name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta_str}%"
-        airfoil_parents = set([airfoil1_parent_1, airfoil1_parent_2, airfoil2_parent_1, airfoil2_parent_2])
+        airfoil_parents = {
+            airfoil1_parent_1,
+            airfoil1_parent_2,
+            airfoil2_parent_1,
+            airfoil2_parent_2,
+        }
         # Remove None values
         airfoil_parents = {x for x in airfoil_parents if x is not None}
         if len(airfoil_parents) == 1:
@@ -432,19 +436,19 @@ class Airfoil(af.Airfoil):  # type: ignore
         if len(airfoil_parents) <= 2:
             # If the airfoils are coming from the same morphing
             if airfoil1_eta is not None and airfoil2_eta is not None:
-                new_eta = airfoil1_eta*(1-eta) + (airfoil2_eta)*(eta)
-            
+                new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
+
             if airfoil1_eta is None and airfoil2_eta is None:
                 new_eta = eta
 
             if airfoil1_eta is not None and airfoil2_eta is None:
-                new_eta = airfoil1_eta*(1-eta) 
+                new_eta = airfoil1_eta * (1 - eta)
 
             if airfoil1_eta is None and airfoil2_eta is not None:
-                new_eta = (airfoil2_eta)*(eta)
+                new_eta = (airfoil2_eta) * (eta)
 
             # ROUND TO 2 DECIMALS
-            new_eta = int(100*new_eta)
+            new_eta = int(100 * new_eta)
             # Round to 2 decimals in string format
             new_eta_str = f"{new_eta}"
             name = f"morphed_{airfoil1_parent_1}_{airfoil2_parent_2}_at_{new_eta_str}%"
@@ -536,14 +540,16 @@ class Airfoil(af.Airfoil):  # type: ignore
                     y.append(y_i)
                 except (ValueError, IndexError):
                     continue
-        lower,upper = cls.split_sides(x,y)
+        x_arr = np.array(x)
+        y_arr = np.array(y)
+        lower, upper = cls.split_sides(x_arr, y_arr)
         try:
             self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
         return self
-    
+
     def flap_airfoil(
         self,
         flap_hinge: float,
@@ -733,7 +739,6 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         # Remove duplicates
 
-
         lower, upper = self.close_airfoil(lower, upper)
 
         x_up = upper[0]
@@ -782,6 +787,8 @@ class Airfoil(af.Airfoil):  # type: ignore
                         # Save the downloaded data locally with the filename
                         dirname = airfoil_name.upper()
 
+                        from ICARUS.database import DB2D
+
                         os.makedirs(os.path.join(DB2D, dirname), exist_ok=True)
                         filename = os.path.join(DB2D, dirname, filename)
                         with open(filename, "wb") as f:
@@ -793,7 +800,6 @@ class Airfoil(af.Airfoil):  # type: ignore
                 except requests.exceptions.RequestException as e:
                     raise FileNotFoundError(f"Error downloading {filename}: {e}")
         raise FileNotFoundError(f"Error fetching {db_url}: {response.status_code}")
-
 
     def save_selig(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
         """
@@ -845,7 +851,6 @@ class Airfoil(af.Airfoil):  # type: ignore
 
             for x, y in zip(x_clean, y_clean):
                 file.write(f"{x:.6f} {y:.6f}\n")
-
 
     def save_le(self, directory: str | None = None) -> None:
         """

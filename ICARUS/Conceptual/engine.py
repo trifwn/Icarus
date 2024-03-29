@@ -1,4 +1,4 @@
-from ICARUS.Propulsion.engine import Engine
+from ICARUS.propulsion.engine import Engine
 
 
 class ConceptualEngine(Engine):

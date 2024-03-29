@@ -8,9 +8,9 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.Database import DB
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
+from ICARUS.database import DB
+from ICARUS.visualization import colors_
+from ICARUS.visualization import markers
 
 
 def plot_airplane_polars(
@@ -24,7 +24,7 @@ def plot_airplane_polars(
     ],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
-    operating_point: dict[str, float] = {}
+    operating_point: dict[str, float] = {},
 ) -> tuple[ndarray[Any, Any], Figure]:
     """Function to plot airplane polars for a given list of airplanes and solvers
 
@@ -123,14 +123,24 @@ def plot_airplane_polars(
                             )
                         except ValueError as e:
                             raise e
-                        
+
                     if plot[0] == "AoA":
                         # Annotate the operating points in the plots
                         for op in operating_point:
-                            ax.axvline(x=operating_point[op], color="r", linestyle="--" , label=f"{op}")
+                            ax.axvline(
+                                x=operating_point[op],
+                                color="r",
+                                linestyle="--",
+                                label=f"{op}",
+                            )
                     elif plot[1] == "AoA":
                         for op in operating_point:
-                            ax.axhline(y=operating_point[op], color="r", linestyle="--" , label=f"{op}")
+                            ax.axhline(
+                                y=operating_point[op],
+                                color="r",
+                                linestyle="--",
+                                label=f"{op}",
+                            )
                 if flag:
                     break
             except KeyError as e:

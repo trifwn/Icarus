@@ -9,8 +9,8 @@ Reynolds numbers and angles of attack.
 To initialize the Airfoil Polars Class, just pass a the
 Struct data from the DataBase to the constructor.
 
->>> from ICARUS.Airfoils.airfoil_polars import AirfoilPolars
->>> from ICARUS.Database import DB
+>>> from ICARUS.airfoils.airfoil_polars import AirfoilPolars
+>>> from ICARUS.database import DB
 >>> data = DB.get_airfoil_data("NACA0012")
 >>> polars = AirfoilPolars(data)
 
@@ -35,7 +35,6 @@ moment, and the slope of the Cl vs Alpha curve by calling:
 >>> polars.get_cl_slope(cl_curve)
 
 """
-
 import os
 from typing import Any
 
@@ -47,12 +46,13 @@ from matplotlib.figure import Figure
 from pandas import DataFrame
 from pandas import Index
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.OpenFoam.post_process import get_aero_coefficients
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.OpenFoam.post_process import get_aero_coefficients
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
 
-# from ICARUS.Airfoils.airfoil import Airfoil
+
+# from ICARUS.airfoils.airfoil import Airfoil
 class PolarNotAccurate(Exception):
     """
     Exception Raised when the Polar is not accurate
@@ -69,6 +69,7 @@ class ReynoldsNotIncluded(Exception):
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
 
 def interpolate_series_index(xval: float, series: pd.Series) -> float:
     """
@@ -126,7 +127,6 @@ def get_linear_series(series: pd.Series) -> pd.Series:
     return series[second_derivative]
 
 
-
 class Polars:
     """
     Airfoil Polars Class
@@ -141,14 +141,10 @@ class Polars:
         self.data: Struct | dict[str, DataFrame] = data
 
         self.reynolds_keys: list[str] = list(data.keys())
-        self.reynolds_nums: list[float] = sorted(
-            [float(reyn) for reyn in self.reynolds_keys]
-        )
+        self.reynolds_nums: list[float] = sorted([float(reyn) for reyn in self.reynolds_keys])
 
         # MERGE ALL POLARS INTO ONE DATAFRAME
-        df: DataFrame = (
-            data[self.reynolds_keys[0]].astype("float32").dropna(axis=0, how="all")
-        )
+        df: DataFrame = data[self.reynolds_keys[0]].astype("float32").dropna(axis=0, how="all")
         df.rename(
             {
                 "CL": f"CL_{self.reynolds_keys[0]}",
@@ -212,9 +208,7 @@ class Polars:
     def get_reynolds_subtable(self, reynolds: float | str) -> DataFrame:
         """Get Reynolds Subtable"""
         if isinstance(reynolds, float):
-            reynolds = np.format_float_scientific(
-                reynolds, sign=False, precision=3, min_digits=3
-            ).replace("+", "")
+            reynolds = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).replace("+", "")
 
         if reynolds not in self.reynolds_keys:
             print(self.reynolds_keys)
@@ -262,17 +256,11 @@ class Polars:
         min_index = int(np.argmin(np.abs(aoa_vector - np.deg2rad(min_angle))))
         max_index = int(np.argmin(np.abs(aoa_vector - np.deg2rad(max_angle))))
 
-        cl_slope = np.poly1d(
-            np.polyfit(
-                aoa_vector[min_index:max_index], cl_vector[min_index:max_index], 1
-            )
-        )[1]
+        cl_slope = float(np.poly1d(np.polyfit(aoa_vector[min_index:max_index], cl_vector[min_index:max_index], 1))[1])
         return cl_slope
         # return self.get_cl_slope(cl_curve)
 
-    def get_aero_coefficients(
-        self, reynolds: float | str, aoa: float
-    ) -> tuple[float, float, float]:
+    def get_aero_coefficients(self, reynolds: float | str, aoa: float) -> tuple[float, float, float]:
         """Get Aero Coefficients"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
         cl_curve: pd.Series = df["CL"]
@@ -391,7 +379,7 @@ class Polars:
             self.plot_reynolds_cl_over_cd_curve(reyn, axs[1, 0])
 
         # Plot the airfoil on the second subplot
-        from ICARUS.Database import DB
+        from ICARUS.database import DB
 
         airfoil: Airfoil = DB.get_airfoil(self.name.upper())
         airfoil.plot(ax=axs[1, 1], camber=True, max_thickness=True, scatter=False)
@@ -496,10 +484,8 @@ class Polars:
         return df
 
     @staticmethod
-    def examine_run(
-        cl_curve: pd.Series, cd_curve: pd.Series, zero_lift_angle: float
-    ) -> tuple[bool, str]:
-        is_bad = False
+    def examine_run(cl_curve: pd.Series, cd_curve: pd.Series, zero_lift_angle: float) -> tuple[bool, str]:
+        is_bad: bool = False
         cl_array = cl_curve.to_numpy()
         cd_array = cd_curve.to_numpy()
         aoa_array = np.deg2rad(cl_curve.index.to_numpy())
@@ -512,19 +498,15 @@ class Polars:
         max_positive_CL_slope = 3 * (2 * np.pi)
         min_negative_CL_slope = -0.2 * (2 * np.pi)
         max_positive_CD_slope = 0.9
-        min_negative_CD_slope = -(0.9)
+        min_negative_CD_slope = -0.9
 
-        CL_cond = np.any(
-            np.greater(cl_slopes[min_index:max_index], max_positive_CL_slope)
-        ) or np.any(
+        CL_cond = np.any(np.greater(cl_slopes[min_index:max_index], max_positive_CL_slope)) or np.any(
             np.less(cl_slopes[min_index:max_index], min_negative_CL_slope),
         )
-        CD_cond = np.any(
-            np.greater(cd_slopes[min_index:max_index], max_positive_CD_slope)
-        ) or np.any(
+        CD_cond = np.any(np.greater(cd_slopes[min_index:max_index], max_positive_CD_slope)) or np.any(
             np.less(cd_slopes[min_index:max_index], min_negative_CD_slope),
         )
-        is_bad: bool = False
+        is_bad = False
         problem: str = "None"
         if CL_cond and not CD_cond:
             is_bad = True
@@ -585,7 +567,7 @@ class Polars:
                     if reyn < reynolds:
                         reynolds_min = reyn
                         break
-                
+
                 diff_reynolds = reynolds_max - reyn
                 diff_reynolds_max = reyn - reynolds_min
                 if diff_reynolds < diff_reynolds_max:
@@ -599,8 +581,6 @@ class Polars:
                 # Interpolate curve based on relative distance between Reynolds Numbers
                 # (Linear Interpolation)
 
-
-
                 # curve = curve_1 + (curve_2 - curve_1) * (reynolds - reynolds_min) / (
                 #     reynolds_max - reynolds_min
                 # )
@@ -612,7 +592,7 @@ class Polars:
             neg_stall_idx = self.get_negative_stall_idx(curve["CL"])
             min_cdcl_idx = self.get_cl_cd_minimum_idx(curve["CL"], curve["CD"])
         except ValueError:
-            print(curve['CL'])
+            print(curve["CL"])
 
         # pos_stall_angle = curve["AoA"].loc[pos_stall_idx]
         # neg_stall_angle = curve["AoA"].loc[neg_stall_idx]

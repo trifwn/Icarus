@@ -6,8 +6,8 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Mission.Trajectory.trajectory import Trajectory
+from ICARUS.core.types import FloatArray
+from ICARUS.mission.trajectory.trajectory import Trajectory
 
 
 #! TODO: Make Callback

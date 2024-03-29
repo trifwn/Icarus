@@ -14,12 +14,12 @@ from numpy import ndarray
 
 
 if TYPE_CHECKING:
-    from ICARUS.Core.types import FloatArray
-    from ICARUS.Core.types import FloatOrListArray
-    from ICARUS.Flight_Dynamics.disturbances import Disturbance
-    from ICARUS.Flight_Dynamics.state import State
-    from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-    from ICARUS.Vehicle.surface_connections import Surface_Connection
+    from ICARUS.core.types import FloatArray
+    from ICARUS.core.types import FloatOrListArray
+    from ICARUS.flight_dynamics.disturbances import Disturbance
+    from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.surface import WingSurface
+    from ICARUS.vehicle.surface_connections import Surface_Connection
 
 jsonpickle_pd.register_handlers()
 
@@ -28,7 +28,7 @@ class Airplane:
     def __init__(
         self,
         name: str,
-        surfaces: list[Lifting_Surface],
+        surfaces: list[WingSurface],
         disturbances: list[Disturbance] | None = None,
         orientation: FloatOrListArray | None = None,
     ) -> None:
@@ -42,7 +42,7 @@ class Airplane:
             orientation (FloatOrListArray] | None, optional): Plane Orientation. Defaults to None.
         """
         self.name: str = name
-        self.surfaces: list[Lifting_Surface] = surfaces
+        self.surfaces: list[WingSurface] = surfaces
 
         if disturbances is None:
             self.disturbances: list[Disturbance] = []
@@ -62,7 +62,7 @@ class Airplane:
         self.S: float = 0
         for surface in surfaces:
             if surface.name.capitalize().startswith("MAIN"):
-                self.main_wing: Lifting_Surface = surface
+                self.main_wing: WingSurface = surface
                 self.S += surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
                 self.aspect_ratio: float = surface.aspect_ratio
@@ -120,9 +120,7 @@ class Airplane:
                 elif axis == "xyz":
                     return mass[1]
                 else:
-                    raise PlaneDoesntContainAttr(
-                        f"Plane doesn't contain attribute {axis}"
-                    )
+                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
 
         for surf in self.surfaces:
             if surf.name == name:
@@ -135,9 +133,7 @@ class Airplane:
                 elif axis == "xyz":
                     return surf.origin
                 else:
-                    raise PlaneDoesntContainAttr(
-                        f"Plane doesn't contain attribute {axis}"
-                    )
+                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
 
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
@@ -176,9 +172,7 @@ class Airplane:
                     p = value
                     self.point_masses[i] = (m, p, name)
                 else:
-                    raise PlaneDoesntContainAttr(
-                        f"Plane doesn't contain attribute {axis}"
-                    )
+                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
                 return
 
         for surf in self.surfaces:
@@ -204,9 +198,7 @@ class Airplane:
                     else:
                         raise ValueError("Value must be a ndarray")
                 else:
-                    raise PlaneDoesntContainAttr(
-                        f"Plane doesn't contain attribute {axis}"
-                    )
+                    raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {axis}")
                 return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
@@ -268,9 +260,7 @@ class Airplane:
                 if "surfaces" in self.__dict__.keys():
                     for surface in self.surfaces:
                         if name.startswith(f"{surface.name}_"):
-                            return surface.__getattribute__(
-                                name.replace(surface.name, "")
-                            )
+                            return surface.__getattribute__(name.replace(surface.name, ""))
                 raise AttributeError(f"Plane doesn't contain attribute {name}")
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -324,8 +314,8 @@ class Airplane:
 
         return ret
 
-    def get_seperate_surfaces(self) -> list[Lifting_Surface]:
-        surfaces: list[Lifting_Surface] = []
+    def get_seperate_surfaces(self) -> list[WingSurface]:
+        surfaces: list[WingSurface] = []
         for surface in self.surfaces:
             if surface.is_symmetric_y:
                 l, r = surface.split_xz_symmetric_wing()
@@ -483,7 +473,7 @@ class Airplane:
             mov = movement
         else:
             if movement is None:
-                mov = np.zeros(3)
+                mov = np.zeros(3, dtype=float)
             else:
                 try:
                     mov = np.array(movement)
@@ -550,7 +540,7 @@ class Airplane:
         """
         Save the plane object to a json file
         """
-        from ICARUS.Database import DB3D
+        from ICARUS.database import DB3D
 
         fname: str = os.path.join(DB3D, self.directory, f"{self.name}.json")
         with open(fname, "w", encoding="utf-8") as f:

@@ -4,15 +4,15 @@ from typing import Callable
 
 from scipy.optimize import OptimizeResult
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Optimization import MAX_FLOAT
-from ICARUS.Optimization import MAX_INT
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
-from ICARUS.Optimization.Optimizers.Airplane.airplane_optimizer import (
+from ICARUS.core.types import FloatArray
+from ICARUS.flight_dynamics.state import State
+from ICARUS.optimization import MAX_FLOAT
+from ICARUS.optimization import MAX_INT
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from ICARUS.optimization.optimizers.airplane.airplane_optimizer import (
     Airplane_Optimizer,
 )
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.vehicle.plane import Airplane
 
 
 class Airplane_Dynamics_Optimizer(Airplane_Optimizer):
@@ -28,9 +28,7 @@ class Airplane_Dynamics_Optimizer(Airplane_Optimizer):
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
         linear_constraints: list[dict[str, FloatArray | str | float]] = [],
-        non_linear_constraints: list[
-            dict[str, Callable[..., float] | str | float]
-        ] = [],
+        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,

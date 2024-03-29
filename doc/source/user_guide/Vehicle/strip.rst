@@ -1,2 +1,2 @@
-ICARUS.Vehicle.strip module
+ICARUS.vehicle.strip module
 ================================

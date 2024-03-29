@@ -3,7 +3,7 @@ from typing import Any
 import numpy as np
 
 from .helper_functions import shape_like
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 # FAR 1 -> 25.111

@@ -12,12 +12,12 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Environment.definition import Environment
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.environment.definition import Environment
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 
 
 class Wing_LSPT:
@@ -43,7 +43,7 @@ class Wing_LSPT:
         self.visc: float = environment.air_dynamic_viscosity
 
         # Store the wing segments
-        self.wing_segments: list[Lifting_Surface] = plane.surfaces
+        self.wing_segments: list[WingSurface] = plane.surfaces
 
         # Add the ground effect distance ! NOT IMPLEMENTED AS OF NOW
         self.ground_effect_dist: float = ground_clearence

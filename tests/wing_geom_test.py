@@ -1,12 +1,12 @@
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 def geom() -> None:
     print("Testing Geometry...")
 
-    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, _ = get_bmark_plane("bmark")
 

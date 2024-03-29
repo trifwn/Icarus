@@ -4,15 +4,15 @@ import time
 import numpy as np
 
 from ICARUS import APPHOME
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Core.units import calc_reynolds
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.core.units import calc_reynolds
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
 
 
 def main() -> None:
@@ -40,12 +40,8 @@ def main() -> None:
     # Load From DB
     DB.load_data()
     print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
-    print(
-        f"Total number of computed airfoil data {len(list(DB.foils_db._data.keys()))}"
-    )
-    print(
-        f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}"
-    )
+    print(f"Total number of computed airfoil data {len(list(DB.foils_db._data.keys()))}")
+    print(f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}")
 
     # all_airfoils = list(DB.foils_db.airfoils.keys())
     # airfoils_to_compute = [
@@ -133,7 +129,7 @@ def main() -> None:
         # Foil2Wake
         if calcF2W:
             f2w_stime: float = time.time()
-            from ICARUS.Computation.Solvers.Foil2Wake.f2w_section import Foil2Wake
+            from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
 
             f2w_s: Solver = Foil2Wake()
 
@@ -153,9 +149,7 @@ def main() -> None:
             f2w_solver_parameters.f_trip_low = 0
             f2w_solver_parameters.Ncrit = Ncrit
             f2w_solver_parameters.max_iter = 250
-            f2w_solver_parameters.boundary_layer_solve_time = (
-                249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
-            )
+            f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
             f2w_solver_parameters.timestep = 0.1
 
             f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
@@ -177,7 +171,7 @@ def main() -> None:
         # XFoil
         if calcXFoil:
             xfoil_stime: float = time.time()
-            from ICARUS.Computation.Solvers.Xfoil.xfoil import Xfoil
+            from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 
             xfoil: Solver = Xfoil()
 
@@ -230,7 +224,7 @@ def main() -> None:
             of_stime: float = time.time()
             for reyn in reynolds:
                 print(f"Running OpenFoam for Re={reyn}")
-                from ICARUS.Computation.Solvers.OpenFoam.open_foam import OpenFoam
+                from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
 
                 open_foam: Solver = OpenFoam()
 

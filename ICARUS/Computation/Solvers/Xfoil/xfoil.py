@@ -1,22 +1,22 @@
-from ICARUS.Computation.Analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
-from ICARUS.Computation.Analyses.analysis import Analysis
-from ICARUS.Computation.Analyses.input import AirfoilInput
-from ICARUS.Computation.Analyses.input import FloatInput
-from ICARUS.Computation.Analyses.input import ListFloatInput
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.solver_parameters import BoolParameter
-from ICARUS.Computation.Solvers.solver_parameters import FloatParameter
-from ICARUS.Computation.Solvers.solver_parameters import IntParameter
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
-from ICARUS.Computation.Solvers.Xfoil.analyses.angles import multiple_reynolds_parallel
-from ICARUS.Computation.Solvers.Xfoil.analyses.angles import (
+from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
+from ICARUS.computation.analyses.analysis import Analysis
+from ICARUS.computation.analyses.input import AirfoilInput
+from ICARUS.computation.analyses.input import FloatInput
+from ICARUS.computation.analyses.input import ListFloatInput
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.solver_parameters import BoolParameter
+from ICARUS.computation.solvers.solver_parameters import FloatParameter
+from ICARUS.computation.solvers.solver_parameters import IntParameter
+from ICARUS.computation.solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers.Xfoil.analyses.angles import multiple_reynolds_parallel
+from ICARUS.computation.solvers.Xfoil.analyses.angles import (
     multiple_reynolds_parallel_seq,
 )
-from ICARUS.Computation.Solvers.Xfoil.analyses.angles import multiple_reynolds_serial
-from ICARUS.Computation.Solvers.Xfoil.analyses.angles import (
+from ICARUS.computation.solvers.Xfoil.analyses.angles import multiple_reynolds_serial
+from ICARUS.computation.solvers.Xfoil.analyses.angles import (
     multiple_reynolds_serial_seq,
 )
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 mach_option = FloatInput(name="mach", description="Mach number")
 
@@ -94,7 +94,7 @@ solver_parameters: list[Parameter] = [
         "repanel_n",
         100,
         "Number of panels to repanel the airfoil",
-    )
+    ),
 ]
 
 

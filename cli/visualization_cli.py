@@ -9,8 +9,8 @@ from inquirer import prompt
 
 from .airfoil_vis import aifoil_visualization_cli
 from .cli_home import cli_home
-from ICARUS.Database import DB
-from ICARUS.Visualization.airplane import __functions__ as airplane_functions
+from ICARUS.database import DB
+from ICARUS.visualization.airplane import __functions__ as airplane_functions
 
 
 def ask_visualization_category() -> str:

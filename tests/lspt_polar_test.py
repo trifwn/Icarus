@@ -2,21 +2,21 @@ import time
 
 import numpy as np
 
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
 
 
 def lspt_run() -> None:
     print("Testing LSPT Running...")
 
     # Get Plane, DB
-    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
 
     airplane, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import LSPT
+    from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 
     lspt: Solver = LSPT()
 

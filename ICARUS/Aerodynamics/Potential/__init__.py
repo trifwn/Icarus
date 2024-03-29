@@ -1,6 +1,6 @@
 """
 =============================
-Potential Aerodynamics Module
+Potential aerodynamics Module
 =============================
 
 .. toctree:
@@ -11,11 +11,11 @@ Potential Aerodynamics Module
     Potential.wing_lspt
 
 
-.. module:: ICARUS.Aerodynamics.Potential
+.. module:: ICARUS.aerodynamics.potential
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for potential aerodynamic analysis on ICARUS objects.
 
-.. currentmodule:: ICARUS.Aerodynamics.Potential
+.. currentmodule:: ICARUS.aerodynamics.potential
 
 This package contains class and routines for potential aerodynamic analysis on ICARUS objects.
 The package is divided in three libraries:
@@ -25,9 +25,9 @@ Lifting Surfaces Potential Theory
 .. autosummary::
     :toctree:
 
-    ICARUS.Aerodynamics.Potential.lifting_surfaces - Interface for solver class
-    ICARUS.Aerodynamics.Potential.vorticity - Functions to solve the Biotsavart equation for different elements
-    ICARUS.Aerodynamics.Potential.wing_lspt - A class modeling a wing for solving the lifting surfaces using panels and a potential theory formulation
+    ICARUS.aerodynamics.potential.lifting_surfaces - Interface for solver class
+    ICARUS.aerodynamics.potential.vorticity - Functions to solve the Biotsavart equation for different elements
+    ICARUS.aerodynamics.potential.wing_lspt - A class modeling a wing for solving the lifting surfaces using panels and a potential theory formulation
 
 """
 from . import lifting_surfaces

@@ -2,11 +2,11 @@ import os
 
 import numpy as np
 import pandas as pd
+import scipy
 from matplotlib import pyplot as plt
 from pandas import DataFrame
-import scipy
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 class Engine:
@@ -60,9 +60,7 @@ class Engine:
         ax.grid()
         fig.show()
 
-    def get_thrust(
-        self, alpha: float, velocity: float, current: float
-    ) -> tuple[float, float]:
+    def get_thrust(self, alpha: float, velocity: float, current: float) -> tuple[float, float]:
         thrust = self.thrust(velocity, current)
         thrust_x = thrust * np.cos(alpha)
         thrust_y = thrust * np.sin(alpha)

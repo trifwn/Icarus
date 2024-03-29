@@ -17,13 +17,13 @@ from .cli_home import cli_home
 from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
 from cli.solver import set_solver_parameters
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.Foil2Wake.f2w_section import Foil2Wake
-from ICARUS.Computation.Solvers.OpenFoam.open_foam import OpenFoam
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.Xfoil.xfoil import Xfoil
-from ICARUS.Core.struct import Struct
-from ICARUS.Database import DB
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
+from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
 
 
 def ask_num_airfoils() -> int:

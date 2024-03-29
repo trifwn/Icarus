@@ -2,16 +2,16 @@ import time
 
 import numpy as np
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Core.units import calc_mach
-from ICARUS.Core.units import calc_reynolds
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.core.units import calc_mach
+from ICARUS.core.units import calc_reynolds
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
 
 
 ########################################################################################
@@ -123,7 +123,7 @@ def main() -> None:
 
         if FOIL2WAKE:
             f2w_stime: float = time.time()
-            from ICARUS.Computation.Solvers.Foil2Wake.f2w_section import Foil2Wake
+            from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
 
             f2w_s: Solver = Foil2Wake()
 
@@ -155,7 +155,7 @@ def main() -> None:
 
         if XFOIL:
             xfoil_stime: float = time.time()
-            from ICARUS.Computation.Solvers.Xfoil.xfoil import Xfoil
+            from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 
             xfoil: Solver = Xfoil()
 
@@ -198,7 +198,7 @@ def main() -> None:
             of_stime: float = time.time()
             for reyn in reynolds:
                 print(f"Running OpenFoam for Re={reyn}")
-                from ICARUS.Computation.Solvers.OpenFoam.open_foam import OpenFoam
+                from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
 
                 open_foam: Solver = OpenFoam()
 
@@ -234,7 +234,7 @@ def main() -> None:
             f"Airfoil {airfoil.name} completed in {airfoil_etime - airfoil_stime} seconds",
         )
 
-        from ICARUS.Visualization.airfoil.airfoil_polars import plot_airfoil_polars
+        from ICARUS.visualization.airfoil.airfoil_polars import plot_airfoil_polars
 
         DB.foils_db.load_data()
         axs, fig = plot_airfoil_polars(

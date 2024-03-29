@@ -5,19 +5,19 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.Airfoils.airfoil_polars import Polars
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.formatting import ff2
-from ICARUS.Core.formatting import ff3
-from ICARUS.Core.formatting import ff4
-from ICARUS.Core.formatting import ff5
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Database import GenuVP3_exe
+from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.formatting import ff2
+from ICARUS.core.formatting import ff3
+from ICARUS.core.formatting import ff4
+from ICARUS.core.formatting import ff5
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.database import GenuVP3_exe
 
 
 def line(value: Any, var_name: str, description: str, file: TextIOWrapper) -> None:

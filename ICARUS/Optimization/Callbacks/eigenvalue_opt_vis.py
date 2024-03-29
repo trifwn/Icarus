@@ -7,9 +7,9 @@ from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.figure import Figure
 
-from ICARUS.Core.types import ComplexArray
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
+from ICARUS.core.types import ComplexArray
+from ICARUS.flight_dynamics.state import State
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 
 
 class EigenvalueOptimizationVisualizer(OptimizationCallback):
@@ -89,8 +89,11 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         ):
             self.setup()
 
-        new_eigenvalues_longitudal: ComplexArray = state.state_space.longitudal.eigenvalues
-        new_eigenvalues_lateral: ComplexArray = state.state_space.lateral.eigenvalues
+        try:
+            new_eigenvalues_longitudal: ComplexArray = state.state_space.longitudal.eigenvalues
+            new_eigenvalues_lateral: ComplexArray = state.state_space.lateral.eigenvalues
+        except AttributeError:
+            return
 
         self.fig.canvas.flush_events()
         title: str = f"Eigenvalues at {iteration} of optimization"

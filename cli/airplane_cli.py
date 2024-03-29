@@ -22,17 +22,17 @@ from inquirer import Text
 from .cli_home import cli_home
 from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
-from ICARUS.Computation.Solvers.GenuVP.gnvp3 import GenuVP3
-from ICARUS.Computation.Solvers.GenuVP.gnvp7 import GenuVP7
-from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import LSPT
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
-from ICARUS.Core.struct import Struct
-from ICARUS.Database import DB
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Environment.definition import Environment
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
+from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
+from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 jsonpickle_pd.register_handlers()

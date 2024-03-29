@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from .disturbances import Disturbance as dst
 
 if TYPE_CHECKING:
-    from ICARUS.Flight_Dynamics.state import State
+    from ICARUS.flight_dynamics.state import State
 
 
 def longitudal_pertrubations(

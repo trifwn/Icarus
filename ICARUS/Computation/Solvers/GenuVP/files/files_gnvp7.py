@@ -12,19 +12,19 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.Airfoils.airfoil_polars import Polars
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Core.formatting import ff2
-from ICARUS.Core.formatting import ff3
-from ICARUS.Core.formatting import ff4
-from ICARUS.Core.formatting import sps
-from ICARUS.Core.formatting import tabs
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import GenuVP7_exe
+from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.core.formatting import ff2
+from ICARUS.core.formatting import ff3
+from ICARUS.core.formatting import ff4
+from ICARUS.core.formatting import sps
+from ICARUS.core.formatting import tabs
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import GenuVP7_exe
 
 
 def input_file(maxiter: float, timestep: float) -> None:

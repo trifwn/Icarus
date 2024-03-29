@@ -3,17 +3,17 @@ from turtle import st
 from typing import Any
 
 import matplotlib.pyplot as plt
-from matplotlib.text import Text
 import numpy as np
 from matplotlib import lines
 from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from matplotlib.text import Text
 
-from ICARUS.Core.types import ComplexArray
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
+from ICARUS.core.types import ComplexArray
+from ICARUS.flight_dynamics.state import State
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 
 
 class AirplanePolarOptimizationVisualizer(OptimizationCallback):
@@ -24,7 +24,7 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
         self.initial_state: State = initial_state
         self.lines: dict[str, Line2D] = {}
         self.collections: dict[str, Collection] = {}
-        self.text: Text = None
+        self.text: Text | None = None
 
     def setup(
         self,
@@ -42,17 +42,17 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
         axs.append(fig.add_subplot(2, 2, 4))
 
         try:
-            aoa = self.initial_state.polar["AoA"]
-            CL = self.initial_state.polar["CL"]
-            CD = self.initial_state.polar["CD"]
-            Cm = self.initial_state.polar["Cm"]
+            aoa = self.initial_state.polar["AoA"].to_numpy()
+            CL = self.initial_state.polar["CL"].to_numpy()
+            CD = self.initial_state.polar["CD"].to_numpy()
+            Cm = self.initial_state.polar["Cm"].to_numpy()
             cl_over_cd = CL / CD
         except:
-            aoa = []
-            CL = []
-            CD = []
-            Cm = []
-            cl_over_cd = []
+            aoa = np.array([], dtype=float)
+            CL = np.array([], dtype=float)
+            CD = np.array([], dtype=float)
+            Cm = np.array([], dtype=float)
+            cl_over_cd = np.array([], dtype=float)
 
         #
         axs[0].plot(aoa, CL, label="Initial", color="b", linestyle="--", linewidth=1)
@@ -131,12 +131,12 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
             ha="center",
             va="center",
         )
-        
+
         if "AoA" in self.initial_state.trim:
             text: Text = axs[0].text(
-                x = self.initial_state.trim['AoA'],
-                y = self.initial_state.trim['CL'],
-                s = f"AoA: {self.initial_state.trim['AoA']:.2f} with V: {self.initial_state.trim['U']:.2f}",
+                x=self.initial_state.trim["AoA"],
+                y=self.initial_state.trim["CL"],
+                s=f"AoA: {self.initial_state.trim['AoA']:.2f} with V: {self.initial_state.trim['U']:.2f}",
                 ha="center",
                 va="center",
             )
@@ -223,8 +223,16 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
             collection = self.collections["CL_CD"]
             collection.set_offsets(np.array([state.trim["AoA"], state.trim["CL"] / state.trim["CD"]]))
             # Add text annotations for state trim velocity and aoa
-            self.text.set_text(f"AoA: {state.trim['AoA']:.2f} with V: {state.trim['U']:.2f}")
-
+            if isinstance(self.text, Text):
+                self.text.set_text(f"AoA: {state.trim['AoA']:.2f} with V: {state.trim['U']:.2f}")
+            else:
+                self.text = axs[0].text(
+                    x=state.trim["AoA"],
+                    y=state.trim["CL"],
+                    s=f"AoA: {state.trim['AoA']:.2f} with V: {state.trim['U']:.2f}",
+                    ha="center",
+                    va="center",
+                )
 
         # Update the figure
         fig.canvas.draw()

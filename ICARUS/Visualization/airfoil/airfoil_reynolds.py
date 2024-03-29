@@ -7,10 +7,10 @@ from matplotlib.markers import MarkerStyle
 from numpy import ndarray
 from pandas import Series
 
-from ICARUS.Core.struct import Struct
-from ICARUS.Database import DB
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
+from ICARUS.visualization import colors_
+from ICARUS.visualization import markers
 
 
 def plot_airfoil_reynolds(

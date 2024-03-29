@@ -1,7 +1,7 @@
 import jax
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 @jax.jit

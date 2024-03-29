@@ -1,8 +1,10 @@
 """
 DATA FROM EMBRAER E190 AIRCRAFT.
 """
-from ICARUS.Conceptual.concept_airplane import ConceptAirplane
-from ICARUS.Conceptual.Criteria.FAR.landing_criterion import far_inverse_landing_criterion_cl_max
+from ICARUS.conceptual.concept_airplane import ConceptAirplane
+from ICARUS.conceptual.criteria.FAR.landing_criterion import (
+    far_inverse_landing_criterion_cl_max,
+)
 
 
 UNITS_IMPERIAL: dict[str, float] = {

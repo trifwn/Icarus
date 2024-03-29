@@ -11,7 +11,7 @@ from pandas import DataFrame
 from tabulate import tabulate
 
 from .input import Input
-from ICARUS.Computation.Solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers.solver_parameters import Parameter
 
 jsonpickle_pd.register_handlers()
 jsonpickle_numpy.register_handlers()

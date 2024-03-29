@@ -1,7 +1,7 @@
 from typing import Callable
 
-from ICARUS.Core.types import AnyFloat
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import AnyFloat
+from ICARUS.core.types import FloatArray
 
 
 class Trajectory:

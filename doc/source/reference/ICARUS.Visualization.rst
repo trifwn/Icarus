@@ -1,6 +1,6 @@
-.. .. _ICARUS.Visualization:
+.. .. _ICARUS.visualization:
 
-.. automodule:: ICARUS.Visualization
+.. automodule:: ICARUS.visualization
    :noindex:
    :no-members:
    :no-inherited-members:

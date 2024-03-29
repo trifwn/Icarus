@@ -2,12 +2,12 @@ from copy import deepcopy
 from typing import Any
 from typing import Callable
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Optimization import MAX_FLOAT
-from ICARUS.Optimization import MAX_INT
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
-from ICARUS.Optimization.Optimizers.general_optimizer import General_SOO_Optimizer
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.core.types import FloatArray
+from ICARUS.optimization import MAX_FLOAT
+from ICARUS.optimization import MAX_INT
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from ICARUS.optimization.optimizers.general_optimizer import General_SOO_Optimizer
+from ICARUS.vehicle.plane import Airplane
 
 
 class Airplane_Optimizer(General_SOO_Optimizer):

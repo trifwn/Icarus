@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
-    from ICARUS.Flight_Dynamics.state import State
+    from ICARUS.flight_dynamics.state import State
 
 
 def eigenvalue_analysis(

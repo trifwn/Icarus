@@ -1,7 +1,7 @@
 import os
 
-from ICARUS.Database import DB3D
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.database import DB3D
+from ICARUS.vehicle.plane import Airplane
 
 
 def get_max_iterations_3(plane: Airplane, case: str) -> int:

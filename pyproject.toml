@@ -33,6 +33,9 @@ dependencies = [
     "gitpython",
     "airfoils @git+https://github.com/trifwn/airfoils.git",
     "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
+    'jax',
+    'jaxlib',
+    'jaxtyping'
 ]
 dynamic = ["version"]
 

@@ -1,7 +1,7 @@
 import numpy as np
 
 from .engine import ConceptualEngine
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 class ConceptualPlane:

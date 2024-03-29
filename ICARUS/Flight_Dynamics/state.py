@@ -16,16 +16,16 @@ from tabulate import tabulate
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
-from .Stability.lateral import lateral_stability_finite_differences
-from .Stability.longitudal import longitudal_stability_finite_differences
+from .stability.lateral import lateral_stability_finite_differences
+from .stability.longitudal import longitudal_stability_finite_differences
 from .trim import trim_state
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Environment.definition import Environment
-from ICARUS.Flight_Dynamics.Stability.state_space import StateSpace
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 if TYPE_CHECKING:
-    from ICARUS.Vehicle.plane import Airplane
+    from ICARUS.vehicle.plane import Airplane
 
 
 class State:
@@ -198,7 +198,7 @@ class State:
             marker_x = MarkerStyle("x")
             axs[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
-        for j in range(0, i+1):
+        for j in range(0, i + 1):
             axs[j].set_ylabel("Imaginary")
             axs[j].set_xlabel("Real")
             axs[j].grid()

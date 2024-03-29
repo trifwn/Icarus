@@ -9,7 +9,7 @@ from .landing_criterion import far_1_landing
 from .range import range_criterion
 from .takeoff_criterion import far_3_takeoff
 from .useful_load import usefull_load_criterion
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 def get_all_far_criteria(
@@ -146,20 +146,37 @@ def get_all_far_criteria(
     thrust_c: float = OP_thrust_loading * W_G
     if plot:
         if start_plot:
-            plt.plot(wing_loading_far_1, thrust_loading_far_1, color='k', label="Landing")
-            plt.plot(wing_loading_far_2, thrust_loading_far_2, color='m', label="Failed Approach")
-            plt.plot(wing_loading_far_3, thrust_loading_far_3, color='r', label="Takeoff")
-            plt.plot(wing_loading_far_4, thrust_loading_far_4, color='b', label="Climb")
-            plt.plot(wing_loading_far_5, thrust_loading_far_5, color='g', label="Cruise")
-            plt.scatter(OP_wing_loading, OP_thrust_loading, label="Operating Point", s=75, marker=MarkerStyle('x'))
-            plt.scatter(MTOW / AREA, THRUST / MTOW, label="EMBRAER 170", s=75, marker=MarkerStyle('x'))
+            plt.plot(wing_loading_far_1, thrust_loading_far_1, color="k", label="Landing")
+            plt.plot(
+                wing_loading_far_2,
+                thrust_loading_far_2,
+                color="m",
+                label="Failed Approach",
+            )
+            plt.plot(wing_loading_far_3, thrust_loading_far_3, color="r", label="Takeoff")
+            plt.plot(wing_loading_far_4, thrust_loading_far_4, color="b", label="Climb")
+            plt.plot(wing_loading_far_5, thrust_loading_far_5, color="g", label="Cruise")
+            plt.scatter(
+                OP_wing_loading,
+                OP_thrust_loading,
+                label="Operating Point",
+                s=75,
+                marker=MarkerStyle("x"),
+            )
+            plt.scatter(
+                MTOW / AREA,
+                THRUST / MTOW,
+                label="EMBRAER 170",
+                s=75,
+                marker=MarkerStyle("x"),
+            )
         else:
             # plt.plot(wing_loading_far_1,thrust_loading_far_1, color = 'k' )
             # plt.plot(wing_loading_far_2,thrust_loading_far_2, color = 'm')
             # plt.plot(wing_loading_far_3,thrust_loading_far_3, color = 'r' )
             # plt.plot(wing_loading_far_4,thrust_loading_far_4, color = 'b' )
             # plt.plot(wing_loading_far_5,thrust_loading_far_5, color = 'g' )
-            plt.scatter(OP_wing_loading, OP_thrust_loading, marker=MarkerStyle('x'))
+            plt.scatter(OP_wing_loading, OP_thrust_loading, marker=MarkerStyle("x"))
 
         if show_plot:
             plt.legend()
@@ -167,4 +184,15 @@ def get_all_far_criteria(
             plt.ylabel("Thrust Loading (lbf/lb)")
             plt.grid()
             plt.show()
-    return far_1, far_2, far_3, far_4, far_5, W_G, S, thrust_c, OP_thrust_loading, OP_wing_loading
+    return (
+        far_1,
+        far_2,
+        far_3,
+        far_4,
+        far_5,
+        W_G,
+        S,
+        thrust_c,
+        OP_thrust_loading,
+        OP_wing_loading,
+    )

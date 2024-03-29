@@ -2,7 +2,7 @@ import numpy as np
 
 from .helper_functions import get_climb_rate_failed_approach
 from .helper_functions import shape_like
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 # FAR 2 -> 25.112

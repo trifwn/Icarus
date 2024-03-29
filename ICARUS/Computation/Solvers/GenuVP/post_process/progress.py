@@ -2,7 +2,7 @@ import os
 import re
 from typing import Optional
 
-from ICARUS.Core.file_tail import tail
+from ICARUS.core.file_tail import tail
 
 
 def latest_time(
@@ -19,9 +19,9 @@ def latest_time(
         Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle where the simulation is, and an error flag.
     """
 
-    filename: str = os.path.join(CASEDIR, f'gnvp{genu_version}.out')
+    filename: str = os.path.join(CASEDIR, f"gnvp{genu_version}.out")
     try:
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             data_b: list[bytes] = tail(f, 300)
         data: list[str] = [line.decode() for line in data_b]
     except FileNotFoundError:
@@ -32,7 +32,7 @@ def latest_time(
     error: bool = any(re.search(r"forrtl", x) for x in data)
 
     # ITERATION
-    matches: list[str] = [x.split('   ')[1] for x in data if re.search(r"NTIME =", x)]
+    matches: list[str] = [x.split("   ")[1] for x in data if re.search(r"NTIME =", x)]
     times: list[int] = [int(x) for x in matches]
     try:
         latest_t: int = max(times)

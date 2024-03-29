@@ -1,11 +1,11 @@
 import numpy as np
 
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
@@ -29,7 +29,7 @@ def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Wing_Segment(
+    main_wing = WingSegment(
         name="wing",
         root_airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
@@ -45,7 +45,7 @@ def hermes_main_wing(airfoils: Struct, name: str) -> Airplane:
     )
     # main_wing.plotWing()
 
-    lifting_surfaces: list[Lifting_Surface] = [main_wing]
+    lifting_surfaces: list[WingSurface] = [main_wing]
     airplane = Airplane(name, lifting_surfaces)
 
     # airplane.visAirplane()

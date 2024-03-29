@@ -2,12 +2,12 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.Core.types import DataDict
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.types import DataDict
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def wing_var_chord_offset(
@@ -39,7 +39,7 @@ def wing_var_chord_offset(
         dtype=float,
     )
 
-    main_wing = Wing_Segment(
+    main_wing = WingSegment(
         name="wing",
         root_airfoil=airfoils["NACA4415"],
         origin=origin + wing_position,
@@ -54,7 +54,7 @@ def wing_var_chord_offset(
         mass=0.670,
     )
     # main_wing.plotWing()
-    lifting_surfaces: list[Lifting_Surface] = [main_wing]
+    lifting_surfaces: list[WingSurface] = [main_wing]
     # main_wing.plotWing()
 
     added_masses: list[tuple[float, FloatArray, str]] = [

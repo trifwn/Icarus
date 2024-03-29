@@ -3,7 +3,7 @@ import re
 
 import requests
 
-from ICARUS.Database import DB2D
+from ICARUS.database import DB2D
 
 # Target URL with airfoil links
 url = "https://m-selig.ae.illinois.edu/ads/coord_database.html"

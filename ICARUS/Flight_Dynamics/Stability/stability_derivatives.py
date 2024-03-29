@@ -1,6 +1,6 @@
-from ICARUS.Core.struct import Struct
-from ICARUS.Flight_Dynamics.Stability.state_space import LateralStateSpace
-from ICARUS.Flight_Dynamics.Stability.state_space import LongitudalStateSpace
+from ICARUS.core.struct import Struct
+from ICARUS.flight_dynamics.stability.state_space import LateralStateSpace
+from ICARUS.flight_dynamics.stability.state_space import LongitudalStateSpace
 
 
 class StabilityDerivativesDS(Struct):

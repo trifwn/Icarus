@@ -7,7 +7,7 @@ import numpy as np
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Computation.Solvers.Foil2Wake.post_process.progress import latest_time
+from ICARUS.computation.solvers.Foil2Wake.post_process.progress import latest_time
 
 
 def serial_monitor(

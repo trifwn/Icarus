@@ -1,6 +1,6 @@
-.. .. _ICARUS.Enviroment:
+.. .. _ICARUS.enviroment:
 
-.. automodule:: ICARUS.Environment
+.. automodule:: ICARUS.environment
    :noindex:
    :no-members:
    :no-inherited-members:

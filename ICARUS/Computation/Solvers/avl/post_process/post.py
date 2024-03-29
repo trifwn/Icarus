@@ -3,17 +3,18 @@ import os
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import DB3D
-from ICARUS.Database.utils import angle_to_case
-from ICARUS.Database.utils import disturbance_to_case
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import DB3D
+from ICARUS.database.utils import angle_to_case
+from ICARUS.database.utils import disturbance_to_case
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 class AVLPostReadError(Exception):
     pass
+
 
 def csplit(input_file: str, pattern: str) -> list[str]:
     with open(input_file) as file:
@@ -69,7 +70,7 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
             else:
                 Cms.append(float(Cm[34:41]))
         except ValueError:
-            raise AVLPostReadError(f"Error reading file {file}") 
+            raise AVLPostReadError(f"Error reading file {file}")
     Fz = np.array(CLs) * plane.S * state.dynamic_pressure
     Fx = np.array(CDs) * plane.S * state.dynamic_pressure
     My = np.array(Cms) * plane.S * state.dynamic_pressure * plane.mean_aerodynamic_chord

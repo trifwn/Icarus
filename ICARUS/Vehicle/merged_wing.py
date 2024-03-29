@@ -5,20 +5,20 @@ Merged Wing Class
 """
 import numpy as np
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.strip import Strip
-from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.strip import Strip
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
 
 
-class MergedWing(Lifting_Surface):
+class MergedWing(WingSurface):
     "Class to represent a Wing of an airplane"
 
     def __init__(
         self,
         name: str,
-        wing_segments: list[Lifting_Surface],
+        wing_segments: list[WingSurface],
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
     ) -> None:
         """
@@ -30,7 +30,7 @@ class MergedWing(Lifting_Surface):
         """
         self.name: str = name
         # Create a grid of points to store all Wing Segments
-        self.wing_segments: list[Lifting_Surface] = wing_segments
+        self.wing_segments: list[WingSurface] = wing_segments
 
         # Define the Coordinate System of the Merged Wing
         # For the orientation of the wing we default to 0,0,0
@@ -115,22 +115,22 @@ class MergedWing(Lifting_Surface):
         self._orientation: FloatArray = orientation
 
         # Define the mass of the wing
-        self._chord_dist = []
-        self._span_dist = []
-        self._xoffset_dist = []
-        self._zoffset_dist = []
+        _chord_dist: list[FloatArray] = []
+        _span_dist: list[FloatArray] = []
+        _xoffset_dist: list[FloatArray] = []
+        _zoffset_dist: list[FloatArray] = []
 
         for segment in wing_segments:
             seg_span_dist = segment._span_dist + segment.origin[1]
-            self._chord_dist.extend(segment._chord_dist.tolist())
-            self._span_dist.extend(seg_span_dist.tolist())
-            self._xoffset_dist.extend(segment._xoffset_dist.tolist())
-            self._zoffset_dist.extend(segment._zoffset_dist.tolist())
+            _chord_dist.extend(segment._chord_dist.tolist())
+            _span_dist.extend(seg_span_dist.tolist())
+            _xoffset_dist.extend(segment._xoffset_dist.tolist())
+            _zoffset_dist.extend(segment._zoffset_dist.tolist())
 
-        self._chord_dist = np.array(self._chord_dist, dtype = float)
-        self._span_dist = np.array(self._span_dist, dtype = float)
-        self._xoffset_dist = np.array(self._xoffset_dist, dtype = float)
-        self._zoffset_dist = np.array(self._zoffset_dist, dtype = float)
+        self._chord_dist = np.array(_chord_dist, dtype=float)
+        self._span_dist = np.array(_span_dist, dtype=float)
+        self._xoffset_dist = np.array(_xoffset_dist, dtype=float)
+        self._zoffset_dist = np.array(_zoffset_dist, dtype=float)
 
         # Variable Initialization
         NM = 0
@@ -138,9 +138,9 @@ class MergedWing(Lifting_Surface):
             NM += (segment.N) * (segment.M)
         self.num_grid_points: int = NM
         # Grid Variables
-        self.grid: FloatArray = np.empty((NM, 3), dtype = float)  # Camber Line
-        self.grid_lower: FloatArray = np.empty((NM, 3), dtype = float)
-        self.grid_upper: FloatArray = np.empty((NM, 3), dtype = float)
+        self.grid: FloatArray = np.empty((NM, 3), dtype=float)  # Camber Line
+        self.grid_lower: FloatArray = np.empty((NM, 3), dtype=float)
+        self.grid_upper: FloatArray = np.empty((NM, 3), dtype=float)
 
         # Panel Variables
         NM = 0
@@ -148,9 +148,9 @@ class MergedWing(Lifting_Surface):
             NM += (segment.N - 1) * (segment.M - 1)
         self.num_panels: int = NM
 
-        self.panels: FloatArray = np.empty((NM, 4, 3), dtype = float)
-        self.panels_lower: FloatArray = np.empty((NM, 4, 3), dtype = float)
-        self.panels_upper: FloatArray = np.empty((NM, 4, 3), dtype = float)
+        self.panels: FloatArray = np.empty((NM, 4, 3), dtype=float)
+        self.panels_lower: FloatArray = np.empty((NM, 4, 3), dtype=float)
+        self.panels_upper: FloatArray = np.empty((NM, 4, 3), dtype=float)
 
         # Initialize Strips
         self.strips: list[Strip] = []
@@ -165,7 +165,7 @@ class MergedWing(Lifting_Surface):
         self.S: float = 0.0
 
         # Initialize Volumes
-        self.volume_distribution: FloatArray = np.empty(self.num_panels, dtype = float)
+        self.volume_distribution: FloatArray = np.empty(self.num_panels, dtype=float)
         self.volume: float = 0.0
 
         ####### Calculate Wing Parameters #######
@@ -185,9 +185,9 @@ class MergedWing(Lifting_Surface):
             segment.create_grid()
             NM += segment.N * segment.M
 
-        grid: FloatArray = np.empty((NM, 3), dtype = float)
-        grid_lower: FloatArray = np.empty((NM, 3), dtype = float)
-        grid_upper: FloatArray = np.empty((NM, 3), dtype = float)
+        grid: FloatArray = np.empty((NM, 3), dtype=float)
+        grid_lower: FloatArray = np.empty((NM, 3), dtype=float)
+        grid_upper: FloatArray = np.empty((NM, 3), dtype=float)
 
         NM = 0
         # Stack all the grid points of the wing segments
@@ -211,17 +211,17 @@ class MergedWing(Lifting_Surface):
         for segment in self.wing_segments:
             NM += (segment.N - 1) * (segment.M - 1)
 
-        panels: FloatArray = np.empty((NM, 4, 3), dtype = float)
-        control_points: FloatArray = np.empty((NM, 3), dtype = float)
-        control_nj: FloatArray = np.empty((NM, 3), dtype = float)
+        panels: FloatArray = np.empty((NM, 4, 3), dtype=float)
+        control_points: FloatArray = np.empty((NM, 3), dtype=float)
+        control_nj: FloatArray = np.empty((NM, 3), dtype=float)
 
-        panels_lower: FloatArray = np.empty((NM, 4, 3), dtype = float)
-        control_points_lower: FloatArray = np.empty((NM, 3), dtype = float)
-        control_nj_lower: FloatArray = np.empty((NM, 3), dtype = float)
+        panels_lower: FloatArray = np.empty((NM, 4, 3), dtype=float)
+        control_points_lower: FloatArray = np.empty((NM, 3), dtype=float)
+        control_nj_lower: FloatArray = np.empty((NM, 3), dtype=float)
 
-        panels_upper: FloatArray = np.empty((NM, 4, 3), dtype = float)
-        control_points_upper: FloatArray = np.empty((NM, 3), dtype = float)
-        control_nj_upper: FloatArray = np.empty((NM, 3), dtype = float)
+        panels_upper: FloatArray = np.empty((NM, 4, 3), dtype=float)
+        control_points_upper: FloatArray = np.empty((NM, 3), dtype=float)
+        control_nj_upper: FloatArray = np.empty((NM, 3), dtype=float)
 
         NM = 0
         for segment in self.wing_segments:
@@ -270,6 +270,8 @@ class MergedWing(Lifting_Surface):
         self.area = 0.0
         self.S = 0.0
         for segment in self.wing_segments:
+            if segment.name.upper().startswith("PADDING"):
+                continue
             segment.calculate_area()
             self.area += segment.area
             self.S += segment.S
@@ -318,7 +320,7 @@ class MergedWing(Lifting_Surface):
         """
         Calculates the center of mass of the wing
         """
-        cog = np.zeros(3)
+        cog = np.zeros(3, dtype=float)
         x_cm = 0.0
         y_cm = 0.0
         z_cm = 0.0
@@ -360,7 +362,15 @@ class MergedWing(Lifting_Surface):
         for segment in self.wing_segments:
             mass += segment.mass
         return mass
-    
+
+    @mass.setter
+    def mass(self, new_mass: float) -> None:
+        old_mass = self.mass
+        surface = self.area
+
+        for segment in self.wing_segments:
+            segment.mass = (segment.area / surface) * segment.mass * (new_mass / old_mass)
+
     @property
     def CG(self) -> FloatArray:
         return self.calculate_center_mass()

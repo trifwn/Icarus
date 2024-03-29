@@ -1,19 +1,19 @@
 """
 =================================
-ICARUS Aerodynamics Module
+ICARUS aerodynamics Module
 =================================
 
 .. toctree: generated/
     :hidden:
     :noindex:
 
-    ICARUS.Aerodynamics.Potential
+    ICARUS.aerodynamics.potential
 
-.. module:: ICARUS.Aerodynamics
+.. module:: ICARUS.aerodynamics
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for aerodynamic analysis on ICARUS objects.
 
-.. currentmodule:: ICARUS.Aerodynamics
+.. currentmodule:: ICARUS.aerodynamics
 
 This package contains class and routines for aerodynamic analysis on ICARUS objects.
 Currently, the package contains a module for potential flow analysis.
@@ -24,10 +24,10 @@ Potential Flow Analysis
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Aerodynamics.Potential - Potential flow analysis classes and definitions
+    ICARUS.aerodynamics.potential - Potential flow analysis classes and definitions
 
 """
 
-__all__ = ['Potential']
+__all__ = ['potential']
 
-from . import Potential
+from . import potential

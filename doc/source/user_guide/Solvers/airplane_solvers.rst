@@ -1,4 +1,4 @@
-Airplane Solvers
+Airplane solvers
 ==============================
 
 The airplane solvers are a set of solvers that are used to solve the flow around an airplane. The solvers currently available are:
@@ -11,19 +11,19 @@ The airplane solvers are a set of solvers that are used to solve the flow around
 GenuVP3
 --------------------------------------
 
-.. include:: ../../../ICARUS/Solvers/Airplane/gnvp3.py
+.. include:: ../../../ICARUS/solvers/Airplane/gnvp3.py
    :literal:
 
 
 GenuVP7
 --------------------------------------
 
-.. include:: ../../../ICARUS/Solvers/Airplane/gnvp7.py
+.. include:: ../../../ICARUS/solvers/Airplane/gnvp7.py
    :literal:
 
 
 LSPT
 --------------------------------------
 
-.. include:: ../../../ICARUS/Solvers/Airplane/lspt.py
+.. include:: ../../../ICARUS/solvers/Airplane/lspt.py
    :literal:

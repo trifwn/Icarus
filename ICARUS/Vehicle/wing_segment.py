@@ -4,17 +4,17 @@ from typing import Callable
 
 import numpy as np
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.utils import DiscretizationType
-from ICARUS.Vehicle.utils import DistributionType
-from ICARUS.Vehicle.utils import equal_spacing_function
-from ICARUS.Vehicle.utils import linear_distribution_function_factory
-from ICARUS.Vehicle.utils import SymmetryAxes
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import DiscretizationType
+from ICARUS.vehicle.utils import DistributionType
+from ICARUS.vehicle.utils import equal_spacing_function
+from ICARUS.vehicle.utils import linear_distribution_function_factory
+from ICARUS.vehicle.utils import SymmetryAxes
 
 
-class Wing_Segment(Lifting_Surface):
+class WingSegment(WingSurface):
     def __init__(
         self,
         name: str,
@@ -242,7 +242,7 @@ class Wing_Segment(Lifting_Surface):
     # the wing segment and store the new values
     @staticmethod
     def recalculation(func: Callable[..., None]) -> Callable[..., None]:
-        def wrapper(self: "Wing_Segment", *args: Any, **kwargs: Any) -> None:
+        def wrapper(self: "WingSegment", *args: Any, **kwargs: Any) -> None:
             # Call the function
             func(self, *args, **kwargs)
             # Recalculate the wing segment

@@ -10,8 +10,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.GenuVP.post_process.strips import get_strip_data
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.GenuVP.post_process.strips import get_strip_data
+from ICARUS.vehicle.plane import Airplane
 
 
 def gnvp_strips_3d(

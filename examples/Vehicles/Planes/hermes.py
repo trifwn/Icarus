@@ -1,11 +1,11 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.utils import SymmetryAxes
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def hermes(name: str) -> Airplane:
@@ -30,7 +30,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Wing_Segment(
+    main_wing = WingSegment(
         name="wing",
         root_airfoil="NACA4415",
         origin=origin + wing_position,
@@ -57,7 +57,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
 
-    elevator = Wing_Segment(
+    elevator = WingSegment(
         name="elevator",
         root_airfoil="NACA0008",
         origin=origin + elevator_pos,
@@ -83,7 +83,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
 
-    rudder = Wing_Segment(
+    rudder = WingSegment(
         name="rudder",
         root_airfoil="NACA0008",
         origin=origin + rudder_position,
@@ -100,7 +100,7 @@ def hermes(name: str) -> Airplane:
     )
     # rudder.plotWing()
 
-    lifting_surfaces: list[Lifting_Surface] = [main_wing, elevator, rudder]
+    lifting_surfaces: list[WingSurface] = [main_wing, elevator, rudder]
 
     point_masses = [
         (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "engine"),  # Engine

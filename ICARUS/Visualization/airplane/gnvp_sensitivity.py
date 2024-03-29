@@ -3,10 +3,10 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas import Series
 
-from ICARUS.Core.struct import Struct
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
+from ICARUS.core.struct import Struct
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.visualization import colors_
+from ICARUS.visualization import markers
 
 
 def plot_sensitivity(

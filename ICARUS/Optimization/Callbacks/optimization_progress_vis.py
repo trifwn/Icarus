@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from scipy.optimize import OptimizeResult
 
-from ICARUS.Optimization.Callbacks.optimization_callback import OptimizationCallback
+from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 
 
 class OptimizationProgress(OptimizationCallback):
@@ -140,7 +140,7 @@ class OptimizationProgress(OptimizationCallback):
         line = self.lines["Best Objective Function Value"]
         ax = self.axes["Best Objective Function Value"]
         try:
-        # Get the data of the line
+            # Get the data of the line
             xdata, ydata = line.get_data()
             # Append the new data
             xdata = np.append(xdata, iteration)
@@ -157,6 +157,10 @@ class OptimizationProgress(OptimizationCallback):
         xdata = np.append(xdata, iteration)
         ydata = np.append(ydata, fitness)
         line.set_data(xdata, ydata)
+
+        # Enable log scale if the values are too far apart
+        if np.max(ydata) / np.min(ydata) > 100:
+            ax.set_yscale("log")
 
         # Update the penalty function value
         line = self.lines["Current Penalty Function Value"]

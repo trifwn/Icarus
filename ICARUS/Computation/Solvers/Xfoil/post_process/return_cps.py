@@ -4,8 +4,8 @@ import numpy as np
 from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
-from ICARUS.Computation.Solvers.Xfoil.utils import angles_sepatation
-from ICARUS.Core.types import FloatArray
+from ICARUS.computation.solvers.Xfoil.utils import angles_sepatation
+from ICARUS.core.types import FloatArray
 
 
 def return_cps(

@@ -7,9 +7,9 @@ from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.Xfoil.post_process.polars import save_multiple_reyn
-from ICARUS.Core.types import FloatArray
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.Xfoil.post_process.polars import save_multiple_reyn
+from ICARUS.core.types import FloatArray
 
 
 def single_reynolds_run(
@@ -152,10 +152,7 @@ def multiple_reynolds_parallel(
     data: list[FloatArray] = []
 
     with Pool(processes=CPU_TO_USE) as pool:
-        args_list = [
-            (reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options)
-            for reyn in reynolds
-        ]
+        args_list = [(reyn, mach, min_aoa, max_aoa, aoa_step, airfoil, solver_options) for reyn in reynolds]
         data = list(
             tqdm(
                 pool.imap(single_reynolds_star_run, args_list),

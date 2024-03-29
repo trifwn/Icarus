@@ -1,6 +1,6 @@
-.. .. _ICARUS.Database:
+.. .. _ICARUS.database:
 
-.. automodule:: ICARUS.Database
+.. automodule:: ICARUS.database
    :noindex:
    :no-members:
    :no-inherited-members:

@@ -4,9 +4,9 @@ import os
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
 
 
 def save_multiple_reyn(
@@ -45,9 +45,7 @@ def save_multiple_reyn(
     # If the airfoil doesn't exist in the DB, save it
     files_in_folder = os.listdir(airfoil_dir)
     if airfoil.file_name in files_in_folder:
-        logging.info(
-            f"{airfoil.name.upper()} already exists in the database. We do not need to save it."
-        )
+        logging.info(f"{airfoil.name.upper()} already exists in the database. We do not need to save it.")
     else:
         airfoil.save_selig(airfoil_dir)
 

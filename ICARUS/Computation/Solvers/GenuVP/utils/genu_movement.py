@@ -1,8 +1,8 @@
 from typing import Any
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Flight_Dynamics.disturbances import Disturbance
-from ICARUS.Vehicle.lifting_surface import Lifting_Surface
+from ICARUS.core.types import FloatArray
+from ICARUS.flight_dynamics.disturbances import Disturbance
+from ICARUS.vehicle.surface import WingSurface
 
 
 class Movement:
@@ -115,7 +115,7 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
 
 
 def define_movements(
-    surfaces: list[Lifting_Surface],
+    surfaces: list[WingSurface],
     CG: FloatArray,
     orientation: FloatArray | list[float],
     disturbances: list[Disturbance] = [],

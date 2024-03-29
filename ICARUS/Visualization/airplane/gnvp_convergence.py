@@ -3,11 +3,11 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.visualization import colors_
+from ICARUS.visualization import markers
 
 
 def plot_convergence(

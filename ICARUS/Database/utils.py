@@ -1,4 +1,4 @@
-from ICARUS.Flight_Dynamics.disturbances import Disturbance
+from ICARUS.flight_dynamics.disturbances import Disturbance
 
 
 def angle_to_case(angle: float) -> str:
