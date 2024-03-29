@@ -6,17 +6,17 @@ ICARUS Flight Dynamics Package
 .. toctree: generated/
     :hidden:
 
-    ICARUS.Flight_Dynamics.disturbances
-    ICARUS.Flight_Dynamics.perturbations
-    ICARUS.Flight_Dynamics.state
-    ICARUS.Flight_Dynamics.trim
-    ICARUS.Flight_Dynamics.Stability
+    ICARUS.flight_dynamics.disturbances
+    ICARUS.flight_dynamics.perturbations
+    ICARUS.flight_dynamics.state
+    ICARUS.flight_dynamics.trim
+    ICARUS.flight_dynamics.stability
 
-.. module:: ICARUS.Flight_Dynamics
+.. module:: ICARUS.flight_dynamics
     :platform: Unix, Windows
     :synopsis: This package contains classes and routines for flight dynamics modelling.
 
-.. currentmodule:: ICARUS.Flight_Dynamics
+.. currentmodule:: ICARUS.flight_dynamics
 
 Flight Dynamics Modelling
 ----------------------------
@@ -27,10 +27,10 @@ To model the flight dynamics of an aircraft, the following classes are defined:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Flight_Dynamics.disturbances
-    ICARUS.Flight_Dynamics.perturbations
-    ICARUS.Flight_Dynamics.state
-    ICARUS.Flight_Dynamics.trim
+    ICARUS.flight_dynamics.disturbances
+    ICARUS.flight_dynamics.perturbations
+    ICARUS.flight_dynamics.state
+    ICARUS.flight_dynamics.trim
 
 
 Stability Analysis
@@ -42,12 +42,11 @@ Difference methods in the following package:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Flight_Dynamics.Stability
+    ICARUS.flight_dynamics.stability
 """
-from . import disturbances
-from . import perturbations
-from . import Stability
-from . import state
-from . import trim
-
-__all__ = ["disturbances", "perturbations", "state", "trim", "Stability"]
+# from . import disturbances
+# from . import perturbations
+# from . import Stability
+# from . import state
+# from . import trim
+# __all__ = ["disturbances", "perturbations", "state", "trim", "Stability"]

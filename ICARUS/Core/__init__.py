@@ -6,30 +6,30 @@ ICARUS Core package
 .. toctree: generated/
     :hidden:
 
-    ICARUS.Core.formatting
-    ICARUS.Core.rotate
-    ICARUS.Core.struct
-    ICARUS.Core.file_tail
-    ICARUS.Core.types
-    ICARUS.Core.units
+    ICARUS.core.formatting
+    ICARUS.core.rotate
+    ICARUS.core.struct
+    ICARUS.core.file_tail
+    ICARUS.core.types
+    ICARUS.core.units
 
-.. module:: ICARUS.Core
+.. module:: ICARUS.core
     :platform: Unix, Windows
     :synopsis: This package contains core utility routines for ICARUS.
 
-.. currentmodule:: ICARUS.Core
+.. currentmodule:: ICARUS.core
 
 The ICARUS Core package contains routines and classes that are used throughtout ICARUS but are not specific to any particular module. The package is divided in the following files:
 
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Core.formatting
-    ICARUS.Core.rotate
-    ICARUS.Core.struct
-    ICARUS.Core.file_tail
-    ICARUS.Core.types
-    ICARUS.Core.units
+    ICARUS.core.formatting
+    ICARUS.core.rotate
+    ICARUS.core.struct
+    ICARUS.core.file_tail
+    ICARUS.core.types
+    ICARUS.core.units
 
 
 """

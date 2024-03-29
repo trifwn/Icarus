@@ -7,9 +7,9 @@ from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.Xfoil.post_process.polars import save_multiple_reyn
-from ICARUS.Core.types import FloatArray
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.Xfoil.post_process.polars import save_multiple_reyn
+from ICARUS.core.types import FloatArray
 
 
 def single_reynolds_run(
@@ -23,30 +23,37 @@ def single_reynolds_run(
 ) -> FloatArray:
     xf = XFoil()
     xf.Re = Reyn
-    # xf.M = MACH
+    xf.M = 0.0
+
+    pts = airfoil.selig
+    xpts = pts[0]
+    ypts = pts[1]
+    xf_airf_obj = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = xf_airf_obj
     # xf.print = True
     for key, value in solver_options.items():
-        setattr(xf, key, value)
+        if key == "repanel_n":
+            print(f"Repaneling Airfoil with {value}")
+            xf.repanel(value)
+        else:
+            setattr(xf, key, value)
 
-    xpts, ypts = airfoil.selig
-    naca = XFAirfoil(x=xpts, y=ypts)
-    xf.airfoil = naca
-    if xf.max_iter > 1000:
-        xf.max_iter = 1000
+    # xf.filter()
+    # xf.max_iter = 500
 
     # If the values are both negative and positive split the into 2 run
-    if AoAmin < 0 and AoAmax > 0:
-        aXF1, clXF1, cdXF1, cmXF1, cpXF1 = xf.aseq(0, AoAmin, -AoAstep)
-        aXF2, clXF2, cdXF2, cmXF2, cpXF2 = xf.aseq(0, AoAmax, AoAstep)
-        aXF = np.concatenate((aXF1, aXF2[1:]))
-        clXF = np.concatenate((clXF1, clXF2[1:]))
-        cdXF = np.concatenate((cdXF1, cdXF2[1:]))
-        cmXF = np.concatenate((cmXF1, cmXF2[1:]))
-        cpXF = np.concatenate((cpXF1, cpXF2[1:]))
-    else:
-        aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
-
-    return np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
+    # if AoAmin < 0 and AoAmax > 0:
+    #     aXF1, clXF1, cdXF1, cmXF1, cpXF1 = xf.aseq(0, AoAmin, -AoAstep)
+    #     aXF2, clXF2, cdXF2, cmXF2, cpXF2 = xf.aseq(0, AoAmax, AoAstep)
+    #     aXF = np.concatenate((aXF1, aXF2[1:]))
+    #     clXF = np.concatenate((clXF1, clXF2[1:]))
+    #     cdXF = np.concatenate((cdXF1, cdXF2[1:]))
+    #     cmXF = np.concatenate((cmXF1, cmXF2[1:]))
+    #     cpXF = np.concatenate((cpXF1, cpXF2[1:]))
+    # else:
+    aXF, clXF, cdXF, cmXF, cpXF = xf.aseq(AoAmin, AoAmax, AoAstep)
+    df = np.array([aXF, clXF, cdXF, cmXF], dtype=float).T
+    return df
 
 
 def single_reynolds_run_seq(
@@ -59,12 +66,18 @@ def single_reynolds_run_seq(
     xf = XFoil()
     xf.Re = Reyn
 
-    for key, value in solver_options.items():
-        setattr(xf, key, value)
-
     xpts, ypts = airfoil.selig
-    naca = XFAirfoil(x=xpts, y=ypts)
-    xf.airfoil = naca
+    airfoil_obj = XFAirfoil(x=xpts, y=ypts)
+    xf.airfoil = airfoil_obj
+
+    for key, value in solver_options.items():
+        if key == "repanel_n":
+            print(f"Repaneling Airfoil with {value}")
+            xf.repanel(value)
+        else:
+            setattr(xf, key, value)
+
+    # xf.filter()
 
     aXF = []
     clXF = []
@@ -74,7 +87,6 @@ def single_reynolds_run_seq(
 
     for angle in angles:
         aXF.append(angle)
-        xf.max_iter = 100
         cl, cd, cm, cp = xf.a(angle)
         clXF.append(cl)
         cdXF.append(cd)

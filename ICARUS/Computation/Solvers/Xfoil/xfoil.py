@@ -1,137 +1,116 @@
-from typing import Any
+from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
+from ICARUS.computation.analyses.analysis import Analysis
+from ICARUS.computation.analyses.input import AirfoilInput
+from ICARUS.computation.analyses.input import FloatInput
+from ICARUS.computation.analyses.input import ListFloatInput
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.solver_parameters import BoolParameter
+from ICARUS.computation.solvers.solver_parameters import FloatParameter
+from ICARUS.computation.solvers.solver_parameters import IntParameter
+from ICARUS.computation.solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers.Xfoil.analyses.angles import multiple_reynolds_parallel
+from ICARUS.computation.solvers.Xfoil.analyses.angles import (
+    multiple_reynolds_parallel_seq,
+)
+from ICARUS.computation.solvers.Xfoil.analyses.angles import multiple_reynolds_serial
+from ICARUS.computation.solvers.Xfoil.analyses.angles import (
+    multiple_reynolds_serial_seq,
+)
+from ICARUS.core.types import FloatArray
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Analyses.analysis import Analysis
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.types import FloatArray
+mach_option = FloatInput(name="mach", description="Mach number")
+
+multi_reynolds_option = ListFloatInput(name="reynolds", description="List of Reynold's numbers to run")
+min_angle = FloatInput(
+    "min_aoa",
+    "Minimum angle of attack",
+)
+max_angle = FloatInput(
+    "max_aoa",
+    "Maximum angle of attack",
+)
+aoa_step = FloatInput(
+    "aoa_step",
+    "Step between each angle of attack",
+)
 
 
-def get_xfoil() -> Solver:
-    xfoil = Solver(name="xfoil", solver_type="2D-IBLM", fidelity=2)
+class Xfoil_Aseq_PolarAnalysis(Analysis):
+    def __init__(
+        self,
+    ) -> None:
+        super().__init__(
+            solver_name="Xfoil",
+            analysis_name="Airfoil Polar Analysis For a multiple Reynolds using aseq",
+            options=[
+                AirfoilInput(),
+                mach_option,
+                multi_reynolds_option,
+                min_angle,
+                max_angle,
+                aoa_step,
+            ],
+            execute_fun=multiple_reynolds_serial,
+            parallel_execute_fun=multiple_reynolds_parallel,
+            unhook=None,
+        )
 
-    options: dict[str, tuple[str, Any]] = {
-        "airfoil": (
-            "Airfoil to run",
-            Airfoil,
-        ),
-        "reynolds": (
-            "List of Reynolds numbers to run",
-            list[float],
-        ),
-        "mach": (
-            "Mach number",
-            float,
-        ),
-        "min_aoa": (
-            "Minimum angle of attack",
-            float,
-        ),
-        "max_aoa": (
-            "Maximum angle of attack",
-            float,
-        ),
-        "aoa_step": (
-            "Step between each angle of attack",
-            float,
-        ),
-    }
 
-    solver_options: dict[str, tuple[Any, str, Any]] = {
-        "max_iter": (
-            100,
-            "Maximum number of iterations",
-            int,
-        ),
-        "Ncrit": (
-            1e-3,
-            "Timestep between each iteration",
-            float,
-        ),
-        "xtr": (
-            (0.1, 0.1),
-            "Transition points: Lower and upper",
-            tuple[float],
-        ),
-        "print": (
-            False,
-            "Print xfoil output",
-            bool,
-        ),
-    }
+class Xfoil_PolarAnalysis(BaseAirfoilPolarAnalysis):
+    def __init__(
+        self,
+    ) -> None:
+        super().__init__(
+            solver_name="Xfoil",
+            execute_function=multiple_reynolds_serial_seq,
+            parallel_execute_function=multiple_reynolds_parallel_seq,
+            unhook=None,
+        )
 
-    from ICARUS.Computation.Solvers.Xfoil.analyses.angles import (
-        multiple_reynolds_serial,
-    )
-    from ICARUS.Computation.Solvers.Xfoil.analyses.angles import (
-        multiple_reynolds_parallel,
-    )
-    from ICARUS.Computation.Solvers.Xfoil.analyses.angles import (
-        multiple_reynolds_serial_seq,
-    )
-    from ICARUS.Computation.Solvers.Xfoil.analyses.angles import (
-        multiple_reynolds_parallel_seq,
-    )
 
-    aseq_multiple_reynolds_serial: Analysis = Analysis(
-        solver_name="xfoil",
-        analysis_name="Aseq for Multiple Reynolds Sequentially",
-        run_function=multiple_reynolds_serial,
-        options=options,
-        solver_options=solver_options,
-        unhook=None,
-    )
+solver_parameters: list[Parameter] = [
+    IntParameter(
+        "max_iter",
+        100,
+        "Maximum number of iterations",
+    ),
+    FloatParameter(
+        "Ncrit",
+        9,
+        "Ncrit",
+    ),
+    Parameter(
+        "xtr",
+        (0.1, 0.1),
+        "Transition points: Lower and upper",
+        tuple[float],
+    ),
+    BoolParameter(
+        "print",
+        False,
+        "Print xfoil output",
+    ),
+    IntParameter(
+        "repanel_n",
+        100,
+        "Number of panels to repanel the airfoil",
+    ),
+]
 
-    aseq_multiple_reynolds_parallel: Analysis = aseq_multiple_reynolds_serial << {
-        "name": "Aseq for Multiple Reynolds in Parallel",
-        "execute": multiple_reynolds_parallel,
-        "unhook": None,
-    }
 
-    options = {
-        "airfoil": (
-            "Airfoil to run",
-            Airfoil,
-        ),
-        "reynolds": (
-            "List of Reynolds numbers to run",
-            list[float],
-        ),
-        "mach": (
-            "Mach number",
-            float,
-        ),
-        "angles": (
-            "List or numpy array of angles to run",
-            list[float] | FloatArray,
-        ),
-    }
-
-    aseq_multiple_reynolds_parallel_2: Analysis = Analysis(
-        solver_name="xfoil",
-        analysis_name="Aseq for Multiple Reynolds Parallel 2",
-        run_function=multiple_reynolds_parallel_seq,
-        options=options,
-        solver_options=solver_options,
-        unhook=None,
-    )
-
-    aseq_multiple_reynolds_serial_2: Analysis = aseq_multiple_reynolds_parallel_2 << {
-        "name": "Aseq for Multiple Reynolds Sequentially 2",
-        "execute": multiple_reynolds_serial_seq,
-        "unhook": None,
-    }
-
-    xfoil.add_analyses(
-        [
-            aseq_multiple_reynolds_parallel,
-            aseq_multiple_reynolds_serial,
-            aseq_multiple_reynolds_parallel_2,
-            aseq_multiple_reynolds_serial_2,
-        ],
-    )
-
-    return xfoil
+class Xfoil(Solver):
+    def __init__(self) -> None:
+        super().__init__(
+            name="XFoil",
+            solver_type="2D-IBLM",
+            fidelity=1,
+            available_analyses=[
+                Xfoil_PolarAnalysis(),
+                Xfoil_Aseq_PolarAnalysis(),
+            ],
+            solver_parameters=solver_parameters,
+        )
 
 
 if __name__ == "__main__":
-    f2w_section = get_xfoil()
+    xfoil = Xfoil()

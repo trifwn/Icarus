@@ -7,8 +7,8 @@ from typing import Any
 import numpy as np
 
 from ICARUS import APPHOME
-from ICARUS.Computation.Solvers import setup_of_script
-from ICARUS.Core.types import FloatArray
+from ICARUS.computation.solvers import setup_of_script
+from ICARUS.core.types import FloatArray
 
 OFBASE = os.path.join(APPHOME, "ICARUS", "Solvers", "OpenFoam", "files")
 

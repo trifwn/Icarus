@@ -1,6 +1,7 @@
 # ENVIROMENT
 *.mypy_cache/
 *.vscode/
+*.pytest_cache
 venv/
 setup.cfg
 *__pycache__
@@ -24,15 +25,9 @@ Control/slprj*
 *.out
 test*.ipynb
 
-Data/2D
-Data/3D
-Data/Engine
-Data/Mock
-Data/3d_Party
-Data/Analyses
+Data
 
 # Playground
-test.ipynb
 *.fuse*
 
 # Docs
@@ -44,3 +39,4 @@ report/*
 
 # DEMO
 # demo*
+acc_2024/

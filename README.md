@@ -1,6 +1,23 @@
 # ICARUS
 
-Major Refactoring: Welcoming Version 0.2.0
+Current BUILD IS the first stable ICARUS version.
+
+## TASKS
+
+- Finish Documentation
+- Write Examples
+- Add jax backend to handle all computations and provide derivatives
+- Add Lower Order Models and Analytical Formulas for Stability
+- Create Results Class to handle Analysis output. Specify some results such as AirfoilPolars, AirplanePolars, AirplaneStates etc..
+- Create Workflow Class to combine Analyses Together
+- Add doctests
+- Add the control parameters
+- Make Mission Class and Module to cover and model a flight envelope
+- Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
+- Add GUI
+- Have the grid/meshing run on julia
+- Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
+
 ---
 
 ## The project is under Work
@@ -11,7 +28,7 @@ Code and Tools to analyze the performance of low speed aircraft using different 
 
 ## How to run
 
-More information on how to run and compile dependencies will be availabe in the future. This project depends on the following 3d Party Software:
+More information on how to run and compile dependencies will be availabe in the future. This project depends on the following 3d Party Software for aerodynamic calculations:
 
 - OpenFoam (by OpenFoam.org)
 - Foil2Wake (National Technical University of Athens Laboratory of Aerodynamics)
@@ -30,6 +47,10 @@ Library for Aerodynamic calculations. Right now it contains a 3d lifting surface
 
 This library is used to handle and generate airfoils. It is an extension of the airfoils pip module (https://pypi.org/project/airfoils/).
 
+- Computation
+
+Abstraction Layer for the solvers and running of analyses. Handles the translation of internal objects to solver specific formats. It contains the solvers and analyses
+
 - Conceptual
 
 Module for conceptual Analysis and sizing of airplanes based on constrained optimization. The final goal is that a user will be able to size an aircraft by defining mission goals and constraints
@@ -42,33 +63,31 @@ Core functions for the program. Basically any operation that is not significant 
 
 Storage Interface to save vehicles, airfoils, analyses, solvers and more. Currently it works with the filesystem. Uses JSON to maybe one day integrate with frontend.
 
-- Mission
+- Environment
 
-Defines the mission of the airplane and the flight envelope.
-
-- Computation
-
-Abstraction Layer for the solvers and running of analyses.
-
-- Vehicle
-
-Defines Airplane and other Vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
+Abstraction for the Environment. Usefull for calculations of fluid and thermodynamical properties at different flight envelope points
 
 - Flight_Dynamics
 
 Defines Flight State as a trimmed airplane position. The intnent of the class is to one day integrate the control surface movement as well and also account for transient states.
 
-- Solvers
+- Mission
 
-Integration with 3d Party Software (solvers). Handles conversion between Icarus objects and input for different solvers. Also handles the output conversion and hamdling
+Defines the mission of the airplane and the flight envelope.
+
+- Optimization
+
+Defines Optimizers for Different Solvers, Integrators and other functions that are used to optimize aerodynamic performance
+
+- Vehicle
+
+Defines Airplane and other vehicles. Defines an airplane as a part of wings that are themselvesade of wing segments. Each class calculates geometrical characteristics and provides io for optimization workflows
+
 
 - Visualization
 
 All Around visualization functions that are grouped according to their function
 
-- Environment
-
-Abstraction for the Environment. Usefull for calculations of fluid and thermodynamical properties at different flight envelope points
 
 ---
 
@@ -98,16 +117,3 @@ If the installation fails change the comments on  `pyproject.toml` at the root o
 The end goal of the project is to come packaged with all 3d party software. Right now it is difficult fore to automate the bulding process or wrap the libraries.
 
 ---
-
-## Tasks To-Do
-
-- Add __init__ includes to all modules
-- Add __init__ rst description to all modules
-- Add doctests
-- Add the control parameters
-- Make Mission Class and Module the whole flight envelope
-- Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
-- Integrate AVL
-- Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
-- Have the grid/meshing run on julia
-- Add GUI

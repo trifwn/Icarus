@@ -7,14 +7,14 @@ ICARUS Module for adding Conceptual Design Criteria
     :hidden:
     :noindex:
 
-    ICARUS.Conceptual.Criteria.FAR
-    ICARUS.Conceptual.Criteria.cruise
+    ICARUS.conceptual.criteria.FAR
+    ICARUS.conceptual.criteria.cruise
 
-.. module:: ICARUS.Conceptual.Criteria
+.. module:: ICARUS.conceptual.criteria
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for defining criteria for the conceptual design of flying vehicles.
 
-.. currentmodule:: ICARUS.Conceptual.Criteria
+.. currentmodule:: ICARUS.conceptual.criteria
 
 This package contains class and routines for defining criteria for the conceptual design of flying vehicles. As of now the package
 is not complete! The following criteria are implemented:
@@ -25,7 +25,7 @@ FAR
 .. autosummary::
     :toctree:
 
-    ICARUS.Conceptual.Criteria.FAR
+    ICARUS.conceptual.criteria.FAR
 
 Flight Segments
 --------------------------
@@ -33,7 +33,7 @@ Flight Segments
 .. autosummary::
     :toctree:
 
-    ICARUS.Conceptual.Criteria.cruise
+    ICARUS.conceptual.criteria.cruise
 
 """
 from . import cruise

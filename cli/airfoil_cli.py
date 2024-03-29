@@ -14,15 +14,16 @@ from inquirer import prompt
 from inquirer import Text
 
 from .cli_home import cli_home
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.Foil2Wake.f2w_section import get_f2w_section
-from ICARUS.Computation.Solvers.OpenFoam.open_foam import get_open_foam
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.Xfoil.xfoil import get_xfoil
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.units import calc_mach
-from ICARUS.Core.units import calc_reynolds
-from ICARUS.Database import DB
+from cli.analysis import set_analysis
+from cli.analysis import set_analysis_options
+from cli.solver import set_solver_parameters
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
+from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
 
 
 def ask_num_airfoils() -> int:
@@ -84,7 +85,7 @@ def get_airfoil_NACA() -> Airfoil:
 
 
 def get_airfoil_db() -> Airfoil:
-    airfoils: Struct = DB.foils_db.set_available_airfoils()
+    airfoils: Struct = DB.foils_db.airfoils
     airfoil_question: list[List] = [
         List(
             "airfoil",
@@ -129,143 +130,6 @@ def select_airfoil_source() -> Airfoil:
         return select_airfoil_source()
 
 
-def set_analysis(solver: Solver) -> None:
-    analyses: list[str] = solver.available_analyses_names(verbose=True)
-    analyses_quest: list[List] = [
-        List(
-            "analysis",
-            message="Which analysis do you want to perform",
-            choices=[analysis for analysis in analyses],
-        ),
-    ]
-    answer: dict[Any, Any] | None = prompt(analyses_quest)
-    if answer is None:
-        print("Exited by User")
-        exit()
-    if answer["analysis"] in analyses:
-        solver.set_analyses(answer["analysis"])
-    else:
-        print("Error")
-        return set_analysis(solver)
-
-
-input_options = {
-    float: "float",
-    int: "int",
-    bool: "bool",
-    str: "text",
-    list[float]: "list_float",
-    list[int]: "list_int",
-    list[str]: "list_str",
-    list[bool]: "list_bool",
-    list[str]: "list_str",
-}
-
-
-def get_option(option_name: str, question_type: str) -> dict[str, Any]:
-    if question_type.startswith("list_"):
-        quest: Text = Text(
-            f"{option_name}",
-            message=f"{option_name} (Multiple Values Must be seperated with ',') = ",
-        )
-    else:
-        quest = Text(
-            f"{option_name}",
-            message=f"{option_name} = ",
-        )
-
-    answer: dict[str, Any] | None = prompt([quest])
-    if answer is None:
-        print("Exited by User")
-        exit()
-
-    try:
-        if question_type == "float":
-            answer[option_name] = float(answer[option_name])
-        elif question_type == "int":
-            answer[option_name] = int(answer[option_name])
-        elif question_type == "bool":
-            answer[option_name] = bool(answer[option_name])
-        elif question_type == "text":
-            answer[option_name] = str(answer[option_name])
-        elif question_type == "list_float":
-            answer[option_name] = [float(x) for x in answer[option_name].split(",")]
-        elif question_type == "list_int":
-            answer[option_name] = [int(x) for x in answer[option_name].split(",")]
-        elif question_type == "list_bool":
-            answer[option_name] = [bool(x) for x in answer[option_name].split(",")]
-        elif question_type == "list_str":
-            answer[option_name] = [str(x) for x in answer[option_name].split(",")]
-    except:
-        print(answer)
-        print("Error Getting Answer! Try Again")
-        import sys
-
-        sys.exit()
-    return answer
-
-
-def set_analysis_options(solver: Solver, airfoil: Airfoil) -> None:
-    all_options: Struct = solver.get_analysis_options(verbose=True)
-    options = Struct()
-    answers = {}
-    for option in all_options.keys():
-        if option == "airfoil":
-            answers[option] = airfoil
-            continue
-        options[option] = all_options[option]
-
-        try:
-            question_type = input_options[options[option].option_type]
-        except KeyError:
-            print(f"Option {option} has an invalid type")
-            continue
-
-        answer = get_option(option, question_type)
-        answers[option] = answer[option]
-
-    try:
-        solver.set_analysis_options(answers)
-        print("Options set")
-        _: Struct = solver.get_analysis_options(verbose=True)
-
-    except:
-        print("Unable to set options! Try Again")
-        return set_analysis_options(solver, airfoil)
-
-
-def set_solver_parameters(solver: Solver) -> None:
-    parameters: Struct = solver.get_solver_parameters(verbose=True)
-    change_prompt: list[List] = [
-        List(
-            "change",
-            message="Do you want to change any of the solver parameters",
-            choices=["Yes", "No"],
-        ),
-    ]
-    choice: dict[Any, Any] | None = prompt(change_prompt)
-    if choice is None:
-        print("Exited by User")
-        exit()
-    if choice["change"] == "Yes":
-        parameters_quest: list[Text] = [
-            Text(
-                f"{parameter}",
-                message=f"{parameter} = ",
-            )
-            for parameter in parameters.keys()
-        ]
-        answer: dict[Any, Any] | None = prompt(parameters_quest)
-        if answer is None:
-            print("Exited by User")
-            exit()
-        try:
-            solver.set_solver_parameters(answer)
-        except:
-            print("Unable to set parameters! Try Again")
-            return set_solver_parameters(solver)
-
-
 def airfoil_cli(return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
@@ -307,7 +171,7 @@ def airfoil_cli(return_home: bool = False) -> None:
             calc_f2w[airfoil.name] = True
 
             # Get Solver
-            f2w_solvers[airfoil.name] = get_f2w_section()
+            f2w_solvers[airfoil.name] = Foil2Wake()
             set_analysis(f2w_solvers[airfoil.name])
             set_analysis_options(f2w_solvers[airfoil.name], airfoil)
             set_solver_parameters(f2w_solvers[airfoil.name])
@@ -318,7 +182,7 @@ def airfoil_cli(return_home: bool = False) -> None:
             calc_xfoil[airfoil.name] = True
 
             # Get Solver
-            xfoil_solvers[airfoil.name] = get_xfoil()
+            xfoil_solvers[airfoil.name] = Xfoil()
             set_analysis(xfoil_solvers[airfoil.name])
             set_analysis_options(xfoil_solvers[airfoil.name], airfoil)
             set_solver_parameters(xfoil_solvers[airfoil.name])
@@ -329,7 +193,7 @@ def airfoil_cli(return_home: bool = False) -> None:
             calc_of[airfoil.name] = True
 
             # Get Solver
-            open_foam_solvers[airfoil.name] = get_open_foam()
+            open_foam_solvers[airfoil.name] = OpenFoam()
             set_analysis(open_foam_solvers[airfoil.name])
             set_analysis_options(open_foam_solvers[airfoil.name], airfoil)
             set_solver_parameters(open_foam_solvers[airfoil.name])
@@ -349,10 +213,11 @@ def airfoil_cli(return_home: bool = False) -> None:
             f2w_s: Solver = f2w_solvers[airfoil.name]
             f2w_options: Struct = f2w_s.get_analysis_options(verbose=True)
             f2w_solver_parameters: Struct = f2w_s.get_solver_parameters()
-            f2w_options.airfoil.value = airfoil
+            f2w_options.airfoil = airfoil
 
             # Run Solver
-            f2w_solvers[airfoil.name].run()
+            f2w_solvers[airfoil.name].define_analysis(f2w_options, f2w_solver_parameters)
+            f2w_solvers[airfoil.name].execute()
 
             # Get Results
             _ = f2w_solvers[airfoil.name].get_results()
@@ -367,10 +232,11 @@ def airfoil_cli(return_home: bool = False) -> None:
             # Set Solver Options and Parameters
             xfoil: Solver = xfoil_solvers[airfoil.name]
             xfoil_options: Struct = xfoil.get_analysis_options(verbose=True)
-            xfoil_options.airfoil.value = airfoil
+            xfoil_options.airfoil = airfoil
 
             # Run Solver and Get Results
-            xfoil_solvers[airfoil.name].run()
+            xfoil_solvers[airfoil.name].define_analysis(xfoil_options, {})
+            xfoil_solvers[airfoil.name].execute()
 
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")
@@ -382,15 +248,16 @@ def airfoil_cli(return_home: bool = False) -> None:
             # Set Solver Options and Parameters
             open_foam: Solver = open_foam_solvers[airfoil.name]
             open_foam_options: Struct = open_foam.get_analysis_options(verbose=True)
-            open_foam_options.airfoil.value = airfoil
+            open_foam_options.airfoil = airfoil
 
-            for reyn in open_foam_options.reynolds.value:
+            for reyn in open_foam_options.reynolds:
                 print(f"Running OpenFoam for Re={reyn}")
 
-                open_foam_options.reynolds.value = reyn
+                open_foam_options.reynolds = reyn
 
                 # Run Solver and Get Results
-                open_foam_solvers[airfoil.name].run()
+                open_foam_solvers[airfoil.name].define_analysis(open_foam_options, {})
+                open_foam_solvers[airfoil.name].execute()
 
             of_etime: float = time.time()
             print(f"OpenFoam completed in {of_etime - of_stime} seconds")

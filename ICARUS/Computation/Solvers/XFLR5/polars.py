@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.Database_3D import Database_3D
+from ICARUS.database import DB
+from ICARUS.database.Database_2D import Database_2D
+from ICARUS.database.Database_3D import Database_3D
 
 
 def read_polars_2d(XFLRdir: str) -> None:
@@ -43,8 +43,8 @@ def read_polars_2d(XFLRdir: str) -> None:
 
         if airf.startswith("NACA"):
             name = "NACA" + name
-        if name not in foils_db.data.keys():
-            foils_db.data[name] = {}
+        if name not in foils_db._data.keys():
+            foils_db._data[name] = {}
 
         if airf.startswith("NACA"):
             os.chdir(airf)
@@ -88,14 +88,14 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db.data[name].keys():
-                        foils_db.data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._data[name].keys():
+                        foils_db._data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
-                    foils_db.data[name]["XFLR"][reyn_str] = dat
+                    foils_db._data[name]["XFLR"][reyn_str] = dat
                     dat = pd.read_csv(
                         file,
                         sep="  ",
@@ -117,14 +117,14 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db.data[name].keys():
-                        foils_db.data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._data[name].keys():
+                        foils_db._data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
-                    foils_db.data[name]["XFLR"][reyn_str] = dat
+                    foils_db._data[name]["XFLR"][reyn_str] = dat
 
                     dat = pd.read_csv(
                         file,
@@ -147,11 +147,11 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db.data[name].keys():
-                        foils_db.data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._data[name].keys():
+                        foils_db._data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
-                    foils_db.data[name]["XFLR"][reyn_str] = dat
+                    foils_db._data[name]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 
@@ -170,7 +170,7 @@ def read_polars_3d(
     Returns:
         DataFrame | None: _description_
     """
-    if f"XFLR_{plane_name}" not in DB.vehicles_db.data.keys():
+    if f"XFLR_{plane_name}" not in DB.vehicles_db.polars.keys():
         # import csv into pandas Dataframe and skip first 7 rows
         df: DataFrame = pd.read_csv(
             filename,
@@ -183,7 +183,7 @@ def read_polars_3d(
 
         # convert to float
         df = df.astype(float)
-        DB.vehicles_db.data[f"XFLR_{plane_name}"] = df
+        DB.vehicles_db.polars[f"XFLR_{plane_name}"] = df
         return df
     else:
         print("Polar Already Exists!")

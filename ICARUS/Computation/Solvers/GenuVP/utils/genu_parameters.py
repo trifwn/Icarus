@@ -5,11 +5,11 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Environment.definition import Environment
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import Environment
+from ICARUS.vehicle.plane import Airplane
 
 
 class GenuParameters:

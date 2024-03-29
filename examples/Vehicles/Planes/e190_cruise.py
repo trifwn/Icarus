@@ -1,15 +1,16 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import define_linear_chord
-from ICARUS.Vehicle.wing_segment import define_linear_span
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def e190_cruise(name: str) -> Airplane:
@@ -24,12 +25,11 @@ def e190_cruise(name: str) -> Airplane:
         Airplane: hermes Airplane object
     """
     read_polars_2d(EXTERNAL_DB)
-    airfoils: Struct = DB.foils_db.set_available_airfoils()
+    airfoils: Struct = DB.foils_db.airfoils
 
-    from ICARUS.Airfoils.airfoil import Airfoil
+    from ICARUS.airfoils.airfoil import Airfoil
 
-    naca64418: Airfoil = DB.foils_db.set_available_airfoils()["NACA64418"]
-    naca64418_fl: Airfoil = naca64418.flap_airfoil(0.75, 1.3, 35, plotting=False)
+    naca64418: Airfoil = DB.get_airfoil("NACA64418")
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
 
@@ -42,18 +42,18 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_1 = Wing_Segment(
+    wing_1 = WingSegment(
         name="wing_1",
-        airfoil=naca64418,
+        root_airfoil=naca64418,
         origin=origin + wing_position,
         orientation=wing_orientation,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * 4.180,
         sweep_offset=2.0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([5.6, 3.7], dtype=float),
-        span_fun=define_linear_span,
+        root_dihedral_angle=0,
+        tip_dihedral_angle=0,
+        root_chord=5.6,
+        tip_chord=3.7,
         N=15,
         M=10,
         mass=1,
@@ -69,18 +69,18 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_2 = Wing_Segment(
+    wing_2 = WingSegment(
         name="wing_2",
-        airfoil=naca64418,
+        root_airfoil=naca64418,
         origin=origin + wing_2_pos,
         orientation=wing_2_or,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * (10.500 - 4.180),
         sweep_offset=5.00 - 2,
-        dih_angle=5,
-        chord_fun=define_linear_chord,
-        chord=np.array([3.7, 2.8]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=5,
+        tip_dihedral_angle=5,
+        root_chord=3.7,
+        tip_chord=2.8,
         N=15,
         M=10,
         mass=1,
@@ -96,32 +96,32 @@ def e190_cruise(name: str) -> Airplane:
         dtype=float,
     )
 
-    wing_3 = Wing_Segment(
+    wing_3 = WingSegment(
         name="wing_3",
-        airfoil=naca64418,
+        root_airfoil=naca64418,
         origin=origin + wing_3_pos,
         orientation=wing_3_or,
-        is_symmetric=True,
+        symmetries=SymmetryAxes.Y,
         span=2 * (14.36 - 10.5),
         sweep_offset=6.75 - 5,
-        dih_angle=5,
-        chord_fun=define_linear_chord,
-        chord=np.array([2.8, 2.3]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=5.0,
+        tip_dihedral_angle=5.0,
+        root_chord=2.8,
+        tip_chord=2.3,
         N=15,
         M=10,
         mass=1.0,
     )
-    # rudder.plotWing()
 
-    lifting_surfaces: list[Wing_Segment] = [wing_1, wing_2, wing_3]
-    airplane: Airplane = Airplane(name, lifting_surfaces)
+    main_wing = MergedWing(
+        "Main Wing",
+        [wing_1, wing_2, wing_3],
+    )
 
-    # Define the surface area of the main wing
-    airplane.S = wing_1.S + wing_2.S + wing_3.S
-
-    # from ICARUS.Database import DB3D
-    # airplane.accessDB(HOMEDIR, DB3D)
-    # airplane.visAirplane()
-
+    airplane: Airplane = Airplane(name, [main_wing])
     return airplane
+
+
+if __name__ == "__main__":
+    plane = e190_cruise("e190_cruise")
+    plane.main_wing.plot()

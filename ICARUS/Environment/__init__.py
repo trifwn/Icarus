@@ -6,20 +6,20 @@ ICARUS Environment modelling package
 .. toctree: generated/
     :hidden:
 
-    ICARUS.Environment.definition
+    ICARUS.environment.definition
 
-.. module:: ICARUS.Environment
+.. module:: ICARUS.environment
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for environment modelling.
 
-.. currentmodule:: ICARUS.Environment
+.. currentmodule:: ICARUS.environment
 
 This package contains class and routines for environment modelling. The package is divided in the following files:
 
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Environment.definition
+    ICARUS.environment.definition
 
 """
 from . import definition

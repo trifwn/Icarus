@@ -6,21 +6,21 @@ ICARUS Module for adding FAR Criteria to the Conceptual Design
 .. toctree:
     :hidden:
 
-    ICARUS.Conceptual.Criteria.FAR.takeoff_criterion
-    ICARUS.Conceptual.Criteria.FAR.climb_criterion
-    ICARUS.Conceptual.Criteria.FAR.cruise_criterion
-    ICARUS.Conceptual.Criteria.FAR.failed_approach_criterion
-    ICARUS.Conceptual.Criteria.FAR.landing_criterion
-    ICARUS.Conceptual.Criteria.FAR.range
-    ICARUS.Conceptual.Criteria.FAR.useful_load
-    ICARUS.Conceptual.Criteria.FAR.get_all_criteria
-    ICARUS.Conceptual.Criteria.FAR.helper_functions
+    ICARUS.conceptual.criteria.FAR.takeoff_criterion
+    ICARUS.conceptual.criteria.FAR.climb_criterion
+    ICARUS.conceptual.criteria.FAR.cruise_criterion
+    ICARUS.conceptual.criteria.FAR.failed_approach_criterion
+    ICARUS.conceptual.criteria.FAR.landing_criterion
+    ICARUS.conceptual.criteria.FAR.range
+    ICARUS.conceptual.criteria.FAR.useful_load
+    ICARUS.conceptual.criteria.FAR.get_all_criteria
+    ICARUS.conceptual.criteria.FAR.helper_functions
 
-.. module:: ICARUS.Conceptual.Criteria.FAR
+.. module:: ICARUS.conceptual.criteria.FAR
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for defining the FAR criteria for the conceptual design of flying vehicles.
 
-.. currentmodule:: ICARUS.Conceptual.Criteria.FAR
+.. currentmodule:: ICARUS.conceptual.criteria.FAR
 
 FAR CRITERIA
 --------------
@@ -60,13 +60,13 @@ from . import takeoff_criterion
 from . import useful_load
 
 __all__ = [
-    'takeoff_criterion',
-    'climb_criterion',
-    'cruise_criterion',
-    'failed_approach_criterion',
-    'landing_criterion',
-    'range',
-    'useful_load',
-    'get_all_criteria',
-    'helper_functions',
+    "takeoff_criterion",
+    "climb_criterion",
+    "cruise_criterion",
+    "failed_approach_criterion",
+    "landing_criterion",
+    "range",
+    "useful_load",
+    "get_all_criteria",
+    "helper_functions",
 ]

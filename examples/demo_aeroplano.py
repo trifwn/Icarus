@@ -1,19 +1,18 @@
 """This module defines the hermes plane object."""
 import numpy as np
 
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import define_linear_chord
-from ICARUS.Vehicle.wing_segment import define_linear_span
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.wing_segment import WingSegment
 
 ############################## AIRPLANE GENERATOR ########################################
 # The code below is a demo function used to generate a conventional airplane.
 ############################## AIRPLANE GENERATOR ########################################
 
 
-def airplane_generator(name: str, plotting=False) -> Airplane:
+def airplane_generator(name: str, plotting: bool = False) -> Airplane:
     """
     Function to generate a conventional airplane, consisting of:
         1) main wing
@@ -50,18 +49,20 @@ def airplane_generator(name: str, plotting=False) -> Airplane:
         dtype=float,
     )
 
-    main_wing = Wing_Segment(
+    main_wing = WingSegment(
         name="wing",  # Name of the wing
-        airfoil="4415",  # Airfoil name
+        root_airfoil="4415",  # Airfoil name
         origin=origin + wing_position,  # Position of the wing in the coordinate system
         orientation=wing_orientation,  # Orientation of the wing
-        is_symmetric=True,  # Is the wing symmetric about the x-z plane?
+        symmetries=SymmetryAxes.Y,  # Is the wing symmetric about the x-z plane?
         span=2 * 1.130,  # Span of the wing
         sweep_offset=0,  # Sweep offset of the wing
-        dih_angle=0,  # Dihedral angle of the wing
-        chord_fun=define_linear_chord,  # Function to define the chord distribution
-        chord=np.array([0.159, 0.072], dtype=float),  # Arguements to the chord function.
-        span_fun=define_linear_span,  # Span Discretization function
+        root_chord=0.159,  # Root chord of the wing
+        tip_chord=0.072,  # Tip chord of the wing
+        twist_root=0,  # Twist at the root of the wing
+        twist_tip=0,  # Twist at the tip of the wing
+        root_dihedral_angle=0,  # Dihedral angle at the root of the wing
+        tip_dihedral_angle=0,  # Dihedral angle at the tip of the wing
         N=25,  # Number of chordwise panels
         M=5,  # Number of spanwise panels
         mass=0.670,  # Mass of the wing in kg
@@ -82,23 +83,25 @@ def airplane_generator(name: str, plotting=False) -> Airplane:
         dtype=float,
     )
 
-    # Elevator Definition
-    elevator = Wing_Segment(
-        name="elevator",
-        airfoil="0008",
-        origin=origin + elevator_pos,
-        orientation=elevator_orientantion,
-        is_symmetric=True,
-        span=2 * 0.169,
-        sweep_offset=0,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.130, 0.03]),
-        span_fun=define_linear_span,
-        N=15,
-        M=5,
-        mass=0.06,
+    elevator = WingSegment(
+        name="elevator",  # Name of the wing
+        root_airfoil="0008",  # Airfoil name
+        origin=origin + elevator_pos,  # Position of the wing in the coordinate system
+        orientation=elevator_orientantion,  # Orientation of the wing
+        symmetries=SymmetryAxes.Y,  # Is the wing symmetric about the x-z plane?
+        span=2 * 0.169,  # Span of the wing
+        sweep_offset=0,  # Sweep offset of the wing
+        root_chord=0.13,  # Root chord of the wing
+        tip_chord=0.03,  # Tip chord of the wing
+        twist_root=0,  # Twist at the root of the wing
+        twist_tip=0,  # Twist at the tip of the wing
+        root_dihedral_angle=0,  # Dihedral angle at the root of the wing
+        tip_dihedral_angle=0,  # Dihedral angle at the tip of the wing
+        N=15,  # Number of chordwise panels
+        M=5,  # Number of spanwise panels
+        mass=0.06,  # Mass of the wing in kg
     )
+
     ########################## ELEVATOR ########################################
 
     ########################## RUDDER ########################################
@@ -115,18 +118,18 @@ def airplane_generator(name: str, plotting=False) -> Airplane:
     )
 
     # Rudder Definition
-    rudder = Wing_Segment(
+    rudder = WingSegment(
         name="rudder",
-        airfoil="0008",
+        root_airfoil="0008",
         origin=origin + rudder_position,
         orientation=rudder_orientation,
-        is_symmetric=False,
+        symmetries=SymmetryAxes.NONE,
         span=0.160,
         sweep_offset=0.1,
-        dih_angle=0,
-        chord_fun=define_linear_chord,
-        chord=np.array([0.2, 0.1]),
-        span_fun=define_linear_span,
+        root_dihedral_angle=0,
+        tip_dihedral_angle=0,
+        root_chord=0.2,
+        tip_chord=0.1,
         N=15,
         M=5,
         mass=0.04,
@@ -135,15 +138,15 @@ def airplane_generator(name: str, plotting=False) -> Airplane:
 
     ########################## POINT MASSES ########################################
     point_masses = [
-        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float)),  # Engine
-        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Battery
-        (1.000, np.array([0.090, 0.0, 0.0], dtype=float)),  # Structure
-        (0.900, np.array([0.130, 0.0, 0.0], dtype=float)),  # Payload
+        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "engine"),  # Engine
+        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"), # Battery
+        (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "structure"),  # Structure
+        (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
     ]
 
     ########################## POINT MASSES ########################################
 
-    lifting_surfaces: list[Wing_Segment] = [main_wing, elevator, rudder]
+    lifting_surfaces: list[WingSurface] = [main_wing, elevator, rudder]
     airplane: Airplane = Airplane(name, lifting_surfaces)
     airplane.add_point_masses(point_masses)
 

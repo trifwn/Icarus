@@ -3,14 +3,14 @@ class Disturbance:
 
     def __init__(self, variable: str | None, amplitude_value: float) -> None:
         if amplitude_value > 0:
-            self.isPositive: bool = True
+            self.is_positive: bool = True
             self.amplitude: float | None = amplitude_value
         elif amplitude_value < 0:
             self.amplitude = amplitude_value
-            self.isPositive = False
+            self.is_positive = False
         elif amplitude_value == 0:
             self.amplitude = None
-            self.isPositive = False
+            self.is_positive = False
 
         if variable == "u":
             self.axis: int | None = 1

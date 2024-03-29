@@ -5,13 +5,10 @@ from typing import Any
 from pandas import DataFrame
 
 from .files_gnvp3 import make_input_files
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import (
-    forces_to_pertrubation_results,
-)
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import log_forces
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 
 
 def gnvp3_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
@@ -50,19 +47,6 @@ def make_polars_3(CASEDIR: str, HOMEDIR: str) -> DataFrame:
         DataFrame: _description_
     """
     return log_forces(CASEDIR, HOMEDIR, 3)
-
-
-def pertubation_results(DYNDIR: str, HOMEDIR: str) -> DataFrame:
-    """Returns a dataframe with the results of a disturbance/pertubation analysis
-
-    Args:
-        DYNDIR (str): _description_
-        HOMEDIR (str): _description_
-
-    Returns:
-        DataFrame: _description_
-    """
-    return forces_to_pertrubation_results(DYNDIR, HOMEDIR)
 
 
 def run_gnvp3_case(

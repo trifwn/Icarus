@@ -1,6 +1,6 @@
-.. .. _ICARUS.Airfoils:
+.. .. _ICARUS.airfoils:
 
-.. automodule:: ICARUS.Airfoils
+.. automodule:: ICARUS.airfoils
    :noindex:
    :no-members:
    :no-inherited-members:

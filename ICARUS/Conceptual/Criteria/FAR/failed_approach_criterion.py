@@ -2,7 +2,7 @@ import numpy as np
 
 from .helper_functions import get_climb_rate_failed_approach
 from .helper_functions import shape_like
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 # FAR 2 -> 25.112
@@ -34,6 +34,5 @@ def far_2_failed_approach(
     g1: float = get_climb_rate_failed_approach(N)
     l_o_d: float = cl_app / (cd + cl_app**2 / (np.pi * AR * e))
     thrust_loading: float = N / (N - 1) * (g1 + 1 / l_o_d)
-    # print(f"{AR=}, {cd=}, {g1=}, {N=}, {thrust_loading=}")
     thrust_loading_arr: FloatArray = shape_like(thrust_loading, wing_loading)
     return (wing_loading, thrust_loading_arr)

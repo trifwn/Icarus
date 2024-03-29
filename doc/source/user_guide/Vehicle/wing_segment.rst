@@ -1,2 +1,2 @@
-ICARUS.Vehicle.wing_segment module
+ICARUS.vehicle.wing_segment module
 ====================================

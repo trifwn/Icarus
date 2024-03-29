@@ -12,12 +12,12 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Environment.definition import Environment
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.environment.definition import Environment
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 
 
 class Wing_LSPT:
@@ -43,7 +43,7 @@ class Wing_LSPT:
         self.visc: float = environment.air_dynamic_viscosity
 
         # Store the wing segments
-        self.wing_segments: list[Wing_Segment] = plane.surfaces
+        self.wing_segments: list[WingSurface] = plane.surfaces
 
         # Add the ground effect distance ! NOT IMPLEMENTED AS OF NOW
         self.ground_effect_dist: float = ground_clearence
@@ -56,12 +56,11 @@ class Wing_LSPT:
         self.wake_geom_type: str = wake_geom_type
 
         self.N: int = 0
-        self._wing_segments: list[Wing_Segment] = plane.surfaces
         self.M: int = plane.surfaces[0].M
         self.is_symmetric: bool = True
 
         for segment in plane.surfaces:
-            if not segment.is_symmetric:
+            if not segment.is_symmetric_y:
                 self.is_symmetric = False
             self.N += segment.N
             if segment.M != self.M:
@@ -83,23 +82,23 @@ class Wing_LSPT:
         self.grid: FloatArray = np.empty((self.N, self.M + 1, 3))
 
         # find maximum chord to set wake distance
-        max_chord: float = 0
-        for wing_segment in self.wing_segments:
-            if np.max(wing_segment._chord_dist) > max_chord:
-                max_chord = float(np.max(wing_segment._chord_dist))
+        max_chord: float = 0.0
+        for lifting_surface in self.wing_segments:
+            if float(np.max(lifting_surface._chord_dist)) > max_chord:
+                max_chord = float(np.max(lifting_surface._chord_dist))
         self.max_chord: float = max_chord
 
         # Get the angle of the trailing edge of each wing segment
         te_angle_dist: list[FloatArray] = []
-        for wing_segment in self.wing_segments:
-            airfoil: Airfoil = wing_segment.airfoil
+        for lifting_surface in self.wing_segments:
+            airfoil: Airfoil = lifting_surface.root_airfoil
             # The trailing edge is the last point of the airfoil
             # We will get the angle of the trailing edge by getting numerical derivative
             # of the airfoil coordinates.
             # We will use the last 3 points to get the derivative
             x: FloatArray = airfoil._x_lower[-3:]
             y: FloatArray = airfoil.camber_line(x)
-            dydx: FloatArray = np.repeat(np.gradient(y, x), wing_segment.N)
+            dydx: FloatArray = np.repeat(np.gradient(y, x), lifting_surface.N)
             te_angle_dist.append(np.arctan(dydx))
         self.te_angle_dist: FloatArray = np.concatenate(te_angle_dist)
 
@@ -107,7 +106,7 @@ class Wing_LSPT:
         N_start: int = 0
         for segment in self.wing_segments:
             N_end: int = N_start + segment.N
-            self.grid[N_start:N_end, :-1, :] = segment.grid
+            self.grid[N_start:N_end, :-1, :] = segment.grid.reshape(segment.N, segment.M, 3)
             N_start = N_end + 0
 
         # THIS CALCULATIONS DEPEND ON THE ORIENTATION OF THE INFLOW
@@ -239,7 +238,7 @@ class Wing_LSPT:
 
     def plot_grid(self, show_wake: bool = False, show_airfoils: bool = False) -> None:
         fig: Figure = plt.figure()
-        ax: Axes3D = fig.add_subplot(projection="3d")
+        ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
         dehidral_prev = 0
         offset_prev = 0
@@ -247,22 +246,26 @@ class Wing_LSPT:
             for wing_seg in self.wing_segments:
                 for i in np.arange(0, wing_seg.N - 1):
                     ax.plot(
-                        wing_seg.airfoil._x_upper * wing_seg._chord_dist[i] + wing_seg._offset_dist[i] + offset_prev,
-                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.airfoil._y_upper)),
-                        wing_seg.airfoil._y_upper + wing_seg._dihedral_dist[i] + dehidral_prev,
+                        wing_seg.root_airfoil._x_upper * wing_seg._chord_dist[i]
+                        + wing_seg._xoffset_dist[i]
+                        + offset_prev,
+                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.root_airfoil._y_upper)),
+                        wing_seg.root_airfoil._y_upper + wing_seg._zoffset_dist[i] + dehidral_prev,
                         "-",
                         color="red",
                     )
 
                     ax.plot(
-                        wing_seg.airfoil._x_lower * wing_seg._chord_dist[i] + wing_seg._offset_dist[i] + offset_prev,
-                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.airfoil._y_lower)),
-                        wing_seg.airfoil._y_lower + wing_seg._dihedral_dist[i] + dehidral_prev,
+                        wing_seg.root_airfoil._x_lower * wing_seg._chord_dist[i]
+                        + wing_seg._xoffset_dist[i]
+                        + offset_prev,
+                        np.repeat(wing_seg.grid[i, 0, 1], len(wing_seg.root_airfoil._y_lower)),
+                        wing_seg.root_airfoil._y_lower + wing_seg._zoffset_dist[i] + dehidral_prev,
                         "-",
                         color="red",
                     )
-                dehidral_prev += wing_seg._dihedral_dist[-1]
-                offset_prev += wing_seg._offset_dist[-1]
+                dehidral_prev += wing_seg._zoffset_dist[-1]
+                offset_prev += wing_seg._xoffset_dist[-1]
         if show_wake:
             M: int = self.M
         else:
@@ -511,10 +514,10 @@ class Wing_LSPT:
             self.get_aerodynamic_loads(umag=20)
 
         fig = plt.figure()
-        ax: ndarray | Axes | SubplotBase = fig.subplots(1, 2)
+        ax: ndarray[Any, Any] | Axes | SubplotBase = fig.subplots(1, 2)
 
         if not isinstance(ax, np.ndarray):
-            raise ValueError("Expected a ndarray of Axes")
+            ax = np.array([ax])
 
         ax[0].bar(self.span_dist[1:], np.mean(self.L_pan, axis=1))
         ax[0].set_title("Lift Distribution")
@@ -532,7 +535,7 @@ class Wing_LSPT:
             self.get_aerodynamic_loads(umag=umag)
 
         fig: Figure = plt.figure()
-        ax: ndarray | Axes | SubplotBase = fig.subplots(1, 2)
+        ax: ndarray[Any, Any] | Axes | SubplotBase = fig.subplots(1, 2)
 
         if not isinstance(ax, np.ndarray):
             raise ValueError("Expected a ndarray of Axes")
@@ -625,18 +628,18 @@ class Wing_LSPT:
         df = pd.DataFrame(
             {
                 "AoA": angles,
-                "L": Ls,
-                "D": Ds,
-                "My": Mys,
-                "L_2D": Ls_2D,
-                "D_2D": Ds_2D,
-                "My_2D": Mys_2D,
-                "CL": CL,
-                "CD": CD,
-                "Cm": Cm,
-                "CL_2D": CL_2D,
-                "CD_2D": CD_2D,
-                "Cm_2D": Cm_2D,
+                "LSPT Potential Fz": Ls,
+                "LSPT Potential Fx": Ds,
+                "LSPT Potential My": Mys,
+                "LSPT 2D Fz": Ls_2D,
+                "LSPT 2D Fx": Ds_2D,
+                "LSPT 2D My": Mys_2D,
+                # "CL": CL,
+                # "CD": CD,
+                # "Cm": Cm,
+                # "CL_2D": CL_2D,
+                # "CD_2D": CD_2D,
+                # "Cm_2D": Cm_2D,
             },
         )
         return df
@@ -694,7 +697,7 @@ class Wing_LSPT:
         D: float = 0
         My_at_quarter_chord: float = 0
         for wing_seg in self.wing_segments:
-            airfoil: Airfoil = wing_seg.airfoil
+            airfoil: Airfoil = wing_seg.root_airfoil
             for j in np.arange(0, wing_seg.N - 1):
                 dy: float = float(np.mean(self.grid[N + j + 1, :, 1] - self.grid[N + j, :, 1]))
 

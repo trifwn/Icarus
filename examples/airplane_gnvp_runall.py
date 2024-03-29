@@ -8,13 +8,13 @@ import time
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def main() -> None:
@@ -22,55 +22,57 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-    from ICARUS.Database import EXTERNAL_DB
+    from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+    from ICARUS.database import EXTERNAL_DB
 
     read_polars_2d(EXTERNAL_DB)
 
     # # Get Plane
     planes: list[Airplane] = []
 
-    # from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
+    # from vehicles.Planes.e190_takeoff import e190_takeoff_generator
     # embraer_to: Airplane = e190_takeoff_generator(name="e190_to_3")
     # planes.append(embraer_to)
 
-    # from Vehicles.Planes.e190_cruise import e190_cruise
+    # from vehicles.Planes.e190_cruise import e190_cruise
 
     # embraer_cr: Airplane = e190_cruise(name="e190_cr_3")
     # planes.append(embraer_cr)
     # planes.append(embraer_to)
 
-    from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
+    from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 
-    filename: str = "Data/3d_Party/plane_1.xml"
-    airplane = parse_xfl_project(filename)
-    # from Vehicles.Planes.hermes import hermes
-    # hermes_3: Airplane = hermes(name="hermes_3_2")
+    # filename: str = "Data/3d_Party/plane_1.xml"
+    # airplane = parse_xfl_project(filename)
+    from vehicles.Planes.e190_cruise import e190_cruise
 
-    planes.append(airplane)
+    hermes_3: Airplane = e190_cruise(name="E190")
+    planes.append(hermes_3)
+
+    # planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"plane_1": 1e-3}
-    maxiter: dict[str, int] = {"plane_1": 500}
-    UINF: dict[str, float] = {"plane_1": 20}
-    ALTITUDE: dict[str, int] = {"plane_1": 0}
+    timestep: dict[str, float] = {"E190": 1e-3}
+    maxiter: dict[str, int] = {"E190": 100}
+    UINF: dict[str, float] = {"E190": 20}
+    ALTITUDE: dict[str, int] = {"E190": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"plane_1": 273 + 15}
+    TEMPERATURE: dict[str, int] = {"E190": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"plane_1": True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"plane_1": True}
+    STATIC_ANALYSIS: dict[str, float] = {"E190": True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {"E190": False}
 
     # Get Solver
     GNVP_VERSION = 3
     if GNVP_VERSION == 7:
-        from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
+        from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
 
-        gnvp: Solver = get_gnvp7()
+        gnvp: Solver = GenuVP7()
     elif GNVP_VERSION == 3:
-        from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
+        from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
 
-        gnvp = get_gnvp3()
+        gnvp = GenuVP3()
     else:
         raise ValueError("GNVP VERSION NOT FOUND")
 
@@ -81,6 +83,12 @@ def main() -> None:
 
         # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
+        state = State(
+            name="Unstick",
+            airplane=airplane,
+            environment=EARTH_ISA,
+            u_freestream=UINF[airplane.name],
+        )
         print(EARTH_ISA)
 
         if STATIC_ANALYSIS[airplane.name]:
@@ -89,11 +97,10 @@ def main() -> None:
             # 1: Angles Sequential
             # 2: Angles Parallel
 
-            analysis: str = gnvp.available_analyses_names()[2]
-            gnvp.set_analyses(analysis)
-            options: Struct = gnvp.get_analysis_options(verbose=False)
+            analysis: str = gnvp.get_analyses_names()[0]
+            gnvp.select_analysis(analysis)
+            options: Struct = gnvp.get_analysis_options()
             solver_parameters: Struct = gnvp.get_solver_parameters()
-
             AOA_MIN = -5
             AOA_MAX = 4
             NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
@@ -103,35 +110,33 @@ def main() -> None:
                 NO_AOA,
             )
 
-            airplane.define_dynamic_pressure(UINF[airplane.name], EARTH_ISA.air_density)
+            options.plane = airplane
+            options.solver2D = "XFLR"
+            options.state = state
+            options.maxiter = maxiter[airplane.name]
+            options.timestep = timestep[airplane.name]
+            options.angles = angles
 
-            options.plane.value = airplane
-            options.environment.value = EARTH_ISA
-            options.solver2D.value = "XFLR"
-            options.maxiter.value = maxiter[airplane.name]
-            options.timestep.value = timestep[airplane.name]
-            options.u_freestream.value = UINF[airplane.name]
-            options.angles.value = angles
+            solver_parameters.Use_Grid = True
+            solver_parameters.Split_Symmetric_Bodies = False
 
-            solver_parameters.Use_Grid.value = True
-            solver_parameters.Split_Symmetric_Bodies.value = False
-
+            gnvp.define_analysis(options, solver_parameters)
             gnvp.print_analysis_options()
 
             polars_time: float = time.time()
-            gnvp.run()
+            gnvp.execute()
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
             polars: DataFrame | int = gnvp.get_results()
             airplane.save()
 
-            from ICARUS.Visualization.airplane.db_polars import plot_airplane_polars
+            from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
             solvers = [
-                "GNVP3 Potential" if GNVP_VERSION == 3 else "GNVP7 Potential",
-                "GNVP3 2D" if GNVP_VERSION == 3 else "GNVP7 2D",
-                "GNVP3 ONERA" if GNVP_VERSION == 3 else "GNVP7 ONERA",
+                "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",
+                "GenuVP3 2D" if GNVP_VERSION == 3 else "GenuVP7 2D",
+                "GenuVP3 ONERA" if GNVP_VERSION == 3 else "GenuVP7 ONERA",
             ]
             axs, fig = plot_airplane_polars(
                 [airplane.name],
@@ -145,14 +150,14 @@ def main() -> None:
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            polars = DB.vehicles_db.raw_data[airplane.name]
-            print(polars)
-            if not isinstance(polars, DataFrame):
+            forces = DB.vehicles_db.forces[airplane.name]
+            if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
-
             try:
-                unstick = State("Unstick", airplane, polars, EARTH_ISA, preffered_polar="Potential")
+                state.add_polar(polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True)
+                unstick = state
             except Exception as error:
+                print("Got errro")
                 print(error)
                 continue
 
@@ -177,38 +182,36 @@ def main() -> None:
             # 4 Pertrubations Parallel
             # 5 Sesitivity Analysis Serial
             # 6 Sesitivity Analysis Parallel
-            analysis = gnvp.available_analyses_names()[4]  # Pertrubations PARALLEL
+            analysis = gnvp.get_analyses_names()[1]  # Pertrubations PARALLEL
             print(f"Selecting Analysis: {analysis}")
-            gnvp.set_analyses(analysis)
+            gnvp.select_analysis(analysis)
 
             options = gnvp.get_analysis_options(verbose=False)
-            solver_parameters = gnvp.get_solver_parameters()
+            solver_parameters = gnvp.get_solver_parameters(verbose=False)
 
             if options is None:
                 raise ValueError("Options not set")
             # Set Options
-            options.plane.value = airplane
-            options.state.value = unstick
-            options.environment.value = EARTH_ISA
-            options.solver2D.value = "Xfoil"
-            options.maxiter.value = maxiter[airplane.name]
-            options.timestep.value = timestep[airplane.name]
-            options.u_freestream.value = unstick.trim["U"]
-            options.angle.value = unstick.trim["AoA"]
+            options.plane = airplane
+            options.state = unstick
+            options.solver2D = "Xfoil"
+            options.maxiter = maxiter[airplane.name]
+            options.timestep = timestep[airplane.name]
+            options.angle = unstick.trim["AoA"]
 
-            solver_parameters.Use_Grid.value = True
-            solver_parameters.Split_Symmetric_Bodies.value = False
+            solver_parameters.Use_Grid = True
+            solver_parameters.Split_Symmetric_Bodies = False
             # Run Analysis
+            gnvp.define_analysis(options, solver_parameters)
             gnvp.print_analysis_options()
 
             pert_time: float = time.time()
             print("Running Pertrubations")
-            gnvp.run()
+            gnvp.execute()
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
             # Get Results And Save
             _ = gnvp.get_results()
-            unstick.save()
 
             # Sensitivity ANALYSIS
             # ADD SENSITIVITY ANALYSIS

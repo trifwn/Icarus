@@ -1,8 +1,8 @@
 from typing import Any
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Flight_Dynamics.disturbances import Disturbance
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.types import FloatArray
+from ICARUS.flight_dynamics.disturbances import Disturbance
+from ICARUS.vehicle.surface import WingSurface
 
 
 class Movement:
@@ -13,8 +13,8 @@ class Movement:
     def __init__(
         self,
         name: str,
-        Rotation: dict[str, Any],
-        Translation: dict[str, Any],
+        rotation: dict[str, Any],
+        translation: dict[str, Any],
     ) -> None:
         """
         Initialize the Movement Class
@@ -37,25 +37,25 @@ class Movement:
                                         6) a2: float \
         """
         self.name: str = name
-        self.rotation_type: int = Rotation["type"]
+        self.rotation_type: int = rotation["type"]
 
-        self.rotation_axis: int = Rotation["axis"]
+        self.rotation_axis: int = rotation["axis"]
 
-        self.rot_t1: float = Rotation["t1"]
-        self.rot_t2: float = Rotation["t2"]
+        self.rot_t1: float = rotation["t1"]
+        self.rot_t2: float = rotation["t2"]
 
-        self.rot_a1: float = Rotation["a1"]
-        self.rot_a2: float = Rotation["a2"]
+        self.rot_a1: float = rotation["a1"]
+        self.rot_a2: float = rotation["a2"]
 
-        self.translation_type: int = Translation["type"]
+        self.translation_type: int = translation["type"]
 
-        self.translation_axis: int = Translation["axis"]
+        self.translation_axis: int = translation["axis"]
 
-        self.translation_t1: float = Translation["t1"]
-        self.translation_t2: float = Translation["t2"]
+        self.translation_t1: float = translation["t1"]
+        self.translation_t2: float = translation["t2"]
 
-        self.translation_a1: float = Translation["a1"]
-        self.translation_a2: float = Translation["a2"]
+        self.translation_a1: float = translation["a1"]
+        self.translation_a2: float = translation["a2"]
 
 
 def distrubance2movement(disturbance: Disturbance) -> Movement:
@@ -115,7 +115,7 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
 
 
 def define_movements(
-    surfaces: list[Wing_Segment],
+    surfaces: list[WingSurface],
     CG: FloatArray,
     orientation: FloatArray | list[float],
     disturbances: list[Disturbance] = [],

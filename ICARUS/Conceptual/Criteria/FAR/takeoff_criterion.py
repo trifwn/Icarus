@@ -1,6 +1,6 @@
 from typing import Any
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 # FAR 3 -> 25.113

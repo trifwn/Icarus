@@ -28,9 +28,9 @@ This package contains an abstraction layer for solvers and analyses. The package
 
 
 """
-from . import Analyses
-from . import Results
-from . import Solvers
-from . import Workflow
+from . import analyses
+from . import results
+from . import solvers
+from . import workflow
 
-__all__ = ['Solvers', 'Analyses', 'Workflow', 'Results']
+__all__ = ['solvers', 'analyses', 'workflow', 'results']

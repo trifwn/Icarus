@@ -2,7 +2,7 @@ import os
 import re
 from typing import Optional
 
-from ICARUS.Core.file_tail import tail
+from ICARUS.core.file_tail import tail
 
 
 def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float], bool, bool]:

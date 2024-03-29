@@ -1,24 +1,24 @@
 """
 =======================================
-ICARUS Vehicles Package
+ICARUS vehicles Package
 =======================================
 
 .. toctree: generated/
     :hidden:
     :noindex:
 
-    ICARUS.Vehicle.strip
-    ICARUS.Vehicle.wing_segment
-    ICARUS.Vehicle.merged_wing
-    ICARUS.Vehicle.plane
-    ICARUS.Vehicle.surface_connections
+    ICARUS.vehicle.strip
+    ICARUS.vehicle.surface
+    ICARUS.vehicle.merged_wing
+    ICARUS.vehicle.plane
+    ICARUS.vehicle.surface_connections
 
 
-.. module:: ICARUS.Vehicle
+.. module:: ICARUS.vehicle
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for vehicle modelling and analysis.
 
-.. currentmodule:: ICARUS.Vehicle
+.. currentmodule:: ICARUS.vehicle
 
 This package contains class and routines for vehicle modelling and analysis.
 
@@ -28,7 +28,7 @@ Strip
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Vehicle.strip - Strip class definition
+    ICARUS.vehicle.strip - Strip class definition
 
 Wing Segment
 ============
@@ -36,7 +36,7 @@ Wing Segment
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Vehicle.wing_segment - Wing Segment class definition
+    ICARUS.vehicle.surface - Wing Segment class definition
 
 Merged Wing
 ===========
@@ -44,7 +44,7 @@ Merged Wing
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Vehicle.merged_wing - Merged Wing class definition
+    ICARUS.vehicle.merged_wing - Merged Wing class definition
 
 Plane
 ========================
@@ -52,7 +52,7 @@ Plane
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Vehicle.plane - Plane class definition
+    ICARUS.vehicle.plane - Plane class definition
 
 Surface Connections
 ===================
@@ -60,10 +60,10 @@ Surface Connections
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Vehicle.surface_connections - Surface Connections class definition
+    ICARUS.vehicle.surface_connections - Surface Connections class definition
 
 """
 
-__all__ = ['strip', 'wing_segment', "merged_wing", "plane", "surface_connections"]
+__all__ = ["strip", "surface", "merged_wing", "plane", "surface_connections"]
 
-from . import strip, wing_segment, merged_wing, plane, surface_connections
+from . import strip, merged_wing, plane, surface, surface_connections

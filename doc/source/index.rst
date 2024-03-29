@@ -1,7 +1,7 @@
 .. module:: ICARUS
 
 *********************
-ICARUS Aerodynamics
+ICARUS aerodynamics
 *********************
 
 This webpage serves to provide an analysis of the workings and structure of the ICARUS software package, as well as some examples of usage. The package is an open source tool for the design and analysis of aircraft, with emphasis on an abstract, parametric and modular modeling. Most of the source code is currently written in Python. This choice was made deliberately for several reasons:

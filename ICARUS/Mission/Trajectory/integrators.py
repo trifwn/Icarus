@@ -1,19 +1,42 @@
 import numpy as np
-import scipy
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Mission.mission_vehicle import Mission_Vehicle
-from ICARUS.Mission.Trajectory.trajectory import Trajectory
+from ICARUS.core.types import FloatArray
+from ICARUS.mission.mission_vehicle import Mission_Vehicle
+from ICARUS.mission.trajectory.trajectory import Trajectory
 
 
-def RK4systems(t0, tend, dt, x0, v0, trajectory: Trajectory, airplane: Mission_Vehicle, verbosity: int = 0):
+def RK4systems(
+    t0: float,
+    tend: float,
+    dt: float,
+    x0: FloatArray,
+    v0: FloatArray,
+    trajectory: Trajectory,
+    airplane: Mission_Vehicle,
+    verbosity: int = 0,
+) -> tuple[FloatArray, FloatArray, FloatArray]:
+    """Integrate the trajectory of an airplane using the RK4 method.
+
+    Args:
+        t0 (float): Start time
+        tend (float): End time
+        dt (float): Time step
+        x0 (FloatArray): Initial position
+        v0 (FloatArray): Initial velocity
+        trajectory (Trajectory): Trajectory Object
+        airplane (Mission_Vehicle): Airplane Object
+        verbosity (int, optional): Verbosity. Defaults to 0.
+
+    Returns:
+        _type_: _description_
+    """
     # print("Starting Simulation")
     # print(f"Initial X: {x0}")
     # print(f"Initial V: {v0}")
     x = [x0]
     v = [v0]
     t: FloatArray = np.arange(t0, tend + dt, dt)
-    aoa = []
+    # aoa = []
 
     steps = round((tend - t0) / dt)
     success = True
@@ -54,7 +77,7 @@ def RK4systems(t0, tend, dt, x0, v0, trajectory: Trajectory, airplane: Mission_V
         #     print(f"Elevator Angle too high at step: {i}   Max Distance: {x[-1][0]}")
         #     success = False
         #     break
-        if np.isnan(xi).any() or np.isnan(vi).any() | np.isinf(xi).any() or np.isinf(vi).any():
+        if np.isnan(xi).any() or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any()) or np.isinf(vi).any():
             print(f"Blew UP at step: {i}                    Max Distance: {x[-1][0]}")
             success = False
             break
@@ -95,8 +118,8 @@ def RK45_scipy_integrator(
     trajectory: Trajectory,
     airplane: Mission_Vehicle,
     verbosity: int = 0,
-):
-    def dxdt(t, y):
+) -> tuple[FloatArray, FloatArray, FloatArray]:
+    def dxdt(t: float, y: FloatArray) -> FloatArray:
         x = y[:2]
         v = y[-2:]
 
@@ -112,7 +135,6 @@ def RK45_scipy_integrator(
         vdot = airplane.dvdt(x, v, trajectory, verbosity=verbosity)
         return np.hstack([xdot, vdot])
 
-    t = np.arange(t0, tend + dt, dt)
     x = [np.array([*x0, *v0])]
     t = [t0]
 
@@ -121,9 +143,9 @@ def RK45_scipy_integrator(
         r.step()
         t.append(r.t)
         x.append(r.y)
-    x = np.array(x)
-    positions = x[:, :2]
-    velocities = x[:, 2:]
+    xs = np.array(x)
+    positions = xs[:, :2]
+    velocities = xs[:, 2:]
 
     print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
     return np.array(t), positions, velocities
@@ -141,8 +163,8 @@ def scipy_ivp_integrator(
     trajectory: Trajectory,
     airplane: Mission_Vehicle,
     verbosity: int = 0,
-):
-    def dxdt(t, y):
+) -> tuple[FloatArray, FloatArray, FloatArray]:
+    def dxdt(t: float, y: FloatArray) -> FloatArray:
         x = y[:2]
         v = y[-2:]
 
@@ -158,10 +180,7 @@ def scipy_ivp_integrator(
         vdot = airplane.dvdt(x, v, trajectory, verbosity=verbosity)
         return np.hstack([xdot, vdot])
 
-    t = np.arange(t0, tend + dt, dt)
-    x = [np.array([*x0, *v0])]
     t = [t0]
-
     r = solve_ivp(dxdt, (t0, tend), [*x0, *v0], t_eval=t, vectorized=False)
     x = r.y
 

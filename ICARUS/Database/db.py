@@ -1,13 +1,30 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .AnalysesDB import AnalysesDB
 from .Database_2D import Database_2D
 from .Database_3D import Database_3D
 from ICARUS import APPHOME
 
+if TYPE_CHECKING:
+    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.airfoils.airfoil import Airfoil
+
 
 class Database:
     """Master Database Class Containing other Databases and managing them."""
 
+    # Create only one instance of the database
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
+        """Initializes the Database"""
         self.HOMEDIR: str = APPHOME
         self.foils_db: Database_2D = Database_2D()
         self.vehicles_db: Database_3D = Database_3D()
@@ -17,6 +34,12 @@ class Database:
         """Loads all the data from the databases"""
         self.foils_db.load_data()
         self.vehicles_db.load_data()
+
+    def get_airfoil(self, name: str) -> Airfoil:
+        return self.foils_db.get_airfoil(name)
+
+    def get_vehicle(self, name: str) -> Airplane:
+        return self.vehicles_db.get_vehicle(name)
 
     def __str__(self) -> str:
         return "Master Database"
@@ -28,11 +51,11 @@ class Database:
         print("------------------------------------------------")
         print(f"|        {self.foils_db}                          |")
         print("------------------------------------------------")
-        for foil in self.foils_db.data.keys():
+        for foil in self.foils_db._data.keys():
             string = f"|{foil}\t\t\t\t\t|\n"
-            for solver in self.foils_db.data[foil].keys():
+            for solver in self.foils_db._data[foil].keys():
                 string += f"|  - {solver}:"
-                reyns = list(self.foils_db.data[foil][solver].keys())
+                reyns = list(self.foils_db._data[foil][solver].keys())
                 reyns_num = [float(reyn) for reyn in reyns]
                 string += f"\t Re: {min(reyns_num)} - {max(reyns_num)} "
                 string += "\t|\n"
@@ -45,9 +68,9 @@ class Database:
         print(f"|        {self.vehicles_db}             |")
         print("------------------------------------------------")
 
-        for vehicle in self.vehicles_db.data.keys():
+        for vehicle in self.vehicles_db.polars.keys():
             string = f"|{vehicle}\n"
-            for solver in self.vehicles_db.data[vehicle].keys():
+            for solver in self.vehicles_db.polars[vehicle].keys():
                 string += f"|\t - {solver}:"
                 string += "\n"
             string += "|\n|"

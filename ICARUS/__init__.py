@@ -20,32 +20,32 @@ APPHOME: str = os.path.dirname(os.path.realpath(__file__))
 APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 
 
-from . import Aerodynamics
-from . import Airfoils
-from . import Conceptual
-from . import Control
-from . import Core
-from . import Database
-from . import Environment
-from . import Flight_Dynamics
-from . import Mission
-from . import Vehicle
-from . import Visualization
-from . import Computation
+from . import airfoils
+from . import aerodynamics
+from . import conceptual
+from . import control
+from . import core
+from . import database
+from . import environment
+from . import flight_dynamics
+from . import mission
+from . import vehicle
+from . import visualization
+from . import computation
 
 __all__ = [
-    "Aerodynamics",
-    "Airfoils",
-    "Conceptual",
-    "Control",
-    "Core",
-    "Database",
-    "Environment",
-    "Flight_Dynamics",
-    "Mission",
-    "Vehicle",
-    "Visualization",
-    "Computation",
+    "aerodynamics",
+    "airfoils",
+    "conceptual",
+    "control",
+    "core",
+    "database",
+    "environment",
+    "flight_dynamics",
+    "mission",
+    "vehicle",
+    "visualization",
+    "computation",
 ]
 
 __version__ = "0.3.0"

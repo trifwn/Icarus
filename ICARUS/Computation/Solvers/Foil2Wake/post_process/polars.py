@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:

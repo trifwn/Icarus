@@ -8,22 +8,22 @@ The ICARUS package is comprised of different modules that interact with each oth
 In this user guide we will cover the usage of the modules in an order that makes sense for a new user. The order of the modules is as follows:
 
 * `Computation`
-    - `Computation.Solvers.solver`
-    - `Computation.analysis`
-    - `Computation.options`
+    - `computation.solvers.solver`
+    - `computation.analysis`
+    - `computation.options`
 
-* `Airfoils`
-    - `Airfoils.airfoil`
-    - `Airfoils.airfoil_polars`
+* `airfoils`
+    - `airfoils.airfoil`
+    - `airfoils.airfoil_polars`
 
-* `Solvers`
-    - `Solvers.aifoil`
-    - `Solvers.airplane`
+* `solvers`
+    - `solvers.aifoil`
+    - `solvers.airplane`
 
-* `Vehicle`
-    - `Vehicle.strip`
-    - `Vehicle.wing_segment`
-    - `Vehicle.merged_wing`
+* `vehicle`
+    - `vehicle.strip`
+    - `vehicle.wing_segment`
+    - `vehicle.merged_wing`
 
 
 .. toctree::
@@ -31,17 +31,17 @@ In this user guide we will cover the usage of the modules in an order that makes
     :hidden:
     :titlesonly:
 
-    Computation                 <Computation/index>
-    Computation.Solver          <Computation/solver>
-    Computation.Analysis        <Computation/analysis>
-    Computation.Options         <Computation/options>
-    Airfoils                <Airfoils/index>
-    Airfoils.airfoil        <Airfoils/airfoil>
-    Airfoils.airfoil_polars <Airfoils/airfoil_polars>
-    Solvers                 <Solvers/index>
-    Solvers.aifoil          <Solvers/airfoil_solvers>
-    Solvers.airplane        <Solvers/airplane_solvers>
-    Vehicle                 <Vehicle/index>
-    Vehicle.strip           <Vehicle/strip>
-    Vehicle.wing_segment    <Vehicle/wing_segment>
-    Vehicle.merged_wing     <Vehicle/merged_wing>
+    computation                 <computation/index>
+    computation.solver          <computation/solver>
+    computation.analysis        <computation/analysis>
+    computation.options         <computation/options>
+    airfoils                <airfoils/index>
+    airfoils.airfoil        <airfoils/airfoil>
+    airfoils.airfoil_polars <airfoils/airfoil_polars>
+    solvers                 <solvers/index>
+    solvers.aifoil          <solvers/airfoil_solvers>
+    solvers.airplane        <solvers/airplane_solvers>
+    vehicle                 <vehicle/index>
+    vehicle.strip           <vehicle/strip>
+    vehicle.wing_segment    <vehicle/wing_segment>
+    vehicle.merged_wing     <vehicle/merged_wing>

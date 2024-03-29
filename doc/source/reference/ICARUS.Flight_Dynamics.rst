@@ -1,6 +1,6 @@
-.. .. _ICARUS.Flight_Dynamics:
+.. .. _ICARUS.flight_dynamics:
 
-.. automodule:: ICARUS.Flight_Dynamics
+.. automodule:: ICARUS.flight_dynamics
    :noindex:
    :no-members:
    :no-inherited-members:

@@ -1,6 +1,6 @@
 import os
 
-from Database.Database_2D import Database_2D
+from ICARUS.database.Database_2D import Database_2D
 
 
 def remove_results(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> None:

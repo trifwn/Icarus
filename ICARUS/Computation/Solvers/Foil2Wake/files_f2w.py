@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 
 from ICARUS import platform_os
-from ICARUS.Database import Foil_Section_exe
+from ICARUS.database import Foil_Section_exe
 
 
 def io_file(airfile: str, name: str) -> None:
@@ -15,7 +15,7 @@ def io_file(airfile: str, name: str) -> None:
         name (str): Positive or Negative Run
     """
     fname = f"io_{name}.files"
-    with open(fname, 'w', encoding="utf-8") as f:
+    with open(fname, "w", encoding="utf-8") as f:
         f.write("***** input files  *****\n")
         f.write(f"design_{name}.inp\n")
         f.write(f"f2w_{name}.inp\n")
@@ -31,7 +31,7 @@ def io_file(airfile: str, name: str) -> None:
         f.write(f"BDLAYER.OUT\n")
         f.write(f"SOL{name}.INI\n")
         f.write(f"SOL{name}.TMP\n")
-        if platform_os == 'Windows':
+        if platform_os == "Windows":
             f.write(f"TMP_{name}\\ \n")
         else:
             f.write(f"TMP_{name}/\n")
@@ -53,7 +53,7 @@ def design_file(
         name (str): pos or neg. Meaning positive or negative run
     """
     fname: str = f"design_{name}.inp"
-    with open(fname, 'w', encoding="utf-8") as f:
+    with open(fname, "w", encoding="utf-8") as f:
         f.write(f"{angles[0]}\n")
         f.write(f"0            ! ISOL\n")
         f.write(f"{number_of_angles}           ! No of ANGLES\n")
@@ -68,7 +68,7 @@ def design_file(
                 f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1])
             from ICARUS import platform_os
 
-            if platform_os == 'Windows':
+            if platform_os == "Windows":
                 f.write("\\ \n")
             else:
                 f.write("/\n")
@@ -98,9 +98,9 @@ def input_file(
         name (str): _description_
     """
     fname: str = f"f2w_{name}.inp"
-    with open(fname, 'w', encoding="utf-8") as f:
+    with open(fname, "w", encoding="utf-8") as f:
         f.write("0.        ! TEANGLE (deg)\n")
-        f.write('1.        ! UINF\n')
+        f.write("1.        ! UINF\n")
         f.write(f"{max_iter}     ! NTIMEM\n")
         f.write(f"{timestep}     ! DT1\n")
         f.write(f"{timestep}     ! DT2\n")  # IS NOT IMPLEMENTED
@@ -158,6 +158,12 @@ def setup_f2w(HOMEDIR: str, CASEDIR: str) -> None:
         dst = os.path.join(CASEDIR, "foil_section")
         try:
             os.symlink(src, dst)
-        except FileExistsError:
-            os.remove(dst)
-            os.symlink(src, dst)
+        except Exception as e:
+            if isinstance(e, FileExistsError):
+                os.remove(dst)
+                os.symlink(src, dst)
+            elif isinstance(e, OSError):
+                import shutil
+
+                # Permission Error so insted of symlink we do copy
+                shutil.copyfile(src, dst)

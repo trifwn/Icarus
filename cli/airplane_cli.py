@@ -8,11 +8,11 @@ Returns:
     None: None
 """
 import time
+from os import name
 from typing import Any
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
-import numpy as np
 from inquirer import Checkbox
 from inquirer import List
 from inquirer import Path
@@ -20,16 +20,20 @@ from inquirer import prompt
 from inquirer import Text
 
 from .cli_home import cli_home
-from ICARUS.Computation.Solvers.GenuVP.gnvp3 import get_gnvp3
-from ICARUS.Computation.Solvers.GenuVP.gnvp7 import get_gnvp7
-from ICARUS.Computation.Solvers.Icarus_LSPT.wing_lspt import get_lspt
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Computation.Solvers.XFLR5.parser import parse_xfl_project
-from ICARUS.Core.struct import Struct
-from ICARUS.Database import DB
-from ICARUS.Environment.definition import EARTH_ISA
-from ICARUS.Environment.definition import Environment
-from ICARUS.Vehicle.plane import Airplane
+from cli.analysis import set_analysis
+from cli.analysis import set_analysis_options
+from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
+from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
+from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
+
 
 jsonpickle_pd.register_handlers()
 
@@ -147,91 +151,6 @@ def select_airplane_source() -> Airplane:
         return select_airplane_source()
 
 
-def set_analysis(solver: Solver) -> None:
-    analyses: list[str] = solver.available_analyses_names(verbose=True)
-    analyses_quest: list[List] = [
-        List(
-            "analysis",
-            message="Which analysis do you want to perform",
-            choices=[analysis for analysis in analyses],
-        ),
-    ]
-    answer: dict[Any, Any] | None = prompt(analyses_quest)
-    if answer is None:
-        print("Exited by User")
-        exit()
-    if answer["analysis"] in analyses:
-        solver.set_analyses(answer["analysis"])
-    else:
-        print("Error")
-        return set_analysis(solver)
-
-
-input_options = {
-    float: "float",
-    int: "int",
-    bool: "bool",
-    str: "text",
-    list[float]: "list_float",
-    list[int]: "list_int",
-    list[str]: "list_str",
-    list[bool]: "list_bool",
-    list[str]: "list_str",
-}
-
-
-def get_option(
-    option_name: str,
-    question_type: str,
-) -> dict[str, Any]:
-    if question_type.startswith("list_"):
-        quest: Text = Text(
-            f"{option_name}",
-            message=f"{option_name} (Multiple Values Must be seperated with ','. You can also specify a range as a:b:c where a and b are the endpoints and c the step )",
-        )
-    else:
-        quest = Text(
-            f"{option_name}",
-            message=f"{option_name} = ",
-        )
-
-    answer: dict[str, Any] | None = prompt([quest])
-    if answer is None:
-        print("Exited by User")
-        exit()
-
-    try:
-        if question_type == "float":
-            answer[option_name] = float(answer[option_name])
-        elif question_type == "int":
-            answer[option_name] = int(answer[option_name])
-        elif question_type == "bool":
-            answer[option_name] = bool(answer[option_name])
-        elif question_type == "text":
-            answer[option_name] = str(answer[option_name])
-        elif question_type == "list_float":
-            # Check if the user specified a range
-            if ":" in answer[option_name]:
-                a, b, c = answer[option_name].split(":")
-                answer[option_name] = np.linspace(float(a), float(b), num=int(c))
-            else:
-                answer[option_name] = [float(x) for x in answer[option_name].split(",")]
-        elif question_type == "list_int":
-            answer[option_name] = [int(x) for x in answer[option_name].split(",")]
-        elif question_type == "list_bool":
-            answer[option_name] = [bool(x) for x in answer[option_name].split(",")]
-        elif question_type == "list_str":
-            answer[option_name] = [str(x) for x in answer[option_name].split(",")]
-    except Exception as e:
-        print(answer)
-        print("Error Getting Answer! Try Again")
-        print(f"Got error {e}")
-        import sys
-
-        sys.exit()
-    return answer
-
-
 def set_environment_options(earth: Environment) -> Environment:
     """
     Function to set the options for the environment. It first displays the
@@ -299,7 +218,7 @@ def set_environment_options(earth: Environment) -> Environment:
         return set_environment_options(earth)
 
 
-def get_environment() -> Environment:
+def get_state(airplane: Airplane) -> State:
     environment_quest: list[List] = [
         List(
             "environment",
@@ -312,10 +231,42 @@ def get_environment() -> Environment:
         print("Exited by User")
         exit()
     if answer["environment"] == "EARTH_ISA":
-        return set_environment_options(EARTH_ISA)
+        env = set_environment_options(EARTH_ISA)
+        # Ask The name of the state
+        state_quest: list[Text] = [
+            Text(
+                "name",
+                message="State Name = ",
+            ),
+        ]
+        answer = prompt(state_quest)
+        if answer is None:
+            print("Exited by User")
+            exit()
+        name: str = answer["name"]
+
+        # Get the freestream velocity
+        uinf_quest: list[Text] = [
+            Text(
+                "uinf",
+                message="Freestream Velocity = ",
+            ),
+        ]
+        answer = prompt(uinf_quest)
+        if answer is None:
+            print("Exited by User")
+            exit()
+        uinf: float = float(answer["uinf"])
+
+        return State(
+            name=name,
+            environment=env,
+            airplane=airplane,
+            u_freestream=uinf,
+        )
     else:
         print("Error")
-        return get_environment()
+        return get_state(airplane)
 
 
 def get_2D_polars_solver() -> str:
@@ -372,38 +323,6 @@ def get_2D_polars_solver() -> str:
     else:
         print("Error")
         return get_2D_polars_solver()
-
-
-def set_analysis_options(solver: Solver, airfoil: Airplane) -> None:
-    all_options: Struct = solver.get_analysis_options(verbose=True)
-    options = Struct()
-    answers: dict[str, Any] = {}
-    for option in all_options.keys():
-        if option == "environment":
-            answers[option] = get_environment()
-            continue
-        elif option == "solver2D":
-            answers[option] = get_2D_polars_solver()
-            continue
-        options[option] = all_options[option]
-
-        try:
-            question_type = input_options[options[option].option_type]
-        except KeyError:
-            print(f"Option {option} has an invalid type")
-            continue
-
-        answer = get_option(option, question_type)
-        answers[option] = answer[option]
-
-    try:
-        solver.set_analysis_options(answers)
-        print("Options set")
-        _: Struct = solver.get_analysis_options(verbose=True)
-
-    except:
-        print("Unable to set options! Try Again")
-        return set_analysis_options(solver, airfoil)
 
 
 def set_solver_parameters(solver: Solver) -> None:
@@ -479,7 +398,7 @@ def airplane_cli(return_home: bool = False) -> None:
             calc_gnvp_3[vehicle.name] = True
 
             # Get Solver
-            gnvp_3_solvers[vehicle.name] = get_gnvp3()
+            gnvp_3_solvers[vehicle.name] = GenuVP3()
             set_analysis(gnvp_3_solvers[vehicle.name])
             set_analysis_options(gnvp_3_solvers[vehicle.name], vehicle)
             set_solver_parameters(gnvp_3_solvers[vehicle.name])
@@ -490,7 +409,7 @@ def airplane_cli(return_home: bool = False) -> None:
             calc_gnvp_7[vehicle.name] = True
 
             # Get Solver
-            gnvp_7_solvers[vehicle.name] = get_gnvp7()
+            gnvp_7_solvers[vehicle.name] = GenuVP7()
             set_analysis(gnvp_7_solvers[vehicle.name])
             set_analysis_options(gnvp_7_solvers[vehicle.name], vehicle)
             set_solver_parameters(gnvp_7_solvers[vehicle.name])
@@ -501,7 +420,7 @@ def airplane_cli(return_home: bool = False) -> None:
             calc_lspt[vehicle.name] = True
 
             # Get Solver
-            lspt_solvers[vehicle.name] = get_lspt()
+            lspt_solvers[vehicle.name] = LSPT()
             set_analysis(lspt_solvers[vehicle.name])
             set_analysis_options(lspt_solvers[vehicle.name], vehicle)
             set_solver_parameters(lspt_solvers[vehicle.name])
@@ -520,10 +439,11 @@ def airplane_cli(return_home: bool = False) -> None:
             # Set Solver Options and Parameters
             gnvp3_s: Solver = gnvp_3_solvers[vehicle.name]
             gnvp3_options: Struct = gnvp3_s.get_analysis_options(verbose=True)
-            gnvp3_options.plane.value = vehicle
+            gnvp3_options.plane = vehicle
 
             # Run Solver
-            gnvp_3_solvers[vehicle.name].run()
+            gnvp_3_solvers[vehicle.name].set_analysis_options(gnvp3_options)
+            gnvp_3_solvers[vehicle.name].execute()
 
             # Get Results
             _ = gnvp_3_solvers[vehicle.name].get_results()
@@ -538,10 +458,11 @@ def airplane_cli(return_home: bool = False) -> None:
             # Set Solver Options and Parameters
             gnvp_7: Solver = gnvp_7_solvers[vehicle.name]
             gnvp_7_options: Struct = gnvp_7.get_analysis_options(verbose=True)
-            gnvp_7_options.plane.value = vehicle
+            gnvp_7_options.plane = vehicle
 
             # Run Solver and Get Results
-            gnvp_7_solvers[vehicle.name].run()
+            gnvp_7_solvers[vehicle.name].set_analysis_options(gnvp_7_options)
+            gnvp_7_solvers[vehicle.name].execute()
 
             gnvp_7_etime: float = time.time()
             print(f"XFoil completed in {gnvp_7_etime - gnvp_7_stime} seconds")
@@ -553,10 +474,11 @@ def airplane_cli(return_home: bool = False) -> None:
             # Set Solver Options and Parameters
             lspt: Solver = lspt_solvers[vehicle.name]
             lspt_options: Struct = lspt.get_analysis_options(verbose=True)
-            lspt_options.plane.value = vehicle
+            lspt_options.plane = vehicle
 
             # Run Solver and Get Results
-            lspt_solvers[vehicle.name].run()
+            lspt_solvers[vehicle.name].set_analysis_options(lspt_options)
+            lspt_solvers[vehicle.name].execute()
 
             lspt_etime: float = time.time()
             print(f"XFoil completed in {lspt_etime - lspt_stime} seconds")

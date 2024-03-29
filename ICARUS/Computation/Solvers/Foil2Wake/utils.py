@@ -1,4 +1,4 @@
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 def separate_angles(

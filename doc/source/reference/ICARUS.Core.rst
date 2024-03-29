@@ -1,6 +1,6 @@
-.. .. _ICARUS.Core:
+.. .. _ICARUS.core:
 
-.. automodule:: ICARUS.Core
+.. automodule:: ICARUS.core
    :noindex:
    :no-members:
    :no-inherited-members:

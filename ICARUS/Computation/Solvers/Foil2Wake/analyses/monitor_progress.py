@@ -7,7 +7,7 @@ import numpy as np
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Computation.Solvers.Foil2Wake.post_process.progress import latest_time
+from ICARUS.computation.solvers.Foil2Wake.post_process.progress import latest_time
 
 
 def serial_monitor(
@@ -21,7 +21,7 @@ def serial_monitor(
     last: float,
     refresh_progress: float = 2,
 ) -> None:
-    sleep(secs=5 + (position + 1) / 10)
+    sleep(5 + (position + 1) / 10)
     angle_prev: float = 0
 
     while True:

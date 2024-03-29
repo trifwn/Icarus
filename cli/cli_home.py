@@ -23,7 +23,7 @@ from inquirer import List
 from pyfiglet import Figlet
 
 from ICARUS import __version__
-from ICARUS.Database import DB
+from ICARUS.database import DB
 
 
 def cli_home() -> None:

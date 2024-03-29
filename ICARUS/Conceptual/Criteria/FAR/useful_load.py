@@ -1,6 +1,6 @@
 from typing import Any
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 # USEFULL LOAD
 
@@ -23,5 +23,4 @@ def usefull_load_criterion(
     we_wg = 1 - u_parameter
     wg = w_p / (1 - we_wg - wf_wg)
 
-    # print(f"{w_p=}, {wg*wf_wg=}, {wg*we_wg=}")
     return wg

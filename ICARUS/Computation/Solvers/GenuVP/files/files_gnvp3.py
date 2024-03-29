@@ -5,19 +5,19 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.Airfoils.airfoil_polars import Polars
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Computation.Solvers.XFLR5.polars import read_polars_2d
-from ICARUS.Core.formatting import ff2
-from ICARUS.Core.formatting import ff3
-from ICARUS.Core.formatting import ff4
-from ICARUS.Core.formatting import ff5
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import EXTERNAL_DB
-from ICARUS.Database import GenuVP3_exe
+from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.core.formatting import ff2
+from ICARUS.core.formatting import ff3
+from ICARUS.core.formatting import ff4
+from ICARUS.core.formatting import ff5
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import EXTERNAL_DB
+from ICARUS.database import GenuVP3_exe
 
 
 def line(value: Any, var_name: str, description: str, file: TextIOWrapper) -> None:
@@ -451,14 +451,11 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
 
-        foil_dat = DB.foils_db.data
+        db_foils = DB.foils_db
         try:
-            polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
+            polars: dict[str, DataFrame] = db_foils.get_data(bod.airfoil_name, solver)
         except KeyError:
-            try:
-                polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
-            except KeyError:
-                raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
+            raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         f_io = StringIO()
         f_io.write(f"------ CL and CD data input file for {bod.airfoil_name}\n")
@@ -473,14 +470,14 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
             f_io.write(f"{reyn.zfill(5)}\n")
         blankline(f_io)
 
-        polar_obj = Polars(polars)
+        polar_obj = Polars(name=bod.airfoil_name, data=polars)
         df: DataFrame = polar_obj.df
         angles = polar_obj.angles
 
         for radpos in [-100.0, 100.0]:
             line(radpos, "RADPOS", "! Radial Position", f_io)
             f_io.write(
-                f"{len(angles)}         ! Number of Angles / Airfoil NACA {bod.airfoil_name}\n",
+                f"{len(angles)}         ! Number of Angles / Airfoil      {bod.airfoil_name}\n",
             )
             f_io.write(
                 "   ALPHA   CL(M=0.0)   CD       CM    CL(M=1)   CD       CM \n",
@@ -515,20 +512,30 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
 
             # Check Whether to split a symmetric body into two parts
             if not params.Use_Grid:
-                f.write(f'1          {"".join(char for char in bod.NACA if char.isdigit())}\n')
+                f.write(f'1          {"".join(char for char in bod.airfoil_name if char.isdigit())}\n')
             else:
-                f.write(f'0          {"".join(char for char in bod.NACA if char.isdigit())}       {bod.name}.WG\n')
+                f.write(
+                    f'0          {"".join(char for char in bod.airfoil_name if char.isdigit())}       {bod.name}.WG\n',
+                )
                 # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
                 # Specify option 0 to read the file
                 with open(f"{bod.name}.WG", "w") as f_wg:
-                    grid: FloatArray = bod.grid
+                    grid: FloatArray | list[FloatArray] = bod.grid
                     f_wg.write("\n")
-                    for n_strip in grid:  # For each strip
-                        for m_point in n_strip:  # For each point in the strip
-                            # Grid Coordinates
-                            # f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
-                            f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
-                        f_wg.write("\n")
+                    if isinstance(grid, list):
+                        for subgrid in grid:
+                            for nstrip in subgrid:
+                                for point in nstrip:
+                                    f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
+                                f_wg.write("\n")
+                    else:
+                        for n_strip in grid:  # For each strip
+                            for m_point in n_strip:  # For each point in the strip
+                                # Grid Coordinates
+                                # f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
+                                f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
+                            f_wg.write("\n")
+
             blankline(f)
             f.write("IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n")
             f.write("1          1          1\n")
@@ -646,7 +653,12 @@ def make_input_files(
     if "gnvp3" not in next(os.walk("."))[2]:
         src: str = GenuVP3_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp3")
-        os.symlink(src, dst)
+        try:
+            os.symlink(src, dst)
+        except OSError:
+            import shutil
+
+            shutil.copy(src, dst)
     os.chdir(HOMEDIR)
 
 

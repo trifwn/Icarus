@@ -3,7 +3,7 @@ from typing import Any
 import numpy as np
 
 from .helper_functions import shape_like
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 # FAR 1 -> 25.111
@@ -40,7 +40,6 @@ def far_inverse_landing_criterion_cl_max(
     cl_app: float = (17.15 / V_app) ** 2 * (wing_loading / sigma)
     landing_dist: float = 0.3 * V_app**2
     cl_max: float = cl_app * 1.69
-    print(f"{landing_dist=} m, {V_app=} m/s, {cl_max=}")
     return cl_app * 1.69
 
 
@@ -51,5 +50,4 @@ def far_inverse_landing_criterion_cl_max2(
 ) -> float:
     V_app: float = np.sqrt(l_landing / 0.3)
     cl_app: float = (17.15 / V_app) ** 2 * (wing_loading / sigma)
-    print(f"{l_landing=} m, {V_app=} m/s, {1.69 * cl_app=}")
     return float(cl_app * 1.69)

@@ -1,6 +1,6 @@
-.. .. _ICARUS.Control:
+.. .. _ICARUS.control:
 
-.. automodule:: ICARUS.Control
+.. automodule:: ICARUS.control
    :noindex:
    :no-members:
    :no-inherited-members:

@@ -9,18 +9,19 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers.Foil2Wake.analyses.monitor_progress import (
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers.Foil2Wake.analyses.monitor_progress import (
     parallel_monitor,
 )
-from ICARUS.Computation.Solvers.Foil2Wake.analyses.monitor_progress import (
+from ICARUS.computation.solvers.Foil2Wake.analyses.monitor_progress import (
     serial_monitor,
 )
-from ICARUS.Computation.Solvers.Foil2Wake.files_interface import sequential_run
-from ICARUS.Computation.Solvers.Foil2Wake.post_process.polars import make_polars
-from ICARUS.Computation.Solvers.Foil2Wake.utils import separate_angles
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
+from ICARUS.computation.solvers.Foil2Wake.files_interface import sequential_run
+from ICARUS.computation.solvers.Foil2Wake.post_process.polars import make_polars
+from ICARUS.computation.solvers.Foil2Wake.utils import separate_angles
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import DB2D
 
 
 def f2w_single_reynolds(
@@ -193,6 +194,7 @@ def run_multiple_reynolds_sequentially(
     solver_options: dict[str, float],
 ) -> None:
     for i, reyn in enumerate(reynolds):
+        print("Running Reynolds number: ", reyn)
         run_single_reynolds(airfoil, reyn, mach, angles, solver_options, i)
 
 
@@ -218,11 +220,11 @@ def process_f2w_run(
 
         CASEDIR: str = os.path.join(
             DB.foils_db.DATADIR,
-            f"NACA{airfoil.name}",
+            f"{airfoil.name.upper()}",
             f"Reynolds_{reynolds_str}",
         )
 
         polars[reynolds_str] = make_polars(CASEDIR, DB.HOMEDIR)
-
-    DB.foils_db.load_data()
+    resutls_folder = os.path.join(DB2D, airfoil.name.upper())
+    DB.foils_db.add_airfoil_data(resutls_folder)
     return polars

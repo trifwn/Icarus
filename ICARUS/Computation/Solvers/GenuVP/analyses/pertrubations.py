@@ -6,26 +6,26 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Computation.Solvers.GenuVP.analyses.monitor_progress import parallel_monitor
-from ICARUS.Computation.Solvers.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.Computation.Solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
-from ICARUS.Computation.Solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import (
+from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import parallel_monitor
+from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_monitor
+from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
+from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
+from ICARUS.computation.solvers.GenuVP.post_process.forces import (
     forces_to_pertrubation_results,
 )
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import define_movements
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Core.struct import Struct
-from ICARUS.Database import DB
-from ICARUS.Database.Database_2D import Database_2D
-from ICARUS.Database.utils import disturbance_to_case
-from ICARUS.Environment.definition import Environment
-from ICARUS.Flight_Dynamics.disturbances import Disturbance
-from ICARUS.Flight_Dynamics.state import State
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.computation.solvers.GenuVP.post_process.forces import rotate_gnvp_forces
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.core.struct import Struct
+from ICARUS.database import DB
+from ICARUS.database.utils import disturbance_to_case
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.disturbances import Disturbance
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 
 
 def gnvp_disturbance_case(
@@ -36,7 +36,7 @@ def gnvp_disturbance_case(
     u_freestream: float,
     angle: float,
     environment: Environment,
-    surfaces: list[Wing_Segment],
+    surfaces: list[WingSurface],
     bodies_dicts: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
@@ -64,7 +64,7 @@ def gnvp_disturbance_case(
         str: Case Done Message
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     airfoils: list[str] = plane.airfoils
 
     movements: list[list[Movement]] = define_movements(
@@ -126,12 +126,9 @@ def run_gnvp7_pertrubation_parallel(*args: Any, **kwars: Any) -> None:
 def run_pertrubation_serial(
     plane: Airplane,
     state: State,
-    environment: Environment,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
-    angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
@@ -145,14 +142,11 @@ def run_pertrubation_serial(
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float):  Freestream Velocity magnitude
-        angle (float): Angle of attack in degrees
-        environment (Environment): Environment Object
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -169,9 +163,9 @@ def run_pertrubation_serial(
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
-                "u_freestream": u_freestream,
-                "angle": angle,
-                "environment": environment,
+                "u_freestream": state.u_freestream,
+                "angle": state.trim["U"],
+                "environment": state.environment,
                 "surfaces": surfaces,
                 "bodies_dicts": bodies_dicts,
                 "dst": dst,
@@ -190,7 +184,7 @@ def run_pertrubation_serial(
         )
         progress_bars.append(pbar)
         folder: str = disturbance_to_case(dst)
-        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
+        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
         job_monitor = Thread(
             target=serial_monitor,
@@ -217,12 +211,9 @@ def run_pertrubation_serial(
 def run_pertrubation_parallel(
     plane: Airplane,
     state: State,
-    environment: Environment,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
-    angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
@@ -233,17 +224,14 @@ def run_pertrubation_parallel(
     Args:
         plane (Airplane): Airplane Object
         state (State): Dynamic State of the airplane
-        environment (Environment): Environment Object
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float): Freestream Velocity magnitude
-        angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -267,9 +255,9 @@ def run_pertrubation_parallel(
                     solver2D,
                     maxiter,
                     timestep,
-                    u_freestream,
-                    angle,
-                    environment,
+                    state.u_freestream,
+                    state.trim["U"],
+                    state.environment,
                     surfaces,
                     bodies_dicts,
                     dst,
@@ -282,9 +270,9 @@ def run_pertrubation_parallel(
 
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR)
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
-    CASEDIRS: list[str] = [os.path.join(PLANEDIR, "Dynamics", folder) for folder in folders]
+    GENUDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
+    CASEDIRS: list[str] = [os.path.join(GENUDIR, "Dynamics", folder) for folder in folders]
 
     refresh_progress: float = 2
     job = Thread(target=run)
@@ -327,12 +315,10 @@ def run_gnvp7_sensitivity_parallel(*args: Any, **kwars: Any) -> None:
 def sensitivity_serial(
     plane: Airplane,
     state: State,
-    environment: Environment,
     var: str,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
     angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -344,18 +330,16 @@ def sensitivity_serial(
 
     Args:
         plane (Dynamic_Airplane): Dynamic Airplane Object
-        environment (Environment): Environment Object
         var (str): Variable to be perturbed
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float): Velocity Magnitude
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -369,9 +353,9 @@ def sensitivity_serial(
             solver2D,
             maxiter,
             timestep,
-            u_freestream,
+            state.u_freestream,
             angle,
-            environment,
+            state.environment,
             surfaces,
             bodies_dicts,
             dst,
@@ -385,12 +369,10 @@ def sensitivity_serial(
 def sensitivity_parallel(
     plane: Airplane,
     state: State,
-    environment: Environment,
     var: str,
     solver2D: str,
     maxiter: int,
     timestep: float,
-    u_freestream: float,
     angle: float,
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -402,18 +384,16 @@ def sensitivity_parallel(
 
     Args:
         plane (Dynamic_Airplane): Dynamic Airplane Object
-        environment (Environment): Environment Object
         var (str): Variable to be perturbed
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        u_freestream (float): Velocity Magnitude
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[Wing_Segment] = plane.get_seperate_surfaces()
+        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
         surfaces = plane.surfaces
 
@@ -436,9 +416,9 @@ def sensitivity_parallel(
                 solver2D,
                 maxiter,
                 timestep,
-                u_freestream,
+                state.u_freestream,
                 angle,
-                environment,
+                state.environment,
                 surfaces,
                 bodies_dicts,
                 dst,
@@ -452,23 +432,33 @@ def sensitivity_parallel(
         _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
 
-def proccess_pertrubation_res(plane: Airplane, state: State) -> DataFrame:
+def proccess_pertrubation_res_3(plane: Airplane, state: State) -> DataFrame:
+    return proccess_pertrubation_res(plane, state, 3)
+
+
+def proccess_pertrubation_res_7(plane: Airplane, state: State) -> DataFrame:
+    return proccess_pertrubation_res(plane, state, 7)
+
+
+def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) -> DataFrame:
     """
     Process the pertrubation results from the GNVP solver
 
     Args:
         plane (Airplane): Airplane Object
         state (State): Plane State to load results to
+        genu_version (int): GenuVP version
 
     Returns:
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
     HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.CASEDIR, "Dynamics")
-    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR)
+    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{gnvp_version}", "Dynamics")
+    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
+    forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 
     state.set_pertrubation_results(forces)
-    state.stability_fd(polar_name="2D")
+    state.stability_fd()
     DB.vehicles_db.states[plane.name] = state
 
     return forces

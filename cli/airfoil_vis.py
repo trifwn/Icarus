@@ -3,8 +3,8 @@ from typing import Any
 from inquirer import Checkbox
 from inquirer import prompt
 
-from ICARUS.Database import DB
-from ICARUS.Visualization.airfoil import __functions__ as airfoil_functions
+from ICARUS.database import DB
+from ICARUS.visualization.airfoil import __functions__ as airfoil_functions
 
 
 def ask_visualization_function(functions: list[Any]) -> Any:

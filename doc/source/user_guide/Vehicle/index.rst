@@ -1,7 +1,7 @@
-ICARUS.Vehicle package
+ICARUS.vehicle package
 ======================
 
-The Vehicle package contains the classes that define different vehicle geometries.
+The vehicle package contains the classes that define different vehicle geometries.
 
 Strip module
 ---------------------------
@@ -14,14 +14,14 @@ Strip module
 
 The most simple vehicle geometry we can define is a wing strip. A wing strip is a section of a wing defined by a start and end section. A section, in that sense, is a stretched and rotated airfoil. The Strip class is iniitialized as follows:
 
-.. literalinclude:: ../../../../ICARUS/Vehicle/strip.py
+.. literalinclude:: ../../../../ICARUS/vehicle/strip.py
     :pyobject: Strip.__init__
 
 
 
 The Strip class can interpolate the geometry of any section in between the start and end section. The interpolation is done by linearly interpolating the airfoil shape and the chord. In future versions of we must include orientation interpolation to account for twist and dihedral.
 
-.. literalinclude:: ../../../../ICARUS/Vehicle/strip.py
+.. literalinclude:: ../../../../ICARUS/vehicle/strip.py
     :pyobject: Strip.get_interpolated_section
 
 
@@ -30,8 +30,8 @@ To understand this further we can define two airfoils and create a strip by inte
 .. code-block:: python
 
     import numpy as np
-    from ICARUS.Vehicle.strip import Strip
-    from ICARUS.Vehicle.airfoil import Airfoil
+    from ICARUS.vehicle.strip import Strip
+    from ICARUS.vehicle.airfoil import Airfoil
 
     # Define two airfoils
     airfoil = Airfoil.naca('2412')
@@ -65,7 +65,7 @@ Wing Segment module
 
 Another way to define model a part of a wing is by using a WingSegment. A WingSegment is defined as follows:
 
-.. literalinclude:: ../../../../ICARUS/Vehicle/wing_segment.py
+.. literalinclude:: ../../../../ICARUS/vehicle/wing_segment.py
     :pyobject: Wing_Segment.__init__
 
 A wing segment is defined by specifying the following parameters:
@@ -98,7 +98,7 @@ Merged Wing
 
 A merged wing is a wing that is composed of multiple wing segments. This class is under development and has not been completed. As of now the Merged_Wing class is initialized as follows:
 
-.. literalinclude:: ../../../../ICARUS/Vehicle/merged_wing.py
+.. literalinclude:: ../../../../ICARUS/vehicle/merged_wing.py
     :pyobject: Merged_Wing.__init__
 
 Plane
@@ -112,13 +112,13 @@ A plane is a vehicle that is composed of multiple Wing Segments. To define a pla
 
 The Plane class is initialized as follows:
 
-.. literalinclude:: ../../../../ICARUS/Vehicle/plane.py
+.. literalinclude:: ../../../../ICARUS/vehicle/plane.py
     :pyobject: Airplane.__init__
 
 Surface Connections module
 ------------------------------------------
 
-.. .. automodule:: ICARUS.Vehicle.surface_connections
+.. .. automodule:: ICARUS.vehicle.surface_connections
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:

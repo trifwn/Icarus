@@ -2,7 +2,7 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 # FAR 5 -> 25.115

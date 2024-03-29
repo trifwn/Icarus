@@ -2,22 +2,23 @@
 Setup script for ICARUS
 """
 import os
-import platform
 import re
-import subprocess
 import sys
 from importlib.metadata import entry_points
-from typing import Any
 
-from setuptools import Extension
 from setuptools import setup
-from setuptools.command.build_ext import build_ext
 from setuptools.command.develop import develop
-from setuptools.command.egg_info import egg_info
 from setuptools.command.sdist import sdist
-from setuptools.command.test import test
-from setuptools.command.upload import upload
-from wheel.bdist_wheel import bdist_wheel
+
+# import platform
+# from typing import Any
+# import subprocess
+# from setuptools import Extension
+# from setuptools.command.build_ext import build_ext
+# from setuptools.command.egg_info import egg_info
+# from setuptools.command.upload import upload
+# from setuptools.command.test import test
+# from wheel.bdist_wheel import bdist_wheel
 
 
 # from distutils.command.clean import clean
@@ -72,9 +73,11 @@ def install(package: str, version: str) -> None:
     setup(
         name=package,
         version=version,
-        # entry_points = {
-        #     'gnvp_wake'
-        # }
+        entry_points={
+            'console_scripts': [
+                'icarus=icarus_cli:main',
+            ],
+        },
     )
 
 

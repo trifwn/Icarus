@@ -3,8 +3,8 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.Database import DB3D
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.database import DB3D
+from ICARUS.vehicle.plane import Airplane
 
 
 def get_strip_data(
@@ -22,7 +22,7 @@ def get_strip_data(
     Returns:
         tuple[DataFrame, DataFrame]: Returns a dataframe with all strip data and a dataframe with all strip data for the NBs
     """
-    directory: str = os.path.join(DB3D, plane.CASEDIR, case)
+    directory: str = os.path.join(DB3D, plane.directory, case)
     files: list[str] = os.listdir(directory)
     strip_data: list[list[Any]] = []
     for file in files:

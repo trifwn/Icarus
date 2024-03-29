@@ -1,7 +1,7 @@
 import os
 from subprocess import call
 
-from ICARUS.Computation.Solvers import logOFscript
+from ICARUS.computation.solvers import logOFscript
 
 
 def get_convergence_data(HOMEDIR: str, CASEDIR: str) -> None:

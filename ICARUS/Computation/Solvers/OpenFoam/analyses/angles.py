@@ -7,15 +7,15 @@ from typing import Any
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.Airfoils.airfoil import Airfoil
-from ICARUS.Computation.Solvers import runOFscript
-from ICARUS.Computation.Solvers.OpenFoam.analyses.monitor_progress import (
+from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.computation.solvers import runOFscript
+from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import (
     parallel_monitor,
 )
-from ICARUS.Computation.Solvers.OpenFoam.analyses.monitor_progress import serial_monitor
-from ICARUS.Computation.Solvers.OpenFoam.files.setup_case import setup_open_foam
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
+from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import serial_monitor
+from ICARUS.computation.solvers.OpenFoam.files.setup_case import setup_open_foam
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
 
 
 def run_angle(

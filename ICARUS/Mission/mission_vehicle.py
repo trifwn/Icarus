@@ -1,60 +1,67 @@
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Mission.Trajectory.trajectory import Trajectory
-from ICARUS.Propulsion.engine import Engine
-from ICARUS.Vehicle.plane import Airplane
-from ICARUS.Vehicle.wing_segment import Wing_Segment
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.mission.trajectory.trajectory import Trajectory
+from ICARUS.propulsion.engine import Engine
+from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 
 
 class Mission_Vehicle:
     def __init__(self, airplane: Airplane, engine: Engine) -> None:
         self.airplane: Airplane = airplane
         self.motor: Engine = engine
-        self.cldata = DB.vehicles_db.data[airplane.name]
+        self.cldata = DB.vehicles_db.polars[airplane.name]
 
-        elevator: Wing_Segment | None = None
-        for surf in airplane.surfaces:
-            if surf.name == "tail":
-                self.l_e = surf.origin[0]
-                elevator = surf
-        if elevator is None:
-            raise Exception("Elevator not found")
+        # elevator: Lifting_Surface | None = None
+        # for surf in airplane.surfaces:
+        #     if surf.name == "tail" or surf.name == "elevator" or surf.name == "horizontal_stabilizer":
+        #         self.l_e = surf.origin[0]
+        #         elevator = surf
+        # if elevator is None:
+        #     raise Exception("Elevator not found")
 
-        self.elevator: Wing_Segment = elevator
-        self.elevator_max_deflection = 30
-        self.Ixx: float = airplane.total_inertia[0]
-        self.l_m: float = -0.4
+        # self.elevator: Lifting_Surface = elevator
+        # self.elevator_max_deflection = 30
+        # self.Ixx: float = airplane.total_inertia[0]
+        # self.l_m: float = -0.4
 
     @staticmethod
-    def interpolate_polars(aoa: float, cldata: DataFrame) -> tuple[FloatArray, FloatArray, FloatArray]:
-        cl = np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CL"])
-        cd = np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential CD"])
-        cm = np.interp(aoa, cldata["AoA"], cldata["GNVP7 Potential Cm"])
+    def interpolate_polars(aoa: float, cldata: DataFrame) -> tuple[float, float, float]:
+        cl = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential CL"]))
+        cd = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential CD"]))
+        cm = float(np.interp(aoa, cldata["AoA"], cldata["GenuVP3 Potential Cm"]))
         return cl, cd, cm
 
-    def get_elevator_lift_over_cl(
-        self,
-        velocity: float,
-        aoa: float,
-    ) -> float:
-        aoa = np.rad2deg(aoa)
-        density = 1.225
-        lift_over_cl = np.pi * density * velocity**2 * self.elevator.S
+    # def get_elevator_lift_over_cl(
+    #     self,
+    #     velocity: float,
+    #     aoa: float,
+    # ) -> float:
+    #     aoa = np.rad2deg(aoa)
+    #     density = 1.225
+    #     lift_over_cl = np.pi * density * velocity**2 * self.elevator.S
 
-        return lift_over_cl
+    #     return lift_over_cl
 
     def get_lift_drag_torque(
         self,
         velocity: float,
         aoa: float,
-    ):
+    ) -> tuple[float, float, float]:
         aoa = np.rad2deg(aoa)
         cl, cd, cm = self.interpolate_polars(
             aoa,
-            self.cldata[["GNVP7 Potential CL", "GNVP7 Potential CD", "GNVP7 Potential Cm", "AoA"]],
+            self.cldata[
+                [
+                    "GenuVP3 Potential CL",
+                    "GenuVP3 Potential CD",
+                    "GenuVP3 Potential Cm",
+                    "AoA",
+                ]
+            ],
         )
         density = 1.225
         lift = cl * 0.5 * density * velocity**2 * self.airplane.S
@@ -71,10 +78,10 @@ class Mission_Vehicle:
         DX: FloatArray = V
         return DX
 
-    def dvdt(self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0):
-        dh_dx: float = trajectory.first_derivative_x_fd(X[0])
-        dh2_dx2: float = trajectory.second_derivative_x_fd(X[0])
-        dh_3_dx3: float = trajectory.third_derivative_x_fd(X[0])
+    def dvdt(self, X: FloatArray, V: FloatArray, trajectory: Trajectory, verbosity: int = 0) -> FloatArray:
+        dh_dx: float = float(trajectory.first_derivative_x_fd(X[0]))
+        dh2_dx2: float = float(trajectory.second_derivative_x_fd(X[0]))
+        dh_3_dx3: float = float(trajectory.third_derivative_x_fd(X[0]))
 
         # alpha = X[2]
         # aoa: float = X[2] - dh_dx
@@ -142,16 +149,16 @@ class Mission_Vehicle:
         # Check if thrust can  be provided in the motor dataset. It should be between the minimum and
         # maximum thrust. If not, the motor is not able to provide the thrust required to maintain
         # course.
-        avail_thrust = self.motor.get_available_thrust(velocity=np.linalg.norm(V))
-        if thrust < avail_thrust[0]:
-            if verbosity:
-                print(f"\tThrust too low {thrust}, {avail_thrust[1]}")
-            # thrust = avail_thrust[0]
+        # avail_thrust = self.motor.thrust(velocity=float(np.linalg.norm(V)))
+        # if thrust < avail_thrust[0]:
+        #     if verbosity:
+        #         print(f"\tThrust too low {thrust}, {avail_thrust[1]}")
+        #     # thrust = avail_thrust[0]
 
-        if thrust > avail_thrust[1]:
-            if verbosity:
-                print(f"\tThrust too high {thrust},{avail_thrust[1]}")
-            # thrust = avail_thrust[1]
+        # if thrust > avail_thrust[1]:
+        #     if verbosity:
+        #         print(f"\tThrust too high {thrust},{avail_thrust[1]}")
+        #     # thrust = avail_thrust[1]
 
         thrust_x = thrust * np.cos(alpha)
         thrust_y = thrust * np.sin(alpha)

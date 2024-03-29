@@ -1,4 +1,4 @@
-ICARUS.Airfoils package
+ICARUS.airfoils package
 =======================
 
 The airfoils module serves to module 2D airfoil geometries. This library is an extension of an already available module that can be found in https://pypi.org/project/airfoils/. An airfoil is defined by specifying the geometry of the upper (suction) and lower (pressure) side, the number of points  that was given, and a name for the airfoil.In the module we also provide functions that:
@@ -17,15 +17,15 @@ Part of the airfoils module is also the AirfoilPolars class. The function of thi
 Airfoil module
 ------------------------------------
 
-.. :ref:`ICARUS.Airfoils.airfoil`
+.. :ref:`ICARUS.airfoils.airfoil`
 
-The basic module for the airfoils package is the airfoil module. This module contains the Airfoil class that is used to create an airfoil object. The airfoil class is a superset of the airfoils pypi package (https://pypi.org/project/airfoils/) that adds usefull functionality. The goal of ICARUS is to eventually deprecate this dependency and incorporate all the functionality of the airfoils package in the ICARUS.Airfoils.airfoil module.
+The basic module for the airfoils package is the airfoil module. This module contains the Airfoil class that is used to create an airfoil object. The airfoil class is a superset of the airfoils pypi package (https://pypi.org/project/airfoils/) that adds usefull functionality. The goal of ICARUS is to eventually deprecate this dependency and incorporate all the functionality of the airfoils package in the ICARUS.airfoils.airfoil module.
 
 To create an airfoil object we need to import the module and then call the Airfoil class. The following example creates an airfoil object for the NACA 2412 airfoil using the built in naca class-method. The naca method currently supports 4 and 5 digit NACA airfoils.
 
 .. code-block:: python
 
-    from ICARUS.Airfoils.airfoil import Airfoil
+    from ICARUS.airfoils.airfoil import Airfoil
 
     airfoil = Airfoil.naca("NACA2412")
 
@@ -40,7 +40,7 @@ We can see the geometry of the airfoil by calling the plot function.
 In general we can create an airfoil by specifying the upper and lower side of the airfoil. The initializer for an airfoil object is:
 
 
-.. literalinclude:: ../../../../ICARUS/Airfoils/airfoil.py
+.. literalinclude:: ../../../../ICARUS/airfoils/airfoil.py
     :pyobject: Airfoil.__init__
 
 To create an airfoil if we have a specific geometry that includes the upper and lower side we can do the following:
@@ -78,6 +78,6 @@ We can also create a flapped version of our airfoil by calling the airfoil.flap_
 Airfoil Polars module
 --------------------------------------
 
-.. :ref:`ICARUS.Airfoils.airfoil_polars`
+.. :ref:`ICARUS.airfoils.airfoil_polars`
 
 The airfoil module also contains the Polars class that is used to handle the polars we calculate for a specific airfoil. The basic functionality of the class is to interpolate polars for different reynolds and mach numbers from computed states.

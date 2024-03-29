@@ -8,17 +8,23 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.Database import DB
-from ICARUS.Visualization import colors_
-from ICARUS.Visualization import markers
+from ICARUS.database import DB
+from ICARUS.visualization import colors_
+from ICARUS.visualization import markers
 
 
 def plot_airplane_polars(
     airplane_names: list[str],
     solvers: list[str] = ["All"],
-    plots: list[list[str]] = [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]],
+    plots: list[list[str]] = [
+        ["AoA", "CL"],
+        ["AoA", "CD"],
+        ["AoA", "Cm"],
+        ["CL", "CD"],
+    ],
     size: tuple[int, int] = (10, 10),
     title: str = "Aero Coefficients",
+    operating_point: dict[str, float] = {},
 ) -> tuple[ndarray[Any, Any], Figure]:
     """Function to plot airplane polars for a given list of airplanes and solvers
 
@@ -53,14 +59,26 @@ def plot_airplane_polars(
         ax.axvline(x=0, color="k")
 
     if solvers == ["All"]:
-        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D"]
+        solvers = [
+            "GNVP3 Potential",
+            "GNVP3 2D",
+            "GNVP7 Potential",
+            "GNVP7 2D",
+            "LSPT Potential",
+            "LSPT 2D",
+        ]
 
     for i, airplane in enumerate(airplane_names):
         flag = False
         for j, solver in enumerate(solvers):
             try:
-                polar: DataFrame = DB.vehicles_db.data[airplane]
+                polar: DataFrame = DB.vehicles_db.polars[airplane]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+                    if plot[0] == "CL/CD" or plot[1] == "CL/CD":
+                        polar[f"{solver} CL/CD"] = polar[f"{solver} CL"] / polar[f"{solver} CD"]
+                    if plot[0] == "CD/CL" or plot[1] == "CD/CL":
+                        polar[f"{solver} CD/CL"] = polar[f"{solver} CD"] / polar[f"{solver} CL"]
+
                     if airplane.startswith("XFLR"):
                         key0 = f"{plot[0]}"
                         key1 = f"{plot[1]}"
@@ -85,13 +103,44 @@ def plot_airplane_polars(
 
                         x: Series = polar[f"{key0}"]
                         y: Series = polar[f"{key1}"]
-                        c = colors_(j / len(solvers))
-                        m = markers[i].get_marker()
+                        if len(solvers) == 1:
+                            c = colors_(i / len(airplane_names))
+                            m = markers[j].get_marker()
+                        else:
+                            c = colors_(j / len(solvers))
+                            m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:
-                            ax.plot(x, y, ls="--", color=c, marker=m, label=label, markersize=3.5, linewidth=1)
+                            ax.plot(
+                                x,
+                                y,
+                                ls="--",
+                                color=c,
+                                marker=m,
+                                label=label,
+                                markersize=3.5,
+                                linewidth=1,
+                            )
                         except ValueError as e:
                             raise e
+
+                    if plot[0] == "AoA":
+                        # Annotate the operating points in the plots
+                        for op in operating_point:
+                            ax.axvline(
+                                x=operating_point[op],
+                                color="r",
+                                linestyle="--",
+                                label=f"{op}",
+                            )
+                    elif plot[1] == "AoA":
+                        for op in operating_point:
+                            ax.axhline(
+                                y=operating_point[op],
+                                color="r",
+                                linestyle="--",
+                                label=f"{op}",
+                            )
                 if flag:
                     break
             except KeyError as e:

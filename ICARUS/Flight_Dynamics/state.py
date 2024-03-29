@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import jsonpickle
 import matplotlib.pyplot as plt
-import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
@@ -16,17 +16,16 @@ from tabulate import tabulate
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
-from .Stability.lateralFD import lateral_stability
-from .Stability.longitudalFD import longitudal_stability
-from .Stability.stability_derivatives import StabilityDerivativesDS
+from .stability.lateral import lateral_stability_finite_differences
+from .stability.longitudal import longitudal_stability_finite_differences
 from .trim import trim_state
-from ICARUS.Computation.Solvers.GenuVP.post_process.forces import rotate_forces
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Environment.definition import Environment
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 if TYPE_CHECKING:
-    from ICARUS.Vehicle.plane import Airplane
+    from ICARUS.vehicle.plane import Airplane
 
 
 class State:
@@ -35,90 +34,100 @@ class State:
     def __init__(
         self,
         name: str,
-        pln: Airplane,
-        forces: DataFrame,
-        env: Environment,
-        preffered_polar: str = "2D",
+        airplane: Airplane,
+        environment: Environment,
+        u_freestream: float,
     ) -> None:
         # Set Basic State Variables
         self.name: str = name
-        # self.vehicle: Airplane = pln
-        self.env: Environment = env
-        from ICARUS.Database import DB3D
-
-        self.dynamics_directory: str = os.path.join(DB3D, pln.CASEDIR, "Dynamics")
+        self.environment: Environment = environment
+        self.u_freestream = u_freestream
 
         # Get Airplane Properties And State Variables
-        self.mean_aerodynamic_chord: float = pln.mean_aerodynamic_chord
-        self.S: float = pln.S
-        self.dynamic_pressure: float = (
-            0.5 * env.air_density * 20**2
-        )  # VELOCITY IS ARBITRARY BECAUSE WE DO NOT KNOW THE TRIM YET
-        self.inertia: FloatArray = pln.total_inertia
-        self.mass: float = pln.M
+        self.mean_aerodynamic_chord: float = airplane.mean_aerodynamic_chord
+        self.S: float = airplane.S
+        self.span: float = airplane.span
+        self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
+        self.inertia: FloatArray = airplane.total_inertia
+        self.mass: float = airplane.M
 
-        # GET TRIM STATE
-        self.polars: DataFrame = self.format_polars(forces, preffered_polar=preffered_polar)
-        self.trim: dict[str, float] = trim_state(self)
-        self.dynamic_pressure = 0.5 * env.air_density * self.trim["U"] ** 2  # NOW WE UPDATE IT
+        # Initialize Trim
+        self.trim: dict[str, float] = {}
+        self.trim_dynamic_pressure = 0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
+        self.polar = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
         self.sensitivity = Struct()
         self.sensitivity_results = Struct()
 
         # Initialize The Longitudal State Space Matrices
-        self.longitudal = Struct()
-        self.longitudal.stateSpace = Struct()
-        self.longitudal.stateSpace.A = np.empty((4, 4), dtype=float)
-        self.longitudal.stateSpace.A_DS = np.empty((4, 4), dtype=float)
-        self.longitudal.stateSpace.B = np.empty((4, 1), dtype=float)
-        self.longitudal.stateSpace.B_DS = np.empty((4, 1), dtype=float)
-
-        # Initialize The Longitudal Eigenvalues And Eigenvectors
-        self.longitudal.eigenValues = np.empty((4,), dtype=float)
-        self.longitudal.eigenVectors = np.empty((4, 4), dtype=float)
-
         # Initialize The Lateral State Space Matrices
-        self.lateral = Struct()
-        self.lateral.stateSpace = Struct()
-        self.lateral.stateSpace.A = np.empty((4, 4), dtype=float)
-        self.lateral.stateSpace.A_DS = np.empty((4, 4), dtype=float)
-        self.lateral.stateSpace.B = np.empty((4, 1), dtype=float)
-        self.lateral.stateSpace.B_DS = np.empty((4, 1), dtype=float)
 
-        # Initialize The Lateral Eigenvalues And Eigenvectors
-        self.lateral.eigenValues = np.empty((4,), dtype=float)
-        self.lateral.eigenVectors = np.empty((4, 4), dtype=float)
+    def ground_effect(self) -> bool:
+        if self.environment.altitude == 0:
+            return False
+        if self.environment.altitude > 2 * self.span:
+            return False
+        else:
+            return True
 
-    def eigenvalue_analysis(self) -> None:
-        # Compute Eigenvalues and Eigenvectors
-        eigvalLong, eigvecLong = np.linalg.eig(self.a_long)
-        self.longitudal.eigenValues = eigvalLong
-        self.longitudal.eigenVectors = eigvecLong
+    def update_plane(self, airplane: Airplane) -> None:
+        self.mean_aerodynamic_chord = airplane.mean_aerodynamic_chord
+        self.S = airplane.S
+        self.inertia = airplane.total_inertia
+        self.mass = airplane.M
 
-        eigvalLat, eigvecLat = np.linalg.eig(self.a_lat)
-        self.lateral.eigenValues = eigvalLat
-        self.lateral.eigenVectors = eigvecLat
+        # Reset Trim
+        self.trim = {}
+        self.trim_dynamic_pressure = 0
 
-    def format_polars(self, forces: DataFrame, preffered_polar="2D") -> DataFrame:
-        forces_rotated: DataFrame = rotate_forces(forces, forces["AoA"], preferred=preffered_polar)
-        return self.make_aero_coefficients(forces_rotated)
+        # Reset Disturbances For Dynamic Analysis and Sensitivity Analysis
+        self.polar = DataFrame()
+        self.disturbances = []
+        self.pertrubation_results = DataFrame()
+        self.sensitivity = Struct()
+        self.sensitivity_results = Struct()
+
+    def add_polar(
+        self,
+        polar: DataFrame,
+        polar_prefix: str | None = None,
+        is_dimensional: bool = True,
+        verbose: bool = True,
+    ) -> None:
+        # Remove prefix from polar columns
+        if polar_prefix is not None:
+            cols: list[str] = list(polar.columns)
+            if "Fz" not in cols and "CL" not in cols:
+                for i, col in enumerate(cols):
+                    cols[i] = col.replace(f"{polar_prefix} ", "")
+                polar.columns = cols
+
+        if is_dimensional:
+            self.polar = self.make_aero_coefficients(polar)
+        else:
+            self.polar = polar
+
+        # GET TRIM STATE
+        self.trim = trim_state(self, verbose=verbose)
+        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
-        Data: DataFrame = DataFrame()
+        data: DataFrame = DataFrame()
         S: float = self.S
         MAC: float = self.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
 
-        Data["CL"] = forces["Fz"] / (dynamic_pressure * S)
-        Data["CD"] = forces["Fx"] / (dynamic_pressure * S)
-        Data["Cm"] = forces["M"] / (dynamic_pressure * S * MAC)
-        Data["Cn"] = forces["N"] / (dynamic_pressure * S * MAC)
-        Data["Cl"] = forces["L"] / (dynamic_pressure * S * MAC)
-        Data["AoA"] = forces["AoA"]
-        return Data
+        data["CL"] = forces["Fz"] / (dynamic_pressure * S)
+        data["CD"] = forces["Fx"] / (dynamic_pressure * S)
+        data["Cm"] = forces["My"] / (dynamic_pressure * S * MAC)
+        data["CL/CD"] = data["CL"] / data["CD"]
+        # data["Cn"] = forces["Mz"] / (dynamic_pressure * S * span)
+        # data["Cl"] = forces["Mx"] / (dynamic_pressure * S * span)
+        data["AoA"] = forces["AoA"]
+        return data
 
     def add_all_pertrubations(
         self,
@@ -156,35 +165,47 @@ class State:
         self.pertrubation_results = pertrubation_results
         self.stability_fd()
 
-    def stability_fd(self, polar_name: str = "2D") -> None:
-        X, Z, M = longitudal_stability(self, polar_name)
-        Y, L, N = lateral_stability(self, polar_name)
-        self.SBderivativesDS = StabilityDerivativesDS(X, Y, Z, L, M, N)
+    def stability_fd(self) -> None:
+        longitudal_state_space = longitudal_stability_finite_differences(self)
+        lateral_state_space = lateral_stability_finite_differences(self)
+        self.state_space = StateSpace(longitudal_state_space, lateral_state_space)
 
-    def plot_eigenvalues(self) -> None:
+    def plot_eigenvalues(self, plot_lateral: bool = True, plot_longitudal: bool = True) -> tuple[Figure, list[Axes]]:
         """
         Generate a plot of the eigenvalues.
         """
         fig = plt.figure()
-        ax = fig.add_subplot(111)
 
-        # extract real part
-        x: list[float] = [ele.real for ele in self.longitudal.eigenValues]
-        # extract imaginary part
-        y: list[float] = [ele.imag for ele in self.longitudal.eigenValues]
-        ax.scatter(x, y, color="r")
+        if plot_lateral and plot_longitudal:
+            axs: list[Axes] = fig.subplots(1, 2)  # type: ignore
+        else:
+            axs0 = fig.add_axes((0.1, 0.1, 0.8, 0.8))
+            axs = [axs0]
+        i = 0
+        if plot_longitudal:
+            # extract real part
+            x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
+            # extract imaginary part
+            y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
+            axs[i].scatter(x, y, label="Longitudal", color="r")
+            i += 1
 
-        # extract real part
-        x = [ele.real for ele in self.lateral.eigenValues]
-        # extract imaginary part
-        y = [ele.imag for ele in self.lateral.eigenValues]
-        marker_x = MarkerStyle("x")
-        ax.scatter(x, y, color="b", marker=marker_x)
+        if plot_lateral:
+            # extract real part
+            x = [ele.real for ele in self.state_space.lateral.eigenvalues]
+            # extract imaginary part
+            y = [ele.imag for ele in self.state_space.lateral.eigenvalues]
+            marker_x = MarkerStyle("x")
+            axs[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
-        ax.set_ylabel("Imaginary")
-        ax.set_xlabel("Real")
-        ax.grid()
+        for j in range(0, i + 1):
+            axs[j].set_ylabel("Imaginary")
+            axs[j].set_xlabel("Real")
+            axs[j].grid()
+            axs[j].axvline(0, color="black", lw=2)
+            axs[j].legend()
         fig.show()
+        return fig, axs
 
     def __str__(self) -> str:
         ss = io.StringIO()
@@ -192,29 +213,30 @@ class State:
         ss.write(f"Trim: {self.trim}\n")
         ss.write(f"\n{45*'--'}\n")
 
-        ss.write("\nLongitudal State:\n")
-        ss.write(
-            f"Eigen Values: {[round(item,3) for item in self.longitudal.eigenValues]}\n",
-        )
-        ss.write("Eigen Vectors:\n")
-        for item in self.longitudal.eigenVectors:
-            ss.write(f"\t{[round(i,3) for i in item]}\n")
-        ss.write("\nThe State Space Matrix:\n")
-        ss.write(
-            tabulate(self.longitudal.stateSpace.A, tablefmt="github", floatfmt=".3f"),
-        )
+        if hasattr(self, "state_space"):
+            ss.write("\nLongitudal State:\n")
+            ss.write(
+                f"Eigen Values: {[round(item,3) for item in self.state_space.longitudal.eigenvalues]}\n",
+            )
+            ss.write("Eigen Vectors:\n")
+            for item in self.state_space.longitudal.eigenvectors:
+                ss.write(f"\t{[round(i,3) for i in item]}\n")
+            ss.write("\nThe State Space Matrix:\n")
+            ss.write(
+                tabulate(self.state_space.longitudal.A, tablefmt="github", floatfmt=".3f"),
+            )
 
-        ss.write(f"\n\n{45*'--'}\n")
+            ss.write(f"\n\n{45*'--'}\n")
 
-        ss.write("\nLateral State:\n")
-        ss.write(
-            f"Eigen Values: {[round(item,3) for item in self.lateral.eigenValues]}\n",
-        )
-        ss.write("Eigen Vectors:\n")
-        for item in self.lateral.eigenVectors:
-            ss.write(f"\t{[round(i,3) for i in item]}\n")
-        ss.write("\nThe State Space Matrix:\n")
-        ss.write(tabulate(self.lateral.stateSpace.A, tablefmt="github", floatfmt=".3f"))
+            ss.write("\nLateral State:\n")
+            ss.write(
+                f"Eigen Values: {[round(item,3) for item in self.state_space.lateral.eigenvalues]}\n",
+            )
+            ss.write("Eigen Vectors:\n")
+            for item in self.state_space.lateral.eigenvectors:
+                ss.write(f"\t{[round(i,3) for i in item]}\n")
+            ss.write("\nThe State Space Matrix:\n")
+            ss.write(tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f"))
         return ss.getvalue()
 
     def to_json(self) -> str:
@@ -227,42 +249,46 @@ class State:
         encoded: str = str(jsonpickle.encode(self))
         return encoded
 
-    def save(self) -> None:
+    def save(self, directory: str) -> None:
         """
         Save the state object to a json file.
+
+        Args:
+            directory (str): Directory to save the state to.
+
         """
-        fname: str = os.path.join(self.dynamics_directory, f"{self.name}.json")
+        fname: str = os.path.join(directory, f"{self.name}_state.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 
     @property
     def a_long(self) -> Any:
-        return self.longitudal.stateSpace.A
+        return self.state_space.longitudal.A
 
     @a_long.setter
     def a_long(self, value: FloatArray) -> None:
-        self.longitudal.stateSpace.A = value
+        self.state_space.longitudal.A = value
 
     @property
     def astar_long(self) -> Any:
-        return self.longitudal.stateSpace.A_DS
+        return self.state_space.longitudal.A_DS
 
     @astar_long.setter
     def astar_long(self, value: FloatArray) -> None:
-        self.longitudal.stateSpace.A_DS = value
+        self.state_space.longitudal.A_DS = value
 
     @property
     def a_lat(self) -> Any:
-        return self.lateral.stateSpace.A
+        return self.state_space.lateral.A
 
     @a_lat.setter
     def a_lat(self, value: FloatArray) -> None:
-        self.lateral.stateSpace.A = value
+        self.state_space.lateral.A = value
 
     @property
     def astar_lat(self) -> Any:
-        return self.lateral.stateSpace.A_DS
+        return self.state_space.lateral.A_DS
 
     @astar_lat.setter
     def astar_lat(self, value: FloatArray) -> None:
-        self.lateral.stateSpace.A_DS = value
+        self.state_space.lateral.A_DS = value

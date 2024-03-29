@@ -1,2 +1,2 @@
-ICARUS.Vehicle.merged_wing module
+ICARUS.vehicle.merged_wing module
 ===================================

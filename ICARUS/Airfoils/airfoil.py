@@ -6,7 +6,7 @@ constructors to generate airfoils from NACA 4 and 5 digit identifiers.
 
 To initialize the Airfoil class, you need to pass the upper and lower surface coordinates.
 
->>> from ICARUS.Airfoils.airfoil import Airfoil
+>>> from ICARUS.airfoils.airfoil import Airfoil
 >>> naca0012 = Airfoil.naca("0012", n_points=200)
 >>> naca0012.plot()
 
@@ -50,18 +50,25 @@ methods from the original airfoil class which include but are not limited to:
 
 
 """
+import logging
 import os
 import re
-import urllib.request
+from calendar import c
 from typing import Any
+from typing import Union
 
 import airfoils as af
 import matplotlib.pyplot as plt
 import numpy as np
+import requests
+from jax import debug_infs
+from matplotlib.axes import Axes
+from scipy.interpolate import splev
+from scipy.interpolate import splprep
 
-from ICARUS.Airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
+from ICARUS.airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
 
 # # Airfoil
 # ##### 0 = Read from python module
@@ -83,7 +90,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         upper: FloatArray,
         lower: FloatArray,
         name: str,
-        n_points: int,
+        n_points: int = 200,
     ) -> None:
         """
         Initialize the Airfoil class
@@ -94,30 +101,244 @@ class Airfoil(af.Airfoil):  # type: ignore
             naca (str): NACA 4 digit identifier (e.g. 0012)
             n_points (int): Number of points to be used to generate the airfoil. It interpolates between upper and lower
         """
+
+        lower, upper = self.close_airfoil(lower, upper)
         super().__init__(upper, lower)
         name = name.replace(" ", "")
-        name = name.replace(".dat", "")
-        name = name.replace("naca", "")
-        if name.lower().startswith("naca"):
-            self.file_name: str = name.upper()
-        else:
-            self.file_name = f"naca{name}"
-        # self.file_name: str = f"{name}"
-        name = name.replace("NACA", "")
         self.name: str = name
+        self.file_name: str = name
 
         self.n_points: int = n_points
-        self.polars: dict[str, Any] | Struct = {}
+        # Repanel the airfoil
+        # self.repanel(n_points=n_points, distribution="cosine")
+        self.selig = self.to_selig()
 
-        self.airfoil_to_selig()
-        # self.fix_le()
+        self.polars: dict[str, Any] | Struct = {}
 
         # For Type Checking
         self._x_upper: FloatArray = self._x_upper
         self._y_upper: FloatArray = self._y_upper
+
         self._x_lower: FloatArray = self._x_lower
         self._y_lower: FloatArray = self._y_lower
-        # self.getFromWeb()
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
+        self.selig_original = self.selig
+
+    def repanel_spl(self, n_points: int = 200, smoothing=0.0) -> None:
+        pts = self.selig_original
+        x = pts[0, :]
+        y = pts[1, :]
+        # Combine x and y coordinates into a single array of complex numbers
+        complex_coords = x + 1j * y
+        # Find unique complex coordinates
+        unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+        # Use the unique indices to get the unique x and y coordinates
+        x = x[unique_indices]
+        y = y[unique_indices]
+        # x = np.hstack((x, x[0]))
+        # y = np.hstack((y, y[0]))
+
+        tck, _ = splprep([x, y], s=smoothing)
+
+        ksi = np.linspace(0, np.pi, n_points // 2)
+        # Apply cosine spacing to ksi
+        tnew_1 = 0.5 * (1 - np.cos(ksi)) / 2
+        tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) / 2
+        tnew = np.hstack((tnew_1, tnew_2))
+
+        spline = splev(tnew, tck)
+        lower, upper = self.split_sides(spline[0], spline[1])
+        lower, upper = self.close_airfoil(lower, upper)
+
+        self._x_upper = upper[0]
+        self._y_upper = upper[1]
+        self._x_lower = lower[0]
+        self._y_lower = lower[1]
+        # update for plot
+        self.n_points = n_points
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
+        self.selig = self.to_selig()
+
+    def repanel_from_internal(self, n_points: int, distribution="cosine") -> None:
+        """
+        Repanels the airfoil to have n_points
+
+        Args:
+            n_points (int): Number of points to generate
+        """
+        if distribution == "cosine":
+            beta = np.linspace(0, np.pi, int(n_points // 2))
+            # apply cosine spacing to xsi
+            xsi = 0.5 * (1 - np.cos(beta))
+        elif distribution == "tanh":
+            xsi = np.tanh(np.linspace(-3, 3, n_points))
+            xsi = (xsi - np.min(xsi)) / (np.max(xsi) - np.min(xsi))
+        else:
+            xsi = np.linspace(0, 1, int(n_points // 2))
+
+        _x_upper = xsi
+        _x_lower = xsi
+        _y_upper = self.y_upper(xsi)
+        _y_lower = self.y_lower(xsi)
+
+        lower = np.array([_x_lower, _y_lower], dtype=float)
+        upper = np.array([_x_upper, _y_upper], dtype=float)
+
+        # lower, upper = self.close_airfoil(lower, upper)
+
+        self._x_lower = lower[0]
+        self._y_lower = lower[1]
+        self._x_upper = upper[0]
+        self._y_upper = upper[1]
+
+        self.n_points = n_points
+        self.n_upper = self._x_upper.shape[0]
+        self.n_lower = self._x_lower.shape[0]
+        self.selig = self.to_selig()
+        self.selig_original = self.selig
+
+    def close_airfoil(self, lower: FloatArray, upper: FloatArray) -> tuple[FloatArray, FloatArray]:
+        # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
+        # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
+        # Identify the upper surface trailing edge and leading edge
+        f_upper = upper[0, 0]
+        l_upper = upper[0, -1]
+        if f_upper < l_upper:
+            leading_upper = f_upper
+            le_idx_upper = 0
+            trailing_upper = l_upper
+            te_idx_upper = -1
+        else:
+            leading_upper = l_upper
+            le_idx_upper = -1
+            trailing_upper = f_upper
+            te_idx_upper = 0
+
+        # Identify the lower surface trailing edge and leading edge
+        f_lower = lower[0, 0]
+        l_lower = lower[0, -1]
+        if f_lower < l_lower:
+            leading_lower = f_lower
+            le_idx_lower = 0
+            trailing_lower = l_lower
+            te_idx_lower = -1
+        else:
+            leading_lower = l_lower
+            le_idx_lower = -1
+            trailing_lower = f_lower
+            te_idx_lower = 0
+
+        # Fix the trailing edge
+        # Leading upper is the leftmost point. We need to add it to the surface with the rightmost point
+        if leading_upper == leading_lower:
+            pass
+        elif leading_upper < leading_lower:
+            if le_idx_lower == 0:
+                lower = np.hstack((upper[:, le_idx_upper].reshape(2, 1), lower))
+            elif le_idx_lower == -1:
+                lower = np.hstack((lower, upper[:, le_idx_upper].reshape(2, 1)))
+        elif leading_upper > leading_lower:
+            if le_idx_upper == 0:
+                upper = np.hstack((lower[:, le_idx_lower].reshape(2, 1), upper))
+            elif le_idx_upper == -1:
+                upper = np.hstack((upper, lower[:, le_idx_lower].reshape(2, 1)))
+
+        # Fix the leading edge
+        # Trailing upper is the rightmost point. We need to add it to the surface with the leftmost point
+        if trailing_upper == trailing_lower:
+            pass
+        elif trailing_upper > trailing_lower:
+            if te_idx_lower == -1:
+                lower = np.hstack((lower, upper[:, te_idx_upper].reshape(2, 1)))
+            elif te_idx_lower == 0:
+                lower = np.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
+        elif trailing_upper < trailing_lower:
+            if te_idx_upper == -1:
+                upper = np.hstack((upper, lower[:, te_idx_lower].reshape(2, 1)))
+            elif te_idx_upper == 0:
+                upper = np.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
+        return lower, upper
+
+    def thickness(self, x) -> FloatArray:
+        """
+        Returns the thickness of the airfoil at the given x coordinates
+
+        Args:
+            x (FloatArray): X coordinates
+
+        Returns:
+            FloatArray: _description_
+        """
+        thickness: FloatArray = self.y_upper(x) - self.y_lower(x)
+        # Remove Nan
+        thickness = thickness[~np.isnan(thickness)]
+        return thickness
+
+    def max_thickness(self) -> float:
+        """
+        Returns the maximum thickness of the airfoil
+
+        Returns:
+            float: Maximum thickness
+        """
+        thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
+        return float(np.max(thickness))
+
+    def max_thickness_location(self) -> float:
+        """
+        Returns the location of the maximum thickness of the airfoil
+
+        Returns:
+            float: Location of the maximum thickness
+        """
+        thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
+        return float(np.argmax(thickness) / self.n_points)
+
+    @staticmethod
+    def split_sides(x: FloatArray, y: FloatArray) -> tuple[FloatArray, FloatArray]:
+        # Remove duplicate points from the array
+        # A point is duplicated if it has the same x and y coordinates
+        # This is done to avoid issues with the interpolation
+        x_arr = np.array(x)
+        y_arr = np.array(y)
+
+        # Combine x and y coordinates into a single array of complex numbers
+        complex_coords = x_arr + 1j * y_arr
+        # Find unique complex coordinates
+        unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+
+        # Use the unique indices to get the unique x and y coordinates
+        x_clean = x_arr[unique_indices]
+        y_clean = y_arr[unique_indices]
+        # Locate the trailing edge
+
+        # Find Where x_arr = 0
+        idxs = np.where(x_arr == 0)[0].flatten()
+        if len(idxs) == 0:
+            # Find where the x_arr is closest to 0
+            # Check if the min values is duplicated in the array
+            idx = np.argmin(np.abs(x_arr))
+            # If it is duplicated, take the last one
+            if len(np.where(x_arr == x_arr[idx])[0]) > 1:
+                idx = np.where(x_arr == x_arr[idx])[0][-1]
+        elif len(idxs) == 1:
+            idx = idxs[0] + 1
+        else:
+            idx = idxs[-1]
+
+        if idx == 1:
+            idx = np.argmin(np.abs(x_arr[1:]))
+            # If it is duplicated, take the last one
+            if len(np.where(x_arr[1:] == x_arr[idx])[0]) > 1:
+                idx = np.where(x_arr[1:] == x_arr[idx])[0][-1]
+        # Calibrate idx to account for removed duplicates
+        idx_int: int = int(unique_indices[unique_indices < idx].shape[0])
+        lower: FloatArray = np.array([x_clean[idx_int:], y_clean[idx_int:]])
+        upper: FloatArray = np.array([x_clean[:idx_int], y_clean[:idx_int]])
+
+        return lower, upper
 
     @classmethod
     def morph_new_from_two_foils(
@@ -148,8 +369,15 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         if not 0 <= eta <= 1:
             raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
+        # Round to 2 decimals
+        eta = round(eta, 2)
+        if eta == 0.0:
+            return airfoil1
+        elif eta == 1.0:
+            return airfoil1
 
-        x = np.linspace(0, 1, n_points)
+        ksi = np.linspace(0, np.pi, n_points // 2)
+        x = 0.5 * (1 - np.cos(ksi))
 
         y_upper_af1 = airfoil1.y_upper(x)
         y_lower_af1 = airfoil1.y_lower(x)
@@ -159,10 +387,72 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_upper_new = y_upper_af1 * (1 - eta) + y_upper_af2 * eta
         y_lower_new = y_lower_af1 * (1 - eta) + y_lower_af2 * eta
 
-        upper = np.array([x, y_upper_new])
-        lower = np.array([x, y_lower_new])
+        upper = np.array([x, y_upper_new], dtype=float)
+        lower = np.array([x, y_lower_new], dtype=float)
 
-        return cls(upper, lower, f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta}%", n_points)
+        # Remove nan values and duplicates
+        nan_upper_idx = np.isnan(upper[1])
+        upper = upper[:, ~nan_upper_idx]
+
+        nan_lower_idx = np.isnan(lower[1])
+        lower = lower[:, ~nan_lower_idx]
+        # Create the name
+        # Round eta to 2 decimals in string format
+        eta_perc = int(eta * 100)
+        eta_str = f"{eta_perc}"
+
+        if airfoil1.name.startswith("morphed_"):
+            # Check if the airfoils are coming from the same morphing
+            airfoil1_parent_1 = airfoil1.name.split("_")[1]
+            airfoil1_parent_2 = airfoil1.name.split("_")[2]
+            airfoil1_eta = float(airfoil1.name.split("_")[4][:-1]) / 100
+        else:
+            airfoil1_parent_1 = airfoil1.name
+            airfoil1_parent_2 = None
+            airfoil1_eta = None
+
+        if airfoil2.name.startswith("morphed_"):
+            airfoil2_parent_1 = airfoil2.name.split("_")[1]
+            airfoil2_parent_2 = airfoil2.name.split("_")[2]
+            airfoil2_eta = float(airfoil2.name.split("_")[4][:-1]) / 100
+        else:
+            airfoil2_parent_1 = None
+            airfoil2_parent_2 = airfoil2.name
+            airfoil2_eta = None
+
+        name = f"morphed_{airfoil1.name}_{airfoil2.name}_at_{eta_str}%"
+        airfoil_parents = {
+            airfoil1_parent_1,
+            airfoil1_parent_2,
+            airfoil2_parent_1,
+            airfoil2_parent_2,
+        }
+        # Remove None values
+        airfoil_parents = {x for x in airfoil_parents if x is not None}
+        if len(airfoil_parents) == 1:
+            return airfoil1
+        # Remove None values
+        airfoil_parents = {x for x in airfoil_parents if x is not None}
+        if len(airfoil_parents) <= 2:
+            # If the airfoils are coming from the same morphing
+            if airfoil1_eta is not None and airfoil2_eta is not None:
+                new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
+
+            if airfoil1_eta is None and airfoil2_eta is None:
+                new_eta = eta
+
+            if airfoil1_eta is not None and airfoil2_eta is None:
+                new_eta = airfoil1_eta * (1 - eta)
+
+            if airfoil1_eta is None and airfoil2_eta is not None:
+                new_eta = (airfoil2_eta) * (eta)
+
+            # ROUND TO 2 DECIMALS
+            new_eta = int(100 * new_eta)
+            # Round to 2 decimals in string format
+            new_eta_str = f"{new_eta}"
+            name = f"morphed_{airfoil1_parent_1}_{airfoil2_parent_2}_at_{new_eta_str}%"
+        return cls(upper, lower, name, n_points)
 
     @classmethod
     def naca(cls, naca: str, n_points: int = 200) -> "Airfoil":
@@ -179,8 +469,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         Returns:
             Airfoil: airfoil class object
         """
-        re_4digits: re.Pattern[str] = re.compile(r'\b(?:NACA\s*)?(\d{4})\b')
-        re_5digits: re.Pattern[str] = re.compile(r'\b(?:NACA\s*)?(\d{5})\b')
+        re_4digits: re.Pattern[str] = re.compile(r"\b(?:NACA\s*)?(\d{4})\b")
+        re_5digits: re.Pattern[str] = re.compile(r"\b(?:NACA\s*)?(\d{5})\b")
         naca = naca.replace("naca", "")
         naca = naca.replace("NACA", "")
         naca = naca.replace(".", "")
@@ -193,14 +483,14 @@ class Airfoil(af.Airfoil):  # type: ignore
             q: float = float(naca[2]) / 1000
             xx: float = float(naca[3:5]) / 1000
             upper, lower = gen_NACA5_airfoil(naca, n_points)
-            self: "Airfoil" = cls(upper, lower, naca, n_points)
+            self: "Airfoil" = cls(upper, lower, f"naca{naca}", n_points)
             return self
         elif re_4digits.match(naca):
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
             upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points // 2)
-            self = cls(upper, lower, naca, n_points)
+            self = cls(upper, lower, f"naca{naca}", n_points)
             self.set_naca4_digits(p, m, xx)
             return self
         else:
@@ -229,47 +519,36 @@ class Airfoil(af.Airfoil):  # type: ignore
         #     sep=" ",
         #     on_bad_lines="skip",
         # )
+        logging.info(f"Loading airfoil from {filename}")
         with open(filename) as file:
             for line in file:
-                if line.startswith("NACA"):
-                    continue
+                line = line.strip()
+
                 if line == "\n":
                     continue
-                try:
-                    x.append(float(line.split()[0]))
-                    y.append(float(line.split()[1]))
-                except ValueError:
+
+                # Check if it contains two numbers
+                if len(line.split()) != 2:
                     continue
-        # find index of x = 0
-        idx: int = x.index(0)
 
-        upper: FloatArray = np.array([x[:idx], y[:idx]])
-        lower: FloatArray = np.array([x[idx:], y[idx:]])
-        self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
+                try:
+                    x_i = float(line.split()[0])
+                    y_i = float(line.split()[1])
+                    if np.abs(x_i) > 2.0 or np.abs(y_i) > 2.0:
+                        continue
+                    x.append(x_i)
+                    y.append(y_i)
+                except (ValueError, IndexError):
+                    continue
+        x_arr = np.array(x)
+        y_arr = np.array(y)
+        lower, upper = cls.split_sides(x_arr, y_arr)
+        try:
+            self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
+        except ValueError as e:
+            print(f"Error loading airfoil from {filename}")
+            raise (ValueError(e))
         return self
-
-    def fix_le(self) -> None:
-        if self._x_upper[0] < 0:
-            # remove the first point
-            self._x_upper = self._x_upper[1:]
-            self._y_upper = self._y_upper[1:]
-            self.fix_le()
-        elif self._x_lower[0] > 0:
-            # remove the first point
-            self._x_lower = self._x_lower[1:]
-            self._y_lower = self._y_lower[1:]
-            self.fix_le()
-        elif self._x_upper[0] != 0:
-            # add a point at 0
-            self._x_upper = np.hstack((0, self._x_upper))
-            self._y_upper = np.hstack((0, self._y_upper))
-            self.fix_le()
-        elif self._x_lower[0] != 0:
-            # add a point at 0
-            self._x_lower = np.hstack((0, self._x_lower))
-            self._y_lower = np.hstack((0, self._y_lower))
-            self.fix_le()
-        return None
 
     def flap_airfoil(
         self,
@@ -331,10 +610,16 @@ class Airfoil(af.Airfoil):  # type: ignore
             self.plot()
 
         upper: FloatArray = np.array(
-            [[*self._x_upper[:idx_upper], *x_upper], [*self._y_upper[:idx_upper], *y_upper]],
+            [
+                [*self._x_upper[:idx_upper], *x_upper],
+                [*self._y_upper[:idx_upper], *y_upper],
+            ],
         )
         lower: FloatArray = np.array(
-            [[*self._x_lower[:idx_lower], *x_lower], [*self._y_lower[:idx_lower], *y_lower]],
+            [
+                [*self._x_lower[:idx_lower], *x_lower],
+                [*self._y_lower[:idx_lower], *y_lower],
+            ],
         )
         flapped = Airfoil(upper, lower, f"{self.name}_flapped", n_points=self.n_points)
 
@@ -372,7 +657,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
     def camber_line_naca4(
         self,
-        points: FloatArray,
+        points: float | FloatArray | list[float],
     ) -> FloatArray:
         """
         Function to generate the camber line for a NACA 4 digit airfoil.
@@ -387,63 +672,143 @@ class Airfoil(af.Airfoil):  # type: ignore
         p: float = self.p
         m: float = self.m
 
-        points = points.flatten()
-        res: FloatArray = np.zeros_like(points)
-        for i, x in enumerate(points):
+        if isinstance(points, float):
+            x: float = float(points)
             if x < p:
-                res[i] = m / p**2 * (2 * p * x - x**2)
+                result: float = m / p**2 * (2 * p * x - x**2)
             else:
-                res[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
-        return res
+                result = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
+            return np.array(result)
+        else:
+            if isinstance(points, list):
+                points = np.array(points, dtype=float)
+            if isinstance(points, int):
+                points = np.array(float(points))
 
-    def camber_line(self, x):
+            results: FloatArray = np.zeros_like(points)
+            for i, x in enumerate(points.tolist()):
+                if x < p:
+                    results[i] = m / p**2 * (2 * p * x - x**2)
+                else:
+                    results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
+            return results
+
+    def camber_line(self, x: Union[float, list[float], FloatArray]) -> FloatArray:
         """"""
         if hasattr(self, "l"):
             # return self.camber_line_naca5(x)
             print("NACA 5 camber analytical solution not implemented yet")
-            return super().camber_line(x)
+            return np.array(super().camber_line(x), dtype=float)
         elif hasattr(self, "p"):
             return self.camber_line_naca4(x)
         else:
-            return super().camber_line(x)
+            return np.array(super().camber_line(x), dtype=float)
 
-    def airfoil_to_selig(self) -> None:
+    def to_selig(self) -> FloatArray:
         """
-        Returns the airfoil in the selig format
+        Returns the airfoil in the selig format.
+        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
+        back to the trailing edge in either direction:
         """
-        x_points: FloatArray = np.hstack((self._x_lower[::-1], self._x_upper[1:])).T
-        y_points: FloatArray = np.hstack((self._y_lower[::-1], self._y_upper[1:])).T
-        # y_points[0]=0
-        # y_points[-1]=0
-        self.selig: FloatArray = np.vstack((x_points, y_points))
+        # Identify the upper and lower surface leading and trailing edges
+        if self._x_upper[0] < self._x_upper[-1]:
+            y_up = self._y_upper[::-1]
+            x_up = self._x_upper[::-1]
+        else:
+            x_up = self._x_upper
+            y_up = self._y_upper
 
-    def load_from_web(self) -> None:
+        if self._x_lower[0] > self._x_lower[-1]:
+            x_lo = self._x_lower[::-1]
+            y_lo = self._y_lower[::-1]
+        else:
+            x_lo = self._x_lower
+            y_lo = self._y_lower
+
+        # Remove NaN values
+        idx_nan = np.isnan(x_up) | np.isnan(y_up)
+        x_up = x_up[~idx_nan]
+        y_up = y_up[~idx_nan]
+
+        idx_nan = np.isnan(x_lo) | np.isnan(y_lo)
+        x_lo = x_lo[~idx_nan]
+        y_lo = y_lo[~idx_nan]
+
+        upper = np.array([x_up, y_up], dtype=float)
+        lower = np.array([x_lo, y_lo], dtype=float)
+
+        # Remove duplicates
+
+        lower, upper = self.close_airfoil(lower, upper)
+
+        x_up = upper[0]
+        y_up = upper[1]
+
+        x_lo = lower[0]
+        y_lo = lower[1]
+
+        x_points: FloatArray = np.hstack((x_up, x_lo)).T
+        y_points: FloatArray = np.hstack((y_up, y_lo)).T
+
+        return np.vstack((x_points, y_points))
+
+    @classmethod
+    def load_from_web(cls, name: str) -> "Airfoil":
         """
         Fetches the airfoil data from the web. Specifically from the UIUC airfoil database.
         """
-        link: str = "https://m-selig.ae.illinois.edu/ads/coord/naca" + self.name + ".dat"
-        with urllib.request.urlopen(link) as url:
-            site_data: str = url.read().decode("UTF-8")
-        s: list[str] = site_data.split()
-        s = s[2:]
-        x: list[float] = []
-        y: list[float] = []
-        for i in range(int(len(s) / 2)):
-            temp: float = float(s[2 * i])
-            x.append(temp)
-            temp = float(s[2 * i + 1])
-            y.append(temp)
-        # y[0] = 0
-        # y[-1]= 0
-        self.selig_web: FloatArray = np.vstack((x, y))
 
-    def save_selig_te(self, directory: str | None = None, header: bool = False) -> None:
+        db_url = "https://m-selig.ae.illinois.edu/ads/coord_database.html"
+        base_url = "https://m-selig.ae.illinois.edu/ads/"
+        response = requests.get(db_url)
+        if response.status_code == 200:
+            # Find all lines containing .dat filenames
+            lines = response.text.split("\n")
+            filenames = []
+            for line in lines:
+                match = re.search(r'href="(.*?)\.dat"', line)
+                if match:
+                    filenames.append(f"{match.group(1)}.dat")
+
+            for filename in filenames:
+                download_url = base_url + filename
+
+                # Get the Airfoil name from the filename
+                airfoil_name = filename.split(".")[0].split("/")[-1]
+                if airfoil_name.upper() != name.upper():
+                    continue
+
+                # Download the file (handle potential errors)
+                try:
+                    response = requests.get(download_url)
+                    if response.status_code == 200:
+                        # Remove the .dat extension
+                        filename = airfoil_name.lower()
+                        # Save the downloaded data locally with the filename
+                        dirname = airfoil_name.upper()
+
+                        from ICARUS.database import DB2D
+
+                        os.makedirs(os.path.join(DB2D, dirname), exist_ok=True)
+                        filename = os.path.join(DB2D, dirname, filename)
+                        with open(filename, "wb") as f:
+                            f.write(response.content)
+                        print(f"Downloaded: {filename} from {download_url}. Creating Airfoil obj...")
+                        return cls.load_from_file(filename)
+                    else:
+                        raise FileNotFoundError(f"Error downloading {filename}: {response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    raise FileNotFoundError(f"Error downloading {filename}: {e}")
+        raise FileNotFoundError(f"Error fetching {db_url}: {response.status_code}")
+
+    def save_selig(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
         """
         Saves the airfoil in the selig format.
 
         Args:
             directory (str, optional): Directory to save the airfoil. Defaults to None.
             header (bool, optional): Whether to include the header. Defaults to False.
+            inverse (bool, optional): Whether to save the airfoil in the reverse selig format. Defaults to False.
         """
 
         if directory is not None:
@@ -456,9 +821,36 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         with open(file_name, "w") as file:
             if header:
-                file.write(f"{self.name}\n\n")
-            for x, y in self.selig.T:
-                file.write(f" {x:.6f} {y:.6f}\n")
+                file.write(f"{self.name} with {self.n_points}\n")
+            if inverse:
+                pts = self.selig.T[::-1]
+            else:
+                pts = self.selig.T
+            x = pts[:, 0]
+            y = pts[:, 1]
+            # Remove NaN values and duplicates
+            x_arr = np.array(x)
+            y_arr = np.array(y)
+
+            # Combine x and y coordinates into a single array of complex numbers
+            complex_coords = x_arr + 1j * y_arr
+            # Round all the values to 6 decimals
+            complex_coords = np.round(complex_coords, 5)
+
+            # Find unique complex coordinates
+            unique_indices = np.sort(np.unique(complex_coords, return_index=True)[1])
+
+            # Use the unique indices to get the unique x and y coordinates
+            x_clean = x_arr[unique_indices]
+            y_clean = y_arr[unique_indices]
+
+            # Remove NaN values
+            idx_nan = np.isnan(x_clean) | np.isnan(y_clean)
+            x_clean = x_clean[~idx_nan]
+            y_clean = y_clean[~idx_nan]
+
+            for x, y in zip(x_clean, y_clean):
+                file.write(f"{x:.6f} {y:.6f}\n")
 
     def save_le(self, directory: str | None = None) -> None:
         """
@@ -485,26 +877,48 @@ class Airfoil(af.Airfoil):  # type: ignore
             for x, y in pts.T:
                 file.write(f" {x:.6f} {y:.6f}\n")
 
-    def plot(self, camber: bool = False, scatter: bool = False) -> None:
+    def plot(
+        self,
+        camber: bool = False,
+        scatter: bool = False,
+        max_thickness: bool = False,
+        ax: Axes | None = None,
+    ) -> None:
         """
         Plots the airfoil in the selig format
 
         Args:
             camber (bool, optional): Whether to plot the camber line. Defaults to False.
             scatter (bool, optional): Whether to plot the airfoil as a scatter plot. Defaults to False.
+            max_thickness (bool, optional): Whether to plot the max thickness. Defaults to False.
         """
         pts = self.selig
         x, y = pts
-        if scatter:
-            plt.scatter(x[: self.n_points], y[: self.n_points], s=1)
-            plt.scatter(x[self.n_points :], y[self.n_points :], s=1)
+
+        if ax is None:
+            fig, _ax = plt.subplots()
         else:
-            plt.plot(x[: self.n_points], y[: self.n_points], "r")
-            plt.plot(x[self.n_points :], y[self.n_points :], "b")
+            _ax: Axes = ax
+
+        if scatter:
+            _ax.scatter(x[: self.n_upper], y[: self.n_upper], s=1)
+            _ax.scatter(x[self.n_upper :], y[self.n_upper :], s=1)
+        else:
+            _ax.plot(x[: self.n_upper], y[: self.n_upper], "r")
+            _ax.plot(x[self.n_upper :], y[self.n_upper :], "b")
 
         if camber:
             x = np.linspace(0, 1, 100)
             y = self.camber_line(x)
-            plt.plot(x, y, "k--")
+            _ax.plot(x, y, "k--")
 
-        plt.axis("scaled")
+        if max_thickness:
+            x = self.max_thickness_location()
+            thick = self.max_thickness()
+            y_up = self.y_upper(x)
+            y_lo = self.y_lower(x)
+            # Plot a line from the upper to the lower surface
+            _ax.plot([x, x], [y_up, y_lo], "k--")
+            # Add a text with the thickness
+            _ax.text(x, y_lo, f"{thick:.3f}", ha="right", va="bottom")
+        _ax.axis("scaled")

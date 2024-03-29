@@ -1,7 +1,7 @@
 import numpy as np
 
 from .engine import ConceptualEngine
-from ICARUS.Core.types import FloatArray
+from ICARUS.core.types import FloatArray
 
 
 class ConceptualPlane:
@@ -53,7 +53,7 @@ class ConceptualPlane:
 
         return cl
 
-    def cd0(self):
+    def cd0(self) -> float:
         return 0.05
 
     def cd(self, angle_of_attack: float | FloatArray, velocity: float) -> FloatArray | float:
@@ -65,10 +65,10 @@ class ConceptualPlane:
             velocity (float): Velocity
         """
 
-        cd = self.cd0 + self.cl(angle_of_attack) * velocity**2
+        cd = self.cl(angle_of_attack) * velocity**2 + self.cd0()
         return cd
 
-    def trust(self, velocity: float, aoa: float, amperes: float):
+    def trust(self, velocity: float, aoa: float, amperes: float) -> None:
         """Calculates the trust of the plane based on the the engine model
 
         Args:
@@ -76,3 +76,4 @@ class ConceptualPlane:
             aoa (float): _description_
             amperes (float): _description_
         """
+        pass

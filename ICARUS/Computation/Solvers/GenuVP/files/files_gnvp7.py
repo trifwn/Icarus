@@ -12,19 +12,19 @@ from numpy import floating
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.Airfoils.airfoil_polars import Polars
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.Computation.Solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.Core.formatting import ff2
-from ICARUS.Core.formatting import ff3
-from ICARUS.Core.formatting import ff4
-from ICARUS.Core.formatting import sps
-from ICARUS.Core.formatting import tabs
-from ICARUS.Core.struct import Struct
-from ICARUS.Core.types import FloatArray
-from ICARUS.Database import DB
-from ICARUS.Database import GenuVP7_exe
+from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
+from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+from ICARUS.core.formatting import ff2
+from ICARUS.core.formatting import ff3
+from ICARUS.core.formatting import ff4
+from ICARUS.core.formatting import sps
+from ICARUS.core.formatting import tabs
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.database import DB
+from ICARUS.database import GenuVP7_exe
 
 
 def input_file(maxiter: float, timestep: float) -> None:
@@ -501,10 +501,7 @@ def cld_files(
             polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
 
         except KeyError:
-            try:
-                polars = foil_dat[f"NACA{bod.airfoil_name}"][solver]
-            except KeyError:
-                raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
+            raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         f_io = StringIO()
         f_io.write(f"CL-CD POLARS by {solver}\n")
@@ -523,7 +520,7 @@ def cld_files(
         f_io.write("\n")
 
         # GET ALL 2D Airfoil POLARS IN ONE TABLE
-        polar_obj = Polars(polars)
+        polar_obj = Polars(name=bod.airfoil_name, data=polars)
         df: DataFrame = polar_obj.df
         # Get Angles
         angles: FloatArray = polar_obj.angles
@@ -648,14 +645,19 @@ def make_input_files(
     # WAKE Files
     wake_files(bodies_dicts)
     # ANGLES File
-    angles_inp(DB.foils_db.data, airfoils, solver)
+    angles_inp(DB.foils_db._data, airfoils, solver)
     # CLD FILES
-    cld_files(DB.foils_db.data, bodies_dicts, solver)
+    cld_files(DB.foils_db._data, bodies_dicts, solver)
 
     if "gnvp7" not in next(os.walk("."))[2]:
         src: str = GenuVP7_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp7")
-        os.symlink(src, dst)
+        try:
+            os.symlink(src, dst)
+        except OSError:
+            import shutil
+
+            shutil.copy(src, dst)
     os.chdir(HOMEDIR)
 
 

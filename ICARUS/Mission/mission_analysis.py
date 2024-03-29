@@ -1,6 +1,6 @@
-from ICARUS.Computation.Solvers.solver import Solver
-from ICARUS.Mission.mission_definition import Mission
-from ICARUS.Vehicle.plane import Airplane
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.mission.mission_definition import Mission
+from ICARUS.vehicle.plane import Airplane
 
 
 class MissionAnalysis:

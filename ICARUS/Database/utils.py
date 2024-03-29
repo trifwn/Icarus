@@ -1,4 +1,4 @@
-from ICARUS.Flight_Dynamics.disturbances import Disturbance
+from ICARUS.flight_dynamics.disturbances import Disturbance
 
 
 def angle_to_case(angle: float) -> str:
@@ -30,7 +30,7 @@ def disturbance_to_case(dst: Disturbance) -> str:
 
     if dst.var == "Trim":
         folder: str = "Trim"
-    elif dst.isPositive:
+    elif dst.is_positive:
         folder = "p" + str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
     else:
         folder = "m" + str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"

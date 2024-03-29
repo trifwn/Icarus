@@ -1,19 +1,19 @@
 """
 ===================================================
-ICARUS Airfoils modelling and analysis package
+ICARUS airfoils modelling and analysis package
 ===================================================
 
 .. toctree: generated/
     :hidden:
 
-    Airfoils.airfoil
-    Airfoils.airfoil_polars
+    airfoils.airfoil
+    airfoils.airfoil_polars
 
-.. module:: ICARUS.Airfoils
+.. module:: ICARUS.airfoils
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for airfoil modelling and analysis.
 
-.. currentmodule:: ICARUS.Airfoils
+.. currentmodule:: ICARUS.airfoils
 
 This package contains class and routines for airfoil modelling and analysis. The package is divided in two modules:
 
@@ -40,4 +40,4 @@ Airfoil Polars Analysis
 from . import airfoil
 from . import airfoil_polars
 
-__all__ = ['airfoil', 'airfoil_polars']
+__all__ = ["airfoil", "airfoil_polars"]

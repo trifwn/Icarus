@@ -59,7 +59,11 @@ repos:
     rev: v0.991
     hooks:
       - id: mypy
-        args: [--ignore-missing-imports, --strict, --explicit-package-bases]
+        args: [--ignore-missing-imports, --strict, --install-types, --explicit-package-bases, --disable-error-code=no-untyped-def]
         additional_dependencies:
           - "numpy"
           - "types-tabulate"
+          - "types-attrs"
+          - "types-pyOpenSSL"
+          - "types-redis"
+          - "types-requests"

@@ -6,17 +6,17 @@ ICARUS Database package
 .. toctree: generated/
     :hidden:
 
-    ICARUS.Database.db
-    ICARUS.Database.Database_2D
-    ICARUS.Database.Database_3D
-    ICARUS.Database.AnalysesDB
-    ICARUS.Database.utils
+    ICARUS.database.db
+    ICARUS.database.Database_2D
+    ICARUS.database.Database_3D
+    ICARUS.database.AnalysesDB
+    ICARUS.database.utils
 
-.. module:: ICARUS.Database
+.. module:: ICARUS.database
     :platform: Unix, Windows
     :synopsis: This package contains class and routines for defining the ICARUS Database.
 
-.. currentmodule:: ICARUS.Database
+.. currentmodule:: ICARUS.database
 
 This package contains class and routines for defining the ICARUS Database.
 The ICARUS Database is used in order to have data and workflow persistency.
@@ -25,11 +25,11 @@ The package is divided in the following files:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Database.db
-    ICARUS.Database.Database_2D
-    ICARUS.Database.Database_3D
-    ICARUS.Database.AnalysesDB
-    ICARUS.Database.utils
+    ICARUS.database.db
+    ICARUS.database.Database_2D
+    ICARUS.database.Database_3D
+    ICARUS.database.AnalysesDB
+    ICARUS.database.utils
 
 """
 import os
@@ -44,11 +44,13 @@ if platform_os == "Windows":
     GenuVP7_exe: str = os.path.join(APPHOME, "bin", "gnvp7.exe")
     F2W_exe: str = os.path.join(APPHOME, "bin", "f2w.exe")
     Foil_Section_exe: str = os.path.join(APPHOME, "bin", "foil_section.exe")
+    AVL_exe: str = os.path.join(APPHOME, "bin", "avl.exe")
 elif platform_os == "Linux":
     GenuVP3_exe = os.path.join(APPHOME, "bin", "gnvp3")
     GenuVP7_exe = os.path.join(APPHOME, "bin", "gnvp7")
     F2W_exe = os.path.join(APPHOME, "bin", "f2w")
     Foil_Section_exe = os.path.join(APPHOME, "bin", "foil_section")
+    AVL_exe = os.path.join(APPHOME, "bin", "avl.exe")
 
 # DATABASES ###
 DB2D: str = os.path.join(APPHOME, "Data", "2D")
@@ -67,6 +69,6 @@ from .db import Database
 
 cwd = os.getcwd()
 DB = Database()
-DB.load_data()
+# DB.load_data()
 # DB.inspect()
 os.chdir(cwd)

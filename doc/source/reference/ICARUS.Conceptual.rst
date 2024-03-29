@@ -1,6 +1,6 @@
-.. .. _ICARUS.Conceptual:
+.. .. _ICARUS.conceptual:
 
-.. automodule:: ICARUS.Conceptual
+.. automodule:: ICARUS.conceptual
    :noindex:
    :no-members:
    :no-inherited-members:

@@ -1,7 +1,7 @@
 import numpy as np
 
-from ICARUS.Airfoils._interpolate import interpolate
-from ICARUS.Core.types import FloatArray
+from ICARUS.airfoils._interpolate import interpolate
+from ICARUS.core.types import FloatArray
 
 
 def gen_NACA5_airfoil(number: str, n_points: int, finite_TE: bool = False) -> tuple[FloatArray, FloatArray]:

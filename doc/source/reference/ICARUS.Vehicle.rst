@@ -1,6 +1,6 @@
-.. .. _ICARUS.Vehicle:
+.. .. _ICARUS.vehicle:
 
-.. automodule:: ICARUS.Vehicle
+.. automodule:: ICARUS.vehicle
    :noindex:
    :no-members:
    :no-inherited-members:

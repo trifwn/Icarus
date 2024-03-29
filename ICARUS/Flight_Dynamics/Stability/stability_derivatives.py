@@ -1,4 +1,6 @@
-from ICARUS.Core.struct import Struct
+from ICARUS.core.struct import Struct
+from ICARUS.flight_dynamics.stability.state_space import LateralStateSpace
+from ICARUS.flight_dynamics.stability.state_space import LongitudalStateSpace
 
 
 class StabilityDerivativesDS(Struct):
@@ -8,30 +10,22 @@ class StabilityDerivativesDS(Struct):
 
     def __init__(
         self,
-        X: dict[str, float],
-        Y: dict[str, float],
-        Z: dict[str, float],
-        L: dict[str, float],
-        M: dict[str, float],
-        N: dict[str, float],
+        longitudal_state_space: LongitudalStateSpace,
+        lateral_state_space: LateralStateSpace,
     ) -> None:
         """
         Initialize Stability Derivatives
 
         Args:
-            X (dict[str, float]): Derivatives based on X
-            Y (dict[str, float]): Derivatives based on Y
-            Z (dict[str, float]): Derivatives based on Z
-            L (dict[str, float]): Derivatives based on L
-            M (dict[str, float]): Derivatives based on M
-            N (dict[str, float]): Derivatives based on N
+            longitudal_state_space (LongitudalStateSpace): Longitudal State Space Object
+            lateral_state_space (LateralStateSpace): Lateral Space Object
         """
-        self.X: dict[str, float] = X
-        self.Y: dict[str, float] = Y
-        self.Z: dict[str, float] = Z
-        self.L: dict[str, float] = L
-        self.M: dict[str, float] = M
-        self.N: dict[str, float] = N
+        self.X: dict[str, float] = longitudal_state_space.X
+        self.Y: dict[str, float] = lateral_state_space.Y
+        self.Z: dict[str, float] = longitudal_state_space.M
+        self.L: dict[str, float] = lateral_state_space.L
+        self.M: dict[str, float] = longitudal_state_space.M
+        self.N: dict[str, float] = lateral_state_space.N
 
     def __str__(self) -> str:
         """

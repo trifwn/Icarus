@@ -1,6 +1,6 @@
-from ICARUS.Propulsion.engine import Engine
+from ICARUS.propulsion.engine import Engine
 
 
 class ConceptualEngine(Engine):
-    def __init__(self, *args, **kwargs) -> None:
-        return super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        return super().__init__()
