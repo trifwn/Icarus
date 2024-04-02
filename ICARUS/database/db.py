@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .AnalysesDB import AnalysesDB
-from .Database_2D import Database_2D
-from .Database_3D import Database_3D
+from .analysesDB import AnalysesDB
+from .database2D import Database_2D
+from .database3D import Database_3D
 from ICARUS import APPHOME
 
 if TYPE_CHECKING:
