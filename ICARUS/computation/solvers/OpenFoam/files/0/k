@@ -1,0 +1,55 @@
+/*----------------------------------------------------------------------------------*\
+|                                                                                    |
+|    ANSA_VERSION: 22.1.0                                                            |
+|                                                                                    |
+|    file created by  A N S A  Mon Feb 28 15:04:06 2022                              |
+|                                                                                    |
+|    Output from: /home/dvlastos/TzimiNiki/Untitled.ansa                             |
+|                                                                                    |
+\*----------------------------------------------------------------------------------*/
+
+
+
+FoamFile
+{
+	version 2.0;
+	format binary;
+	class volScalarField;
+	location "";
+	object k;
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+dimensions [0 2 -2 0 0 0 0];
+
+internalField uniform 0.015;
+
+
+boundaryField
+{
+	Farfield
+	{
+		type inletOutlet;
+		value uniform 0.015;
+		inletValue uniform 0.015;
+	}
+
+	Airfoil
+	{
+		type fixedValue;
+		value uniform 0.;
+	}
+
+	SideHigh
+	{
+		type empty;
+	}
+	SideLow
+	{
+		type empty;
+	}
+
+
+}
