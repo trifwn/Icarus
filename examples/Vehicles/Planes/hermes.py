@@ -41,12 +41,11 @@ def hermes(name: str) -> Airplane:
         root_chord=0.159,
         tip_chord=0.072,
         twist_root=0,
-        twist_tip=30,
-        N=25,
+        twist_tip=0,
+        N=15,
         M=5,
         mass=0.670,
     )
-    # main_wing.plotWing()
 
     elevator_pos: FloatArray = np.array(
         [0.54, 0.0, 0.0],
@@ -72,7 +71,6 @@ def hermes(name: str) -> Airplane:
         M=5,
         mass=0.06,
     )
-    # elevator.plotWing()
 
     rudder_position: FloatArray = np.array(
         [0.47, 0.0, 0.01],
@@ -98,7 +96,6 @@ def hermes(name: str) -> Airplane:
         M=5,
         mass=0.04,
     )
-    # rudder.plotWing()
 
     lifting_surfaces: list[WingSurface] = [main_wing, elevator, rudder]
 

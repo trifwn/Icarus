@@ -80,4 +80,4 @@ class GenuSurface:
         self.root_chord: float = surf.chords[0]
         self.tip_chord: float = surf.chords[-1]
         self.offset: float = surf._xoffset_dist[-1]
-        self.grid: FloatArray = surf.get_grid()
+        self.grid: FloatArray | list[FloatArray] = surf.get_grid()

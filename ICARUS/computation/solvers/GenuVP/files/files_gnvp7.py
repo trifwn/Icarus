@@ -318,14 +318,21 @@ def grid_file(bod: GenuSurface) -> None:
         body_dict (GenuSurface): Dictionary Containing the information about
             the body in GenuSurface format.
     """
-    with open(f"{bod.grid_fname}", "w") as file:
-        grid: FloatArray = bod.grid
-        file.write("\n")
-        for n_strip in grid:  # For each strip
-            for m_point in n_strip:  # For each point in the strip
-                # Grid Coordinates
-                file.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
-            file.write("\n")
+    with open(f"{bod.grid_fname}", "w") as f_wg:
+        grid: FloatArray | list[FloatArray] = bod.grid
+        f_wg.write("\n")
+        if isinstance(grid, list):
+            for subgrid in grid:
+                for nstrip in subgrid:
+                    for point in nstrip:
+                        f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
+                    f_wg.write("\n")
+        else:
+            for n_strip in grid:  # For each strip
+                for m_point in n_strip:  # For each point in the strip
+                    # Grid Coordinates
+                    f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
+                f_wg.write("\n")
 
 
 def topology_files(
@@ -483,7 +490,6 @@ def pm_file() -> None:
 
 
 def cld_files(
-    foil_dat: Struct,
     bodies: list[GenuSurface],
     solver: str,
 ) -> None:
@@ -498,7 +504,7 @@ def cld_files(
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
         try:
-            polars: dict[str, DataFrame] = foil_dat[bod.airfoil_name][solver]
+            polars: Polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
 
         except KeyError:
             raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
@@ -507,12 +513,12 @@ def cld_files(
         f_io.write(f"CL-CD POLARS by {solver}\n")
 
         # WRITE MACH AND REYNOLDS NUMBERS
-        f_io.write(f"{len(polars)}  ! Mach/Reynolds combs for which CL-CD are given\n")
-        for i, _ in enumerate(polars.keys()):
+        f_io.write(f"{len(polars.reynolds_nums)}  ! Mach/Reynolds combs for which CL-CD are given\n")
+        for i, _ in enumerate(polars.reynolds_nums):
             f_io.write(f"0.08000{tabs(1)}")
         f_io.write("MACH\n")
 
-        for reyn in polars.keys():
+        for reyn in polars.reynolds_keys:
             f_io.write(f"{reyn.zfill(4)}{tabs(1)}")
         f_io.write("Reynolds\n")
 
@@ -520,21 +526,20 @@ def cld_files(
         f_io.write("\n")
 
         # GET ALL 2D Airfoil POLARS IN ONE TABLE
-        polar_obj = Polars(name=bod.airfoil_name, data=polars)
-        df: DataFrame = polar_obj.df
+        df: DataFrame = polars.df
         # Get Angles
-        angles: FloatArray = polar_obj.angles
+        angles: FloatArray = polars.angles
         # FILL FILE
         for radpos in [-100.0, 100.0]:
             f_io.write(f"!profile: {radpos}\n")
             f_io.write(f"{radpos}{tabs(1)}{0.25}{tabs(1)}{1}{tabs(7)}Span AerCentr NumFlap\n")
 
             anglenum: int = len(angles)
-            flap_angle: float = polar_obj.flap_angle  # Flap Angle
-            a_zero_pot: float = polar_obj.a_zero_pot  # Potential Zero Lift Angle
-            cm_pot: float = polar_obj.cm_pot  # Potential Cm at Zero Lift Angle
-            a_zero: float = polar_obj.a_zero_visc  # Viscous Zero Lift Angle
-            cl_slope: float = polar_obj.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
+            flap_angle: float = polars.flap_angle  # Flap Angle
+            a_zero_pot: float = polars.a_zero_pot  # Potential Zero Lift Angle
+            cm_pot: float = polars.cm_pot  # Potential Cm at Zero Lift Angle
+            a_zero: float = polars.a_zero_visc  # Viscous Zero Lift Angle
+            cl_slope: float = polars.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
 
             f_io.write(f"{anglenum} ")
             for item in [flap_angle, a_zero_pot, cm_pot, a_zero, cl_slope]:
@@ -592,16 +597,15 @@ def wake_connections(name: str) -> None:
 
 
 def angles_inp(
-    foil_dat: Struct,
     airfoils: list[str],
     solver: str,
 ) -> None:
     angles: list[float] = []
     # Find all distinct angles in foil_dat.
     for airf in airfoils:
-        polars: dict[str, DataFrame] = foil_dat[airf][solver]
-        for reyn in polars.keys():
-            angles.extend(polars[reyn]["AoA"].to_list())
+        polars: Polars = DB.foils_db.get_polars(airf, solver=solver)
+        # foil_dat[airf][solver]
+        angles.extend(polars.angles)
     angles = [angle for angle in angles if np.isnan(angle) == False]
     angles = list(set(angles))
     angles.sort()
@@ -621,7 +625,7 @@ def make_input_files(
     ANGLEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
-    bodies_dicts: list[GenuSurface],
+    genu_bodies: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
     solver: str,
@@ -635,19 +639,19 @@ def make_input_files(
     # DFILE
     dfile(params)
     # GEO
-    geofile(movements, bodies_dicts, params)
+    geofile(movements, genu_bodies, params)
     # TOPOLOGY Files
-    topology_files(bodies_dicts)
+    topology_files(genu_bodies)
     # BODY CONNECTIONS
-    body_connections(len(bodies_dicts), params.name)
+    body_connections(len(genu_bodies), params.name)
     # Wake Connections
     wake_connections(params.name)
     # WAKE Files
-    wake_files(bodies_dicts)
+    wake_files(genu_bodies)
     # ANGLES File
-    angles_inp(DB.foils_db._data, airfoils, solver)
+    angles_inp(airfoils, solver)
     # CLD FILES
-    cld_files(DB.foils_db._data, bodies_dicts, solver)
+    cld_files(genu_bodies, solver)
 
     if "gnvp7" not in next(os.walk("."))[2]:
         src: str = GenuVP7_exe

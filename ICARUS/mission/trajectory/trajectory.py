@@ -25,4 +25,7 @@ class Trajectory:
     def third_derivative_x_fd(self, x: float | FloatArray) -> FloatArray:
         # Third derivative
         h = 0.0001
-        return (-self.fun(x - 2 * h) + 2 * self.fun(x - h) - 2 * self.fun(x + h) + self.fun(x + 2 * h)) / (2 * h**3)
+        res: FloatArray = (-self.fun(x - 2 * h) + 2 * self.fun(x - h) - 2 * self.fun(x + h) + self.fun(x + 2 * h)) / (
+            2 * h**3
+        )
+        return res

@@ -335,18 +335,17 @@ class MergedWing(WingSurface):
         cog[2] = z_cm / self.mass
         return cog
 
-    def get_grid(self, which: str = "camber") -> FloatArray:
+    def get_grid(self, which: str = "camber") -> list[FloatArray]:
         """
         Returns the grid of the wing
         """
         grids: list[FloatArray] = []
         for segment in self.wing_segments:
-            if which == "camber":
-                grids.append(segment.get_grid(which))
-            elif which == "lower":
-                grids.append(segment.get_grid(which))
-            elif which == "upper":
-                grids.append(segment.get_grid(which))
+            grid = segment.get_grid(which)
+            if isinstance(grid, list):
+                grids.extend(grid)
+            else:
+                grids.append(grid)
         return grids
 
     @property

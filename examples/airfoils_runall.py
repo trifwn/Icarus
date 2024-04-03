@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Any
 
 import numpy as np
 
@@ -40,7 +41,7 @@ def main() -> None:
     # Load From DB
     DB.load_data()
     print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
-    print(f"Total number of computed airfoil data {len(list(DB.foils_db._data.keys()))}")
+    print(f"Total number of computed airfoil data {len(list(DB.foils_db._raw_data.keys()))}")
     print(f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}")
 
     # all_airfoils = list(DB.foils_db.airfoils.keys())
@@ -160,7 +161,7 @@ def main() -> None:
 
             try:
                 # Get polar
-                polar = DB.foils_db.get_polars(airfoil.name, "Foil2Wake")
+                polar = DB.foils_db.get_polars(airfoil.name)
 
                 airfoil_folder = os.path.join("Data/images/")
                 polar.save_polar_plot_img(airfoil_folder, "f2w")
@@ -209,7 +210,7 @@ def main() -> None:
 
             try:
                 # Get polar
-                polar = DB.foils_db.get_polars(airfoil.name, "Xfoil")
+                polar = DB.foils_db.get_polars(airfoil.name)
 
                 airfoil_folder = os.path.join(APPHOME, "Data", "images")
                 polar.save_polar_plot_img(airfoil_folder, "xfoil")

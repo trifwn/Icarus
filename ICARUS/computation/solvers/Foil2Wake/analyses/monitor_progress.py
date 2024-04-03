@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from time import sleep
+from typing import NoReturn
 from typing import Optional
 
 import numpy as np
@@ -11,7 +12,7 @@ from ICARUS.computation.solvers.Foil2Wake.post_process.progress import latest_ti
 
 
 def serial_monitor(
-    progress_bars: list[tqdm],
+    progress_bars: list[tqdm[NoReturn]],
     REYNDIR: str,
     reyn_str: str,
     name: str,

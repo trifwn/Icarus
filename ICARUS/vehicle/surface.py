@@ -1057,7 +1057,7 @@ class WingSurface:
 
         return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
 
-    def get_grid(self, which: str = "camber") -> FloatArray:
+    def get_grid(self, which: str = "camber") -> FloatArray | list[FloatArray]:
         """
         Returns the Grid of the Wing.
 

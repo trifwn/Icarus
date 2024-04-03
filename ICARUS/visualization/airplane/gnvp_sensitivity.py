@@ -12,7 +12,7 @@ from ICARUS.visualization import markers
 def plot_sensitivity(
     data: Struct,
     plane: Airplane,
-    trim: Series,
+    trim: Series[float],
     relative: bool = False,
     vars2s: list[str] = ["All"],
     solvers: list[str] = ["2D"],
@@ -51,12 +51,13 @@ def plot_sensitivity(
     i = -1
     j = -1
 
-    fx_trim: float = trim[f"TFORC{solvers[0]}(1)"].astype(float).values
-    fy_trim: float = trim[f"TFORC{solvers[0]}(2)"].astype(float).values
-    fz_trim: float = trim[f"TFORC{solvers[0]}(3)"].astype(float).values
-    mx_trim: float = trim[f"TAMOM{solvers[0]}(1)"].astype(float).values
-    my_trim: float = trim[f"TAMOM{solvers[0]}(2)"].astype(float).values
-    mz_trim: float = trim[f"TAMOM{solvers[0]}(2)"].astype(float).values
+    trim = trim.astype(float)
+    fx_trim: float = trim[f"TFORC{solvers[0]}(1)"]
+    fy_trim: float = trim[f"TFORC{solvers[0]}(2)"]
+    fz_trim: float = trim[f"TFORC{solvers[0]}(3)"]
+    mx_trim: float = trim[f"TAMOM{solvers[0]}(1)"]
+    my_trim: float = trim[f"TAMOM{solvers[0]}(2)"]
+    mz_trim: float = trim[f"TAMOM{solvers[0]}(2)"]
     if not relative:
         axs[0].axhline(
             fx_trim,

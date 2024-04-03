@@ -53,7 +53,7 @@ def run_gnvp3_case(
     CASEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
-    bodies_dicts: list[GenuSurface],
+    genu_bodies: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
     solver2D: str,
@@ -65,7 +65,7 @@ def run_gnvp3_case(
         HOMEDIR (str): Home Directory
         GENUBASE (str): Base of GenuVP3
         movements (list[list[Movement]]): List of Movements for each body
-        bodies (list[dict[GenuSurface]): List of Bodies in GenuSurface format
+        genu_bodies (list[dict[GenuSurface]): List of Bodies in GenuSurface format
         params (GenuParameters): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
         solver2D (str): Name of 2D Solver to be used
@@ -74,7 +74,7 @@ def run_gnvp3_case(
         CASEDIR,
         HOMEDIR,
         movements,
-        bodies_dicts,
+        genu_bodies,
         params,
         solver2D,
     )

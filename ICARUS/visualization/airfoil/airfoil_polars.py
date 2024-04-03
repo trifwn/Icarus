@@ -59,7 +59,7 @@ def plot_airfoil_polars(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
-    data: Struct = DB.foils_db._data
+    data: Struct = DB.foils_db._raw_data
     db_solvers = data[airfoil_name]
 
     for i, solver in enumerate(db_solvers):
@@ -86,8 +86,8 @@ def plot_airfoil_polars(
                     if plot[1] == "AoA":
                         key1 = "AoA"
 
-                    x: Series = polar[f"{key0}"]
-                    y: Series = polar[f"{key1}"]
+                    x: Series[float] = polar[f"{key0}"]
+                    y: Series[float] = polar[f"{key1}"]
                     c = colors_(j / len(db_solvers[solver].keys()))
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reynolds} - {solver}"

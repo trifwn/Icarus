@@ -15,7 +15,7 @@ from ICARUS.vehicle.plane import Airplane
 class GenuParameters:
     def __init__(
         self,
-        bodies_dicts: list[GenuSurface],
+        genu_bodies: list[GenuSurface],
         plane: Airplane,
         maxiter: int,
         timestep: float,
@@ -40,7 +40,7 @@ class GenuParameters:
         Returns:
             dict[str, Any]: dict with all the parameters to define the simulation
         """
-        nBodies: int = len(bodies_dicts)
+        n_bodies: int = len(genu_bodies)
         num_airfoils: int = len(plane.airfoils)
         angle: float = angle_deg * np.pi / 180
         dens: float = environment.air_density
@@ -53,7 +53,7 @@ class GenuParameters:
         ]
 
         self.name: str = plane.name
-        self.nBods: int = nBodies
+        self.nBods: int = n_bodies
         self.nBlades: int = num_airfoils
         self.CG: FloatArray = plane.CG
         self.maxiter: int = maxiter

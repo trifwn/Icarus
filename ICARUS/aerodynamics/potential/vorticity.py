@@ -1,10 +1,8 @@
-import jax
 import numpy as np
 
 from ICARUS.core.types import FloatArray
 
 
-@jax.jit
 def vortexL(
     xp: float,
     yp: float,
@@ -50,7 +48,7 @@ def vortexL(
     r0dr1 = (x2 - x1) * (xp - x1) + (y2 - y1) * (yp - y1) + (z2 - z1) * (zp - z1)
     r0dr2 = (x2 - x1) * (xp - x2) + (y2 - y1) * (yp - y2) + (z2 - z1) * (zp - z2)
 
-    epsilon = 0.0001
+    epsilon: float = 0.0001
     d = cross_mag / r0
     filt = 1  # - np.exp(-(d/epsilon)**2)
     K: float = filt * (gamma / (4 * np.pi * cross_mag)) * (r0dr1 / r1 - r0dr2 / r2)
@@ -61,7 +59,6 @@ def vortexL(
     return u, v, w
 
 
-@jax.jit
 def voring(
     x: float,
     y: float,
@@ -149,7 +146,6 @@ def voring(
     return U, Ustar
 
 
-@jax.jit
 def hshoe2(
     x: float,
     y: float,
@@ -225,7 +221,6 @@ def hshoe2(
     return U, Ustar
 
 
-@jax.jit
 def hshoeSL2(
     x: float,
     y: float,
@@ -324,7 +319,6 @@ def hshoeSL2(
     return U, Ustar
 
 
-@jax.jit
 def symm_wing_panels(
     x: float,
     y: float,
@@ -383,10 +377,16 @@ def ground_effect(x: float, y: float, z: float, i: int, j: int, panel: FloatArra
     return U_ind, U_ind_st
 
 
-# try:
-#     from jax import jit
-#     # Jit all functions
+try:
+    import jax
 
+    # Compile the functions with JAX
+    vortexL = jax.jit(vortexL)
+    voring = jax.jit(voring)
+    hshoe2 = jax.jit(hshoe2)
+    hshoeSL2 = jax.jit(hshoeSL2)
+    symm_wing_panels = jax.jit(symm_wing_panels)
+    ground_effect = jax.jit(ground_effect)
 
-# except ImportError:
-#     pass
+except ImportError:
+    pass

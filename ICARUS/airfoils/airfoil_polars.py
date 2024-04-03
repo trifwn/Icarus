@@ -35,19 +35,20 @@ moment, and the slope of the Cl vs Alpha curve by calling:
 >>> polars.get_cl_slope(cl_curve)
 
 """
-import os
-from typing import Any
+from __future__ import annotations
 
-import jax.numpy as jnp
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas import DataFrame
 from pandas import Index
+from pandas import Series
 
 from ICARUS.airfoils.airfoil import Airfoil
-from ICARUS.computation.solvers.OpenFoam.post_process import get_aero_coefficients
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 
@@ -71,7 +72,7 @@ class ReynoldsNotIncluded(Exception):
         super().__init__(message)
 
 
-def interpolate_series_index(xval: float, series: pd.Series) -> float:
+def interpolate_series_index(xval: float, series: pd.Series[float]) -> float:
     """
     Compute xval as the linear interpolation of xval where df is a dataframe and
     df.x are the x coordinates, and df.y are the y coordinates. df.x is expected to be sorted.
@@ -86,7 +87,7 @@ def interpolate_series_index(xval: float, series: pd.Series) -> float:
     return float(np.interp(xval, series.to_numpy(), series.index.to_numpy()))
 
 
-def interpolate_series_value(xval: float, series: pd.Series) -> float:
+def interpolate_series_value(xval: float, series: pd.Series[float]) -> float:
     """
     Interpolate Pandas Series Value
 
@@ -102,7 +103,7 @@ def interpolate_series_value(xval: float, series: pd.Series) -> float:
     return float(np.interp(xval, series.index.to_numpy(), series.to_numpy()))
 
 
-def get_linear_series(series: pd.Series) -> pd.Series:
+def get_linear_series(series: pd.Series[float]) -> pd.Series[float]:
     """
     Get the Linear Part of a Series. We assume that the series is a curve with one linear
     part and some non-linear part. We find the linear part by finding the second derivative
@@ -119,12 +120,31 @@ def get_linear_series(series: pd.Series) -> pd.Series:
         pd.Series: Filtered Series
     """
     # Get Second Derivative
-    second_derivative: pd.Series = series.diff().diff()
+    second_derivative: Series[float] = series.diff().diff()
     # Apply Threshold
     threshold: float = 0.01
-    second_derivative = second_derivative.abs() < threshold
+    second_derivative_idx: Series[bool] = second_derivative.abs() < threshold
     # Filter Series
-    return series[second_derivative]
+    return series[second_derivative_idx]
+
+
+class AirfoilData:
+    """
+    Solver Data Class
+    """
+
+    def __init__(self, name: str, data: Struct | dict[str, dict[str, DataFrame]]) -> None:
+        self.name = name
+        self.all_data = data
+
+        self.polars = {}
+        for solver, dat in data.items():
+            self.polars[solver] = Polars(name, dat)
+
+    def get_polars(self, solver: str) -> Polars:
+        if solver == "Any":
+            return self.polars[list(self.polars.keys())[0]]
+        return self.polars[solver]
 
 
 class Polars:
@@ -183,8 +203,8 @@ class Polars:
 
         # Potential Zero Lift Angle
         if "CL_Potential" in df.keys():
-            potential_cl: pd.Series = df["CL_Potential"]
-            potential_cm: pd.Series = df["Cm_Potential"]
+            potential_cl: pd.Series[float] = df["CL_Potential"]
+            potential_cm: pd.Series[float] = df["Cm_Potential"]
         else:
             least_idx: int = self.reynolds_nums.index(min(self.reynolds_nums))
             potential_cl = df[f"CL_{self.reynolds_keys[least_idx]}"]
@@ -198,7 +218,7 @@ class Polars:
 
         # Viscous Zero Lift Angle
         max_idx: int = self.reynolds_nums.index(max(self.reynolds_nums))
-        viscous: pd.Series = df[f"CL_{self.reynolds_keys[max_idx]}"]
+        viscous: pd.Series[float] = df[f"CL_{self.reynolds_keys[max_idx]}"]
         viscous.index = Index(df["AoA"].astype("float32"))
         self.a_zero_visc: float = self.get_zero_lift_angle(viscous)
 
@@ -239,14 +259,14 @@ class Polars:
     def get_reynolds_zero_lift_angle(self, reynolds: float | str) -> float:
         """Get Reynolds Zero Lift Angle"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
-        cl_curve: pd.Series = df["CL"]
+        cl_curve: pd.Series[float] = df["CL"]
         cl_curve.index = Index(df["AoA"].astype("float32"))
         return self.get_zero_lift_angle(cl_curve)
 
     def get_reynolds_cl_slope(self, reynolds: float | str) -> float:
         """Get Reynolds Cl Slope"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
-        cl_curve: pd.Series = df["CL"]
+        cl_curve: pd.Series[float] = df["CL"]
         cl_curve.index = Index(df["AoA"].astype("float32"))
         cl_vector = cl_curve.to_numpy()
         aoa_vector = np.deg2rad(df["AoA"].to_numpy())
@@ -263,9 +283,9 @@ class Polars:
     def get_aero_coefficients(self, reynolds: float | str, aoa: float) -> tuple[float, float, float]:
         """Get Aero Coefficients"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
-        cl_curve: pd.Series = df["CL"]
-        cd_curve: pd.Series = df["CD"]
-        cm_curve: pd.Series = df["Cm"]
+        cl_curve: pd.Series[float] = df["CL"]
+        cd_curve: pd.Series[float] = df["CD"]
+        cm_curve: pd.Series[float] = df["Cm"]
         cl_curve.index = Index(df["AoA"].astype("float32"))
         cd_curve.index = Index(df["AoA"].astype("float32"))
         cm_curve.index = Index(df["AoA"].astype("float32"))
@@ -277,8 +297,8 @@ class Polars:
 
     def reynolds_examine_run(self, reynolds: float | str) -> tuple[bool, str]:
         df: DataFrame = self.get_reynolds_subtable(reynolds)
-        cl_curve: pd.Series = df["CL"]
-        cd_curve: pd.Series = df["CD"]
+        cl_curve: pd.Series[float] = df["CL"]
+        cd_curve: pd.Series[float] = df["CD"]
         cl_curve.index = Index(df["AoA"].astype("float32"))
         zero_lift = self.get_zero_lift_angle(cl_curve)
         return self.examine_run(cl_curve, cd_curve, zero_lift)
@@ -286,7 +306,7 @@ class Polars:
     def plot_reynolds_cl_curve(
         self,
         reynolds: float | str,
-        ax=None,
+        ax: Axes | None = None,
         add_zero_lift: bool = True,
     ) -> None:
         """Plot Reynolds Cl Curve"""
@@ -295,8 +315,9 @@ class Polars:
         cl.index = Index(df["AoA"].astype("float32"))
         aoa = df["AoA"]
 
-        if ax is None:
-            fig, ax = plt.subplots()
+        if not isinstance(ax, Axes):
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
         ax.plot(aoa, cl, label=f"Reynolds {reynolds}")
         ax.set_xlabel("Angle of Attack [deg]")
@@ -311,7 +332,7 @@ class Polars:
     def plot_reynolds_cd_curve(
         self,
         reynolds: float | str,
-        ax=None,
+        ax: Axes | None = None,
     ) -> None:
         """Plot Reynolds Cd Curve"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
@@ -320,8 +341,9 @@ class Polars:
         cl.index = Index(df["AoA"].astype("float32"))
         aoa = df["AoA"]
 
-        if ax is None:
-            fig, ax = plt.subplots()
+        if not isinstance(ax, Axes):
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
         ax.plot(aoa, cd, label=f"Reynolds {reynolds}")
         ax.set_xlabel("Angle of Attack [deg]")
@@ -335,7 +357,7 @@ class Polars:
     def plot_reynolds_cl_over_cd_curve(
         self,
         reynolds: float | str,
-        ax=None,
+        ax: Axes | None = None,
     ) -> None:
         """Plot Reynolds Cl Over Cd Curve"""
         df: DataFrame = self.get_reynolds_subtable(reynolds)
@@ -355,7 +377,8 @@ class Polars:
         # df.loc[idx2, "CL/CD"] = 0
 
         if ax is None:
-            fig, ax = plt.subplots()
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
         ax.plot(aoa, cl_over_cd, label=f"Reynolds {reynolds}")
         ax.set_xlabel("Angle of Attack [deg]")
@@ -411,41 +434,41 @@ class Polars:
         print(f"Saved {filename}")
 
     @staticmethod
-    def get_zero_lift_angle(cl_curve: pd.Series) -> float:
+    def get_zero_lift_angle(cl_curve: pd.Series[float]) -> float:
         """Get Zero Lift Angle from Cl Curve"""
         return interpolate_series_index(0.0, cl_curve)
 
     @staticmethod
-    def get_zero_lift_cm(cm_curve: pd.Series, zero_lift_angle: float) -> float:
+    def get_zero_lift_cm(cm_curve: pd.Series[float], zero_lift_angle: float) -> float:
         """Get Zero Lift Cm from Cl Curve"""
         return interpolate_series_index(zero_lift_angle, cm_curve)
 
     @staticmethod
-    def get_cl_slope(cl_curve: pd.Series) -> float:
+    def get_cl_slope(cl_curve: pd.Series[float]) -> float:
         """Get Slope of Cl Curve"""
-        cl_linear: pd.Series = get_linear_series(cl_curve)
+        cl_linear: pd.Series[float] = get_linear_series(cl_curve)
         # cl_linear.plot()
 
         return float(cl_linear.diff().mean())
 
     @staticmethod
-    def get_positive_stall_idx(cl_curve: pd.Series) -> int:
+    def get_positive_stall_idx(cl_curve: pd.Series[float]) -> int:
         """Get Positive Stall Angle"""
         # Remove NaN Values
         cl_curve = cl_curve.dropna()
         return int(cl_curve.idxmax())
 
     @staticmethod
-    def get_negative_stall_idx(cl_curve: pd.Series) -> int:
+    def get_negative_stall_idx(cl_curve: pd.Series[float]) -> int:
         """Get Negative Stall Angle"""
         # Remove NaN Values
         cl_curve = cl_curve.dropna()
         return int(cl_curve.idxmin())
 
     @staticmethod
-    def get_cl_cd_minimum_idx(cl_curve: pd.Series, cd_curve: pd.Series) -> int:
+    def get_cl_cd_minimum_idx(cl_curve: pd.Series[float], cd_curve: pd.Series[float]) -> int:
         """Get Minimum CD/CL Ratio"""
-        cd_cl: pd.Series = cd_curve / cl_curve
+        cd_cl: pd.Series[float] = cd_curve / cl_curve
         slope_cd_cl = cd_cl.diff()
 
         # Find the minimum slope
@@ -484,7 +507,7 @@ class Polars:
         return df
 
     @staticmethod
-    def examine_run(cl_curve: pd.Series, cd_curve: pd.Series, zero_lift_angle: float) -> tuple[bool, str]:
+    def examine_run(cl_curve: pd.Series[float], cd_curve: pd.Series[float], zero_lift_angle: float) -> tuple[bool, str]:
         is_bad: bool = False
         cl_array = cl_curve.to_numpy()
         cd_array = cd_curve.to_numpy()

@@ -4,6 +4,7 @@ import subprocess
 from io import StringIO
 
 import numpy as np
+from pandas import DataFrame
 
 from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
@@ -11,8 +12,8 @@ from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.types import FloatArray
 from ICARUS.database import AVL_exe
 from ICARUS.database import DB
-from ICARUS.database.Database_2D import AirfoilNotFoundError
-from ICARUS.database.Database_2D import PolarsNotFoundError
+from ICARUS.database.database2D import AirfoilNotFoundError
+from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.merged_wing import MergedWing
@@ -233,7 +234,7 @@ def avl_geo(
                 reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
                 # Get the airfoil polar
                 try:
-                    polar_obj: Polars = DB.foils_db.get_polars(strip_airfoil.name, solver2D)
+                    polar_obj: Polars = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
                     reyns_computed = polar_obj.reynolds_nums
 
                     # print("We have computed polars for the following reynolds numbers:")
@@ -270,7 +271,7 @@ def avl_geo(
                             reynolds=reynolds,
                             angles=np.linspace(-8, 20, 29),
                         )
-                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver2D)
+                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
 
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
@@ -293,7 +294,7 @@ def avl_geo(
                     )
 
                     try:
-                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver2D)
+                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
 
                         f_io.write("CDCL\n")
                         cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
@@ -351,7 +352,7 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
 
 
 # ayto mpainei sto input
-def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]):
+def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> list[DataFrame]:
     # for i, s in enumerate(plane.surfaces)
     #     if i0
     #         start += plane.surfaces[i-1].N2

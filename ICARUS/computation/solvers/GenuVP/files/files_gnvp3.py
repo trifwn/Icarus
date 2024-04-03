@@ -18,6 +18,8 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.database import EXTERNAL_DB
 from ICARUS.database import GenuVP3_exe
+from ICARUS.database.database2D import AirfoilNotFoundError
+from ICARUS.database.database2D import PolarsNotFoundError
 
 
 def line(value: Any, var_name: str, description: str, file: TextIOWrapper) -> None:
@@ -451,10 +453,9 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
 
-        db_foils = DB.foils_db
         try:
-            polars: dict[str, DataFrame] = db_foils.get_data(bod.airfoil_name, solver)
-        except KeyError:
+            polars: Polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
+        except (PolarsNotFoundError, AirfoilNotFoundError):
             raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         f_io = StringIO()
@@ -462,17 +463,16 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
         f_io.write("------ Mach number dependence included\n")
         blankline(f_io)
         line(2, "NSPAN", "Number of positions for which CL-CD data are given", f_io)
-        line(len(polars), "! NMACH", "Mach numbers for which CL-CD are given", f_io)
-        for _ in range(0, len(polars)):
+        line(len(polars.reynolds_nums), "! NMACH", "Mach numbers for which CL-CD are given", f_io)
+        for _ in range(0, len(polars.reynolds_nums)):
             f_io.write(f"0.08\n")
         f_io.write("! Reyn numbers for which CL-CD are given\n")
-        for reyn in polars.keys():
+        for reyn in polars.reynolds_keys:
             f_io.write(f"{reyn.zfill(5)}\n")
         blankline(f_io)
 
-        polar_obj = Polars(name=bod.airfoil_name, data=polars)
-        df: DataFrame = polar_obj.df
-        angles = polar_obj.angles
+        df: DataFrame = polars.df
+        angles = polars.angles
 
         for radpos in [-100.0, 100.0]:
             line(radpos, "RADPOS", "! Radial Position", f_io)

@@ -11,6 +11,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
+from pandas import Index
 from tabulate import tabulate
 
 from .disturbances import Disturbance as dst
@@ -59,8 +60,8 @@ class State:
         self.polar = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
-        self.sensitivity = Struct()
-        self.sensitivity_results = Struct()
+        self.sensitivity: Struct = Struct()
+        # self.sensitivity_results = Struct()
 
         # Initialize The Longitudal State Space Matrices
         # Initialize The Lateral State Space Matrices
@@ -88,7 +89,7 @@ class State:
         self.disturbances = []
         self.pertrubation_results = DataFrame()
         self.sensitivity = Struct()
-        self.sensitivity_results = Struct()
+        # self.sensitivity_results = Struct()
 
     def add_polar(
         self,
@@ -103,7 +104,7 @@ class State:
             if "Fz" not in cols and "CL" not in cols:
                 for i, col in enumerate(cols):
                     cols[i] = col.replace(f"{polar_prefix} ", "")
-                polar.columns = cols
+                polar.columns = Index(cols, dtype='str')
 
         if is_dimensional:
             self.polar = self.make_aero_coefficients(polar)

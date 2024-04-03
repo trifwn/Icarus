@@ -35,11 +35,11 @@ class Database_3D:
     def __init__(self) -> None:
         self.HOMEDIR: str = APPHOME
         self.DATADIR: str = DB3D
-        self.forces = Struct()
-        self.polars = Struct()
-        self.planes = Struct()
-        self.states = Struct()
-        self.convergence_data = Struct()
+        self.forces: Struct = Struct()
+        self.polars: Struct = Struct()
+        self.planes: Struct = Struct()
+        self.states: Struct = Struct()
+        self.convergence_data: Struct = Struct()
 
     def get_planenames(self) -> list[str]:
         """
@@ -60,27 +60,32 @@ class Database_3D:
             self.states[vehicle] = {}
 
         if state in self.states[vehicle].keys():
-            return self.states[vehicle][state]
+            state_obj: State = self.states[vehicle][state]
+            return state_obj
         else:
             try:
                 self.read_plane_data(vehicle)
-                return self.states[vehicle][state]
+                state_obj = self.states[vehicle][state]
+                return state_obj
             except KeyError:
                 raise ValueError(f"No State found for {state}")
 
     def get_polars(self, name: str) -> DataFrame:
         if name in self.polars.keys():
-            return self.polars[name]
+            polar_obj: DataFrame = self.polars[name]
+            return polar_obj
         else:
             self.read_plane_data(name)
             try:
-                return self.polars[name]
+                polar_obj = self.polars[name]
+                return polar_obj
             except KeyError:
                 raise ValueError(f"No Polars found for {name}")
 
     def get_vehicle(self, name: str) -> Airplane:
         if name in self.planes.keys():
-            return self.planes[name]
+            plane_object: Airplane = self.planes[name]
+            return plane_object
         else:
             # Try to Load Vehicle object
             file_plane: str = os.path.join(DB3D, name, f"{name}.json")

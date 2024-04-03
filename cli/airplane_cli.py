@@ -8,7 +8,6 @@ Returns:
     None: None
 """
 import time
-from os import name
 from typing import Any
 
 import jsonpickle

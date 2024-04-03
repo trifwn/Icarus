@@ -1,8 +1,8 @@
 import os
+from typing import TypeVar
 
 import numpy as np
 import pandas as pd
-import scipy
 from matplotlib import pyplot as plt
 from pandas import DataFrame
 
@@ -66,21 +66,23 @@ class Engine:
         thrust_y = thrust * np.sin(alpha)
         return thrust_x, thrust_y
 
-    def thrust(self, velocity: float, current: float) -> float | FloatArray:
+    def thrust(self, velocity: float | FloatArray, current: float | FloatArray) -> FloatArray:
         # Interpolating the thrust curve
         x = np.array([[velocity], [current]]).T
-        print(x.shape)
-        return self.thrust_model.predict(x)
+        thrust: FloatArray = self.thrust_model.predict(x).astype(float)
+        return thrust
 
-    def get_current(self, velocity: float, thrust: float) -> float | FloatArray:
+    Num = TypeVar("Num", float, FloatArray)
+
+    def get_current(self, velocity: Num, thrust: Num) -> Num:
         # Interpolating the current curve
         # x = np.array([[velocity], [thrust]]).T
-        p00 = 1.245
-        p10 = -0.2109
-        p01 = 0.4448
-        p20 = 0.02435
-        p11 = 0.08183
-        p02 = 0.05932
+        p00: float = 1.245
+        p10: float = -0.2109
+        p01: float = 0.4448
+        p20: float = 0.02435
+        p11: float = 0.08183
+        p02: float = 0.05932
 
         x = velocity
         y = thrust

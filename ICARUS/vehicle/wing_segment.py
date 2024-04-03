@@ -200,7 +200,7 @@ class WingSegment(WingSurface):
         # Define chordwise discretization
         if self._chord_spacing == DiscretizationType.EQUAL:
             # Define the chordwise discretization function
-            chord_disc_fun = partial(equal_spacing_function, N=self.M, stretching=1.0)
+            chord_disc_fun: Callable[[int], float] = partial(equal_spacing_function, N=self.M, stretching=1.0)
             # equal_spacing_function_factory(M)
         elif self._chord_spacing == DiscretizationType.USER_DEFINED:
             try:

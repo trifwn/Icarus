@@ -60,10 +60,10 @@ EXTERNAL_DB: str = os.path.join(APPHOME, "Data", "3d_Party")
 
 from . import database2D
 from . import database3D
-from . import AnalysesDB
+from . import analysesDB
 from . import db
 
-__all__ = ["database2D", "database3D", "AnalysesDB", "db"]
+__all__ = ["database2D", "database3D", "analysesDB", "db"]
 
 from .db import Database
 

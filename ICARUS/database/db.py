@@ -18,7 +18,7 @@ class Database:
     # Create only one instance of the database
     _instance = None
 
-    def __new__(cls):
+    def __new__(cls) -> Database:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -51,11 +51,11 @@ class Database:
         print("------------------------------------------------")
         print(f"|        {self.foils_db}                          |")
         print("------------------------------------------------")
-        for foil in self.foils_db._data.keys():
+        for foil in self.foils_db._raw_data.keys():
             string = f"|{foil}\t\t\t\t\t|\n"
-            for solver in self.foils_db._data[foil].keys():
+            for solver in self.foils_db._raw_data[foil].keys():
                 string += f"|  - {solver}:"
-                reyns = list(self.foils_db._data[foil][solver].keys())
+                reyns = list(self.foils_db._raw_data[foil][solver].keys())
                 reyns_num = [float(reyn) for reyn in reyns]
                 string += f"\t Re: {min(reyns_num)} - {max(reyns_num)} "
                 string += "\t|\n"

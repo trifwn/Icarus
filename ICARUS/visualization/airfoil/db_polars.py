@@ -16,7 +16,7 @@ from ICARUS.visualization import markers
 
 def plot_airfoils_polars(
     airfoil_names: list[str],
-    solvers: list[str] = ["All"],
+    solvers: list[str] | str = ["All"],
     plots: list[list[str]] = [
         ["AoA", "CL"],
         ["AoA", "CD"],
@@ -60,11 +60,14 @@ def plot_airfoils_polars(
         ax.axhline(y=0, color="k")
         ax.axvline(x=0, color="k")
 
-    if solvers == "All" or solvers == ["All"]:
+    if isinstance(solvers, str):
+        solvers = [solvers]
+
+    if solvers == ["All"]:
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
-    data: Struct = DB.foils_db._data
+    data: Struct = DB.foils_db._raw_data
 
     for j, airfoil_name in enumerate(airfoil_names):
         db_solvers = data[airfoil_name]
@@ -113,8 +116,8 @@ def plot_airfoils_polars(
                     if plot[1] == "AoA":
                         key1 = "AoA"
 
-                    x: Series = polar[f"{key0}"]
-                    y: Series = polar[f"{key1}"]
+                    x: Series[float] = polar[f"{key0}"]
+                    y: Series[float] = polar[f"{key1}"]
                     c = colors_(j / len(airfoil_names))
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reyn} - {solver}"

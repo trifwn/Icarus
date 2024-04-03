@@ -9,7 +9,6 @@ from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.database.Database_2D import Database_2D
 
 
 def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
@@ -56,7 +55,7 @@ def run_gnvp7_case(
     CASEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],
-    bodies_dicts: list[GenuSurface],
+    genu_bodies: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
     solver2D: str,
@@ -67,7 +66,7 @@ def run_gnvp7_case(
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
         movements (list[list[Movement]]): List of Movements for each body
-        bodies_dicts (list[GenuSurface]): List of Bodies in Genu format
+        genu_bodies (list[GenuSurface]): List of Bodies in Genu format
         params (GenuParameters): Parameters for the simulation
         airfoils (list[str]): List with the names of all airfoils
         solver2D (str): Name of 2D Solver to be used
@@ -76,7 +75,7 @@ def run_gnvp7_case(
         ANGLEDIR=CASEDIR,
         HOMEDIR=HOMEDIR,
         movements=movements,
-        bodies_dicts=bodies_dicts,
+        genu_bodies=genu_bodies,
         params=params,
         airfoils=airfoils,
         solver=solver2D,

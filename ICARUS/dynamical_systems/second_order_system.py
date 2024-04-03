@@ -23,7 +23,7 @@ class SecondOrderSystem(DynamicalSystem):
         M: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray,
         K: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray,
         C: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray,
-        f_ext: (Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray) = lambda t, u: jnp.zeros_like(
+        f_ext: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray = lambda t, u: jnp.zeros_like(
             u,
         ),
     ) -> None:

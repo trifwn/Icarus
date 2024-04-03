@@ -11,7 +11,7 @@ class Mission:
         fitness: Any,
         constraints: Any,
     ) -> None:
-        self.missionSegments = Struct()
+        self.missionSegments: Struct = Struct()
         for segment in segments:
             self.addSegment(segment)
         pass

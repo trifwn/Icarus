@@ -112,7 +112,7 @@ class Solver:
             Struct: Struct Object containing the analysis options.
         """
         # Convert Option Object to struct
-        ret = Struct()
+        ret: Struct = Struct()
         print(self.mode)
         for option in self.analyses[self.mode].options.values():
             ret[option.name] = option.value

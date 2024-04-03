@@ -6,8 +6,8 @@ import pandas as pd
 from pandas import DataFrame
 
 from ICARUS.database import DB
-from ICARUS.database.Database_2D import Database_2D
-from ICARUS.database.Database_3D import Database_3D
+from ICARUS.database.database2D import Database_2D
+from ICARUS.database.database3D import Database_3D
 
 
 def read_polars_2d(XFLRdir: str) -> None:
@@ -43,8 +43,8 @@ def read_polars_2d(XFLRdir: str) -> None:
 
         if airf.startswith("NACA"):
             name = "NACA" + name
-        if name not in foils_db._data.keys():
-            foils_db._data[name] = {}
+        if name not in foils_db._raw_data.keys():
+            foils_db._raw_data[name] = {}
 
         if airf.startswith("NACA"):
             os.chdir(airf)
@@ -74,7 +74,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                         print(f"Error")
                         continue
 
-                    dat.columns = xfoilcols
+                    dat.columns = pd.Index(xfoilcols, dtype="str")
                     dat = dat.drop(
                         [
                             "CDp",
@@ -88,14 +88,14 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db._data[name].keys():
-                        foils_db._data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._raw_data[name].keys():
+                        foils_db._raw_data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
-                    foils_db._data[name]["XFLR"][reyn_str] = dat
+                    foils_db._raw_data[name]["XFLR"][reyn_str] = dat
                     dat = pd.read_csv(
                         file,
                         sep="  ",
@@ -103,7 +103,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                         skiprows=11,
                         engine="python",
                     )
-                    dat.columns = xfoilcols
+                    dat.columns = pd.Index(xfoilcols)
                     dat = dat.drop(
                         [
                             "CDp",
@@ -117,14 +117,14 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db._data[name].keys():
-                        foils_db._data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._raw_data[name].keys():
+                        foils_db._raw_data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
                         "+",
                         "",
                     )
-                    foils_db._data[name]["XFLR"][reyn_str] = dat
+                    foils_db._raw_data[name]["XFLR"][reyn_str] = dat
 
                     dat = pd.read_csv(
                         file,
@@ -133,7 +133,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                         skiprows=11,
                         engine="python",
                     )
-                    dat.columns = xfoilcols
+                    dat.columns = pd.Index(xfoilcols)
                     dat = dat.drop(
                         [
                             "CDp",
@@ -147,11 +147,11 @@ def read_polars_2d(XFLRdir: str) -> None:
                         ],
                         axis=1,
                     )
-                    if "XFLR" not in foils_db._data[name].keys():
-                        foils_db._data[name]["XFLR"] = {}
+                    if "XFLR" not in foils_db._raw_data[name].keys():
+                        foils_db._raw_data[name]["XFLR"] = {}
 
                     reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
-                    foils_db._data[name]["XFLR"][reyn_str] = dat
+                    foils_db._raw_data[name]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 

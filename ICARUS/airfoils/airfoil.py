@@ -53,7 +53,6 @@ methods from the original airfoil class which include but are not limited to:
 import logging
 import os
 import re
-from calendar import c
 from typing import Any
 from typing import Union
 
@@ -61,12 +60,11 @@ import airfoils as af
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
-from jax import debug_infs
 from matplotlib.axes import Axes
 from scipy.interpolate import splev
 from scipy.interpolate import splprep
 
-from ICARUS.airfoils._gen_NACA5_airfoil import gen_NACA5_airfoil
+from ICARUS.airfoils._naca5 import gen_NACA5_airfoil
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 
@@ -125,7 +123,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.n_lower = self._x_lower.shape[0]
         self.selig_original = self.selig
 
-    def repanel_spl(self, n_points: int = 200, smoothing=0.0) -> None:
+    def repanel_spl(self, n_points: int = 200, smoothing: float = 0.0) -> None:
         pts = self.selig_original
         x = pts[0, :]
         y = pts[1, :]
@@ -161,7 +159,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.n_lower = self._x_lower.shape[0]
         self.selig = self.to_selig()
 
-    def repanel_from_internal(self, n_points: int, distribution="cosine") -> None:
+    def repanel_from_internal(self, n_points: int, distribution: str = "cosine") -> None:
         """
         Repanels the airfoil to have n_points
 
@@ -261,7 +259,7 @@ class Airfoil(af.Airfoil):  # type: ignore
                 upper = np.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
         return lower, upper
 
-    def thickness(self, x) -> FloatArray:
+    def thickness(self, x: FloatArray) -> FloatArray:
         """
         Returns the thickness of the airfoil at the given x coordinates
 
@@ -898,7 +896,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         if ax is None:
             fig, _ax = plt.subplots()
         else:
-            _ax: Axes = ax
+            _ax = ax
 
         if scatter:
             _ax.scatter(x[: self.n_upper], y[: self.n_upper], s=1)

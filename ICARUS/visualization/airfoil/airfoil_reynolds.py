@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from numpy import ndarray
+from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.core.struct import Struct
@@ -63,7 +64,7 @@ def plot_airfoil_reynolds(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
-    data: Struct = DB.foils_db._data
+    data: Struct = DB.foils_db._raw_data
 
     for j, solver in enumerate(solvers):
         try:
@@ -80,8 +81,8 @@ def plot_airfoil_reynolds(
                 if plot[1] == "AoA":
                     key1 = "AoA"
 
-                x: Series = polar[f"{key0}"]
-                y: Series = polar[f"{key1}"]
+                x: Series[float] = polar[f"{key0}"]
+                y: Series[float] = polar[f"{key1}"]
                 c = colors_(j / len(solvers))
                 m = markers[i].get_marker()
                 label: str = f"{airfoil_name}: {reynolds} - {solver}"

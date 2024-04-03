@@ -2,6 +2,7 @@ import logging
 import os
 from threading import Thread
 from typing import Any
+from typing import NoReturn
 
 from pandas import DataFrame
 from tqdm import tqdm
@@ -85,7 +86,7 @@ def gnvp_angle_case(
         CASEDIR=CASEDIR,
         HOMEDIR=HOMEDIR,
         movements=movements,
-        bodies_dicts=bodies_dicts,
+        genu_bodies=bodies_dicts,
         params=params,
         airfoils=airfoils,
         solver2D=solver2D,
@@ -149,7 +150,7 @@ def run_gnvp_angles(
     print("Running Angles in Sequential Mode")
 
     PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{gnvp_version}")
-    progress_bars: list[tqdm] = []
+    progress_bars: list[tqdm[NoReturn]] = []
     for i, angle in enumerate(angles):
         folder: str = angle_to_case(angle)
         CASEDIR: str = os.path.join(PLANEDIR, folder)
