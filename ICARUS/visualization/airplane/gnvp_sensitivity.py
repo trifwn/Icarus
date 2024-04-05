@@ -12,7 +12,7 @@ from ICARUS.visualization import markers
 def plot_sensitivity(
     data: Struct,
     plane: Airplane,
-    trim: Series[float],
+    trim: Series,
     relative: bool = False,
     vars2s: list[str] = ["All"],
     solvers: list[str] = ["2D"],

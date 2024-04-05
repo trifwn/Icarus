@@ -3,6 +3,7 @@ from __future__ import annotations
 from logging import root
 from math import pi
 from typing import Callable
+import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from .strip import Strip
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
+from typing import Union
 from ICARUS.database import DB
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -39,6 +41,10 @@ class WingSurface:
         chord_discretization_function: Callable[[int], float] | None = None,
         tip_airfoil: str | Airfoil | None = None,
         has_lift: bool = True,
+        moving_surfs : dict[str, Union[list[float], list[int], list[str],list[FloatArray]]] = {"names":["default"],"gains":[0.0],"hinges":[0.7],"local_axes":[np.array([0.0,1.0,0.0])],"rotation":[1],"span_percs":[0.3]}
+
+    
+ 
     ) -> None:
         # Constructor for the Lifting Surface Class
         # The lifting surface is defined by providing the information on a number of points on the wing.
@@ -90,6 +96,15 @@ class WingSurface:
             ],
         )
         self.R_MAT: FloatArray = R_YAW.dot(R_PITCH).dot(R_ROLL)
+        new_axes = []
+        for i,n in enumerate(moving_surfs["names"]):
+            new_axes.append(self.R_MAT.T@moving_surfs["local_axes"][i])
+        self.moving_surfs : dict = copy.deepcopy(moving_surfs) 
+        self.moving_surfs.pop("local_axes")
+        self.moving_surfs["hinge_axes"] = new_axes
+
+
+        # self.moving_surface : tuple[str,float,float,FloatArray,int] = (local_moving_surface[0],local_moving_surface[1],local_moving_surface[2],new_axis,local_moving_surface[4])
 
         # Define Symmetries
         if isinstance(symmetries, SymmetryAxes):
@@ -206,6 +221,8 @@ class WingSurface:
         mass: float = 1.0,
         # Optional Parameters
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
+        moving_surfs : dict[str, Union[list[float], list[int], list[str],list[FloatArray]]] = {"names":["default"],"gains":[0.0],"hinges":[0.7],"local_axes":[np.array([0.0,1.0,0.0])],"rotation":[1],"span_percs":[0.3]}
+        
     ) -> WingSurface:
         # Define the Lifting Surface from a set of functions instead of a set of points. We must Specify 3 kind of inputs
         # 1) Basic information about the wi:g win thee ofng:
@@ -296,6 +313,8 @@ class WingSurface:
             chord_discretization_function=chord_discretization_function,
             mass=mass,
             symmetries=symmetries,
+            moving_surfs = moving_surfs
+
         )
         return self
 
