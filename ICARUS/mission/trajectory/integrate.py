@@ -1,8 +1,10 @@
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.mission.mission_vehicle import Mission_Vehicle
-from ICARUS.mission.trajectory.trajectory import Trajectory
+from ICARUS.mission.trajectory.trajectory import MissionTrajectory
+
+# Use dynamical System Integrators
+# from ICARUS.dynamical_systems.integrate import integrators
 
 
 def RK4systems(
@@ -11,8 +13,7 @@ def RK4systems(
     dt: float,
     x0: FloatArray,
     v0: FloatArray,
-    trajectory: Trajectory,
-    airplane: Mission_Vehicle,
+    trajectory: MissionTrajectory,
     verbosity: int = 0,
 ) -> tuple[FloatArray, FloatArray, FloatArray]:
     """Integrate the trajectory of an airplane using the RK4 method.
@@ -49,18 +50,19 @@ def RK4systems(
 
         xi = np.array(x[i])
         vi = np.array(v[i])
+        ti: float = t.tolist()[i].astype(float)
 
-        k1 = dt * airplane.dxdt(xi, vi)
-        l1 = dt * airplane.dvdt(xi, vi, trajectory, verbosity=verbosity)
+        k1 = dt * trajectory.dxdt(xi, vi)
+        l1 = dt * trajectory.dvdt(ti, xi, vi)
 
-        k2 = dt * airplane.dxdt(xi + (k1 / 2), vi + l1 / 2)
-        l2 = dt * airplane.dvdt(xi + (k1 / 2), vi + l1 / 2, trajectory, verbosity=verbosity)
+        k2 = dt * trajectory.dxdt(xi + (k1 / 2), vi + l1 / 2)
+        l2 = dt * trajectory.dvdt(ti, xi + (k1 / 2), vi + l1 / 2)
 
-        k3 = dt * airplane.dxdt(xi + (k2 / 2), vi + l2 / 2)
-        l3 = dt * airplane.dvdt(xi + (k2 / 2), vi + l2 / 2, trajectory, verbosity=verbosity)
+        k3 = dt * trajectory.dxdt(xi + (k2 / 2), vi + l2 / 2)
+        l3 = dt * trajectory.dvdt(ti, xi + (k2 / 2), vi + l2 / 2)
 
-        k4 = dt * airplane.dxdt(xi + k3, vi + l3)
-        l4 = dt * airplane.dvdt(xi + k3, vi + l3, trajectory, verbosity=verbosity)
+        k4 = dt * trajectory.dxdt(xi + k3, vi + l3)
+        l4 = dt * trajectory.dvdt(ti, xi + k3, vi + l3)
 
         k = (k1 + 2 * k2 + 2 * k3 + k4) / 6
         l = (l1 + 2 * l2 + 2 * l3 + l4) / 6
@@ -77,7 +79,11 @@ def RK4systems(
         #     print(f"Elevator Angle too high at step: {i}   Max Distance: {x[-1][0]}")
         #     success = False
         #     break
-        if np.isnan(xi).any() or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any()) or np.isinf(vi).any():
+        if (
+            np.isnan(xi).any()
+            or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any())
+            or np.isinf(vi).any()
+        ):
             print(f"Blew UP at step: {i}                    Max Distance: {x[-1][0]}")
             success = False
             break
@@ -86,7 +92,9 @@ def RK4systems(
             success = False
             break
         if x[-1][0] < 0:
-            print(f"Airplane Went to negative at step: {i}           Max Distance: {x[-1][0]}")
+            print(
+                f"Airplane Went to negative at step: {i}           Max Distance: {x[-1][0]}"
+            )
             success = False
             break
         if v[-1][0] < 0:
@@ -95,7 +103,9 @@ def RK4systems(
             success = False
             break
     if success:
-        print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
+        print(
+            f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}"
+        )
     else:
         # Return the last valid state
         pass
@@ -115,39 +125,35 @@ def RK45_scipy_integrator(
     dt: float,
     x0: FloatArray,
     v0: FloatArray,
-    trajectory: Trajectory,
-    airplane: Mission_Vehicle,
-    verbosity: int = 0,
+    trajectory: MissionTrajectory,
 ) -> tuple[FloatArray, FloatArray, FloatArray]:
-    def dxdt(t: float, y: FloatArray) -> FloatArray:
-        x = y[:2]
-        v = y[-2:]
-
-        # Check if the airplane is still in the air
-        if x[1] < trajectory.operating_floor:
-            return np.zeros(4)
-        if x[0] < 0:
-            return np.zeros(4)
-        if v[0] < 0:
-            return np.zeros(4)
-
-        xdot = airplane.dxdt(x, v)
-        vdot = airplane.dvdt(x, v, trajectory, verbosity=verbosity)
-        return np.hstack([xdot, vdot])
+    status = "Successfull"
 
     x = [np.array([*x0, *v0])]
     t = [t0]
 
-    r = RK45(dxdt, t0, [*x0, *v0], tend, max_step=dt, vectorized=False)
+    r = RK45(
+        fun = trajectory.timestep,
+        t0 = t0,
+        y0 = [*x0, *v0],
+        t_bound= tend,
+        max_step=dt, 
+        vectorized=False
+    )
     while r.status == "running":
         r.step()
         t.append(r.t)
         x.append(r.y)
+        if np.isnan(x[-1]).any():
+            break
     xs = np.array(x)
     positions = xs[:, :2]
     velocities = xs[:, 2:]
 
-    print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
+    print(
+        f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}"
+    )
+    print(status)
     return np.array(t), positions, velocities
 
 
@@ -157,32 +163,16 @@ from scipy.integrate import solve_ivp
 def scipy_ivp_integrator(
     t0: float,
     tend: float,
-    dt: float,
     x0: FloatArray,
     v0: FloatArray,
-    trajectory: Trajectory,
-    airplane: Mission_Vehicle,
-    verbosity: int = 0,
+    trajectory: MissionTrajectory,
 ) -> tuple[FloatArray, FloatArray, FloatArray]:
-    def dxdt(t: float, y: FloatArray) -> FloatArray:
-        x = y[:2]
-        v = y[-2:]
-
-        # Check if the airplane is still in the air
-        if x[1] < trajectory.operating_floor:
-            return np.zeros(4)
-        if x[0] < 0:
-            return np.zeros(4)
-        if v[0] < 0:
-            return np.zeros(4)
-
-        xdot = airplane.dxdt(x, v)
-        vdot = airplane.dvdt(x, v, trajectory, verbosity=verbosity)
-        return np.hstack([xdot, vdot])
 
     t = [t0]
-    r = solve_ivp(dxdt, (t0, tend), [*x0, *v0], t_eval=t, vectorized=False)
+    r = solve_ivp(trajectory.timestep, (t0, tend), [*x0, *v0], t_eval=t, vectorized=False)
     x = r.y
 
-    print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
+    print(
+        f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}"
+    )
     return np.array(t), x[:, :2], x[:, 2:]

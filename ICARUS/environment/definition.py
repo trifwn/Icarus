@@ -143,4 +143,4 @@ class Environment:
         return string
 
 
-EARTH_ISA = Environment("Earth_Stardard_Atmosphere")
+EARTH_ISA: Environment = Environment("Earth_Stardard_Atmosphere")

@@ -23,7 +23,6 @@ APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 from . import airfoils
 from . import aerodynamics
 from . import conceptual
-from . import control
 from . import core
 from . import database
 from . import environment
@@ -37,7 +36,6 @@ __all__ = [
     "aerodynamics",
     "airfoils",
     "conceptual",
-    "control",
     "core",
     "database",
     "environment",

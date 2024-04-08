@@ -107,6 +107,7 @@ class Database_3D:
     def read_plane_data(self, vehicle_folder: str) -> None:
         logging.info(f"Adding Vehicle at {vehicle_folder}")
         # Enter DB3D
+        DIRNOW = os.getcwd()
         os.chdir(DB3D)
         vehicle_folder_path = os.path.join(DB3D, vehicle_folder)
         os.chdir(vehicle_folder_path)
@@ -118,10 +119,9 @@ class Database_3D:
             vehicle_name = vehicle_folder
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
         else:
-            print(f"Loaded Plane {plane_obj}")
+            # print(f"Loaded Plane {plane_obj}")
             # plane_obj.visualize()
             self.planes[plane_obj.name] = plane_obj
-            print(plane_obj)
             vehicle_name = plane_obj.name
 
         # Load Vehicle State
@@ -163,6 +163,8 @@ class Database_3D:
                 pass
 
             os.chdir(vehicle_folder_path)
+
+        os.chdir(DIRNOW)
 
     def load_plane(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.
