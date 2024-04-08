@@ -186,7 +186,7 @@ def avl_geo(
         f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
         f_io.write("\n")
         f_io.write("\n")
-
+        # cntrl_index = 1
         for j, strip in enumerate(surf.strips):
             f_io.write(
                 f"#------------ {surf.name} SECTION---{j+1} of {len(surf.strips)} of---------------------|  (keyword)\n",
@@ -381,14 +381,16 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
         file = open(path)
         lines = file.readlines()
         file.close()
+      
 
         head: list[float] = []
         surfs: list[float] = []
         for j, l in enumerate(lines):
             if l.startswith(f"    j     Xle "):
                 head.append(j)
-            elif l[47].isdigit() or l[46].isdigit() or l[56].isdigit():
+            elif len(l)>56 and (l[47].isdigit() or l[46].isdigit() or l[56].isdigit() and not l.startswith("  Xref") and not l.startswith("  Sref")):
                 surfs.append(j)
+
 
         surfs_arr = np.array(surfs, dtype=float)
         head_arr = np.array([head[0]], dtype=float)

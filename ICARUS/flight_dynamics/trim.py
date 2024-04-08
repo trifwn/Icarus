@@ -38,47 +38,86 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     - Engine fuel consumption   ! NOT IMPLEMENTED YET
     - Engine fuel remaining     ! NOT IMPLEMENTED YET
     """
+    if state.stick_free:
+            
+        # Find the index of the closest positive value to zero
+        Cm = state.polar["Cm"]
+        try:
+            trim_loc1: int = int((Cm[Cm >= 0] - 0).idxmin())
+            # Find the index of the closest negative value to zero
+            trim_loc2: int = int((-Cm[Cm < 0] - 0).idxmin())
+        except ValueError as e:
+            logging.debug("Trim not possible due to Cm not crossing zero at the imported polars")
+            logging.debug(e)
+            logging.debug(Cm)
+            raise TrimOutsidePolars()
 
-    # Find the index of the closest positive value to zero
-    Cm = state.polar["Cm"]
-    try:
-        trim_loc1: int = int((Cm[Cm >= 0] - 0).idxmin())
-        # Find the index of the closest negative value to zero
-        trim_loc2: int = int((-Cm[Cm < 0] - 0).idxmin())
-    except ValueError as e:
-        logging.debug("Trim not possible due to Cm not crossing zero at the imported polars")
-        logging.debug(e)
-        logging.debug(Cm)
-        raise TrimOutsidePolars()
+        # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
+        d_aoa = state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1]
+        d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
+        d_cl = state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]
+        d_cd = state.polar["CD"][trim_loc2] - state.polar["CD"][trim_loc1]
 
-    # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
-    d_aoa = state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1]
-    d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
-    d_cl = state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]
-    d_cd = state.polar["CD"][trim_loc2] - state.polar["CD"][trim_loc1]
-
-    if trim_loc1 < trim_loc2:
-        if trim_loc1 != 0:
-            trim_loc3 = trim_loc1 - 1
-            d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+        if trim_loc1 < trim_loc2:
+            if trim_loc1 != 0:
+                trim_loc3 = trim_loc1 - 1
+                d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+            else:
+                d2_cd = 0
         else:
-            d2_cd = 0
+            if trim_loc1 != len(state.polar["Cm"]):
+                trim_loc3 = trim_loc1 + 1
+                d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+            else:
+                d2_cd = 0
+
+        aoa_trim = state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
+
+        cm_trim = state.polar["Cm"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cm / d_aoa
+        cl_trim = state.polar["CL"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cl / d_aoa
+        cd_trim = (
+            state.polar["CD"][trim_loc1]
+            + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cd / d_aoa
+            + (aoa_trim - state.polar["AoA"][trim_loc1]) ** 2 * d2_cd / (d_aoa**2)
+        )
     else:
-        if trim_loc1 != len(state.polar["Cm"]):
-            trim_loc3 = trim_loc1 + 1
-            d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+        aoa_trim = state.stick_aoa
+        aoa = state.polar["AoA"]
+        try:
+            trim_loc1: int = int((aoa[aoa-aoa_trim >= 0] - 0).idxmin())
+            # Find the index of the closest negative value to zero
+            trim_loc2: int = int((-aoa[aoa-aoa_trim < 0] - 0).idxmin())
+        except ValueError as e:
+            logging.debug("Trim not possible due to aoa  not being inside the polars")
+            logging.debug(e)
+            logging.debug(aoa)
+            raise TrimOutsidePolars()
+        # from trimLoc1 and trimLoc2, interpolate the angle where aoa = 0
+        d_aoa = state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1]
+        d_cm = state.polar["Cm"][trim_loc2] - state.polar["Cm"][trim_loc1]
+        d_cl = state.polar["CL"][trim_loc2] - state.polar["CL"][trim_loc1]
+        d_cd = state.polar["CD"][trim_loc2] - state.polar["CD"][trim_loc1]
+
+        if trim_loc1 < trim_loc2:
+            if trim_loc1 != 0:
+                trim_loc3 = trim_loc1 - 1
+                d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+            else:
+                d2_cd = 0
         else:
-            d2_cd = 0
+            if trim_loc1 != len(state.polar["Cm"]):
+                trim_loc3 = trim_loc1 + 1
+                d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+            else:
+                d2_cd = 0
+        aoa_trim = 0.5*(aoa[trim_loc1]+aoa[trim_loc1])
+        cl_trim = state.polar["CL"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cl / d_aoa
+        cd_trim = (
+            state.polar["CD"][trim_loc1]
+            + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cd / d_aoa
+            + (aoa_trim - state.polar["AoA"][trim_loc1]) ** 2 * d2_cd / (d_aoa**2)
+        )
 
-    aoa_trim = state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
-
-    cm_trim = state.polar["Cm"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cm / d_aoa
-    cl_trim = state.polar["CL"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cl / d_aoa
-    cd_trim = (
-        state.polar["CD"][trim_loc1]
-        + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cd / d_aoa
-        + (aoa_trim - state.polar["AoA"][trim_loc1]) ** 2 * d2_cd / (d_aoa**2)
-    )
 
     if cl_trim <= 0:
         raise TrimNotPossible()
