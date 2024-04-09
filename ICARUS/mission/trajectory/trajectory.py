@@ -1,11 +1,10 @@
 from typing import Callable
-from scipy.optimize import fsolve
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from numpy import ndarray
-
+from scipy.optimize import fsolve
 
 from ICARUS.core.types import AnyFloat
 from ICARUS.core.types import FloatArray
@@ -62,9 +61,9 @@ class MissionTrajectory:
         self.operating_floor = operating_floor
         self.verbosity = verbosity
 
-    def clear_history(self):
+    def clear_history(self) -> None:
         self.times = []
-
+        
         self.positions = {}
         self.positions["x"] = []
         self.positions["y"] = []
@@ -124,16 +123,12 @@ class MissionTrajectory:
         dh_dx: float = float(self.dy_dx_fd(X[0]))
         dh2_dx2: float = float(self.d2y_dx2_fd(X[0]))
 
-        thrust = self.vehicle.motor.thrust(
-            velocity=float(np.linalg.norm(V)), current=engine_amps
-        )
+        thrust = self.vehicle.motor.thrust(velocity=float(np.linalg.norm(V)), current=engine_amps)
         m = self.vehicle.mass
 
         # Get the aerodynamic forces
         def f(aoa):
-            lift, _, _ = self.vehicle.get_aerodynamic_forces(
-                float(np.linalg.norm(V)), aoa
-            )
+            lift, _, _ = self.vehicle.get_aerodynamic_forces(float(np.linalg.norm(V)), aoa)
             alpha = aoa + dh_dx
             return (
                 thrust * (np.sin(alpha) - dh_dx * np.cos(alpha))
@@ -142,16 +137,13 @@ class MissionTrajectory:
                 - m * dh2_dx2 * V[0] ** 2
             )
 
-
         aoa = fsolve(f, np.deg2rad(aoa_prev), xtol=1e-07)[0]
         # Print the residual of the function
         # print(f"\tResidual: {f(aoa)}, AoA: {aoa}")
         aoa_deg = np.rad2deg(aoa)
 
         # Get the aerodynamic forces
-        lift, drag, torque = self.vehicle.get_aerodynamic_forces(
-            float(np.linalg.norm(V)), aoa_deg
-        )
+        lift, drag, torque = self.vehicle.get_aerodynamic_forces(float(np.linalg.norm(V)), aoa_deg)
         return aoa, lift, thrust, drag, torque
 
     def dvdt(
@@ -277,9 +269,7 @@ class MissionTrajectory:
         x_arr = np.array([i for i in x if i == i], dtype=float)
         h = self.y(x_arr)
 
-        all_axs[0].plot(
-            self.positions["x"], self.positions["y"], label="Trajectory", color="blue"
-        )
+        all_axs[0].plot(self.positions["x"], self.positions["y"], label="Trajectory", color="blue")
         all_axs[0].plot(x_arr, h, label="Function", color="Black", linestyle="--")
         all_axs[0].set_title("Trajectory")
         all_axs[0].set_xlabel("x")
@@ -288,21 +278,14 @@ class MissionTrajectory:
         # On the same ax with different scale also plot the angle gamma
         ax2: Axes = all_axs[0].twinx()  # type: ignore
         color = "tab:red"
-        ax2.plot(
-            self.positions["x"], self.orientation["gamma"], label="Gamma", color=color
-        )
-        ax2.set_ylabel(
-            "Angle Gamma [rad]", color=color
-        )  # we already handled the x-label with ax1
+        ax2.plot(self.positions["x"], self.orientation["gamma"], label="Gamma", color=color)
+        ax2.set_ylabel("Angle Gamma [rad]", color=color)  # we already handled the x-label with ax1
         ax2.tick_params(axis="y", labelcolor=color)
 
         # Axes 1 is the Velocity
         all_axs[1].plot(self.times, self.velocities["x"], label="Vx")
         all_axs[1].plot(self.times, self.velocities["y"], label="Vy")
-        velocity_mag = [
-            ((vx**2 + vy**2) ** 0.5)
-            for vx, vy in zip(self.velocities["x"], self.velocities["y"])
-        ]
+        velocity_mag = [((vx**2 + vy**2) ** 0.5) for vx, vy in zip(self.velocities["x"], self.velocities["y"])]
         all_axs[1].plot(self.times, velocity_mag, label="V")
         all_axs[1].set_title("Velocity")
         all_axs[1].set_xlabel("Time")
@@ -359,13 +342,7 @@ class MissionTrajectory:
             DX: jnp.ndarray = V
             return DX
 
-        def trim_jax(
-            t, 
-            X, 
-            V, 
-            aoa_prev: float, 
-            engine_amps
-        ):
+        def trim_jax(t, X, V, aoa_prev: float, engine_amps):
 
             G = 9.81
 
@@ -373,16 +350,12 @@ class MissionTrajectory:
             dh_dx: float = float(self.dy_dx_fd(X[0]))
             dh2_dx2: float = float(self.d2y_dx2_fd(X[0]))
 
-            thrust = self.vehicle.motor.thrust(
-                velocity=float(np.linalg.norm(V)), current=engine_amps
-            )
+            thrust = self.vehicle.motor.thrust(velocity=float(np.linalg.norm(V)), current=engine_amps)
             m = self.vehicle.mass
 
             # Get the aerodynamic forces
             def f(aoa):
-                lift, _, _ = self.vehicle.get_aerodynamic_forces(
-                    float(np.linalg.norm(V)), aoa
-                )
+                lift, _, _ = self.vehicle.get_aerodynamic_forces(float(np.linalg.norm(V)), aoa)
                 alpha = aoa + dh_dx
                 return (
                     thrust * (np.sin(alpha) - dh_dx * np.cos(alpha))
@@ -400,11 +373,9 @@ class MissionTrajectory:
             aoa_deg = np.rad2deg(aoa)
 
             # Get the aerodynamic forces
-            lift, drag, torque = self.vehicle.get_aerodynamic_forces(
-                float(np.linalg.norm(V)), aoa_deg
-            )
+            lift, drag, torque = self.vehicle.get_aerodynamic_forces(float(np.linalg.norm(V)), aoa_deg)
             return aoa, lift, thrust, drag, torque
-    
+
         def dvdt_jax(
             t: float,
             X: jnp.ndarray,

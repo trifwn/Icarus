@@ -1,6 +1,7 @@
+import jax.numpy as jnp
+
 from ICARUS.core.types import FloatArray
 from ICARUS.dynamical_systems.control.variable import ControllerVariable
-import jax.numpy as jnp
 
 
 class MissionController:
@@ -8,13 +9,11 @@ class MissionController:
         self,
         control_variables: list[ControllerVariable],
     ) -> None:
-        self.control_vector = {}
+        self.control_vector: dict[str, float | str] = {}
         for var in control_variables:
             self.control_vector[var.name] = var.value
 
-    def control_law(
-        self, time: float, x: FloatArray | jnp.ndarray, v: FloatArray | jnp.ndarray
-    ):
+    def control_law(self, time: float, x: FloatArray | jnp.ndarray, v: FloatArray | jnp.ndarray):
         if time < 30:
             self.control_vector["aoa"] = "TRIM"
             self.control_vector["engine_amps"] = 30

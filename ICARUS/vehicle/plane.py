@@ -12,6 +12,9 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
+from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.strip import Strip
+
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -94,6 +97,25 @@ class Airplane:
         # Define Connection Dictionary
         self.connections: dict[str, Surface_Connection] = {}
         # self.register_connections()
+
+    # @property
+    # def surfaces(self) -> list[WingSurface]:
+    #     surfaces: list[WingSurface] = []
+    #     for surface in self._surfaces:
+    #         if isinstance(surface, MergedWing):
+    #             for s in surface.wing_segments:
+    #                 surfaces.append(s)
+    #         else:
+    #             surfaces.append(surface)
+    #     return surfaces
+
+    # @property
+    # def strips(self) -> list[Strip]:
+    #     strips: list[Strip] = []
+    #     for surface in self.surfaces:
+    #         for strip in surface.strips:
+    #             strips.append(strip)
+    #     return strips
 
     def get_position(self, name: str, axis: str) -> float | FloatArray:
         """

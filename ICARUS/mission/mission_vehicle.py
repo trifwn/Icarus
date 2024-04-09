@@ -34,11 +34,7 @@ class MissionVehicle:
         cm = float(np.interp(aoa, cldata["AoA"], cldata[f"Cm"]))
         return cl, cd, cm
 
-    def get_aerodynamic_forces(
-        self,
-        velocity: float,
-        aoa: float 
-    ) -> tuple[float, float, float]:
+    def get_aerodynamic_forces(self, velocity: float, aoa: float) -> tuple[float, float, float]:
 
         aoa = float(np.rad2deg(aoa))
         cl, cd, cm = self.interpolate_polars(
@@ -50,12 +46,12 @@ class MissionVehicle:
                     f"{self.solver_name} Cm",
                     "AoA",
                 ]
-            ].rename(   
-                columns= {
+            ].rename(
+                columns={
                     f"{self.solver_name} CL": "CL",
                     f"{self.solver_name} CD": "CD",
                     f"{self.solver_name} Cm": "Cm",
-                } 
+                },
             ),
         )
 
@@ -66,9 +62,5 @@ class MissionVehicle:
 
         return lift, drag, torque
 
-    def get_aerodynamic_forces_jax(
-        self,
-        velocity: jnp.ndarray,
-        aoa: jnp.ndarray
-    )-> jnp.ndarray:
+    def get_aerodynamic_forces_jax(self, velocity: jnp.ndarray, aoa: jnp.ndarray) -> jnp.ndarray:
         pass

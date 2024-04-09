@@ -72,7 +72,7 @@ def plot_airplane_polars(
         flag = False
         for j, solver in enumerate(solvers):
             try:
-                polar: DataFrame = DB.vehicles_db.polars[airplane]
+                polar: DataFrame = DB.vehicles_db.get_polars(airplane)
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
                         polar[f"{solver} CL/CD"] = polar[f"{solver} CL"] / polar[f"{solver} CD"]

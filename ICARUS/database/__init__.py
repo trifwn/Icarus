@@ -50,7 +50,7 @@ elif platform_os == "Linux":
     GenuVP7_exe = os.path.join(APPHOME, "bin", "gnvp7")
     F2W_exe = os.path.join(APPHOME, "bin", "f2w")
     Foil_Section_exe = os.path.join(APPHOME, "bin", "foil_section")
-    AVL_exe = os.path.join(APPHOME, "bin", "avl.exe")
+    AVL_exe = os.path.join(APPHOME, "bin", "avl")
 
 # DATABASES ###
 DB2D: str = os.path.join(APPHOME, "Data", "2D")

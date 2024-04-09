@@ -351,7 +351,6 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
 
 
-# ayto mpainei sto input
 def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> list[DataFrame]:
     # for i, s in enumerate(plane.surfaces)
     #     if i0
@@ -377,7 +376,13 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
         for j, l in enumerate(lines):
             if l.startswith(f"    j     Xle "):
                 head.append(j)
-            elif l[47].isdigit() or l[46].isdigit() or l[56].isdigit():
+            elif len(l) > 56 and (
+                l[47].isdigit()
+                or l[46].isdigit()
+                or l[56].isdigit()
+                and not l.startswith("  Xref")
+                and not l.startswith("  Sref")
+            ):
                 surfs.append(j)
 
         surfs_arr = np.array(surfs, dtype=float)

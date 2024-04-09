@@ -79,11 +79,7 @@ def RK4systems(
         #     print(f"Elevator Angle too high at step: {i}   Max Distance: {x[-1][0]}")
         #     success = False
         #     break
-        if (
-            np.isnan(xi).any()
-            or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any())
-            or np.isinf(vi).any()
-        ):
+        if np.isnan(xi).any() or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any()) or np.isinf(vi).any():
             print(f"Blew UP at step: {i}                    Max Distance: {x[-1][0]}")
             success = False
             break
@@ -92,9 +88,7 @@ def RK4systems(
             success = False
             break
         if x[-1][0] < 0:
-            print(
-                f"Airplane Went to negative at step: {i}           Max Distance: {x[-1][0]}"
-            )
+            print(f"Airplane Went to negative at step: {i}           Max Distance: {x[-1][0]}")
             success = False
             break
         if v[-1][0] < 0:
@@ -103,9 +97,7 @@ def RK4systems(
             success = False
             break
     if success:
-        print(
-            f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}"
-        )
+        print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
     else:
         # Return the last valid state
         pass
@@ -132,14 +124,7 @@ def RK45_scipy_integrator(
     x = [np.array([*x0, *v0])]
     t = [t0]
 
-    r = RK45(
-        fun = trajectory.timestep,
-        t0 = t0,
-        y0 = [*x0, *v0],
-        t_bound= tend,
-        max_step=dt, 
-        vectorized=False
-    )
+    r = RK45(fun=trajectory.timestep, t0=t0, y0=[*x0, *v0], t_bound=tend, max_step=dt, vectorized=False)
     while r.status == "running":
         r.step()
         t.append(r.t)
@@ -150,9 +135,7 @@ def RK45_scipy_integrator(
     positions = xs[:, :2]
     velocities = xs[:, 2:]
 
-    print(
-        f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}"
-    )
+    print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
     print(status)
     return np.array(t), positions, velocities
 
@@ -172,7 +155,5 @@ def scipy_ivp_integrator(
     r = solve_ivp(trajectory.timestep, (t0, tend), [*x0, *v0], t_eval=t, vectorized=False)
     x = r.y
 
-    print(
-        f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}"
-    )
+    print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
     return np.array(t), x[:, :2], x[:, 2:]
