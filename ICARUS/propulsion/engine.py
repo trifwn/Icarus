@@ -1,17 +1,20 @@
 import os
-from typing import TypeVar
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 import pandas as pd
+from jaxtyping import Array
+from jaxtyping import Float
 from matplotlib import pyplot as plt
 from pandas import DataFrame
-from scipy.interpolate import griddata
-from scipy.interpolate import RBFInterpolator
 
-from ICARUS.core.types import FloatArray
+from ICARUS.core.polynomial_interpolator import Polynomial2DInterpolator
+
+# from scipy.interpolate import RBFInterpolator
 
 
+# from scipy.interpolate import griddata
 class Engine:
     def __init__(self) -> None:
         pass
@@ -33,34 +36,30 @@ class Engine:
         y = df["Current [A]"].values
         z = df["Thrust [N]"].values
 
+        # Convert to jax
+        x = jnp.array(x)
+        y = jnp.array(y)
+        z = jnp.array(z)
+
         # Create function to evaluate thrust from airspeed and current
-        thrust_interpolator = RBFInterpolator(np.c_[x, y], z, kernel="linear")
+        thrust_interpolator = Polynomial2DInterpolator(3, 3)
+        thrust_interpolator.fit(x, y, z)
 
-        def thrust(airspeed, current):
+        def thrust(airspeed: jax.Array, current: jax.Array) -> jax.Array:
             # return griddata((x, y), z, (airspeed, current), method="linear")
-            try:
-                shape = airspeed.shape
-            except AttributeError:
-                shape = 1
-            airspeed = np.ravel(airspeed)
-            current = np.ravel(current)
+            x = airspeed
+            y = current
+            return thrust_interpolator(x, y)
 
-            xy = np.c_[airspeed, current]
-            return thrust_interpolator(xy).reshape(shape)
+        current_interpolator = Polynomial2DInterpolator(3, 3)
+        current_interpolator.fit(x, z, y)
 
-        current_interpolator = RBFInterpolator(np.c_[x, z], y, kernel="linear")
-
-        def current(airspeed, thrust):
+        def current(airspeed: jax.Array, thrust: jax.Array) -> jax.Array:
             # return griddata((x, z), y, (airspeed, thrust), method="linear")
-            try:
-                shape = airspeed.shape
-            except AttributeError:
-                shape = 1
-            airspeed = np.ravel(airspeed)
-            thrust = np.ravel(thrust)
+            x = airspeed
+            y = thrust
 
-            xy = np.c_[airspeed, thrust]
-            return current_interpolator(xy).reshape(shape)
+            return current_interpolator(x, y)
 
         self.thrust_model = thrust
         self.current_model = current
@@ -102,15 +101,15 @@ class Engine:
         # Plot the 3D engine map of current, thrust and velocity
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(121)
-        x = self.motor["Airspeed [m/s]"]
-        y = self.motor["Current [A]"]
-        z = self.motor["Thrust [N]"]
+        x = np.array(self.motor["Airspeed [m/s]"].values)
+        y = np.array(self.motor["Current [A]"].values)
+        z = np.array(self.motor["Thrust [N]"].values)
 
         # Plot original data points
-        c = ax.scatter(x, y, c=z, cmap="viridis")
+        c = ax.scatter(x=x, y=y, c=z, cmap="viridis")
         fig.colorbar(c, label="Thrust [N]")
         # Plot interpolated surface
-        x_grid, y_grid = np.meshgrid(np.linspace(min(x), max(x), 100), np.linspace(min(y), max(y), 100))
+        x_grid, y_grid = jnp.meshgrid(jnp.linspace(min(x), max(x), 100), np.linspace(min(y), max(y), 100))
         z_interp = self.thrust_model(x_grid, y_grid).reshape(x_grid.shape)
 
         CS = ax.contourf(x_grid, y_grid, z_interp, cmap="viridis", alpha=0.5, levels=30)
@@ -122,15 +121,16 @@ class Engine:
 
         # Add current plot
         ax = fig.add_subplot(122)
-        x = self.motor["Airspeed [m/s]"]
-        y = self.motor["Thrust [N]"]
-        z = self.motor["Current [A]"]
+        x = np.array(self.motor["Airspeed [m/s]"].values)
+        y = np.array(self.motor["Thrust [N]"].values)
+        z = np.array(self.motor["Current [A]"].values)
 
         # Plot original data points
         c = ax.scatter(x, y, c=z, cmap="viridis")
         fig.colorbar(c, label="Current [A]")
+
         # Plot interpolated surface
-        x_grid, y_grid = np.meshgrid(np.linspace(min(x), max(x), 100), np.linspace(min(y), max(y), 100))
+        x_grid, y_grid = jnp.meshgrid(jnp.linspace(min(x), max(x), 100), jnp.linspace(min(y), max(y), 100))
         z_interp = self.current_model(x_grid, y_grid).reshape(x_grid.shape)
         CS = ax.contourf(x_grid, y_grid, z_interp, cmap="viridis", alpha=0.5, levels=30)
         ax.clabel(CS, inline=True, fontsize=10, fmt="%2.2f")
@@ -140,18 +140,26 @@ class Engine:
         ax.set_title("Engine Map: Current [A] vs Airspeed [m/s] and Thrust [N]")
         fig.show()
 
-    K = TypeVar("K", float, FloatArray)
-
-    def thrust(self, velocity: K, current: K) -> K:
+    def thrust(
+        self,
+        velocity: float | Float[Array, "dim1 dim2"],
+        current: float | Float[Array, "dim1 dim2"],
+    ) -> Float[Array, "dim1 dim2"]:
         # Interpolating the thrust curve
-        thrust: FloatArray = self.thrust_model(velocity, current)
-        return thrust
+        velocity = jnp.atleast_1d(velocity)
+        current = jnp.atleast_1d(current)
 
-    # @jax.jit
-    def current(self, velocity: float | FloatArray, thrust: float | FloatArray) -> FloatArray:
+        return self.thrust_model(velocity, current)
+
+    def current(
+        self,
+        velocity: float | Float[Array, "dim1 dim2"],
+        thrust: float | Float[Array, "dim1 dim2"],
+    ) -> Float[Array, "dim1 dim2"]:
+        velocity = jnp.atleast_1d(velocity)
+        thrust = jnp.atleast_1d(thrust)
         # Interpolating the current curve
-        current: FloatArray = self.current_model(velocity, thrust)
-        return current
+        return self.current_model(velocity, thrust)
 
 
 #

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from logging import root
-from math import pi
+import types
 from typing import Callable
 
 import matplotlib.pyplot as plt
@@ -14,6 +13,7 @@ from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.vehicle.utils import DiscretizationType
+from ICARUS.vehicle.utils import equal_spacing_function_factory
 from ICARUS.vehicle.utils import SymmetryAxes
 
 
@@ -105,9 +105,8 @@ class WingSurface:
         self.num_grid_points: int = self.N * self.M
 
         if chord_discretization_function is None:
-            self.chord_spacing: DiscretizationType = DiscretizationType.EQUAL
-            # Define Chord Discretization to be the identity function
-            self.chord_discretization_function: Callable[[int], float] = lambda x: x / (self.M - 1)
+            self.chord_spacing = DiscretizationType.EQUAL
+            self.chord_discretization_function = equal_spacing_function_factory(M, stretching=1.0)
         else:
             self.chord_discretization_function = chord_discretization_function
             self.chord_spacing = DiscretizationType.USER_DEFINED
@@ -1172,3 +1171,76 @@ class WingSurface:
 
     def __str__(self) -> str:
         return f"Lifting Surface: {self.name} with {self.N} Panels and {self.M} Panels"
+
+    def serialize_function(self, func):
+        if isinstance(func, types.MethodType):
+            func_name = func.__func__.__name__
+            return {"py/method": [func.__self__, func_name]}
+        elif isinstance(func, types.FunctionType):
+            if func.__name__ == '<lambda>':
+                return {"py/lambda": func.__code__.co_code}
+            else:
+                return {"py/function": func.__module__ + '.' + func.__name__}
+        else:
+            return None
+
+    def __setstate__(self, state: dict) -> None:
+        chord_discretization_func_info = state.get("chord_discretization_function")
+        if chord_discretization_func_info:
+            func_type, func_info = list(chord_discretization_func_info.items())[0]
+            if func_type == "py/method":
+                obj, func_name = func_info
+                chord_discretization_function = getattr(obj, func_name)
+            elif func_type == "py/function":
+                module_name, func_name = func_info.rsplit('.', 1)
+                module = __import__(module_name, fromlist=[func_name])
+                chord_discretization_function = getattr(module, func_name)
+            else:
+                chord_discretization_function = None
+        else:
+            chord_discretization_function = None
+
+        self.__init__(
+            name=state["name"],
+            origin=state["origin"],
+            orientation=state["orientation"],
+            spanwise_positions=state["spanwise_positions"],
+            chord_lengths=state["chord_lengths"],
+            x_offsets=state["x_offsets"],
+            z_offsets=state["z_offsets"],
+            twist_angles=state["twist_angles"],
+            root_airfoil=state["root_airfoil"],
+            tip_airfoil=state["tip_airfoil"],
+            N=state["N"],
+            M=state["M"],
+            mass=state["mass"],
+            symmetries=state["symmetries"],
+            chord_discretization_function=chord_discretization_function,
+            has_lift=state["has_lift"],
+        )
+
+    def __getstate__(self) -> dict:
+        # Convert lambda function to a named function
+        state = {
+            "name": self.name,
+            "origin": self.origin,
+            "orientation": self.orientation,
+            "spanwise_positions": self._span_dist,
+            "chord_lengths": self._chord_dist,
+            "x_offsets": self._xoffset_dist,
+            "z_offsets": self._zoffset_dist,
+            "twist_angles": self.twist_angles,
+            "root_airfoil": self.root_airfoil,
+            "tip_airfoil": self.tip_airfoil,
+            "N": self.N,
+            "M": self.M,
+            "mass": self.mass,
+            "symmetries": self.symmetries,
+            "has_lift": self.has_lift,
+            "chord_discretization_function": (
+                self.serialize_function(self.chord_discretization_function)
+                if self.chord_spacing is not DiscretizationType.EQUAL
+                else None
+            ),
+        }
+        return state

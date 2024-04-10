@@ -19,6 +19,23 @@ else:
 APPHOME: str = os.path.dirname(os.path.realpath(__file__))
 APPHOME = os.path.abspath(os.path.join(APPHOME, os.pardir))
 
+try:
+    import jax
+
+    # Set precision to 64 bits
+    jax.config.update("jax_enable_x64", True)
+    HAS_JAX = True
+
+    # CHECK IF JAX IS USING GPU
+    try:
+        jax.devices("gpu")
+        HAS_GPU = True
+    except RuntimeError:
+        HAS_GPU = False
+
+except ImportError:
+    pass
+
 
 from . import airfoils
 from . import aerodynamics

@@ -1,3 +1,4 @@
+import jax
 import numpy as np
 
 from ICARUS.core.types import FloatArray
@@ -11,11 +12,11 @@ def RK4systems(
     t0: float,
     tend: float,
     dt: float,
-    x0: FloatArray,
-    v0: FloatArray,
+    x0: jax.Array,
+    v0: jax.Array,
     trajectory: MissionTrajectory,
     verbosity: int = 0,
-) -> tuple[FloatArray, FloatArray, FloatArray]:
+) -> tuple[FloatArray, FloatArray, FloatArray, list[FloatArray]]:
     """Integrate the trajectory of an airplane using the RK4 method.
 
     Args:
@@ -37,10 +38,11 @@ def RK4systems(
     x = [x0]
     v = [v0]
     t: FloatArray = np.arange(t0, tend + dt, dt)
-    # aoa = []
 
     steps = round((tend - t0) / dt)
     success = True
+    state = trajectory.get_initial_state(x0, v0)
+    states = [state]
     for i in np.arange(0, steps, 1):
         if verbosity:
             print(f"Step {i} of {steps} started")
@@ -50,27 +52,31 @@ def RK4systems(
 
         xi = np.array(x[i])
         vi = np.array(v[i])
-        ti: float = t.tolist()[i].astype(float)
+        ti: float = t.tolist()[i]
 
         k1 = dt * trajectory.dxdt(xi, vi)
-        l1 = dt * trajectory.dvdt(ti, xi, vi)
+        l1, state1 = trajectory.dvdt(ti, xi, vi, state)
+        l1 = dt * l1
 
         k2 = dt * trajectory.dxdt(xi + (k1 / 2), vi + l1 / 2)
-        l2 = dt * trajectory.dvdt(ti, xi + (k1 / 2), vi + l1 / 2)
+        l2, state2 = trajectory.dvdt(ti, xi + (k1 / 2), vi + l1 / 2, state1)
+        l2 = dt * l2
 
         k3 = dt * trajectory.dxdt(xi + (k2 / 2), vi + l2 / 2)
-        l3 = dt * trajectory.dvdt(ti, xi + (k2 / 2), vi + l2 / 2)
+        l3, state3 = trajectory.dvdt(ti, xi + (k2 / 2), vi + l2 / 2, state2)
+        l3 = dt * l3
 
         k4 = dt * trajectory.dxdt(xi + k3, vi + l3)
-        l4 = dt * trajectory.dvdt(ti, xi + k3, vi + l3)
+        l4, state4 = trajectory.dvdt(ti, xi + k3, vi + l3, state3)
+        l4 = dt * l4
 
         k = (k1 + 2 * k2 + 2 * k3 + k4) / 6
         l = (l1 + 2 * l2 + 2 * l3 + l4) / 6
 
-        # thrust = (thrust1 + 2 * thrust2 + 2 * thrust3 + thrust4) / 6
-        # thrust_req.append(thrust)
-        # a_elev = (a_elev1 + 2 * a_elev2 + 2 * a_elev3 + a_elev4) / 6
-        # elev_control.append(a_elev)
+        # Average the states
+        state = (state1 + 2 * state2 + 2 * state3 + state4) / 6
+        states.append(state)
+
         x.append(xi + k)
         v.append(vi + l)
         # aoa.append(x[-1][2])
@@ -104,8 +110,15 @@ def RK4systems(
         # print(x[-1])
         # x[-1] = x[-2]/2
         # print(f"Simulation Failed                        Max Distance: {x[-1][0]}")
+    #   for statei, xi, vi, ti in zip(states, x, v, t):
+    #       trajectory.record_state(ti, xi, vi, *statei)
+    # Plot Trajectory
+    trajectory.clear_history()
+    for statei, xi, vi, ti in zip(states, x, v, t):
+        trajectory.record_state(ti, xi, vi, *statei)
+    trajectory.plot_history()
 
-    return t, np.array(x), np.array(v)
+    return t, np.array(x), np.array(v), states
 
 
 from scipy.integrate import RK45
@@ -115,8 +128,8 @@ def RK45_scipy_integrator(
     t0: float,
     tend: float,
     dt: float,
-    x0: FloatArray,
-    v0: FloatArray,
+    x0: jax.Array,
+    v0: jax.Array,
     trajectory: MissionTrajectory,
 ) -> tuple[FloatArray, FloatArray, FloatArray]:
     status = "Successfull"

@@ -59,14 +59,7 @@ def plot_airplane_polars(
         ax.axvline(x=0, color="k")
 
     if solvers == ["All"]:
-        solvers = [
-            "GNVP3 Potential",
-            "GNVP3 2D",
-            "GNVP7 Potential",
-            "GNVP7 2D",
-            "LSPT Potential",
-            "LSPT 2D",
-        ]
+        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D", "AVL"]
 
     for i, airplane in enumerate(airplane_names):
         flag = False

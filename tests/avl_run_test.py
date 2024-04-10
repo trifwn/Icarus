@@ -12,7 +12,7 @@ from ICARUS.vehicle.plane import Airplane
 def avl_run() -> None:
     print("Testing AVL Running ...")
     # Get Plane, DB
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
 

@@ -9,11 +9,11 @@ import time
 from typing import Any
 
 import numpy as np
-from vehicles.Planes.e190_cruise import e190_cruise
-from vehicles.Planes.e190_takeoff import e190_takeoff_generator
-from vehicles.Planes.wing_variations import wing_var_chord_offset
+from Vehicles.Planes.e190_cruise import e190_cruise
+from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
+from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
-from examples.vehicles.Planes.hermes import hermes
+from examples.Vehicles.Planes.hermes import hermes
 from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project

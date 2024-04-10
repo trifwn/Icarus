@@ -1,6 +1,10 @@
+from functools import partial
+
+import jax
 import jax.numpy as jnp
-import numpy as np
-from pandas import DataFrame
+from interpax import Interpolator1D
+from jaxtyping import Array
+from jaxtyping import Float
 
 from ICARUS.database import DB
 from ICARUS.propulsion.engine import Engine
@@ -22,38 +26,35 @@ class MissionVehicle:
         self.inertias: float = airplane.total_inertia[0]
         self.mass: float = airplane.M
 
-        # self.elevator: Lifting_Surface = elevator
-        # self.elevator_max_deflection = 30
-        # self.Ixx: float = airplane.total_inertia[0]
-        # self.l_m: float = -0.4
+        # Get the cl, cd, cm data
+        cl = jnp.array(self.polar_data[f"{solver} CL"].values)
+        cd = jnp.array(self.polar_data[f"{solver} CD"].values)
+        cm = jnp.array(self.polar_data[f"{solver} Cm"].values)
+        aoa = jnp.array(self.polar_data["AoA"].values)
 
-    @staticmethod
-    def interpolate_polars(aoa: float, cldata: DataFrame) -> tuple[float, float, float]:
-        cl = float(np.interp(aoa, cldata["AoA"], cldata[f"CL"]))
-        cd = float(np.interp(aoa, cldata["AoA"], cldata[f"CD"]))
-        cm = float(np.interp(aoa, cldata["AoA"], cldata[f"Cm"]))
+        # Create interpolators
+        self.cl_interpolator = Interpolator1D(aoa, cl, method="cubic")
+        self.cd_interpolator = Interpolator1D(aoa, cd, method="cubic")
+        self.cm_interpolator = Interpolator1D(aoa, cm, method="cubic")
+
+    @partial(jax.jit, static_argnums=(0,))
+    def interpolate_polars(
+        self,
+        aoa: Float[Array, "dim1"] | float,
+    ) -> tuple[Float[Array, "dim1"], Float[Array, "dim1"], Float[Array, "dim1"]]:
+        _aoa = jnp.atleast_1d(aoa)
+        cl = self.cl_interpolator(_aoa)
+        cd = self.cd_interpolator(_aoa)
+        cm = self.cm_interpolator(_aoa)
         return cl, cd, cm
 
-    def get_aerodynamic_forces(self, velocity: float, aoa: float) -> tuple[float, float, float]:
-
-        aoa = float(np.rad2deg(aoa))
-        cl, cd, cm = self.interpolate_polars(
-            aoa,
-            self.polar_data[
-                [
-                    f"{self.solver_name} CL",
-                    f"{self.solver_name} CD",
-                    f"{self.solver_name} Cm",
-                    "AoA",
-                ]
-            ].rename(
-                columns={
-                    f"{self.solver_name} CL": "CL",
-                    f"{self.solver_name} CD": "CD",
-                    f"{self.solver_name} Cm": "Cm",
-                },
-            ),
-        )
+    @partial(jax.jit, static_argnums=(0,))
+    def get_aerodynamic_forces(
+        self,
+        velocity: Float[Array, "dim1"] | float,
+        aoa: Float[Array, "dim1"] | float,
+    ) -> tuple[Float[Array, "dim1"], Float[Array, "dim1"], Float[Array, "dim1"]]:
+        cl, cd, cm = self.interpolate_polars(aoa)
 
         density = 1.225
         lift = cl * 0.5 * density * velocity**2 * self.airplane.S
@@ -61,6 +62,3 @@ class MissionVehicle:
         torque = cm * 0.5 * density * velocity**2 * self.airplane.S * self.airplane.mean_aerodynamic_chord
 
         return lift, drag, torque
-
-    def get_aerodynamic_forces_jax(self, velocity: jnp.ndarray, aoa: jnp.ndarray) -> jnp.ndarray:
-        pass

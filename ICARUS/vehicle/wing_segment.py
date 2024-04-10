@@ -407,3 +407,57 @@ class WingSegment(WingSurface):
 
     def __str__(self) -> str:
         return f"Wing Segment: {self.name} with {self.N} panels in the spanwise direction and {self.M} panels in the chordwise direction"
+
+    def __setstate__(self, state: dict) -> None:
+        self.__init__(
+            name=state["name"],
+            origin=state["origin"],
+            orientation=state["orientation"],
+            span=state["span"],
+            tip_chord=state["tip_chord"],
+            root_chord=state["root_chord"],
+            root_airfoil=state["root_airfoil"],
+            sweepback_angle=state["sweepback_angle"],
+            sweep_offset=state["sweep_offset"],
+            twist_root=state["twist_root"],
+            twist_tip=state["twist_tip"],
+            root_dihedral_angle=state["root_dihedral_angle"],
+            tip_dihedral_angle=state["tip_dihedral_angle"],
+            tip_airfoil=state["tip_airfoil"],
+            symmetries=state["symmetries"],
+            spanwise_chord_distribution=state["spanwise_chord_distribution"],
+            spanwise_dihedral_distibution=state["spanwise_dihedral_distibution"],
+            spanwise_twist_distribution=state["spanwise_twist_distribution"],
+            span_spacing=state["span_spacing"],
+            chord_spacing=state["chord_spacing"],
+            N=state["N"],
+            M=state["M"],
+            mass=state["mass"],
+        )
+
+    def __getstate__(self) -> dict:
+        return {
+            "name": self.name,
+            "origin": self.origin,
+            "orientation": self.orientation,
+            "span": self.span,
+            "tip_chord": self.tip_chord,
+            "root_chord": self.root_chord,
+            "root_airfoil": self.root_airfoil,
+            "sweepback_angle": self.sweepback_angle,
+            "sweep_offset": self.sweep_offset,
+            "twist_root": self.twist_root,
+            "twist_tip": self.twist_tip,
+            "root_dihedral_angle": self.root_dihedral_angle,
+            "tip_dihedral_angle": self.tip_dihedral_angle,
+            "tip_airfoil": self.tip_airfoil,
+            "symmetries": self.symmetries,
+            "spanwise_chord_distribution": self.spanwise_chord_distribution,
+            "spanwise_dihedral_distibution": self.spanwise_dihedral_distibution,
+            "spanwise_twist_distribution": self.spanwise_twist_distribution,
+            "span_spacing": self.span_spacing,
+            "chord_spacing": self.chord_spacing,
+            "N": self.N,
+            "M": self.M,
+            "mass": self.mass,
+        }

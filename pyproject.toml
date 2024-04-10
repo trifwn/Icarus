@@ -35,7 +35,9 @@ dependencies = [
     "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     'jax',
     'jaxlib',
-    'jaxtyping'
+    'jaxtyping',
+    'interpax',
+    'jaxopt',
 ]
 dynamic = ["version"]
 

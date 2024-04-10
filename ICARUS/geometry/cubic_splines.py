@@ -1,19 +1,18 @@
 from typing import Callable
 
-import numpy as np
-from scipy.interpolate import CubicSpline
-
-from ICARUS.core.types import FloatArray
+from interpax import CubicSpline as interpax_CubicSpline
+from jaxtyping import Array
+from jaxtyping import Float
 
 
 def CubicSpline_factory(
-    x: list[float] | FloatArray,
-    y: list[float] | FloatArray,
-) -> tuple[Callable[..., float | FloatArray], str]:
-    cs = CubicSpline(x, y)
+    x: Float[Array, "dim1"],
+    y: Float[Array, "dim1"],
+) -> tuple[Callable[[Float[Array, "dim2"]], Float[Array, 'dim2']], str]:
+    cs = interpax_CubicSpline(x, y)
 
-    def spline(x: float | FloatArray) -> float | FloatArray:
-        return np.array(cs(x), dtype=np.float64)
+    def spline(x: Float[Array, "dim2"]) -> Float[Array, "dim2"]:
+        return cs(x)
 
     title = "Cubic Spline Passes Through\n$"
     for num in cs.x:

@@ -90,8 +90,10 @@ class Database_3D:
             # Try to Load Vehicle object
             file_plane: str = os.path.join(DB3D, name, f"{name}.json")
             plane_obj: Airplane | None = self.load_plane(name, file_plane)
+            print(f"Loaded Plane {plane_obj}")
             if plane_obj is None:
                 raise ValueError(f"No Vehicle Object Found at {file_plane}")
+
             self.planes[name] = plane_obj
             return plane_obj
 

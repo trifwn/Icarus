@@ -11,7 +11,7 @@ def lspt_run() -> None:
     print("Testing LSPT Running...")
 
     # Get Plane, DB
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     airplane, state = get_bmark_plane("bmark")
 

@@ -80,6 +80,8 @@ class MergedWing(WingSurface):
                         merged_wing_symmetries.append(symmetry_type)
             else:
                 merged_wing_symmetries = [symmetries]
+        else:
+            merged_wing_symmetries = symmetries
         self.symmetries: list[SymmetryAxes] = merged_wing_symmetries
         self.is_symmetric_y: bool = True if SymmetryAxes.Y in self.symmetries else False
 
@@ -408,3 +410,17 @@ class MergedWing(WingSurface):
     #     """
     #     for segment in self.wing_segments:
     #         segment.change_discretization(N, M)
+
+    def __setstate__(self, state: dict) -> None:
+        self.__init__(
+            state["name"],
+            state["wing_segments"],
+            state["symmetries"],
+        )
+
+    def __getstate__(self) -> dict:
+        return {
+            "name": self.name,
+            "wing_segments": self.wing_segments,
+            "symmetries": self.symmetries,
+        }
