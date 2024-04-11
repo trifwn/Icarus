@@ -73,8 +73,16 @@ class MissionTrajectory:
         self.y_jit = jax.jit(self.y)
         self.dy_dx = jax.jit(jax.grad(self.fun))
         self.d2y_dx2 = jax.jit(jax.grad(self.dy_dx))
-        self.broyden = Broyden(self.f_to_trim, verbose=False, stop_if_linesearch_fails=True, tol=1e-7, maxiter=1000)
-        self.broyden.verbose = False
+        self.broyden = Broyden(
+            self.f_to_trim,
+            has_aux=False,
+            verbose=False,
+            stop_if_linesearch_fails=False,
+            tol=1e-7,
+            maxiter=1000,
+            history_size=10,
+        )
+        self.broyden.verbose = 0
 
     def clear_history(self) -> None:
         self.times = []
@@ -209,15 +217,6 @@ class MissionTrajectory:
 
         return jnp.array([aoa, amps, acc_x, acc_y, lift, thrust, drag, torque])
 
-    def dy_dx_fd(self, x: jax.Array) -> jax.Array:
-        h = 0.0001
-        return (self.fun(x + h) - self.fun(x - h)) / (2 * h)
-
-    def d2y_dx2_fd(self, x: jax.Array) -> jax.Array:
-        # Second derivative
-        h = 0.001
-        return (self.fun(x + h) - 2 * self.fun(x) + self.fun(x - h)) / (h**2)
-
     @partial(jax.jit, static_argnums=(0,))
     def dxdt(self, X: Float[Array, "dim1"], V: Float[Array, "dim1"]) -> Float[Array, "dim1"]:
         return V
@@ -245,11 +244,11 @@ class MissionTrajectory:
         alpha = jnp.deg2rad(aoa) + jnp.arctan(dh_dx)
         residual = (
             thrust * (jnp.sin(alpha) - dh_dx * jnp.cos(alpha))
-            + lift * jnp.sqrt(1 + dh_dx**2)
+            + lift * (dh_dx**2 + 1) / jnp.sqrt(dh_dx**2 + 1)
             - m * G
             - m * dh2_dx2 * V[0] ** 2
         )
-        # print(f"\tResidual: {residual}, AoA: {aoa}, alpha: {np.rad2deg(alpha)}")
+        # jprint("\tResidual: {}, AoA: {}, alpha: {}, gamma {}, dhdx  {}",residual,aoa,jnp.rad2deg(alpha), jnp.rad2deg(jnp.arctan(dh_dx)), dh_dx)
         return residual
 
     @partial(jax.jit, static_argnums=(0,))
@@ -279,7 +278,9 @@ class MissionTrajectory:
         thrust = self.vehicle.motor.thrust(velocity=jnp.linalg.norm(V), current=engine_amps)
 
         x0 = jnp.atleast_1d(jnp.deg2rad(aoa_prev_deg))
+        self.broyden.verbose = 0
         sol = self.broyden.run(init_params=x0, thrust=thrust, V=V, dh_dx=dh_dx, dh2_dx2=dh2_dx2)
+        # jprint("sol : {}", sol)
         # sol = fsolve(f_to_trim, aoa_prev_deg, xtol=1e-09)
 
         aoa_new = jnp.atleast_1d(sol.params)
@@ -290,11 +291,20 @@ class MissionTrajectory:
         is_failed = jnp.any(is_failed)
 
         def true_fun():
-            jprint(f"Trim Failed:")
-            jprint("\tTime: {}, Residual: {}, AoA: {}", t, self.f_to_trim(aoa_new, thrust, V, dh_dx, dh2_dx2), aoa_new)
-            return jnp.atleast_1d(aoa_prev_deg)
+            jprint(
+                "Trim Failed:\tTime: {}, Residual: {}, AoA: {}",
+                t,
+                self.f_to_trim(aoa_new, thrust, V, dh_dx, dh2_dx2),
+                aoa_new,
+            )
+            # Print diagnostic information the args to the function
+            jprint("\tArgs: thrust: {}, V: {}, dh_dx: {}, dh2_dx2: {}", thrust, V, dh_dx, dh2_dx2)
+            jprint("\tx0: {}", x0)
+            jprint("\tResidual: {}", residual)
+            return jnp.atleast_1d(aoa_new)
 
         def false_fun():
+            # jprint("Trim Successful:\tTime: {}, Residual: {}, AoA: {}", t, self.f_to_trim(aoa_new, thrust, V, dh_dx, dh2_dx2), aoa_new)
             return aoa_new
 
         # Use lax.cond to choose AoA based on residual
@@ -377,19 +387,24 @@ class MissionTrajectory:
         return np.hstack([xdot, vdot, carry])
 
     def plot_history(self, axs: list[Axes] | None = None, fig=None) -> None:
+        print(type(axs))
+
         if isinstance(axs, ndarray):
             axs = axs.tolist()
             # Get the figure
-
+        # error
         if not isinstance(axs, list):
             fig = plt.figure()
             all_axs: list[Axes] = fig.subplots(3, 2, squeeze=False).flatten().tolist()
+            axes_provided = False
         else:
             all_axs = axs
+            axes_provided = True
 
         if fig is None:
             fig = all_axs[0].get_figure()
-            raise ValueError("The figure is None")
+            if fig is None:
+                raise ValueError("The figure is None")
 
         fig.suptitle(f"Trajectory: {self.name}")
         # Axes 0 is the Trajectory
@@ -403,7 +418,6 @@ class MissionTrajectory:
         all_axs[0].set_title("Trajectory")
         all_axs[0].set_xlabel("x")
         all_axs[0].set_ylabel("y")
-        all_axs[0].legend()
         # On the same ax with different scale also plot the angle gamma
         ax2: Axes = all_axs[0].twinx()  # type: ignore
         color = "tab:red"
@@ -419,7 +433,6 @@ class MissionTrajectory:
         all_axs[1].set_title("Velocity")
         all_axs[1].set_xlabel("Time")
         all_axs[1].set_ylabel("Velocity")
-        all_axs[1].legend()
 
         # Axes 2 is the Forces
         all_axs[2].plot(self.times, self.forces["x"], label="Fx")
@@ -430,28 +443,34 @@ class MissionTrajectory:
         all_axs[2].plot(self.times, self.forces["torque"], label="Torque")
         all_axs[2].set_title("Forces")
         all_axs[2].set_xlabel("Time")
-        all_axs[2].legend()
 
         # Axes 3 is the Control Inputs
         for key in self.control_inputs.keys():
             all_axs[3].plot(self.times, self.control_inputs[key], label=key)
         all_axs[3].set_title("Control Inputs")
         all_axs[3].set_xlabel("Time")
-        all_axs[3].legend()
 
         # Axes 4 is the Angles
         all_axs[4].plot(self.times, self.orientation["alpha"], label="Alpha")
         all_axs[4].plot(self.times, self.orientation["aoa"], label="AoA")
         all_axs[4].set_title("Orientations")
         all_axs[4].set_xlabel("Time")
-        all_axs[4].legend()
 
         # Axes 5 is the Accelerations
         all_axs[5].plot(self.times, self.accelerations["x"], label="Ax")
         all_axs[5].plot(self.times, self.accelerations["y"], label="Ay")
         all_axs[5].set_title("Accelerations")
         all_axs[5].set_xlabel("Time")
-        all_axs[5].legend()
+
+        # Clear the legends
+        for ax in all_axs:
+            try:
+                # Clear the legends
+                ax.get_legend().remove()
+            except AttributeError:
+                pass
+            ax.legend()
+            ax.grid()
 
         # Apply spacing to the plots
         fig.tight_layout()

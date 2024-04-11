@@ -79,31 +79,30 @@ def RK4systems(
 
         x.append(xi + k)
         v.append(vi + l)
-        # aoa.append(x[-1][2])
 
-        # if np.abs(a_elev) > np.deg2rad(airplane.elevator_max_deflection):
-        #     print(f"Elevator Angle too high at step: {i}   Max Distance: {x[-1][0]}")
-        #     success = False
-        #     break
         if np.isnan(xi).any() or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any()) or np.isinf(vi).any():
-            print(f"Blew UP at step: {i}                    Max Distance: {x[-1][0]}")
+            print(f"Blew UP at step: {i}\tTime {t[i]}")
+            print(f"\tMax Distance: {x[-1][0]}")
             success = False
             break
         if x[-1][1] < trajectory.operating_floor:
-            print(f"Airplane Crash at step: {i}           Max Distance: {x[-1][0]} ")
+            print(f"Airplane Crash at step: {i}\tTime {t[i]}")
+            print(f"\tMax Distance: {x[-1][0]} ")
             success = False
             break
         if x[-1][0] < 0:
-            print(f"Airplane Went to negative at step: {i}           Max Distance: {x[-1][0]}")
+            print(f"Airplane Went to negative at step: {i}\tTime {t[i]}")
+            print(f"\tMax Distance: {x[-1][0]}")
             success = False
             break
         if v[-1][0] < 0:
             print(f"Negative velocity at step: {i} \t {v[-1][0]}")
-            print(f"Airplane Goes Backwords at step:{i}     Max Distance: {x[-1][0]}")
+            print(f"Airplane Goes Backwords at step:{i}\tTime {t[i]}")
+            print(f"\tMax Distance: {x[-1][0]}")
             success = False
             break
     if success:
-        print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
+        print(f"Simulation Completed Successfully at time {t[-1]}\tTime {t[i]}Max Distance: {x[-1][0]}")
     else:
         # Return the last valid state
         pass
@@ -113,11 +112,9 @@ def RK4systems(
     #   for statei, xi, vi, ti in zip(states, x, v, t):
     #       trajectory.record_state(ti, xi, vi, *statei)
     # Plot Trajectory
-    trajectory.clear_history()
-    for statei, xi, vi, ti in zip(states, x, v, t):
-        trajectory.record_state(ti, xi, vi, *statei)
-    trajectory.plot_history()
-
+    # trajectory.clear_history()
+    # for statei, xi, vi, ti in zip(states, x, v, t):
+    #     trajectory.record_state(ti, xi, vi, *statei)
     return t, np.array(x), np.array(v), states
 
 

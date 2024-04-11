@@ -17,5 +17,8 @@ def CubicSpline_factory(
     title = "Cubic Spline Passes Through\n$"
     for num in cs.x:
         title += f" {num:.2f}, "
+    title += "\n"
+    for num in y:
+        title += f" {num:.2f}, "
     title += "$"
     return spline, title

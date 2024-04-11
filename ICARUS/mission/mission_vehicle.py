@@ -33,9 +33,9 @@ class MissionVehicle:
         aoa = jnp.array(self.polar_data["AoA"].values)
 
         # Create interpolators
-        self.cl_interpolator = Interpolator1D(aoa, cl, method="cubic")
-        self.cd_interpolator = Interpolator1D(aoa, cd, method="cubic")
-        self.cm_interpolator = Interpolator1D(aoa, cm, method="cubic")
+        self.cl_interpolator = Interpolator1D(aoa, cl, method="cubic", extrap=True)
+        self.cd_interpolator = Interpolator1D(aoa, cd, method="cubic", extrap=True)
+        self.cm_interpolator = Interpolator1D(aoa, cm, method="cubic", extrap=True)
 
     @partial(jax.jit, static_argnums=(0,))
     def interpolate_polars(
