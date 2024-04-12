@@ -41,7 +41,7 @@ def RK4systems(
 
     steps = round((tend - t0) / dt)
     success = True
-    state = trajectory.get_initial_state(x0, v0)
+    state = trajectory.get_control()
     states = [state]
     for i in np.arange(0, steps, 1):
         if verbosity:

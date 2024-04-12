@@ -3,9 +3,8 @@ from typing import Callable
 
 import jax
 import jax.numpy as jnp
-import numpy as np
+from jax import lax
 from jax.debug import print as jprint
-from jax.interpreters.partial_eval import DynamicJaxprTracer
 from jaxopt import Broyden
 from jaxtyping import Array
 from jaxtyping import Float
@@ -14,7 +13,6 @@ from matplotlib.axes import Axes
 from numpy import ndarray
 
 from ICARUS.core.types import FloatArray
-from ICARUS.dynamical_systems.first_order_system import NonLinearSystem
 from ICARUS.mission.mission_vehicle import MissionVehicle
 
 
@@ -119,16 +117,10 @@ class MissionTrajectory:
     def record_state(
         self,
         t: float,
-        X: Float[Array, "dim1"],
-        V: Float[Array, "dim1"],
+        X: Float[Array, "2"],
+        V: Float[Array, "2"],
         aoa: float,
         amps: float,
-        acc_x: float,
-        acc_y: float,
-        lift: float,
-        thrust: Float[Array, "dim1"],
-        drag: float,
-        torque: float,
     ) -> None:
         dh_dx = self.dy_dx(X[0])
         dh2_dx2 = self.d2y_dx2(X[0])
@@ -137,26 +129,47 @@ class MissionTrajectory:
 
         alpha = jnp.deg2rad(aoa) + jnp.arctan(dh_dx)
 
-        acc_x = acc_x
-        acc_y = acc_y
         x = X[0]
         y = X[1]
         u = V[0]
         w = V[1]
-        fx = acc_x * m
-        fy = acc_y * m
-        L = lift
-        D = drag
-        T = thrust
-        TORQUE = torque
         alpha = jnp.rad2deg(aoa)
         gamma = jnp.rad2deg(dh_dx)
-        ACC = jnp.array([acc_x, acc_y])
-        step_successful = jnp.isnan(ACC).any()
 
+        thrust = self.vehicle.motor.thrust(velocity=jnp.linalg.norm(V), current=amps)
+        lift, drag, torque = self.vehicle.get_aerodynamic_forces(jnp.linalg.norm(V), aoa)
+        # Compute the forces
+        thrust_x = thrust * jnp.cos(alpha)
+        thrust_y = thrust * jnp.sin(alpha)
+
+        acc_x = (
+            thrust_x  # Thrust
+            - lift * dh_dx / jnp.sqrt(dh_dx**2 + 1)  # Lift
+            - drag / jnp.sqrt(dh_dx**2 + 1)  # Drag
+            # +  Elevator drag due to control
+        ) / m
+
+        acc_y = (
+            thrust_y  # Thrust
+            + lift / jnp.sqrt(dh_dx**2 + 1)  # Lift
+            - drag * dh_dx / jnp.sqrt(dh_dx**2 + 1)  # Drag
+            - m * G  # Weight
+            # + Elevator lift due to control
+        ) / m
+
+        ACC = jnp.array([acc_x, acc_y], dtype=float).squeeze()
+
+        fx = ACC[0] * m
+        fy = ACC[1] * m
+
+        L = lift
+        T = thrust
+        D = drag
+        TORQUE = torque
+
+        step_successful = jnp.isnan(ACC).any()
         if not step_successful:
             # Register the state
-            jprint("Appending State")
             self.times.append(t)
             self.positions["x"].append(x)
             self.positions["y"].append(y)
@@ -186,39 +199,17 @@ class MissionTrajectory:
             jprint("F: {}", ACC)
             jprint("{}", jnp.isnan(ACC).any())
 
-    def get_initial_state(self, x0: Float[Array, "dim1"], v0: Float[Array, "dim1"]) -> Float[Array, "dim2"]:
-        x0 = jnp.atleast_1d(x0)
-        v0 = jnp.atleast_1d(v0)
+    @partial(jax.jit, static_argnums=(0,))
+    def get_control(
+        self, 
+    ) -> Float[Array, "2"]:
+        
         aoa = jnp.array([0])
         amps = jnp.array([30])
-        thrust = self.vehicle.motor.thrust(velocity=jnp.linalg.norm(v0), current=amps)
-        lift, drag, torque = self.vehicle.get_aerodynamic_forces(jnp.linalg.norm(v0), aoa)
-        # Calculate the force vector
-        dh_dx = self.dy_dx(x0[0])
-        alpha = jnp.deg2rad(aoa) + jnp.arctan(dh_dx)
-        thrust_x = thrust * jnp.cos(alpha)
-        thrust_y = thrust * jnp.sin(alpha)
-        acc_x = (
-            thrust_x  # Thrust
-            - lift * dh_dx / jnp.sqrt(dh_dx**2 + 1)  # Lift
-            - drag / jnp.sqrt(dh_dx**2 + 1)  # Drag
-            # +  Elevator drag due to control
-        ) / self.vehicle.mass
-
-        acc_y = (
-            thrust_y  # Thrust
-            + lift / jnp.sqrt(dh_dx**2 + 1)  # Lift
-            - drag * dh_dx / jnp.sqrt(dh_dx**2 + 1)  # Drag
-            - self.vehicle.mass * 9.81  # Weight
-            # + Elevator lift due to control
-        ) / self.vehicle.mass
-
-        F = jnp.array([acc_x, acc_y], dtype=float).squeeze()
-
-        return jnp.array([aoa, amps, acc_x, acc_y, lift, thrust, drag, torque])
+        return jnp.array([aoa, amps])
 
     @partial(jax.jit, static_argnums=(0,))
-    def dxdt(self, X: Float[Array, "dim1"], V: Float[Array, "dim1"]) -> Float[Array, "dim1"]:
+    def dxdt(self, X: Float[Array, "2"], V: Float[Array, "2"]) -> Float[Array, "2"]:
         return V
 
     # Get the aerodynamic forces
@@ -227,7 +218,7 @@ class MissionTrajectory:
         self,
         aoa: float | Float[Array, "1"],
         thrust: float | Float[Array, "1"],
-        V: Float[Array, "1"],
+        V: Float[Array, "2"],
         dh_dx: float,
         dh2_dx2: float,
     ) -> float:
@@ -255,8 +246,8 @@ class MissionTrajectory:
     def trim(
         self,
         t: float,
-        X: Float[Array, "dim1"],
-        V: Float[Array, "dim1"],
+        X: Float[Array, "2"],
+        V: Float[Array, "2"],
         aoa_prev_deg: float,
         engine_amps: float,
     ):
@@ -322,16 +313,16 @@ class MissionTrajectory:
     def dvdt(
         self,
         t: float,
-        X: Float[Array, "dim1"],
-        V: Float[Array, "dim1"],
-        prev_state: Float[Array, "dim2"],
-    ) -> tuple[Float[Array, "dim1"], Float[Array, "dim2"]]:
+        X: Float[Array, "2"],
+        V: Float[Array, "2"],
+        prev_state: Float[Array, "2"],
+    ) -> tuple[Float[Array, "2"], Float[Array, "8"]]:
 
         G: float = 9.81
         m: float = self.vehicle.mass
 
         # The carry of jax is
-        aoa_prev, amps_prev, acc_x_prev, acc_y_prev, lift_prev, thrust_prev, drag_prev, torque_prev = prev_state
+        aoa_prev, amps_prev = prev_state
 
         aoa, amps, lift, thrust, drag, torque = self.trim(t, X, V, aoa_prev, amps_prev)
         # Aoa is in degrees
@@ -358,33 +349,58 @@ class MissionTrajectory:
 
         F: Float[Array, "dim1"] = jnp.array([acc_x, acc_y], dtype=float).squeeze()
 
-        state_now = jnp.array([aoa, amps, acc_x, acc_y, lift, thrust, drag, torque])
+        state_now = jnp.array([aoa, amps])
         return F, state_now
 
-    def timestep(self, t: float, y: FloatArray) -> FloatArray:
-        x = y[:2]
-        v = y[2:4]
-        prev_state = y[4:]
+    @partial(jax.jit, static_argnums=(0,))
+    def timestep(
+        self, t: float, 
+        y: FloatArray, 
+        *args
+    ) -> FloatArray:
+        x = y[:2]    
+        v = y[2:]
+        current_state = self.get_control()
 
-        # Check if the airplane is still in the air
-        if x[1] < self.operating_floor:
-            print("Crash")
-            return np.array([np.nan, np.nan, np.nan, np.nan])
-        if x[0] < 0:
-            print("Negative x")
-            return np.array([np.nan, np.nan, np.nan, np.nan])
+        def normal():
+            xdot = self.dxdt(x, v).reshape(-1)
+            vdot, _ = self.dvdt(t, x, v, current_state)
+            vdot = vdot.reshape(-1)
+            return jnp.hstack([xdot, vdot])
+        
+        def problem():
+            return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
+        
+        def error_check(curr_y):
+            def nan_check(curr_y):
+                return jnp.isnan(curr_y).any()
 
-        if v[0] < 0:
-            print("Negative v")
-            return np.array([np.nan, np.nan, np.nan, np.nan])
+            def crash_check(curr_y):
+                return curr_y[1] < self.operating_floor
 
-        xdot = self.dxdt(x, v).reshape(-1)
-        vdot, carry = self.dvdt(t, x, v, prev_state).reshape(-1)
+            def negative_v_check(curr_y):
+                return curr_y[2] < 0
 
-        if np.isnan(vdot).any():
-            return np.array([np.nan, np.nan, np.nan, np.nan])
+            def handle_error(_):
+                # jprint("Error encountered at time: {}", t)
+                # jprint("State: {}", curr_y)
+                return True
+            
+            def ok(_):
+                return False
 
-        return np.hstack([xdot, vdot, carry])
+            nan_result = lax.cond(nan_check(curr_y), handle_error, ok, None)
+            crash_result = lax.cond(crash_check(curr_y), handle_error, ok, None)
+            negative_v_result = lax.cond(negative_v_check(curr_y), handle_error, ok, None)
+
+            return nan_result | crash_result | negative_v_result 
+
+        # If there is a Nan Value in Y retrun error() else compute normal
+        return jax.lax.cond(
+            error_check(y),
+            problem,
+            normal,
+        ) 
 
     def plot_history(self, axs: list[Axes] | None = None, fig=None) -> None:
         print(type(axs))

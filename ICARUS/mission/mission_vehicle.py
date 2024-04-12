@@ -40,8 +40,8 @@ class MissionVehicle:
     @partial(jax.jit, static_argnums=(0,))
     def interpolate_polars(
         self,
-        aoa: Float[Array, "dim1"] | float,
-    ) -> tuple[Float[Array, "dim1"], Float[Array, "dim1"], Float[Array, "dim1"]]:
+        aoa: Float[Array, "..."] | float,
+    ) -> tuple[Float[Array, "..."], Float[Array, "..."], Float[Array, "..."]]:
         _aoa = jnp.atleast_1d(aoa)
         cl = self.cl_interpolator(_aoa)
         cd = self.cd_interpolator(_aoa)
