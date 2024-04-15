@@ -12,7 +12,7 @@ from ICARUS.core.types import FloatArray
 
 
 def serial_monitor(
-    progress_bars: list[tqdm[NoReturn]],
+    progress_bars: list[tqdm],
     CASEDIR: str,
     position: int,
     lock: Optional[Lock],

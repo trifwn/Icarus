@@ -12,11 +12,13 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
+from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.strip import Strip
+
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.core.types import FloatOrListArray
-    from ICARUS.flight_dynamics.disturbances import Disturbance
     from ICARUS.flight_dynamics.state import State
     from ICARUS.vehicle.surface import WingSurface
     from ICARUS.vehicle.surface_connections import Surface_Connection
@@ -29,8 +31,8 @@ class Airplane:
         self,
         name: str,
         surfaces: list[WingSurface],
-        disturbances: list[Disturbance] | None = None,
         orientation: FloatOrListArray | None = None,
+        point_masses: list[tuple[float, FloatArray, str]] | None = None,
     ) -> None:
         """
         Initialize the Airplane class
@@ -43,11 +45,6 @@ class Airplane:
         """
         self.name: str = name
         self.surfaces: list[WingSurface] = surfaces
-
-        if disturbances is None:
-            self.disturbances: list[Disturbance] = []
-        else:
-            self.disturbances = disturbances
 
         if orientation is None:
             self.orientation: FloatOrListArray = [
@@ -88,12 +85,34 @@ class Airplane:
             self.moments.append(mom)
         self.m = self.M
 
+        if point_masses is not None:
+            self.add_point_masses(point_masses)
+
         # Define Computed States
         self.states: list[State] = []
 
         # Define Connection Dictionary
         self.connections: dict[str, Surface_Connection] = {}
         # self.register_connections()
+
+    # @property
+    # def surfaces(self) -> list[WingSurface]:
+    #     surfaces: list[WingSurface] = []
+    #     for surface in self._surfaces:
+    #         if isinstance(surface, MergedWing):
+    #             for s in surface.wing_segments:
+    #                 surfaces.append(s)
+    #         else:
+    #             surfaces.append(surface)
+    #     return surfaces
+
+    # @property
+    # def strips(self) -> list[Strip]:
+    #     strips: list[Strip] = []
+    #     for surface in self.surfaces:
+    #         for strip in surface.strips:
+    #             strips.append(strip)
+    #     return strips
 
     def get_position(self, name: str, axis: str) -> float | FloatArray:
         """
@@ -533,8 +552,37 @@ class Airplane:
         Returns:
             str: Json String
         """
-        encoded: str = str(jsonpickle.encode(self))
-        return encoded
+        # If the object is a subclass of Airplane, then we can pickle it as an Airplane object
+        print(f"Encoding {self.name}")
+        print(f"{type(self)}")
+        if isinstance(self, Airplane):
+            print("Encoding as Airplane")
+            encoded = jsonpickle.encode(self)
+        else:
+            print("Converting as Airplane")
+            # Encode the object as only an Airplane object
+            other = Airplane.__copy__(self)
+            print(f"Other is {other}, {type(other)}")
+            encoded = jsonpickle.encode(other)
+            del other
+
+        return str(encoded)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__init__(
+            name=state["name"],
+            surfaces=state["surfaces"],
+            orientation=state["orientation"],
+            point_masses=state['point_masses'],
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "surfaces": self.surfaces,
+            "orientation": self.orientation,
+            "point_masses": self.point_masses,
+        }
 
     def save(self) -> None:
         """
@@ -556,6 +604,14 @@ class Airplane:
     def __str__(self) -> str:
         string: str = f"Plane Object: {self.name}"
         return string
+
+    def __copy__(self) -> Airplane:
+        return Airplane(
+            name=self.name,
+            surfaces=self.surfaces,
+            orientation=self.orientation,
+            point_masses=self.point_masses,
+        )
 
 
 class PlaneDoesntContainAttr(AttributeError):

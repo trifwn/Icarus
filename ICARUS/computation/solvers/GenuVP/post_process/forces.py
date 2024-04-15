@@ -113,7 +113,7 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, gnvp
 
 def rotate_gnvp_forces(
     rawforces: DataFrame,
-    alpha_deg: float | Series[float] | FloatArray,
+    alpha_deg: float | Series | FloatArray,
     gnvp_version: int,
     default_name_to_use: str = "2D",
 ) -> DataFrame:

@@ -13,7 +13,7 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     print("Testing GNVP3 Running...")
 
     # Get Plane, DB
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
 

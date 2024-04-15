@@ -145,7 +145,6 @@ def run_gnvp_angles(
         surfaces,
         plane.CG,
         plane.orientation,
-        plane.disturbances,
     )
     print("Running Angles in Sequential Mode")
 
@@ -238,7 +237,6 @@ def run_gnvp_angles_parallel(
         surfaces,
         plane.CG,
         plane.orientation,
-        plane.disturbances,
     )
     from multiprocessing import Pool
 

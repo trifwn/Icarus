@@ -16,6 +16,7 @@ readme = "README.md"
 requires-python = ">=3"
 dependencies = [
     "pip",
+    "requests",
     "jsonpickle",
     "matplotlib",
     "numpy",
@@ -35,7 +36,9 @@ dependencies = [
     "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     'jax',
     'jaxlib',
-    'jaxtyping'
+    'jaxtyping',
+    'interpax',
+    'jaxopt',
 ]
 dynamic = ["version"]
 

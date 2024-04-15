@@ -2,7 +2,7 @@ from typing import Any
 from typing import Callable
 
 
-class Fitness:
+class MissionPerformance:
     def __init__(self, func: Callable[..., Any]) -> None:
         self.func = func
 

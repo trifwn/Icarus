@@ -1,9 +1,11 @@
 # ICARUS
 
+BRANCH TO FIX TRAJECTORY AND MISSION
 Current BUILD IS the first stable ICARUS version.
 
 ## TASKS
 
+- Convert to jax typing
 - Finish Documentation
 - Write Examples
 - Add jax backend to handle all computations and provide derivatives
@@ -15,7 +17,6 @@ Current BUILD IS the first stable ICARUS version.
 - Make Mission Class and Module to cover and model a flight envelope
 - Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
 - Add GUI
-- Have the grid/meshing run on julia
 - Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
 
 ---

@@ -1,18 +1,24 @@
-import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from pandas import Series
+from __future__ import annotations
 
-from ICARUS.core.struct import Struct
-from ICARUS.vehicle.plane import Airplane
+from typing import TYPE_CHECKING
+
+import matplotlib.pyplot as plt
+
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
+
+if TYPE_CHECKING:
+    import pandas as pd
+    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.core.struct import Struct
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 def plot_sensitivity(
     data: Struct,
     plane: Airplane,
-    trim: Series,
+    trim: pd.Series[float],
     relative: bool = False,
     vars2s: list[str] = ["All"],
     solvers: list[str] = ["2D"],
