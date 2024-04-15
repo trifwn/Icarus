@@ -38,6 +38,8 @@ class State:
         airplane: Airplane,
         environment: Environment,
         u_freestream: float,
+        stick_free = True,
+        stick_aoa = 1.0,
     ) -> None:
         # Set Basic State Variables
         self.name: str = name
@@ -55,6 +57,8 @@ class State:
         # Initialize Trim
         self.trim: dict[str, float] = {}
         self.trim_dynamic_pressure = 0
+        self.stick_free = stick_free
+        self.stick_aoa = stick_aoa
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
         self.polar = DataFrame()

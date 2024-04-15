@@ -27,6 +27,19 @@ def csplit(input_file: str, pattern: str) -> list[str]:
 
     return sections
 
+def moving_vars_assignment(plane,state):
+    RESULTS_DIR = os.path.join(DB3D, plane.directory, "AVL")
+    file = os.path.join(RESULTS_DIR, f"mov_log.txt")
+    with open(file, encoding="utf-8") as f:
+            con = f.readlines()
+    for surf in plane.surfaces:
+        surf.moving_surfs["avl_vars"] = []
+
+        for n in surf.moving_surfs["names"]:
+            for l in con:
+                if l.find(f"->  {n}") != -1:
+                    surf.moving_surfs["avl_vars"].append(l[2:4])
+
 
 def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray | list[float]) -> DataFrame:
     """POST-PROCESSING OF POLAR RUNS - RETURNS AN ARRAY WITH THE FOLLOWING ORDER OF VECTORS: AOA,CL,CD,CM

@@ -16,7 +16,7 @@ from ICARUS.vehicle.plane import Airplane
 
 
 # DEFINING ALL AOA RUNS IN .RUN AVL FILE
-def case_def(plane: Airplane, angles: FloatArray | list[float]) -> None:
+def case_def(plane: Airplane, angles: FloatArray | list[float],move = False, move_names = [], move_defs = []) -> None:
     li = []
     PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
     for i, angle in enumerate(angles):
@@ -28,6 +28,11 @@ def case_def(plane: Airplane, angles: FloatArray | list[float]) -> None:
         li.append("pb/2V        ->  pb/2V       =   0.00000")
         li.append("qc/2V        ->  qc/2V       =   0.00000")
         li.append("rb/2V        ->  rb/2V       =   0.00000")
+        if move == True:
+            for k,n in enumerate(move_names):
+                li.append(f"{n}         ->  {n}       =    {move_defs[k]:.5f}")
+
+
     ar = np.array(li)
     np.savetxt(os.path.join(PLANEDIR, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
 

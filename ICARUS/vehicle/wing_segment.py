@@ -1,6 +1,7 @@
 from functools import partial
 from typing import Any
 from typing import Callable
+from typing import Union
 
 import numpy as np
 
@@ -42,6 +43,8 @@ class WingSegment(WingSurface):
         N: int = 15,
         M: int = 5,
         mass: float = 1.0,
+        moving_surfs : dict[str, Union[list[float], list[int], list[str],list[FloatArray]]] = {"names":["default"],"gains":[0.0],"hinges":[0.7],"local_axes":[np.array([0.0,1.0,0.0])],"rotation":[1],"span_percs":[0.3]}
+        
     ):
         """
         Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
@@ -133,6 +136,9 @@ class WingSegment(WingSurface):
 
         # Set the mass
         self._mass = mass
+
+        # set the moving segments
+        self.moving_surfs = moving_surfs
 
         # Create the wing segment
         self._recalculate()
@@ -230,6 +236,7 @@ class WingSegment(WingSurface):
             N=self.N,
             M=self.M,
             mass=self._mass,
+            moving_surfs = self.moving_surfs
         )
 
         # Get the properties of the wing segment instance and overwrite the properties of the wing segment
