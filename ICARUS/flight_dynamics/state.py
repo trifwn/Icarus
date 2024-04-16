@@ -90,6 +90,10 @@ class State:
     def name(self) -> str:
         return self._name
 
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name = value
+
     @property
     def u_freestream(self) -> float:
         return self._u_freestream

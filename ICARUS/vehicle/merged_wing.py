@@ -170,6 +170,12 @@ class MergedWing(WingSurface):
         self.volume_distribution: FloatArray = np.empty(self.num_panels, dtype=float)
         self.volume: float = 0.0
 
+        self.control_vars = set()
+        self.controls = []
+        for segment in self.wing_segments:
+            self.control_vars.update(segment.control_vars)
+            self.controls.extend(segment.controls)
+        
         ####### Calculate Wing Parameters #######
         self.calculate_wing_parameters()
         ####### Calculate Wing Parameters ########
@@ -272,7 +278,7 @@ class MergedWing(WingSurface):
         self.area = 0.0
         self.S = 0.0
         for segment in self.wing_segments:
-            if segment.name.upper().startswith("PADDING"):
+            if segment.is_lifting == False:
                 continue
             segment.calculate_area()
             self.area += segment.area

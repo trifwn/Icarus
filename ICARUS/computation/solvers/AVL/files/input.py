@@ -166,7 +166,7 @@ def avl_geo(
             if solver_options["inviscid"]:
                 viscous = False
 
-        if surf.name == "padding":
+        if surf.is_lifting == False:
             viscous = False
             f_io.write("\n")
             f_io.write("NOWAKE\n")
