@@ -7,6 +7,8 @@ import numpy as np
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.control_surface import ControlSurface
+from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import DistributionType
@@ -43,8 +45,8 @@ class WingSegment(WingSurface):
         N: int = 15,
         M: int = 5,
         mass: float = 1.0,
-        moving_surfs : dict[str, Union[list[float], list[int], list[str],list[FloatArray]]] = {"names":["default"],"gains":[0.0],"hinges":[0.7],"local_axes":[np.array([0.0,1.0,0.0])],"rotation":[1],"span_percs":[0.3]}
-        
+        controls: list[ControlSurface] = [NoControl],
+        is_lifting: bool = True,
     ):
         """
         Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
@@ -137,8 +139,11 @@ class WingSegment(WingSurface):
         # Set the mass
         self._mass = mass
 
+        # Wether the surface has lift
+        self.is_lifting = is_lifting
+
         # set the moving segments
-        self.moving_surfs = moving_surfs
+        self.controls = controls
 
         # Create the wing segment
         self._recalculate()
@@ -236,7 +241,8 @@ class WingSegment(WingSurface):
             N=self.N,
             M=self.M,
             mass=self._mass,
-            moving_surfs = self.moving_surfs
+            controls=self.controls,
+            is_lifting=self.is_lifting,
         )
 
         # Get the properties of the wing segment instance and overwrite the properties of the wing segment
@@ -440,6 +446,7 @@ class WingSegment(WingSurface):
             N=state["N"],
             M=state["M"],
             mass=state["mass"],
+            controls=state['controls'],
         )
 
     def __getstate__(self) -> dict:
@@ -467,4 +474,5 @@ class WingSegment(WingSurface):
             "N": self.N,
             "M": self.M,
             "mass": self.mass,
+            "controls": self.controls,
         }

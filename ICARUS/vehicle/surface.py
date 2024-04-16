@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import types
 from typing import Callable
-import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,8 +11,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from .strip import Strip
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
-from typing import Union
 from ICARUS.database import DB
+from ICARUS.vehicle.control_surface import ControlSurface
+from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import equal_spacing_function_factory
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -40,11 +40,8 @@ class WingSurface:
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
         chord_discretization_function: Callable[[int], float] | None = None,
         tip_airfoil: str | Airfoil | None = None,
-        has_lift: bool = True,
-        moving_surfs : dict[str, Union[list[float], list[int], list[str],list[FloatArray]]] = {"names":["default"],"gains":[0.0],"hinges":[0.7],"local_axes":[np.array([0.0,1.0,0.0])],"rotation":[1],"span_percs":[0.3]}
-
-    
- 
+        is_lifting: bool = True,
+        controls: list[ControlSurface] = [NoControl],
     ) -> None:
         # Constructor for the Lifting Surface Class
         # The lifting surface is defined by providing the information on a number of points on the wing.
@@ -63,7 +60,7 @@ class WingSurface:
             raise ValueError("The number of points must be the same for all parameters")
 
         self.name: str = name
-        self.has_lift: bool = has_lift
+        self.is_lifting: bool = is_lifting
         # Define Coordinate System
         orientation = np.array(orientation, dtype=float)
         origin = np.array(origin, dtype=float)
@@ -96,13 +93,15 @@ class WingSurface:
             ],
         )
         self.R_MAT: FloatArray = R_YAW.dot(R_PITCH).dot(R_ROLL)
-        new_axes = []
-        for i,n in enumerate(moving_surfs["names"]):
-            new_axes.append(self.R_MAT.T@moving_surfs["local_axes"][i])
-        self.moving_surfs : dict = copy.deepcopy(moving_surfs) 
-        self.moving_surfs.pop("local_axes")
-        self.moving_surfs["hinge_axes"] = new_axes
 
+        # Controls
+        self.controls = controls
+        control_vars: set[str] = set()
+        for control in self.controls:
+            if control.name != "none":
+                control_vars.add(control.control_var)
+        self.control_vars = control_vars
+        self.num_control_variables = len(control_vars)
 
         # self.moving_surface : tuple[str,float,float,FloatArray,int] = (local_moving_surface[0],local_moving_surface[1],local_moving_surface[2],new_axis,local_moving_surface[4])
 
@@ -220,8 +219,8 @@ class WingSurface:
         mass: float = 1.0,
         # Optional Parameters
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
-        moving_surfs : dict[str, Union[list[float], list[int], list[str],list[FloatArray]]] = {"names":["default"],"gains":[0.0],"hinges":[0.7],"local_axes":[np.array([0.0,1.0,0.0])],"rotation":[1],"span_percs":[0.3]}
-        
+        controls: list[ControlSurface] = [NoControl],
+        is_lifting: bool = True,
     ) -> WingSurface:
         # Define the Lifting Surface from a set of functions instead of a set of points. We must Specify 3 kind of inputs
         # 1) Basic information about the wi:g win thee ofng:
@@ -312,8 +311,8 @@ class WingSurface:
             chord_discretization_function=chord_discretization_function,
             mass=mass,
             symmetries=symmetries,
-            moving_surfs = moving_surfs
-
+            controls=controls,
+            is_lifting=is_lifting,
         )
         return self
 
@@ -1159,6 +1158,9 @@ class WingSurface:
         if show_plot:
             plt.show()
 
+    def __control__(self, control_vector: dict[str, float]) -> None:
+        pass
+
     # def plot_surface(
     #     self,
     #     thin: bool = False,
@@ -1196,14 +1198,14 @@ class WingSurface:
             func_name = func.__func__.__name__
             return {"py/method": [func.__self__, func_name]}
         elif isinstance(func, types.FunctionType):
-            if func.__name__ == '<lambda>':
+            if func.__name__ == "<lambda>":
                 return {"py/lambda": func.__code__.co_code}
             else:
-                return {"py/function": func.__module__ + '.' + func.__name__}
+                return {"py/function": func.__module__ + "." + func.__name__}
         else:
             return None
 
-    def __setstate__(self, state: dict) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         chord_discretization_func_info = state.get("chord_discretization_function")
         if chord_discretization_func_info:
             func_type, func_info = list(chord_discretization_func_info.items())[0]
@@ -1211,7 +1213,7 @@ class WingSurface:
                 obj, func_name = func_info
                 chord_discretization_function = getattr(obj, func_name)
             elif func_type == "py/function":
-                module_name, func_name = func_info.rsplit('.', 1)
+                module_name, func_name = func_info.rsplit(".", 1)
                 module = __import__(module_name, fromlist=[func_name])
                 chord_discretization_function = getattr(module, func_name)
             else:
@@ -1235,10 +1237,11 @@ class WingSurface:
             mass=state["mass"],
             symmetries=state["symmetries"],
             chord_discretization_function=chord_discretization_function,
-            has_lift=state["has_lift"],
+            is_lifting=state["is_lifting"],
+            controls=state["controls"],
         )
 
-    def __getstate__(self) -> dict:
+    def __getstate__(self) -> dict[str, Any]:
         # Convert lambda function to a named function
         state = {
             "name": self.name,
@@ -1255,11 +1258,12 @@ class WingSurface:
             "M": self.M,
             "mass": self.mass,
             "symmetries": self.symmetries,
-            "has_lift": self.has_lift,
+            "is_lifting": self.is_lifting,
             "chord_discretization_function": (
                 self.serialize_function(self.chord_discretization_function)
                 if self.chord_spacing is not DiscretizationType.EQUAL
                 else None
             ),
+            "controls": self.controls,
         }
         return state

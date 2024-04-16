@@ -14,13 +14,12 @@ class ControlVariableType(Enum):
 
 
 class ControllerVariable:
-
     def __init__(
         self,
         name: str,
         type: ControlVariableType | str,
         initial_value: float = 0,
-        bounds=[-np.inf, np.inf],
+        bounds: tuple[float, float] = (-np.inf, np.inf),
     ) -> None:
         self.name = name
 

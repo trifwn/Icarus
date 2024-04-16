@@ -224,15 +224,25 @@ def avl_geo(
                 f_io.write("\n")
                 f_io.write("\n")
                 strip_airfoil = strip.mean_airfoil
-                strip_r =np.array([strip.x1,strip.y1,strip.z1])
-                strip_span = surf.R_MAT.T@strip_r
-                for k,n in enumerate(surf.moving_surfs["names"]):
-                    
-                    if strip_r[1] <= surf.moving_surfs["span_percs"][k]:
+
+                strip_r = np.array([strip.x1, strip.y1, strip.z1])
+                strip_span = (surf.R_MAT.T @ strip_r)[1]
+
+                for control_surf in surf.controls:
+                    if (strip_span >= control_surf.span_position_start) and (
+                        strip_span <= control_surf.span_position_end
+                    ):
 
                         f_io.write("CONTROL \n")
-                        f_io.write("#Cname   Cgain  Xhinge  HingeVec       SgnDup\n")
-                        f_io.write(f"{n} {surf.moving_surfs['gains'][k]}  {surf.moving_surfs['hinges'][k]} {surf.moving_surfs['hinge_axes'][k][0]} {surf.moving_surfs['hinge_axes'][k][1]} {surf.moving_surfs['hinge_axes'][k][2]} {surf.moving_surfs['rotation'][k]} \n")
+                        f_io.write("#Cname   Cgain  Xhinge  HingeVec  SgnDup\n")
+                        cname = control_surf.control_var
+                        cgain = 1.0
+                        x_hinge = control_surf.chord_function(0.0)
+                        hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
+                        sgndup = -1 if control_surf.inverse_symmetric else 1
+                        f_io.write(
+                            f"{cname} {cgain}  {x_hinge} {hinge_vec[0]} {hinge_vec[1]} {hinge_vec[2]} {sgndup} \n",
+                        )
 
             # Save Airfoil file
             strip_airfoil.repanel_spl(180, 1e-7)
@@ -380,7 +390,6 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
         file = open(path)
         lines = file.readlines()
         file.close()
-      
 
         head: list[float] = []
         surfs: list[float] = []
@@ -395,7 +404,6 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
                 and not l.startswith("  Sref")
             ):
                 surfs.append(j)
-
 
         surfs_arr = np.array(surfs, dtype=float)
         head_arr = np.array([head[0]], dtype=float)

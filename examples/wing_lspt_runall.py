@@ -9,7 +9,6 @@ import time
 from typing import Any
 
 import numpy as np
-
 from Vehicles.Planes.e190_cruise import e190_cruise
 from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
 from Vehicles.Planes.wing_variations import wing_var_chord_offset

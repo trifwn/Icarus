@@ -1,6 +1,7 @@
 import time
 from typing import Any
 
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -95,7 +96,7 @@ def update_plot(
         fig.suptitle(title, fontsize=16)
 
         # x_goal = np.linspace(0, traj[-1][0], len(traj))
-        x_goal = np.linspace(0, 1000, len(xs))
+        x_goal = jnp.linspace(0, 1000, len(xs))
         y_goal = trajectory.fun(x_goal)
 
         # Plot Trajectory

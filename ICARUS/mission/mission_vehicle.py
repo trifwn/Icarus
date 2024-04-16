@@ -51,9 +51,9 @@ class MissionVehicle:
     @partial(jax.jit, static_argnums=(0,))
     def get_aerodynamic_forces(
         self,
-        velocity: Float[Array, "dim1"] | float,
-        aoa: Float[Array, "dim1"] | float,
-    ) -> tuple[Float[Array, "dim1"], Float[Array, "dim1"], Float[Array, "dim1"]]:
+        velocity: Float[Array, "a"] | float,
+        aoa: Float[Array, "a"] | float,
+    ) -> tuple[Float[Array, "a"], Float[Array, "a"], Float[Array, "a"]]:
         cl, cd, cm = self.interpolate_polars(aoa)
 
         density = 1.225

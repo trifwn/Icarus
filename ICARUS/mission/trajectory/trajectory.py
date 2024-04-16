@@ -201,9 +201,9 @@ class MissionTrajectory:
 
     @partial(jax.jit, static_argnums=(0,))
     def get_control(
-        self, 
+        self,
     ) -> Float[Array, "2"]:
-        
+
         aoa = jnp.array([0])
         amps = jnp.array([30])
         return jnp.array([aoa, amps])
@@ -353,12 +353,8 @@ class MissionTrajectory:
         return F, state_now
 
     @partial(jax.jit, static_argnums=(0,))
-    def timestep(
-        self, t: float, 
-        y: FloatArray, 
-        *args
-    ) -> FloatArray:
-        x = y[:2]    
+    def timestep(self, t: float, y: FloatArray, *args) -> FloatArray:
+        x = y[:2]
         v = y[2:]
         current_state = self.get_control()
 
@@ -367,10 +363,10 @@ class MissionTrajectory:
             vdot, _ = self.dvdt(t, x, v, current_state)
             vdot = vdot.reshape(-1)
             return jnp.hstack([xdot, vdot])
-        
+
         def problem():
             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
-        
+
         def error_check(curr_y):
             def nan_check(curr_y):
                 return jnp.isnan(curr_y).any()
@@ -385,7 +381,7 @@ class MissionTrajectory:
                 # jprint("Error encountered at time: {}", t)
                 # jprint("State: {}", curr_y)
                 return True
-            
+
             def ok(_):
                 return False
 
@@ -393,14 +389,14 @@ class MissionTrajectory:
             crash_result = lax.cond(crash_check(curr_y), handle_error, ok, None)
             negative_v_result = lax.cond(negative_v_check(curr_y), handle_error, ok, None)
 
-            return nan_result | crash_result | negative_v_result 
+            return nan_result | crash_result | negative_v_result
 
         # If there is a Nan Value in Y retrun error() else compute normal
         return jax.lax.cond(
             error_check(y),
             problem,
             normal,
-        ) 
+        )
 
     def plot_history(self, axs: list[Axes] | None = None, fig=None) -> None:
         print(type(axs))

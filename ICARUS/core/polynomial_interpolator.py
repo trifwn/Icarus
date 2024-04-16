@@ -2,10 +2,12 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
+from jaxtyping import Array
+from jaxtyping import Float
 
 
 class Polynomial2DInterpolator:
-    def __init__(self, kx, ky) -> None:
+    def __init__(self, kx: int, ky: int) -> None:
         self.kx = kx
         self.ky = ky
         self.coefficients = jnp.zeros((kx + 1, ky + 1))
@@ -19,7 +21,7 @@ class Polynomial2DInterpolator:
         self.z_mean = jnp.empty(0)
         self.z_std = jnp.empty(0)
 
-    def fit(self, x: jax.Array, y: jax.Array, z: jax.Array) -> None:
+    def fit(self, x: Float[Array, "a"], y: Float[Array, "a"], z: Float[Array, "a"]) -> None:
         """
         Works in the following way:
 
@@ -78,7 +80,7 @@ class Polynomial2DInterpolator:
 
     partial(jax.jit, static_argnums=(0,))
 
-    def __call__(self, x: jax.Array, y: jax.Array) -> jax.Array:
+    def __call__(self, x: Float[Array, "a"], y: Float[Array, "a"]) -> jax.Array:
         # If the arrays are scalar convert to 1D arrays
         x = jnp.atleast_1d(x)
         y = jnp.atleast_1d(y)

@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 
-
 from examples.Vehicles.Planes.hermes import hermes
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
     avl_dynamic_analysis_fd,

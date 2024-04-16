@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
+from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.strip import Strip
 
@@ -94,6 +95,22 @@ class Airplane:
         # Define Connection Dictionary
         self.connections: dict[str, Surface_Connection] = {}
         # self.register_connections()
+
+        # Get the control vector:
+        control_vars: set[str] = set()
+        for surf in self.surfaces:
+            control_vars.update(surf.control_vars)
+        self.control_vars: set[str] = control_vars
+        self.num_control_variables = len(control_vars)
+
+    def __control__(self, control_vector):
+        control_dict = {k: control_vector[i] for k, i in enumerate(self.control_vars)}
+        for surf in self.surfaces:
+            surf_control_vec = []
+            for name, value in control_dict.items():
+                if name in surf.control_vars:
+                    surf_control_vec.append(value)
+            surf.__control__(surf_control_vec)
 
     # @property
     # def surfaces(self) -> list[WingSurface]:
@@ -553,16 +570,13 @@ class Airplane:
             str: Json String
         """
         # If the object is a subclass of Airplane, then we can pickle it as an Airplane object
-        print(f"Encoding {self.name}")
-        print(f"{type(self)}")
-        if isinstance(self, Airplane):
-            print("Encoding as Airplane")
+        if self.__class__ == Airplane.__class__:
             encoded = jsonpickle.encode(self)
         else:
-            print("Converting as Airplane")
+            # print("Converting to Airplane")
             # Encode the object as only an Airplane object
             other = Airplane.__copy__(self)
-            print(f"Other is {other}, {type(other)}")
+            # print(f"Other is {other}, {type(other)}")
             encoded = jsonpickle.encode(other)
             del other
 

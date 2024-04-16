@@ -1,13 +1,15 @@
 import jax
+
 # Get the percision of the jax library
 jax.config.update("jax_enable_x64", True)
-jax.config.update('jax_platform_name', 'cpu')
-print('Jax has been configured to use the following devices: ', jax.devices())
+jax.config.update("jax_platform_name", "cpu")
+print("Jax has been configured to use the following devices: ", jax.devices())
 # Global flag to set a specific platform, must be used at startup.
-print(jax.numpy.ones(3).devices()) # TFRT_CPU_0
+print(jax.numpy.ones(3).devices())  # TFRT_CPU_0
 
 
 import numpy as np
+from jaxtyping import Float, Array
 from ICARUS.propulsion.engine import Engine
 from ICARUS.database import DB
 
@@ -25,17 +27,14 @@ from ICARUS.vehicle.plane import Airplane
 from ICARUS.mission.mission_vehicle import MissionVehicle
 
 
-plane: Airplane = DB.get_vehicle('final_design')
+plane: Airplane = DB.get_vehicle("final_design")
 # plane.visualize(annotate=True)
 
 from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
+
 # plot_airplane_polars([plane.name])
 
-mission_plane = MissionVehicle(
-    plane,
-    engine,
-    solver= "AVL"
-)
+mission_plane = MissionVehicle(plane, engine, solver="AVL")
 
 
 # # Compute Trajectory
@@ -47,95 +46,112 @@ from jax.debug import print as jprint
 import matplotlib.pyplot as plt
 
 
-from diffrax import diffeqsolve, ODETerm, SaveAt, Tsit5,Dopri8, PIDController, DiscreteTerminatingEvent, DirectAdjoint, BacksolveAdjoint
+from diffrax import (
+    diffeqsolve,
+    ODETerm,
+    SaveAt,
+    # Tsit5,
+    Dopri8,
+    PIDController,
+    DiscreteTerminatingEvent,
+    DirectAdjoint,
+    # BacksolveAdjoint,
+)
 
 
 operating_floor = 12.5
-T0 = 0.
-X0 =  jnp.array([0., 60.])
-V0_MAG = 25.
-TEND = 90.
-TRAJECTORY_MAX_DIST = 3000.
-NUM_SPLINE_CONTROL_POINTS = 50
-
+T0 = 0.0
+X0 = jnp.array([0.0, 60.0])
+V0_MAG = 25.0
+TEND = 90.0
+TRAJECTORY_MAX_DIST = 3000.0
+NUM_SPLINE_CONTROL_POINTS = 45
 
 
 solver = Dopri8(scan_kind="bounded")
 ts = jnp.linspace(T0, TEND, 1001)
 saveat = SaveAt(ts=ts)
-stepsize_controller = PIDController(rtol=1e-5, atol=1e-5, dtmin= 1e-4)
+stepsize_controller = PIDController(rtol=1e-5, atol=1e-5, dtmin=1e-4)
+
 
 def default_terminating_event_fxn(state, **kwargs):
     terms = kwargs.get("terms", lambda a, x, b: x)
     return jnp.any(jnp.isnan(terms.vf(state.tnext, state.y, 0)))
-terminating_event =  DiscreteTerminatingEvent(default_terminating_event_fxn)
+
+
+terminating_event = DiscreteTerminatingEvent(default_terminating_event_fxn)
 
 
 @jax.jit
 def fun(y, *args):
-    x0 = X0 
-    x =  jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
+    x0 = X0
+    x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
-    spline_i = CubicSpline_factory(x,y)
+    spline_i = CubicSpline_factory(x, y)
 
     traj_spl = MissionTrajectory(
-        "CubicSpline", 
-        spline_i, 
+        "CubicSpline",
+        spline_i,
         vehicle=mission_plane,
-        verbosity= 2,
-        operating_floor= operating_floor
+        verbosity=2,
+        operating_floor=operating_floor,
     )
 
-    g1 = jnp.arctan(
-        traj_spl.dy_dx(x0[0])
-    )
+    g1 = jnp.arctan(traj_spl.dy_dx(x0[0]))
 
     v0 = jnp.array([jnp.cos(g1), jnp.sin(g1)]) * V0_MAG
     y0 = jnp.hstack([x0, v0])
     term = ODETerm(traj_spl.timestep)
 
-    solution = diffeqsolve(term, solver, t0=T0, t1=TEND, dt0=0.1, y0=y0,
-                saveat=saveat,
-                stepsize_controller=stepsize_controller,
-                discrete_terminating_event= terminating_event,
-                max_steps= 10000,
-                adjoint= DirectAdjoint() 
-        )
+    solution = diffeqsolve(
+        term,
+        solver,
+        t0=T0,
+        t1=TEND,
+        dt0=0.1,
+        y0=y0,
+        saveat=saveat,
+        stepsize_controller=stepsize_controller,
+        discrete_terminating_event=terminating_event,
+        max_steps=10000,
+        adjoint=DirectAdjoint(),
+    )
     ts = jnp.array(solution.ts)
     ys = jnp.array(solution.ys)
     jprint("\tControl Point X {}", x)
     jprint("\tControl Point Y {}", y)
-    x = jnp.nan_to_num(ys[:,0], nan = 0 , posinf= 0, neginf= 0)
-    y = jnp.nan_to_num(ys[:,1], nan = 0 , posinf= 0, neginf= 0)
-    u = jnp.nan_to_num(ys[:,2], nan = 0 , posinf= 0, neginf= 0)
-    v = jnp.nan_to_num(ys[:,3], nan = 0 , posinf= 0, neginf= 0)
+    x = jnp.nan_to_num(ys[:, 0], nan=0, posinf=0, neginf=0)
+    y = jnp.nan_to_num(ys[:, 1], nan=0, posinf=0, neginf=0)
+    u = jnp.nan_to_num(ys[:, 2], nan=0, posinf=0, neginf=0)
+    v = jnp.nan_to_num(ys[:, 3], nan=0, posinf=0, neginf=0)
     # jprint("X: {}", x)
     # jprint("Y: {}", y)
     # jprint("t: {}", ts)
     jprint("\033[92mReturning {} \033[0m", -jnp.max(x))
-    return -x[-1]/ TRAJECTORY_MAX_DIST
+    return -x[-1] / TRAJECTORY_MAX_DIST
+
 
 @jax.jit
 def jacobian(y, *args):
-    J =  jax.jacrev(fun, argnums=0)(y)
+    J = jax.jacrev(fun, argnums=0)(y)
     jprint("\033[91mJacobian: {} \033[0m", J)
-    return J 
+    return J
 
 
-def compute_and_plot(y):
-    x0 = X0 
-    x =  jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
+def compute_and_plot(y: Float[Array, "..."]) -> None:
+    x0 = X0
+    x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
 
-    some_spl = CubicSpline_factory(x,y)
-    trajectory_best =  MissionTrajectory(
-            "Optimized CubicSpline", 
-            some_spl, 
-            vehicle=mission_plane,
-            verbosity= 2,
-            operating_floor= operating_floor
-        )
-    gamma = jnp.arctan( trajectory_best.dy_dx(X0[0]) )
+    some_spl = CubicSpline_factory(x, y)
+    trajectory_best = MissionTrajectory(
+        "Optimized CubicSpline",
+        some_spl,
+        vehicle=mission_plane,
+        verbosity=2,
+        operating_floor=operating_floor,
+    )
+    gamma = jnp.arctan(trajectory_best.dy_dx(X0[0]))
     v0 = jnp.array([jnp.cos(gamma), jnp.sin(gamma)]) * V0_MAG
 
     t, xs, vs, states = RK4systems(T0, TEND, 0.1, X0, v0, trajectory_best)
@@ -145,7 +161,7 @@ def compute_and_plot(y):
         trajectory_best.record_state(ti, xi, vi, *statei)
     # Plot Trajectory
     trajectory_best.plot_history()
-    plt.show(block = True)
+    plt.show(block=True)
 
 
 # # Function Call
@@ -153,7 +169,7 @@ def compute_and_plot(y):
 
 # print("Compiling the function. First Call will be slow.")
 # import time
-# time_s = time.time() 
+# time_s = time.time()
 
 # y_test = jnp.repeat(60., NUM_SPLINE_CONTROL_POINTS)
 # solution = fun(y = y_test)
@@ -167,20 +183,19 @@ def compute_and_plot(y):
 # time_s = time.time()
 
 
-
 # y_test = jnp.repeat(15., NUM_SPLINE_CONTROL_POINTS)
 # JAC= jacobian(y = y_test)
 # print(f"Time taken: {time.time() - time_s}")
-
 
 
 # # Optimization JAX
 
 
 import optimistix as optx
+
 # solver_optimistix = optx.BestSoFarMinimiser(
 #     optx.GradientDescent(
-#         rtol=1e-12, 
+#         rtol=1e-12,
 #         atol=1e-12,
 #         learning_rate=1e-1,
 #         # search = optx.BacktrackingArmijo(decrease_factor=0.9, slope=0.1, step_init=1.)
@@ -188,11 +203,8 @@ import optimistix as optx
 # )
 
 import optax
-solver_optax = optx.BestSoFarMinimiser(
-    optx.OptaxMinimiser(
-        optax.adam(1e-3, eps = 1e-10), rtol=1e-12, atol=1e-12
-    )
-)
+
+solver_optax = optx.BestSoFarMinimiser(optx.OptaxMinimiser(optax.adam(1e-3, eps=1e-10), rtol=1e-12, atol=1e-12))
 
 # y_initial = jnp.array([
 #     58.52307106 ,
@@ -206,15 +218,15 @@ solver_optax = optx.BestSoFarMinimiser(
 #     94.65244459 ,
 #     25.41280581,
 # ])
-y_initial = jnp.repeat(60., NUM_SPLINE_CONTROL_POINTS)
+y_initial = jnp.repeat(60.0, NUM_SPLINE_CONTROL_POINTS)
 
 print("Optimizing with Optimistix.")
 res_splines = optx.minimise(
-    fn = fun,
-    y0 = y_initial,
-    solver = solver_optax,
-    max_steps= 300000,
-    throw = False,
+    fn=fun,
+    y0=y_initial,
+    solver=solver_optax,
+    max_steps=300000,
+    throw=False,
 )
 
 print(res_splines.stats)
@@ -226,7 +238,7 @@ compute_and_plot(y)
 
 
 # from scipy.optimize import minimize
- 
+
 # res_splines = minimize(
 #     fun =fun,
 #     jac = jacobian,
@@ -239,5 +251,3 @@ compute_and_plot(y)
 # print(res_splines.x)
 # y = res_splines.x
 # compute_and_plot(y)
-
-

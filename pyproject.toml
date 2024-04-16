@@ -37,8 +37,11 @@ dependencies = [
     'jax',
     'jaxlib',
     'jaxtyping',
-    'interpax',
+    'interpax', # Maybe Deprecate
+    "diffrax",
+    "optimistix",
     'jaxopt',
+    "optax",
 ]
 dynamic = ["version"]
 
