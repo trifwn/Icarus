@@ -175,7 +175,7 @@ class MergedWing(WingSurface):
         for segment in self.wing_segments:
             self.control_vars.update(segment.control_vars)
             self.controls.extend(segment.controls)
-        
+
         ####### Calculate Wing Parameters #######
         self.calculate_wing_parameters()
         ####### Calculate Wing Parameters ########

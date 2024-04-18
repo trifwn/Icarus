@@ -56,6 +56,7 @@ class General_SOO_Optimizer:
             )
         self.x0 = np.array(x0)
         self.x0_norm = np.array(x0_norm)
+        self.best_x = self.x0
 
         # Bounds
         self.bounds = []
@@ -112,6 +113,8 @@ class General_SOO_Optimizer:
         fitness = self.objective_fn(self.current_obj, **self.design_constants)
         print(f"Fitness is {fitness}")
         self.fitness.append(fitness)
+        if fitness == np.min(self.fitness):
+            self.best_x = x
         return fitness
 
     def jac(self, x: FloatArray) -> float:
@@ -344,6 +347,11 @@ class General_SOO_Optimizer:
             raise NotImplementedError
         print(f"Optimization Effort Returned")
         for design_variable, value in self.design_variables.items():
-            print(f"{design_variable}: {value}")
+            print(f"{design_variable}= {value},")
+
+        print("\n\n\n")
+        print(f"Best Fitness: {np.min(self.fitness)}")
+        for i, design_variable in enumerate(self.design_variables.keys()):
+            print(f"{design_variable}= {self.best_x[i] * (self.bounds[i][1] - self.bounds[i][0]) + self.bounds[i][0]},")
 
         return opt

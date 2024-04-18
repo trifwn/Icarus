@@ -41,7 +41,7 @@ def run_lstp_angles(
     )
 
     if wing.is_symmetric:
-        solve_fun: Callable[..., tuple[FloatArray, FloatArray]] = symm_wing_panels
+        solve_fun = symm_wing_panels
     else:
         solve_fun = voring
 

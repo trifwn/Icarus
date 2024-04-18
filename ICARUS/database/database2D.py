@@ -350,7 +350,6 @@ class Database_2D:
         Raises:
             FileNotFoundError: If the airfoil is not found in the DB2D or EXTERNAL DB and cant be generated from NACA Digits.
         """
-        print(f"Searching for airfoil {airfoil_folder} in DB2D")
         # Handle NACA airfoils first since we have analytical expressions for them
         if airfoil_folder.upper().startswith("NACA") and (
             len(airfoil_folder) == (4 + 4) or len(airfoil_folder) == (5 + 4)
@@ -365,7 +364,6 @@ class Database_2D:
         path_exists = os.path.exists(os.path.join(DB2D, airfoil_folder.upper()))
         if path_exists:
             try:
-                print(f"Loading airfoil {airfoil_folder} from DB2D")
                 filename = os.path.join(DB2D, airfoil_folder.upper(), airfoil_folder.lower())
                 self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
                 logging.info(f"Loaded airfoil {airfoil_folder} from DB2D")

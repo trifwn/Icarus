@@ -40,7 +40,7 @@ def gnvp3_run(run_parallel: bool = True) -> None:
 
     options.plane = bmark
     options.state = state
-    options.solver2D = "XFLR"
+    options.solver2D = "Xfoil"
     options.maxiter = maxiter
     options.timestep = timestep
     options.angles = angles

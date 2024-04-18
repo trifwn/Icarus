@@ -52,6 +52,7 @@ class State:
         self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
         self.inertia: FloatArray = airplane.total_inertia
         self.mass: float = airplane.M
+        self.CG = airplane.CG
 
         # Get the airplane control variables
         self.control_vars: set[str] = airplane.control_vars
@@ -63,7 +64,7 @@ class State:
         self.trim_dynamic_pressure = 0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
-        self.polar = DataFrame()
+        self.polar: DataFrame = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
         self.sensitivity: Struct = Struct()

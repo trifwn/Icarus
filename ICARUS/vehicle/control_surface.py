@@ -1,6 +1,12 @@
 from typing import Callable
-from ICARUS.core.types import FloatArray
+
 import numpy as np
+
+from ICARUS.core.types import FloatArray
+
+
+def default_chord_function(self, span_position: float) -> float:
+    return self.chord_percentage_start + (self.chord_percentage_end - self.chord_percentage_start) * span_position
 
 
 class ControlSurface:
@@ -17,7 +23,7 @@ class ControlSurface:
         chord_extension: float = 1.0,
         local_rotation_axis: FloatArray = np.array([0.0, 1.0, 0.0]),
         chord_function: Callable[[float], float] | None = None,
-        inverse_symmetric: bool = False
+        inverse_symmetric: bool = False,
     ) -> None:
         """
         Initialize the control surface object.
@@ -44,11 +50,7 @@ class ControlSurface:
         self.local_rotation_axis = local_rotation_axis
 
         if chord_function is None:
-            self.chord_function : Callable[[float], float] = (
-                lambda span_position: self.chord_percentage_start
-                + (self.chord_percentage_end - self.chord_percentage_start)
-                * span_position
-            )
+            self.chord_function: Callable[[float], float] = default_chord_function
         else:
             self.chord_function = chord_function
         self.inverse_symmetric = inverse_symmetric
@@ -91,7 +93,7 @@ class Rudder(ControlSurface):
             span_positions=span_positions,
             hinge_chord_percentages=hinge_chord_percentages,
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
-            chord_extension= 1.0,
+            chord_extension=1.0,
         )
 
 
@@ -108,7 +110,7 @@ class Aileron(ControlSurface):
             hinge_chord_percentages=hinge_chord_percentages,
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
             chord_extension=1.0,
-            inverse_symmetric= True
+            inverse_symmetric=True,
         )
 
 
@@ -125,5 +127,5 @@ class Flap(ControlSurface):
             span_positions=span_positions,
             hinge_chord_percentages=hinge_chord_percentages,
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
-            chord_extension= chord_extension,
+            chord_extension=chord_extension,
         )

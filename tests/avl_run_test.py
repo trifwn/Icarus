@@ -35,7 +35,7 @@ def avl_run() -> None:
 
     options.plane = bmark
     options.state = state
-    options.solver2D = "XFLR"
+    options.solver2D = "Xfoil"
     options.angles = angles
 
     avl.set_analysis_options(options)

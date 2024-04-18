@@ -89,6 +89,7 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     U_CRUISE: float = np.sqrt(W / (0.5 * dens * cl_trim * S))
     CL_OVER_CD = cl_trim / cd_trim
     CM0: float = float(state.polar[state.polar["AoA"] == 0.0]["Cm"].to_list()[0])
+
     # Print How accurate is the trim
     if verbose:
         print(
@@ -96,6 +97,32 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
         )
         print(f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
         print(f"Trim velocity is {U_CRUISE} m/s")
+
+    # Calculate the static margin
+    aoas = state.polar["AoA"].to_numpy()
+    cls = state.polar["CL"].to_numpy()
+    cms = state.polar["Cm"].to_numpy()
+    mac = state.mean_aerodynamic_chord
+    x_cg = state.CG[0]
+
+    def movement(new_cg):
+        new_CM = cms + (new_cg - x_cg) * (cls) / mac
+
+        # New trim location
+        cm_sorted_idx = np.argsort(new_CM)
+        aoa_trim = np.interp(0, new_CM[cm_sorted_idx], aoas[cm_sorted_idx])
+
+        # Get the slope of the curve near the trim location
+        slopes = np.gradient(new_CM, aoas)
+        slope = np.interp(aoa_trim, aoas, slopes)
+        return slope
+
+    # Find where the slope is zero
+    from scipy.optimize import fsolve
+
+    x_neutral_point = fsolve(movement, x_cg)[0]
+    static_margin = (x_neutral_point - x_cg) / mac
+
     trim: dict[str, float] = {
         "U": U_CRUISE,
         "AoA": aoa_trim,
@@ -103,5 +130,7 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
         "CD": cd_trim,
         "CL/CD": CL_OVER_CD,
         "Cm0": CM0,
+        "Static Margin": static_margin,
+        "Neutral Point": x_neutral_point,
     }
     return trim

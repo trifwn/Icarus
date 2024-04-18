@@ -11,13 +11,12 @@ from typing import Any
 import numpy as np
 from Vehicles.Planes.e190_cruise import e190_cruise
 from Vehicles.Planes.e190_takeoff import e190_takeoff_generator
+from Vehicles.Planes.hermes import hermes
 from Vehicles.Planes.wing_variations import wing_var_chord_offset
 
-from examples.Vehicles.Planes.hermes import hermes
 from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import EXTERNAL_DB
@@ -30,9 +29,6 @@ def main() -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
 
-    # # DB CONNECTION
-    read_polars_2d(EXTERNAL_DB)
-
     # # Get Plane
     planes: list[Airplane] = []
     UINF: dict[str, Any] = {}
@@ -41,17 +37,11 @@ def main() -> None:
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, Any] = {}
 
-    from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-
-    filename: str = "Data/3D_Party/plane_titos.xml"
-    airplane = parse_xfl_project(filename)
-    planes.append(airplane)
-
-    embraer_cr: Airplane = e190_cruise(name="plane_1")
+    her: Airplane = hermes(name="plane_1")
     UINF["plane_1"] = 20
     ALTITUDE["plane_1"] = 0
     TEMPERATURE["plane_1"] = 273 + 15
-    planes.append(embraer_cr)
+    planes.append(her)
 
     for airplane in planes:
         print("--------------------------------------------------")

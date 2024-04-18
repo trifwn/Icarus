@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import types
-from typing import Any, Callable
+from typing import Any
+from typing import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -353,6 +354,8 @@ class WingSurface:
 
         # Create New Strips
         self.create_strips()
+        # self.calculate_wing_parameters()
+        self.calculate_volume()
 
     @property
     def span(self) -> float:
