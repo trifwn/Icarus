@@ -1,6 +1,9 @@
 # ICARUS
 Version v0.1
 
+## Working Effort.
+Code and Tools to analyze the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name). This software is developed for it to be used as part of a more general optimization workflow that will use different fidelity levels to produce mission specific aircrafts.
+
 ## Current Goals
 
 - Improve Examples
@@ -26,9 +29,7 @@ Version v0.1
 
 ---
 
-## The project is under Work
 
-Code and Tools to analyze the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name). This software is developed for it to be used as part of a more general optimization workflow that will use different fidelity levels to produce mission specific aircrafts.
 
 ---
 
