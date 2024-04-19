@@ -1,5 +1,3 @@
-from typing import Any
-
 from ICARUS.core.types import FloatArray
 
 

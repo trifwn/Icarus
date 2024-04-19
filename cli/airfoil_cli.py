@@ -4,16 +4,16 @@ ICARUS CLI for computing Airfoils
 Returns:
     None: None
 """
+
 import time
 from typing import Any
 
 from inquirer import Checkbox
 from inquirer import List
 from inquirer import Path
-from inquirer import prompt
 from inquirer import Text
+from inquirer import prompt
 
-from .cli_home import cli_home
 from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
 from cli.solver import set_solver_parameters
@@ -24,6 +24,8 @@ from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 from ICARUS.core.struct import Struct
 from ICARUS.database import DB
+
+from .cli_home import cli_home
 
 
 def ask_num_airfoils() -> int:

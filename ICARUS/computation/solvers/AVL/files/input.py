@@ -10,8 +10,8 @@ from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.types import FloatArray
-from ICARUS.database import AVL_exe
 from ICARUS.database import DB
+from ICARUS.database import AVL_exe
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
@@ -166,7 +166,7 @@ def avl_geo(
             if solver_options["inviscid"]:
                 viscous = False
 
-        if surf.name == "padding":
+        if surf.is_lifting == False:
             viscous = False
             f_io.write("\n")
             f_io.write("NOWAKE\n")
@@ -186,7 +186,7 @@ def avl_geo(
         f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
         f_io.write("\n")
         f_io.write("\n")
-
+        # cntrl_index = 1
         for j, strip in enumerate(surf.strips):
             f_io.write(
                 f"#------------ {surf.name} SECTION---{j+1} of {len(surf.strips)} of---------------------|  (keyword)\n",
@@ -224,6 +224,26 @@ def avl_geo(
                 f_io.write("\n")
                 f_io.write("\n")
                 strip_airfoil = strip.mean_airfoil
+
+                strip_r = np.array([strip.x1, strip.y1, strip.z1])
+                strip_span = (surf.R_MAT.T @ strip_r)[1]
+
+                for control_surf in surf.controls:
+                    if (strip_span >= control_surf.span_position_start) and (
+                        strip_span <= control_surf.span_position_end
+                    ):
+
+                        f_io.write("CONTROL \n")
+                        f_io.write("#Cname   Cgain  Xhinge  HingeVec  SgnDup\n")
+                        cname = control_surf.control_var
+                        cgain = 1.0
+                        x_hinge = control_surf.chord_function(0.0)
+                        hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
+                        sgndup = -1 if control_surf.inverse_symmetric else 1
+                        f_io.write(
+                            f"{cname} {cgain}  {x_hinge} {hinge_vec[0]} {hinge_vec[1]} {hinge_vec[2]} {sgndup} \n",
+                        )
+
             # Save Airfoil file
             strip_airfoil.repanel_spl(180, 1e-7)
             strip_airfoil.save_selig(PLANE_DIR)
@@ -351,7 +371,6 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
 
 
-# ayto mpainei sto input
 def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> list[DataFrame]:
     # for i, s in enumerate(plane.surfaces)
     #     if i0
@@ -362,9 +381,9 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
     #         inds.append(np.arange(1,s.N+1))
 
     dfs = []
-    from ICARUS.database.utils import angle_to_case
-
     import pandas as pd
+
+    from ICARUS.database.utils import angle_to_case
 
     for i, angle in enumerate(angles):
         path = os.path.join(DB.vehicles_db.DATADIR, plane.name, "AVL", f"fs_{angle_to_case(angle)}.txt")
@@ -377,13 +396,19 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
         for j, l in enumerate(lines):
             if l.startswith(f"    j     Xle "):
                 head.append(j)
-            elif l[47].isdigit() or l[46].isdigit() or l[56].isdigit():
+            elif len(l) > 56 and (
+                l[47].isdigit()
+                or l[46].isdigit()
+                or l[56].isdigit()
+                and not l.startswith("  Xref")
+                and not l.startswith("  Sref")
+            ):
                 surfs.append(j)
 
         surfs_arr = np.array(surfs, dtype=float)
         head_arr = np.array([head[0]], dtype=float)
         specific_rows = np.concatenate((head_arr, surfs_arr))
-        df = pd.read_csv(path, delim_whitespace=True, skiprows=lambda x: x not in specific_rows)
+        df = pd.read_csv(path, sep=r'\s+', skiprows=lambda x: x not in specific_rows)
         dfs.append(df)
 
     return dfs

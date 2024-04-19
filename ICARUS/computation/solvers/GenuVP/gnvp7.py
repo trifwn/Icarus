@@ -24,7 +24,6 @@ from ICARUS.computation.solvers.solver_parameters import FloatParameter
 from ICARUS.computation.solvers.solver_parameters import IntParameter
 from ICARUS.computation.solvers.solver_parameters import Parameter
 
-
 timestep_option = FloatInput(
     "timestep",
     "Timestep = 0.05 * chord / u_inf",

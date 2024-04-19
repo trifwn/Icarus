@@ -3,6 +3,9 @@
 Merged Wing Class
 ==================
 """
+
+from typing import Any
+
 import numpy as np
 
 from ICARUS.airfoils.airfoil import Airfoil
@@ -80,6 +83,8 @@ class MergedWing(WingSurface):
                         merged_wing_symmetries.append(symmetry_type)
             else:
                 merged_wing_symmetries = [symmetries]
+        else:
+            merged_wing_symmetries = symmetries
         self.symmetries: list[SymmetryAxes] = merged_wing_symmetries
         self.is_symmetric_y: bool = True if SymmetryAxes.Y in self.symmetries else False
 
@@ -167,6 +172,12 @@ class MergedWing(WingSurface):
         # Initialize Volumes
         self.volume_distribution: FloatArray = np.empty(self.num_panels, dtype=float)
         self.volume: float = 0.0
+
+        self.control_vars = set()
+        self.controls = []
+        for segment in self.wing_segments:
+            self.control_vars.update(segment.control_vars)
+            self.controls.extend(segment.controls)
 
         ####### Calculate Wing Parameters #######
         self.calculate_wing_parameters()
@@ -270,7 +281,7 @@ class MergedWing(WingSurface):
         self.area = 0.0
         self.S = 0.0
         for segment in self.wing_segments:
-            if segment.name.upper().startswith("PADDING"):
+            if segment.is_lifting == False:
                 continue
             segment.calculate_area()
             self.area += segment.area
@@ -408,3 +419,18 @@ class MergedWing(WingSurface):
     #     """
     #     for segment in self.wing_segments:
     #         segment.change_discretization(N, M)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        MergedWing.__init__(
+            self,
+            state["name"],
+            state["wing_segments"],
+            state["symmetries"],
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "wing_segments": self.wing_segments,
+            "symmetries": self.symmetries,
+        }

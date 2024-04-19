@@ -7,7 +7,6 @@ from pandas import DataFrame
 
 from ICARUS.database import DB
 from ICARUS.database.database2D import Database_2D
-from ICARUS.database.database3D import Database_3D
 
 
 def read_polars_2d(XFLRdir: str) -> None:
@@ -175,7 +174,7 @@ def read_polars_3d(
         df: DataFrame = pd.read_csv(
             filename,
             skiprows=7,
-            delim_whitespace=True,
+            sep=r'\s+',
             on_bad_lines="skip",
         )
         # rename columns

@@ -1,10 +1,9 @@
-from typing import Any
-
 import numpy as np
+
+from ICARUS.core.types import FloatArray
 
 from .helper_functions import get_climb_rate
 from .helper_functions import shape_like
-from ICARUS.core.types import FloatArray
 
 # FAR 4 -> 25.114
 

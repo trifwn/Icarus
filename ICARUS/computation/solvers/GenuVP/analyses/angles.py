@@ -1,5 +1,7 @@
 import logging
 import os
+from subprocess import CalledProcessError
+from threading import Event
 from threading import Thread
 from typing import Any
 from typing import NoReturn
@@ -13,8 +15,8 @@ from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_m
 from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
 from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
 from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct
@@ -26,6 +28,10 @@ from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 from ICARUS.vehicle.surface import WingSurface
+
+
+class StopRunningThreadError(Exception):
+    pass
 
 
 def gnvp_angle_case(
@@ -145,7 +151,6 @@ def run_gnvp_angles(
         surfaces,
         plane.CG,
         plane.orientation,
-        plane.disturbances,
     )
     print("Running Angles in Sequential Mode")
 
@@ -238,10 +243,10 @@ def run_gnvp_angles_parallel(
         surfaces,
         plane.CG,
         plane.orientation,
-        plane.disturbances,
     )
     from multiprocessing import Pool
 
+    stop_event = Event()
     print("Running Angles in Parallel Mode")
 
     def run() -> None:
@@ -266,7 +271,11 @@ def run_gnvp_angles_parallel(
                 )
                 for angle in angles
             ]
-            pool.starmap(gnvp_angle_case, args_list)
+            try:
+                _ = pool.starmap(gnvp_angle_case, args_list)
+            except CalledProcessError as e:
+                print(f"Could not run GNVP got: {e}")
+                stop_event.set()
 
     PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
     folders: list[str] = [angle_to_case(angle) for angle in angles]
@@ -283,14 +292,14 @@ def run_gnvp_angles_parallel(
             "max_iter": maxiter,
             "refresh_progress": refresh_pogress,
             "genu_version": genu_version,
+            "stop_event": stop_event,
         },
     )
 
-    # Start
+    # Start the threads and catch stopRunningThreadError to stop each one if it fails
     job.start()
     job_monitor.start()
 
-    # Join
     job.join()
     job_monitor.join()
 

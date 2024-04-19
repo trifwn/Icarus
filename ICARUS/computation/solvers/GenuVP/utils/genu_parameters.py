@@ -1,6 +1,7 @@
 """
 Class to define the parameters for the GenuVP solvers.
 """
+
 from typing import Any
 
 import numpy as np

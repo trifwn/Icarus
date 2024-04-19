@@ -37,6 +37,7 @@ Airfoil Polars Analysis
 
 
 """
+
 from . import airfoil
 from . import airfoil_polars
 

@@ -25,20 +25,29 @@ This module contains classes and routines for visualization. The module is divid
     ICARUS.visualization.airplane - Airplane visualization
 
 """
+
 from typing import Literal
 from typing import Sequence
 
-import matplotlib
 from matplotlib import colors
 from matplotlib.markers import MarkerStyle
 
-cdict: dict[Literal["red", "green", "blue", "alpha"], Sequence[tuple[float, float, float]]] = {
-    "red": ((0.0, 0.22, 0.0), (0.5, 1.0, 1.0), (1.0, 0.89, 1.0)),
-    "green": ((0.0, 0.49, 0.0), (0.5, 1.0, 1.0), (1.0, 0.12, 1.0)),
-    "blue": ((0.0, 0.72, 0.0), (0.5, 0.0, 0.0), (1.0, 0.11, 1.0)),
-}
 
-colors_ = colors.LinearSegmentedColormap("custom", cdict)
+def get_p_RdBl_cmap() -> colors.LinearSegmentedColormap:
+    """p_RdBl red-blue colormap."""
+    cdict: dict[Literal['red', 'green', 'blue', 'alpha'], Sequence[tuple[float, float, float]]] = {
+        "red": [(0.0, 217, 217), (0.5, 242, 242), (1.0, 65, 65)],
+        "green": [(0.0, 58, 58), (0.5, 242, 242), (1.0, 124, 124)],
+        "blue": [(0.0, 70, 70), (0.5, 242, 242), (1.0, 167, 167)],
+    }
+    # Normalize
+    n_cdict: dict[Literal['red', 'green', 'blue', 'alpha'], Sequence[tuple[float, float, float]]] = {
+        color: [(x[0], x[1] / 255.0, x[2] / 255.0) for x in scale] for color, scale in cdict.items()
+    }
+    return colors.LinearSegmentedColormap("p_RdBl", n_cdict)
+
+
+colors_ = get_p_RdBl_cmap()
 
 markers_str: list[str | int] = list(MarkerStyle.markers.keys())
 markers = [MarkerStyle(marker) for marker in markers_str]

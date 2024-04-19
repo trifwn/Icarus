@@ -27,6 +27,7 @@ This package contains classes and routines for flight dynamics stability computa
     ICARUS.flight_dynamics.stability.stability_derivatives
 
 """
+
 from . import lateral
 from . import longitudal
 from . import stability_derivatives

@@ -20,11 +20,11 @@ class BaseAirplaneTests(unittest.TestCase):
     def test3_geometry_gnvp3(self) -> None:
         gnvp3_geometry(plot=True)
 
-    # def test5_gnvp7_run(self) -> None:
-    #     gnvp7_run(run_parallel= True)
+    def test5_gnvp7_run(self) -> None:
+        gnvp7_run(run_parallel=True)
 
-    # def test6_geometry_gnvp7(self) -> None:
-    #     gridAP, gridGNVP = gnvp7_geometry(plot=True)
+    def test6_geometry_gnvp7(self) -> None:
+        gnvp7_geometry(plot=True)
 
     def test7_lspt_run(self) -> None:
         lspt_run()

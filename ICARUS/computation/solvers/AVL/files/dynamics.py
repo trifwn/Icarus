@@ -6,13 +6,13 @@ import numpy as np
 from numpy import deg2rad
 from numpy import rad2deg
 
-from .input import make_input_files
-from ICARUS.core.types import FloatArray
-from ICARUS.database import AVL_exe
 from ICARUS.database import DB3D
+from ICARUS.database import AVL_exe
 from ICARUS.database.utils import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
+
+from .input import make_input_files
 
 
 def csplit(input_file: str, pattern: str) -> list[str]:
@@ -25,6 +25,35 @@ def csplit(input_file: str, pattern: str) -> list[str]:
     sections = [section.strip() for section in sections if section.strip()]
 
     return sections
+
+
+# def moving_vars_script(
+#     plane: Airplane,
+#     state: State,
+#     solver2D: str = "Xfoil",
+# )-> None:
+#     PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
+#     HOMEDIR = os.getcwd()
+#     f_li = []
+#     f_li.append(f"load {plane.name}.avl\n")
+
+#     f_li.append("oper\n")
+#     f_li.append("    \n")
+#     f_li.append("quit\n")
+#     input_f = os.path.join(PLANEDIR, f"move_scr")
+#     log = os.path.join(PLANEDIR, "mov_log.txt")
+#     with open(input_f, "w", encoding="utf-8") as f:
+#         f.writelines(f_li)
+#     os.chdir(PLANEDIR)
+#     with open(input_f, encoding="utf-8") as fin:
+#         with open(log, "w", encoding="utf-8") as fout:
+#             res: int = subprocess.check_call(
+#                 [AVL_exe],
+#                 stdin=fin,
+#                 stdout=fout,
+#                 stderr=fout,
+#             )
+#     os.chdir(HOMEDIR)
 
 
 # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL

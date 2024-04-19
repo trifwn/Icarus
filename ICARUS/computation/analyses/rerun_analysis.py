@@ -5,7 +5,6 @@ from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.computation.analyses.input import Input
 from ICARUS.computation.analyses.input import StrInput
 
-
 casedir: StrInput = StrInput("CASEDIR", "Case Directory")
 
 

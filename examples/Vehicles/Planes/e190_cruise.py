@@ -1,4 +1,5 @@
 """This module defines the hermes plane object."""
+
 import numpy as np
 
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d

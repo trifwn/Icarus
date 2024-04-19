@@ -1,13 +1,13 @@
 import time
-from typing import Any
 
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from ICARUS.core.types import FloatArray
-from ICARUS.mission.trajectory.trajectory import Trajectory
+from ICARUS.mission.trajectory.trajectory import MissionTrajectory
 
 
 #! TODO: Make Callback
@@ -77,7 +77,7 @@ def setup_plot() -> tuple[Figure, list[Axes]]:
 
 
 def update_plot(
-    trajectories: list[Trajectory],
+    trajectories: list[MissionTrajectory],
     traj_ts: list[FloatArray],
     traj_xs: list[FloatArray],
     traj_vs: list[FloatArray],
@@ -88,15 +88,15 @@ def update_plot(
     fig.canvas.flush_events()
     for trajectory, ts, xs, vs in zip(trajectories, traj_ts, traj_xs, traj_vs):
         i += 1
-        title: str = trajectory.title
+        title: str = trajectory.name
         t = ts[: len(xs)]
         # Make title display the polynomial equation using latex
 
         fig.suptitle(title, fontsize=16)
 
         # x_goal = np.linspace(0, traj[-1][0], len(traj))
-        x_goal = np.linspace(0, 1000, len(xs))
-        y_goal = trajectory(x_goal)
+        x_goal = jnp.linspace(0, 1000, len(xs))
+        y_goal = trajectory.fun(x_goal)
 
         # Plot Trajectory
         line1, line2 = list(axs[0].get_lines())

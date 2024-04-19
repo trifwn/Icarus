@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -12,11 +12,13 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
+from ICARUS.vehicle.control_surface import NoControl
+from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.strip import Strip
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.core.types import FloatOrListArray
-    from ICARUS.flight_dynamics.disturbances import Disturbance
     from ICARUS.flight_dynamics.state import State
     from ICARUS.vehicle.surface import WingSurface
     from ICARUS.vehicle.surface_connections import Surface_Connection
@@ -29,8 +31,9 @@ class Airplane:
         self,
         name: str,
         surfaces: list[WingSurface],
-        disturbances: list[Disturbance] | None = None,
         orientation: FloatOrListArray | None = None,
+        point_masses: list[tuple[float, FloatArray, str]] | None = None,
+        cg_override: FloatArray | None = None,
     ) -> None:
         """
         Initialize the Airplane class
@@ -43,11 +46,6 @@ class Airplane:
         """
         self.name: str = name
         self.surfaces: list[WingSurface] = surfaces
-
-        if disturbances is None:
-            self.disturbances: list[Disturbance] = []
-        else:
-            self.disturbances = disturbances
 
         if orientation is None:
             self.orientation: FloatOrListArray = [
@@ -63,11 +61,12 @@ class Airplane:
         for surface in surfaces:
             if surface.name.capitalize().startswith("MAIN"):
                 self.main_wing: WingSurface = surface
-                self.S += surface.S
+                self.S = surface.S
                 self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
                 self.aspect_ratio: float = surface.aspect_ratio
                 self.span: float = surface.span
                 found_wing = True
+                break
 
         if not found_wing:
             self.main_wing = surfaces[0]
@@ -86,7 +85,9 @@ class Airplane:
 
             self.M += surface.mass
             self.moments.append(mom)
-        self.m = self.M
+
+        if point_masses is not None:
+            self.add_point_masses(point_masses)
 
         # Define Computed States
         self.states: list[State] = []
@@ -94,6 +95,49 @@ class Airplane:
         # Define Connection Dictionary
         self.connections: dict[str, Surface_Connection] = {}
         # self.register_connections()
+
+        # Get the control vector:
+        control_vars: set[str] = set()
+        for surf in self.surfaces:
+            control_vars.update(surf.control_vars)
+        self.control_vars: set[str] = control_vars
+        self.num_control_variables = len(control_vars)
+
+        self.cg_override: FloatArray | None = cg_override
+        if cg_override is not None:
+            self.overide_mass = True
+            self._CG = cg_override
+        else:
+            self.overide_mass = False
+            self._CG = self.find_cg()
+
+    def __control__(self, control_vector: dict[str, float]) -> None:
+        control_dict = {k: control_vector[k] for k in self.control_vars}
+        for surf in self.surfaces:
+            surf_control_vec = {}
+            for name, value in control_dict.items():
+                if name in surf.control_vars:
+                    surf_control_vec[name] = value
+            surf.__control__(surf_control_vec)
+
+    # @property
+    # def surfaces(self) -> list[WingSurface]:
+    #     surfaces: list[WingSurface] = []
+    #     for surface in self._surfaces:
+    #         if isinstance(surface, MergedWing):
+    #             for s in surface.wing_segments:
+    #                 surfaces.append(s)
+    #         else:
+    #             surfaces.append(surface)
+    #     return surfaces
+
+    # @property
+    # def strips(self) -> list[Strip]:
+    #     strips: list[Strip] = []
+    #     for surface in self.surfaces:
+    #         for strip in surface.strips:
+    #             strips.append(strip)
+    #     return strips
 
     def get_position(self, name: str, axis: str) -> float | FloatArray:
         """
@@ -236,56 +280,56 @@ class Airplane:
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     # Define the __getattribute__ function to get attributes from the surfaces
-    def __getattribute__(self, name: str) -> Any:
-        try:
-            return object.__getattribute__(self, name)
-        except AttributeError:
-            if name.endswith("_position_x"):
-                name = name.replace("_position_x", "")
-                return self.get_position(name, "x")
-            elif name.endswith("_position_y"):
-                name = name.replace("_position_y", "")
-                return self.get_position(name, "y")
-            elif name.endswith("_position_z"):
-                name = name.replace("_position_z", "")
-                return self.get_position(name, "z")
-            elif name.endswith("_position"):
-                name = name.replace("_position", "")
-                return self.get_position(name, "xyz")
-            elif name.endswith("_mass"):
-                name = name.replace("_mass", "")
-                return self.get_mass(name)
-            else:
-                # How to handle infinite recursion?
-                if "surfaces" in self.__dict__.keys():
-                    for surface in self.surfaces:
-                        if name.startswith(f"{surface.name}_"):
-                            return surface.__getattribute__(name.replace(surface.name, ""))
-                raise AttributeError(f"Plane doesn't contain attribute {name}")
+    # def __getattribute__(self, name: str) -> Any:
+    #     try:
+    #         return object.__getattribute__(self, name)
+    #     except AttributeError:
+    #         if name.endswith("_position_x"):
+    #             name = name.replace("_position_x", "")
+    #             return self.get_position(name, "x")
+    #         elif name.endswith("_position_y"):
+    #             name = name.replace("_position_y", "")
+    #             return self.get_position(name, "y")
+    #         elif name.endswith("_position_z"):
+    #             name = name.replace("_position_z", "")
+    #             return self.get_position(name, "z")
+    #         elif name.endswith("_position"):
+    #             name = name.replace("_position", "")
+    #             return self.get_position(name, "xyz")
+    #         elif name.endswith("_mass"):
+    #             name = name.replace("_mass", "")
+    #             return self.get_mass(name)
+    #         else:
+    #             # How to handle infinite recursion?
+    #             if "surfaces" in self.__dict__.keys():
+    #                 for surface in self.surfaces:
+    #                     if name.startswith(f"{surface.name}_"):
+    #                         return surface.__getattribute__(name.replace(surface.name, ""))
+    #             raise AttributeError(f"Plane doesn't contain attribute {name}")
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name.endswith("_position_x"):
-            name = name.replace("_position_x", "")
-            self.set_position(name, "x", value)
-        elif name.endswith("_position_y"):
-            name = name.replace("_position_y", "")
-            self.set_position(name, "y", value)
-        elif name.endswith("_position_z"):
-            name = name.replace("_position_z", "")
-            self.set_position(name, "z", value)
-        elif name.endswith("_position"):
-            name = name.replace("_position", "")
-            self.set_position(name, "xyz", value)
-        elif name.endswith("_mass"):
-            name = name.replace("_mass", "")
-            self.change_mass(name, new_mass=value)
-        else:
-            if hasattr(self, "surfaces"):
-                for surface in self.surfaces:
-                    if name.startswith(f"{surface.name}_"):
-                        surface.__setattr__(name.replace(f"{surface.name}_", ""), value)
-                        return
-            object.__setattr__(self, name, value)
+    # def __setattr__(self, name: str, value: Any) -> None:
+    #     if name.endswith("_position_x"):
+    #         name = name.replace("_position_x", "")
+    #         self.set_position(name, "x", value)
+    #     elif name.endswith("_position_y"):
+    #         name = name.replace("_position_y", "")
+    #         self.set_position(name, "y", value)
+    #     elif name.endswith("_position_z"):
+    #         name = name.replace("_position_z", "")
+    #         self.set_position(name, "z", value)
+    #     elif name.endswith("_position"):
+    #         name = name.replace("_position", "")
+    #         self.set_position(name, "xyz", value)
+    #     elif name.endswith("_mass"):
+    #         name = name.replace("_mass", "")
+    #         self.change_mass(name, new_mass=value)
+    #     else:
+    #         if hasattr(self, "surfaces"):
+    #             for surface in self.surfaces:
+    #                 if name.startswith(f"{surface.name}_"):
+    #                     surface.__setattr__(name.replace(f"{surface.name}_", ""), value)
+    #                     return
+    #         object.__setattr__(self, name, value)
 
     @property
     def directory(self) -> str:
@@ -293,7 +337,15 @@ class Airplane:
 
     @property
     def CG(self) -> FloatArray:
+        if self.overide_mass:
+            return self._CG
         return self.find_cg()
+
+    @CG.setter
+    def CG(self, cg: FloatArray) -> None:
+        self._CG = cg
+        self.overide_mass = True
+        self.cg_override = cg
 
     @property
     def total_inertia(self) -> FloatArray:
@@ -356,6 +408,12 @@ class Airplane:
                             self.connections[surface.name] = Surface_Connection()
                             self.connections[other_surface.name] = Surface_Connection()
 
+    def get_surface(self, name: str) -> WingSurface:
+        for surface in self.surfaces:
+            if surface.name == name:
+                return surface
+        raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
+
     def add_point_masses(
         self,
         masses: list[tuple[float, FloatArray, str]],
@@ -368,6 +426,7 @@ class Airplane:
         """
         for mass in masses:
             self.point_masses.append(mass)
+            self.M += mass[0]
         # self.CG = self.find_cg()
         # self.total_inertia = self.find_inertia(self.CG)
 
@@ -533,8 +592,37 @@ class Airplane:
         Returns:
             str: Json String
         """
-        encoded: str = str(jsonpickle.encode(self))
-        return encoded
+        # If the object is a subclass of Airplane, then we can pickle it as an Airplane object
+        if self.__class__ == Airplane.__class__:
+            encoded = jsonpickle.encode(self)
+        else:
+            # print("Converting to Airplane")
+            # Encode the object as only an Airplane object
+            other = Airplane.__copy__(self)
+            # print(f"Other is {other}, {type(other)}")
+            encoded = jsonpickle.encode(other)
+            del other
+
+        return str(encoded)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        Airplane.__init__(
+            self,
+            name=state["name"],
+            surfaces=state["surfaces"],
+            orientation=state["orientation"],
+            point_masses=state['point_masses'],
+            cg_override=state['cg_override'],
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "surfaces": self.surfaces,
+            "orientation": self.orientation,
+            "point_masses": self.point_masses,
+            "cg_override": self.CG if self.overide_mass else None,
+        }
 
     def save(self) -> None:
         """
@@ -556,6 +644,15 @@ class Airplane:
     def __str__(self) -> str:
         string: str = f"Plane Object: {self.name}"
         return string
+
+    def __copy__(self) -> Airplane:
+        return Airplane(
+            name=self.name,
+            surfaces=self.surfaces,
+            orientation=self.orientation,
+            point_masses=self.point_masses,
+            cg_override=self.CG if self.overide_mass else None,
+        )
 
 
 class PlaneDoesntContainAttr(AttributeError):

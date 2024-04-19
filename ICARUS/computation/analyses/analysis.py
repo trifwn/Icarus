@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import logging
 from io import StringIO
@@ -10,8 +12,9 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 from pandas import DataFrame
 from tabulate import tabulate
 
-from .input import Input
 from ICARUS.computation.solvers.solver_parameters import Parameter
+
+from .input import Input
 
 jsonpickle_pd.register_handlers()
 jsonpickle_numpy.register_handlers()
@@ -159,7 +162,7 @@ class Analysis:
         Returns:
             DataFrame | int: Results of the analysis or error code
         """
-        print("Getting Results")
+        # print("Getting Results")
         args_needed = list(inspect.signature(self.unhook).parameters.keys())
         kwargs: dict[str, Any] = {
             option.name: option.value for _, option in self.options.items() if option.name in args_needed
@@ -170,7 +173,7 @@ class Analysis:
         encoded: str = str(jsonpickle.encode(self))
         return encoded
 
-    def __lshift__(self, other: dict[str, Any]) -> "Analysis":
+    def __lshift__(self, other: dict[str, Any]) -> Analysis:
         """
         overloading operator <<
         """
@@ -181,7 +184,7 @@ class Analysis:
         s.__dict__.update(other)
         return s
 
-    def __copy__(self) -> "Analysis":
+    def __copy__(self) -> Analysis:
         return self.__class__(
             self.solver_name,
             self.name,

@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 from threading import Lock
 from time import sleep
 from typing import NoReturn
-from typing import Optional
 
 from tqdm.auto import tqdm
 
@@ -15,14 +17,15 @@ def serial_monitor(
     progress_bars: list[tqdm[NoReturn]],
     CASEDIR: str,
     position: int,
-    lock: Optional[Lock],
+    lock: Lock | None,
     max_iter: int,
     refresh_progress: float,
     genu_version: int,
+    stop_event: Event = Event(),
 ) -> None:
     sleep(1 + (position + 1) / 10)
 
-    while True:
+    while not stop_event.is_set():
         sleep(refresh_progress)
         time, error = latest_time(CASEDIR, genu_version)
 
@@ -51,6 +54,7 @@ def parallel_monitor(
     max_iter: int,
     genu_version: int,
     refresh_progress: float = 0.2,
+    stop_event: Event = Event(),
 ) -> None:
     # Create a lock to synchronize progress bar updates
     progress_bar_lock = Lock()
@@ -80,6 +84,7 @@ def parallel_monitor(
                 max_iter=max_iter,
                 refresh_progress=refresh_progress,
                 genu_version=genu_version,
+                stop_event=stop_event,
             )
 
     for pbar in progress_bars:

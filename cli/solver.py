@@ -1,8 +1,8 @@
 from typing import Any
 
 from inquirer import List
-from inquirer import prompt
 from inquirer import Text
+from inquirer import prompt
 
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct

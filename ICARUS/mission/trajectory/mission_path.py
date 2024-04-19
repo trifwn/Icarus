@@ -2,6 +2,7 @@
 Module to define the Path class.
 TODO: WRITE THE MODULE THIS IS JUST A TEMPLATE
 """
+
 from typing import Any
 
 

@@ -2,8 +2,8 @@ import sys
 from typing import Any
 
 import numpy as np
-from inquirer import prompt
 from inquirer import Text
+from inquirer import prompt
 
 
 def get_option(

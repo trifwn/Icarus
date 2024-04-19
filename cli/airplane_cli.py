@@ -7,6 +7,7 @@ Raises:
 Returns:
     None: None
 """
+
 import time
 from typing import Any
 
@@ -15,10 +16,9 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 from inquirer import Checkbox
 from inquirer import List
 from inquirer import Path
-from inquirer import prompt
 from inquirer import Text
+from inquirer import prompt
 
-from .cli_home import cli_home
 from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
 from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
@@ -33,6 +33,7 @@ from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
+from .cli_home import cli_home
 
 jsonpickle_pd.register_handlers()
 

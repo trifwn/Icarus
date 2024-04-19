@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from pandas import DataFrame
@@ -5,14 +7,13 @@ from pandas import DataFrame
 from ICARUS.flight_dynamics.stability.state_space import LateralStateSpace
 from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
-
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics.state import State
 
 
 def lateral_stability_finite_differences(
-    state: "State",
-) -> "LateralStateSpace":
+    state: State,
+) -> LateralStateSpace:
     """This Function Requires the results from perturbation analysis"""
     pertr: DataFrame = state.pertrubation_results.sort_values(
         by=["Epsilon"],

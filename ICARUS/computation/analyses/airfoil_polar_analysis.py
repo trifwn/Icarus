@@ -7,7 +7,6 @@ from ICARUS.computation.analyses.input import FloatInput
 from ICARUS.computation.analyses.input import Input
 from ICARUS.computation.analyses.input import ListFloatInput
 
-
 airfoil_option = AirfoilInput()
 mach_option = FloatInput(name="mach", description="Mach number")
 

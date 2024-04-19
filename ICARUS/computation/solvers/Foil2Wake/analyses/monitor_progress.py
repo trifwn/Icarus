@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from time import sleep
 from typing import NoReturn
-from typing import Optional
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -17,7 +16,7 @@ def serial_monitor(
     reyn_str: str,
     name: str,
     position: int,
-    lock: Optional[Lock],
+    lock: Lock | None,
     max_iter: int,
     last: float,
     refresh_progress: float = 2,

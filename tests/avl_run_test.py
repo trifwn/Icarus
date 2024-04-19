@@ -5,14 +5,12 @@ import numpy as np
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
 
 
 def avl_run() -> None:
     print("Testing AVL Running ...")
     # Get Plane, DB
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
 
@@ -35,7 +33,7 @@ def avl_run() -> None:
 
     options.plane = bmark
     options.state = state
-    options.solver2D = "XFLR"
+    options.solver2D = "Xfoil"
     options.angles = angles
 
     avl.set_analysis_options(options)

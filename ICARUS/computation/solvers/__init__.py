@@ -13,11 +13,12 @@ ICARUS Input Output package
     ICARUS.Solvers.XFLR5
 
 """
+
+from . import XFLR5
 from . import Foil2Wake
 from . import GenuVP
 from . import Icarus_LSPT
 from . import OpenFoam
-from . import XFLR5
 from . import Xfoil
 
 _all_ = ["OpenFoam", "Xfoil", "Foil2Wake", "GenuVP", "XFLR5", "Icarus_LSPT"]

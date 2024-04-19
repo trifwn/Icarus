@@ -1,6 +1,5 @@
 from typing import Any
 
-from ICARUS.core.struct import Struct
 from ICARUS.mission.segment.mission_segment import MissionSegment
 
 
@@ -11,14 +10,13 @@ class Mission:
         fitness: Any,
         constraints: Any,
     ) -> None:
-        self.missionSegments: Struct = Struct()
+        self.segments: dict[str, MissionSegment] = {}
         for segment in segments:
-            self.addSegment(segment)
-        pass
+            self.add_segment(segment)
         self.fitness = fitness
         self.constrains = constraints
+        pass
 
-    def addSegment(self, segment: MissionSegment) -> None:
-        self.missionSegments[segment.name] = segment
-        # self.missionSegments.sort(key=lambda x: x.startingTime) ## NOT IMPLEMENTED
+    def add_segment(self, segment: MissionSegment) -> None:
+        self.segments[segment.name] = segment
         pass

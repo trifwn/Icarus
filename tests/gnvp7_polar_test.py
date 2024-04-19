@@ -1,19 +1,17 @@
 import time
-from typing import Any
 
 import numpy as np
 
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.plane import Airplane
 
 
-def gnvp7_run(mode: str = "Parallel") -> None:
+def gnvp7_run(run_parallel: bool = True) -> None:
     print("Testing GNVP7 Running...")
 
     # Get Plane, DB
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     airplane, state = get_bmark_plane("bmark")
 
@@ -41,7 +39,7 @@ def gnvp7_run(mode: str = "Parallel") -> None:
 
     options.plane = airplane
     options.state = state
-    options.solver2D = "XFLR"
+    options.solver2D = "Xfoil"
     options.maxiter = maxiter
     options.timestep = timestep
     options.angles = angles
@@ -59,9 +57,10 @@ def gnvp7_run(mode: str = "Parallel") -> None:
     _ = gnvp7.get_analysis_options(verbose=True)
 
     start_time: float = time.perf_counter()
-    gnvp7.execute(parallel=(mode == "Parallel"))
+    gnvp7.execute(parallel=run_parallel)
 
     end_time: float = time.perf_counter()
+    mode = "Parallel" if run_parallel else "Serial"
     print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 

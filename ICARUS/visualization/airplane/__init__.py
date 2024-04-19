@@ -46,6 +46,7 @@ There are also routines for the visualization of the results of the GNVP results
 
 
 """
+
 from . import db_polars
 from . import gnvp_convergence
 from . import gnvp_sensitivity
@@ -61,11 +62,14 @@ __all__ = [
 ]
 
 # Get all the visualization functions
-from typing import Any, Callable
+from typing import Any
+from typing import Callable
+
 from .db_polars import plot_airplane_polars
 from .gnvp_convergence import plot_convergence
 from .gnvp_sensitivity import plot_sensitivity
-from .gnvp_strips import gnvp_strips_2d, gnvp_strips_3d
+from .gnvp_strips import gnvp_strips_2d
+from .gnvp_strips import gnvp_strips_3d
 from .gnvp_wake import plot_gnvp_wake
 
 __functions__: list[Callable[..., Any]] = [

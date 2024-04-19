@@ -6,7 +6,7 @@ from ICARUS.core.types import FloatArray
 def geom() -> None:
     print("Testing Geometry...")
 
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, _ = get_bmark_plane("bmark")
 
@@ -19,7 +19,7 @@ def geom() -> None:
     S_act: tuple[float] = (4.0,)
     MAC_act: tuple[float] = (0.8,)
     AREA_act: tuple[float] = (4.0608,)
-    CG_act: FloatArray = np.array([0.337, 0.0, 0.0])
+    CG_act: FloatArray = np.array([0.363, 0.0, 0.0])
     I_act: FloatArray = np.array(
         [2.077, 0.017, 2.094, 0.0, 0.0, 0.0],
     )

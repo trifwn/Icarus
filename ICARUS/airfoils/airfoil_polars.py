@@ -35,6 +35,7 @@ moment, and the slope of the Cl vs Alpha curve by calling:
 >>> polars.get_cl_slope(cl_curve)
 
 """
+
 from __future__ import annotations
 
 import os

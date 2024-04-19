@@ -40,8 +40,9 @@ Additionally, the package contains the following modules:
 
 
 """
+
+from . import mission
 from . import mission_analysis
-from . import mission_definition
 from . import mission_performance
 from . import mission_vehicle
 from . import segment
@@ -49,7 +50,7 @@ from . import trajectory
 
 __all__ = [
     "mission_analysis",
-    "mission_definition",
+    "mission",
     "segment",
     "trajectory",
     "mission_performance",

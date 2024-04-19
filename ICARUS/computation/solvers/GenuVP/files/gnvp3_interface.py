@@ -1,14 +1,14 @@
 import os
 import subprocess
-from typing import Any
 
 from pandas import DataFrame
 
-from .files_gnvp3 import make_input_files
 from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+
+from .files_gnvp3 import make_input_files
 
 
 def gnvp3_execute(HOMEDIR: str, ANGLEDIR: str) -> int:

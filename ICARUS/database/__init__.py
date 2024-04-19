@@ -32,6 +32,7 @@ The package is divided in the following files:
     ICARUS.database.utils
 
 """
+
 import os
 
 from ICARUS import APPHOME
@@ -48,9 +49,25 @@ if platform_os == "Windows":
 elif platform_os == "Linux":
     GenuVP3_exe = os.path.join(APPHOME, "bin", "gnvp3")
     GenuVP7_exe = os.path.join(APPHOME, "bin", "gnvp7")
-    F2W_exe = os.path.join(APPHOME, "bin", "f2w")
+    # F2W_exe = os.path.join(APPHOME, "bin", "f2w")
     Foil_Section_exe = os.path.join(APPHOME, "bin", "foil_section")
-    AVL_exe = os.path.join(APPHOME, "bin", "avl.exe")
+    AVL_exe = os.path.join(APPHOME, "bin", "avl")
+
+    # Check if the files have execution permission
+    if not os.access(GenuVP3_exe, os.X_OK):
+        os.chmod(GenuVP3_exe, 0o755)
+
+    if not os.access(GenuVP7_exe, os.X_OK):
+        os.chmod(GenuVP7_exe, 0o755)
+
+    # if not os.access(F2W_exe, os.X_OK):
+    # os.chmod(F2W_exe, 0o755)
+
+    if not os.access(Foil_Section_exe, os.X_OK):
+        os.chmod(Foil_Section_exe, 0o755)
+
+    if not os.access(AVL_exe, os.X_OK):
+        os.chmod(AVL_exe, 0o755)
 
 # DATABASES ###
 DB2D: str = os.path.join(APPHOME, "Data", "2D")
@@ -58,9 +75,9 @@ DB3D: str = os.path.join(APPHOME, "Data", "3D")
 ANALYSESDB: str = os.path.join(APPHOME, "Data", "Analyses")
 EXTERNAL_DB: str = os.path.join(APPHOME, "Data", "3d_Party")
 
+from . import analysesDB
 from . import database2D
 from . import database3D
-from . import analysesDB
 from . import db
 
 __all__ = ["database2D", "database3D", "analysesDB", "db"]

@@ -142,6 +142,8 @@ class OptimizationProgress(OptimizationCallback):
         try:
             # Get the data of the line
             xdata, ydata = line.get_data()
+            if result.fun > 1e10:
+                return
             # Append the new data
             xdata = np.append(xdata, iteration)
             ydata = np.append(ydata, result.fun)

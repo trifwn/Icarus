@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import partial
 from typing import Any
 from typing import Callable
@@ -6,12 +8,14 @@ import numpy as np
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.control_surface import ControlSurface
+from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import DistributionType
+from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.utils import equal_spacing_function
 from ICARUS.vehicle.utils import linear_distribution_function_factory
-from ICARUS.vehicle.utils import SymmetryAxes
 
 
 class WingSegment(WingSurface):
@@ -42,6 +46,8 @@ class WingSegment(WingSurface):
         N: int = 15,
         M: int = 5,
         mass: float = 1.0,
+        controls: list[ControlSurface] = [NoControl],
+        is_lifting: bool = True,
     ):
         """
         Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
@@ -133,6 +139,12 @@ class WingSegment(WingSurface):
 
         # Set the mass
         self._mass = mass
+
+        # Wether the surface has lift
+        self.is_lifting = is_lifting
+
+        # set the moving segments
+        self.controls = controls
 
         # Create the wing segment
         self._recalculate()
@@ -230,6 +242,8 @@ class WingSegment(WingSurface):
             N=self.N,
             M=self.M,
             mass=self._mass,
+            controls=self.controls,
+            is_lifting=self.is_lifting,
         )
 
         # Get the properties of the wing segment instance and overwrite the properties of the wing segment
@@ -242,7 +256,7 @@ class WingSegment(WingSurface):
     # the wing segment and store the new values
     @staticmethod
     def recalculation(func: Callable[..., None]) -> Callable[..., None]:
-        def wrapper(self: "WingSegment", *args: Any, **kwargs: Any) -> None:
+        def wrapper(self: WingSegment, *args: Any, **kwargs: Any) -> None:
             # Call the function
             func(self, *args, **kwargs)
             # Recalculate the wing segment
@@ -407,3 +421,60 @@ class WingSegment(WingSurface):
 
     def __str__(self) -> str:
         return f"Wing Segment: {self.name} with {self.N} panels in the spanwise direction and {self.M} panels in the chordwise direction"
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        WingSegment.__init__(
+            self,
+            name=state["name"],
+            origin=state["origin"],
+            orientation=state["orientation"],
+            span=state["span"],
+            tip_chord=state["tip_chord"],
+            root_chord=state["root_chord"],
+            root_airfoil=state["root_airfoil"],
+            sweepback_angle=state["sweepback_angle"],
+            sweep_offset=state["sweep_offset"],
+            twist_root=state["twist_root"],
+            twist_tip=state["twist_tip"],
+            root_dihedral_angle=state["root_dihedral_angle"],
+            tip_dihedral_angle=state["tip_dihedral_angle"],
+            tip_airfoil=state["tip_airfoil"],
+            symmetries=state["symmetries"],
+            spanwise_chord_distribution=state["spanwise_chord_distribution"],
+            spanwise_dihedral_distibution=state["spanwise_dihedral_distibution"],
+            spanwise_twist_distribution=state["spanwise_twist_distribution"],
+            span_spacing=state["span_spacing"],
+            chord_spacing=state["chord_spacing"],
+            N=state["N"],
+            M=state["M"],
+            mass=state["mass"],
+            controls=state['controls'],
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "origin": self.origin,
+            "orientation": self.orientation,
+            "span": self.span,
+            "tip_chord": self.tip_chord,
+            "root_chord": self.root_chord,
+            "root_airfoil": self.root_airfoil,
+            "sweepback_angle": self.sweepback_angle,
+            "sweep_offset": self.sweep_offset,
+            "twist_root": self.twist_root,
+            "twist_tip": self.twist_tip,
+            "root_dihedral_angle": self.root_dihedral_angle,
+            "tip_dihedral_angle": self.tip_dihedral_angle,
+            "tip_airfoil": self.tip_airfoil,
+            "symmetries": self.symmetries,
+            "spanwise_chord_distribution": self.spanwise_chord_distribution,
+            "spanwise_dihedral_distibution": self.spanwise_dihedral_distibution,
+            "spanwise_twist_distribution": self.spanwise_twist_distribution,
+            "span_spacing": self.span_spacing,
+            "chord_spacing": self.chord_spacing,
+            "N": self.N,
+            "M": self.M,
+            "mass": self.mass,
+            "controls": self.controls,
+        }

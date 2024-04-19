@@ -1,5 +1,7 @@
-from typing import Any
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
+from typing import Any
 
 from pandas import DataFrame
 
@@ -11,8 +13,8 @@ if TYPE_CHECKING:
 
 
 def longitudal_stability_finite_differences(
-    state: "State",
-) -> "LongitudalStateSpace":
+    state: State,
+) -> LongitudalStateSpace:
     """This Function Requires the results from perturbation analysis
     For the Longitudinal Motion, in addition to the state space variables
     an analysis with respect to the derivative of w perturbation is needed.

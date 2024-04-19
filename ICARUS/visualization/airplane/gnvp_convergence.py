@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from matplotlib.markers import MarkerStyle
 
-from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.visualization import colors_

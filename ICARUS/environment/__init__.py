@@ -22,6 +22,7 @@ This package contains class and routines for environment modelling. The package 
     ICARUS.environment.definition
 
 """
+
 from . import definition
 
 __all__ = ["definition"]

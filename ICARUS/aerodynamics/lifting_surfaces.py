@@ -1,13 +1,12 @@
 import logging
 import os
 from typing import Any
-from typing import Callable
 
 import pandas as pd
 
-from ICARUS.aerodynamics.potential.vorticity import symm_wing_panels
-from ICARUS.aerodynamics.potential.vorticity import voring
-from ICARUS.aerodynamics.potential.wing_lspt import Wing_LSPT
+from ICARUS.aerodynamics.biot_savart import symm_wing_panels
+from ICARUS.aerodynamics.biot_savart import voring
+from ICARUS.aerodynamics.wing_lspt import Wing_LSPT
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.database import DB3D
@@ -41,7 +40,7 @@ def run_lstp_angles(
     )
 
     if wing.is_symmetric:
-        solve_fun: Callable[..., tuple[FloatArray, FloatArray]] = symm_wing_panels
+        solve_fun = symm_wing_panels
     else:
         solve_fun = voring
 
@@ -50,6 +49,8 @@ def run_lstp_angles(
         angles=angles,
         umag=state.u_freestream,
         solver_fun=solve_fun,
+        verbose=False,
+        solver2D=solver2D,
     )
 
     # Save the results

@@ -1,20 +1,25 @@
-import numpy as np
+import jax
+import jax.numpy as jnp
+from jax import lax
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
+from jaxtyping import Scalar
 
-from ICARUS.core.types import FloatArray
 
-
+@jax.jit
 def vortexL(
-    xp: float,
-    yp: float,
-    zp: float,
-    x1: float,
-    y1: float,
-    z1: float,
-    x2: float,
-    y2: float,
-    z2: float,
+    xp: Scalar,
+    yp: Scalar,
+    zp: Scalar,
+    x1: Scalar,
+    y1: Scalar,
+    z1: Scalar,
+    x2: Scalar,
+    y2: Scalar,
+    z2: Scalar,
     gamma: float,
-) -> tuple[float, float, float]:
+) -> tuple[Scalar, Scalar, Scalar]:
     """Computes the velocities induced at a point xp,yp,zp
     by a vortex line given its two end points and circulation
 
@@ -33,41 +38,54 @@ def vortexL(
     Returns:
         u,v,w: induced velocities
     """
-    crossx: float = (yp - y1) * (zp - z2) - (zp - z1) * (yp - y2)
-    crossy: float = -(xp - x1) * (zp - z2) + (zp - z1) * (xp - x2)
-    crossz: float = (xp - x1) * (yp - y2) - (yp - y1) * (xp - x2)
+    crossx = (yp - y1) * (zp - z2) - (zp - z1) * (yp - y2)
+    crossy = -(xp - x1) * (zp - z2) + (zp - z1) * (xp - x2)
+    crossz = (xp - x1) * (yp - y2) - (yp - y1) * (xp - x2)
 
-    cross_mag: float = crossx**2 + crossy**2 + crossz**2
-    r1: float = np.sqrt((xp - x1) ** 2 + (yp - y1) ** 2 + (zp - z1) ** 2)
-    r2: float = np.sqrt((xp - x2) ** 2 + (yp - y2) ** 2 + (zp - z2) ** 2)
-    r0: float = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+    cross_mag = crossx**2 + crossy**2 + crossz**2
+    r1 = jnp.sqrt((xp - x1) ** 2 + (yp - y1) ** 2 + (zp - z1) ** 2)
+    r2 = jnp.sqrt((xp - x2) ** 2 + (yp - y2) ** 2 + (zp - z2) ** 2)
+    r0 = jnp.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
-    e: float = 1e-9
-    if r1 < e or r2 < e or cross_mag < e:
-        return 0, 0, 0
     r0dr1 = (x2 - x1) * (xp - x1) + (y2 - y1) * (yp - y1) + (z2 - z1) * (zp - z1)
     r0dr2 = (x2 - x1) * (xp - x2) + (y2 - y1) * (yp - y2) + (z2 - z1) * (zp - z2)
 
     epsilon: float = 0.0001
     d = cross_mag / r0
     filt = 1  # - np.exp(-(d/epsilon)**2)
-    K: float = filt * (gamma / (4 * np.pi * cross_mag)) * (r0dr1 / r1 - r0dr2 / r2)
-    u: float = K * crossx
-    v: float = K * crossy
-    w: float = K * crossz
+    K = filt * (gamma / (4 * jnp.pi * cross_mag)) * (r0dr1 / r1 - r0dr2 / r2)
+    u = K * crossx
+    v = K * crossy
+    w = K * crossz
 
+    e: float = 1e-9
+    # if r1 < e or r2 < e or cross_mag < e:
+    # return 0, 0, 0
+    cond = (r1 < e) | (r2 < e) | (cross_mag < e)
+
+    def true_fn(args: tuple[Scalar, Scalar, Scalar]) -> tuple[Scalar, Scalar, Scalar]:
+        u = jnp.array(0.0)
+        v = jnp.array(0.0)
+        w = jnp.array(0.0)
+        return u, v, w
+
+    def false_fn(args: tuple[Scalar, Scalar, Scalar]) -> tuple[Scalar, Scalar, Scalar]:
+        return u, v, w
+
+    u, v, w = lax.cond(cond, true_fn, false_fn, (r1, r2, cross_mag))
     return u, v, w
 
 
+@jax.jit
 def voring(
-    x: float,
-    y: float,
-    z: float,
-    j: int,
-    k: int,
-    grid: FloatArray,
-    gamma: float = 1,
-) -> tuple[FloatArray, FloatArray]:
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
+    i: Int[Array, ""],
+    j: Int[Array, ""],
+    grid: Float[Array, "n m"],
+    gamma: float = 1.0,
+) -> tuple[Float[Array, "n"], Float[Array, "m"]]:
     """Vorticity Ring Element. Computes the velocities induced at a point x,y,z
     by a vortex ring given its grid lower corner coordinates
 
@@ -75,8 +93,8 @@ def voring(
         x: x coordinate of point
         y: y coordinate of point
         z: z coordinate of point
-        j: specifies i index of grid (gd[j,k])
-        k: specifies j index of grid (gd[j,k])
+        i: specifies i index of grid (gd[i,k])
+        j: specifies j index of grid (gd[j,k])
         grid: grid of geometry
         gamma: Circulation. Defaults to 1 (When we use nondimensional solve).
 
@@ -87,12 +105,12 @@ def voring(
         x,
         y,
         z,
-        grid[j, k, 0],
-        grid[j, k, 1],
-        grid[j, k, 2],
-        grid[j + 1, k, 0],
-        grid[j + 1, k, 1],
-        grid[j + 1, k, 2],
+        grid[i, j, 0],
+        grid[i, j, 1],
+        grid[i, j, 2],
+        grid[i + 1, j, 0],
+        grid[i + 1, j, 1],
+        grid[i + 1, j, 2],
         gamma,
     )
 
@@ -100,61 +118,62 @@ def voring(
         x,
         y,
         z,
-        grid[j + 1, k, 0],
-        grid[j + 1, k, 1],
-        grid[j + 1, k, 2],
-        grid[j + 1, k + 1, 0],
-        grid[j + 1, k + 1, 1],
-        grid[j + 1, k + 1, 2],
+        grid[i + 1, j, 0],
+        grid[i + 1, j, 1],
+        grid[i + 1, j, 2],
+        grid[i + 1, j + 1, 0],
+        grid[i + 1, j + 1, 1],
+        grid[i + 1, j + 1, 2],
         gamma,
     )
     u3, v3, w3 = vortexL(
         x,
         y,
         z,
-        grid[j + 1, k + 1, 0],
-        grid[j + 1, k + 1, 1],
-        grid[j + 1, k + 1, 2],
-        grid[j, k + 1, 0],
-        grid[j, k + 1, 1],
-        grid[j, k + 1, 2],
+        grid[i + 1, j + 1, 0],
+        grid[i + 1, j + 1, 1],
+        grid[i + 1, j + 1, 2],
+        grid[i, j + 1, 0],
+        grid[i, j + 1, 1],
+        grid[i, j + 1, 2],
         gamma,
     )
     u4, v4, w4 = vortexL(
         x,
         y,
         z,
-        grid[j, k + 1, 0],
-        grid[j, k + 1, 1],
-        grid[j, k + 1, 2],
-        grid[j, k, 0],
-        grid[j, k, 1],
-        grid[j, k, 2],
+        grid[i, j + 1, 0],
+        grid[i, j + 1, 1],
+        grid[i, j + 1, 2],
+        grid[i, j, 0],
+        grid[i, j, 1],
+        grid[i, j, 2],
         gamma,
     )
 
-    u: float = u1 + u2 + u3 + u4
-    v: float = v1 + v2 + v3 + v4
-    w: float = w1 + w2 + w3 + w4
+    u = u1 + u2 + u3 + u4
+    v = v1 + v2 + v3 + v4
+    w = w1 + w2 + w3 + w4
 
-    ustar: float = u2 + u4
-    vstar: float = v2 + v4
-    wstar: float = w2 + w4
+    ustar = u2 + u4
+    vstar = v2 + v4
+    wstar = w2 + w4
 
-    U: FloatArray = np.array((u, v, w))
-    Ustar: FloatArray = np.array((ustar, vstar, wstar))
+    U = jnp.hstack((u, v, w))
+    Ustar = jnp.hstack((ustar, vstar, wstar))
     return U, Ustar
 
 
+@jax.jit
 def hshoe2(
-    x: float,
-    y: float,
-    z: float,
-    k: int,
-    j: int,
-    grid: FloatArray,
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
+    k: Int[Array, ""],
+    j: Int[Array, ""],
+    grid: Float[Array, "n m"],
     gamma: float = 1,
-) -> tuple[FloatArray, FloatArray]:
+) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """Vorticity Horseshow Element. Computes the velocities induced at a point x,y,z
     by a horseshow Vortex given its grid lower corner coordinates
 
@@ -207,29 +226,29 @@ def hshoe2(
         gamma,
     )
 
-    u: float = u1 + u2 + u3
-    v: float = v1 + v2 + v3
-    w: float = w1 + w2 + w3
+    u = u1 + u2 + u3
+    v = v1 + v2 + v3
+    w = w1 + w2 + w3
 
-    ust: float = u1 + u3
-    vst: float = v1 + v3
-    wst: float = w1 + w3
+    ust = u1 + u3
+    vst = v1 + v3
+    wst = w1 + w3
 
-    U: FloatArray = np.array((u, v, w))
-    Ustar: FloatArray = np.array((ust, vst, wst))
-
+    U = jnp.hstack((u, v, w))
+    Ustar = jnp.hstack((ust, vst, wst))
     return U, Ustar
 
 
+@jax.jit
 def hshoeSL2(
-    x: float,
-    y: float,
-    z: float,
-    i: int,
-    j: int,
-    grid: FloatArray,
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
+    i: Int[Array, ""],
+    j: Int[Array, ""],
+    grid: Float[Array, "n m"],
     gamma: float = 1,
-) -> tuple[FloatArray, FloatArray]:
+) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """Slanted Horseshoe Element To Work with Panels
 
     Args:
@@ -305,29 +324,30 @@ def hshoeSL2(
         gamma,
     )
 
-    u: float = u1 + u2 + u3 + u4 + u5
-    v: float = v1 + v2 + v3 + v4 + v5
-    w: float = w1 + w2 + w3 + w4 + w5
+    u = u1 + u2 + u3 + u4 + u5
+    v = v1 + v2 + v3 + v4 + v5
+    w = w1 + w2 + w3 + w4 + w5
 
-    ust: float = u1 + u2 - u3 - u4
-    vst: float = v1 + v2 - v3 - v4
-    wst: float = w1 + w2 - w3 - w4
+    ust = u1 + u2 - u3 - u4
+    vst = v1 + v2 - v3 - v4
+    wst = w1 + w2 - w3 - w4
 
-    U: FloatArray = np.array((u, v, w))
-    Ustar: FloatArray = np.array((ust, vst, wst))
+    U = jnp.hstack((u, v, w))
+    Ustar = jnp.hstack((ust, vst, wst))
 
     return U, Ustar
 
 
+@jax.jit
 def symm_wing_panels(
-    x: float,
-    y: float,
-    z: float,
-    i: int,
-    j: int,
-    grid: FloatArray,
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
+    i: Int[Array, ""],
+    j: Int[Array, ""],
+    grid: Float[Array, "n m"],
     gamma: float = 1,
-) -> tuple[FloatArray, FloatArray]:
+) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """
     Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
     using the slanted horseshow model and accounting for a symmetric wing around the x axis.
@@ -348,12 +368,20 @@ def symm_wing_panels(
     U1, U1st = voring(x, y, z, i, j, grid, gamma)
     U2, U2st = voring(x, -y, z, i, j, grid, gamma)
 
-    U_ind = np.array([U1[0] + U2[0], U1[1] - U2[1], U1[2] + U2[2]])
-    U_ind_st = np.array([U1st[0] + U2st[0], U1st[1] - U2st[1], U1st[2] + U2st[2]])
+    U_ind = jnp.array([U1[0] + U2[0], U1[1] - U2[1], U1[2] + U2[2]])
+    U_ind_st = jnp.array([U1st[0] + U2st[0], U1st[1] - U2st[1], U1st[2] + U2st[2]])
     return U_ind, U_ind_st
 
 
-def ground_effect(x: float, y: float, z: float, i: int, j: int, panel: FloatArray) -> tuple[FloatArray, FloatArray]:
+@jax.jit
+def ground_effect(
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
+    i: Int[Array, ""],
+    j: Int[Array, ""],
+    panel: Float[Array, "n m"],
+) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """
     Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
     using the slanted horseshow model and accounting for the ground effect by reflecting the panels along the z axis.
@@ -372,21 +400,6 @@ def ground_effect(x: float, y: float, z: float, i: int, j: int, panel: FloatArra
     U1, U1st = hshoeSL2(x, y, z, i, j, panel)
     U2, U2st = hshoeSL2(x, y, -z, i, j, panel)
 
-    U_ind = np.array([U1[0] + U2[0], U1[1] + U2[1], U1[2] - U2[2]])
-    U_ind_st = np.array([U1st[0] + U2st[0], U1st[1] + U2st[1], U1st[2] - U2st[2]])
+    U_ind = jnp.array([U1[0] + U2[0], U1[1] + U2[1], U1[2] - U2[2]])
+    U_ind_st = jnp.array([U1st[0] + U2st[0], U1st[1] + U2st[1], U1st[2] - U2st[2]])
     return U_ind, U_ind_st
-
-
-try:
-    import jax
-
-    # Compile the functions with JAX
-    vortexL = jax.jit(vortexL)
-    voring = jax.jit(voring)
-    hshoe2 = jax.jit(hshoe2)
-    hshoeSL2 = jax.jit(hshoeSL2)
-    symm_wing_panels = jax.jit(symm_wing_panels)
-    ground_effect = jax.jit(ground_effect)
-
-except ImportError:
-    pass

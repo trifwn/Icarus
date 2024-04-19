@@ -36,7 +36,8 @@ Flight Segments
     ICARUS.conceptual.criteria.cruise
 
 """
-from . import cruise
+
 from . import FAR
+from . import cruise
 
 __all__ = ["FAR", "cruise"]

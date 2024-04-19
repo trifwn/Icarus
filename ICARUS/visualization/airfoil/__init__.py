@@ -41,6 +41,7 @@ For the visualization of the results of the F2W solver, the following routines a
     ICARUS.visualization.airfoil.f2w_pressure - Plots the pressure distribution on the airfoil
 
 """
+
 from typing import Any
 from typing import Callable
 

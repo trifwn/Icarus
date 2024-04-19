@@ -3,9 +3,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from matplotlib.markers import MarkerStyle
 from numpy import ndarray
-from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.core.struct import Struct

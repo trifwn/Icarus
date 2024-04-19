@@ -1,10 +1,7 @@
+from __future__ import annotations
+
 from enum import Enum
-from functools import partial
 from typing import Callable
-
-import numpy as np
-
-from ICARUS.core.types import FloatArray
 
 
 class DiscretizationType(Enum):

@@ -2,17 +2,24 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import jsonpickle
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Index
 from tabulate import tabulate
+from traitlets import Float
+
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
@@ -20,10 +27,6 @@ from .perturbations import longitudal_pertrubations
 from .stability.lateral import lateral_stability_finite_differences
 from .stability.longitudal import longitudal_stability_finite_differences
 from .trim import trim_state
-from ICARUS.core.struct import Struct
-from ICARUS.core.types import FloatArray
-from ICARUS.environment.definition import Environment
-from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 if TYPE_CHECKING:
     from ICARUS.vehicle.plane import Airplane
@@ -40,9 +43,9 @@ class State:
         u_freestream: float,
     ) -> None:
         # Set Basic State Variables
-        self.name: str = name
+        self._name: str = name
         self.environment: Environment = environment
-        self.u_freestream = u_freestream
+        self._u_freestream = u_freestream
 
         # Get Airplane Properties And State Variables
         self.mean_aerodynamic_chord: float = airplane.mean_aerodynamic_chord
@@ -51,13 +54,19 @@ class State:
         self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
         self.inertia: FloatArray = airplane.total_inertia
         self.mass: float = airplane.M
+        self.CG: FloatArray = airplane.CG
+
+        # Get the airplane control variables
+        self.control_vars: set[str] = airplane.control_vars
+        self.num_control_vars: int = len(self.control_vars)
+        self.control_vector_dict: dict[str, float] = {key: 0.0 for key in self.control_vars}
 
         # Initialize Trim
         self.trim: dict[str, float] = {}
         self.trim_dynamic_pressure = 0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
-        self.polar = DataFrame()
+        self.polar: DataFrame = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
         self.sensitivity: Struct = Struct()
@@ -65,6 +74,37 @@ class State:
 
         # Initialize The Longitudal State Space Matrices
         # Initialize The Lateral State Space Matrices
+
+    def set_control(self, control_vector_dict: dict[str, float]) -> None:
+        # if len(control_vector_dict) != self.num_control_vars:
+        #     raise ValueError(
+        #         f"Control Vector Length Mismatch: {len(control_vector_dict)} != {self.num_control_vars}"
+        #     )
+        for key in control_vector_dict:
+            if key not in self.control_vars:
+                raise ValueError(f"Control Variable Not Found: {key}")
+            self.control_vector_dict[key] = control_vector_dict[key]
+        # self.__control__()
+
+    def __control__(self) -> None:
+        raise NotImplementedError("Control Not Implemented")
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name = value
+
+    @property
+    def u_freestream(self) -> float:
+        return self._u_freestream
+
+    @u_freestream.setter
+    def u_freestream(self, value: float) -> None:
+        self._u_freestream = value
+        self.dynamic_pressure = 0.5 * self.environment.air_density * value**2
 
     def ground_effect(self) -> bool:
         if self.environment.altitude == 0:
@@ -104,7 +144,7 @@ class State:
             if "Fz" not in cols and "CL" not in cols:
                 for i, col in enumerate(cols):
                     cols[i] = col.replace(f"{polar_prefix} ", "")
-                polar.columns = Index(cols, dtype='str')
+                polar.columns = Index(cols, dtype="str")
 
         if is_dimensional:
             self.polar = self.make_aero_coefficients(polar)
@@ -261,6 +301,8 @@ class State:
         fname: str = os.path.join(directory, f"{self.name}_state.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
+
+        # TODO ADD A FILE CONTAINING ENUMERATION OF CASES AND CONTROL VECTORS
 
     @property
     def a_long(self) -> Any:

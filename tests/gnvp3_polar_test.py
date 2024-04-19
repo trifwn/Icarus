@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 
 import numpy as np
@@ -5,15 +7,13 @@ import numpy as np
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
 
 
 def gnvp3_run(run_parallel: bool = True) -> None:
     print("Testing GNVP3 Running...")
 
     # Get Plane, DB
-    from examples.vehicles.Planes.benchmark_plane import get_bmark_plane
+    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
 
@@ -40,7 +40,7 @@ def gnvp3_run(run_parallel: bool = True) -> None:
 
     options.plane = bmark
     options.state = state
-    options.solver2D = "XFLR"
+    options.solver2D = "Xfoil"
     options.maxiter = maxiter
     options.timestep = timestep
     options.angles = angles
