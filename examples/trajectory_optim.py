@@ -1,3 +1,5 @@
+from typing import Any
+
 import jax
 
 # Get the percision of the jax library
@@ -8,11 +10,11 @@ print("Jax has been configured to use the following devices: ", jax.devices())
 print(jax.numpy.ones(3).devices())  # TFRT_CPU_0
 
 
-import numpy as np
-from jaxtyping import Float, Array
-from ICARUS.propulsion.engine import Engine
-from ICARUS.database import DB
+from jaxtyping import Array
+from jaxtyping import Float
 
+from ICARUS.database import DB
+from ICARUS.propulsion.engine import Engine
 
 # #  Load Plane and Engine
 engine_dir = "../Data/Engine/Motor_1/"
@@ -22,10 +24,10 @@ engine.load_data_from_df(engine_dir)
 # engine.plot_engine_map()
 
 
-# # Vehicle
-from ICARUS.vehicle.plane import Airplane
 from ICARUS.mission.mission_vehicle import MissionVehicle
 
+# # Vehicle
+from ICARUS.vehicle.plane import Airplane
 
 plane: Airplane = DB.get_vehicle("final_design")
 # plane.visualize(annotate=True)
@@ -37,27 +39,22 @@ from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 mission_plane = MissionVehicle(plane, engine, solver="AVL")
 
 
-# # Compute Trajectory
-from ICARUS.mission.trajectory.trajectory import MissionTrajectory
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+from diffrax import DirectAdjoint  # Tsit5,; BacksolveAdjoint,
+from diffrax import DiscreteTerminatingEvent
+from diffrax import Dopri8
+from diffrax import ODETerm
+from diffrax import PIDController
+from diffrax import SaveAt
+from diffrax import diffeqsolve
+from jax.debug import print as jprint
+
 from ICARUS.geometry.cubic_splines import CubicSpline_factory
 from ICARUS.mission.trajectory.integrate import RK4systems
-import jax.numpy as jnp
-from jax.debug import print as jprint
-import matplotlib.pyplot as plt
 
-
-from diffrax import (
-    diffeqsolve,
-    ODETerm,
-    SaveAt,
-    # Tsit5,
-    Dopri8,
-    PIDController,
-    DiscreteTerminatingEvent,
-    DirectAdjoint,
-    # BacksolveAdjoint,
-)
-
+# # Compute Trajectory
+from ICARUS.mission.trajectory.trajectory import MissionTrajectory
 
 operating_floor = 12.5
 T0 = 0.0
@@ -74,7 +71,7 @@ saveat = SaveAt(ts=ts)
 stepsize_controller = PIDController(rtol=1e-5, atol=1e-5, dtmin=1e-4)
 
 
-def default_terminating_event_fxn(state, **kwargs):
+def default_terminating_event_fxn(state: Any, **kwargs: Any) -> jnp.ndarray:
     terms = kwargs.get("terms", lambda a, x, b: x)
     return jnp.any(jnp.isnan(terms.vf(state.tnext, state.y, 0)))
 
@@ -83,7 +80,7 @@ terminating_event = DiscreteTerminatingEvent(default_terminating_event_fxn)
 
 
 @jax.jit
-def fun(y, *args):
+def fun(y: Float[Array, "dim"], *args) -> Float[Array, "1"]:
     x0 = X0
     x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
@@ -132,13 +129,13 @@ def fun(y, *args):
 
 
 @jax.jit
-def jacobian(y, *args):
+def jacobian(y: Float[Array, "dim"], *args) -> Float[Array, "dim"]:
     J = jax.jacrev(fun, argnums=0)(y)
     jprint("\033[91mJacobian: {} \033[0m", J)
     return J
 
 
-def compute_and_plot(y: Float[Array, "..."]) -> None:
+def compute_and_plot(y: Float[Array, ...]) -> None:
     x0 = X0
     x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
@@ -191,6 +188,7 @@ def compute_and_plot(y: Float[Array, "..."]) -> None:
 # # Optimization JAX
 
 
+import optax
 import optimistix as optx
 
 # solver_optimistix = optx.BestSoFarMinimiser(
@@ -202,7 +200,6 @@ import optimistix as optx
 #     ),
 # )
 
-import optax
 
 solver_optax = optx.BestSoFarMinimiser(optx.OptaxMinimiser(optax.adam(1e-3, eps=1e-10), rtol=1e-12, atol=1e-12))
 

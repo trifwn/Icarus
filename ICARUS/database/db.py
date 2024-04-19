@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ICARUS import APPHOME
+
 from .analysesDB import AnalysesDB
 from .database2D import Database_2D
 from .database3D import Database_3D
-from ICARUS import APPHOME
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.plane import Airplane
     from ICARUS.airfoils.airfoil import Airfoil
+    from ICARUS.vehicle.plane import Airplane
 
 
 class Database:

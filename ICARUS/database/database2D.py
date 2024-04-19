@@ -11,14 +11,14 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from . import DB2D
-from . import DB3D
-from . import EXTERNAL_DB
 from ICARUS import APPHOME
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.airfoils.airfoil_polars import AirfoilData
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.core.struct import Struct
+
+from . import DB2D
+from . import EXTERNAL_DB
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray

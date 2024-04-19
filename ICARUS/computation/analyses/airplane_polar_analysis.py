@@ -8,7 +8,6 @@ from ICARUS.computation.analyses.input import ListFloatInput
 from ICARUS.computation.analyses.input import StateInput
 from ICARUS.computation.analyses.input import StrInput
 
-
 airplane_option = AirplaneInput()
 state_opion = StateInput()
 solver_2D_option = StrInput("solver2D", "Name of 2D Solver from which to use computed polars")

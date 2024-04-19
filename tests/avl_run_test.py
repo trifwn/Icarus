@@ -5,8 +5,6 @@ import numpy as np
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
 
 
 def avl_run() -> None:

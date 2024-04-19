@@ -1,6 +1,5 @@
 import os
 import re
-from typing import Optional
 
 from ICARUS.core.file_tail import tail
 
@@ -8,7 +7,7 @@ from ICARUS.core.file_tail import tail
 def latest_time(
     CASEDIR: str,
     genu_version: int,
-) -> tuple[Optional[int], bool]:
+) -> tuple[int | None, bool]:
     """Get the latest iteration of GNVP3
 
     Args:

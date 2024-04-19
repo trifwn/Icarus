@@ -1,15 +1,11 @@
 """
 GNVP7 input files generation
 """
+
 import os
 from io import StringIO
-from typing import Any
 
 import numpy as np
-import pandas as pd
-from numpy import dtype
-from numpy import floating
-from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.airfoils.airfoil_polars import Polars
@@ -17,11 +13,9 @@ from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.formatting import ff2
-from ICARUS.core.formatting import ff3
 from ICARUS.core.formatting import ff4
 from ICARUS.core.formatting import sps
 from ICARUS.core.formatting import tabs
-from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.database import GenuVP7_exe

@@ -14,8 +14,8 @@ from ICARUS.computation.solvers.GenuVP.post_process.forces import (
     forces_to_pertrubation_results,
 )
 from ICARUS.computation.solvers.GenuVP.post_process.forces import rotate_gnvp_forces
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct

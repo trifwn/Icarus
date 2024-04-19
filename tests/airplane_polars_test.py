@@ -26,7 +26,6 @@ def airplane_polars(plot: bool = False) -> None:
 
     planenames.append("XFLR_bmark")
     if plot:
-        print(DB.vehicles_db.polars["bmark"].keys())
         from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
         plot_airplane_polars(

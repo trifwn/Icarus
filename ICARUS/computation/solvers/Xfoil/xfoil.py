@@ -16,7 +16,6 @@ from ICARUS.computation.solvers.Xfoil.analyses.angles import multiple_reynolds_s
 from ICARUS.computation.solvers.Xfoil.analyses.angles import (
     multiple_reynolds_serial_seq,
 )
-from ICARUS.core.types import FloatArray
 
 mach_option = FloatInput(name="mach", description="Mach number")
 

@@ -3,6 +3,9 @@
 Merged Wing Class
 ==================
 """
+
+from typing import Any
+
 import numpy as np
 
 from ICARUS.airfoils.airfoil import Airfoil
@@ -417,14 +420,15 @@ class MergedWing(WingSurface):
     #     for segment in self.wing_segments:
     #         segment.change_discretization(N, M)
 
-    def __setstate__(self, state: dict) -> None:
-        self.__init__(
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        MergedWing.__init__(
+            self,
             state["name"],
             state["wing_segments"],
             state["symmetries"],
         )
 
-    def __getstate__(self) -> dict:
+    def __getstate__(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "wing_segments": self.wing_segments,

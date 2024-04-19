@@ -1,23 +1,28 @@
 # ICARUS
 
-BRANCH TO FIX TRAJECTORY AND MISSION
-Current BUILD IS the first stable ICARUS version.
 
-## TASKS
+## Current Goals
 
+- Improve Examples
+- Create functional API (instead of object orienting) for analysis
 - Convert to jax typing
-- Finish Documentation
-- Write Examples
-- Add jax backend to handle all computations and provide derivatives
-- Add Lower Order Models and Analytical Formulas for Stability
-- Create Results Class to handle Analysis output. Specify some results such as AirfoilPolars, AirplanePolars, AirplaneStates etc..
+- Finish integrating Control Surfaces for AVL, GenuVP
+- Ameliorate Trajectory calculations
+- Create Panel/Particle Solver (insted of LSPT) to deprecate external aerodynamic solvers.
+- Create Results Class to handle Analysis output.
+- Improve Airfoil Polar class to handle higher order jax compatible interpolations
+- Create Airplane Polar class
 - Create Workflow Class to combine Analyses Together
-- Add doctests
-- Add the control parameters
-- Make Mission Class and Module to cover and model a flight envelope
-- Make low fidelity approximations. Conceptual Module more robust to work with Lagrange multipliers
-- Add GUI
-- Find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia.
+
+## Long Term Goals
+- Integrate DATCOM for conceputal design. Also add Lower Order Models and Analytical Formulas for Stability
+- Integrate Different fidelity levels for improved optimization
+- Add more optimization techniques (stohastic, GAs, swarm, etc.)
+- Improve testing
+- Finish Documentation and add doctests
+- Add CD/CI
+- Create fully working demo of design an airplane from start to finish in ICARUS
+- Add GUI and find alternative to matplotlib for visualization (3d graphics are slows). One alternative is plotly or julia
 
 ---
 

@@ -1,4 +1,6 @@
 from functools import partial
+from re import A
+from typing import Any
 from typing import Callable
 
 import jax
@@ -7,12 +9,14 @@ from jax import lax
 from jax.debug import print as jprint
 from jaxopt import Broyden
 from jaxtyping import Array
+from jaxtyping import ArrayLike
+from jaxtyping import Bool
 from jaxtyping import Float
+from jaxtyping import Scalar
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from numpy import ndarray
 
-from ICARUS.core.types import FloatArray
 from ICARUS.mission.mission_vehicle import MissionVehicle
 
 
@@ -216,12 +220,12 @@ class MissionTrajectory:
     @partial(jax.jit, static_argnums=(0,))
     def f_to_trim(
         self,
-        aoa: float | Float[Array, "1"],
-        thrust: float | Float[Array, "1"],
+        aoa: float | Float[Array, ""],
+        thrust: float | Float[Array, ""],
         V: Float[Array, "2"],
         dh_dx: float,
         dh2_dx2: float,
-    ) -> float:
+    ) -> Float[Array, ""]:
         """
 
         Args:
@@ -233,7 +237,7 @@ class MissionTrajectory:
 
         lift, _, _ = self.vehicle.get_aerodynamic_forces(jnp.linalg.norm(V), aoa)
         alpha = jnp.deg2rad(aoa) + jnp.arctan(dh_dx)
-        residual = (
+        residual: Float[Array, ''] = (
             thrust * (jnp.sin(alpha) - dh_dx * jnp.cos(alpha))
             + lift * (dh_dx**2 + 1) / jnp.sqrt(dh_dx**2 + 1)
             - m * G
@@ -250,7 +254,7 @@ class MissionTrajectory:
         V: Float[Array, "2"],
         aoa_prev_deg: float,
         engine_amps: float,
-    ):
+    ) -> tuple[float, float, float, float, float, float]:
         """
         From the controller get all the variables that are marked as trim variables then solve the system of equations that ensure the forces normal to the trajectory are zero.
 
@@ -353,36 +357,36 @@ class MissionTrajectory:
         return F, state_now
 
     @partial(jax.jit, static_argnums=(0,))
-    def timestep(self, t: float, y: FloatArray, *args) -> FloatArray:
-        x = y[:2]
-        v = y[2:]
+    def timestep(self, t: float, y: Float[Array, '4'], *args: Any) -> Float[Array, '4']:
+        x: Float[Array, '2'] = y[:2]
+        v: Float[Array, '2'] = y[2:]
         current_state = self.get_control()
 
-        def normal():
+        def normal() -> Float[Array, '4']:
             xdot = self.dxdt(x, v).reshape(-1)
             vdot, _ = self.dvdt(t, x, v, current_state)
             vdot = vdot.reshape(-1)
             return jnp.hstack([xdot, vdot])
 
-        def problem():
+        def problem() -> Float[Array, '4']:
             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
 
-        def error_check(curr_y):
-            def nan_check(curr_y):
+        def error_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
+            def nan_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
                 return jnp.isnan(curr_y).any()
 
-            def crash_check(curr_y):
+            def crash_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
                 return curr_y[1] < self.operating_floor
 
-            def negative_v_check(curr_y):
+            def negative_v_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
                 return curr_y[2] < 0
 
-            def handle_error(_):
+            def handle_error(_: Any) -> Bool[ArrayLike, ""]:
                 # jprint("Error encountered at time: {}", t)
                 # jprint("State: {}", curr_y)
                 return True
 
-            def ok(_):
+            def ok(_: Any) -> Bool[ArrayLike, ""]:
                 return False
 
             nan_result = lax.cond(nan_check(curr_y), handle_error, ok, None)

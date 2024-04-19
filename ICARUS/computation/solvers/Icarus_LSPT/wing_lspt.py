@@ -1,6 +1,4 @@
-from typing import Any
-
-from ICARUS.aerodynamics.potential.lifting_surfaces import run_lstp_angles
+from ICARUS.aerodynamics.lifting_surfaces import run_lstp_angles
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )

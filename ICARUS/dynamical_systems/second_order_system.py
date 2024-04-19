@@ -4,12 +4,12 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 from jax import jit
-from jax.typing import ArrayLike
 from numpy import ndarray
+
+from ICARUS.core.types import FloatArray
 
 from .base_system import DynamicalSystem
 from .first_order_system import NonLinearSystem
-from ICARUS.core.types import FloatArray
 
 
 class SecondOrderSystem(DynamicalSystem):

@@ -25,10 +25,10 @@ This module contains classes and routines for visualization. The module is divid
     ICARUS.visualization.airplane - Airplane visualization
 
 """
+
 from typing import Literal
 from typing import Sequence
 
-import matplotlib
 from matplotlib import colors
 from matplotlib.markers import MarkerStyle
 

@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 from functools import partial
 from typing import Any
 from typing import Callable
-from typing import Union
 
 import numpy as np
 
@@ -12,9 +13,9 @@ from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import DistributionType
+from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.utils import equal_spacing_function
 from ICARUS.vehicle.utils import linear_distribution_function_factory
-from ICARUS.vehicle.utils import SymmetryAxes
 
 
 class WingSegment(WingSurface):
@@ -255,7 +256,7 @@ class WingSegment(WingSurface):
     # the wing segment and store the new values
     @staticmethod
     def recalculation(func: Callable[..., None]) -> Callable[..., None]:
-        def wrapper(self: "WingSegment", *args: Any, **kwargs: Any) -> None:
+        def wrapper(self: WingSegment, *args: Any, **kwargs: Any) -> None:
             # Call the function
             func(self, *args, **kwargs)
             # Recalculate the wing segment
@@ -421,8 +422,9 @@ class WingSegment(WingSurface):
     def __str__(self) -> str:
         return f"Wing Segment: {self.name} with {self.N} panels in the spanwise direction and {self.M} panels in the chordwise direction"
 
-    def __setstate__(self, state: dict) -> None:
-        self.__init__(
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        WingSegment.__init__(
+            self,
             name=state["name"],
             origin=state["origin"],
             orientation=state["orientation"],
@@ -449,7 +451,7 @@ class WingSegment(WingSurface):
             controls=state['controls'],
         )
 
-    def __getstate__(self) -> dict:
+    def __getstate__(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "origin": self.origin,

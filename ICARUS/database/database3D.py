@@ -3,15 +3,14 @@ from __future__ import annotations
 import logging
 import os
 from copy import deepcopy
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 import pandas as pd
 from pandas import DataFrame
 
-from . import DB3D
 from ICARUS import APPHOME
 from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
     get_error_convergence,
@@ -21,6 +20,8 @@ from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
 )
 from ICARUS.core.struct import Struct
 from ICARUS.flight_dynamics.state import State
+
+from . import DB3D
 
 if TYPE_CHECKING:
     from ICARUS.vehicle.plane import Airplane

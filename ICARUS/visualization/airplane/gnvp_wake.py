@@ -56,9 +56,9 @@ def plot_gnvp_wake(
     ax.set_ylim(-plane.span / 2, plane.span / 2)
     ax.set_zlim(-1, 1)
 
-    ax.scatter(xs=A1[:, 0], ys=A1[:, 1], zs=A1[:, 2], color="r", s=5)  # WAKE
-    ax.scatter(xs=B1[:, 0], ys=B1[:, 1], zs=B1[:, 2], color="k", s=5)  # NEARWAKE
-    ax.scatter(xs=C1[:, 0], ys=C1[:, 1], zs=C1[:, 2], color="g", s=5)  # GRID
+    ax.scatter(xs=A1[:, 0], ys=A1[:, 1], zs=A1[:, 2], color="r", s=5)  # WAKE   # type: ignore
+    ax.scatter(xs=B1[:, 0], ys=B1[:, 1], zs=B1[:, 2], color="k", s=5)  # NEARWAKE   # type: ignore
+    ax.scatter(xs=C1[:, 0], ys=C1[:, 1], zs=C1[:, 2], color="g", s=5)  # GRID       # type: ignore
 
     plane.visualize(fig, ax, movement=-np.array(plane.CG))
     if scale == "True":
@@ -95,7 +95,6 @@ if __name__ == "__main__":
     # arg -g is the genu version
     # arg -a is the angle of attack
 
-    import sys
     import argparse
 
     parser = argparse.ArgumentParser()

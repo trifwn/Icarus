@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-from scipy.optimize import OptimizeResult
 
 from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 from ICARUS.vehicle.plane import Airplane

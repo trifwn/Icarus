@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import jsonpickle
 import matplotlib.pyplot as plt
@@ -14,6 +14,12 @@ from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Index
 from tabulate import tabulate
+from traitlets import Float
+
+from ICARUS.core.struct import Struct
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import Environment
+from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
@@ -21,10 +27,6 @@ from .perturbations import longitudal_pertrubations
 from .stability.lateral import lateral_stability_finite_differences
 from .stability.longitudal import longitudal_stability_finite_differences
 from .trim import trim_state
-from ICARUS.core.struct import Struct
-from ICARUS.core.types import FloatArray
-from ICARUS.environment.definition import Environment
-from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 if TYPE_CHECKING:
     from ICARUS.vehicle.plane import Airplane
@@ -52,7 +54,7 @@ class State:
         self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
         self.inertia: FloatArray = airplane.total_inertia
         self.mass: float = airplane.M
-        self.CG = airplane.CG
+        self.CG: FloatArray = airplane.CG
 
         # Get the airplane control variables
         self.control_vars: set[str] = airplane.control_vars

@@ -10,8 +10,8 @@ from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.types import FloatArray
-from ICARUS.database import AVL_exe
 from ICARUS.database import DB
+from ICARUS.database import AVL_exe
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
@@ -381,9 +381,9 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
     #         inds.append(np.arange(1,s.N+1))
 
     dfs = []
-    from ICARUS.database.utils import angle_to_case
-
     import pandas as pd
+
+    from ICARUS.database.utils import angle_to_case
 
     for i, angle in enumerate(angles):
         path = os.path.join(DB.vehicles_db.DATADIR, plane.name, "AVL", f"fs_{angle_to_case(angle)}.txt")
@@ -408,7 +408,7 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
         surfs_arr = np.array(surfs, dtype=float)
         head_arr = np.array([head[0]], dtype=float)
         specific_rows = np.concatenate((head_arr, surfs_arr))
-        df = pd.read_csv(path, delim_whitespace=True, skiprows=lambda x: x not in specific_rows)
+        df = pd.read_csv(path, sep=r'\s+', skiprows=lambda x: x not in specific_rows)
         dfs.append(df)
 
     return dfs

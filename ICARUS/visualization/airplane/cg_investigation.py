@@ -3,19 +3,18 @@ from typing import Any
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 from numpy import ndarray
+from pandas import Series
 
 from ICARUS import APPHOME
 from ICARUS.database import DB
 from ICARUS.propulsion.engine import Engine
 from ICARUS.vehicle.plane import Airplane
-from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
 
 def setup_plot(
@@ -75,9 +74,9 @@ def setup_plot(
         for j, solver in enumerate(solvers):
             try:
                 aoa = polar["AoA"]
-                cl = polar[f"{solver} CL"]
-                cd = polar[f"{solver} CD"]
-                cm = polar[f"{solver} Cm"]
+                cl: Series[bool] = polar[f"{solver} CL"]
+                cd: Series[bool] = polar[f"{solver} CD"]
+                cm: Series[bool] = polar[f"{solver} Cm"]
                 style = f"--"
                 label = f"{airplanes[i]} - {solver}"
 
@@ -101,7 +100,7 @@ def setup_plot(
         # Interpolate the aoa for cm = 0 with numpy
         aoas = np.array(aoa)
         cm_sorted_idx = np.argsort(cm)
-        aoa_trim = np.interp(0, cm[cm_sorted_idx], aoas[cm_sorted_idx])
+        aoa_trim = np.interp(0.0, cm[cm_sorted_idx], aoas[cm_sorted_idx])
 
         clcd_trim = np.interp(aoa_trim, aoas, np.array(clcd_line.get_ydata()))
         cd_trim = np.interp(aoa_trim, aoas, np.array(cd_line.get_ydata()))
@@ -125,7 +124,7 @@ def setup_plot(
 
         # Get the zero lift aoa
         cl_sorted_idx = np.argsort(cl)
-        aoa_zero_lift = np.interp(0, cl[cl_sorted_idx], aoas[cl_sorted_idx])
+        aoa_zero_lift: float = float(np.interp(0.0, cl[cl_sorted_idx], aoas[cl_sorted_idx]))
         cm_zero_lift = np.interp(aoa_zero_lift, aoas, np.array(cm))
 
         # Scatter the zero lift aoa on the cm plot
@@ -272,10 +271,10 @@ if __name__ == "__main__":
     # isss =  np.linspace(-2,2,20)
     planenames = [
         # "final_25A_noinc",
-        "final_25A_STATICMARGIN_NOINC",
+        # "final_25A_STATICMARGIN_NOINC",
         # "final_28A_noinc",
-        # "final_28A_INC",
-        # "final_25A_STATICMARGIN",
+        "bmarFINALk",
+        # "finalR25A_STATICMARGIN",
         # "final_25A_STATICMARGIN_INC",
     ]
 

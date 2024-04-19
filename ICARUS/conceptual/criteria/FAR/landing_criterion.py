@@ -1,9 +1,8 @@
-from typing import Any
-
 import numpy as np
 
-from .helper_functions import shape_like
 from ICARUS.core.types import FloatArray
+
+from .helper_functions import shape_like
 
 
 # FAR 1 -> 25.111

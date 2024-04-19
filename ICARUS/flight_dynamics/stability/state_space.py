@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -9,7 +11,7 @@ if TYPE_CHECKING:
 
 
 def eigenvalue_analysis(
-    state_space_obj: "LateralStateSpace | LongitudalStateSpace",
+    state_space_obj: LateralStateSpace | LongitudalStateSpace,
 ) -> None:
     # Compute Eigenvalues and Eigenvectors
     eigvalLong, eigvecLong = np.linalg.eig(state_space_obj.A)
@@ -20,7 +22,7 @@ def eigenvalue_analysis(
 class LateralStateSpace:
     def __init__(
         self,
-        state: "State",
+        state: State,
         Y: dict[str, float],
         L: dict[str, float],
         N: dict[str, float],
@@ -94,7 +96,7 @@ class LateralStateSpace:
 class LongitudalStateSpace:
     def __init__(
         self,
-        state: "State",
+        state: State,
         X: dict[str, float],
         Z: dict[str, float],
         M: dict[str, float],

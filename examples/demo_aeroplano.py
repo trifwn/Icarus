@@ -1,4 +1,5 @@
 """This module defines the hermes plane object."""
+
 import numpy as np
 
 from ICARUS.core.types import FloatArray

@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.markers import MarkerStyle
 
+from ICARUS.core.types import FloatArray
+
 from .climb_criterion import far_4_climb
 from .cruise_criterion import far_5_cruise_speed
 from .failed_approach_criterion import far_2_failed_approach
@@ -9,7 +11,6 @@ from .landing_criterion import far_1_landing
 from .range import range_criterion
 from .takeoff_criterion import far_3_takeoff
 from .useful_load import usefull_load_criterion
-from ICARUS.core.types import FloatArray
 
 
 def get_all_far_criteria(

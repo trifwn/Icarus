@@ -1,24 +1,25 @@
-from calendar import c
-
+import jax
 import jax.numpy as jnp
 from jax import lax
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
+from jaxtyping import Scalar
 
 
+@jax.jit
 def vortexL(
-    xp: Float[Array, ""],
-    yp: Float[Array, ""],
-    zp: Float[Array, ""],
-    x1: Float[Array, ""],
-    y1: Float[Array, ""],
-    z1: Float[Array, ""],
-    x2: Float[Array, ""],
-    y2: Float[Array, ""],
-    z2: Float[Array, ""],
+    xp: Scalar,
+    yp: Scalar,
+    zp: Scalar,
+    x1: Scalar,
+    y1: Scalar,
+    z1: Scalar,
+    x2: Scalar,
+    y2: Scalar,
+    z2: Scalar,
     gamma: float,
-) -> tuple[Float[Array, ""], Float[Array, ""], Float[Array, ""]]:
+) -> tuple[Scalar, Scalar, Scalar]:
     """Computes the velocities induced at a point xp,yp,zp
     by a vortex line given its two end points and circulation
 
@@ -62,22 +63,26 @@ def vortexL(
     # return 0, 0, 0
     cond = (r1 < e) | (r2 < e) | (cross_mag < e)
 
-    def true_fn(args):
-        return 0.0, 0.0, 0.0
+    def true_fn(args: tuple[Scalar, Scalar, Scalar]) -> tuple[Scalar, Scalar, Scalar]:
+        u = jnp.array(0.0)
+        v = jnp.array(0.0)
+        w = jnp.array(0.0)
+        return u, v, w
 
-    def false_fn(args):
+    def false_fn(args: tuple[Scalar, Scalar, Scalar]) -> tuple[Scalar, Scalar, Scalar]:
         return u, v, w
 
     u, v, w = lax.cond(cond, true_fn, false_fn, (r1, r2, cross_mag))
     return u, v, w
 
 
+@jax.jit
 def voring(
-    x: Float[Array, ""],
-    y: Float[Array, ""],
-    z: Float[Array, ""],
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
+    i: Int[Array, ""],
     j: Int[Array, ""],
-    k: Int[Array, ""],
     grid: Float[Array, "n m"],
     gamma: float = 1.0,
 ) -> tuple[Float[Array, "n"], Float[Array, "m"]]:
@@ -88,8 +93,8 @@ def voring(
         x: x coordinate of point
         y: y coordinate of point
         z: z coordinate of point
-        j: specifies i index of grid (gd[j,k])
-        k: specifies j index of grid (gd[j,k])
+        i: specifies i index of grid (gd[i,k])
+        j: specifies j index of grid (gd[j,k])
         grid: grid of geometry
         gamma: Circulation. Defaults to 1 (When we use nondimensional solve).
 
@@ -100,12 +105,12 @@ def voring(
         x,
         y,
         z,
-        grid[j, k, 0],
-        grid[j, k, 1],
-        grid[j, k, 2],
-        grid[j + 1, k, 0],
-        grid[j + 1, k, 1],
-        grid[j + 1, k, 2],
+        grid[i, j, 0],
+        grid[i, j, 1],
+        grid[i, j, 2],
+        grid[i + 1, j, 0],
+        grid[i + 1, j, 1],
+        grid[i + 1, j, 2],
         gamma,
     )
 
@@ -113,36 +118,36 @@ def voring(
         x,
         y,
         z,
-        grid[j + 1, k, 0],
-        grid[j + 1, k, 1],
-        grid[j + 1, k, 2],
-        grid[j + 1, k + 1, 0],
-        grid[j + 1, k + 1, 1],
-        grid[j + 1, k + 1, 2],
+        grid[i + 1, j, 0],
+        grid[i + 1, j, 1],
+        grid[i + 1, j, 2],
+        grid[i + 1, j + 1, 0],
+        grid[i + 1, j + 1, 1],
+        grid[i + 1, j + 1, 2],
         gamma,
     )
     u3, v3, w3 = vortexL(
         x,
         y,
         z,
-        grid[j + 1, k + 1, 0],
-        grid[j + 1, k + 1, 1],
-        grid[j + 1, k + 1, 2],
-        grid[j, k + 1, 0],
-        grid[j, k + 1, 1],
-        grid[j, k + 1, 2],
+        grid[i + 1, j + 1, 0],
+        grid[i + 1, j + 1, 1],
+        grid[i + 1, j + 1, 2],
+        grid[i, j + 1, 0],
+        grid[i, j + 1, 1],
+        grid[i, j + 1, 2],
         gamma,
     )
     u4, v4, w4 = vortexL(
         x,
         y,
         z,
-        grid[j, k + 1, 0],
-        grid[j, k + 1, 1],
-        grid[j, k + 1, 2],
-        grid[j, k, 0],
-        grid[j, k, 1],
-        grid[j, k, 2],
+        grid[i, j + 1, 0],
+        grid[i, j + 1, 1],
+        grid[i, j + 1, 2],
+        grid[i, j, 0],
+        grid[i, j, 1],
+        grid[i, j, 2],
         gamma,
     )
 
@@ -159,15 +164,16 @@ def voring(
     return U, Ustar
 
 
+@jax.jit
 def hshoe2(
-    x: Float[Array, ""],
-    y: Float[Array, ""],
-    z: Float[Array, ""],
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
     k: Int[Array, ""],
     j: Int[Array, ""],
     grid: Float[Array, "n m"],
     gamma: float = 1,
-) -> tuple[Float[Array, "n"], Float[Array, "m"]]:
+) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """Vorticity Horseshow Element. Computes the velocities induced at a point x,y,z
     by a horseshow Vortex given its grid lower corner coordinates
 
@@ -233,10 +239,11 @@ def hshoe2(
     return U, Ustar
 
 
+@jax.jit
 def hshoeSL2(
-    x: Float[Array, ""],
-    y: Float[Array, ""],
-    z: Float[Array, ""],
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
     i: Int[Array, ""],
     j: Int[Array, ""],
     grid: Float[Array, "n m"],
@@ -331,10 +338,11 @@ def hshoeSL2(
     return U, Ustar
 
 
+@jax.jit
 def symm_wing_panels(
-    x: Float[Array, ""],
-    y: Float[Array, ""],
-    z: Float[Array, ""],
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
     i: Int[Array, ""],
     j: Int[Array, ""],
     grid: Float[Array, "n m"],
@@ -365,10 +373,11 @@ def symm_wing_panels(
     return U_ind, U_ind_st
 
 
+@jax.jit
 def ground_effect(
-    x: Float[Array, ""],
-    y: Float[Array, ""],
-    z: Float[Array, ""],
+    x: Scalar,
+    y: Scalar,
+    z: Scalar,
     i: Int[Array, ""],
     j: Int[Array, ""],
     panel: Float[Array, "n m"],
@@ -394,18 +403,3 @@ def ground_effect(
     U_ind = jnp.array([U1[0] + U2[0], U1[1] + U2[1], U1[2] - U2[2]])
     U_ind_st = jnp.array([U1st[0] + U2st[0], U1st[1] + U2st[1], U1st[2] - U2st[2]])
     return U_ind, U_ind_st
-
-
-try:
-    import jax
-
-    # Compile the functions with JAX
-    vortexL = jax.jit(vortexL)
-    voring = jax.jit(voring)
-    hshoe2 = jax.jit(hshoe2)
-    hshoeSL2 = jax.jit(hshoeSL2)
-    symm_wing_panels = jax.jit(symm_wing_panels)
-    ground_effect = jax.jit(ground_effect)
-
-except ImportError:
-    pass

@@ -9,10 +9,11 @@ from ICARUS.visualization import markers
 
 if TYPE_CHECKING:
     import pandas as pd
-    from ICARUS.vehicle.plane import Airplane
-    from ICARUS.core.struct import Struct
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
+    from ICARUS.core.struct import Struct
+    from ICARUS.vehicle.plane import Airplane
 
 
 def plot_sensitivity(

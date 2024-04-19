@@ -1,12 +1,10 @@
 import time
-from typing import Any
 
 import numpy as np
 
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.plane import Airplane
 
 
 def gnvp7_run(run_parallel: bool = True) -> None:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 
 import numpy as np
@@ -5,8 +7,6 @@ import numpy as np
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
 
 
 def gnvp3_run(run_parallel: bool = True) -> None:

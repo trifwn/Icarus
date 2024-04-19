@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Callable
 
 import numpy as np
@@ -5,8 +6,12 @@ import numpy as np
 from ICARUS.core.types import FloatArray
 
 
-def default_chord_function(self, span_position: float) -> float:
-    return self.chord_percentage_start + (self.chord_percentage_end - self.chord_percentage_start) * span_position
+def default_chord_function_factory(
+    chord_percentage_start: float,
+    chord_percentage_end: float,
+    span_position: float,
+) -> float:
+    return chord_percentage_start + (chord_percentage_end - chord_percentage_start) * span_position
 
 
 class ControlSurface:
@@ -50,7 +55,11 @@ class ControlSurface:
         self.local_rotation_axis = local_rotation_axis
 
         if chord_function is None:
-            self.chord_function: Callable[[float], float] = default_chord_function
+            self.chord_function: Callable[[float], float] = partial(
+                default_chord_function_factory,
+                self.chord_percentage_start,
+                self.chord_percentage_end,
+            )
         else:
             self.chord_function = chord_function
         self.inverse_symmetric = inverse_symmetric

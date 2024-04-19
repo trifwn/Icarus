@@ -22,9 +22,6 @@ class MissionAnalysis:
     def process(self) -> None:
         pass
 
-    def score(self, fitness):
-        pass
-
     def plot(self) -> None:
         pass
 

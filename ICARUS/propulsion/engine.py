@@ -142,9 +142,9 @@ class Engine:
 
     def thrust(
         self,
-        velocity: float | Float[Array, "dim1 dim2"],
-        current: float | Float[Array, "dim1 dim2"],
-    ) -> Float[Array, "dim1 dim2"]:
+        velocity: float | Float[Array, "dim1"],
+        current: float | Float[Array, "dim1"],
+    ) -> Float[Array, "dim1"]:
         # Interpolating the thrust curve
         velocity = jnp.atleast_1d(velocity)
         current = jnp.atleast_1d(current)
@@ -153,9 +153,9 @@ class Engine:
 
     def current(
         self,
-        velocity: float | Float[Array, "dim1 dim2"],
-        thrust: float | Float[Array, "dim1 dim2"],
-    ) -> Float[Array, "dim1 dim2"]:
+        velocity: float | Float[Array, "dim1"],
+        thrust: float | Float[Array, "dim1"],
+    ) -> Float[Array, "dim1"]:
         velocity = jnp.atleast_1d(velocity)
         thrust = jnp.atleast_1d(thrust)
         # Interpolating the current curve

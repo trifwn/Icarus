@@ -1,17 +1,13 @@
-import time
-from turtle import st
 from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import lines
 from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.text import Text
 
-from ICARUS.core.types import ComplexArray
 from ICARUS.flight_dynamics.state import State
 from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 

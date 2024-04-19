@@ -1,14 +1,14 @@
 import os
 import subprocess
-from typing import Any
 
 from pandas import DataFrame
 
-from .files_gnvp7 import make_input_files
 from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
+
+from .files_gnvp7 import make_input_files
 
 
 def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
@@ -23,7 +23,8 @@ def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
     """
     os.chdir(ANGLEDIR)
 
-    cmd = "module load compiler openmpi > /dev/null ; mpirun '-n' '4' 'gnvp7'"
+    # cmd = "module load compiler openmpi > /dev/null ; mpirun '-n' '4' 'gnvp7'"
+    cmd = "gnvp7"
     with open("input", encoding="utf-8") as fin:
         with open("gnvp7.out", "w", encoding="utf-8") as fout:
             res: int = subprocess.check_call(

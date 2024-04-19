@@ -3,6 +3,7 @@ Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
+
 import time
 
 import numpy as np
@@ -40,12 +41,11 @@ def main() -> None:
     # planes.append(embraer_cr)
     # planes.append(embraer_to)
 
-    from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-
     # filename: str = "Data/3d_Party/plane_1.xml"
     # airplane = parse_xfl_project(filename)
-
     from Vehicles.Planes.e190_cruise import e190_cruise
+
+    from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 
     hermes_3: Airplane = e190_cruise(name="E190")
     planes.append(hermes_3)

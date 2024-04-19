@@ -1,6 +1,5 @@
 import inspect
 import logging
-from calendar import c
 from copy import deepcopy
 from re import A
 from time import time
@@ -9,9 +8,9 @@ from typing import Callable
 
 import numpy as np
 from scipy.optimize import LinearConstraint
-from scipy.optimize import minimize
 from scipy.optimize import NonlinearConstraint
 from scipy.optimize import OptimizeResult
+from scipy.optimize import minimize
 
 from ICARUS.core.types import FloatArray
 from ICARUS.optimization import MAX_FLOAT

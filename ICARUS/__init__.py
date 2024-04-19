@@ -1,6 +1,7 @@
 """
 ICARUS: A Python package for the analysis, modelling and design of aircraft.
 """
+
 import multiprocessing
 import os
 import platform
@@ -37,8 +38,9 @@ except ImportError:
     pass
 
 
-from . import airfoils
 from . import aerodynamics
+from . import airfoils
+from . import computation
 from . import conceptual
 from . import core
 from . import database
@@ -47,7 +49,6 @@ from . import flight_dynamics
 from . import mission
 from . import vehicle
 from . import visualization
-from . import computation
 
 __all__ = [
     "aerodynamics",

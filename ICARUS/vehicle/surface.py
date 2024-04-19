@@ -9,15 +9,16 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from .strip import Strip
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.utils import DiscretizationType
-from ICARUS.vehicle.utils import equal_spacing_function_factory
 from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.utils import equal_spacing_function_factory
+
+from .strip import Strip
 
 
 class WingSurface:
@@ -1196,7 +1197,7 @@ class WingSurface:
     def __str__(self) -> str:
         return f"Lifting Surface: {self.name} with {self.N} Panels and {self.M} Panels"
 
-    def serialize_function(self, func):
+    def serialize_function(self, func: Callable[[Any], Any]) -> dict[str, Any] | None:
         if isinstance(func, types.MethodType):
             func_name = func.__func__.__name__
             return {"py/method": [func.__self__, func_name]}
@@ -1224,7 +1225,8 @@ class WingSurface:
         else:
             chord_discretization_function = None
 
-        self.__init__(
+        WingSurface.__init__(
+            self,
             name=state["name"],
             origin=state["origin"],
             orientation=state["orientation"],

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import os
-from calendar import c
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -16,7 +15,6 @@ from numpy import ndarray
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.strip import Strip
-
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -35,7 +33,6 @@ class Airplane:
         surfaces: list[WingSurface],
         orientation: FloatOrListArray | None = None,
         point_masses: list[tuple[float, FloatArray, str]] | None = None,
-        override_mass=False,
         cg_override: FloatArray | None = None,
     ) -> None:
         """
@@ -106,17 +103,16 @@ class Airplane:
         self.control_vars: set[str] = control_vars
         self.num_control_variables = len(control_vars)
 
-        if override_mass and (cg_override is not None):
+        self.cg_override: FloatArray | None = cg_override
+        if cg_override is not None:
             self.overide_mass = True
-            self.cg_override = cg_override
             self._CG = cg_override
         else:
             self.overide_mass = False
-            self.cg_override = None
             self._CG = self.find_cg()
 
-    def __control__(self, control_vector):
-        control_dict = {k: control_vector[i] for k, i in enumerate(self.control_vars)}
+    def __control__(self, control_vector: dict[str, float]) -> None:
+        control_dict = {k: control_vector[k] for k in self.control_vars}
         for surf in self.surfaces:
             surf_control_vec = {}
             for name, value in control_dict.items():
@@ -610,12 +606,12 @@ class Airplane:
         return str(encoded)
 
     def __setstate__(self, state: dict[str, Any]) -> None:
-        self.__init__(
+        Airplane.__init__(
+            self,
             name=state["name"],
             surfaces=state["surfaces"],
             orientation=state["orientation"],
             point_masses=state['point_masses'],
-            override_mass=state['override_mass'],
             cg_override=state['cg_override'],
         )
 
@@ -625,7 +621,6 @@ class Airplane:
             "surfaces": self.surfaces,
             "orientation": self.orientation,
             "point_masses": self.point_masses,
-            "override_mass": self.overide_mass,
             "cg_override": self.CG if self.overide_mass else None,
         }
 
@@ -651,13 +646,11 @@ class Airplane:
         return string
 
     def __copy__(self) -> Airplane:
-        print(f"Copying {self.name}")
         return Airplane(
             name=self.name,
             surfaces=self.surfaces,
             orientation=self.orientation,
             point_masses=self.point_masses,
-            override_mass=self.overide_mass,
             cg_override=self.CG if self.overide_mass else None,
         )
 

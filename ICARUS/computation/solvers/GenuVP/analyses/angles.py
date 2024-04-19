@@ -15,8 +15,8 @@ from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_m
 from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
 from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
 from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
+from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct

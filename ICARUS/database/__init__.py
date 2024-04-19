@@ -32,6 +32,7 @@ The package is divided in the following files:
     ICARUS.database.utils
 
 """
+
 import os
 
 from ICARUS import APPHOME
@@ -74,9 +75,9 @@ DB3D: str = os.path.join(APPHOME, "Data", "3D")
 ANALYSESDB: str = os.path.join(APPHOME, "Data", "Analyses")
 EXTERNAL_DB: str = os.path.join(APPHOME, "Data", "3d_Party")
 
+from . import analysesDB
 from . import database2D
 from . import database3D
-from . import analysesDB
 from . import db
 
 __all__ = ["database2D", "database3D", "analysesDB", "db"]

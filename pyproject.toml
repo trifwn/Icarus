@@ -55,3 +55,7 @@ plugins = [
     "numpy.typing.mypy_plugin"
 ]
 #pretty = true
+
+[tool.isort]
+force_single_line = true
+profile = "black"

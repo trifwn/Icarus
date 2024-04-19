@@ -1,10 +1,10 @@
 """
 Setup script for ICARUS
 """
+
 import os
 import re
 import sys
-from importlib.metadata import entry_points
 
 from setuptools import setup
 from setuptools.command.develop import develop

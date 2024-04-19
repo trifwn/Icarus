@@ -1,10 +1,3 @@
-from typing import Any
-
-from ICARUS.core.types import FloatArray
-
-# USEFULL LOAD
-
-
 def usefull_load_criterion(
     thrust_loading: float,
     wf_wg: float,

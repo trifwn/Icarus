@@ -50,11 +50,13 @@ methods from the original airfoil class which include but are not limited to:
 
 
 """
+
+from __future__ import annotations
+
 import logging
 import os
 import re
 from typing import Any
-from typing import Union
 
 import airfoils as af
 import matplotlib.pyplot as plt
@@ -341,11 +343,11 @@ class Airfoil(af.Airfoil):  # type: ignore
     @classmethod
     def morph_new_from_two_foils(
         cls,
-        airfoil1: "Airfoil",
-        airfoil2: "Airfoil",
+        airfoil1: Airfoil,
+        airfoil2: Airfoil,
         eta: float,
         n_points: int,
-    ) -> "Airfoil":
+    ) -> Airfoil:
         """
         Returns a new airfoil morphed between two airfoils
 
@@ -453,7 +455,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         return cls(upper, lower, name, n_points)
 
     @classmethod
-    def naca(cls, naca: str, n_points: int = 200) -> "Airfoil":
+    def naca(cls, naca: str, n_points: int = 200) -> Airfoil:
         """
         Initialize the Airfoil class from a NACA 4 digit identifier.
 
@@ -481,7 +483,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             q: float = float(naca[2]) / 1000
             xx: float = float(naca[3:5]) / 1000
             upper, lower = gen_NACA5_airfoil(naca, n_points)
-            self: "Airfoil" = cls(upper, lower, f"naca{naca}", n_points)
+            self: Airfoil = cls(upper, lower, f"naca{naca}", n_points)
             return self
         elif re_4digits.match(naca):
             m: float = float(naca[0]) / 100
@@ -497,7 +499,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             )
 
     @classmethod
-    def load_from_file(cls, filename: str) -> "Airfoil":
+    def load_from_file(cls, filename: str) -> Airfoil:
         """
         Initialize the Airfoil class from a file.
 
@@ -542,7 +544,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_arr = np.array(y)
         lower, upper = cls.split_sides(x_arr, y_arr)
         try:
-            self: "Airfoil" = cls(upper, lower, os.path.split(filename)[-1], len(x))
+            self: Airfoil = cls(upper, lower, os.path.split(filename)[-1], len(x))
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
@@ -554,7 +556,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         chord_extension: float,
         flap_angle: float,
         plotting: bool = False,
-    ) -> "Airfoil":
+    ) -> Airfoil:
         """
         Function to generate a flapped airfoil. The flap is defined by the flap hinge, the chord extension and the flap angle.
 
@@ -691,7 +693,7 @@ class Airfoil(af.Airfoil):  # type: ignore
                     results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
             return results
 
-    def camber_line(self, x: Union[float, list[float], FloatArray]) -> FloatArray:
+    def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:
         """"""
         if hasattr(self, "l"):
             # return self.camber_line_naca5(x)
@@ -751,7 +753,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         return np.vstack((x_points, y_points))
 
     @classmethod
-    def load_from_web(cls, name: str) -> "Airfoil":
+    def load_from_web(cls, name: str) -> Airfoil:
         """
         Fetches the airfoil data from the web. Specifically from the UIUC airfoil database.
         """

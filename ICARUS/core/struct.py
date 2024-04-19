@@ -1,19 +1,20 @@
+from __future__ import annotations
+
 from typing import Any
 from typing import ItemsView
 from typing import Iterator
 from typing import KeysView
-from typing import List
 from typing import ValuesView
 
 
 class Struct:
-    __slots__: List[str] = ["_data", "_depth"]
+    __slots__: list[str] = ["_data", "_depth"]
     _data: dict[str, Any]
     _depth: int
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "Struct":
+    def __new__(cls, *args: Any, **kwargs: Any) -> Struct:
         """Create a new Struct instance."""
-        instance: "Struct" = super().__new__(cls)
+        instance: Struct = super().__new__(cls)
         object.__setattr__(instance, "_data", {})
         object.__setattr__(instance, "_depth", 0)
         return instance
@@ -77,7 +78,7 @@ class Struct:
 
     def __repr__(self) -> str:
         """Return a string representation of the Struct instance."""
-        items: List[str] = [f"{key}={repr(value)}" for key, value in self._data.items()]
+        items: list[str] = [f"{key}={repr(value)}" for key, value in self._data.items()]
         return f"Struct({', '.join(items)})"
 
     def __str__(self) -> str:
@@ -129,7 +130,7 @@ class Struct:
                 value = Struct(value)
             self._data[key] = value
 
-    def __invert__(self) -> "Struct":
+    def __invert__(self) -> Struct:
         """This method is called when the ~ operator is used on a Struct object. It
         returns a new Struct object that has all the key-value pairs in the original
         Struct object, but with the keys and values swapped.
@@ -140,7 +141,7 @@ class Struct:
         # This allows us to invert the dictionary using the ~ operator
         return self.invert_nested_dict()
 
-    def invert_nested_dict(self) -> "Struct":
+    def invert_nested_dict(self) -> Struct:
         """This method recursively inverts a nested dictionary by creating a new
         dictionary with the same keys as the original, but with inverted values. If any
         of the values are themselves dictionaries, the method calls itself recursively to

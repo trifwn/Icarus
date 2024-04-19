@@ -1,9 +1,6 @@
 from typing import Callable
 
 import jax.numpy as jnp
-import numpy as np
-
-from ICARUS.core.types import FloatArray
 
 
 def h_polynomial_factory(

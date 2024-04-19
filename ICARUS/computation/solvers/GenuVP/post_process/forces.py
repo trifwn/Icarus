@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import Any
 
 import numpy as np
-import pandas as pd
 from pandas import DataFrame
 from pandas import Series
 
@@ -113,7 +114,7 @@ def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, gnvp
 
 def rotate_gnvp_forces(
     rawforces: DataFrame,
-    alpha_deg: float | Series | FloatArray,
+    alpha_deg: float | Series[float] | FloatArray,
     gnvp_version: int,
     default_name_to_use: str = "2D",
 ) -> DataFrame:

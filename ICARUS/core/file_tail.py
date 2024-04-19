@@ -1,6 +1,6 @@
 from io import BufferedReader
-from typing import Any
 from typing import IO
+from typing import Any
 
 
 def tail(f: BufferedReader | IO[Any], lines: int = 20) -> list[bytes]:

@@ -1,6 +1,9 @@
 """
 Trim module
 """
+
+from __future__ import annotations
+
 import logging
 from typing import TYPE_CHECKING
 
@@ -20,7 +23,7 @@ class TrimOutsidePolars(Exception):
     pass
 
 
-def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
+def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -103,7 +106,7 @@ def trim_state(state: "State", verbose: bool = True) -> dict[str, float]:
     cls = state.polar["CL"].to_numpy()
     cms = state.polar["Cm"].to_numpy()
     mac = state.mean_aerodynamic_chord
-    x_cg = state.CG[0]
+    x_cg: float = state.CG[0]
 
     def movement(new_cg):
         new_CM = cms + (new_cg - x_cg) * (cls) / mac

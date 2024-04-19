@@ -13,7 +13,7 @@ class MissionController:
         for var in control_variables:
             self.control_vector[var.name] = var.value
 
-    def control_law(self, time: float, x: FloatArray | jnp.ndarray, v: FloatArray | jnp.ndarray):
+    def control_law(self, time: float, x: FloatArray | jnp.ndarray, v: FloatArray | jnp.ndarray) -> None:
         if time < 30:
             self.control_vector["aoa"] = "TRIM"
             self.control_vector["engine_amps"] = 30
@@ -28,7 +28,7 @@ class MissionController:
             self.control_vector["engine_amps"] = 0
 
     @property
-    def trim_variables(self):
+    def trim_variables(self) -> dict[str, str | float]:
         trim_vars = {}
         for var in self.control_vector:
             if self.control_vector[var] == "TRIM":

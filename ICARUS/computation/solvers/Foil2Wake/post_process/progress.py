@@ -1,11 +1,10 @@
 import os
 import re
-from typing import Optional
 
 from ICARUS.core.file_tail import tail
 
 
-def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float], bool, bool]:
+def latest_time(REYNDIR: str, name: str) -> tuple[int | None, float | None, bool, bool]:
     """Get the latest iteration of F2W
 
     Args:
@@ -17,7 +16,7 @@ def latest_time(REYNDIR: str, name: str) -> tuple[Optional[int], Optional[float]
                                                     where the simulation is, and an error flag.
     """
 
-    def get_angle() -> Optional[float]:
+    def get_angle() -> float | None:
         folders: list[str] = next(os.walk(REYNDIR))[1]
         angles: list[float] = []
         angle: float = 0

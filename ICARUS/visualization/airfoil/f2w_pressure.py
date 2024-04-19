@@ -4,6 +4,7 @@
 !       This is the way it is done for the wake in GNVP
 
 """
+
 import os
 
 import matplotlib.pyplot as plt

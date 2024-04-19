@@ -6,13 +6,13 @@ import numpy as np
 from numpy import deg2rad
 from numpy import rad2deg
 
-from .input import make_input_files
-from ICARUS.core.types import FloatArray
-from ICARUS.database import AVL_exe
 from ICARUS.database import DB3D
+from ICARUS.database import AVL_exe
 from ICARUS.database.utils import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
+
+from .input import make_input_files
 
 
 def csplit(input_file: str, pattern: str) -> list[str]:

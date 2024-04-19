@@ -1,5 +1,4 @@
 import time
-from typing import Any
 
 import jax.numpy as jnp
 import matplotlib.pyplot as plt

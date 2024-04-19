@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -72,7 +74,7 @@ class Strip:
 
     def return_symmetric(
         self,
-    ) -> "Strip":
+    ) -> Strip:
         """
         Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
         It also adds a small gap if the strip located along the x axis.

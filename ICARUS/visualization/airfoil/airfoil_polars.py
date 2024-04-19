@@ -7,10 +7,11 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from .. import colors_
-from .. import markers
 from ICARUS.core.struct import Struct
 from ICARUS.database import DB
+
+from .. import colors_
+from .. import markers
 
 
 def plot_airfoil_polars(

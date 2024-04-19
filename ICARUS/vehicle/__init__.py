@@ -66,4 +66,8 @@ Surface Connections
 
 __all__ = ["strip", "surface", "merged_wing", "plane", "surface_connections"]
 
-from . import strip, merged_wing, plane, surface, surface_connections
+from . import merged_wing
+from . import plane
+from . import strip
+from . import surface
+from . import surface_connections

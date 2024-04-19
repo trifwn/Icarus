@@ -14,6 +14,7 @@ Allows the user to chose between 2d and 3d simulations.                         
     wishes. Visualization options should be provided. and saved to folder if needed      |
 
 """
+
 import argparse
 from argparse import Namespace
 from typing import Any

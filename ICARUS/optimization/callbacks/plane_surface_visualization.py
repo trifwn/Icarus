@@ -1,13 +1,9 @@
-from __future__ import annotations
-
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.optimize import OptimizeResult
 
 from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 
