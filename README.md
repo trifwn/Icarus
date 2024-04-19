@@ -1,5 +1,5 @@
 # ICARUS
-
+Version v0.1
 
 ## Current Goals
 
