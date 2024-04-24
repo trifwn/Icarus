@@ -29,7 +29,10 @@ This module contains classes and routines for visualization. The module is divid
 from typing import Literal
 from typing import Sequence
 
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import colors
+from matplotlib.colors import ListedColormap
 from matplotlib.markers import MarkerStyle
 
 
@@ -47,7 +50,9 @@ def get_p_RdBl_cmap() -> colors.LinearSegmentedColormap:
     return colors.LinearSegmentedColormap("p_RdBl", n_cdict)
 
 
-colors_ = get_p_RdBl_cmap()
+viridis = plt.get_cmap('viridis')
+new_viridis = ListedColormap(viridis(np.arange(256)))
+colors_ = new_viridis
 
 markers_str: list[str | int] = list(MarkerStyle.markers.keys())
 markers = [MarkerStyle(marker) for marker in markers_str]

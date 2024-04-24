@@ -32,7 +32,7 @@ def e190_takeoff_generator(
     from ICARUS.airfoils.airfoil import Airfoil
 
     naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]
-    naca64418_fl: Airfoil = naca64418.flap_airfoil(
+    naca64418_fl: Airfoil = naca64418.flap(
         flap_hinge=flap_hinge,
         chord_extension=chord_extension,
         flap_angle=flap_angle,

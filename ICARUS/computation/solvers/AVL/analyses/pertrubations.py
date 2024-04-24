@@ -32,7 +32,7 @@ def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D: str, solver
         # angles = np.linspace(aoa_min, aoa_max, num_aoa)
         angles = np.linspace(-10, 10, 21)
 
-        avl_angle_run(plane=plane, state=state, solver2D=solver2D, angles=angles)
+        avl_angle_run(plane=plane, state=state, solver2D=solver2D, angles=angles, solver_options=solver_options)
         polar_df = process_avl_angles_run(plane, state, angles)
         state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 

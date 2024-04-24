@@ -102,6 +102,7 @@ class Airplane:
             control_vars.update(surf.control_vars)
         self.control_vars: set[str] = control_vars
         self.num_control_variables = len(control_vars)
+        self.control_vector: dict[str, float] = {k: 0.0 for k in control_vars}
 
         self.cg_override: FloatArray | None = cg_override
         if cg_override is not None:
@@ -118,7 +119,9 @@ class Airplane:
             for name, value in control_dict.items():
                 if name in surf.control_vars:
                     surf_control_vec[name] = value
+                self.control_vector[name] = value
             surf.__control__(surf_control_vec)
+            print(f"Controling {surf.name} with {surf_control_vec}")
 
     # @property
     # def surfaces(self) -> list[WingSurface]:

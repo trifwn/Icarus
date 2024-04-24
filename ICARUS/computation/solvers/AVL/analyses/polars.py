@@ -21,7 +21,7 @@ def avl_angle_run(
     state: State,
     solver2D: str,
     angles: FloatArray | list[float],
-    solver_options: dict[str, Any] = {},
+    solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
     planedir = os.path.join(DB3D, plane.directory, "AVL")
     make_input_files(planedir, plane, state, solver2D, solver_options)

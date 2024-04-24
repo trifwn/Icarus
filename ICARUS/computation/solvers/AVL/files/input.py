@@ -18,6 +18,7 @@ from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -27,7 +28,7 @@ def make_input_files(
     plane: Airplane,
     state: State,
     solver2D: str = "Xfoil",
-    solver_options: dict[str, float] = {},
+    solver_options: dict[str, float] = {"use_avl_control": False},
 ) -> None:
     os.makedirs(directory, exist_ok=True)
     avl_mass(directory, plane, state.environment)
@@ -117,7 +118,7 @@ def avl_geo(
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
     f_io.write(f" 0.0010                               | CDp  (optional)\n")
 
-    surfaces = []
+    surfaces: list[WingSurface] = []
     surfaces_ids = []
     i = 0
     for surface in plane.surfaces:
@@ -133,6 +134,14 @@ def avl_geo(
         f_io.write(f"#SURFACE {i} name {surf.name}\n")
 
     for i, surf in enumerate(surfaces):
+
+        # Use control from AVL vs ICARUS
+        if solver_options['use_avl_control']:
+            surf.__control__({k: 0.0 for k in surf.control_vars})
+            use_avl_control = True
+        else:
+            use_avl_control = False
+
         f_io.write("\n")
         f_io.write("\n")
         f_io.write("\n")
@@ -204,6 +213,7 @@ def avl_geo(
                 f_io.write("\n")
                 f_io.write("\n")
                 strip_airfoil = strip.airfoil_start
+                strip_r = np.array([strip.x0, strip.y0, strip.z0])
             elif j == len(surf.strips) - 1:
                 f_io.write(
                     f"   {strip.x1}    {strip.y1}    {strip.z1}    {strip.chords[1]}   {strip.twists[1]*180/np.pi}   {1}    {span_spacing}   \n",
@@ -214,25 +224,26 @@ def avl_geo(
                 f_io.write("\n")
                 f_io.write("\n")
                 strip_airfoil = strip.airfoil_end
+                strip_r = np.array([strip.x1, strip.y1, strip.z1])
             else:
                 f_io.write(
                     f"   {(strip.x0 + strip.x1)/2}    {(strip.y0+strip.y1)/2}    {(strip.z0+strip.z1)/2}    {strip.mean_chord}   {strip.mean_twist*180/np.pi}   {1}    {span_spacing}   \n",
                 )
                 f_io.write("\n")
                 f_io.write("AFILE \n")
-                f_io.write(f"{strip.mean_airfoil.file_name}\n")
+                f_io.write(f"{strip.airfoil_end.file_name}\n")
                 f_io.write("\n")
                 f_io.write("\n")
-                strip_airfoil = strip.mean_airfoil
+                strip_airfoil = strip.airfoil_end
+                strip_r = np.array([(strip.x0 + strip.x1) / 2, (strip.y0 + strip.y1) / 2, (strip.z0 + strip.z1) / 2])
 
-                strip_r = np.array([strip.x1, strip.y1, strip.z1])
-                strip_span = (surf.R_MAT.T @ strip_r)[1]
-
+            strip_span = (surf.R_MAT.T @ strip_r)[1]
+            span = surf.span / 2 if surface.is_symmetric_y else surf.span
+            if use_avl_control:
                 for control_surf in surf.controls:
-                    if (strip_span >= control_surf.span_position_start) and (
-                        strip_span <= control_surf.span_position_end
+                    if (strip_span >= control_surf.span_position_start * span) and (
+                        strip_span <= control_surf.span_position_end * span
                     ):
-
                         f_io.write("CONTROL \n")
                         f_io.write("#Cname   Cgain  Xhinge  HingeVec  SgnDup\n")
                         cname = control_surf.control_var
@@ -299,8 +310,8 @@ def avl_geo(
                     f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
                     f_io.write("\n")
                 except (
-                    AirfoilNotFoundError,
                     PolarsNotFoundError,
+                    AirfoilNotFoundError,
                     PolarNotAccurate,
                     ReynoldsNotIncluded,
                     FileNotFoundError,

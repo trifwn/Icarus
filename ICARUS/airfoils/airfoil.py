@@ -139,16 +139,32 @@ class Airfoil(af.Airfoil):  # type: ignore
         # x = np.hstack((x, x[0]))
         # y = np.hstack((y, y[0]))
 
-        tck, _ = splprep([x, y], s=smoothing)
+        # tck, _ = splprep([x, y], s=smoothing)
+        from scipy.interpolate import CubicSpline
+        # Airfoils 0 and 1 are defined by their cubic splines,
+        #   x0(s0), y0(s0)       x1(s1), y1(s1)
+        # with the discrete secant arc length parameters s computed from 
+        # the coordinates x(i),y(i):
+        #   s(i) = s(i-1) + sqrt[ (x(i)-x(i-1))^2 + (y(i)-y(i-1))^2 ] 
+        s = np.zeros(x.shape)
+        for i in range(1, x.shape[0]):
+            s[i] = s[i-1] + np.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
+
+        # Normalize the arc length
+        s /= s[-1]
+        spl = CubicSpline(s, y)
 
         ksi = np.linspace(0, np.pi, n_points // 2)
         # Apply cosine spacing to ksi
         tnew_1 = 0.5 * (1 - np.cos(ksi)) / 2
         tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) / 2
         tnew = np.hstack((tnew_1, tnew_2))
+        y_new = spl(tnew)
+        
+        # Get the new x coordinates from the arc length
+        x_new = np.interp(tnew, s, x)
 
-        spline = splev(tnew, tck)
-        lower, upper = self.split_sides(spline[0], spline[1])
+        lower, upper = self.split_sides(x_new, y_new)
         lower, upper = self.close_airfoil(lower, upper)
 
         self._x_upper = upper[0]
@@ -177,6 +193,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             xsi = (xsi - np.min(xsi)) / (np.max(xsi) - np.min(xsi))
         else:
             xsi = np.linspace(0, 1, int(n_points // 2))
+        xsi = self.min_x + (self.max_x - self.min_x) * xsi
 
         _x_upper = xsi
         _x_lower = xsi
@@ -274,6 +291,9 @@ class Airfoil(af.Airfoil):  # type: ignore
         thickness: FloatArray = self.y_upper(x) - self.y_lower(x)
         # Remove Nan
         thickness = thickness[~np.isnan(thickness)]
+
+        # Set 0 thickness for values after x_max
+        thickness[x > self.max_x] = 0
         return thickness
 
     def max_thickness(self) -> float:
@@ -550,12 +570,11 @@ class Airfoil(af.Airfoil):  # type: ignore
             raise (ValueError(e))
         return self
 
-    def flap_airfoil(
+    def flap(
         self,
         flap_hinge: float,
-        chord_extension: float,
         flap_angle: float,
-        plotting: bool = False,
+        chord_extension: float = 1,
     ) -> Airfoil:
         """
         Function to generate a flapped airfoil. The flap is defined by the flap hinge, the chord extension and the flap angle.
@@ -564,69 +583,195 @@ class Airfoil(af.Airfoil):  # type: ignore
             flap_hinge (float): Chordwise location of the flap hinge
             chord_extension (float): Chord extension of the flap
             flap_angle (float): Angle of the flap
-            plotting (bool, optional): Whether to plot the new and old airfoil. Defaults to False.
 
         Returns:
             Airfoil: Flapped airfoil
         """
-        # Find the index of the flap hinge
-        idx_lower: int = int(np.argmin(np.abs(self._x_lower - flap_hinge)))
-        idx_upper: int = int(np.argmin(np.abs(self._x_upper - flap_hinge)))
-        # Rotate all the points to the right of the hinge
-        # and then stretch them in the direction of the flap angle
+        if flap_angle == 0 or flap_hinge == 1.0:
+            return self
+        theta = -np.deg2rad(flap_angle)
 
-        x_lower: FloatArray = self._x_lower[idx_lower:]
-        x_upper: FloatArray = self._x_upper[idx_upper:]
-        x_lower = x_lower - flap_hinge
-        x_upper = x_upper - flap_hinge
+        x = np.linspace(self.min_x, flap_hinge, self.n_points)
+        y_upper = self.y_upper(x)
+        x_upper = x
+        x_lower = x
+        y_lower = self.y_lower(x)
 
-        y_lower: FloatArray = self._y_lower[idx_lower:]
-        temp = y_lower[0].copy()
-        y_upper: FloatArray = self._y_upper[idx_upper:]
-        y_lower = y_lower - temp
-        y_upper = y_upper - temp
+        x_after_flap = np.linspace(flap_hinge, self.max_x, self.n_points)
+        x_lower_after_flap = x_after_flap
+        x_upper_after_flap = x_after_flap
+        y_lower_after_flap = self.y_lower(x_after_flap)
+        y_upper_after_flap = self.y_upper(x_after_flap)
+
+        # Translate the points to the origin to rotate them
+        x_lower_after_flap = x_lower_after_flap - flap_hinge
+        x_upper_after_flap = x_upper_after_flap - flap_hinge
+
+        y_hinge = self.y_lower(flap_hinge)
+        y_lower_after_flap = y_lower_after_flap - y_hinge
+        y_upper_after_flap = y_upper_after_flap - y_hinge
 
         # Stretch the points so all points move the same amount
-        flap_chord_extension = chord_extension * np.cos(np.deg2rad(flap_angle))
-        x_lower = x_lower * (flap_chord_extension)
-        x_upper = x_upper * (flap_chord_extension)
-        # x_lower = x_lower * (chord_extension)
-        # x_upper = x_upper * (chord_extension)
+        x_lower_after_flap = x_lower_after_flap * (chord_extension)
+        x_upper_after_flap = x_upper_after_flap * (chord_extension)
 
         # Rotate the points according to the hinge (located on the lower side)
-        theta: float = -np.deg2rad(flap_angle)
-        x_lower = x_lower * np.cos(theta) - y_lower * np.sin(theta)
-        x_upper = x_upper * np.cos(theta) - y_upper * np.sin(theta)
-        y_lower = x_lower * np.sin(theta) + y_lower * np.cos(theta)
-        y_upper = x_upper * np.sin(theta) + y_upper * np.cos(theta)
+        x = x_lower_after_flap
+        y = y_lower_after_flap
+        x_lower_after_flap = x * np.cos(theta) - y * np.sin(theta)
+        y_lower_after_flap = x * np.sin(theta) + y * np.cos(theta)
+
+        x = x_upper_after_flap
+        y = y_upper_after_flap
+        x_upper_after_flap = x * np.cos(theta) - y * np.sin(theta)
+        y_upper_after_flap = x * np.sin(theta) + y * np.cos(theta)
 
         # Translate the points back
-        x_lower = x_lower + flap_hinge
-        x_upper = x_upper + flap_hinge
-        y_lower = y_lower + temp
-        y_upper = y_upper + temp
+        x_lower_after_flap = x_lower_after_flap + flap_hinge
+        x_upper_after_flap = x_upper_after_flap + flap_hinge
+        y_lower_after_flap = y_lower_after_flap + y_hinge
+        y_upper_after_flap = y_upper_after_flap + y_hinge
 
-        if plotting:
-            self.plot()
+        # TODO: Add points in the upper surface to smooth the flap
 
         upper: FloatArray = np.array(
             [
-                [*self._x_upper[:idx_upper], *x_upper],
-                [*self._y_upper[:idx_upper], *y_upper],
+                [*x_upper, *x_upper_after_flap],
+                [*y_upper, *y_upper_after_flap],
             ],
         )
         lower: FloatArray = np.array(
             [
-                [*self._x_lower[:idx_lower], *x_lower],
-                [*self._y_lower[:idx_lower], *y_lower],
+                [*x_lower, *x_lower_after_flap],
+                [*y_lower, *y_lower_after_flap],
             ],
         )
-        flapped = Airfoil(upper, lower, f"{self.name}_flapped", n_points=self.n_points)
+        flapped = Airfoil(
+            upper,
+            lower,
+            f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{flap_angle:.2f}",
+            n_points=self.n_points,
+        )
 
-        if plotting:
-            flapped.plot()
-            plt.show()
         return flapped
+
+    def flap2(
+        self, 
+        flap_hinge: float, 
+        flap_angle: float,
+        chord_extension: float = 1,
+        plot_flap: bool = False
+    ):
+        if flap_angle == 0 or flap_hinge == 1.0:
+            return self
+        flap_angle = np.deg2rad(flap_angle)
+
+        n = self.n_points
+        eta = (flap_hinge - self.min_x)/ (self.max_x - self.min_x)
+        n1 = int(n * eta)
+        n2 = n - n1
+
+        x_after = np.linspace(flap_hinge, self.max_x, n2)
+        x_before = np.linspace(self.min_x, flap_hinge, n1)
+
+        y_hinge = self.camber_line(flap_hinge)
+        y_after = self.camber_line(x_after)
+
+        y = y_after - y_hinge
+        x = x_after - flap_hinge
+        xnew = x * np.cos(flap_angle) - y * np.sin(flap_angle)
+        ynew = x * np.sin(flap_angle) + y * np.cos(flap_angle)
+        xnew += flap_hinge
+        ynew += y_hinge
+
+        # We need to take the xnew,ynew line and add thickness to both sides in the direction
+        # of the normal to the camber line at each point. We can get the normal by taking the
+        # derivative of the camber line. The normal will be the negative reciprocal of the 
+        # derivative. We can then add the thickness in the direction of the normal to get the
+        # final points
+        thickess = self.thickness(x_after)
+        angle = np.arctan(np.gradient(x_after, y_after))
+        lower_y = ynew - np.sin(angle + flap_angle) * thickess/2 
+        lower_x = xnew - np.cos(angle + flap_angle) * thickess/2 
+
+        upper_y = ynew + np.sin(angle + flap_angle) * thickess/2
+        upper_x = xnew + np.cos(angle + flap_angle) * thickess/2
+
+        # Identiffy the problematic regions
+        # Problematic are the regions of the first point of both the upper and lower surface
+        # until the hinge point. We need to fill the gap that arises on one side and close 
+        # the gap that arises on the other side
+
+        # Remove the points where x < x_hinge
+        problematic_indices = np.where(upper_x < flap_hinge)
+        upper_x = np.delete(upper_x, problematic_indices)
+        upper_y = np.delete(upper_y, problematic_indices)
+
+        problematic_indices = np.where(lower_x < flap_hinge)
+        lower_x = np.delete(lower_x, problematic_indices)
+        lower_y = np.delete(lower_y, problematic_indices)
+
+        # Plot the original camber line
+        y_upper_before = self.y_upper(x_before)
+        y_lower_before = self.y_lower(x_before)
+
+        x_upper = np.concatenate((x_before, upper_x))
+        y_upper = np.concatenate((y_upper_before, upper_y))
+        x_lower = np.concatenate((x_before, lower_x))
+        y_lower = np.concatenate((y_lower_before, lower_y))
+
+        # # Add the trailing edge point
+        # x_te = self.max_x
+        # y_te = self.camber_line(x_te)
+
+        # # Rotate the trailing edge point 
+        # x = x_te - flap_hinge
+        # y = y_te - y_hinge
+
+        # x_te = x * np.cos(flap_angle) - y * np.sin(flap_angle)
+        # y_te = x * np.sin(flap_angle) + y * np.cos(flap_angle)
+
+        # x_te += flap_hinge
+        # y_te += y_hinge
+
+        # x_upper = np.concatenate((x_upper, [x_te]))
+        # y_upper = np.concatenate((y_upper, [y_te]))
+
+        upper = np.vstack([x_upper, y_upper])
+        lower = np.vstack([x_lower, y_lower])
+        
+        # if plot_flap:
+        #     y_camber_before = self.camber_line(x_before)
+        #     fig = plt.figure()
+        #     ax = fig.add_subplot(111)
+        #     ax.vlines(0.75, -1, 1)
+        #     ax.scatter(upper_x, upper_y, color = 'red', s = 0.5)
+        #     ax.scatter(lower_x, lower_y, color = 'black', s = 0.5)
+        #     ax.plot(xnew, ynew, label="Flapped Camber Line", color = 'green')
+        #     circle = plt.Circle((flap_hinge, y_hinge), thickess[0]/2, color='blue', fill=False)
+        #     ax.add_artist(circle)
+        #     # Make lines from upper_x, upper_y to xnew, ynew
+        #     # for i in range(len(xnew)):
+        #     #     ax.plot([xnew[i], upper_x[i]], [ynew[i], upper_y[i]], color = 'red', linewidth = 0.5)
+        #     #     ax.plot([xnew[i], lower_x[i]], [ynew[i], lower_y[i]], color = 'black', linewidth = 0.5)
+        #     ax.plot(x_before, y_camber_before, label="Original Camber Line", color = 'blue')
+        #     ax.plot(x_before, y_upper_before, label="Original Upper Surface", color = 'red')
+        #     ax.plot(x_before, y_lower_before, label="Original Lower Surface", color = 'black')
+        #     ax.legend()
+        #     ax.relim()
+        #     ax.autoscale_view()
+        #     ax.set_ylim(-0.1,0.1)
+        #     ax.set_aspect('equal', 'box')
+        #     plt.show()
+
+        flapped = Airfoil(
+            upper,
+            lower,
+            f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
+            n_points=self.n_points,
+        )
+        return flapped
+
 
     def set_naca4_digits(self, p: float, m: float, xx: float) -> None:
         """
@@ -864,6 +1009,9 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         pts = np.vstack((x, y))
         if directory is not None:
+            # If directory does not exist, create it
+            if not os.path.exists(directory):
+                os.makedirs(directory)
             file_name = os.path.join(directory, self.file_name)
         else:
             file_name = self.file_name
@@ -883,6 +1031,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         scatter: bool = False,
         max_thickness: bool = False,
         ax: Axes | None = None,
+        overide_color: str | None = None,
     ) -> None:
         """
         Plots the airfoil in the selig format
@@ -904,11 +1053,20 @@ class Airfoil(af.Airfoil):  # type: ignore
             _ax.scatter(x[: self.n_upper], y[: self.n_upper], s=1)
             _ax.scatter(x[self.n_upper :], y[self.n_upper :], s=1)
         else:
-            _ax.plot(x[: self.n_upper], y[: self.n_upper], "r")
-            _ax.plot(x[self.n_upper :], y[self.n_upper :], "b")
+            if overide_color is not None:
+                col_up = overide_color
+                col_lo = overide_color
+            else:
+                col_up = "r"
+                col_lo = "b"
+
+            _ax.plot(x[: self.n_upper], y[: self.n_upper], col_up)
+            _ax.plot(x[self.n_upper :], y[self.n_upper :], col_lo)
 
         if camber:
-            x = np.linspace(0, 1, 100)
+            x_min = np.min(x)
+            x_max = np.max(x)
+            x = np.linspace(x_min, x_max, 100)
             y = self.camber_line(x)
             _ax.plot(x, y, "k--")
 
@@ -922,3 +1080,4 @@ class Airfoil(af.Airfoil):  # type: ignore
             # Add a text with the thickness
             _ax.text(x, y_lo, f"{thick:.3f}", ha="right", va="bottom")
         _ax.axis("scaled")
+        _ax.set_title(f"Airfoil {self.name}")

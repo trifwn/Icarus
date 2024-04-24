@@ -98,6 +98,7 @@ class Database_2D:
         Returns:
             Airfoil: Airfoil object
         """
+        airfoil_name = airfoil_name.upper()
         try:
             airf: Airfoil = self.airfoils[airfoil_name]
             return airf
@@ -180,11 +181,11 @@ class Database_2D:
         # xfoil_options.angles = angles  # For options 2 and 3
 
         # Set Solver Options
-        xfoil_solver_parameters.max_iter = 400
+        xfoil_solver_parameters.max_iter = 200
         xfoil_solver_parameters.Ncrit = 9
-        xfoil_solver_parameters.repanel_n = 80
-        xfoil_solver_parameters.xtr = (1.0, 1.0)
+        xfoil_solver_parameters.xtr = (0.1, 0.02)
         xfoil_solver_parameters.print = False
+        xfoil_solver_parameters.repanel_n = 120
 
         # RUN and SAVE
         xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
@@ -355,8 +356,16 @@ class Database_2D:
             len(airfoil_folder) == (4 + 4) or len(airfoil_folder) == (5 + 4)
         ):
             try:
-                self.airfoils[airfoil_folder] = Airfoil.naca(airfoil_folder[4:], n_points=200)
+                naca_foil = Airfoil.naca(airfoil_folder[4:], n_points=200)
+                # Save the airfoil to the DB2D
+                airfoil_dir = os.path.join(DB2D, airfoil_folder.upper())
+                # Create the directory if it doesn't exist
+                os.makedirs(airfoil_dir, exist_ok=True)
+                naca_foil.save_selig(airfoil_dir)
+
+                self.airfoils[airfoil_folder.upper()] = naca_foil
                 logging.info(f"Loaded airfoil {airfoil_folder} from NACA Digits")
+                return
             except Exception as e:
                 print(f"Error loading airfoil {airfoil_folder} from NACA Digits. Got error: {e}")
 

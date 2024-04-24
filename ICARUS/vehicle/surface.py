@@ -13,6 +13,7 @@ from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.vehicle.control_surface import ControlSurface
+from ICARUS.vehicle.control_surface import ControlType
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -104,8 +105,7 @@ class WingSurface:
                 control_vars.add(control.control_var)
         self.control_vars = control_vars
         self.num_control_variables = len(control_vars)
-
-        # self.moving_surface : tuple[str,float,float,FloatArray,int] = (local_moving_surface[0],local_moving_surface[1],local_moving_surface[2],new_axis,local_moving_surface[4])
+        self.control_vector = {control_var: 0.0 for control_var in control_vars}
 
         # Define Symmetries
         if isinstance(symmetries, SymmetryAxes):
@@ -600,6 +600,9 @@ class WingSurface:
 
     def calculate_wing_parameters(self) -> None:
         """Calculate Wing Parameters"""
+        # Generate airfoils
+        self.generate_airfoils()
+
         # Create Grid
         self.create_grid()
 
@@ -669,6 +672,36 @@ class WingSurface:
         else:
             raise ValueError("Cannot Split Body it is not symmetric")
 
+    def generate_airfoils(self) -> None:
+        """Generate Airfoils for the Wing"""
+        self.airfoils = []
+        for j in range(self.N):
+            eta = j / (self.N - 1)
+            if self.root_airfoil == self.tip_airfoil:
+                airfoil_j = self.root_airfoil
+            else:
+                # Calculate the heta position of the strip
+
+                airfoil_j = Airfoil.morph_new_from_two_foils(
+                    self.root_airfoil,
+                    self.tip_airfoil,
+                    eta,
+                    self.root_airfoil.n_points,
+                )
+
+            # Apply the control vector to the airfoil
+            for control, (control_var, control_val) in zip(self.controls, self.control_vector.items()):
+                if (eta >= control.span_position_start) and (eta <= control.span_position_end):
+                    flap_hinge = control.chord_function(eta)
+                    if control.type == ControlType.AIRFOIL:
+                        airfoil_j = airfoil_j.flap(
+                            flap_hinge=flap_hinge,
+                            chord_extension=control.chord_extension,
+                            flap_angle=control_val,
+                        )
+
+            self.airfoils.append(airfoil_j)
+
     def create_strips(self) -> None:
         """Create Strips given the Grid and airfoil"""
         strips: list[Strip] = []
@@ -699,25 +732,8 @@ class WingSurface:
 
         strips = []
         for j in range(self.N - 1):
-            if self.root_airfoil == self.tip_airfoil:
-                strip_root_af = self.root_airfoil
-                strip_tip_af = self.root_airfoil
-            else:
-                # Calculate the heta position of the strip
-                root_eta = j / (self.N - 1)
-                tip_eta = (j + 1) / (self.N - 1)
-                strip_root_af = Airfoil.morph_new_from_two_foils(
-                    self.root_airfoil,
-                    self.tip_airfoil,
-                    root_eta,
-                    self.root_airfoil.n_points,
-                )
-                strip_tip_af = Airfoil.morph_new_from_two_foils(
-                    self.root_airfoil,
-                    self.tip_airfoil,
-                    tip_eta,
-                    self.tip_airfoil.n_points,
-                )
+            strip_root_af = self.airfoils[j]
+            strip_tip_af = self.airfoils[j + 1]
 
             # Based on the shape (area) of the strip, we can calculate the eta position of the strip
             # We can then calculate the mean aerodynamic chord of the strip
@@ -753,9 +769,6 @@ class WingSurface:
 
     def create_grid(self) -> None:
         chord_eta = np.array([self.chord_discretization_function(int(i)) for i in range(0, self.M)])
-        # span_eta = np.array(
-        #     [self.spanwise_positions[int(i)] / self.span for i in range(0, self.N)]
-        # )
 
         xs = np.outer(chord_eta, self._chord_dist) + self._xoffset_dist
         xs_upper = xs.copy()
@@ -766,23 +779,55 @@ class WingSurface:
         ys_lower = ys.copy()
 
         # Calculate the airfoil at the position of the strip based on eta
-        airf_z_up = chord_eta * self.root_airfoil.y_upper(chord_eta) + (1 - chord_eta) * self.tip_airfoil.y_upper(
-            chord_eta,
-        )
+        # airf_z_up = chord_eta * self.root_airfoil.y_upper(chord_eta) + (1 - chord_eta) * self.tip_airfoil.y_upper(
+        #     chord_eta,
+        # )
 
-        airf_z_low = chord_eta * self.root_airfoil.y_lower(chord_eta) + (1 - chord_eta) * self.tip_airfoil.y_lower(
-            chord_eta,
-        )
-        airf_camber = chord_eta * self.root_airfoil.camber_line(chord_eta) + (
-            1 - chord_eta
-        ) * self.tip_airfoil.camber_line(chord_eta)
+        # airf_z_low = chord_eta * self.root_airfoil.y_lower(chord_eta) + (1 - chord_eta) * self.tip_airfoil.y_lower(
+        #     chord_eta,
+        # )
+        # airf_camber = chord_eta * self.root_airfoil.camber_line(chord_eta) + (
+        #     1 - chord_eta
+        # ) * self.tip_airfoil.camber_line(chord_eta)
+        airf_z_up = []
+        airf_z_low = []
+        airf_camber = []
 
-        zs_upper = np.outer(airf_z_up, self._chord_dist) + self._zoffset_dist
-        zs_lower = np.outer(airf_z_low, self._chord_dist) + self._zoffset_dist
-        zs = np.outer(airf_camber, self._chord_dist) + self._zoffset_dist
+        for j in range(self.N):
+            airf_j: Airfoil = self.airfoils[j]
+            x_pos = airf_j.min_x + chord_eta * (airf_j.max_x - airf_j.min_x)
+
+            airf_z_up_i = airf_j.y_upper(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
+            airf_z_low_i = airf_j.y_lower(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
+            airf_camber_i = (
+                airf_j.camber_line(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
+            )
+
+            airf_z_up.append(airf_z_up_i)
+            airf_z_low.append(airf_z_low_i)
+            airf_camber.append(airf_camber_i)
+
+            # Normalize the xs according to the norm factor of the airfoil
+            xs_upper[:, j] = (xs_upper[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs_lower[:, j] = (xs_lower[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs[:, j] = (xs[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
+
+        airf_z_up = np.array(airf_z_up).T
+        airf_z_low = np.array(airf_z_low).T
+        airf_camber = np.array(airf_camber).T
+
+        # print(f"the shape of zs_camber is {airf_camber.shape}")
+        # zs_upper = np.outer(airf_z_up, self._chord_dist) + self._zoffset_dist
+        # zs_lower = np.outer(airf_z_low, self._chord_dist) + self._zoffset_dist
+        # zs_camber= np.outer(airf_camber, self._chord_dist) + self._zoffset_dist
+        # print(f"the shape of zs_camber is {zs_camber.shape}")
+        # print(f"We wanted a shape of {self.N} x {self.M} meaning {xs.shape}")
+        zs_upper = airf_z_up
+        zs_lower = airf_z_low
+        zs_camber = airf_camber
 
         # Rotate according to R_MAT
-        coordinates = np.matmul(self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs.flatten()]))
+        coordinates = np.matmul(self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs_camber.flatten()]))
         coordinates = coordinates.reshape((3, self.M, self.N))
 
         coordinates_upper = np.matmul(
@@ -1163,7 +1208,10 @@ class WingSurface:
             plt.show()
 
     def __control__(self, control_vector: dict[str, float]) -> None:
-        pass
+        # Add the control vector to the wing
+        for key in control_vector:
+            self.control_vector[key] = control_vector[key]
+        self.calculate_wing_parameters()
 
     # def plot_surface(
     #     self,

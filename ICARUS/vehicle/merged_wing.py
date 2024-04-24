@@ -178,6 +178,7 @@ class MergedWing(WingSurface):
         for segment in self.wing_segments:
             self.control_vars.update(segment.control_vars)
             self.controls.extend(segment.controls)
+        self.control_vector = {control_var: 0.0 for control_var in self.control_vars}
 
         ####### Calculate Wing Parameters #######
         self.calculate_wing_parameters()
@@ -419,6 +420,17 @@ class MergedWing(WingSurface):
     #     """
     #     for segment in self.wing_segments:
     #         segment.change_discretization(N, M)
+
+    def __control__(self, control_vector: dict[str, float]) -> None:
+        control_dict = {k: control_vector[k] for k in self.control_vars}
+        for surf in self.wing_segments:
+            surf_control_vec = {}
+            for name, value in control_dict.items():
+                if name in surf.control_vars:
+                    surf_control_vec[name] = value
+            surf.__control__(surf_control_vec)
+            print(f"\tControling {surf.name} with {surf_control_vec}")
+        self.calculate_wing_parameters()
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         MergedWing.__init__(

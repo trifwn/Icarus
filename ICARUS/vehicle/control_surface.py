@@ -1,9 +1,14 @@
+from enum import Enum
 from functools import partial
 from typing import Callable
 
 import numpy as np
 
 from ICARUS.core.types import FloatArray
+
+
+class ControlType(Enum):
+    AIRFOIL = "AIRFOIL"
 
 
 def default_chord_function_factory(
@@ -43,6 +48,7 @@ class ControlSurface:
             chord_function (Callable[[float], float] | None, optional): Function to calculate the chord length. Defaults to None.
         """
         self.name = name
+        self.type = ControlType.AIRFOIL
         self.control_var = control_vector_var
         self.span_position_start = span_positions[0]
         self.span_position_end = span_positions[1]
