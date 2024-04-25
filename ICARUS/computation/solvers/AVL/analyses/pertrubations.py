@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Literal
 
 import numpy as np
 from pandas import DataFrame
@@ -17,13 +18,18 @@ from ICARUS.vehicle.plane import Airplane
 def avl_dynamic_analysis_implicit(
     plane: Airplane,
     state: State,
-    solver2D: str,
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
     solver_options: dict[str, Any] = {},
 ) -> None:
     implicit_eigs(plane=plane, state=state, solver2D=solver2D)
 
 
-def avl_dynamic_analysis_fd(plane: Airplane, state: State, solver2D: str, solver_options: dict[str, Any] = {}) -> None:
+def avl_dynamic_analysis_fd(
+    plane: Airplane,
+    state: State,
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver_options: dict[str, Any] = {},
+) -> None:
     if state.trim == {}:
         print("Trimming the plane")
         aoa_min = -8

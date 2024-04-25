@@ -376,3 +376,21 @@ class Database_3D:
 
     def __str__(self) -> str:
         return f"Vehicle Database at {DB3D}"
+
+    def get_case_directory(
+        self, 
+        airplane: Airplane,
+        solver: str,
+        case: str | None = None,
+        subcase: str | None = None
+    ) -> str:
+        if solver not in ["GenuVP3", "GenuVP7", "LSPT", "AVL"]:
+            raise ValueError(f"Solver {solver} not recognized")
+    
+        if case is None:
+            return os.path.join(DB3D, airplane.directory, solver)
+        else:
+            if subcase is not None:
+                return os.path.join(DB3D, airplane.directory, solver, case, subcase)
+            else:
+                return os.path.join(DB3D, airplane.directory, solver, case)

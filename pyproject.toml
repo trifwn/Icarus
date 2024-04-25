@@ -54,6 +54,7 @@ version = {attr = "ICARUS.__version__"}
 plugins = [
     "numpy.typing.mypy_plugin"
 ]
+
 #pretty = true
 
 [tool.isort]

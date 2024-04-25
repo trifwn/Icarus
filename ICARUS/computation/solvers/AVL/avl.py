@@ -12,7 +12,6 @@ from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd_res
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
 from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
-from ICARUS.computation.solvers.AVL.analyses.polars import process_avl_angles_run
 from ICARUS.computation.solvers.solver import Solver
 
 
@@ -20,7 +19,7 @@ class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
     def __init__(
         self,
     ) -> None:
-        super().__init__("AVL", avl_angle_run, unhook=process_avl_angles_run)
+        super().__init__("AVL", avl_angle_run, unhook=None)
 
 
 # class AVL_TrimAnalysis(BasePolarAnalysis):

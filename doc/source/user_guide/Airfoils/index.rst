@@ -66,8 +66,8 @@ We can also create a flapped version of our airfoil by calling the airfoil.flap_
 
 .. code-block:: python
 
-    airfoil_flapped = airfoil.flap_airfoil(
-        flap_hinge= 0.7,
+    airfoil_flapped = airfoil.flap(
+        flap_hinge_chord_percentage= 0.7,
         chord_extension= 1.3,
         flap_angle= 20,
     )

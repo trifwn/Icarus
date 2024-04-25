@@ -22,6 +22,7 @@ def get_gamma_distribution(
 
 
 def get_aerodynamic_loads(self, umag: float, verbose: bool = False):
+    gammas_mat = self.gammas_mat
     if self.gammas_mat is None:
         self.get_gamma_distribution()
 
@@ -56,10 +57,6 @@ def get_aerodynamic_loads(self, umag: float, verbose: bool = False):
     L: float = float(jnp.sum(L_pan))
     D: float = D_trefftz  # np.sum(D_pan)
     D2: float = float(jnp.sum(D_pan))
-    Mx: float = Mx
-    My: float = My
-    Mz: float = Mz
-
     CL: float = 2 * self.L / (self.dens * (umag**2) * self.S)
     CD: float = 2 * self.D / (self.dens * (umag**2) * self.S)
     Cm: float = 2 * self.My / (self.dens * (umag**2) * self.S * self.MAC)

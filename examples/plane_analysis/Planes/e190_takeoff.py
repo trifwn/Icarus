@@ -33,7 +33,7 @@ def e190_takeoff_generator(
 
     naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]
     naca64418_fl: Airfoil = naca64418.flap(
-        flap_hinge=flap_hinge,
+        flap_hinge_chord_percentage=flap_hinge,
         chord_extension=chord_extension,
         flap_angle=flap_angle,
     )

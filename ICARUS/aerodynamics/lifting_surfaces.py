@@ -29,7 +29,11 @@ def run_lstp_angles(
         options (dict[str, Any]): Options
         solver_options (dict[str, Any]): Solver Options
     """
-    LSPTDIR = os.path.join(DB3D, plane.directory, "LSPT")
+    LSPTDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver="LSPT",
+    )
+
     os.makedirs(LSPTDIR, exist_ok=True)
     # Generate the wing LLT solver
     wing = Wing_LSPT(

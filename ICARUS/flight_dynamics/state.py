@@ -32,6 +32,52 @@ if TYPE_CHECKING:
     from ICARUS.vehicle.plane import Airplane
 
 
+class ControlState:
+    def __init__(
+        self,
+        airplane: Airplane,
+    ) -> None:
+        # Get the airplane control variables
+        self.control_vars: set[str] = airplane.control_vars
+        self.num_control_vars: int = len(self.control_vars)
+        self.control_vector_dict: dict[str, float] = airplane.control_vector
+        self.hash_dict: dict[int, int] = {}
+
+    def update(self, control_vector_dict: dict[str, float]) -> None:
+        self.control_vector_dict = control_vector_dict
+
+    @property
+    def control_vector(self) -> FloatArray:
+        control_vector = np.array([self.control_vector_dict[key] for key in self.control_vars])
+        return control_vector
+
+    def __str__(self) -> str:
+        return f"Control Variables: {self.control_vars}"
+
+    def __hash__(self) -> int:
+        """
+        Unique hash for the control state. This is used to generate a unique name for the state.
+        It depends on the control variables and their values.
+
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            int: _description_
+        """
+        hash_val = hash(frozenset(self.control_vector_dict.items()))
+        # Add to the hash dictionary if not already present
+        if hash_val not in self.hash_dict.keys():
+            self.hash_dict[hash_val] = len(self.hash_dict) - 1
+
+        return hash_val
+
+    def identifier(self) -> int:
+        num = self.__hash__()
+        return self.hash_dict[num]
+
+
 class State:
     """Class for the state of a vehicle."""
 
@@ -47,19 +93,11 @@ class State:
         self.environment: Environment = environment
         self._u_freestream = u_freestream
 
-        # Get Airplane Properties And State Variables
-        self.mean_aerodynamic_chord: float = airplane.mean_aerodynamic_chord
-        self.S: float = airplane.S
-        self.span: float = airplane.span
-        self.dynamic_pressure: float = 0.5 * environment.air_density * u_freestream**2
-        self.inertia: FloatArray = airplane.total_inertia
-        self.mass: float = airplane.M
-        self.CG: FloatArray = airplane.CG
+        # Store reference to the airplane
+        self.airplane: Airplane = airplane
 
         # Get the airplane control variables
-        self.control_vars: set[str] = airplane.control_vars
-        self.num_control_vars: int = len(self.control_vars)
-        self.control_vector_dict: dict[str, float] = {key: 0.0 for key in self.control_vars}
+        self.control_state: ControlState = ControlState(airplane)
 
         # Initialize Trim
         self.trim: dict[str, float] = {}
@@ -69,29 +107,16 @@ class State:
         self.polar: DataFrame = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
-        self.sensitivity: Struct = Struct()
-        # self.sensitivity_results = Struct()
-
-        # Initialize The Longitudal State Space Matrices
-        # Initialize The Lateral State Space Matrices
-
-    def set_control(self, control_vector_dict: dict[str, float]) -> None:
-        # if len(control_vector_dict) != self.num_control_vars:
-        #     raise ValueError(
-        #         f"Control Vector Length Mismatch: {len(control_vector_dict)} != {self.num_control_vars}"
-        #     )
-        for key in control_vector_dict:
-            if key not in self.control_vars:
-                raise ValueError(f"Control Variable Not Found: {key}")
-            self.control_vector_dict[key] = control_vector_dict[key]
-        # self.__control__()
-
-    def __control__(self) -> None:
-        raise NotImplementedError("Control Not Implemented")
+        self.sensitivities: Struct = Struct()
 
     @property
     def name(self) -> str:
-        return self._name
+        name = self._name
+        # Get the airplanes control variables
+        identifier = self.control_state.identifier()
+        if identifier != 0:
+            name += f"_{identifier}"
+        return name
 
     @name.setter
     def name(self, value: str) -> None:
@@ -104,7 +129,72 @@ class State:
     @u_freestream.setter
     def u_freestream(self, value: float) -> None:
         self._u_freestream = value
-        self.dynamic_pressure = 0.5 * self.environment.air_density * value**2
+
+    @property
+    def dynamic_pressure(self) -> float:
+        Q = 0.5 * self.environment.air_density * self.u_freestream**2
+        return Q
+
+    ##################### Airplane Properties ############################
+
+    @property
+    def CG(self) -> FloatArray:
+        return self.airplane.CG
+
+    @property
+    def mean_aerodynamic_chord(self) -> float:
+        return self.airplane.mean_aerodynamic_chord
+
+    @property
+    def S(self) -> float:
+        return self.airplane.S
+
+    @property
+    def span(self) -> float:
+        return self.airplane.span
+
+    @property
+    def inertia(self) -> FloatArray:
+        return self.airplane.total_inertia
+
+    @property
+    def mass(self) -> float:
+        return self.airplane.M
+
+    ##################### END Airplane Properties ############################
+
+    ########################### CONTROL  ################################
+
+    @property
+    def control_vars(self) -> set[str]:
+        return self.control_state.control_vars
+
+    @property
+    def num_control_vars(self) -> int:
+        return self.control_state.num_control_vars
+
+    @property
+    def control_vector_dict(self) -> dict[str, float]:
+        # Update the control state
+        # self.control_state.control_vector_dict
+        airplane_val = self.airplane.control_vector
+        self.control_state.update(airplane_val)
+        return self.control_state.control_vector_dict
+
+    @property
+    def control_vector(self) -> FloatArray:
+        control_vector_dict = self.control_vector_dict
+        control_vector = np.array([control_vector_dict[key] for key in self.control_vars])
+        return control_vector
+
+    def set_control(self, control_vector_dict: dict[str, float]) -> None:
+        for key in control_vector_dict:
+            if key not in self.control_vars:
+                raise ValueError(f"Control Variable Not Found: {key}")
+        self.control_state.update(control_vector_dict)
+        self.airplane.__control__(control_vector_dict)
+
+    ########################### END CONTROL  ################################
 
     def ground_effect(self) -> bool:
         if self.environment.altitude == 0:
@@ -115,10 +205,7 @@ class State:
             return True
 
     def update_plane(self, airplane: Airplane) -> None:
-        self.mean_aerodynamic_chord = airplane.mean_aerodynamic_chord
-        self.S = airplane.S
-        self.inertia = airplane.total_inertia
-        self.mass = airplane.M
+        self.airplane = airplane
 
         # Reset Trim
         self.trim = {}
@@ -128,8 +215,7 @@ class State:
         self.polar = DataFrame()
         self.disturbances = []
         self.pertrubation_results = DataFrame()
-        self.sensitivity = Struct()
-        # self.sensitivity_results = Struct()
+        self.sensitivities = Struct()
 
     def add_polar(
         self,
@@ -191,9 +277,9 @@ class State:
         self.disturbances.append(dst(None, 0))
 
     def sensitivity_analysis(self, var: str, space: list[float] | FloatArray) -> None:
-        self.sensitivity[var] = []
+        self.sensitivities[var] = []
         for e in space:
-            self.sensitivity[var].append(dst(var, e))
+            self.sensitivities[var].append(dst(var, e))
 
     def get_pertrub(self) -> None:
         for disturbance in self.disturbances:

@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 from io import StringIO
+from typing import Literal
 
 import numpy as np
 from pandas import DataFrame
@@ -27,7 +28,7 @@ def make_input_files(
     directory: str,
     plane: Airplane,
     state: State,
-    solver2D: str = "Xfoil",
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
     solver_options: dict[str, float] = {"use_avl_control": False},
 ) -> None:
     os.makedirs(directory, exist_ok=True)
@@ -96,7 +97,7 @@ def avl_geo(
     plane: Airplane,
     state: State,
     u_inf: float,
-    solver2D: str = "Xfoil",
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
     solver_options: dict[str, float] = {},
 ) -> None:
     environment = state.environment
@@ -298,8 +299,8 @@ def avl_geo(
                     if not cond:
                         DB.foils_db.compute_polars(
                             airfoil=strip_airfoil,
-                            solvers=[solver2D],
-                            reynolds=reynolds,
+                            solver_name=solver2D,
+                            reynolds=[reynolds],
                             angles=np.linspace(-8, 20, 29),
                         )
                         polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
@@ -319,8 +320,8 @@ def avl_geo(
                     print(f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute")
                     DB.foils_db.compute_polars(
                         airfoil=strip_airfoil,
-                        solvers=[solver2D],
-                        reynolds=reynolds,
+                        solver_name=solver2D,
+                        reynolds=[reynolds],
                         angles=np.linspace(-10, 20, 31),
                     )
 

@@ -6,6 +6,7 @@ import re
 import shutil
 from time import sleep
 from typing import TYPE_CHECKING
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -142,9 +143,9 @@ class Database_2D:
     def compute_polars(
         self,
         airfoil: Airfoil,
-        reynolds: list[float] | float,
+        reynolds: list[float] | FloatArray,
         angles: list[float] | FloatArray,
-        solvers: list[str] | str = ["Xfoil"],
+        solver_name: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
     ) -> None:
         """
         Computes the polars for an airfoil at a given reynolds number and angles of attack.
@@ -154,43 +155,22 @@ class Database_2D:
             reynolds (float): Reynolds number
             angles (list[float]): List of angles of attack
         """
-        min_angle = min(angles)
-        max_angle = max(angles)
-
         if isinstance(reynolds, float):
             reynolds = [reynolds]
+        airfoil.repanel_spl(500)
 
-        from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+        from ICARUS.computation.airfoil_polars import compute_polars
 
-        xfoil = Xfoil()
-
-        analysis = xfoil.get_analyses_names()[1]  # Run
-        xfoil.select_analysis(analysis)
-
-        # Get Options
-        xfoil_options: Struct = xfoil.get_analysis_options()
-        xfoil_solver_parameters: Struct = xfoil.get_solver_parameters()
-
-        # Set Options
-        xfoil_options.airfoil = airfoil
-        xfoil_options.reynolds = reynolds
-        xfoil_options.mach = 0.0
-        xfoil_options.max_aoa = max_angle
-        xfoil_options.min_aoa = min_angle
-        xfoil_options.aoa_step = 0.5
-        # xfoil_options.angles = angles  # For options 2 and 3
-
-        # Set Solver Options
-        xfoil_solver_parameters.max_iter = 200
-        xfoil_solver_parameters.Ncrit = 9
-        xfoil_solver_parameters.xtr = (0.1, 0.02)
-        xfoil_solver_parameters.print = False
-        xfoil_solver_parameters.repanel_n = 120
-
-        # RUN and SAVE
-        xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-        xfoil.print_analysis_options()
-        xfoil.execute(parallel=False)
+        compute_polars(
+            airfoil=airfoil,
+            reynolds_numbers=reynolds,
+            aoas=angles,
+            solver_name=solver_name,
+            mach=0.0,
+            plot_polars=False,
+            repanel=120,
+            trips=(0.2, 0.2),
+        )
 
     def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
         """

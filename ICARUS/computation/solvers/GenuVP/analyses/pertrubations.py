@@ -64,7 +64,10 @@ def gnvp_disturbance_case(
         str: Case Done Message
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
+    PLANEDIR: str = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver=f"GenuVP{genu_version}",
+    )
     airfoils: list[str] = plane.airfoils
 
     movements: list[list[Movement]] = define_movements(
@@ -184,7 +187,10 @@ def run_pertrubation_serial(
         )
         progress_bars.append(pbar)
         folder: str = disturbance_to_case(dst)
-        PLANEDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
+        PLANEDIR: str = DB.vehicles_db.get_case_directory(
+            airplane=plane,
+            solver=f"GenuVP{genu_version}",
+        )
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
         job_monitor = Thread(
             target=serial_monitor,
@@ -271,7 +277,10 @@ def run_pertrubation_parallel(
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
-    GENUDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{genu_version}")
+    GENUDIR: str = DB.vehicles_db.get_case_directory(
+            airplane=plane,
+            solver=f"GenuVP{genu_version}",
+        )
     CASEDIRS: list[str] = [os.path.join(GENUDIR, "Dynamics", folder) for folder in folders]
 
     refresh_progress: float = 2
@@ -347,7 +356,7 @@ def sensitivity_serial(
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
-    for dst in state.sensitivity[var]:
+    for dst in state.sensitivities[var]:
         msg: str = gnvp_disturbance_case(
             plane,
             solver2D,
@@ -401,7 +410,7 @@ def sensitivity_parallel(
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
-    disturbances: list[Disturbance] = state.sensitivity[var]
+    disturbances: list[Disturbance] = state.sensitivities[var]
 
     from multiprocessing import Pool
 
@@ -453,7 +462,11 @@ def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) 
         DataFrame: DataFrame with the forces for each pertrubation simulation
     """
     HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = os.path.join(DB.vehicles_db.DATADIR, plane.directory, f"GenuVP{gnvp_version}", "Dynamics")
+    DYNDIR: str = DB.vehicles_db.get_case_directory(
+            airplane=plane,
+            solver=f"GenuVP{gnvp_version}",
+            case = "Dynamics",
+        )
     forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
     forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 

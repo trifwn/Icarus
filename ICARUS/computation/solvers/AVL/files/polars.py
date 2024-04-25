@@ -5,7 +5,7 @@ import subprocess
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB3D
+from ICARUS.database import DB, DB3D
 from ICARUS.database import AVL_exe
 from ICARUS.database.utils import angle_to_case
 from ICARUS.flight_dynamics.state import State
@@ -22,7 +22,10 @@ def case_def(
     angles: FloatArray | list[float],
 ) -> None:
     li = []
-    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
+    PLANEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver = "AVL",
+    )
     for i, angle in enumerate(angles):
         li.append("---------------------------------------------")
         li.append(f"Run case  {i+1}:  -{angle}_deg- ")
@@ -43,7 +46,10 @@ def case_def(
 
 def case_setup(plane: Airplane) -> None:
     HOMEDIR = os.getcwd()
-    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
+    PLANEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver = "AVL",
+    )
     os.chdir(PLANEDIR)
 
     li = []
@@ -77,7 +83,10 @@ def case_setup(plane: Airplane) -> None:
 # EXECUTION
 def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
     HOMEDIR = os.getcwd()
-    PLANEDIR = os.path.join(DB3D, plane.directory, "AVL")
+    PLANEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver = "AVL",
+    )
 
     os.chdir(PLANEDIR)
     li_2 = []

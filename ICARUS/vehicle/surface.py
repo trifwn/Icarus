@@ -695,7 +695,7 @@ class WingSurface:
                     flap_hinge = control.chord_function(eta)
                     if control.type == ControlType.AIRFOIL:
                         airfoil_j = airfoil_j.flap(
-                            flap_hinge=flap_hinge,
+                            flap_hinge_chord_percentage=flap_hinge,
                             chord_extension=control.chord_extension,
                             flap_angle=control_val,
                         )

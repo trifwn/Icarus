@@ -12,10 +12,6 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
-from ICARUS.vehicle.control_surface import NoControl
-from ICARUS.vehicle.merged_wing import MergedWing
-from ICARUS.vehicle.strip import Strip
-
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.core.types import FloatOrListArray

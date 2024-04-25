@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Any
+from typing import Literal
 
 from pandas import DataFrame
 
@@ -19,15 +20,19 @@ from ICARUS.vehicle.plane import Airplane
 def avl_angle_run(
     plane: Airplane,
     state: State,
-    solver2D: str,
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'],
     angles: FloatArray | list[float],
     solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
-    planedir = os.path.join(DB3D, plane.directory, "AVL")
-    make_input_files(planedir, plane, state, solver2D, solver_options)
+    PLANEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver = "AVL",
+    )
+    make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
     case_def(plane, state, angles)
     case_setup(plane)
     case_run(plane, angles)
+    _ = process_avl_angles_run(plane, state, angles)
 
 
 def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | list[float]) -> DataFrame:
@@ -42,11 +47,9 @@ def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | l
     Returns:
         DataFrame: Forces Calculated
     """
-    HOMEDIR: str = DB.HOMEDIR
-    CASEDIR: str = os.path.join(DB3D, plane.directory)
-
     forces: DataFrame = collect_avl_polar_forces(plane=plane, state=state, angles=angles)
     plane.save()
+    CASEDIR: str = os.path.join(DB3D, plane.directory)
     state.save(CASEDIR)
 
     logging.info("Adding Results to Database")

@@ -175,29 +175,29 @@ class MissionTrajectory:
         if not step_successful:
             # Register the state
             self.times.append(t)
-            self.positions["x"].append(x)
-            self.positions["y"].append(y)
+            self.positions["x"].append(float(x.item()))
+            self.positions["y"].append(float(y.item()))
 
-            self.velocities["x"].append(u)
-            self.velocities["y"].append(w)
+            self.velocities["x"].append(float(u.item()))
+            self.velocities["y"].append(float(w.item()))
 
             self.accelerations["x"].append(acc_x)
             self.accelerations["y"].append(acc_y)
 
-            self.forces["x"].append(fx)
-            self.forces["y"].append(fy)
+            self.forces["x"].append(float(fx.item()))
+            self.forces["y"].append(float(fy.item()))
 
-            self.forces["lift"].append(L)
-            self.forces["thrust"].append(T)
-            self.forces["drag"].append(D)
-            self.forces["torque"].append(TORQUE)
+            self.forces["lift"].append(float(L.item()))
+            self.forces["thrust"].append(float(T.item()))
+            self.forces["drag"].append(float(D.item()))
+            self.forces["torque"].append(float(TORQUE.item()))
 
             self.control_inputs["aoa"].append(aoa)
             self.control_inputs["engine_amps"].append(amps)
 
-            self.orientation["alpha"].append(alpha)
+            self.orientation["alpha"].append(float(alpha.item()))
             self.orientation["aoa"].append(aoa)
-            self.orientation["gamma"].append(gamma)
+            self.orientation["gamma"].append(float(gamma.item()))
         else:
             jprint("State not appended")
             jprint("F: {}", ACC)
@@ -254,7 +254,7 @@ class MissionTrajectory:
         V: Float[Array, "2"],
         aoa_prev_deg: float,
         engine_amps: float,
-    ) -> tuple[float, float, float, float, float, float]:
+    ) -> tuple[Float, Float, Float, Float, Float, Float]:
         """
         From the controller get all the variables that are marked as trim variables then solve the system of equations that ensure the forces normal to the trajectory are zero.
 

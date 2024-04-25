@@ -56,6 +56,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+from typing import TYPE_CHECKING
 from typing import Any
 
 import airfoils as af
@@ -63,13 +64,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import requests
 from matplotlib.axes import Axes
-from scipy.interpolate import splev
-from scipy.interpolate import splprep
 
 from ICARUS.airfoils._naca5 import gen_NACA5_airfoil
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 
+if TYPE_CHECKING:
+    from ICARUS.airfoils.flapped_airfoil import FlappedAirfoil
 # # Airfoil
 # ##### 0 = Read from python module
 # ##### 1 = Read from airfoiltools.com
@@ -533,13 +534,6 @@ class Airfoil(af.Airfoil):  # type: ignore
         x: list[float] = []
         y: list[float] = []
 
-        # np.loadtxt(filename, skiprows=1, unpack=True)
-        # pd.read_csv(
-        #     filename,
-        #     skiprows=1,
-        #     sep=" ",
-        #     on_bad_lines="skip",
-        # )
         logging.info(f"Loading airfoil from {filename}")
         with open(filename) as file:
             for line in file:
@@ -573,10 +567,11 @@ class Airfoil(af.Airfoil):  # type: ignore
 
     def flap(
         self,
-        flap_hinge: float,
+        flap_hinge_chord_percentage: float,
         flap_angle: float,
+        flap_hinge_thickness_percentage: float = 0.5,
         chord_extension: float = 1,
-    ) -> Airfoil:
+    ) -> FlappedAirfoil | Airfoil:
         """
         Function to generate a flapped airfoil. The flap is defined by the flap hinge, the chord extension and the flap angle.
 
@@ -588,27 +583,32 @@ class Airfoil(af.Airfoil):  # type: ignore
         Returns:
             Airfoil: Flapped airfoil
         """
-        if flap_angle == 0 or flap_hinge == 1.0:
+        flap_hinge_1 = flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        if flap_angle == 0 or flap_hinge_1 == 1.0:
             return self
-        theta = -np.deg2rad(flap_angle)
+        theta = np.deg2rad(flap_angle)
 
-        x = np.linspace(self.min_x, flap_hinge, self.n_points)
+        x = np.linspace(self.min_x, flap_hinge_1, self.n_points)
         y_upper = self.y_upper(x)
         x_upper = x
         x_lower = x
         y_lower = self.y_lower(x)
 
-        x_after_flap = np.linspace(flap_hinge, self.max_x, self.n_points)
+        x_after_flap = np.linspace(flap_hinge_1, self.max_x, self.n_points)
         x_lower_after_flap = x_after_flap
         x_upper_after_flap = x_after_flap
         y_lower_after_flap = self.y_lower(x_after_flap)
         y_upper_after_flap = self.y_upper(x_after_flap)
 
         # Translate the points to the origin to rotate them
-        x_lower_after_flap = x_lower_after_flap - flap_hinge
-        x_upper_after_flap = x_upper_after_flap - flap_hinge
+        x_lower_after_flap = x_lower_after_flap - flap_hinge_1
+        x_upper_after_flap = x_upper_after_flap - flap_hinge_1
 
-        y_hinge = self.y_lower(flap_hinge)
+        hinge_upper = self.y_lower(flap_hinge_1)
+        hinge_lower = self.y_upper(flap_hinge_1)
+        eta = flap_hinge_thickness_percentage
+        y_hinge = hinge_upper * (eta) + hinge_lower * (1 - eta)
+
         y_lower_after_flap = y_lower_after_flap - y_hinge
         y_upper_after_flap = y_upper_after_flap - y_hinge
 
@@ -628,10 +628,19 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_upper_after_flap = x * np.sin(theta) + y * np.cos(theta)
 
         # Translate the points back
-        x_lower_after_flap = x_lower_after_flap + flap_hinge
-        x_upper_after_flap = x_upper_after_flap + flap_hinge
+        x_lower_after_flap = x_lower_after_flap + flap_hinge_1
+        x_upper_after_flap = x_upper_after_flap + flap_hinge_1
         y_lower_after_flap = y_lower_after_flap + y_hinge
         y_upper_after_flap = y_upper_after_flap + y_hinge
+
+        # Remove the points where x < x_hinge
+        problematic_indices = np.where(x_lower_after_flap < flap_hinge_1)
+        x_lower_after_flap = np.delete(x_lower_after_flap, problematic_indices)
+        y_lower_after_flap = np.delete(y_lower_after_flap, problematic_indices)
+
+        problematic_indices = np.where(x_upper_after_flap < flap_hinge_1)
+        x_upper_after_flap = np.delete(x_upper_after_flap, problematic_indices)
+        y_upper_after_flap = np.delete(y_upper_after_flap, problematic_indices)
 
         # TODO: Add points in the upper surface to smooth the flap
 
@@ -647,16 +656,24 @@ class Airfoil(af.Airfoil):  # type: ignore
                 [*y_lower, *y_lower_after_flap],
             ],
         )
-        flapped = Airfoil(
+        from .flapped_airfoil import FlappedAirfoil
+
+        flapped = FlappedAirfoil(
             upper,
             lower,
-            f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{flap_angle:.2f}",
-            n_points=self.n_points,
+            name=f"{self.name}_flapped_hinge_{flap_hinge_chord_percentage:.2f}_deflection_{flap_angle:.2f}",
+            parent=self,
         )
 
         return flapped
 
-    def flap2(self, flap_hinge: float, flap_angle: float, chord_extension: float = 1, plot_flap: bool = False):
+    def flap_camber_line(
+        self,
+        flap_hinge: float,
+        flap_angle: float,
+        chord_extension: float = 1,
+        # plot_flap: bool = False
+    ):
         if flap_angle == 0 or flap_hinge == 1.0:
             return self
         flap_angle = np.deg2rad(flap_angle)
@@ -834,15 +851,16 @@ class Airfoil(af.Airfoil):  # type: ignore
             return results
 
     def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:
-        """"""
-        if hasattr(self, "l"):
-            # return self.camber_line_naca5(x)
-            print("NACA 5 camber analytical solution not implemented yet")
-            return np.array(super().camber_line(x), dtype=float)
-        elif hasattr(self, "p"):
-            return self.camber_line_naca4(x)
-        else:
-            return np.array(super().camber_line(x), dtype=float)
+        """
+        Returns the camber line for a given set of x coordinates
+
+        Args:
+            x (float | list[float] | FloatArray): X coordinates
+
+        Returns:
+            FloatArray: Camber line
+        """
+        return np.array(super().camber_line(x), dtype=float)
 
     def to_selig(self) -> FloatArray:
         """
