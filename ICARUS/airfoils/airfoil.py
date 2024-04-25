@@ -141,14 +141,15 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         # tck, _ = splprep([x, y], s=smoothing)
         from scipy.interpolate import CubicSpline
+
         # Airfoils 0 and 1 are defined by their cubic splines,
         #   x0(s0), y0(s0)       x1(s1), y1(s1)
-        # with the discrete secant arc length parameters s computed from 
+        # with the discrete secant arc length parameters s computed from
         # the coordinates x(i),y(i):
-        #   s(i) = s(i-1) + sqrt[ (x(i)-x(i-1))^2 + (y(i)-y(i-1))^2 ] 
+        #   s(i) = s(i-1) + sqrt[ (x(i)-x(i-1))^2 + (y(i)-y(i-1))^2 ]
         s = np.zeros(x.shape)
         for i in range(1, x.shape[0]):
-            s[i] = s[i-1] + np.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
+            s[i] = s[i - 1] + np.sqrt((x[i] - x[i - 1]) ** 2 + (y[i] - y[i - 1]) ** 2)
 
         # Normalize the arc length
         s /= s[-1]
@@ -160,7 +161,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) / 2
         tnew = np.hstack((tnew_1, tnew_2))
         y_new = np.array(spl(tnew), dtype=float)
-        
+
         # Get the new x coordinates from the arc length
         x_new = np.interp(tnew, s, x)
 
@@ -655,19 +656,13 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         return flapped
 
-    def flap2(
-        self, 
-        flap_hinge: float, 
-        flap_angle: float,
-        chord_extension: float = 1,
-        plot_flap: bool = False
-    ):
+    def flap2(self, flap_hinge: float, flap_angle: float, chord_extension: float = 1, plot_flap: bool = False):
         if flap_angle == 0 or flap_hinge == 1.0:
             return self
         flap_angle = np.deg2rad(flap_angle)
 
         n = self.n_points
-        eta = (flap_hinge - self.min_x)/ (self.max_x - self.min_x)
+        eta = (flap_hinge - self.min_x) / (self.max_x - self.min_x)
         n1 = int(n * eta)
         n2 = n - n1
 
@@ -686,21 +681,21 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         # We need to take the xnew,ynew line and add thickness to both sides in the direction
         # of the normal to the camber line at each point. We can get the normal by taking the
-        # derivative of the camber line. The normal will be the negative reciprocal of the 
+        # derivative of the camber line. The normal will be the negative reciprocal of the
         # derivative. We can then add the thickness in the direction of the normal to get the
         # final points
         thickess = self.thickness(x_after)
         spacing = np.hstack((0, np.diff(y_after)))
-        angle = np.arctan(np.gradient(x_after,spacing, edge_order=1))
-        lower_y = ynew - np.sin(angle + flap_angle) * thickess/2 
-        lower_x = xnew - np.cos(angle + flap_angle) * thickess/2 
+        angle = np.arctan(np.gradient(x_after, spacing, edge_order=1))
+        lower_y = ynew - np.sin(angle + flap_angle) * thickess / 2
+        lower_x = xnew - np.cos(angle + flap_angle) * thickess / 2
 
-        upper_y = ynew + np.sin(angle + flap_angle) * thickess/2
-        upper_x = xnew + np.cos(angle + flap_angle) * thickess/2
+        upper_y = ynew + np.sin(angle + flap_angle) * thickess / 2
+        upper_x = xnew + np.cos(angle + flap_angle) * thickess / 2
 
         # Identiffy the problematic regions
         # Problematic are the regions of the first point of both the upper and lower surface
-        # until the hinge point. We need to fill the gap that arises on one side and close 
+        # until the hinge point. We need to fill the gap that arises on one side and close
         # the gap that arises on the other side
 
         # Remove the points where x < x_hinge
@@ -725,7 +720,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         # x_te = self.max_x
         # y_te = self.camber_line(x_te)
 
-        # # Rotate the trailing edge point 
+        # # Rotate the trailing edge point
         # x = x_te - flap_hinge
         # y = y_te - y_hinge
 
@@ -740,7 +735,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         upper = np.vstack([x_upper, y_upper])
         lower = np.vstack([x_lower, y_lower])
-        
+
         # if plot_flap:
         #     y_camber_before = self.camber_line(x_before)
         #     fig = plt.figure()
@@ -772,7 +767,6 @@ class Airfoil(af.Airfoil):  # type: ignore
             n_points=self.n_points,
         )
         return flapped
-
 
     def set_naca4_digits(self, p: float, m: float, xx: float) -> None:
         """

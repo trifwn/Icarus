@@ -147,7 +147,7 @@ def main() -> None:
             f2w_s.print_analysis_options()
 
             f2w_solver_parameters.f_trip_upper = 0.1
-            f2w_solver_parameters.f_trip_low = 1.
+            f2w_solver_parameters.f_trip_low = 1.0
             f2w_solver_parameters.Ncrit = Ncrit
             f2w_solver_parameters.max_iter = 250
             f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER

@@ -1,5 +1,7 @@
 import jax.numpy as jnp
+
 from ICARUS.airfoils.airfoil import Airfoil
+
 
 def get_gamma_distribution(
     self,

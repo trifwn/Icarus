@@ -10,7 +10,7 @@ from ICARUS.core.types import FloatArray
 def avl_run() -> None:
     print("Testing AVL Running ...")
     # Get Plane, DB
-    from examples.Vehicles.Planes.benchmark_plane import get_bmark_plane
+    from benchmark_plane_test import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
 

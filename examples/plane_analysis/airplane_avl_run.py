@@ -1,10 +1,14 @@
 import os
 
 import numpy as np
-
 from Planes.hermes import hermes
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import avl_dynamic_analysis_fd
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import avl_dynamic_analysis_implicit
+
+from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
+    avl_dynamic_analysis_fd,
+)
+from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
+    avl_dynamic_analysis_implicit,
+)
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd_res
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
 from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run

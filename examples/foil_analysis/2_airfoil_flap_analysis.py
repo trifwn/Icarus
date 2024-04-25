@@ -1,13 +1,14 @@
 from time import sleep
 
-from ICARUS.database import DB
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ICARUS.database import DB
 
 airfoil = DB.get_airfoil("NACA0009")
 
 import numpy as np
+
 from ICARUS.core.types import FloatArray
 
 # PARAMETERS FOR ESTIMATION
