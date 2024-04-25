@@ -43,7 +43,7 @@ def main() -> None:
 
     # filename: str = "Data/3d_Party/plane_1.xml"
     # airplane = parse_xfl_project(filename)
-    from Vehicles.Planes.e190_cruise import e190_cruise
+    from Planes.e190_cruise import e190_cruise
 
     from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 

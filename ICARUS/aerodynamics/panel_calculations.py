@@ -1,6 +1,8 @@
 import jax
 import jax.numpy as jnp
 
+from  jaxtyping import Float, Array
+from typing import Callable
 
 def induced_vel_calc_vectorized(
     i: int,

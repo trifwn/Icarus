@@ -36,7 +36,6 @@ def e190_takeoff_generator(
         flap_hinge=flap_hinge,
         chord_extension=chord_extension,
         flap_angle=flap_angle,
-        plotting=False,
     )
 
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)

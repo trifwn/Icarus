@@ -159,7 +159,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         tnew_1 = 0.5 * (1 - np.cos(ksi)) / 2
         tnew_2 = 0.5 + 0.5 * (1 - np.cos(ksi)) / 2
         tnew = np.hstack((tnew_1, tnew_2))
-        y_new = spl(tnew)
+        y_new = np.array(spl(tnew), dtype=float)
         
         # Get the new x coordinates from the arc length
         x_new = np.interp(tnew, s, x)
@@ -690,7 +690,8 @@ class Airfoil(af.Airfoil):  # type: ignore
         # derivative. We can then add the thickness in the direction of the normal to get the
         # final points
         thickess = self.thickness(x_after)
-        angle = np.arctan(np.gradient(x_after, y_after))
+        spacing = np.hstack((0, np.diff(y_after)))
+        angle = np.arctan(np.gradient(x_after,spacing, edge_order=1))
         lower_y = ynew - np.sin(angle + flap_angle) * thickess/2 
         lower_x = xnew - np.cos(angle + flap_angle) * thickess/2 
 
