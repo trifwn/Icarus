@@ -27,7 +27,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     Returns:
         tuple[list[FloatArray], list[FloatArray]]: Meshgrid of the geometry from the gnvp results and the airplane.
     """
-    from benchmark_plane_test import get_bmark_plane
+    from .benchmark_plane_test import get_bmark_plane
 
     if gnvp_version == 3:
         airplane, _ = get_bmark_plane("bmark")

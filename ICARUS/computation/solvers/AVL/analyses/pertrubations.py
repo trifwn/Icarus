@@ -18,7 +18,7 @@ from ICARUS.vehicle.plane import Airplane
 def avl_dynamic_analysis_implicit(
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
     solver_options: dict[str, Any] = {},
 ) -> None:
     implicit_eigs(plane=plane, state=state, solver2D=solver2D)
@@ -27,7 +27,7 @@ def avl_dynamic_analysis_implicit(
 def avl_dynamic_analysis_fd(
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
     solver_options: dict[str, Any] = {},
 ) -> None:
     if state.trim == {}:

@@ -7,7 +7,8 @@ import numpy as np
 from numpy import deg2rad
 from numpy import rad2deg
 
-from ICARUS.database import DB, DB3D
+from ICARUS.database import DB
+from ICARUS.database import DB3D
 from ICARUS.database import AVL_exe
 from ICARUS.database.utils import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
@@ -61,11 +62,11 @@ def csplit(input_file: str, pattern: str) -> list[str]:
 def implicit_eigs(
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
 ) -> None:
     PLANEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
-        solver = "AVL",
+        solver="AVL",
     )
     DYNAMICS_DIR = os.path.join(PLANEDIR, "Dynamics")
     HOMEDIR = os.getcwd()
@@ -181,12 +182,12 @@ def trim_calculation(PLANE_DIR: str, plane: Airplane) -> tuple[float, float]:
 def finite_difs(
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
 ) -> None:
     DYNAMICS_DIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
-        solver = "AVL",
-        case = "Dynamics",
+        solver="AVL",
+        case="Dynamics",
     )
     HOMEDIR = os.getcwd()
     os.makedirs(DYNAMICS_DIR, exist_ok=True)

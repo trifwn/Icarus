@@ -59,6 +59,7 @@ def main() -> None:
     elif command == "uninstall":
         uninstall(package)
     else:
+        setup()
         print(f"Command {command} not recognized")
 
 

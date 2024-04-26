@@ -82,3 +82,4 @@ class GenuSurface:
         self.tip_chord: float = surf.chords[-1]
         self.offset: float = surf._xoffset_dist[-1]
         self.grid: FloatArray | list[FloatArray] = surf.get_grid()
+        self.mean_aerodynamic_chord: float = surf.mean_aerodynamic_chord

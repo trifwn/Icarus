@@ -278,9 +278,9 @@ def run_pertrubation_parallel(
 
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
     GENUDIR: str = DB.vehicles_db.get_case_directory(
-            airplane=plane,
-            solver=f"GenuVP{genu_version}",
-        )
+        airplane=plane,
+        solver=f"GenuVP{genu_version}",
+    )
     CASEDIRS: list[str] = [os.path.join(GENUDIR, "Dynamics", folder) for folder in folders]
 
     refresh_progress: float = 2
@@ -463,10 +463,10 @@ def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) 
     """
     HOMEDIR: str = DB.HOMEDIR
     DYNDIR: str = DB.vehicles_db.get_case_directory(
-            airplane=plane,
-            solver=f"GenuVP{gnvp_version}",
-            case = "Dynamics",
-        )
+        airplane=plane,
+        solver=f"GenuVP{gnvp_version}",
+        case="Dynamics",
+    )
     forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
     forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 

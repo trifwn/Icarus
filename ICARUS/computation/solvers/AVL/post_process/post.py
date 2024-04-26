@@ -60,7 +60,7 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
     Cms = []
     RESULTS_DIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
-        solver = "AVL",
+        solver="AVL",
     )
     for angle in angles:
         file = os.path.join(RESULTS_DIR, f"{angle_to_case(angle)}.txt")
@@ -185,8 +185,8 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
 def implicit_dynamics_post(plane: Airplane, state: State) -> tuple[list[complex], list[complex]]:
     DYNAMICS_DIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
-        solver = "AVL",
-        case = "Dynamics",
+        solver="AVL",
+        case="Dynamics",
     )
     log = os.path.join(DYNAMICS_DIR, "eig_log.txt")
     sections = csplit(log, "1:")

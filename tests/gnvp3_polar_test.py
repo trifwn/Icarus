@@ -13,10 +13,9 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     print("Testing GNVP3 Running...")
 
     # Get Plane, DB
-    from benchmark_plane_test import get_bmark_plane
+    from .benchmark_plane_test import get_bmark_plane
 
     bmark, state = get_bmark_plane("bmark")
-
     # Get Solver
     from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
 

@@ -6,7 +6,7 @@ from ICARUS.core.types import FloatArray
 def geom() -> None:
     print("Testing Geometry...")
 
-    from benchmark_plane_test import get_bmark_plane
+    from .benchmark_plane_test import get_bmark_plane
 
     bmark, _ = get_bmark_plane("bmark")
 

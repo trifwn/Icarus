@@ -3,9 +3,12 @@ from io import StringIO
 from io import TextIOWrapper
 from typing import Any
 
+import numpy as np
 from pandas import DataFrame
 
+from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
@@ -442,7 +445,7 @@ def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
+def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
     """
     Create Polars CL-CD-Cm files for each airfoil
 
@@ -453,10 +456,65 @@ def cldFiles(bodies: list[GenuSurface], solver: str) -> None:
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
 
+        # Get the airfoil polar
+        reynolds = bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc
+        RE_MIN = 8e4
+        RE_MAX = 1.5e6
+        NUM_BINS = 12
+        REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
+        DR_REYNOLDS = np.diff(REYNOLDS_BINS)
         try:
             polars: Polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
-        except (PolarsNotFoundError, AirfoilNotFoundError):
-            raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
+            reyns_computed = polars.reynolds_nums
+
+            # print("We have computed polars for the following reynolds numbers:")
+            # print(reyns_computed)
+            # print(f"Reynolds number for this strip: {reynolds}")
+
+            # Check if the reynolds number is within the range of the computed polars
+            # To be within the range of the computed polars the reynolds number must be
+            # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]
+            # If the reynolds number is not within the range of the computed polars, the polar is recomputed
+
+            # Find the bin corresponding to the each computed reynolds number
+            reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 1
+            # print(REYNOLDS_BINS)
+            # print(f"Reynolds bin: {reyns_bin}")
+            cond = False
+            for i, reyns in enumerate(reyns_computed):
+                if reyns - DR_REYNOLDS[reyns_bin] < reynolds < reyns + DR_REYNOLDS[reyns_bin]:
+                    cond = True
+                    # print(f"\tReynolds number {reynolds} is within the range of the computed polars")
+                    # print(f"   Reynolds number: {reyns} +/- {DR_REYNOLDS[reyns_bin]}")
+                    break
+
+            if not cond:
+                DB.foils_db.compute_polars(
+                    airfoil=DB.get_airfoil(bod.airfoil_name),
+                    solver_name=solver,
+                    reynolds=[float(reynolds)],
+                    angles=np.linspace(-8, 20, 29),
+                )
+                polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
+        except (
+            PolarsNotFoundError,
+            AirfoilNotFoundError,
+            PolarNotAccurate,
+            ReynoldsNotIncluded,
+            FileNotFoundError,
+        ):
+            print(f"\tPolar for {bod.airfoil_name} not found in database. Trying to recompute")
+
+            DB.foils_db.compute_polars(
+                airfoil=DB.get_airfoil(bod.airfoil_name),
+                solver_name=solver,
+                reynolds=REYNOLDS_BINS,
+                angles=np.linspace(-10, 16, 53),
+            )
+            try:
+                polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
+            except PolarsNotFoundError:
+                raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         f_io = StringIO()
         f_io.write(f"------ CL and CD data input file for {bod.airfoil_name}\n")
@@ -649,7 +707,7 @@ def make_input_files(
     # BLD FILES
     bldFiles(bodies, params)
     # CLD FILES
-    cldFiles(bodies, solver)
+    cldFiles(bodies, params, solver)
     if "gnvp3" not in next(os.walk("."))[2]:
         src: str = GenuVP3_exe
         dst: str = os.path.join(ANGLEDIR, "gnvp3")

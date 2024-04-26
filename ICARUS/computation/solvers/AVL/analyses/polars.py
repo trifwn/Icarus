@@ -20,13 +20,13 @@ from ICARUS.vehicle.plane import Airplane
 def avl_angle_run(
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'],
+    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str,
     angles: FloatArray | list[float],
     solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
     PLANEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
-        solver = "AVL",
+        solver="AVL",
     )
     make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
     case_def(plane, state, angles)

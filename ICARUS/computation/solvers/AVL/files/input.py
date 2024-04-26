@@ -28,7 +28,7 @@ def make_input_files(
     directory: str,
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
     solver_options: dict[str, float] = {"use_avl_control": False},
 ) -> None:
     os.makedirs(directory, exist_ok=True)
@@ -97,7 +97,7 @@ def avl_geo(
     plane: Airplane,
     state: State,
     u_inf: float,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] = 'Xfoil',
+    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
     solver_options: dict[str, float] = {},
 ) -> None:
     environment = state.environment
@@ -137,7 +137,7 @@ def avl_geo(
     for i, surf in enumerate(surfaces):
 
         # Use control from AVL vs ICARUS
-        if solver_options['use_avl_control']:
+        if solver_options["use_avl_control"]:
             surf.__control__({k: 0.0 for k in surf.control_vars})
             use_avl_control = True
         else:
@@ -236,7 +236,13 @@ def avl_geo(
                 f_io.write("\n")
                 f_io.write("\n")
                 strip_airfoil = strip.airfoil_end
-                strip_r = np.array([(strip.x0 + strip.x1) / 2, (strip.y0 + strip.y1) / 2, (strip.z0 + strip.z1) / 2])
+                strip_r = np.array(
+                    [
+                        (strip.x0 + strip.x1) / 2,
+                        (strip.y0 + strip.y1) / 2,
+                        (strip.z0 + strip.z1) / 2,
+                    ],
+                )
 
             strip_span = (surf.R_MAT.T @ strip_r)[1]
             span = surf.span / 2 if surface.is_symmetric_y else surf.span
@@ -420,7 +426,7 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
         surfs_arr = np.array(surfs, dtype=float)
         head_arr = np.array([head[0]], dtype=float)
         specific_rows = np.concatenate((head_arr, surfs_arr))
-        df = pd.read_csv(path, sep=r'\s+', skiprows=lambda x: x not in specific_rows)
+        df = pd.read_csv(path, sep=r"\s+", skiprows=lambda x: x not in specific_rows)
         dfs.append(df)
 
     return dfs

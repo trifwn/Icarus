@@ -11,7 +11,7 @@ def gnvp7_run(run_parallel: bool = True) -> None:
     print("Testing GNVP7 Running...")
 
     # Get Plane, DB
-    from benchmark_plane_test import get_bmark_plane
+    from .benchmark_plane_test import get_bmark_plane
 
     airplane, state = get_bmark_plane("bmark")
 
