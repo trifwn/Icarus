@@ -98,7 +98,11 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
     )
     polar_df = polar_df.sort_values("AoA").reset_index(drop=True)
 
-    filename = os.path.join(DB3D, plane.directory, "forces.avl")
+    PLANEDIR = DB.vehicles_db.get_plane_directory(
+        plane=plane,
+    )
+    filename = os.path.join(PLANEDIR, "forces.avl")
+
     polar_df.to_csv(filename, index=False, float_format="%.10f")
     return polar_df
 

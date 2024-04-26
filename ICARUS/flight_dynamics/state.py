@@ -69,7 +69,7 @@ class ControlState:
         hash_val = hash(frozenset(self.control_vector_dict.items()))
         # Add to the hash dictionary if not already present
         if hash_val not in self.hash_dict.keys():
-            self.hash_dict[hash_val] = len(self.hash_dict) - 1
+            self.hash_dict[hash_val] = len(self.hash_dict) 
 
         return hash_val
 

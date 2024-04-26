@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB3D
+from ICARUS.database import DB3D, DB
 from ICARUS.vehicle.plane import Airplane
 
 from .max_iter import get_max_iterations_3
@@ -23,7 +23,12 @@ def get_wake_data_3(
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
-    fname: str = os.path.join(DB3D, plane.directory, "GenuVP3", case, "YOURS.WAK")
+    CASEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver="GenuVP3",
+        case=case,
+    )
+    fname: str = os.path.join(CASEDIR, "YOURS.WAK")
     with open(fname) as file:
         data: list[str] = file.readlines()
     a: list[list[float]] = []
@@ -71,14 +76,19 @@ def nwake_data_7(
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
+    CASEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver="GenuVP7",
+        case=case,
+    )
     try:
-        fname: str = os.path.join(DB3D, plane.directory, "GenuVP7", case, "NWAKE_FINAL")
+        fname: str = os.path.join(CASEDIR, "NWAKE_FINAL")
 
         with open(fname) as file:
             data: list[str] = file.readlines()
 
     except FileNotFoundError:
-        fname = os.path.join(DB3D, plane.directory, "GenuVP7", case, "NWAKE00f")
+        fname = os.path.join(CASEDIR, "NWAKE00f")
         with open(fname) as file:
             data = file.readlines()
 
@@ -113,7 +123,12 @@ def wake_data_7(
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
-    fname: str = os.path.join(DB3D, plane.directory, "GenuVP7", case, "VORTPF")
+    CASEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver="GenuVP7",
+        case=case,
+    )
+    fname: str = os.path.join(CASEDIR, "VORTPF")
 
     with open(fname) as file:
         data: list[str] = file.readlines()
@@ -149,12 +164,17 @@ def grid_data_7(
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
     """
+    CASEDIR = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver="GenuVP7",
+        case=case,
+    )
     try:
-        fname: str = os.path.join(DB3D, plane.directory, "GenuVP7", case, "GWING_FINAL")
+        fname: str = os.path.join(CASEDIR, "GWING_FINAL")
         with open(fname) as file:
             data: list[str] = file.readlines()
     except FileNotFoundError:
-        fname = os.path.join(DB3D, plane.directory, case, "GenuVP7", "GWING000")
+        fname = os.path.join(CASEDIR, "GWING000")
         with open(fname) as file:
             data = file.readlines()
     a: list[list[float]] = []

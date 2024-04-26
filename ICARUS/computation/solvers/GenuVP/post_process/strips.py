@@ -3,7 +3,7 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.database import DB3D
+from ICARUS.database import DB, DB3D
 from ICARUS.vehicle.plane import Airplane
 
 
@@ -22,7 +22,11 @@ def get_strip_data(
     Returns:
         tuple[DataFrame, DataFrame]: Returns a dataframe with all strip data and a dataframe with all strip data for the NBs
     """
-    directory: str = os.path.join(DB3D, plane.directory, case)
+    directory = DB.vehicles_db.get_case_directory(
+        airplane=plane,
+        solver="GenuVP3",
+        case=case,
+    )
     files: list[str] = os.listdir(directory)
     strip_data: list[list[Any]] = []
     for file in files:
@@ -36,7 +40,9 @@ def get_strip_data(
             strip = int(file[3:5])
             strip_data.append([body, strip, *data_num])
     try:
-        strip_data_df: DataFrame = DataFrame(strip_data, columns=strip_columns_3).sort_values(
+        strip_data_df: DataFrame = DataFrame(
+            strip_data, columns=strip_columns_3
+        ).sort_values(
             ["Body", "Strip"],
             ignore_index=True,
         )

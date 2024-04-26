@@ -117,7 +117,9 @@ class Database_3D:
 
         # Load Vehicle object
         file_plane: str = os.path.join(DB3D, vehicle_folder, f"{vehicle_folder}.json")
-        plane_obj: Airplane | None = self.load_plane(name=vehicle_folder, file=file_plane)
+        plane_obj: Airplane | None = self.load_plane(
+            name=vehicle_folder, file=file_plane
+        )
         if plane_obj is None:
             vehicle_name = vehicle_folder
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
@@ -156,9 +158,13 @@ class Database_3D:
                     gnvp_version=7,
                 )
             elif solver_folder == "LSPT":
-                self.load_lspt_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
+                self.load_lspt_data(
+                    plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder
+                )
             elif solver_folder == "AVL":
-                self.load_avl_data(plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder)
+                self.load_avl_data(
+                    plane=plane_obj, state=state_obj, vehicle_folder=vehicle_folder
+                )
             # elif solver_folder == "XFLR5":
             #     self.load_xflr5_data(vehicle_name, gnvp_version=3)
             else:
@@ -190,10 +196,14 @@ class Database_3D:
                     else:
                         raise ValueError(f"Error Decoding Plane object {name}")
                 except Exception as error:
-                    logging.debug(f"Error decoding Plane object {name}! Got error {error}")
+                    logging.debug(
+                        f"Error decoding Plane object {name}! Got error {error}"
+                    )
                     print(f"Error decoding Plane object {name}! Got error {error}")
         except FileNotFoundError:
-            logging.debug(f"FileNotFound No Plane object found in {name} folder at {file}!")
+            logging.debug(
+                f"FileNotFound No Plane object found in {name} folder at {file}!"
+            )
         return plane
 
     def load_plane_state(self, directory: str) -> State | None:
@@ -248,7 +258,9 @@ class Database_3D:
                 f"GenuVP{gnvp_version} 2D",
                 f"GenuVP{gnvp_version} ONERA",
             ]:
-                self.add_polars_from_forces(plane=plane, state=state, forces=forces_df, prefix=name)
+                self.add_polars_from_forces(
+                    plane=plane, state=state, forces=forces_df, prefix=name
+                )
         except FileNotFoundError:
             logging.debug(
                 f"No forces.gnvp{gnvp_version} file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well",
@@ -263,13 +275,19 @@ class Database_3D:
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
             # the convergence data from gnvp.out. If successfull it adds the error data to the
             # dataframe containing the loads and stores it in the convergence_data dict.
-            RESULTS_DIR = os.path.join(DB3D, vehicle_folder, f"GenuVP{gnvp_version}", case)
+            RESULTS_DIR = os.path.join(
+                DB3D, vehicle_folder, f"GenuVP{gnvp_version}", case
+            )
             loads_file: str = os.path.join(RESULTS_DIR, "LOADS_aer.dat")
             log_file = os.path.join(RESULTS_DIR, f"gnvp{gnvp_version}.out")
 
             # Load Convergence
-            load_convergence: DataFrame = get_loads_convergence(loads_file, gnvp_version)
-            convergence: DataFrame = get_error_convergence(log_file, load_convergence, gnvp_version)
+            load_convergence: DataFrame = get_loads_convergence(
+                loads_file, gnvp_version
+            )
+            convergence: DataFrame = get_error_convergence(
+                log_file, load_convergence, gnvp_version
+            )
             if vehicle_name not in self.convergence_data.keys():
                 self.convergence_data[vehicle_name] = Struct()
             self.convergence_data[vehicle_name][case] = convergence
@@ -291,9 +309,13 @@ class Database_3D:
             self.add_forces(vehicle_name, forces_df)
             logging.info(f"Loading Forces from {file_lspt}")
             for name in [f"LSPT Potential", "LSPT 2D"]:
-                self.add_polars_from_forces(plane=plane, state=state, forces=forces_df, prefix=name)
+                self.add_polars_from_forces(
+                    plane=plane, state=state, forces=forces_df, prefix=name
+                )
         except FileNotFoundError:
-            logging.debug(f"No forces.lspt file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well")
+            logging.debug(
+                f"No forces.lspt file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well"
+            )
 
     def load_avl_data(
         self,
@@ -312,9 +334,13 @@ class Database_3D:
             self.add_forces(vehicle_name, forces_df)
             logging.info(f"Loading AVL Forces from {file_avl}")
             for name in [f"AVL"]:
-                self.add_polars_from_forces(plane=plane, state=state, forces=forces_df, prefix=name)
+                self.add_polars_from_forces(
+                    plane=plane, state=state, forces=forces_df, prefix=name
+                )
         except FileNotFoundError:
-            logging.debug(f"No forces.avl file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well")
+            logging.debug(
+                f"No forces.avl file found in {vehicle_folder} folder at {DB3D}!\nNo polars Created as well"
+            )
 
     def add_polars_from_forces(
         self,
@@ -377,6 +403,9 @@ class Database_3D:
     def __str__(self) -> str:
         return f"Vehicle Database at {DB3D}"
 
+    def get_plane_directory(self, plane: Airplane) -> str:
+        return os.path.join(DB3D, plane.directory)
+
     def get_case_directory(
         self,
         airplane: Airplane,
@@ -384,13 +413,14 @@ class Database_3D:
         case: str | None = None,
         subcase: str | None = None,
     ) -> str:
+        directory = airplane.directory
         if solver not in ["GenuVP3", "GenuVP7", "LSPT", "AVL"]:
             raise ValueError(f"Solver {solver} not recognized")
 
         if case is None:
-            return os.path.join(DB3D, airplane.directory, solver)
+            return os.path.join(DB3D, directory, solver)
         else:
             if subcase is not None:
-                return os.path.join(DB3D, airplane.directory, solver, case, subcase)
+                return os.path.join(DB3D, directory, solver, case, subcase)
             else:
-                return os.path.join(DB3D, airplane.directory, solver, case)
+                return os.path.join(DB3D, directory, solver, case)

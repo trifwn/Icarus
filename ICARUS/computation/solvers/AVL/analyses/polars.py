@@ -49,12 +49,14 @@ def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | l
     """
     forces: DataFrame = collect_avl_polar_forces(plane=plane, state=state, angles=angles)
     plane.save()
-    CASEDIR: str = os.path.join(DB3D, plane.directory)
+    CASEDIR = DB.vehicles_db.get_plane_directory(
+        plane=plane,
+    )
     state.save(CASEDIR)
 
     logging.info("Adding Results to Database")
     # Add Plane to Database
-    file_plane: str = os.path.join(DB3D, plane.directory, f"{plane.name}.json")
+    file_plane: str = os.path.join(CASEDIR, f"{plane.name}.json")
     _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
 
     # Add Results to Database

@@ -334,14 +334,17 @@ def process_gnvp_angles_run(plane: Airplane, state: State, gvnp_version: int) ->
         DataFrame: Forces Calculated
     """
     HOMEDIR: str = DB.HOMEDIR
-    CASEDIR: str = os.path.join(DB3D, plane.directory)
-    forces: DataFrame = log_forces(CASEDIR, HOMEDIR, gvnp_version)
+    PLANEDIR = DB.vehicles_db.get_plane_directory(
+        plane=plane,
+    )
+    
+    forces: DataFrame = log_forces(PLANEDIR, HOMEDIR, gvnp_version)
     plane.save()
-    state.save(CASEDIR)
+    state.save(PLANEDIR)
 
     logging.info("Adding Results to Database")
     # Add Plane to Database
-    file_plane: str = os.path.join(DB3D, plane.directory, f"{plane.name}.json")
+    file_plane: str = os.path.join(PLANEDIR, f"{plane.name}.json")
     _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
 
     # Add Results to Database
