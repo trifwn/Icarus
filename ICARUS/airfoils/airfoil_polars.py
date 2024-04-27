@@ -617,6 +617,8 @@ class Polars:
             min_cdcl_idx = self.get_cl_cd_minimum_idx(curve["CL"], curve["CD"])
         except ValueError:
             print(curve["CL"])
+            print(self.name)
+            raise ValueError("Error in getting the indexes")
 
         # pos_stall_angle = curve["AoA"].loc[pos_stall_idx]
         # neg_stall_angle = curve["AoA"].loc[neg_stall_idx]

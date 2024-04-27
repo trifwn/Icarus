@@ -10,11 +10,11 @@ from ICARUS.database.utils import angle_to_case
 from ICARUS.vehicle.plane import Airplane
 
 
-def plot_gnvp3_wake(plane: Airplane, case: str, scale: str = "True", figsize: tuple[int, int] = (16, 7)) -> None:
+def plot_gnvp3_wake(plane: Airplane, case: str, scale: bool = True, figsize: tuple[int, int] = (16, 7)) -> None:
     plot_gnvp_wake(gnvp_version=3, plane=plane, case=case, scale=scale, figsize=figsize)
 
 
-def plot_gnvp7_wake(plane: Airplane, case: str, scale: str = "True", figsize: tuple[int, int] = (16, 7)) -> None:
+def plot_gnvp7_wake(plane: Airplane, case: str, scale: bool = True, figsize: tuple[int, int] = (16, 7)) -> None:
     plot_gnvp_wake(gnvp_version=7, plane=plane, case=case, scale=scale, figsize=figsize)
 
 
@@ -22,7 +22,7 @@ def plot_gnvp_wake(
     gnvp_version: int,
     plane: Airplane,
     case: str,
-    scale: str = "True",
+    scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
     """
@@ -60,8 +60,8 @@ def plot_gnvp_wake(
     ax.scatter(xs=B1[:, 0], ys=B1[:, 1], zs=B1[:, 2], color="k", s=5)  # NEARWAKE   # type: ignore
     ax.scatter(xs=C1[:, 0], ys=C1[:, 1], zs=C1[:, 2], color="g", s=5)  # GRID       # type: ignore
 
-    plane.visualize(fig, ax, movement=-np.array(plane.CG))
-    if scale == "True":
+    plane.visualize(fig, ax, movement=-np.array(plane.CG), show_masses = False)
+    if scale:
         ax.set_aspect("equal", "box")
     plt.show()
 

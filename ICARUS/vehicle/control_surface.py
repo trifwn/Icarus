@@ -34,6 +34,7 @@ class ControlSurface:
         local_rotation_axis: FloatArray = np.array([0.0, 1.0, 0.0]),
         chord_function: Callable[[float], float] | None = None,
         inverse_symmetric: bool = False,
+        constant_chord: float = 0,
     ) -> None:
         """
         Initialize the control surface object.
@@ -68,6 +69,8 @@ class ControlSurface:
             )
         else:
             self.chord_function = chord_function
+
+        self.constant_chord = constant_chord
         self.inverse_symmetric = inverse_symmetric
 
 

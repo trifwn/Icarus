@@ -38,7 +38,7 @@ def case_def(
         li.append("rb/2V        ->  rb/2V       =   0.00000")
         # for k, n in enumerate(move_names):
         #     li.append(f"{n}         ->  {n}       =    {move_defs[k]:.5f}")
-        for name, value in plane.control_vector.items():
+        for name, value in state.control_vector_dict.items():
             li.append(f"{name}         ->  {name}       =    {value:.5f}")
 
     ar = np.array(li)

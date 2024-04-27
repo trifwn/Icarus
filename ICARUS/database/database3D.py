@@ -105,7 +105,10 @@ class Database_3D:
 
         vehicle_folders: list[str] = next(os.walk(DB3D))[1]
         for vehicle_folder in vehicle_folders:  # For each plane vehicle == folder name
-            self.read_plane_data(vehicle_folder)
+            try:
+                self.read_plane_data(vehicle_folder)
+            except Exception as error:
+                print(f"Error reading {vehicle_folder}! Got error {error}")
 
     def read_plane_data(self, vehicle_folder: str) -> None:
         logging.info(f"Adding Vehicle at {vehicle_folder}")

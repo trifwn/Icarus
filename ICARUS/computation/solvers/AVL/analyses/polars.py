@@ -28,8 +28,9 @@ def avl_angle_run(
         airplane=plane,
         solver="AVL",
     )
-    make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
+    os.makedirs(PLANEDIR, exist_ok=True)
     case_def(plane, state, angles)
+    make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
     case_setup(plane)
     case_run(plane, angles)
     _ = process_avl_angles_run(plane, state, angles)

@@ -429,7 +429,6 @@ class MergedWing(WingSurface):
                 if name in surf.control_vars:
                     surf_control_vec[name] = value
             surf.__control__(surf_control_vec)
-            print(f"\tControling {surf.name} with {surf_control_vec}")
         self.calculate_wing_parameters()
 
     def __setstate__(self, state: dict[str, Any]) -> None:

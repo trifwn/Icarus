@@ -146,6 +146,7 @@ class Database_2D:
         reynolds: list[float] | FloatArray,
         angles: list[float] | FloatArray,
         solver_name: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
+        trips = (0.3, 0.3),
     ) -> None:
         """
         Computes the polars for an airfoil at a given reynolds number and angles of attack.
@@ -157,7 +158,7 @@ class Database_2D:
         """
         if isinstance(reynolds, float):
             reynolds = [reynolds]
-        airfoil.repanel_spl(500)
+        airfoil.repanel_spl(400)
 
         from ICARUS.computation.airfoil_polars import compute_polars
 
@@ -168,8 +169,8 @@ class Database_2D:
             solver_name=solver_name,
             mach=0.0,
             plot_polars=False,
-            repanel=120,
-            trips=(0.2, 0.2),
+            repanel=110,
+            trips= trips,
         )
 
     def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
