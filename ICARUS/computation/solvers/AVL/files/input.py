@@ -53,23 +53,15 @@ def avl_mass(
     f_io.write("#  Mass & Inertia breakdown.\n")
     f_io.write("#-------------------------------------------------\n")
     f_io.write("\n")
-    f_io.write(
-        "#  Names and scalings for units to be used for trim and eigenmode calculations.\n"
-    )
-    f_io.write(
-        "#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n"
-    )
-    f_io.write(
-        "#  Lunit value will also scale all lengths and areas in the AVL input file.\n"
-    )
+    f_io.write("#  Names and scalings for units to be used for trim and eigenmode calculations.\n")
+    f_io.write("#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n")
+    f_io.write("#  Lunit value will also scale all lengths and areas in the AVL input file.\n")
     f_io.write("Lunit = 1 m\n")
     f_io.write("Munit = 1 kg\n")
     f_io.write("Tunit = 1.0 s\n")
     f_io.write("\n")
     f_io.write("#-------------------------\n")
-    f_io.write(
-        "#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n"
-    )
+    f_io.write("#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n")
     f_io.write("#  Must be in the unit names given above (m,kg,s).\n")
     f_io.write(f"g   = {env.GRAVITY}\n")
     f_io.write(f"rho = {env.air_density}\n")
@@ -79,9 +71,7 @@ def avl_mass(
     f_io.write("#  x y z  is location of item's own CG.\n")
     f_io.write("#  Ixx... are item's inertias about item's own CG.\n")
     f_io.write("#\n")
-    f_io.write(
-        "#  x,y,z system here must be exactly the same one used in the .avl input file\n"
-    )
+    f_io.write("#  x,y,z system here must be exactly the same one used in the .avl input file\n")
     f_io.write("#     (same orientation, same origin location, same length units)\n")
     f_io.write("#\n")
     f_io.write("#  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz\n")
@@ -126,9 +116,7 @@ def avl_geo(
     else:
         f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
 
-    f_io.write(
-        f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n"
-    )
+    f_io.write(f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n")
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
     f_io.write(f" 0.0010                               | CDp  (optional)\n")
 
@@ -160,9 +148,7 @@ def avl_geo(
         f_io.write("\n")
 
         # SURFACE DEFINITION
-        f_io.write(
-            f"#-------------Surface {i+1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n"
-        )
+        f_io.write(f"#-------------Surface {i+1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n")
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}                 | surface name string \n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
@@ -286,14 +272,10 @@ def avl_geo(
             if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
-                reynolds = (
-                    strip.mean_chord * u_inf / environment.air_kinematic_viscosity
-                )
+                reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
                 # Get the airfoil polar
                 try:
-                    polar_obj: Polars = DB.foils_db.get_polars(
-                        strip_airfoil.name, solver=solver2D
-                    )
+                    polar_obj: Polars = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
                     reyns_computed = polar_obj.reynolds_nums
 
                     # print("We have computed polars for the following reynolds numbers:")
@@ -303,9 +285,7 @@ def avl_geo(
                     RE_MIN = 8e4
                     RE_MAX = 1.5e6
                     NUM_BINS = 12
-                    REYNOLDS_BINS = (
-                        np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
-                    )
+                    REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
                     DR_REYNOLDS = np.diff(REYNOLDS_BINS)
 
                     # Check if the reynolds number is within the range of the computed polars
@@ -319,11 +299,7 @@ def avl_geo(
                     # print(f"Reynolds bin: {reyns_bin}")
                     cond = False
                     for i, reyns in enumerate(reyns_computed):
-                        if (
-                            reyns - DR_REYNOLDS[reyns_bin]
-                            < reynolds
-                            < reyns + DR_REYNOLDS[reyns_bin]
-                        ):
+                        if reyns - DR_REYNOLDS[reyns_bin] < reynolds < reyns + DR_REYNOLDS[reyns_bin]:
                             cond = True
                             # print(f"\tReynolds number {reynolds} is within the range of the computed polars")
                             # print(f"   Reynolds number: {reyns} +/- {DR_REYNOLDS[reyns_bin]}")
@@ -336,16 +312,12 @@ def avl_geo(
                             reynolds=[reynolds],
                             angles=np.linspace(-8, 20, 29),
                         )
-                        polar_obj = DB.foils_db.get_polars(
-                            strip_airfoil.name, solver=solver2D
-                        )
+                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
 
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
                     f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-                    f_io.write(
-                        f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
-                    )
+                    f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
                     f_io.write("\n")
                 except (
                     PolarsNotFoundError,
@@ -354,9 +326,7 @@ def avl_geo(
                     ReynoldsNotIncluded,
                     FileNotFoundError,
                 ):
-                    print(
-                        f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute"
-                    )
+                    print(f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute")
                     DB.foils_db.compute_polars(
                         airfoil=strip_airfoil,
                         solver_name=solver2D,
@@ -365,16 +335,12 @@ def avl_geo(
                     )
 
                     try:
-                        polar_obj = DB.foils_db.get_polars(
-                            strip_airfoil.name, solver=solver2D
-                        )
+                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
 
                         f_io.write("CDCL\n")
                         cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
                         f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-                        f_io.write(
-                            f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n"
-                        )
+                        f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
                         f_io.write("\n")
                     except PolarsNotFoundError:
                         DB.foils_db.compute_polars(
@@ -385,9 +351,7 @@ def avl_geo(
                             trips=(0.3, 0.3),
                         )
                         try:
-                            polar_obj = DB.foils_db.get_polars(
-                                strip_airfoil.name, solver=solver2D
-                            )
+                            polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
                         except PolarsNotFoundError:
                             print(f"\tCould not compute polar for {strip_airfoil.name}")
                             pass
@@ -438,9 +402,7 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
 
 
-def get_effective_aoas(
-    plane: Airplane, angles: FloatArray | list[float]
-) -> list[DataFrame]:
+def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> list[DataFrame]:
     # for i, s in enumerate(plane.surfaces)
     #     if i0
     #         start += plane.surfaces[i-1].N2
@@ -455,9 +417,7 @@ def get_effective_aoas(
     from ICARUS.database.utils import angle_to_case
 
     for i, angle in enumerate(angles):
-        path = os.path.join(
-            DB.vehicles_db.DATADIR, plane.name, "AVL", f"fs_{angle_to_case(angle)}.txt"
-        )
+        path = os.path.join(DB.vehicles_db.DATADIR, plane.name, "AVL", f"fs_{angle_to_case(angle)}.txt")
         file = open(path)
         lines = file.readlines()
         file.close()

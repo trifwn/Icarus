@@ -60,7 +60,7 @@ def plot_gnvp_wake(
     ax.scatter(xs=B1[:, 0], ys=B1[:, 1], zs=B1[:, 2], color="k", s=5)  # NEARWAKE   # type: ignore
     ax.scatter(xs=C1[:, 0], ys=C1[:, 1], zs=C1[:, 2], color="g", s=5)  # GRID       # type: ignore
 
-    plane.visualize(fig, ax, movement=-np.array(plane.CG), show_masses = False)
+    plane.visualize(fig, ax, movement=-np.array(plane.CG), show_masses=False)
     if scale:
         ax.set_aspect("equal", "box")
     plt.show()

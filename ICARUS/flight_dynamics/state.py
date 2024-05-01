@@ -69,7 +69,7 @@ class ControlState:
         hash_val = hash(frozenset(self.control_vector_dict.items()))
         # Add to the hash dictionary if not already present
         if hash_val not in self.hash_dict.keys():
-            self.hash_dict[hash_val] = len(self.hash_dict) 
+            self.hash_dict[hash_val] = len(self.hash_dict)
 
         return hash_val
 
@@ -297,24 +297,35 @@ class State:
         lateral_state_space = lateral_stability_finite_differences(self)
         self.state_space = StateSpace(longitudal_state_space, lateral_state_space)
 
-    def plot_eigenvalues(self, plot_lateral: bool = True, plot_longitudal: bool = True) -> tuple[Figure, list[Axes]]:
+    def plot_eigenvalues(
+        self,
+        plot_lateral: bool = True,
+        plot_longitudal: bool = True,
+        axs: list[Axes] | None = None,
+    ) -> tuple[Figure, list[Axes]]:
         """
         Generate a plot of the eigenvalues.
         """
-        fig = plt.figure()
-
-        if plot_lateral and plot_longitudal:
-            axs: list[Axes] = fig.subplots(1, 2)  # type: ignore
+        if axs is not None:
+            fig: Figure = axs[0].figure
+            axs_now = axs
         else:
-            axs0 = fig.add_axes((0.1, 0.1, 0.8, 0.8))
-            axs = [axs0]
+            fig = plt.figure()
+            fig.suptitle(f"Eigenvalues")
+
+            if plot_lateral and plot_longitudal:
+                axs_now = fig.subplots(1, 2)  # type: ignore
+            else:
+                axs0 = fig.add_axes((0.1, 0.1, 0.8, 0.8))
+                axs_now: list[Axes] = [axs0]
+
         i = 0
         if plot_longitudal:
             # extract real part
             x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
             # extract imaginary part
             y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
-            axs[i].scatter(x, y, label="Longitudal", color="r")
+            axs_now[i].scatter(x, y, label="Longitudal", color="r")
             i += 1
 
         if plot_lateral:
@@ -323,16 +334,16 @@ class State:
             # extract imaginary part
             y = [ele.imag for ele in self.state_space.lateral.eigenvalues]
             marker_x = MarkerStyle("x")
-            axs[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
+            axs_now[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
         for j in range(0, i + 1):
-            axs[j].set_ylabel("Imaginary")
-            axs[j].set_xlabel("Real")
-            axs[j].grid()
-            axs[j].axvline(0, color="black", lw=2)
-            axs[j].legend()
+            axs_now[j].set_ylabel("Imaginary")
+            axs_now[j].set_xlabel("Real")
+            axs_now[j].axvline(0, color="black", lw=2)
+            axs_now[j].grid(True)
+            # axs[j].legend()
         fig.show()
-        return fig, axs
+        return fig, axs_now
 
     def __str__(self) -> str:
         ss = io.StringIO()

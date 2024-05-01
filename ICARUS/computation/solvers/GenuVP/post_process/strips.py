@@ -3,7 +3,8 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.database import DB, DB3D
+from ICARUS.database import DB
+from ICARUS.database import DB3D
 from ICARUS.vehicle.plane import Airplane
 
 
@@ -40,9 +41,7 @@ def get_strip_data(
             strip = int(file[3:5])
             strip_data.append([body, strip, *data_num])
     try:
-        strip_data_df: DataFrame = DataFrame(
-            strip_data, columns=strip_columns_3
-        ).sort_values(
+        strip_data_df: DataFrame = DataFrame(strip_data, columns=strip_columns_3).sort_values(
             ["Body", "Strip"],
             ignore_index=True,
         )

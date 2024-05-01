@@ -3,7 +3,8 @@ import os
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB3D, DB
+from ICARUS.database import DB
+from ICARUS.database import DB3D
 from ICARUS.vehicle.plane import Airplane
 
 from .max_iter import get_max_iterations_3

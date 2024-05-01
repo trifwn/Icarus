@@ -337,7 +337,7 @@ def process_gnvp_angles_run(plane: Airplane, state: State, gvnp_version: int) ->
     PLANEDIR = DB.vehicles_db.get_plane_directory(
         plane=plane,
     )
-    
+
     forces: DataFrame = log_forces(PLANEDIR, HOMEDIR, gvnp_version)
     plane.save()
     state.save(PLANEDIR)

@@ -59,13 +59,7 @@ class WingSurface:
         #   - The airfoil at that point. The airfoil is interpolated between the root and tip airfoil.
 
         # Check that the number of points is the same for all parameters if not raise an error
-        if not (
-            len(spanwise_positions)
-            == len(chord_lengths)
-            == len(z_offsets)
-            == len(x_offsets)
-            == len(twist_angles)
-        ):
+        if not (len(spanwise_positions) == len(chord_lengths) == len(z_offsets) == len(x_offsets) == len(twist_angles)):
             raise ValueError("The number of points must be the same for all parameters")
 
         self.name: str = name
@@ -128,9 +122,7 @@ class WingSurface:
 
         if chord_discretization_function is None:
             self.chord_spacing = DiscretizationType.EQUAL
-            self.chord_discretization_function = equal_spacing_function_factory(
-                M, stretching=1.0
-            )
+            self.chord_discretization_function = equal_spacing_function_factory(M, stretching=1.0)
         else:
             self.chord_discretization_function = chord_discretization_function
             self.chord_spacing = DiscretizationType.USER_DEFINED
@@ -301,9 +293,7 @@ class WingSurface:
             eta = span_discretization_function(i)
             spanwise_positions[i] = eta * span
             chord_lengths[i] = real_chord_fun(eta)
-            z_offsets[i] = (
-                np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
-            )
+            z_offsets[i] = np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
             x_offsets[i] = x_offset_as_a_function_of_span_percentage(eta)
             twist_angles[i] = twist_as_a_function_of_span_percentage(eta)
 
@@ -459,9 +449,7 @@ class WingSurface:
         self.grid_lower = rotated_points.reshape(self.grid_lower.shape)
 
         # Rotate Panels
-        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(
-            self.grid
-        )
+        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(self.grid)
 
         (
             self.panels_lower,
@@ -602,9 +590,7 @@ class WingSurface:
         area_approx = dspan * mchord
         mean_area = np.mean(dspan * mchord)
         mean_area_pos = np.argmin(np.abs(area_approx - mean_area))
-        heta = (self._span_dist[mean_area_pos] - self._span_dist[0]) / (
-            self._span_dist[-1] - self._span_dist[0]
-        )
+        heta = (self._span_dist[mean_area_pos] - self._span_dist[0]) / (self._span_dist[-1] - self._span_dist[0])
         return Airfoil.morph_new_from_two_foils(
             self.root_airfoil,
             self.tip_airfoil,
@@ -654,11 +640,7 @@ class WingSurface:
                     dtype=float,
                 ),
                 orientation=self.orientation,
-                symmetries=[
-                    symmetry
-                    for symmetry in self.symmetries
-                    if symmetry != SymmetryAxes.Y
-                ],
+                symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
                 chord_lengths=self._chord_dist[::-1],
                 spanwise_positions=self._span_dist[::-1],
                 x_offsets=self._xoffset_dist[::-1],
@@ -675,11 +657,7 @@ class WingSurface:
                 root_airfoil=self.root_airfoil,
                 origin=self._origin,
                 orientation=self.orientation,
-                symmetries=[
-                    symmetry
-                    for symmetry in self.symmetries
-                    if symmetry != SymmetryAxes.Y
-                ],
+                symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
                 chord_lengths=self._chord_dist,
                 spanwise_positions=self._span_dist,
                 x_offsets=self._xoffset_dist,
@@ -712,17 +690,12 @@ class WingSurface:
                 )
 
             # Apply the control vector to the airfoil
-            for control, control_val in zip(
-                self.controls, self.control_vector.values()
-            ):
-                if (eta >= control.span_position_start) and (
-                    eta <= control.span_position_end
-                ):
+            for control, control_val in zip(self.controls, self.control_vector.values()):
+                if (eta >= control.span_position_start) and (eta <= control.span_position_end):
 
                     if control.constant_chord != 0:
                         airfoil_j = airfoil_j.flap(
-                            flap_hinge_chord_percentage=1
-                            - control.constant_chord / self._chord_dist[j],
+                            flap_hinge_chord_percentage=1 - control.constant_chord / self._chord_dist[j],
                             chord_extension=control.chord_extension,
                             flap_angle=control_val,
                         )
@@ -804,12 +777,9 @@ class WingSurface:
         self.all_strips = [*strips, *symmetric_strips]
 
     def create_grid(self) -> None:
-        chord_eta = np.array(
-            [self.chord_discretization_function(int(i)) for i in range(0, self.M)]
-        )
+        chord_eta = np.array([self.chord_discretization_function(int(i)) for i in range(0, self.M)])
         chord_eta[-1] -= 1e-7
         chord_eta[0] += 1e-7
-            
 
         xs = np.outer(chord_eta, self._chord_dist) + self._xoffset_dist
         xs_upper = xs.copy()
@@ -827,17 +797,10 @@ class WingSurface:
             airf_j: Airfoil = self.airfoils[j]
             x_pos = airf_j.min_x + chord_eta * (airf_j.max_x - airf_j.min_x)
 
-            airf_z_up_i = (
-                airf_j.y_upper(x_pos) * (self._chord_dist[j] * airf_j.norm_factor)
-                + self._zoffset_dist[j]
-            )
-            airf_z_low_i = (
-                airf_j.y_lower(x_pos) * (self._chord_dist[j] * airf_j.norm_factor)
-                + self._zoffset_dist[j]
-            )
+            airf_z_up_i = airf_j.y_upper(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
+            airf_z_low_i = airf_j.y_lower(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
             airf_camber_i = (
-                airf_j.camber_line(x_pos) * (self._chord_dist[j] * airf_j.norm_factor)
-                + self._zoffset_dist[j]
+                airf_j.camber_line(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
             )
 
             airf_z_up.append(airf_z_up_i)
@@ -845,20 +808,13 @@ class WingSurface:
             airf_camber.append(airf_camber_i)
 
             # Normalize the xs according to the norm factor of the airfoil
-            xs_upper[:, j] = (
-                xs_upper[:, j] - self._xoffset_dist[j]
-            ) * airf_j.norm_factor + self._xoffset_dist[j]
-            xs_lower[:, j] = (
-                xs_lower[:, j] - self._xoffset_dist[j]
-            ) * airf_j.norm_factor + self._xoffset_dist[j]
-            xs[:, j] = (
-                xs[:, j] - self._xoffset_dist[j]
-            ) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs_upper[:, j] = (xs_upper[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs_lower[:, j] = (xs_lower[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs[:, j] = (xs[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
 
         airf_z_up = np.array(airf_z_up).T
         airf_z_low = np.array(airf_z_low).T
         airf_camber = np.array(airf_camber).T
-
 
         # print(f"the shape of zs_camber is {airf_camber.shape}")
         # zs_upper = np.outer(airf_z_up, self._chord_dist) + self._zoffset_dist
@@ -871,9 +827,7 @@ class WingSurface:
         zs_camber = airf_camber
 
         # Rotate according to R_MAT
-        coordinates = np.matmul(
-            self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs_camber.flatten()])
-        )
+        coordinates = np.matmul(self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs_camber.flatten()]))
         coordinates = coordinates.reshape((3, self.M, self.N))
 
         coordinates_upper = np.matmul(
@@ -918,16 +872,13 @@ class WingSurface:
                 ],
             )
             rotated_coordinates[:, :, i] = (
-                np.matmul(R, (coordinates[:, :, i] - c_4[:, i][:, None]))
-                + c_4[:, i][:, None]
+                np.matmul(R, (coordinates[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
             )
             rotated_coordinates_upper[:, :, i] = (
-                np.matmul(R, (coordinates_upper[:, :, i] - c_4[:, i][:, None]))
-                + c_4[:, i][:, None]
+                np.matmul(R, (coordinates_upper[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
             )
             rotated_coordinates_lower[:, :, i] = (
-                np.matmul(R, (coordinates_lower[:, :, i] - c_4[:, i][:, None]))
-                + c_4[:, i][:, None]
+                np.matmul(R, (coordinates_lower[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
             )
 
         # Add origin
@@ -940,9 +891,7 @@ class WingSurface:
         self.grid_upper = coordinates_upper.transpose(2, 1, 0).reshape(-1, 3)
         self.grid_lower = coordinates_lower.transpose(2, 1, 0).reshape(-1, 3)
 
-        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(
-            self.grid
-        )
+        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(self.grid)
 
         (
             self.panels_lower,
@@ -956,9 +905,7 @@ class WingSurface:
             self.control_nj_upper,
         ) = self.grid_to_panels(self.grid_upper)
 
-    def grid_to_panels(
-        self, grid: FloatArray
-    ) -> tuple[FloatArray, FloatArray, FloatArray]:
+    def grid_to_panels(self, grid: FloatArray) -> tuple[FloatArray, FloatArray, FloatArray]:
         num_panels = (self.N - 1) * (self.M - 1)
         grid = grid.reshape(self.N, self.M, 3)
 
@@ -1014,22 +961,15 @@ class WingSurface:
         "Finds the Mean Aerodynamic Chord (mean_aerodynamic_chord) of the wing."
         # Vectorized calculation for mean_aerodynamic_chord
         num = np.sum(
-            ((self._chord_dist[:-1] + self._chord_dist[1:]) / 2) ** 2
-            * (self._span_dist[1:] - self._span_dist[:-1]),
+            ((self._chord_dist[:-1] + self._chord_dist[1:]) / 2) ** 2 * (self._span_dist[1:] - self._span_dist[:-1]),
         )
         denum = np.sum(
-            (self._chord_dist[:-1] + self._chord_dist[1:])
-            / 2
-            * (self._span_dist[1:] - self._span_dist[:-1]),
+            (self._chord_dist[:-1] + self._chord_dist[1:]) / 2 * (self._span_dist[1:] - self._span_dist[:-1]),
         )
         self.mean_aerodynamic_chord = float(num) / float(denum)
 
         # Vectorized calculation for standard_mean_chord
-        num = np.sum(
-            (self._chord_dist[:-1] + self._chord_dist[1:])
-            / 2
-            * (self._span_dist[1:] - self._span_dist[:-1])
-        )
+        num = np.sum((self._chord_dist[:-1] + self._chord_dist[1:]) / 2 * (self._span_dist[1:] - self._span_dist[:-1]))
         denum = np.sum(self._span_dist[1:] - self._span_dist[:-1])
         self.standard_mean_chord = float(num) / float(denum)
 
@@ -1062,17 +1002,13 @@ class WingSurface:
         AB2_up = g_up[1:, 1:, :] - g_up[:-1, 1:, :]
         AD1_up = g_up[:-1, 1:, :] - g_up[:-1, :-1, :]
         AD2_up = g_up[1:, 1:, :] - g_up[1:, :-1, :]
-        area_up = np.linalg.norm(
-            np.cross((AB1_up + AB2_up) / 2, (AD1_up + AD2_up) / 2), axis=-1
-        )
+        area_up = np.linalg.norm(np.cross((AB1_up + AB2_up) / 2, (AD1_up + AD2_up) / 2), axis=-1)
 
         AB1_low = g_low[1:, :-1, :] - g_low[:-1, :-1, :]
         AB2_low = g_low[1:, 1:, :] - g_low[:-1, 1:, :]
         AD1_low = g_low[:-1, 1:, :] - g_low[:-1, :-1, :]
         AD2_low = g_low[1:, 1:, :] - g_low[1:, :-1, :]
-        area_low = np.linalg.norm(
-            np.cross((AB1_low + AB2_low) / 2, (AD1_low + AD2_low) / 2), axis=-1
-        )
+        area_low = np.linalg.norm(np.cross((AB1_low + AB2_low) / 2, (AD1_low + AD2_low) / 2), axis=-1)
 
         self.area = float(np.sum(area_up) + np.sum(area_low))
 
@@ -1131,13 +1067,9 @@ class WingSurface:
         z = ((z_upp1 + z_upp2) / 2 + (z_low1 + z_low2) / 2) / 2
 
         if self.is_symmetric_y:
-            x_cm = np.sum(
-                self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * x
-            )
+            x_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * x)
             y_cm = 0
-            z_cm = np.sum(
-                self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * z
-            )
+            z_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * z)
         else:
             x_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * x)
             y_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * y)
@@ -1169,21 +1101,13 @@ class WingSurface:
         zd = ((z_upp + z_low) / 2 - cog[2]) ** 2
 
         if self.is_symmetric_y:
-            yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2 + (
-                (y_upp + y_low) / 2 - cog[1]
-            ) ** 2
+            yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2 + ((y_upp + y_low) / 2 - cog[1]) ** 2
         else:
             yd = ((y_upp + y_low) / 2 - cog[1]) ** 2
 
-        I_xx = np.sum(
-            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd + zd)
-        )
-        I_yy = np.sum(
-            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + zd)
-        )
-        I_zz = np.sum(
-            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + yd)
-        )
+        I_xx = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd + zd))
+        I_yy = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + zd))
+        I_zz = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + yd))
 
         xd = (x_upp + x_low) / 2 - cog[0]
         zd = (z_upp + z_low) / 2 - cog[2]
@@ -1193,15 +1117,9 @@ class WingSurface:
         else:
             yd = (y_upp + y_low) / 2 - cog[1]
 
-        I_xz = np.sum(
-            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * zd)
-        )
-        I_xy = np.sum(
-            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * yd)
-        )
-        I_yz = np.sum(
-            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd * zd)
-        )
+        I_xz = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * zd))
+        I_xy = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * yd))
+        I_yz = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd * zd))
 
         return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
 

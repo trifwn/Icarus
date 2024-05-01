@@ -23,7 +23,7 @@ def plot_airplane_polars(
         ["CL", "CD"],
     ],
     size: tuple[int, int] = (10, 10),
-    title: str = "Aero Coefficients",
+    title: str = "Aerodynamic Coefficients",
     operating_point: dict[str, float] = {},
 ) -> tuple[ndarray[Any, Any], Figure]:
     """Function to plot airplane polars for a given list of airplanes and solvers
@@ -59,7 +59,16 @@ def plot_airplane_polars(
         ax.axvline(x=0, color="k")
 
     if solvers == ["All"]:
-        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D", "AVL"]
+        solvers = [
+            "GenuVP3 Potential",
+            "GenuVP3 2D",
+            "GenuVP3 ONERA",
+            "GenuVP7 Potential",
+            "GenuVP7 2D",
+            "LSPT Potential",
+            "LSPT 2D",
+            "AVL",
+        ]
 
     for i, airplane in enumerate(airplane_names):
         flag = False
@@ -97,11 +106,11 @@ def plot_airplane_polars(
                         x: Series[float] = polar[f"{key0}"]
                         y: Series[float] = polar[f"{key1}"]
                         if len(solvers) == 1:
-                            c = colors_(i / len(airplane_names))
+                            c = colors_(j / len(airplane_names))
                             m = markers[j].get_marker()
                         else:
-                            c = colors_(i / len(solvers))
-                            m = markers[j].get_marker()
+                            c = colors_(j / len(solvers))
+                            m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:
                             ax.plot(
@@ -150,8 +159,8 @@ def plot_airplane_polars(
 
     # Take the legend of all plots (they are the same) and add them to the empty space below
     # where we removed the empty plots
-    handles, labels = axs.flatten()[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower right", ncol=2)
+    # handles, labels = axs.flatten()[0].get_legend_handles_labels()
+    # fig.legend(handles, labels, loc="lower right", ncol=2)
 
     # Adjust the plots
     fig.tight_layout()

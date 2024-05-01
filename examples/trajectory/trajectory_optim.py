@@ -2,6 +2,8 @@ from typing import Any
 
 import jax
 
+from ICARUS.database import APPHOME as HOMEDIR
+
 # Get the percision of the jax library
 jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_platform_name", "cpu")
@@ -17,7 +19,7 @@ from ICARUS.database import DB
 from ICARUS.propulsion.engine import Engine
 
 # #  Load Plane and Engine
-engine_dir = "../Data/Engine/Motor_1/"
+engine_dir = f"{HOMEDIR}/Data/Engine/Motor_1/"
 
 engine = Engine()
 engine.load_data_from_df(engine_dir)
@@ -29,7 +31,7 @@ from ICARUS.mission.mission_vehicle import MissionVehicle
 # # Vehicle
 from ICARUS.vehicle.plane import Airplane
 
-plane: Airplane = DB.get_vehicle("final_design")
+plane: Airplane = DB.get_vehicle("final")
 # plane.visualize(annotate=True)
 
 from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
@@ -135,7 +137,7 @@ def jacobian(y: Float[Array, "dim"], *args) -> Float[Array, "dim"]:
     return J
 
 
-def compute_and_plot(y: Float[Array, ...]) -> None:
+def compute_and_plot(y: Float[Array, "..."]) -> None:
     x0 = X0
     x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])

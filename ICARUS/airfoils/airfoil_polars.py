@@ -408,21 +408,28 @@ class Polars:
         airfoil: Airfoil = DB.get_airfoil(self.name.upper())
         airfoil.plot(ax=axs[1, 1], camber=True, max_thickness=True, scatter=False)
 
+        # Clear all axes legends
+        for ax in axs.flatten():
+            ax.legend().remove()
+
+        ax = axs[0, 0]
+        ax.legend(title="Reynolds Numbers", loc="upper left")
+
         # Add text for the slopes
-        axs[0, 0].text(
-            0.7,
-            0.2,
-            f"Cl slope at {float(reyn_min):.1e}: {self.get_reynolds_cl_slope(reyn_min)* 180/np.pi:.3f} ",
-            fontsize=12,
-            transform=axs[0, 0].transAxes,
-        )
-        axs[0, 0].text(
-            0.7,
-            0.1,
-            f"Cl slope at {float(reyn_max):.1e}: {self.get_reynolds_cl_slope(reyn_max)* 180/np.pi:.3f} ",
-            fontsize=12,
-            transform=axs[0, 0].transAxes,
-        )
+        # axs[0, 0].text(
+        #     0.7,
+        #     0.2,
+        #     f"Cl slope at {float(reyn_min):.1e}: {self.get_reynolds_cl_slope(reyn_min)* 180/np.pi:.3f} ",
+        #     fontsize=12,
+        #     transform=axs[0, 0].transAxes,
+        # )
+        # axs[0, 0].text(
+        #     0.7,
+        #     0.1,
+        #     f"Cl slope at {float(reyn_max):.1e}: {self.get_reynolds_cl_slope(reyn_max)* 180/np.pi:.3f} ",
+        #     fontsize=12,
+        #     transform=axs[0, 0].transAxes,
+        # )
         fig.tight_layout()
         return fig
 

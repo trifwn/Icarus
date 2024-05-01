@@ -35,7 +35,7 @@ def setup_plot(
     axs: ndarray = fig.subplots(2, 2)  # type: ignore
 
     if len(airplanes) == 1:
-        fig.suptitle(f"{airplanes[0]} Aero Coefficients", fontsize=16)
+        fig.suptitle(f"{airplanes[0]} CG Investigation", fontsize=16)
     else:
         fig.suptitle(f"Aero Coefficients", fontsize=16)
 
@@ -60,7 +60,15 @@ def setup_plot(
     axs[1, 1].set_xlabel("AoA")
 
     if solvers == ["All"]:
-        solvers = ["GNVP3 Potential", "GNVP3 2D", "GNVP7 Potential", "GNVP7 2D", "LSPT Potential", "LSPT 2D", "AVL"]
+        solvers = [
+            "GNVP3 Potential",
+            "GNVP3 2D",
+            "GNVP7 Potential",
+            "GNVP7 2D",
+            "LSPT Potential",
+            "LSPT 2D",
+            "AVL",
+        ]
 
     polars = [DB.vehicles_db.get_polars(airplane) for airplane in airplanes]
     cm_lines = {}
@@ -81,6 +89,38 @@ def setup_plot(
                 label = f"{airplanes[i]} - {solver}"
 
                 try:
+                    axs[1, 0].plot(
+                        aoa,
+                        cl,
+                        style,
+                        label=f"Original {label}",
+                        markersize=3.5,
+                        linewidth=1,
+                    )
+                    axs[0, 0].plot(
+                        aoa,
+                        cm,
+                        style,
+                        label=f"Original {label}",
+                        markersize=3.5,
+                        linewidth=1,
+                    )
+                    axs[0, 1].plot(
+                        aoa,
+                        cd,
+                        style,
+                        label=f"Original {label}",
+                        markersize=3.5,
+                        linewidth=1,
+                    )
+                    axs[1, 1].plot(
+                        aoa,
+                        cl / cd,
+                        style,
+                        label=f"Original {label}",
+                        markersize=3.5,
+                        linewidth=1,
+                    )
                     (cl_line,) = axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
                     (cm_line,) = axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
                     (cd_line,) = axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
@@ -111,14 +151,14 @@ def setup_plot(
         # Get cl_line color
         color = cl_line.get_color()
 
-        collection['Cm'] = axs[0, 0].scatter(
+        collection["Cm"] = axs[0, 0].scatter(
             aoa_trim,
             0,
             color=color,
         )
-        collection['CD'] = axs[0, 1].scatter(aoa_trim, cd_trim, color=color)
-        collection['CL'] = axs[1, 0].scatter(aoa_trim, cl_trim, color=color)
-        collection['CL/CD'] = axs[1, 1].scatter(aoa_trim, clcd_trim, color=color)
+        collection["CD"] = axs[0, 1].scatter(aoa_trim, cd_trim, color=color)
+        collection["CL"] = axs[1, 0].scatter(aoa_trim, cl_trim, color=color)
+        collection["CL/CD"] = axs[1, 1].scatter(aoa_trim, clcd_trim, color=color)
 
         collections[airplanes[i]] = collection
 
@@ -128,7 +168,7 @@ def setup_plot(
         cm_zero_lift = np.interp(aoa_zero_lift, aoas, np.array(cm))
 
         # Scatter the zero lift aoa on the cm plot
-        axs[0, 0].scatter(aoa_zero_lift, cm_zero_lift, color='black', marker='o')
+        axs[0, 0].scatter(aoa_zero_lift, cm_zero_lift, color="black", marker="o")
 
         # Based on airplane mass calculate the trim velocity
         rho = 1.225
@@ -142,7 +182,7 @@ def setup_plot(
             (aoa_trim, cl_trim),
             textcoords="offset points",
             xytext=(0, 10),
-            ha='center',
+            ha="center",
         )
         annot.set_color(color)
         annots[airplanes[i]] = annot
@@ -181,7 +221,8 @@ def cg_investigation(
     cg_x_orig: float = CG[0]
 
     # Create a slider to change the CG
-    ax_cg = fig.add_axes((0.25, 0.1, 0.65, 0.03))
+    # Place the slider at the bottom of the plot outside the plot area
+    ax_cg = fig.add_axes((0.1, 0.025, 0.65, 0.01), facecolor="lightgoldenrodyellow")
     cg_slider = Slider(ax=ax_cg, label="CG", valmin=-1, valmax=1, valinit=cg_x_orig)
 
     # Store initial CMs for each solver
@@ -225,10 +266,10 @@ def cg_investigation(
             cl_trim = np.interp(aoa_trim, aoas_now, np.array(cl_line.get_ydata()))
 
             # Update the red points
-            collection['Cm'].set_offsets([[aoa_trim, 0]])
-            collection['CD'].set_offsets([[aoa_trim, cd_trim]])
-            collection['CL'].set_offsets([[aoa_trim, cl_trim]])
-            collection['CL/CD'].set_offsets([[aoa_trim, clcd_trim]])
+            collection["Cm"].set_offsets([[aoa_trim, 0]])
+            collection["CD"].set_offsets([[aoa_trim, cd_trim]])
+            collection["CL"].set_offsets([[aoa_trim, cl_trim]])
+            collection["CL/CD"].set_offsets([[aoa_trim, clcd_trim]])
 
             # Based on airplane mass calculate the trim velocity
             rho = 1.225
@@ -256,26 +297,21 @@ def cg_investigation(
     cg_slider.on_changed(update)
 
     # Button to reset slider
-    resetax = fig.add_axes((0.8, 0.025, 0.1, 0.04))
+    resetax = fig.add_axes((0.8, 0.025, 0.1, 0.03))
     button = Button(resetax, "Reset", hovercolor="0.975")
 
     def reset(event: Any) -> None:
         cg_slider.reset()
 
     button.on_clicked(reset)
-
+    fig.tight_layout()
     plt.show()
 
 
 if __name__ == "__main__":
     # isss =  np.linspace(-2,2,20)
     planenames = [
-        # "final_25A_noinc",
-        # "final_25A_STATICMARGIN_NOINC",
-        # "final_28A_noinc",
-        "bmarFINALk",
-        # "finalR25A_STATICMARGIN",
-        # "final_25A_STATICMARGIN_INC",
+        "bmark",
     ]
 
     engine_dir = f"{APPHOME}/Data/Engine/Motor_1/"
