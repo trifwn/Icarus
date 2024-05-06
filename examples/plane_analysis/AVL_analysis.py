@@ -1,6 +1,8 @@
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from Planes.hermes import hermes
 
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
@@ -84,26 +86,37 @@ unstick.stability_fd()
 
 
 print(unstick)
-fig, ax = unstick.plot_eigenvalues()
+fig = plt.figure(figsize=(12, 6))
+_axs = fig.subplots(1, 2)
+if isinstance(_axs, np.ndarray):
+    axs: list[Axes] = _axs.flatten().tolist()
+elif isinstance(_axs, Axes):
+    axs = [_axs]
+elif isinstance(_axs, list):
+    axs = _axs
+else:
+    raise ValueError("Invalid type for axs")
+
+unstick.plot_eigenvalues(axs=axs)
 
 x = [ele.real for ele in xflr_late]
 y = [ele.imag for ele in xflr_late]
-ax[0].scatter(x, y, marker="x", label="XFLR LAT", color="k")
+axs[0].scatter(x, y, marker="x", label="XFLR LAT", color="k")
 
 x = [ele.real for ele in xflr_long]
 y = [ele.imag for ele in xflr_long]
-ax[1].scatter(x, y, marker="o", label="XFLR LONG", color="k")
+axs[1].scatter(x, y, marker="o", label="XFLR LONG", color="k")
 
 x = [ele.real for ele in impl_late]
 y = [ele.imag for ele in impl_late]
-ax[0].scatter(x, y, marker="x", label="IMPL LATE", color="m")
+axs[0].scatter(x, y, marker="x", label="IMPL LATE", color="m")
 
 x = [ele.real for ele in impl_long]
 y = [ele.imag for ele in impl_long]
-ax[1].scatter(x, y, marker="o", label="IMPL LONG", color="m")
+axs[1].scatter(x, y, marker="o", label="IMPL LONG", color="m")
 
-ax[0].legend()
-ax[1].legend()
+axs[0].legend()
+axs[1].legend()
 import matplotlib.pyplot as plt
 
 plt.show()

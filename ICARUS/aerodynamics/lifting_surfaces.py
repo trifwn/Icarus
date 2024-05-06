@@ -3,10 +3,12 @@ import os
 from typing import Any
 
 import pandas as pd
+from numpy import ndarray
 
+from ICARUS.aerodynamics import assemble_matrix
 from ICARUS.aerodynamics.biot_savart import symm_wing_panels
 from ICARUS.aerodynamics.biot_savart import voring
-from ICARUS.aerodynamics.wing_lspt import Wing_LSPT
+from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
 from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.database import DB3D
@@ -36,25 +38,19 @@ def run_lstp_angles(
 
     os.makedirs(LSPTDIR, exist_ok=True)
     # Generate the wing LLT solver
-    wing = Wing_LSPT(
+    wing = LSPT_Plane(
         plane=plane,
-        environment=state.environment,
-        alpha=0,
-        beta=0,
     )
 
-    if wing.is_symmetric:
-        solve_fun = symm_wing_panels
-    else:
-        solve_fun = voring
-
     # Run the solver
+    import numpy as np
+
+    if not isinstance(angles, ndarray):
+        angles = np.array(angles)
+
     df: pd.DataFrame = wing.aseq(
         angles=angles,
-        umag=state.u_freestream,
-        solver_fun=solve_fun,
-        verbose=False,
-        solver2D=solver2D,
+        state=state,
     )
 
     # Save the results

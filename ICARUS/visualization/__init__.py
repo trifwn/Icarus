@@ -50,9 +50,13 @@ def get_p_RdBl_cmap() -> colors.LinearSegmentedColormap:
     return colors.LinearSegmentedColormap("p_RdBl", n_cdict)
 
 
+from matplotlib import colormaps
+
 viridis = plt.get_cmap('viridis')
-new_viridis = ListedColormap(viridis(np.arange(256)))
-colors_ = new_viridis
+coolwarm = colormaps.get_cmap("coolwarm")
+
+viridis_listed = ListedColormap(viridis(np.arange(256)))
+colors_ = viridis_listed
 
 markers_str: list[str | int] = list(MarkerStyle.markers.keys())
 markers = [MarkerStyle(marker) for marker in markers_str]
@@ -61,3 +65,7 @@ from . import airfoil
 from . import airplane
 
 __all__ = ["airfoil", "airplane"]
+
+from .figure_setup import create_single_subplot
+from .figure_setup import create_subplots
+from .figure_setup import flatten_axes

@@ -10,14 +10,10 @@ import time
 from typing import Any
 
 import numpy as np
-from Planes.e190_cruise import e190_cruise
-from Planes.e190_takeoff import e190_takeoff_generator
 from Planes.hermes import hermes
-from Planes.wing_variations import wing_var_chord_offset
 
 from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment.definition import EARTH_ISA

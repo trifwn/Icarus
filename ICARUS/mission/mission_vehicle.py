@@ -4,6 +4,7 @@ import jax
 import jax.numpy as jnp
 from interpax import Interpolator1D
 from jaxtyping import Array
+from jaxtyping import ArrayLike
 from jaxtyping import Float
 
 from ICARUS.database import DB
@@ -51,9 +52,9 @@ class MissionVehicle:
     @partial(jax.jit, static_argnums=(0,))
     def get_aerodynamic_forces(
         self,
-        velocity: Float[Array, "dim"] | float,
-        aoa: Float[Array, "dim"] | float,
-    ) -> tuple[Float[Array, "dim"], Float[Array, "dim"], Float[Array, "dim"]]:
+        velocity: Float[ArrayLike, "..."],
+        aoa: Float[ArrayLike, "..."],
+    ) -> tuple[Float[ArrayLike, "..."], Float[ArrayLike, "..."], Float[ArrayLike, "..."]]:
         cl, cd, cm = self.interpolate_polars(aoa)
 
         density = 1.225

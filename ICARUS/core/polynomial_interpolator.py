@@ -21,7 +21,7 @@ class Polynomial2DInterpolator:
         self.z_mean = jnp.empty(0)
         self.z_std = jnp.empty(0)
 
-    def fit(self, x: Float[Array, "dim1"], y: Float[Array, "dim1"], z: Float[Array, "dim1"]) -> None:
+    def fit(self, x: Float[Array, "..."], y: Float[Array, "..."], z: Float[Array, "..."]) -> None:
         """
         Works in the following way:
 
@@ -35,8 +35,9 @@ class Polynomial2DInterpolator:
         return coeff[0] + coeff[1]*x + coeff[2]*y + coeff[3]*x**2 + coeff[4]*x**2*y + coeff[5]*x**2*y**2 + coeff[6]*y**2 + coeff[7]*x*y**2 + coeff[8]* x*y
 
         Args:
-            x (jax.Array): _description_
-            y (jax.Array): _description_
+            x (Array): x values
+            y (Array): y values
+            z (Array): z values
         """
         # Normalize the input data
         x_mean, x_std = jnp.mean(x), jnp.std(x)
@@ -80,7 +81,7 @@ class Polynomial2DInterpolator:
 
     partial(jax.jit, static_argnums=(0,))
 
-    def __call__(self, x: Float[Array, "dim2"], y: Float[Array, "dim2"]) -> Float[Array, "dim2"]:
+    def __call__(self, x: Float[Array, "..."], y: Float[Array, "..."]) -> Float[Array, "..."]:
         # If the arrays are scalar convert to 1D arrays
         x = jnp.atleast_1d(x)
         y = jnp.atleast_1d(y)

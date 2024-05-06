@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.figure import SubFigure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Index
@@ -302,13 +303,16 @@ class State:
         plot_lateral: bool = True,
         plot_longitudal: bool = True,
         axs: list[Axes] | None = None,
-    ) -> tuple[Figure, list[Axes]]:
+    ) -> None:
         """
         Generate a plot of the eigenvalues.
         """
         if axs is not None:
-            fig: Figure = axs[0].figure
-            axs_now = axs
+            fig: Figure | SubFigure | None = axs[0].figure
+            if fig is None:
+                fig = plt.figure()
+                fig.suptitle(f"Eigenvalues")
+            axs_now: list[Axes] = axs
         else:
             fig = plt.figure()
             fig.suptitle(f"Eigenvalues")
@@ -317,7 +321,7 @@ class State:
                 axs_now = fig.subplots(1, 2)  # type: ignore
             else:
                 axs0 = fig.add_axes((0.1, 0.1, 0.8, 0.8))
-                axs_now: list[Axes] = [axs0]
+                axs_now = [axs0]
 
         i = 0
         if plot_longitudal:
@@ -342,8 +346,10 @@ class State:
             axs_now[j].axvline(0, color="black", lw=2)
             axs_now[j].grid(True)
             # axs[j].legend()
-        fig.show()
-        return fig, axs_now
+        if isinstance(fig, SubFigure):
+            pass
+        else:
+            fig.show()
 
     def __str__(self) -> str:
         ss = io.StringIO()

@@ -673,7 +673,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         flap_angle: float,
         chord_extension: float = 1,
         # plot_flap: bool = False
-    ):
+    ) -> Airfoil:
         if flap_angle == 0 or flap_hinge == 1.0:
             return self
         flap_angle = np.deg2rad(flap_angle)

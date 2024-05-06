@@ -12,6 +12,7 @@ from numpy import ndarray
 from pandas import Series
 
 from ICARUS import APPHOME
+from ICARUS.core.types import FloatArray
 from ICARUS.database import DB
 from ICARUS.propulsion.engine import Engine
 from ICARUS.vehicle.plane import Airplane
@@ -82,9 +83,9 @@ def setup_plot(
         for j, solver in enumerate(solvers):
             try:
                 aoa = polar["AoA"]
-                cl: Series[bool] = polar[f"{solver} CL"]
-                cd: Series[bool] = polar[f"{solver} CD"]
-                cm: Series[bool] = polar[f"{solver} Cm"]
+                cl: FloatArray = polar[f"{solver} CL"].to_numpy()
+                cd: FloatArray = polar[f"{solver} CD"].to_numpy()
+                cm: FloatArray = polar[f"{solver} Cm"].to_numpy()
                 style = f"--"
                 label = f"{airplanes[i]} - {solver}"
 
@@ -140,7 +141,7 @@ def setup_plot(
         # Interpolate the aoa for cm = 0 with numpy
         aoas = np.array(aoa)
         cm_sorted_idx = np.argsort(cm)
-        aoa_trim = np.interp(0.0, cm[cm_sorted_idx], aoas[cm_sorted_idx])
+        aoa_trim = float(np.interp(0.0, cm[cm_sorted_idx], aoas[cm_sorted_idx]))
 
         clcd_trim = np.interp(aoa_trim, aoas, np.array(clcd_line.get_ydata()))
         cd_trim = np.interp(aoa_trim, aoas, np.array(cd_line.get_ydata()))

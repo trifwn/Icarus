@@ -103,7 +103,7 @@ class WingSurface:
         for control in self.controls:
             if control.name != "none":
                 control_vars.add(control.control_var)
-        self.control_vars = control_vars
+        self.control_vars: set[str] = control_vars
         self.num_control_variables = len(control_vars)
         self.control_vector = {control_var: 0.0 for control_var in control_vars}
 
@@ -781,17 +781,17 @@ class WingSurface:
         chord_eta[-1] -= 1e-7
         chord_eta[0] += 1e-7
 
-        xs = np.outer(chord_eta, self._chord_dist) + self._xoffset_dist
-        xs_upper = xs.copy()
-        xs_lower = xs.copy()
+        xs: FloatArray = np.outer(chord_eta, self._chord_dist) + self._xoffset_dist
+        xs_upper: FloatArray = xs.copy()
+        xs_lower: FloatArray = xs.copy()
 
         ys = np.tile(self._span_dist, (self.M, 1))
         ys_upper = ys.copy()
         ys_lower = ys.copy()
 
-        airf_z_up = []
-        airf_z_low = []
-        airf_camber = []
+        airf_z_up: list[FloatArray] = []
+        airf_z_low: list[FloatArray] = []
+        airf_camber: list[FloatArray] = []
 
         for j in range(self.N):
             airf_j: Airfoil = self.airfoils[j]
@@ -812,19 +812,9 @@ class WingSurface:
             xs_lower[:, j] = (xs_lower[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
             xs[:, j] = (xs[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
 
-        airf_z_up = np.array(airf_z_up).T
-        airf_z_low = np.array(airf_z_low).T
-        airf_camber = np.array(airf_camber).T
-
-        # print(f"the shape of zs_camber is {airf_camber.shape}")
-        # zs_upper = np.outer(airf_z_up, self._chord_dist) + self._zoffset_dist
-        # zs_lower = np.outer(airf_z_low, self._chord_dist) + self._zoffset_dist
-        # zs_camber= np.outer(airf_camber, self._chord_dist) + self._zoffset_dist
-        # print(f"the shape of zs_camber is {zs_camber.shape}")
-        # print(f"We wanted a shape of {self.N} x {self.M} meaning {xs.shape}")
-        zs_upper = airf_z_up
-        zs_lower = airf_z_low
-        zs_camber = airf_camber
+        zs_upper = np.array(airf_z_up).T
+        zs_lower = np.array(airf_z_low).T
+        zs_camber = np.array(airf_camber).T
 
         # Rotate according to R_MAT
         coordinates = np.matmul(self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs_camber.flatten()]))

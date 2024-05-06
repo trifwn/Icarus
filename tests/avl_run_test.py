@@ -24,6 +24,7 @@ def avl_run() -> None:
 
     # Set Options
     options: Struct = avl.get_analysis_options(verbose=True)
+    solver_parameters: Struct = avl.get_solver_parameters(verbose=True)
 
     AoAmin = -3
     AoAmax = 3
@@ -36,7 +37,9 @@ def avl_run() -> None:
     options.solver2D = "Xfoil"
     options.angles = angles
 
-    avl.set_analysis_options(options)
+    solver_parameters.use_avl_control = False
+
+    avl.define_analysis(options=options, solver_parameters=solver_parameters)
     _ = avl.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
 

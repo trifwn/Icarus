@@ -159,8 +159,8 @@ def plot_airplane_polars(
 
     # Take the legend of all plots (they are the same) and add them to the empty space below
     # where we removed the empty plots
-    # handles, labels = axs.flatten()[0].get_legend_handles_labels()
-    # fig.legend(handles, labels, loc="lower right", ncol=2)
+    handles, labels = axs.flatten()[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower right", ncol=2)
 
     # Adjust the plots
     fig.tight_layout()

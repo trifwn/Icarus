@@ -21,10 +21,10 @@ def airplane_polars(plot: bool = False) -> None:
     """
 
     planenames: list[str] = ["bmark"]
-    BMARKLOC: str = os.path.join(EXTERNAL_DB, "bmark.txt")
-    read_polars_3d(BMARKLOC, "bmark")
+    # BMARKLOC: str = os.path.join(EXTERNAL_DB, "bmark.txt")
+    # read_polars_3d(BMARKLOC, "bmark")
 
-    planenames.append("XFLR_bmark")
+    # planenames.append("XFLR_bmark")
     if plot:
         from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 

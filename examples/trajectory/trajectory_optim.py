@@ -2,7 +2,7 @@ from typing import Any
 
 import jax
 
-from ICARUS.database import APPHOME as HOMEDIR
+from ICARUS import APPHOME
 
 # Get the percision of the jax library
 jax.config.update("jax_enable_x64", True)
@@ -19,7 +19,7 @@ from ICARUS.database import DB
 from ICARUS.propulsion.engine import Engine
 
 # #  Load Plane and Engine
-engine_dir = f"{HOMEDIR}/Data/Engine/Motor_1/"
+engine_dir = f"{APPHOME}/Data/Engine/Motor_1/"
 
 engine = Engine()
 engine.load_data_from_df(engine_dir)
@@ -80,9 +80,10 @@ def default_terminating_event_fxn(state: Any, **kwargs: Any) -> jnp.ndarray:
 
 terminating_event = DiscreteTerminatingEvent(default_terminating_event_fxn)
 
+dim = (NUM_SPLINE_CONTROL_POINTS,)
 
-@jax.jit
-def fun(y: Float[Array, "dim"], *args) -> Float[Array, "1"]:
+
+def fun(y: Float[Array, "{dim}"], *args: Any) -> Float[Array, "1"]:
     x0 = X0
     x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
@@ -130,11 +131,16 @@ def fun(y: Float[Array, "dim"], *args) -> Float[Array, "1"]:
     return -x[-1] / TRAJECTORY_MAX_DIST
 
 
-@jax.jit
-def jacobian(y: Float[Array, "dim"], *args) -> Float[Array, "dim"]:
+fun = jax.jit(fun)
+
+
+def jacobian(y: Float[Array, "dim"], *args: Any) -> Float[Array, "dim"]:
     J = jax.jacrev(fun, argnums=0)(y)
     jprint("\033[91mJacobian: {} \033[0m", J)
     return J
+
+
+jacobian = jax.jit(jacobian)
 
 
 def compute_and_plot(y: Float[Array, "..."]) -> None:

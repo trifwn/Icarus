@@ -52,7 +52,7 @@ def compute_polars(
 
         solver = Foil2Wake()
         # Import Analysis
-        analysis: str = solver.get_analyses_names()[1]  # Run
+        analysis = solver.get_analyses_names()[1]  # Run
         solver.select_analysis(analysis)
 
         # Get Options
@@ -73,7 +73,7 @@ def compute_polars(
 
         solver = OpenFoam()
         # Import Analysis
-        analysis: str = solver.get_analyses_names()[1]  # Run
+        analysis = solver.get_analyses_names()[1]  # Run
         solver.select_analysis(analysis)
 
         # Get Options

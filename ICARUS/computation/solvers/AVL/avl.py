@@ -2,6 +2,7 @@ from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAna
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
+from ICARUS.computation.analyses.input import BoolInput
 from ICARUS.computation.analyses.input import IntInput
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
     avl_dynamic_analysis_fd,
@@ -13,6 +14,13 @@ from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
 from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
 from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.solver_parameters import BoolParameter
+
+use_avl_control_option = BoolParameter(
+    name="use_avl_control",
+    description="Use AVL control surface deflections",
+    default_value=False,
+)
 
 
 class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
@@ -50,6 +58,7 @@ class AVL(Solver):
                 AVL_DynamicAnalysisFD(),
                 AVL_DynamicAnalysisImplicit(),
             ],
+            solver_parameters=[use_avl_control_option],
         )
 
 

@@ -2,9 +2,10 @@ from time import time
 
 import matplotlib.pyplot as plt
 import numpy as np
+from jax import Array
 from scipy.integrate import solve_ivp
 
-from ICARUS.dynamical_systems.first_order_system import NonLinearSystem
+from ICARUS.dynamical_systems.base_system import DynamicalSystem
 from ICARUS.dynamical_systems.integrate import BackwardEulerIntegrator
 from ICARUS.dynamical_systems.integrate import CrankNicolsonIntegrator
 from ICARUS.dynamical_systems.integrate import ForwardEulerIntegrator
@@ -15,7 +16,7 @@ from ICARUS.dynamical_systems.integrate import RK45Integrator
 from ICARUS.dynamical_systems.second_order_system import SecondOrderSystem
 
 
-def plot_results(x_data, t_data):
+def plot_results(x_data: dict[str, Array], t_data: dict[str, Array]) -> None:
     # Plot the results
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
@@ -29,9 +30,16 @@ def plot_results(x_data, t_data):
     ax.legend()
 
 
-def test_all_integrators(system, x0, t0, t_end, dt0, compare_with_scipy=False):
+def test_all_integrators(
+    system: DynamicalSystem,
+    x0: Array,
+    t0: float,
+    t_end: float,
+    dt0: float,
+    compare_with_scipy: bool = False,
+) -> tuple[dict[str, Array], dict[str, Array]]:
     if isinstance(system, SecondOrderSystem):
-        system2 = system.convert_to_first_order()
+        system2: DynamicalSystem = system.convert_to_first_order()
         newmark = NewmarkIntegrator(dt0, system, gamma=0.5, beta=0.25)
     else:
         system2 = system

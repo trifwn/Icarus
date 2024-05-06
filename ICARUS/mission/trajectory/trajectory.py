@@ -15,6 +15,7 @@ from jaxtyping import Float
 from jaxtyping import Scalar
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from numpy import ndarray
 
 from ICARUS.mission.mission_vehicle import MissionVehicle
@@ -285,7 +286,7 @@ class MissionTrajectory:
         is_failed = residual > 1e-6
         is_failed = jnp.any(is_failed)
 
-        def true_fun():
+        def true_fun() -> Float[Array, ""]:
             jprint(
                 "Trim Failed:\tTime: {}, Residual: {}, AoA: {}",
                 t,
@@ -298,7 +299,7 @@ class MissionTrajectory:
             jprint("\tResidual: {}", residual)
             return jnp.atleast_1d(aoa_new)
 
-        def false_fun():
+        def false_fun() -> Float[Array, ""]:
             # jprint("Trim Successful:\tTime: {}, Residual: {}, AoA: {}", t, self.f_to_trim(aoa_new, thrust, V, dh_dx, dh2_dx2), aoa_new)
             return aoa_new
 
@@ -402,7 +403,7 @@ class MissionTrajectory:
             normal,
         )
 
-    def plot_history(self, axs: list[Axes] | None = None, fig=None) -> None:
+    def plot_history(self, axs: list[Axes] | None = None, fig: Figure | None = None) -> None:
         print(type(axs))
 
         if isinstance(axs, ndarray):
@@ -496,144 +497,3 @@ class MissionTrajectory:
         import time
 
         time.sleep(0.1)
-
-    # def to_nonlinear_sys(self) -> NonLinearSystem:
-    #     # Define the timestep function for the system in jax pure functions
-    #     import jax
-    #     from jax import numpy as jnp
-
-    #     def y(x):
-    #         return self.fun(x)
-
-    #     y = jax.jit(y)
-    #     dy_dx = jax.grad(self.fun)
-    #     dy_dx = jax.jit(dy_dx)
-
-    #     d2y_dx2 = jax.grad(dy_dx)
-    #     d2y_dx2 = jax.jit(d2y_dx2)
-
-    #     def dxdt_jax(
-    #         X: jnp.ndarray,
-    #         V: jnp.ndarray,
-    #     ) -> jnp.ndarray:
-    #         DX: jnp.ndarray = V
-    #         return DX
-
-    #     def trim_jax(t, X, V, aoa_prev: float, engine_amps):
-
-    #         G = 9.81
-
-    #         # Get Trajectory Information
-    #         dh_dx: float = dy_dx(X[0])
-    #         dh2_dx2: float = d2y_dx2(X[0])
-
-    #         thrust = self.vehicle.motor.thrust(velocity=jnp.linalg.norm(V), current=engine_amps)
-    #         m = self.vehicle.mass
-
-    #         # Get the aerodynamic forces
-    #         def f(aoa):
-    #             lift, _, _ = self.vehicle.get_aerodynamic_forces(float(np.linalg.norm(V)), aoa)
-    #             alpha = aoa + dh_dx
-    #             return (
-    #                 thrust * (np.sin(alpha) - dh_dx * np.cos(alpha))
-    #                 + lift * np.sqrt(1 + dh_dx**2)
-    #                 - m * G
-    #                 - m * dh2_dx2 * V[0] ** 2
-    #             )
-
-    #         # Import the fsolve function from scipy
-    #         from jax.scipy.optimize import minimize
-
-    #         aoa = minimize(fun=f, x0=np.deg2rad(aoa_prev), tol=1e-07, method="BFGS")[0]
-    #         # Print the residual of the function
-    #         # print(f"\tResidual: {f(aoa)}, AoA: {aoa}")
-    #         aoa_deg = float(aoa)  # In radians
-
-    #         # Get the aerodynamic forces
-    #         lift, drag, torque = self.vehicle.get_aerodynamic_forces(float(np.linalg.norm(V)), aoa_deg)
-    #         return aoa, lift, thrust, drag, torque
-
-    #     def dvdt_jax(
-    #         t: float,
-    #         X: jnp.ndarray,
-    #         V: jnp.ndarray,
-    #     ) -> jnp.ndarray:
-
-    #         G: float = 9.81
-    #         m: float = self.vehicle.mass
-
-    #         dh_dx = dy_dx(X[0])
-    #         amps = 30
-    #         aoa_prev = 0
-    #         aoa, lift, thrust, drag, torque = trim_jax(t, X, V, aoa_prev, amps)
-    #         alpha: float = np.deg2rad(aoa) + dh_dx
-
-    #         thrust_x = thrust * np.cos(alpha)
-    #         thrust_y = thrust * np.sin(alpha)
-
-    #         acc_x: float = (
-    #             thrust_x  # Thrust
-    #             - lift * dh_dx / np.sqrt(dh_dx**2 + 1)  # Lift
-    #             - drag / np.sqrt(dh_dx**2 + 1)  # Drag
-    #             # +  Elevator drag due to control
-    #         ) / m
-
-    #         acc_y: float = (
-    #             thrust_y  # Thrust
-    #             + lift / np.sqrt(dh_dx**2 + 1)  # Lift
-    #             - drag * dh_dx / np.sqrt(dh_dx**2 + 1)  # Drag
-    #             - m * G  # Weight
-    #             # + Elevator lift due to control
-    #         ) / m
-
-    #         F = jnp.hstack([acc_x, acc_y])
-    #         return F
-
-    #     def timestep(t: float, y: jnp.ndarray) -> jnp.ndarray:
-    #         x = y[:2]
-    #         v = y[-2:]
-
-    #         # Check if the airplane is still in the air
-    #         if x[1] < self.operating_floor:
-    #             jprint("Crash")
-    #             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
-    #         if x[0] < 0:
-    #             jprint("Negative x")
-    #             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
-
-    #         if v[0] < 0:
-    #             jprint("Negative v")
-    #             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
-
-    #         xdot = dxdt_jax(x, v).reshape(-1)
-    #         vdot = dvdt_jax(t, x, v).reshape(-1)
-
-    #         if jnp.isnan(vdot).any():
-    #             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
-
-    #         return jnp.hstack([xdot, vdot])
-
-    #     def f(t: float, y: jnp.ndarray) -> jnp.ndarray:
-    #         return timestep(t, y)
-
-    #     # The carry of jax should be done:
-    #     # f(
-    #     # t, y,
-    #     # rest:
-    #     # self.accelerations["x"].append(acc_x)
-    #     # self.accelerations["y"].append(acc_y)
-    #     # self.forces["x"].append(F[0])
-    # self.forces["y"].append(F[1])
-    # self.forces["lift"].append(lift)
-    # self.forces["thrust"].append(thrust)
-    # self.forces["drag"].append(drag)
-    # self.forces["torque"].append(torque)
-    # self.control_inputs["aoa"].append(aoa)
-    # self.control_inputs["engine_amps"].append(amps)
-    # self.orientation["alpha"].append(np.deg2rad(alpha))
-    # self.orientation["aoa"].append(np.deg2rad(aoa))
-    # self.orientation["gamma"].append(np.deg2rad(dh_dx))
-    # )
-
-    # f = jax.jit(f)
-    # return NonLinearSystem(f)

@@ -5,6 +5,7 @@ import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 from jaxtyping import Array
+from jaxtyping import ArrayLike
 from jaxtyping import Float
 from matplotlib import pyplot as plt
 from pandas import DataFrame
@@ -142,9 +143,9 @@ class Engine:
 
     def thrust(
         self,
-        velocity: float | Float[Array, "dim1"],
-        current: float | Float[Array, "dim1"],
-    ) -> Float[Array, "dim1"]:
+        velocity: Float[ArrayLike, "..."],
+        current: Float[ArrayLike, "..."],
+    ) -> Float[Array, "..."]:
         # Interpolating the thrust curve
         velocity = jnp.atleast_1d(velocity)
         current = jnp.atleast_1d(current)
@@ -153,9 +154,9 @@ class Engine:
 
     def current(
         self,
-        velocity: float | Float[Array, "dim1"],
-        thrust: float | Float[Array, "dim1"],
-    ) -> Float[Array, "dim1"]:
+        velocity: Float[ArrayLike, "..."],
+        thrust: Float[ArrayLike, "..."],
+    ) -> Float[Array, "..."]:
         velocity = jnp.atleast_1d(velocity)
         thrust = jnp.atleast_1d(thrust)
         # Interpolating the current curve

@@ -1,4 +1,3 @@
-import jax
 import jax.numpy as jnp
 from jax import lax
 from jaxtyping import Array
@@ -7,7 +6,6 @@ from jaxtyping import Int
 from jaxtyping import Scalar
 
 
-@jax.jit
 def vortexL(
     xp: Scalar,
     yp: Scalar,
@@ -76,16 +74,13 @@ def vortexL(
     return u, v, w
 
 
-@jax.jit
 def voring(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    i: Int[Array, ""],
-    j: Int[Array, ""],
-    grid: Float[Array, "n m"],
+    panel: Float[Array, "4 3"],
     gamma: float = 1.0,
-) -> tuple[Float[Array, "n"], Float[Array, "m"]]:
+) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """Vorticity Ring Element. Computes the velocities induced at a point x,y,z
     by a vortex ring given its grid lower corner coordinates
 
@@ -101,16 +96,21 @@ def voring(
     Returns:
         U: induced velocities vector
     """
+    l_right = panel[0]
+    l_left = panel[1]
+    u_left = panel[2]
+    u_right = panel[3]
+
     u1, v1, w1 = vortexL(
         x,
         y,
         z,
-        grid[i, j, 0],
-        grid[i, j, 1],
-        grid[i, j, 2],
-        grid[i + 1, j, 0],
-        grid[i + 1, j, 1],
-        grid[i + 1, j, 2],
+        l_left[0],
+        l_left[1],
+        l_left[2],
+        l_right[0],
+        l_right[1],
+        l_right[2],
         gamma,
     )
 
@@ -118,36 +118,36 @@ def voring(
         x,
         y,
         z,
-        grid[i + 1, j, 0],
-        grid[i + 1, j, 1],
-        grid[i + 1, j, 2],
-        grid[i + 1, j + 1, 0],
-        grid[i + 1, j + 1, 1],
-        grid[i + 1, j + 1, 2],
+        l_right[0],
+        l_right[1],
+        l_right[2],
+        u_right[0],
+        u_right[1],
+        u_right[2],
         gamma,
     )
     u3, v3, w3 = vortexL(
         x,
         y,
         z,
-        grid[i + 1, j + 1, 0],
-        grid[i + 1, j + 1, 1],
-        grid[i + 1, j + 1, 2],
-        grid[i, j + 1, 0],
-        grid[i, j + 1, 1],
-        grid[i, j + 1, 2],
+        u_right[0],
+        u_right[1],
+        u_right[2],
+        u_left[0],
+        u_left[1],
+        u_left[2],
         gamma,
     )
     u4, v4, w4 = vortexL(
         x,
         y,
         z,
-        grid[i, j + 1, 0],
-        grid[i, j + 1, 1],
-        grid[i, j + 1, 2],
-        grid[i, j, 0],
-        grid[i, j, 1],
-        grid[i, j, 2],
+        u_left[0],
+        u_left[1],
+        u_left[2],
+        l_left[0],
+        l_left[1],
+        l_left[2],
         gamma,
     )
 
@@ -164,7 +164,6 @@ def voring(
     return U, Ustar
 
 
-@jax.jit
 def hshoe2(
     x: Scalar,
     y: Scalar,
@@ -239,7 +238,6 @@ def hshoe2(
     return U, Ustar
 
 
-@jax.jit
 def hshoeSL2(
     x: Scalar,
     y: Scalar,
@@ -338,15 +336,12 @@ def hshoeSL2(
     return U, Ustar
 
 
-@jax.jit
 def symm_wing_panels(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    i: Int[Array, ""],
-    j: Int[Array, ""],
-    grid: Float[Array, "n m"],
-    gamma: float = 1,
+    panel: Float[Array, "4 3"],
+    gamma: float = 1.0,
 ) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """
     Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
@@ -365,15 +360,14 @@ def symm_wing_panels(
         tuple[FloatArray, FloatArray]: _description_
     """
 
-    U1, U1st = voring(x, y, z, i, j, grid, gamma)
-    U2, U2st = voring(x, -y, z, i, j, grid, gamma)
+    U1, U1st = voring(x, y, z, panel, gamma)
+    U2, U2st = voring(x, -y, z, panel, gamma)
 
     U_ind = jnp.array([U1[0] + U2[0], U1[1] - U2[1], U1[2] + U2[2]])
     U_ind_st = jnp.array([U1st[0] + U2st[0], U1st[1] - U2st[1], U1st[2] + U2st[2]])
     return U_ind, U_ind_st
 
 
-@jax.jit
 def ground_effect(
     x: Scalar,
     y: Scalar,
@@ -403,3 +397,17 @@ def ground_effect(
     U_ind = jnp.array([U1[0] + U2[0], U1[1] + U2[1], U1[2] - U2[2]])
     U_ind_st = jnp.array([U1st[0] + U2st[0], U1st[1] + U2st[1], U1st[2] - U2st[2]])
     return U_ind, U_ind_st
+
+
+try:
+    import jax
+
+    # Jit all the functions
+    vortexL = jax.jit(vortexL)
+    voring = jax.jit(voring)
+    hshoe2 = jax.jit(hshoe2)
+    hshoeSL2 = jax.jit(hshoeSL2)
+    symm_wing_panels = jax.jit(symm_wing_panels)
+    ground_effect = jax.jit(ground_effect)
+except:
+    pass

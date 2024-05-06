@@ -146,7 +146,7 @@ class Database_2D:
         reynolds: list[float] | FloatArray,
         angles: list[float] | FloatArray,
         solver_name: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
-        trips=(0.3, 0.3),
+        trips: tuple[float, float] = (0.3, 0.3),
     ) -> None:
         """
         Computes the polars for an airfoil at a given reynolds number and angles of attack.

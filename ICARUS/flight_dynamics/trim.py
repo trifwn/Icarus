@@ -108,7 +108,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     mac = state.mean_aerodynamic_chord
     x_cg: float = state.CG[0]
 
-    def movement(new_cg):
+    def movement(new_cg: float) -> float:
         new_CM = cms + (new_cg - x_cg) * (cls) / mac
 
         # New trim location
@@ -117,7 +117,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
 
         # Get the slope of the curve near the trim location
         slopes = np.gradient(new_CM, aoas)
-        slope = np.interp(aoa_trim, aoas, slopes)
+        slope = float(np.interp(aoa_trim, aoas, slopes))
         return slope
 
     # Find where the slope is zero
