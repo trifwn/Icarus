@@ -83,7 +83,7 @@ class Analysis:
             if opt.value is None:
                 value: str = "None"
             elif hasattr(opt.value, "__str__"):
-                if len(str(opt.value)) > 10:
+                if len(str(opt.value)) > 20:
                     value = "Complex Datatype"
                     if hasattr(opt.value, "name"):
                         value += f" ({opt.value.name})"

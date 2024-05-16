@@ -118,7 +118,7 @@ def avl_geo(
 
     f_io.write(f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n")
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
-    f_io.write(f" 0.0010                               | CDp  (optional)\n")
+    f_io.write(f" 0.0000                               | CDp  (optional)\n")
 
     surfaces: list[WingSurface] = []
     surfaces_ids = []

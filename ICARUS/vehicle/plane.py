@@ -109,13 +109,13 @@ class Airplane:
             self._CG = self.find_cg()
 
     def __control__(self, control_vector: dict[str, float]) -> None:
-        control_dict = {k: control_vector[k] for k in self.control_vars}
+        # control_dict = {k: control_vector[k] for k in self.control_vars}
         for surf in self.surfaces:
             surf_control_vec = {}
-            for name, value in control_dict.items():
+            for name, value in control_vector.items():
                 if name in surf.control_vars:
                     surf_control_vec[name] = value
-                self.control_vector[name] = value
+                    self.control_vector[name] = value
             surf.__control__(surf_control_vec)
             print(f"Controling {surf.name} with {surf_control_vec}")
 
@@ -632,6 +632,9 @@ class Airplane:
         from ICARUS.database import DB3D
 
         fname: str = os.path.join(DB3D, self.directory, f"{self.name}.json")
+        # If the directory doesn't exist, create it
+        if not os.path.exists(os.path.join(DB3D, self.directory)):
+            os.makedirs(os.path.join(DB3D, self.directory))
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 

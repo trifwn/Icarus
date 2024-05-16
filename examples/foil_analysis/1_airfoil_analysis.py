@@ -3,6 +3,7 @@ import time
 from typing import Any
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from ICARUS import APPHOME
 from ICARUS.airfoils.airfoil import Airfoil
@@ -61,29 +62,16 @@ def main() -> None:
     #         # or airfoil.upper().startswith('W')
     #     )
     # ]
-    airfoil_root = DB.get_airfoil("S4062")
-    airfoil_root.repanel_spl(160)
-    airfoil_tip = DB.get_airfoil("S4320")
-    airfoil_tip.repanel_spl(160)
-
-    airfoils_to_compute = [
-        Airfoil.morph_new_from_two_foils(
-            airfoil_root,
-            airfoil_tip,
-            heta,
-            160,
-        )
-        for heta in np.linspace(0, 1, 11)
-    ]
-    airfoils_to_compute.append(DB.get_airfoil("NACA0008"))
+    airfoils_to_compute: list[Airfoil] = []
+    airfoils_to_compute.append(DB.get_airfoil("NACA4415"))
     for airfoil in airfoils_to_compute:
         airfoil.repanel_spl(160)
 
     print(f"Computing: {len(airfoils_to_compute)}")
 
     # PARAMETERS FOR ESTIMATION
-    chord_max: float = 0.5
-    chord_min: float = 0.1
+    chord_max: float = 0.16
+    chord_min: float = 0.06
     u_max: float = 35.0
     u_min: float = 5.0
     viscosity: float = 1.56e-5
@@ -100,7 +88,7 @@ def main() -> None:
     reynolds: FloatArray = np.linspace(
         start=reynolds_min,
         stop=reynolds_max,
-        num=5,
+        num=12,
     )
 
     # ANGLE OF ATTACK SETUP
@@ -159,15 +147,6 @@ def main() -> None:
             _ = f2w_s.get_results()
             f2w_etime: float = time.time()
 
-            try:
-                # Get polar
-                polar = DB.foils_db.get_polars(airfoil.name)
-
-                airfoil_folder = os.path.join("Data/images/")
-                polar.save_polar_plot_img(airfoil_folder, "f2w")
-            except Exception as e:
-                print(f"Error saving polar plot. Got: {e}")
-
             print(f"Foil2Wake completed in {f2w_etime - f2w_stime} seconds")
         # XFoil
         if calcXFoil:
@@ -197,25 +176,16 @@ def main() -> None:
 
             xfoil.print_analysis_options()
             # Set Solver Options
-            xfoil_solver_parameters.max_iter = 300
+            xfoil_solver_parameters.max_iter = 500
 
             xfoil_solver_parameters.Ncrit = Ncrit
-            xfoil_solver_parameters.xtr = (0.1, 1.0)
+            xfoil_solver_parameters.xtr = (0.1, 0.2)
             xfoil_solver_parameters.print = False
             # xfoil.print_solver_options()
 
             # RUN and SAVE
             xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
             xfoil.execute(parallel=True)
-
-            try:
-                # Get polar
-                polar = DB.foils_db.get_polars(airfoil.name)
-
-                airfoil_folder = os.path.join(APPHOME, "Data", "images")
-                polar.save_polar_plot_img(airfoil_folder, "xfoil")
-            except Exception as e:
-                print(f"Error saving polar plot. Got: {e}")
 
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")
@@ -260,6 +230,16 @@ def main() -> None:
         print(
             f"Airfoil {airfoil.name} completed in {airfoil_etime - airfoil_stime} seconds",
         )
+        try:
+            # Get polar
+            polar = DB.foils_db.get_polars(airfoil.name)
+            airfoil_folder = os.path.join("Data/images/")
+            polar.plot()
+            plt.show(block=True)
+            polar.save_polar_plot_img(airfoil_folder, "xfoil")
+
+        except Exception as e:
+            print(f"Error saving polar plot. Got: {e}")
 
     #   ############################### END LOOP ##############################################
 

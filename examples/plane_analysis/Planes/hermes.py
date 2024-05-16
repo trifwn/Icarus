@@ -41,10 +41,8 @@ def hermes(name: str) -> Airplane:
         sweep_offset=0,
         root_chord=0.159,
         tip_chord=0.072,
-        twist_root=0,
-        twist_tip=0,
-        N=15,
-        M=5,
+        N=30,
+        M=10,
         mass=0.670,
     )
 
@@ -103,10 +101,15 @@ def hermes(name: str) -> Airplane:
     point_masses = [
         (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "engine"),  # Engine
         (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "structure"),  # Structure
-        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"),  # Battery
         (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
+        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"),  # Battery
     ]
     airplane: Airplane = Airplane(name, lifting_surfaces)
     airplane.add_point_masses(point_masses)
 
     return airplane
+
+
+if __name__ == "__main__":
+    pln = hermes("hermes")
+    pln.save()

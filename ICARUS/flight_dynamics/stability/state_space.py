@@ -35,14 +35,16 @@ class LateralStateSpace:
         mass: float = state.mass
         U: float = state.trim["U"]
         theta: float = state.trim["AoA"] * np.pi / 180
+        u_e: float = U * np.cos(theta)
+        w_e: float = U * np.sin(theta)
         G: float = state.environment.GRAVITY
 
         Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
 
         yv: float = Y["v"] / mass
-        yp: float = (Y["p"] + mass * U * np.sin(theta)) / mass
-        yr: float = (Y["r"] - mass * U * np.cos(theta)) / mass
-        yphi: float = -G * np.cos(theta)
+        yp: float = (Y["p"] + mass * w_e) / mass
+        yr: float = (Y["r"] - mass * u_e) / mass
+        yphi: float = G * np.cos(theta)
 
         lv: float = (Iz * L["v"] + Ixz * N["v"]) / (Ix * Iz - Ixz**2)
         lp: float = (Iz * L["p"] + Ixz * N["p"]) / (Ix * Iz - Ixz**2)
@@ -109,8 +111,8 @@ class LongitudalStateSpace:
         m: float = state.mass
         trim_velocity: float = state.trim["U"]
         theta: float = state.trim["AoA"] * np.pi / 180
-        u_e: float = np.abs(trim_velocity * np.cos(theta))
-        w_e: float = np.abs(trim_velocity * np.sin(theta))
+        u_e: float = trim_velocity * np.cos(theta)
+        w_e: float = trim_velocity * np.sin(theta)
 
         G: float = 9.81
         Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
