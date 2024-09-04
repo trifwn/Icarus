@@ -340,6 +340,11 @@ def process_gnvp_angles_run(plane: Airplane, state: State, gvnp_version: int) ->
 
     forces: DataFrame = log_forces(PLANEDIR, HOMEDIR, gvnp_version)
     plane.save()
+    state.add_polar(
+        polar=forces,
+        polar_prefix=f"GenuVP{gvnp_version}",
+        is_dimensional=True,
+    )
     state.save(PLANEDIR)
 
     logging.info("Adding Results to Database")

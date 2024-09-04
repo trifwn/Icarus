@@ -15,7 +15,8 @@ from setuptools.command.sdist import sdist
 # import subprocess
 # from setuptools import Extension
 # from setuptools.command.build_ext import build_ext
-# from setuptools.command.egg_info import egg_info
+from setuptools.command.egg_info import egg_info
+
 # from setuptools.command.upload import upload
 # from setuptools.command.test import test
 # from wheel.bdist_wheel import bdist_wheel
@@ -36,50 +37,19 @@ def get_package_version() -> str:
     return __version__
 
 
-def main() -> None:
-    """MAIN FUNCTION"""
+from setuptools import setup, find_packages
+import subprocess
 
-    package = "ICARUS"
-    __version__: str = get_package_version()
-
-    # TODO: Check for intel fortran, opemmpi, mkl
-    # TODO: if not installed, install them.
-
-    if len(sys.argv) >= 2:
-        command: str = sys.argv[1]
-    else:
-        command = "install"
-
-    if command == "dist_info":
-        setup(cmdclass={"sdist": sdist})
-    if command == "editable_wheel":
-        setup(cmdclass={"develop": develop})
-    if command == "install":
-        install(package, __version__)
-    elif command == "uninstall":
-        uninstall(package)
-    else:
-        setup()
-        print(f"Command {command} not recognized")
-
-
-def install(package: str, version: str) -> None:
-    """INSTALL THE PACKAGE
-
-    Args:
-        package (str): Package Name
-        version (str): Version Number
-    """
-
-    setup(
-        name=package,
-        version=version,
-        entry_points={
-            'console_scripts': [
-                'icarus=icarus_cli:main',
-            ],
-        },
-    )
+setup(
+    name="ICARUS",
+    version=get_package_version(),
+    packages=find_packages(),
+    entry_points={
+        "console_scripts": [
+            "icarus=icarus_cli:main",
+        ],
+    },
+)
 
 
 def uninstall(package: str) -> None:
@@ -89,12 +59,7 @@ def uninstall(package: str) -> None:
         package (str): Package Name
     """
     try:
-        import pip
-    except ImportError:
-        print("Error importing pip")
-        return
-    pip.main(["uninstall", package, "-y"])
+        subprocess.check_call([sys.executable, "-m", "pip", "uninstall", package, "-y"])
+    except subprocess.CalledProcessError as e:
+        print(f"Error uninstalling package: {e}")
 
-
-if __name__ == "__main__":
-    main()

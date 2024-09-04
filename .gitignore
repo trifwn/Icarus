@@ -25,6 +25,7 @@ Control/slprj*
 *.out
 test*.ipynb
 
+# Data folder
 Data
 
 # Playground
@@ -40,3 +41,7 @@ report/*
 # DEMO
 # demo*
 acc_2024/
+1_ypologistiko/
+
+# Internal
+notes.md

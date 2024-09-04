@@ -49,7 +49,9 @@ class ControlState:
 
     @property
     def control_vector(self) -> FloatArray:
-        control_vector = np.array([self.control_vector_dict[key] for key in self.control_vars])
+        control_vector = np.array(
+            [self.control_vector_dict[key] for key in self.control_vars]
+        )
         return control_vector
 
     def __str__(self) -> str:
@@ -69,14 +71,14 @@ class ControlState:
         """
         hash_val = hash(frozenset(self.control_vector_dict.items()))
         # Add to the hash dictionary if not already present
-        if hash_val not in self.hash_dict.keys():
-            self.hash_dict[hash_val] = len(self.hash_dict)
+        if str(hash_val) not in list(self.hash_dict.keys()):
+            self.hash_dict[str(hash_val)] = len(self.hash_dict)
 
         return hash_val
 
     def identifier(self) -> int:
         num = self.__hash__()
-        return self.hash_dict[num]
+        return self.hash_dict[str(num)]
 
 
 class State:
@@ -185,7 +187,9 @@ class State:
     @property
     def control_vector(self) -> FloatArray:
         control_vector_dict = self.control_vector_dict
-        control_vector = np.array([control_vector_dict[key] for key in self.control_vars])
+        control_vector = np.array(
+            [control_vector_dict[key] for key in self.control_vars]
+        )
         return control_vector
 
     def set_control(self, control_vector_dict: dict[str, float]) -> None:
@@ -240,7 +244,9 @@ class State:
 
         # GET TRIM STATE
         self.trim = trim_state(self, verbose=verbose)
-        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
+        self.trim_dynamic_pressure = (
+            0.5 * self.environment.air_density * self.trim["U"] ** 2.0
+        )  # NOW WE UPDATE IT
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()
@@ -326,9 +332,13 @@ class State:
         i = 0
         if plot_longitudal:
             # extract real part
-            x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
+            x: list[float] = [
+                ele.real for ele in self.state_space.longitudal.eigenvalues
+            ]
             # extract imaginary part
-            y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
+            y: list[float] = [
+                ele.imag for ele in self.state_space.longitudal.eigenvalues
+            ]
             axs_now[i].scatter(x, y, label="Longitudal", color="r")
             i += 1
 
@@ -367,7 +377,9 @@ class State:
                 ss.write(f"\t{[round(i,3) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
-                tabulate(self.state_space.longitudal.A, tablefmt="github", floatfmt=".3f"),
+                tabulate(
+                    self.state_space.longitudal.A, tablefmt="github", floatfmt=".3f"
+                ),
             )
 
             ss.write(f"\n\n{45*'--'}\n")
@@ -380,7 +392,9 @@ class State:
             for item in self.state_space.lateral.eigenvectors:
                 ss.write(f"\t{[round(i,3) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
-            ss.write(tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f"))
+            ss.write(
+                tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f")
+            )
         return ss.getvalue()
 
     def to_json(self) -> str:

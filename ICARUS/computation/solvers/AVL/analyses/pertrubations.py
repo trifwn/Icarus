@@ -39,10 +39,9 @@ def avl_dynamic_analysis_fd(
         angles = np.linspace(-10, 10, 21)
 
         avl_angle_run(plane=plane, state=state, solver2D=solver2D, angles=angles, solver_options=solver_options)
-        polar_df = process_avl_angles_run(plane, state, angles)
-        state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 
     finite_difs(plane=plane, state=state, solver2D=solver2D)
+    process_avl_fd_res(plane, state)
 
 
 def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
@@ -61,6 +60,12 @@ def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
 
     state.set_pertrubation_results(forces)
     state.stability_fd()
+    # Save the state
+    PLANEDIR = DB.vehicles_db.get_plane_directory(
+        plane=plane,
+    )
+    state.save(PLANEDIR)
+    
     DB.vehicles_db.states[plane.name] = state
 
     return forces

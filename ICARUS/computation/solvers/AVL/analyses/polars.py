@@ -33,7 +33,8 @@ def avl_angle_run(
     make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
     case_setup(plane)
     case_run(plane, angles)
-    _ = process_avl_angles_run(plane, state, angles)
+    polar_df = process_avl_angles_run(plane, state, angles)
+    state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 
 
 def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | list[float]) -> DataFrame:
@@ -52,6 +53,11 @@ def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | l
     plane.save()
     CASEDIR = DB.vehicles_db.get_plane_directory(
         plane=plane,
+    )
+    state.add_polar(
+        polar=forces,
+        polar_prefix="AVL",
+        is_dimensional=True,
     )
     state.save(CASEDIR)
 

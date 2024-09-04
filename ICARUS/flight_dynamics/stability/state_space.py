@@ -76,9 +76,73 @@ class LateralStateSpace:
 
         self.eigenvalues = np.empty((4,), dtype=float)
         self.eigenvectors = np.empty((4, 4), dtype=float)
+        self.dutch_roll: complex = 0 + 0j
+        self.coupled_mode: complex = 0 + 0j
+        self.roll_subsidance: float = 0.
+        self.spiral: float = 0.
+        self.n_modes = 3
         eigenvalue_analysis(self)
-        self.omegas = np.abs(self.eigenvalues)
-        self.zetas = -(self.eigenvalues.real) / (self.omegas)
+        self.classify_modes()
+
+    def classify_modes(self) -> None:
+        """
+        Classify the modes based on the eigenvalues. On the lateral case, the modes are:
+        - Roll (1 mode)
+        - Spiral (1 mode)
+        - Dutch Roll (2 modes)
+        There is the case where the roll and spiral mode become coupled and form a pair of 
+        2 conjugate value
+        """
+        # Get the number of modes by setting the imaginary part to abs
+        eigen_values = set(np.array(
+            [
+                val.real + 1j * np.abs(val.imag)
+                for val in self.eigenvalues
+            ]
+        ))
+        n_modes = len(eigen_values)
+        self.n_modes = n_modes
+
+        if n_modes == 2:
+            # Then we a dutch mode and a roll-spiral mode
+            # The dutch-roll mode is the one with the smallest complex part
+            dutch_roll = min(eigen_values, key=lambda x: x.imag)
+            coupled_mode = max(eigen_values, key=lambda x: x.imag)
+
+            self.dutch_roll = dutch_roll
+            self.coupled_mode = coupled_mode
+            # NON EXISTENT
+            self.roll_subsidance = np.nan
+            self.spiral = np.nan
+        elif n_modes == 3:
+            # Then we have a dutch roll, a roll and a spiral mode
+            # The complex eigenvalue is the dutch roll
+            dutch_roll = max(eigen_values, key=lambda x: np.abs(x.imag))
+            # The two real eigenvalues are the roll and spiral modes
+            # The spiral mode is the one with the smallest real part
+            spiral = min(
+                [eigen_value for eigen_value in eigen_values if eigen_value.imag == 0],
+                key=lambda x: x.real,
+            )
+            # The roll mode is the one with the largest real part
+            roll_subsidance = max(
+                [val for val in eigen_values if val.imag == 0],
+                key=lambda x: x.real,
+            )
+            self.dutch_roll = dutch_roll
+            self.roll_subsidance = roll_subsidance.real
+            self.spiral = spiral.real
+            # NON EXISTENT
+            self.coupled_mode = np.nan
+        else:
+            # I have never seen this case so let's print the eigenvalues
+            # And throw an error
+            if n_modes == 4:
+                print("4 distinct modes found in the lateral dynamics. (Overdamped Dutch Roll)")
+            else:
+                print("1 mode found in the longitudinal dynamics")
+            print(self.eigenvalues)
+            raise ValueError
 
     def print_derivatives(
         self,
@@ -150,9 +214,59 @@ class LongitudalStateSpace:
 
         self.eigenvalues = np.empty((4,), dtype=complex)
         self.eigenvectors = np.empty((4, 4), dtype=float)
+        self.short_period:complex = 0+0j 
+        self.phugoid: complex = 0+0j
+        self.overdamped_phugoid: list[float] = [0., 0.]
+        self.n_modes: int = 2
         eigenvalue_analysis(self)
-        self.omegas: FloatArray = np.abs(self.eigenvalues)
-        self.zetas: FloatArray = -(self.eigenvalues.real) / (self.omegas)
+        self.classify_modes()
+
+    def classify_modes(self) -> None:
+        """
+        Classify the modes based on the eigenvalues. On the longitudinal case, the modes are:
+        - Phugoid  (2 modes)
+        - Short Period (2 modes)
+        The short period mode is oscillatory but can degenerate to two real roots
+        """
+        # Get the number of modes by setting the imaginary part to abs
+        eigen_values = set(np.array(
+            [
+                val.real + 1j * np.abs(val.imag)
+                for val in self.eigenvalues
+            ]
+        ))
+        n_modes = len(eigen_values)
+        self.n_modes = n_modes
+
+        if n_modes == 2:
+            # Then we have a phugoid and a short period mode
+            # This is the mode with the smallest complex part
+            phugoid = min(eigen_values, key=lambda x: x.imag)
+            short_period = max(eigen_values, key=lambda x: x.imag)
+
+            self.phugoid = phugoid
+            self.short_period = short_period
+        elif n_modes == 3:
+            # Then we have a phugoid and two short period modes
+            # The complex eigenvalue is the phugoid
+            phugoid = max(eigen_values, key=lambda x: x.imag)
+            # The two real eigenvalues are the short period modes
+            short_period_modes = [
+                eigen_val for eigen_val in eigen_values if eigen_val.imag == 0
+            ]
+
+            self.phugoid = phugoid
+            self.short_period = np.nan 
+            self.overdamped_phugoid = [val.real for val in short_period_modes]
+        else:
+            # I have never seen this case so let's print the eigenvalues
+            # And throw an error
+            if n_modes == 4:
+                print("4 distinct modes found in the longitudinal dynamics")
+            else:
+                print("1 mode found in the longitudinal dynamics")
+            print(self.eigenvalues)
+            raise ValueError
 
     def print_derivatives(
         self,

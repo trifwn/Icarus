@@ -11,7 +11,7 @@ from ICARUS.vehicle.plane import Airplane
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
-
+from ICARUS.database import DB
 
 def parse_xfl_project(filename: str) -> Airplane:
     """
@@ -148,17 +148,7 @@ def parse_xfl_project(filename: str) -> Airplane:
                 else:
                     raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in EXTERNAL DB")
 
-            elif "naca" in text_part.lower():
-                if len(foil) == 4:
-                    airfoil = Airfoil.naca(foil)
-                    airfoil.name = foil
-                elif len(foil) == 5:
-                    airfoil = Airfoil.naca(foil)
-                    airfoil.name = foil
-                else:
-                    raise ValueError(f"Unknown NACA {foil}")
-            else:
-                raise ValueError(f"Unknown airfoil {foil}")
+            airfoil = DB.get_airfoil(foil)
 
             # twist: float = float(section["Twist"])  # ! TODO: IMPLEMENT TWIST
             y_pos: float = float(section["y_position"])

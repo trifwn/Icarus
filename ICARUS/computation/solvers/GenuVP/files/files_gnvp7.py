@@ -475,10 +475,10 @@ def pm_file() -> None:
         file.write(f"0\n")
         file.write(f"0{tabs(6)}! IPMWRITE  number of pm time series, max value 10\n")
 
-        # UKNOWN
+        # First num is the iteration to start writing the pm file and the second is the number of iterations to write the pm file
         file.write(f"649  72\n")
-        file.write(f"1008  72\n")
         file.write(f"900 90\n")
+        file.write(f"1008  72\n")
         file.write(f"1200 90\n")
         file.write(f"4410 90\n")
 

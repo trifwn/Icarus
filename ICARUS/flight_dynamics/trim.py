@@ -67,9 +67,9 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         else:
             d2_cd = 0
     else:
-        if trim_loc1 != len(state.polar["Cm"]):
+        if trim_loc1 != len(state.polar["CD"])- 1:
             trim_loc3 = trim_loc1 + 1
-            d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+            d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]    
         else:
             d2_cd = 0
 
@@ -123,7 +123,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     # Find where the slope is zero
     from scipy.optimize import fsolve
 
-    x_neutral_point = fsolve(movement, x_cg)[0]
+    x_neutral_point = fsolve(movement, x_cg, xtol= 1e-5)[0]
     static_margin = (x_neutral_point - x_cg) / mac
 
     trim: dict[str, float] = {

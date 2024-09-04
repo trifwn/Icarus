@@ -472,6 +472,11 @@ def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) 
 
     state.set_pertrubation_results(forces)
     state.stability_fd()
+    # Save the state
+    PLANEDIR = DB.vehicles_db.get_plane_directory(
+        plane=plane,
+    )
+    state.save(PLANEDIR)
     DB.vehicles_db.states[plane.name] = state
 
     return forces

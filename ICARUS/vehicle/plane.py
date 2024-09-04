@@ -117,7 +117,8 @@ class Airplane:
                     surf_control_vec[name] = value
                     self.control_vector[name] = value
             surf.__control__(surf_control_vec)
-            print(f"Controling {surf.name} with {surf_control_vec}")
+            if surf_control_vec != {}:
+                print(f"Controlling {surf.name} with {surf_control_vec}")
 
     # @property
     # def surfaces(self) -> list[WingSurface]:
@@ -278,57 +279,59 @@ class Airplane:
                 return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
-    # Define the __getattribute__ function to get attributes from the surfaces
-    # def __getattribute__(self, name: str) -> Any:
-    #     try:
-    #         return object.__getattribute__(self, name)
-    #     except AttributeError:
-    #         if name.endswith("_position_x"):
-    #             name = name.replace("_position_x", "")
-    #             return self.get_position(name, "x")
-    #         elif name.endswith("_position_y"):
-    #             name = name.replace("_position_y", "")
-    #             return self.get_position(name, "y")
-    #         elif name.endswith("_position_z"):
-    #             name = name.replace("_position_z", "")
-    #             return self.get_position(name, "z")
-    #         elif name.endswith("_position"):
-    #             name = name.replace("_position", "")
-    #             return self.get_position(name, "xyz")
-    #         elif name.endswith("_mass"):
-    #             name = name.replace("_mass", "")
-    #             return self.get_mass(name)
-    #         else:
-    #             # How to handle infinite recursion?
-    #             if "surfaces" in self.__dict__.keys():
-    #                 for surface in self.surfaces:
-    #                     if name.startswith(f"{surface.name}_"):
-    #                         return surface.__getattribute__(name.replace(surface.name, ""))
-    #             raise AttributeError(f"Plane doesn't contain attribute {name}")
+    def get_plane_attr(self, name: str) -> Any:
+        try:
+            return object.__getattribute__(self, name)
+        except AttributeError:
+            if name.endswith("_position_x"):
+                name = name.replace("_position_x", "")
+                return self.get_position(name, "x")
+            elif name.endswith("_position_y"):
+                name = name.replace("_position_y", "")
+                return self.get_position(name, "y")
+            elif name.endswith("_position_z"):
+                name = name.replace("_position_z", "")
+                return self.get_position(name, "z")
+            elif name.endswith("_position"):
+                name = name.replace("_position", "")
+                return self.get_position(name, "xyz")
+            elif name.endswith("_mass"):
+                name = name.replace("_mass", "")
+                return self.get_mass(name)
+            else:
+                # How to handle infinite recursion?
+                if "surfaces" in self.__dict__.keys():
+                    for surface in self.surfaces:
+                        if name.startswith(f"{surface.name}_"):
+                            return surface.__getattribute__(name.replace(surface.name, ""))
+                raise AttributeError(f"Plane doesn't contain attribute {name}")
 
-    # def __setattr__(self, name: str, value: Any) -> None:
-    #     if name.endswith("_position_x"):
-    #         name = name.replace("_position_x", "")
-    #         self.set_position(name, "x", value)
-    #     elif name.endswith("_position_y"):
-    #         name = name.replace("_position_y", "")
-    #         self.set_position(name, "y", value)
-    #     elif name.endswith("_position_z"):
-    #         name = name.replace("_position_z", "")
-    #         self.set_position(name, "z", value)
-    #     elif name.endswith("_position"):
-    #         name = name.replace("_position", "")
-    #         self.set_position(name, "xyz", value)
-    #     elif name.endswith("_mass"):
-    #         name = name.replace("_mass", "")
-    #         self.change_mass(name, new_mass=value)
-    #     else:
-    #         if hasattr(self, "surfaces"):
-    #             for surface in self.surfaces:
-    #                 if name.startswith(f"{surface.name}_"):
-    #                     surface.__setattr__(name.replace(f"{surface.name}_", ""), value)
-    #                     return
-    #         object.__setattr__(self, name, value)
+    def change_plane_attr(self, name: str, value: Any) -> None:
+        if name.endswith("_position_x"):
+            name = name.replace("_position_x", "")
+            self.set_position(name, "x", value)
+        elif name.endswith("_position_y"):
+            name = name.replace("_position_y", "")
+            self.set_position(name, "y", value)
+        elif name.endswith("_position_z"):
+            name = name.replace("_position_z", "")
+            self.set_position(name, "z", value)
+        elif name.endswith("_position"):
+            name = name.replace("_position", "")
+            self.set_position(name, "xyz", value)
+        elif name.endswith("_mass"):
+            name = name.replace("_mass", "")
+            self.change_mass(name, new_mass=value)
+        else:
+            if hasattr(self, "surfaces"):
+                for surface in self.surfaces:
+                    if name.startswith(f"{surface.name}_"):
+                        surface.__setattr__(name.replace(f"{surface.name}_", ""), value)
+                        return
+            object.__setattr__(self, name, value)
+    
+    def rename(self, new_name: str) -> None:
+        self.name = new_name
 
     @property
     def directory(self) -> str:
