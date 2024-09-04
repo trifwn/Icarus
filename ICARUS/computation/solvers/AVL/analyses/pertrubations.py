@@ -39,7 +39,10 @@ def avl_dynamic_analysis_fd(
         angles = np.linspace(-10, 10, 21)
 
         avl_angle_run(plane=plane, state=state, solver2D=solver2D, angles=angles, solver_options=solver_options)
-
+    if state.epsilons == {}:
+        print("Calculating the epsilons")
+        state.add_all_pertrubations("Central")
+        print(state.epsilons)
     finite_difs(plane=plane, state=state, solver2D=solver2D)
     process_avl_fd_res(plane, state)
 

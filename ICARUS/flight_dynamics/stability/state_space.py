@@ -61,7 +61,7 @@ class LateralStateSpace:
                 [yv, yp, yr, yphi],
                 [lv, lp, lr, lphi],
                 [nv, n_p, nr, nph],
-                [0, 1, np.tan(theta), 0],
+                [0, 1, 0*np.tan(theta), 0], # Etkins uses np.tan(theta) here where as most writers use 0
             ],
         )
 
@@ -104,7 +104,7 @@ class LateralStateSpace:
         self.n_modes = n_modes
 
         if n_modes == 2:
-            # Then we a dutch mode and a roll-spiral mode
+            # Then we a dutch mode and a coupled roll-spiral mode
             # The dutch-roll mode is the one with the smallest complex part
             dutch_roll = min(eigen_values, key=lambda x: x.imag)
             coupled_mode = max(eigen_values, key=lambda x: x.imag)
@@ -140,7 +140,7 @@ class LateralStateSpace:
             if n_modes == 4:
                 print("4 distinct modes found in the lateral dynamics. (Overdamped Dutch Roll)")
             else:
-                print("1 mode found in the longitudinal dynamics")
+                print("1 mode found in the lateral dynamics")
             print(self.eigenvalues)
             raise ValueError
 
@@ -216,7 +216,7 @@ class LongitudalStateSpace:
         self.eigenvectors = np.empty((4, 4), dtype=float)
         self.short_period:complex = 0+0j 
         self.phugoid: complex = 0+0j
-        self.overdamped_phugoid: list[float] = [0., 0.]
+        self.overdamped_short_period: list[float] = [0., 0.]
         self.n_modes: int = 2
         eigenvalue_analysis(self)
         self.classify_modes()
@@ -257,7 +257,7 @@ class LongitudalStateSpace:
 
             self.phugoid = phugoid
             self.short_period = np.nan 
-            self.overdamped_phugoid = [val.real for val in short_period_modes]
+            self.overdamped_short_period = [val.real for val in short_period_modes]
         else:
             # I have never seen this case so let's print the eigenvalues
             # And throw an error

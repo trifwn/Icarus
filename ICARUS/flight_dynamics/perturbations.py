@@ -22,7 +22,18 @@ def longitudal_pertrubations(
     disturbances: list[dst] = []
     if epsilon is None:
         del epsilon
-        epsilon = {"u": 0.01, "w": 0.01, "q": 0.25, "theta": 0.01}  # /plane.trim["U"]
+        if state.trim == {}:
+            print("You should not really set the disturbance epsilon without a trim because it will contain default values. Instead either trim the plane or set the epsilon values manually")
+            u_trim = 1.
+        else:
+            u_trim = state.trim["U"]
+
+        epsilon = {
+            "u": 0.01 * u_trim, 
+            "w": 0.01 * u_trim, 
+            "q": 0.005 * u_trim, 
+            "theta": 0.01
+        }  # /plane.trim["U"]
 
     for var in ["u", "w", "q", "theta"]:
         state.epsilons[var] = epsilon[var]
@@ -52,7 +63,18 @@ def lateral_pertrubations(
     disturbances: list[dst] = []
     if epsilon is None:
         del epsilon
-        epsilon = {"v": 0.01, "p": 0.25, "r": 0.25, "phi": 0.01}
+        if state.trim == {}:
+            print("You should not really set the disturbance epsilon without a trim because it will contain default values. Instead either trim the plane or set the epsilon values manually")
+            u_trim = 1.
+        else:
+            u_trim = state.trim["U"]
+
+        epsilon = {
+            "v": 0.01 * u_trim, 
+            "p": 0.005 * u_trim, 
+            "r": 0.005 * u_trim, 
+            "phi": 0.01
+        }
 
     for var in ["v", "p", "r", "phi"]:
         state.epsilons[var] = epsilon[var]

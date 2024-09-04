@@ -107,6 +107,7 @@ class State:
         self.trim_dynamic_pressure = 0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
+        self.epsilons: dict[str, float] = {}
         self.polar: DataFrame = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
