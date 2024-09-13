@@ -1,5 +1,7 @@
 # ICARUS
-Version v0.1
+Version v1.0
+
+![image](https://github.com/user-attachments/assets/5bbbd72c-0046-4b50-85b0-facba5348f80)
 
 ## Working Effort.
 Code and Tools to analyze the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name). This software is developed for it to be used as part of a more general optimization workflow that will use different fidelity levels to produce mission specific aircrafts.
@@ -7,10 +9,10 @@ Code and Tools to analyze the performance of low speed aircraft using different 
 ## Current Goals
 
 - Improve Examples
-- Create functional API (instead of object orienting) for analysis
+- Create functional API (instead of object oriented on) for analysis
 - Convert to jax typing
 - Finish integrating Control Surfaces for AVL, GenuVP
-- Ameliorate Trajectory calculations
+- Ameliorate Trajectory Calculations
 - Create Panel/Particle Solver (insted of LSPT) to deprecate external aerodynamic solvers.
 - Create Results Class to handle Analysis output.
 - Improve Airfoil Polar class to handle higher order jax compatible interpolations
@@ -18,9 +20,10 @@ Code and Tools to analyze the performance of low speed aircraft using different 
 - Create Workflow Class to combine Analyses Together
 
 ## Long Term Goals
+- Add more optimization techniques (stohastic, GAs, swarm, etc.)
+- Integrate MDAO capabilities fully
 - Integrate DATCOM for conceputal design. Also add Lower Order Models and Analytical Formulas for Stability
 - Integrate Different fidelity levels for improved optimization
-- Add more optimization techniques (stohastic, GAs, swarm, etc.)
 - Improve testing
 - Finish Documentation and add doctests
 - Add CD/CI
@@ -30,17 +33,6 @@ Code and Tools to analyze the performance of low speed aircraft using different 
 ---
 
 
-
----
-
-## How to run
-
-More information on how to run and compile dependencies will be availabe in the future. This project depends on the following 3d Party Software for aerodynamic calculations:
-
-- OpenFoam (by OpenFoam.org)
-- Foil2Wake (National Technical University of Athens Laboratory of Aerodynamics)
-- XFoil (MIT)
-- GenuVP (National Technical University of Athens Laboratory of Aerodynamics)
 
 ---
 
@@ -100,8 +92,6 @@ All Around visualization functions that are grouped according to their function
 
 ## Building and Installing the Python Module
 -----------------------------------------
-Currently there are some errors on building the module. Will be worked out in the future as they are not a priority and project changes rapidly. With some basic debugging it works. The most common problem is with the xfoil package.
-If you want you can create a venv enviroment first:
 ```
 python -m venv venv
 .\venv\Scripts\activate # Windows
@@ -112,15 +102,15 @@ To install the package run:
 ```bash
 pip install .
 ```
+---
 
-On Windows to install the xfoil package, you may have to force the system to use MinGW.
-If the installation fails change the comments on  `pyproject.toml` at the root of the repo to:
-
-```
-    "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
-    #"xfoil @git+https://github.com/DARcorporation/xfoil-python.git",
-```
-
+## External Dependencies
 The end goal of the project is to come packaged with all 3d party software. Right now it is difficult fore to automate the bulding process or wrap the libraries.
+More information on how to run and compile dependencies will be availabe in the future. This project depends on the following 3d Party Software for aerodynamic calculations:
+
+- OpenFoam (by OpenFoam.org)
+- Foil2Wake (National Technical University of Athens Laboratory of Aerodynamics)
+- XFoil (MIT)
+- GenuVP (National Technical University of Athens Laboratory of Aerodynamics)
 
 ---
