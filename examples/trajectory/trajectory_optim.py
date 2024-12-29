@@ -30,7 +30,7 @@ jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_platform_name", "cpu")
 print("Jax has been configured to use the following devices: ", jax.devices())
 # Global flag to set a specific platform, must be used at startup.
-print(jax.numpy.ones(3).devices())  # TFRT_CPU_0
+print(jax.numpy.ones(3).devices())
 
 
 DB = Database(f"{INSTALL_DIR}/Data")

@@ -112,9 +112,3 @@ def compute_polars(
         fig.show()
         plt.pause(10.0)
         plt.close()
-
-
-# if __name__ == "__main__":
-#     from ICARUS.database import DB
-#     airfoil = DB.get_airfoil("NACA0015")
-#     compute_polars(airfoil, [1e6, 1e5], plot_polars=True)

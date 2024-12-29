@@ -124,9 +124,4 @@ def e190_takeoff_generator(
 
     # Define the surface area of the main wing
     airplane.S = wing_1.S + wing_2.S + wing_3.S
-
-    # from ICARUS.database import DB3D
-    # airplane.accessDB(HOMEDIR, DB3D)
-    # airplane.visAirplane()
-
     return airplane

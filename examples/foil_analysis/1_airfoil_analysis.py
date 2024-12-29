@@ -18,7 +18,12 @@ def main() -> None:
     start_time: float = time.time()
 
     # SETUP DB CONNECTION
-    # read_polars_2d(EXTERNAL_DB)
+    # CHANGE THIS TO YOUR DATABASE FOLDER
+    database_folder = "E:\\Icarus\\Data"
+
+    # Load the database
+    DB = Database(database_folder)
+    DB.load_data()
 
     # RUN SETUP
     calcXFoil: bool = True
@@ -30,12 +35,6 @@ def main() -> None:
     print(f"\tXfoil: {calcXFoil}")
     print(f"\tOpenfoam: {calcOpenFoam}")
 
-    # CHANGE THIS TO YOUR DATABASE FOLDER
-    database_folder = "E:\\Icarus\\Data"
-
-    # Load the database
-    DB = Database(database_folder)
-    DB.load_data()
     print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
     print(
         f"Total number of computed airfoil data {len(list(DB.foils_db._raw_data.keys()))}",
@@ -229,7 +228,7 @@ def main() -> None:
         except Exception as e:
             print(f"Error saving polar plot. Got: {e}")
 
-    #   ############################### END LOOP ##############################################
+    ################################ END LOOP ##############################################
 
     end_time = time.time()
     print(f"Total time: {end_time - start_time}")
@@ -239,19 +238,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # # parse command line options
-    # # Options are -n for number of processors
-    # from ICARUS import CPU_TO_USE
-
-    # from optparse import OptionParser
-    # parser = OptionParser()
-    # parser.add_option("-n", "--num_proc", type="int", dest="num_proc", default=CPU_TO_USE,
-    #                   help="Number of processors to use")
-    # (options, args) = parser.parse_args()
-    # num_proc = options.num_proc
-
-    # # if num proc is specified, set it
-    # if num_proc > 0:
-    #     CPU_TO_USE = num_proc
-
     main()

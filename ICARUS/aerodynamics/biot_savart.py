@@ -375,8 +375,8 @@ def ground_effect(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    i: Int[Array, '1'],
-    j: Int[Array, '1'],
+    i: Int[Array, "1"],
+    j: Int[Array, "1"],
     panel: Float[Array, "..."],
 ) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,

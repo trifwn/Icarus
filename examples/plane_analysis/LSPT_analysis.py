@@ -15,10 +15,10 @@ from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
+from ICARUS.database import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
-from ICARUS.database import Database
 
 
 def main() -> None:
@@ -28,7 +28,7 @@ def main() -> None:
     # # DB CONNECTION
     database_folder = "E:\\Icarus\\Data"
     # Load the database
-    DB = Database(database_folder)
+    _ = Database(database_folder)
 
     # # Get Plane
     planes: list[Airplane] = []

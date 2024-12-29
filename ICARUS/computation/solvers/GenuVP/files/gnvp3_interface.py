@@ -3,11 +3,11 @@ import subprocess
 
 from pandas import DataFrame
 
+from ICARUS import GenuVP3_exe
 from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS import GenuVP3_exe
 
 from .files_gnvp3 import make_input_files
 

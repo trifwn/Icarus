@@ -140,13 +140,14 @@ class WingSurface:
         self.twist_angles: FloatArray = twist_angles
 
         # Define the airfoil
-        DB = Database.get_instance()
         if isinstance(root_airfoil, str):
+            DB = Database.get_instance()
             root_airfoil = DB.get_airfoil(root_airfoil)
         self._root_airfoil: Airfoil = root_airfoil
         if tip_airfoil is None:
             tip_airfoil = root_airfoil
         elif isinstance(tip_airfoil, str):
+            DB = Database.get_instance()
             tip_airfoil = DB.get_airfoil(tip_airfoil)
         self._tip_airfoil: Airfoil = tip_airfoil
         self.airfoils: list[Airfoil] = [root_airfoil, tip_airfoil]
@@ -259,9 +260,9 @@ class WingSurface:
         x_offsets: FloatArray = np.empty(N, dtype=float)
         twist_angles: FloatArray = np.empty(N, dtype=float)
 
-        DB = Database.get_instance()
         # Define Airfoils
         if isinstance(root_airfoil, str):
+            DB = Database.get_instance()
             root_airfoil_obj: Airfoil = DB.get_airfoil(root_airfoil)
         elif isinstance(root_airfoil, Airfoil):
             root_airfoil_obj = root_airfoil
@@ -271,6 +272,7 @@ class WingSurface:
             raise ValueError("Root Airfoil must be a string or an Airfoil")
 
         if isinstance(tip_airfoil, str):
+            DB = Database.get_instance()
             tip_airfoil_obj: Airfoil = DB.get_airfoil(tip_airfoil)
         elif isinstance(tip_airfoil, Airfoil):
             tip_airfoil_obj = tip_airfoil
@@ -1184,7 +1186,6 @@ class WingSurface:
             grid = np.concatenate((gsym, grid))
         else:
             grid = grid
-        print(f"Grid shape: {grid.shape} for surface {self.name}")
         return grid
 
     def plot(

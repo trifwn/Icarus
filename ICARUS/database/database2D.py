@@ -42,7 +42,7 @@ class PolarsNotFoundError(Exception):
         self,
         airfoil_name: str,
         solver: str = "None",
-        solvers_found: list[str] | None= None,
+        solvers_found: list[str] | None = None,
     ) -> None:
         """Initialize the PolarsNotFoundError class.
 
@@ -480,6 +480,7 @@ class Database_2D:
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
         from ICARUS import INSTALL_DIR
+
         return INSTALL_DIR, AFDIR, REYNDIR, ANGLEDIRS
 
     # STATIC METHODS

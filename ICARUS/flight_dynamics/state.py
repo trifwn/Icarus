@@ -26,6 +26,7 @@ from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
 from .stability.lateral import lateral_stability_finite_differences
 from .stability.longitudal import longitudal_stability_finite_differences
+from .trim import TrimNotPossible
 from .trim import trim_state
 
 if TYPE_CHECKING:
@@ -248,8 +249,13 @@ class State:
             self.polar = polar
 
         # GET TRIM STATE
-        self.trim = trim_state(self, verbose=verbose)
-        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
+        try:
+            self.trim = trim_state(self, verbose=verbose)
+            self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
+        except TrimNotPossible:
+            self.trimmable = False
+            self.trim = {}
+            self.trim_dynamic_pressure = np.nan
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()

@@ -35,6 +35,7 @@ from matplotlib import colors
 from matplotlib.colors import ListedColormap
 from matplotlib.markers import MarkerStyle
 
+
 def get_p_RdBl_cmap() -> colors.LinearSegmentedColormap:
     """p_RdBl red-blue colormap."""
     cdict: dict[
@@ -66,4 +67,3 @@ from . import airfoil
 from . import airplane
 
 __all__ = ["airfoil", "airplane"]
-

@@ -4,8 +4,8 @@ import subprocess
 
 import numpy as np
 
-from ICARUS.core.types import FloatArray
 from ICARUS import AVL_exe
+from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database.utils import angle_to_case
 from ICARUS.flight_dynamics.state import State

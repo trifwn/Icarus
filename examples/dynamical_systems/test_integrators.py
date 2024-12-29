@@ -7,7 +7,6 @@ from scipy.integrate import solve_ivp
 
 from ICARUS.dynamical_systems.base_system import DynamicalSystem
 from ICARUS.dynamical_systems.integrate import BackwardEulerIntegrator
-from ICARUS.dynamical_systems.integrate import CrankNicolsonIntegrator
 from ICARUS.dynamical_systems.integrate import ForwardEulerIntegrator
 from ICARUS.dynamical_systems.integrate import GaussLegendreIntegrator
 from ICARUS.dynamical_systems.integrate import NewmarkIntegrator

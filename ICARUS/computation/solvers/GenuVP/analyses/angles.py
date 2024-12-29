@@ -34,6 +34,7 @@ class StopRunningThreadError(Exception):
 
 
 def gnvp_angle_case(
+    DB: Database,
     plane: Airplane,
     solver2D: str,
     maxiter: int,
@@ -64,7 +65,6 @@ def gnvp_angle_case(
         str: Case Done Message
 
     """
-    DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
     PLANEDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
@@ -170,6 +170,7 @@ def run_gnvp_angles(
         job = Thread(
             target=gnvp_angle_case,
             kwargs={
+                "DB": DB,
                 "plane": plane,
                 "solver2D": solver2D,
                 "maxiter": maxiter,
@@ -237,8 +238,9 @@ def run_gnvp_angles_parallel(
         solver_options (dict[str, Any]): Solver Options
 
     """
-    bodies_dict: list[GenuSurface] = []
+    DB = Database.get_instance()
 
+    bodies_dict: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
@@ -254,17 +256,19 @@ def run_gnvp_angles_parallel(
     )
 
     stop_event = Event()
+    from multiprocessing import Pool
+
     print("Running Angles in Parallel Mode")
 
     def run() -> None:
         if genu_version == 3:
-            num_processes = CPU_TO_USE
+            num_processes = int(CPU_TO_USE)
         else:
             num_processes = int((CPU_TO_USE) / 3)
-        from multiprocessing import Pool
         with Pool(num_processes) as pool:
             args_list = [
                 (
+                    DB,
                     plane,
                     solver2D,
                     maxiter,
@@ -279,13 +283,14 @@ def run_gnvp_angles_parallel(
                 )
                 for angle in angles
             ]
+
             try:
                 _ = pool.starmap(gnvp_angle_case, args_list)
+
             except CalledProcessError as e:
                 print(f"Could not run GNVP got: {e}")
                 stop_event.set()
 
-    DB = Database.get_instance()
     PLANEDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver=f"GenuVP{genu_version}",

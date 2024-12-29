@@ -7,11 +7,11 @@ from typing import Literal
 import numpy as np
 from pandas import DataFrame
 
+from ICARUS import AVL_exe
 from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.types import FloatArray
-from ICARUS import AVL_exe
 from ICARUS.database import Database
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError

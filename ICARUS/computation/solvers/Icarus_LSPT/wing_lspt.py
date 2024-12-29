@@ -40,23 +40,3 @@ class LSPT(Solver):
             [LSPT_PolarAnalysis()],
             solver_parameters=solver_parameters,
         )
-
-
-# # EXAMPLE USAGE
-if __name__ == "__main__":
-    pass
-    # from ICARUS.database.utils import angle_to_case
-    # from ICARUS.database import DB
-    # import os
-
-    # HOMEDIR = os.getcwd()
-    # lspt = LSPT()
-    # analysis = lspt.get_analyses_names()[0]
-    # lspt.select_analysis(analysis)
-    # options = lspt.get_analysis_options()
-
-    # plane = list(DB.vehicles_db.planes.items())[0][1]
-    # CASEDIR = plane.CASEDIR + "/" + angle_to_case(0.0) + "/"
-    # options["HOMEDIR"] = HOMEDIR
-    # options["CASEDIR"] = CASEDIR
-    # # gnvp3.run()

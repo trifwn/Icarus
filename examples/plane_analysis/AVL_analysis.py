@@ -13,11 +13,11 @@ from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
 from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
 from ICARUS.computation.solvers.AVL.analyses.polars import process_avl_angles_run
+from ICARUS.database.db import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
-from ICARUS.database.db import Database
 # CHANGE THIS TO YOUR DATABASE FOLDER
 database_folder = "E:\\Icarus\\Data"
 # Load the database

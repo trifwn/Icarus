@@ -147,7 +147,7 @@ def plot_airplane_polars(
                 if flag:
                     break
             except KeyError as e:
-                print(f"Run Doesn't Exist: {airplane},{e} ")
+                print(f"For plane {airplane}: run {e} Does not exist")
 
     # In the plots we created there is either one or two empty plots
     # depending on the number of plots we demanded

@@ -3,8 +3,9 @@ import subprocess
 from time import sleep
 from typing import Any
 
-from ICARUS.computation.solvers.Foil2Wake import files_f2w as ff2w
 from ICARUS import Foil_Section_exe
+from ICARUS.computation.solvers.Foil2Wake import files_f2w as ff2w
+
 
 def sequential_run(
     CASEDIR: str,

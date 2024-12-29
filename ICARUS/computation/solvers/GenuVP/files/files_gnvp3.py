@@ -624,20 +624,19 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
                     if isinstance(grid, list):
                         grid = np.array(grid)
 
-                    if len(np.shape(grid)) == 3:
+                    if len(np.shape(grid)) == 4:
                         for subgrid in grid:
                             for nstrip in subgrid:
                                 for point in nstrip:
                                     f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
                                 f_wg.write("\n")
-                    elif len(np.shape(grid)) == 2:
+                    elif len(np.shape(grid)) == 3:
                         for n_strip in grid:  # For each strip
                             for m_point in n_strip:  # For each point in the strip
                                 # Grid Coordinates
-                                # f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
                                 f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
                             f_wg.write("\n")
-                    else:
+                    elif len(np.shape(grid)) == 2:
                         for point in grid:
                             f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
                         f_wg.write("\n")

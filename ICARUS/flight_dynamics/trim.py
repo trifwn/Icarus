@@ -135,3 +135,38 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         "Neutral Point": x_neutral_point,
     }
     return trim
+
+    # _trim = Trim(
+    #     velocity=U_CRUISE,
+    #     angle_of_attack=aoa_trim,
+    #     cl=cl_trim,
+    #     cd=cd_trim,
+    #     cl_over_cd=CL_OVER_CD,
+    #     cm0=CM0,
+    #     static_margin=static_margin,
+    #     neutral_point=x_neutral_point,
+    # )
+
+
+class Trim:
+    """Trim class"""
+
+    def __init__(
+        self,
+        velocity: float,
+        angle_of_attack: float,
+        cl: float,
+        cd: float,
+        cl_over_cd: float,
+        cm0: float,
+        static_margin: float,
+        neutral_point: float,
+    ) -> None:
+        self.velocity = velocity
+        self.angle_of_attack = angle_of_attack
+        self.cl = cl
+        self.cd = cd
+        self.cl_over_cd = cl_over_cd
+        self.cm0 = cm0
+        self.static_margin = static_margin
+        self.neutral_point = neutral_point

@@ -78,16 +78,20 @@ class Database_3D:
         except KeyError:
             raise ValueError(f"No State found for {state}")
 
-    def get_polars(self, name: str) -> DataFrame:
+    def get_polars(self, name: str, solver: str | None = None) -> DataFrame:
         if name in self.polars.keys():
             polar_obj: DataFrame = self.polars[name]
-            return polar_obj
+            pol = polar_obj
         self.read_plane_data(name)
         try:
             polar_obj = self.polars[name]
-            return polar_obj
+            pol = polar_obj
         except KeyError:
             raise ValueError(f"No Polars found for {name}")
+
+        if solver is not None:
+            return pol[[col for col in pol.columns if col.startswith(solver) or col == "AoA"]]
+        return pol
 
     def get_vehicle(self, name: str) -> Airplane:
         if name in self.planes.keys():

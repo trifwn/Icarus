@@ -34,6 +34,7 @@ class Database:
         Args:
             APPHOME (str): The path to the database directory
         """
+        APPHOME = os.path.abspath(APPHOME)
         self.HOMEDIR: str = APPHOME
         self.DB2D: str = os.path.join(APPHOME, "2D")
         self.DB3D: str = os.path.join(APPHOME, "3D")

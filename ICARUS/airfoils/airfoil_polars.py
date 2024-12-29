@@ -9,7 +9,9 @@ To initialize the Airfoil Polars Class, just pass a the
 Struct data from the DataBase to the constructor.
 
 >>> from ICARUS.airfoils.airfoil_polars import AirfoilPolars
->>> from ICARUS.database import DB
+>>> from ICARUS.database import Database
+>>> db_folder = "path/to/database"
+>>> DB = Database(db_folder)
 >>> data = DB.get_airfoil_data("NACA0012")
 >>> polars = AirfoilPolars(data)
 

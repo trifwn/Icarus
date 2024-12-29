@@ -248,7 +248,7 @@ class ConceptAirplane:
 
     def far_criteria(
         self,
-        **missing_vals: dict[str, Any],
+        **missing_vals: dict[str, bool],
     ) -> tuple[
         tuple[FloatArray, FloatArray],
         tuple[FloatArray, FloatArray],
