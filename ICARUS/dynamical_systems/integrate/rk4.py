@@ -25,10 +25,13 @@ class RK4Integrator(Integrator):
 
         return x + (self.dt / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         num_steps = jnp.ceil((tf - t0) / self.dt).astype(int)
-        x = x0
-        t = t0
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
         trajectory = trajectory.at[0].set(x0)
 
@@ -37,10 +40,18 @@ class RK4Integrator(Integrator):
         return times, trajectory
 
     @partial(jit, static_argnums=(0,))
-    def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def _simulate(
+        self,
+        trajectory: jnp.ndarray,
+        times: jnp.ndarray,
+        num_steps: int,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the RK4 method and
         # stores the results in the trajectory array
-        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
+        def body(
+            i: int,
+            args: tuple[jnp.ndarray, jnp.ndarray],
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             x = trajectory[i - 1]
             t = times[i - 1]

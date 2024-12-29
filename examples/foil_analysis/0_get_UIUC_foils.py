@@ -3,7 +3,10 @@ import re
 
 import requests
 
-from ICARUS.database import DB2D
+from ICARUS.database import Database
+
+DB = Database("./Data")
+DB2D = DB.DB2D
 
 # Target URL with airfoil links
 url = "https://m-selig.ae.illinois.edu/ads/coord_database.html"

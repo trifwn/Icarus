@@ -8,7 +8,7 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.core.struct import Struct
-from ICARUS.database import DB
+from ICARUS.database import Database
 
 from .. import colors_
 from .. import markers
@@ -27,14 +27,14 @@ def plot_airfoil_polars(
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
 ) -> tuple[ndarray[Any, Any], Figure]:
-    """
-    Args:
-        airfoil_name (str): Airfoil names
-        solvers (list[str] | str, optional): List of solver Names. Defaults to "All".
-        plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
-        size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
-        aoa_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
-        title (str, optional): Figure Title. Defaults to "Aero Coefficients".
+    """Args:
+    airfoil_name (str): Airfoil names
+    solvers (list[str] | str, optional): List of solver Names. Defaults to "All".
+    plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
+    size (tuple[int, int], optional): Fig Size. Defaults to (10, 10).
+    aoa_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
+    title (str, optional): Figure Title. Defaults to "Aero Coefficients".
+
     """
     number_of_plots = len(plots) + 1
 
@@ -60,6 +60,7 @@ def plot_airfoil_polars(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
+    DB = Database.get_instance()
     data: Struct = DB.foils_db._raw_data
     db_solvers = data[airfoil_name]
 

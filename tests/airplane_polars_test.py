@@ -1,25 +1,20 @@
-import os
-
 import numpy as np
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_3d
-from ICARUS.database import DB
-from ICARUS.database import EXTERNAL_DB
+from ICARUS.database.db import Database
 
 
 def airplane_polars(plot: bool = False) -> None:
-    """
-    Function to test the airplane polars.
+    """Function to test the airplane polars.
 
     Args:
         plot (bool, optional): Whether to plot the results. Defaults to False.
 
     Returns:
         tuple[DataFrame, DataFrame]: Returns the desired and actual results.
-    """
 
+    """
     planenames: list[str] = ["bmark"]
     # BMARKLOC: str = os.path.join(EXTERNAL_DB, "bmark.txt")
     # read_polars_3d(BMARKLOC, "bmark")
@@ -31,8 +26,8 @@ def airplane_polars(plot: bool = False) -> None:
         plot_airplane_polars(
             airplane_names=planenames,
             solvers=[
-                "GenuVP3 Potential",
                 "GenuVP3 2D",
+                "GenuVP3 Potential",
                 "GenuVP7 2D",
                 "GenuVP7 Potential",
                 "LSPT 2D",
@@ -43,6 +38,7 @@ def airplane_polars(plot: bool = False) -> None:
             title="Benchmark Airplane Polars",
         )
 
+    DB = Database.get_instance()
     desired: DataFrame = DB.vehicles_db.polars["XFLR_bmark"]
     actuals: list[DataFrame] = [
         DB.vehicles_db.polars["bmark"],
@@ -64,7 +60,7 @@ def airplane_polars(plot: bool = False) -> None:
                 Cm_d: Series[float] = desired["Cm"].astype(float)
                 Cm: Series[float] = act[f"{pol}Cm"].astype(float)
             except KeyError:
-                print(f"--------ATTENTION----------")
+                print("--------ATTENTION----------")
                 print(f"{pol} not found")
                 continue
             # Compare All Values tha correspond to same AoA

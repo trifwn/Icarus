@@ -5,8 +5,8 @@ def angles_sepatation(all_angles: list[float]) -> tuple[list[float], list[float]
         all_angles (_type_): _description_
     Returns:
         _type_: _description_
-    """
 
+    """
     pangles: list[float] = []
     nangles: list[float] = []
     for ang in all_angles:

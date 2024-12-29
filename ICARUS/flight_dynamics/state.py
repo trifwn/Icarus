@@ -15,7 +15,6 @@ from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Index
 from tabulate import tabulate
-from traitlets import Float
 
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
@@ -42,7 +41,7 @@ class ControlState:
         self.control_vars: set[str] = airplane.control_vars
         self.num_control_vars: int = len(self.control_vars)
         self.control_vector_dict: dict[str, float] = airplane.control_vector
-        self.hash_dict: dict[int, int] = {}
+        self.hash_dict: dict[str, int] = {}
 
     def update(self, control_vector_dict: dict[str, float]) -> None:
         self.control_vector_dict = control_vector_dict
@@ -50,7 +49,7 @@ class ControlState:
     @property
     def control_vector(self) -> FloatArray:
         control_vector = np.array(
-            [self.control_vector_dict[key] for key in self.control_vars]
+            [self.control_vector_dict[key] for key in self.control_vars],
         )
         return control_vector
 
@@ -58,8 +57,7 @@ class ControlState:
         return f"Control Variables: {self.control_vars}"
 
     def __hash__(self) -> int:
-        """
-        Unique hash for the control state. This is used to generate a unique name for the state.
+        """Unique hash for the control state. This is used to generate a unique name for the state.
         It depends on the control variables and their values.
 
 
@@ -68,6 +66,7 @@ class ControlState:
 
         Returns:
             int: _description_
+
         """
         hash_val = hash(frozenset(self.control_vector_dict.items()))
         # Add to the hash dictionary if not already present
@@ -158,8 +157,14 @@ class State:
         return self.airplane.span
 
     @property
-    def inertia(self) -> FloatArray:
-        return self.airplane.total_inertia
+    def inertia(self) -> tuple[float, float, float, float, float, float]:
+        Ix = float(self.airplane.total_inertia[0])
+        Iy = float(self.airplane.total_inertia[1])
+        Iz = float(self.airplane.total_inertia[2])
+        Ixz = float(self.airplane.total_inertia[3])
+        Ixy = float(self.airplane.total_inertia[4])
+        Iyz = float(self.airplane.total_inertia[5])
+        return Ix, Iy, Iz, Ixz, Ixy, Iyz
 
     @property
     def mass(self) -> float:
@@ -189,7 +194,7 @@ class State:
     def control_vector(self) -> FloatArray:
         control_vector_dict = self.control_vector_dict
         control_vector = np.array(
-            [control_vector_dict[key] for key in self.control_vars]
+            [control_vector_dict[key] for key in self.control_vars],
         )
         return control_vector
 
@@ -207,8 +212,7 @@ class State:
             return False
         if self.environment.altitude > 2 * self.span:
             return False
-        else:
-            return True
+        return True
 
     def update_plane(self, airplane: Airplane) -> None:
         self.airplane = airplane
@@ -245,9 +249,7 @@ class State:
 
         # GET TRIM STATE
         self.trim = trim_state(self, verbose=verbose)
-        self.trim_dynamic_pressure = (
-            0.5 * self.environment.air_density * self.trim["U"] ** 2.0
-        )  # NOW WE UPDATE IT
+        self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()
@@ -276,7 +278,7 @@ class State:
         - epsilon: Disturbance Magnitudes
         """
         self.scheme: str = scheme
-        self.epsilons: dict[str, float] = {}
+        self.epsilons = {}
 
         self.disturbances = [
             *longitudal_pertrubations(self, scheme, epsilon),
@@ -287,7 +289,7 @@ class State:
     def sensitivity_analysis(self, var: str, space: list[float] | FloatArray) -> None:
         self.sensitivities[var] = []
         for e in space:
-            self.sensitivities[var].append(dst(var, e))
+            self.sensitivities[var].append(dst(var, float(e)))
 
     def get_pertrub(self) -> None:
         for disturbance in self.disturbances:
@@ -311,18 +313,16 @@ class State:
         plot_longitudal: bool = True,
         axs: list[Axes] | None = None,
     ) -> None:
-        """
-        Generate a plot of the eigenvalues.
-        """
+        """Generate a plot of the eigenvalues."""
         if axs is not None:
             fig: Figure | SubFigure | None = axs[0].figure
             if fig is None:
                 fig = plt.figure()
-                fig.suptitle(f"Eigenvalues")
+                fig.suptitle("Eigenvalues")
             axs_now: list[Axes] = axs
         else:
             fig = plt.figure()
-            fig.suptitle(f"Eigenvalues")
+            fig.suptitle("Eigenvalues")
 
             if plot_lateral and plot_longitudal:
                 axs_now = fig.subplots(1, 2)  # type: ignore
@@ -333,13 +333,9 @@ class State:
         i = 0
         if plot_longitudal:
             # extract real part
-            x: list[float] = [
-                ele.real for ele in self.state_space.longitudal.eigenvalues
-            ]
+            x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
             # extract imaginary part
-            y: list[float] = [
-                ele.imag for ele in self.state_space.longitudal.eigenvalues
-            ]
+            y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
             axs_now[i].scatter(x, y, label="Longitudal", color="r")
             i += 1
 
@@ -351,7 +347,7 @@ class State:
             marker_x = MarkerStyle("x")
             axs_now[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
-        for j in range(0, i + 1):
+        for j in range(i + 1):
             axs_now[j].set_ylabel("Imaginary")
             axs_now[j].set_xlabel("Real")
             axs_now[j].axvline(0, color="black", lw=2)
@@ -379,7 +375,9 @@ class State:
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
                 tabulate(
-                    self.state_space.longitudal.A, tablefmt="github", floatfmt=".3f"
+                    self.state_space.longitudal.A,
+                    tablefmt="github",
+                    floatfmt=".3f",
                 ),
             )
 
@@ -394,23 +392,22 @@ class State:
                 ss.write(f"\t{[round(i,3) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
-                tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f")
+                tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f"),
             )
         return ss.getvalue()
 
     def to_json(self) -> str:
-        """
-        Pickle the state object to a json string.
+        """Pickle the state object to a json string.
 
         Returns:
             str: Json String
+
         """
         encoded: str = str(jsonpickle.encode(self))
         return encoded
 
     def save(self, directory: str) -> None:
-        """
-        Save the state object to a json file.
+        """Save the state object to a json file.
 
         Args:
             directory (str): Directory to save the state to.

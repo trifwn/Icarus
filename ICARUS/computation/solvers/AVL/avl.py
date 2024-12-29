@@ -2,8 +2,6 @@ from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAna
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.computation.analyses.input import BoolInput
-from ICARUS.computation.analyses.input import IntInput
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
     avl_dynamic_analysis_fd,
 )
@@ -44,7 +42,11 @@ class AVL_DynamicAnalysisFD(BaseDynamicAnalysis):
 
 class AVL_DynamicAnalysisImplicit(BaseDynamicAnalysis):
     def __init__(self) -> None:
-        super().__init__("AVL", avl_dynamic_analysis_implicit, unhook=process_avl_impl_res)
+        super().__init__(
+            "AVL",
+            avl_dynamic_analysis_implicit,
+            unhook=process_avl_impl_res,
+        )
 
 
 class AVL(Solver):

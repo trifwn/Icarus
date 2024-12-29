@@ -1,21 +1,18 @@
 import os
 
-from ICARUS import APPHOME
 from ICARUS.core.struct import Struct
-
-from . import ANALYSESDB
 
 
 class AnalysesDB:
-    def __init__(self) -> None:
+    def __init__(self, APPHOME: str, location: str) -> None:
         self.HOMEDIR: str = APPHOME
-        self.DATADIR: str = ANALYSESDB
+        self.DBANALYSES: str = location
         self.data = Struct()
 
     def load_data(self) -> None:
         self.scan()
 
     def scan(self) -> None:
-        os.chdir(ANALYSESDB)
+        os.chdir(self.DBANALYSES)
         # LOAD ANALYSES
         os.chdir(self.HOMEDIR)

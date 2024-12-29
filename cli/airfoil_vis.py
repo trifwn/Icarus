@@ -3,7 +3,6 @@ from typing import Any
 from inquirer import Checkbox
 from inquirer import prompt
 
-from ICARUS.database import DB
 from ICARUS.visualization.airfoil import __functions__ as airfoil_functions
 
 

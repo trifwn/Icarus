@@ -16,8 +16,7 @@ def far_4_climb(
     e: float,
     wing_loading: FloatArray,
 ) -> tuple[FloatArray, FloatArray]:
-    """
-    Returns the thrust loading for a given number of engines, cl_2, cd, AR and e
+    """Returns the thrust loading for a given number of engines, cl_2, cd, AR and e
 
     Args:
         no_of_engines (int): Number of engines
@@ -28,6 +27,7 @@ def far_4_climb(
 
     Returns:
         tuple: Wing loading, Thrust loading
+
     """
     lift_o_drag: float = cl_2 / (cd + cl_2**2 / (np.pi * AR * e))
     N: int = no_of_engines

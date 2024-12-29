@@ -2,7 +2,8 @@
 *.mypy_cache/
 *.vscode/
 *.pytest_cache
-venv/
+*.ruff_cache/
+.venv/
 setup.cfg
 *__pycache__
 3d_Party/

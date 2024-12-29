@@ -4,9 +4,12 @@ from ICARUS.airfoils._interpolate import interpolate
 from ICARUS.core.types import FloatArray
 
 
-def gen_NACA5_airfoil(number: str, n_points: int, finite_TE: bool = False) -> tuple[FloatArray, FloatArray]:
-    """
-    Generates a NACA 5 digit airfoil
+def gen_NACA5_airfoil(
+    number: str,
+    n_points: int,
+    finite_TE: bool = False,
+) -> tuple[FloatArray, FloatArray]:
+    """Generates a NACA 5 digit airfoil
 
     Args:
         number (str): NACA 5 digit identifier
@@ -15,8 +18,8 @@ def gen_NACA5_airfoil(number: str, n_points: int, finite_TE: bool = False) -> tu
 
     Returns:
         tuple[FloatArray, FloatArray]: Upper and lower surface coordinates
-    """
 
+    """
     naca1 = int(number[0])
     naca23 = int(number[1:3])
     naca45 = int(number[3:])

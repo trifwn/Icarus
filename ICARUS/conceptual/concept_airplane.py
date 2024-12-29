@@ -10,8 +10,7 @@ from ICARUS.core.units import si_to_imperial
 
 
 class ConceptAirplane:
-    """
-    Conceptual AIRPLANE class to calculate all FAR criteria
+    """Conceptual AIRPLANE class to calculate all FAR criteria
     and produce Match Point Diagrams.
     """
 
@@ -172,13 +171,21 @@ class ConceptAirplane:
     def CD_LANDING(self) -> float | None:
         if self.CD_0 is None:
             return None
-        return drag_coeff_skin(cd_0=self.CD_0, flap_extension=30, landing_gear_cd=0.015)  # degrees
+        return drag_coeff_skin(
+            cd_0=self.CD_0,
+            flap_extension=30,
+            landing_gear_cd=0.015,
+        )  # degrees
 
     @property
     def CD_CLIMB(self) -> float | None:
         if self.CD_0 is None:
             return None
-        return drag_coeff_skin(cd_0=self.CD_0, flap_extension=30, landing_gear_cd=0)  # degrees
+        return drag_coeff_skin(
+            cd_0=self.CD_0,
+            flap_extension=30,
+            landing_gear_cd=0,
+        )  # degrees
 
     @property
     def CD_CRUISE(self) -> float | None:
@@ -219,9 +226,8 @@ class ConceptAirplane:
             if callable(self.__dict__[item]):
                 if item is None:
                     missing_vals.append(item)
-            else:
-                if getattr(self, item) is None:
-                    missing_vals.append(item)
+            elif getattr(self, item) is None:
+                missing_vals.append(item)
         return missing_vals
 
     def set_parameters(self, missing_val_dict: dict[str, Any]) -> dict[str, Any]:
@@ -286,8 +292,7 @@ class ConceptAirplane:
                 **kwargs,
             )
             return res
-        else:
-            raise (ValueError(f"Missing values: {self.missing_vals}"))
+        raise (ValueError(f"Missing values: {self.missing_vals}"))
 
     def partial_fun_factory(
         self,
@@ -296,12 +301,17 @@ class ConceptAirplane:
         **kwargs: dict[str, Any],
     ) -> Callable[..., Any]:
         not_defined: list[str] = [arg for arg in args_to_suppress or self.get_missing_parameters()]
-        print(f"Function will try to evaluate with the following params as inputs: {not_defined}")
+        print(
+            f"Function will try to evaluate with the following params as inputs: {not_defined}",
+        )
         for arg in not_defined:
             if arg not in self.property_dict:
                 print(f"{arg} is not a valid parameter")
 
-        def optimize_fun(new_args: list[Any] | Any, **new_kwargs: dict[str, Any]) -> Any:
+        def optimize_fun(
+            new_args: list[Any] | Any,
+            **new_kwargs: dict[str, Any],
+        ) -> Any:
             if not isinstance(new_args, list):
                 new_args = new_args.tolist()
 

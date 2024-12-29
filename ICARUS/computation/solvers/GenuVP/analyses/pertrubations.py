@@ -19,7 +19,7 @@ from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movemen
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.database.utils import disturbance_to_case
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.disturbances import Disturbance
@@ -43,8 +43,7 @@ def gnvp_disturbance_case(
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> str:
-    """
-    Run a single disturbance simulation in GNVP3
+    """Run a single disturbance simulation in GNVP3
 
     Args:
         plane (Airplane): Plane Object
@@ -62,7 +61,9 @@ def gnvp_disturbance_case(
 
     Returns:
         str: Case Done Message
+
     """
+    DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
     PLANEDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
@@ -135,8 +136,7 @@ def run_pertrubation_serial(
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
-    """
-    For each pertrubation in the plane object, run a simulation in GNVP3.
+    """For each pertrubation in the plane object, run a simulation in GNVP3.
     Can be used mainly for a pertrubation analysis. This analysis is serial.
 
     Args:
@@ -146,7 +146,9 @@ def run_pertrubation_serial(
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
         solver_options (dict[str, Any] | Struct): Solver Options
+
     """
+    DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
@@ -223,8 +225,7 @@ def run_pertrubation_parallel(
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
-    """
-    For each pertrubation in the plane object, run a simulation in GNVP3.
+    """For each pertrubation in the plane object, run a simulation in GNVP3.
     Can be used mainly for a pertrubation analysis. This analysis is parallel.
 
     Args:
@@ -234,7 +235,9 @@ def run_pertrubation_parallel(
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
         solver_options (dict[str, Any] | Struct): Solver Options
+
     """
+    DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
@@ -332,8 +335,7 @@ def sensitivity_serial(
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
-    """
-    For each pertrubation in the sensitivity attribute of the dynamic airplane
+    """For each pertrubation in the sensitivity attribute of the dynamic airplane
     object, run a simulation in GNVP3. Can be used mainly for a sensitivity
     analysis. This analysis is serial.
 
@@ -345,6 +347,7 @@ def sensitivity_serial(
         timestep (float): Timestep for the simulation
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
+
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
@@ -386,8 +389,7 @@ def sensitivity_parallel(
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
-    """
-    For each pertrubation in the sensitivity attribute of the dynamic airplane
+    """For each pertrubation in the sensitivity attribute of the dynamic airplane
     object, run a simulation in GNVP3. Can be used mainly for a sensitivity
     analysis. This analysis is parallel.
 
@@ -399,6 +401,7 @@ def sensitivity_parallel(
         timestep (float): Timestep for the simulation
         angle_of_attack (float): Angle of attack in degrees
         solver_options (dict[str, Any] | Struct): Solver Options
+
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
@@ -449,9 +452,12 @@ def proccess_pertrubation_res_7(plane: Airplane, state: State) -> DataFrame:
     return proccess_pertrubation_res(plane, state, 7)
 
 
-def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) -> DataFrame:
-    """
-    Process the pertrubation results from the GNVP solver
+def proccess_pertrubation_res(
+    plane: Airplane,
+    state: State,
+    gnvp_version: int,
+) -> DataFrame:
+    """Process the pertrubation results from the GNVP solver
 
     Args:
         plane (Airplane): Airplane Object
@@ -460,14 +466,21 @@ def proccess_pertrubation_res(plane: Airplane, state: State, gnvp_version: int) 
 
     Returns:
         DataFrame: DataFrame with the forces for each pertrubation simulation
+
     """
+    DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
     DYNDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver=f"GenuVP{gnvp_version}",
         case="Dynamics",
     )
-    forces: DataFrame = forces_to_pertrubation_results(DYNDIR, HOMEDIR, state, gnvp_version)
+    forces: DataFrame = forces_to_pertrubation_results(
+        DYNDIR,
+        HOMEDIR,
+        state,
+        gnvp_version,
+    )
     forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
 
     state.set_pertrubation_results(forces)

@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from ICARUS.core.types import FloatArray
-
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics.state import State
 
@@ -61,7 +59,12 @@ class LateralStateSpace:
                 [yv, yp, yr, yphi],
                 [lv, lp, lr, lphi],
                 [nv, n_p, nr, nph],
-                [0, 1, 0*np.tan(theta), 0], # Etkins uses np.tan(theta) here where as most writers use 0
+                [
+                    0,
+                    1,
+                    0 * np.tan(theta),
+                    0,
+                ],  # Etkins uses np.tan(theta) here where as most writers use 0
             ],
         )
 
@@ -78,28 +81,24 @@ class LateralStateSpace:
         self.eigenvectors = np.empty((4, 4), dtype=float)
         self.dutch_roll: complex = 0 + 0j
         self.coupled_mode: complex = 0 + 0j
-        self.roll_subsidance: float = 0.
-        self.spiral: float = 0.
+        self.roll_subsidance: float = 0.0
+        self.spiral: float = 0.0
         self.n_modes = 3
         eigenvalue_analysis(self)
         self.classify_modes()
 
     def classify_modes(self) -> None:
-        """
-        Classify the modes based on the eigenvalues. On the lateral case, the modes are:
+        """Classify the modes based on the eigenvalues. On the lateral case, the modes are:
         - Roll (1 mode)
         - Spiral (1 mode)
         - Dutch Roll (2 modes)
-        There is the case where the roll and spiral mode become coupled and form a pair of 
+        There is the case where the roll and spiral mode become coupled and form a pair of
         2 conjugate value
         """
         # Get the number of modes by setting the imaginary part to abs
-        eigen_values = set(np.array(
-            [
-                val.real + 1j * np.abs(val.imag)
-                for val in self.eigenvalues
-            ]
-        ))
+        eigen_values = set(
+            np.array([val.real + 1j * np.abs(val.imag) for val in self.eigenvalues]),
+        )
         n_modes = len(eigen_values)
         self.n_modes = n_modes
 
@@ -138,7 +137,9 @@ class LateralStateSpace:
             # I have never seen this case so let's print the eigenvalues
             # And throw an error
             if n_modes == 4:
-                print("4 distinct modes found in the lateral dynamics. (Overdamped Dutch Roll)")
+                print(
+                    "4 distinct modes found in the lateral dynamics. (Overdamped Dutch Roll)",
+                )
             else:
                 print("1 mode found in the lateral dynamics")
             print(self.eigenvalues)
@@ -214,27 +215,23 @@ class LongitudalStateSpace:
 
         self.eigenvalues = np.empty((4,), dtype=complex)
         self.eigenvectors = np.empty((4, 4), dtype=float)
-        self.short_period:complex = 0+0j 
-        self.phugoid: complex = 0+0j
-        self.overdamped_short_period: list[float] = [0., 0.]
+        self.short_period: complex = 0 + 0j
+        self.phugoid: complex = 0 + 0j
+        self.overdamped_short_period: list[float] = [0.0, 0.0]
         self.n_modes: int = 2
         eigenvalue_analysis(self)
         self.classify_modes()
 
     def classify_modes(self) -> None:
-        """
-        Classify the modes based on the eigenvalues. On the longitudinal case, the modes are:
+        """Classify the modes based on the eigenvalues. On the longitudinal case, the modes are:
         - Phugoid  (2 modes)
         - Short Period (2 modes)
         The short period mode is oscillatory but can degenerate to two real roots
         """
         # Get the number of modes by setting the imaginary part to abs
-        eigen_values = set(np.array(
-            [
-                val.real + 1j * np.abs(val.imag)
-                for val in self.eigenvalues
-            ]
-        ))
+        eigen_values = set(
+            np.array([val.real + 1j * np.abs(val.imag) for val in self.eigenvalues]),
+        )
         n_modes = len(eigen_values)
         self.n_modes = n_modes
 
@@ -251,12 +248,10 @@ class LongitudalStateSpace:
             # The complex eigenvalue is the phugoid
             phugoid = max(eigen_values, key=lambda x: x.imag)
             # The two real eigenvalues are the short period modes
-            short_period_modes = [
-                eigen_val for eigen_val in eigen_values if eigen_val.imag == 0
-            ]
+            short_period_modes = [eigen_val for eigen_val in eigen_values if eigen_val.imag == 0]
 
             self.phugoid = phugoid
-            self.short_period = np.nan 
+            self.short_period = np.nan
             self.overdamped_short_period = [val.real for val in short_period_modes]
         else:
             # I have never seen this case so let's print the eigenvalues

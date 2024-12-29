@@ -5,9 +5,8 @@ import subprocess
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB3D
-from ICARUS.database import AVL_exe
+from ICARUS import AVL_exe
+from ICARUS.database import Database
 from ICARUS.database.utils import angle_to_case
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
@@ -23,6 +22,7 @@ def case_def(
     angles: FloatArray | list[float],
 ) -> None:
     li = []
+    DB = Database.get_instance()
     PLANEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="AVL",
@@ -47,6 +47,7 @@ def case_def(
 
 def case_setup(plane: Airplane) -> None:
     HOMEDIR = os.getcwd()
+    DB = Database.get_instance()
     PLANEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="AVL",
@@ -58,9 +59,9 @@ def case_setup(plane: Airplane) -> None:
     li.append(f"load {plane.name}.avl")
     li.append(f"mass {plane.name}.mass")
     li.append(f"case {plane.name}.run")
-    li.append(f"MSET")
+    li.append("MSET")
     li.append("0")
-    li.append(f"oper")
+    li.append("oper")
     li.append("s")
     li.append(f"{plane.name}.run")
     li.append("y")
@@ -68,11 +69,11 @@ def case_setup(plane: Airplane) -> None:
     li.append("quit")
     ar = np.array(li)
 
-    np.savetxt(f"mset_script", ar, delimiter=" ", fmt="%s")
+    np.savetxt("mset_script", ar, delimiter=" ", fmt="%s")
 
-    with open(f"mset_script") as fin:
-        with open(f"mset_script.out", "w") as fout:
-            res = subprocess.check_call(
+    with open("mset_script") as fin:
+        with open("mset_script.out", "w") as fout:
+            _ = subprocess.check_call(
                 [AVL_exe],
                 stdin=fin,
                 stdout=fout,
@@ -84,6 +85,7 @@ def case_setup(plane: Airplane) -> None:
 # EXECUTION
 def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
     HOMEDIR = os.getcwd()
+    DB = Database.get_instance()
     PLANEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="AVL",
@@ -94,12 +96,12 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
     li_2.append(f"load {plane.name}.avl")
     li_2.append(f"mass {plane.name}.mass")
     li_2.append(f"case {plane.name}.run")
-    li_2.append(f"MSET 0")
-    li_2.append(f"oper")
+    li_2.append("MSET 0")
+    li_2.append("oper")
     for i, angle in enumerate(angles):
         li_2.append(f"{i+1}")
-        li_2.append(f"x")
-        li_2.append(f"FT")
+        li_2.append("x")
+        li_2.append("FT")
         li_2.append(f"{angle_to_case(angle)}.txt")
 
         if os.path.isfile(f"{li_2[-1]}"):
@@ -114,11 +116,11 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
     li_2.append("    ")
     li_2.append("quit")
     ar_2 = np.array(li_2)
-    np.savetxt(f"polar_script", ar_2, delimiter=" ", fmt="%s")
+    np.savetxt("polar_script", ar_2, delimiter=" ", fmt="%s")
 
     # Do the same with subprocess
-    with open(f"polar_script") as fin:
-        with open(f"polar_script.out", "w") as fout:
+    with open("polar_script") as fin:
+        with open("polar_script.out", "w") as fout:
             res = subprocess.check_call(
                 [AVL_exe],
                 stdin=fin,

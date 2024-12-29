@@ -114,7 +114,11 @@ def get_all_far_criteria(
     wing_loading_far_5, thrust_loading_far_5 = far_5
 
     # # METHOD 1
-    idx: int = int(np.argwhere(np.diff(np.sign(wing_loading_far_3 - wing_loading_far_1))).flatten())
+    idx: int = int(
+        np.argwhere(
+            np.diff(np.sign(wing_loading_far_3 - wing_loading_far_1)),
+        ).flatten(),
+    )
     OP_thrust_loading: float = thrust_loading_far_3[idx]
     OP_wing_loading: float = wing_loading_far_3[idx]
 
@@ -147,16 +151,31 @@ def get_all_far_criteria(
     thrust_c: float = OP_thrust_loading * W_G
     if plot:
         if start_plot:
-            plt.plot(wing_loading_far_1, thrust_loading_far_1, color="k", label="Landing")
+            plt.plot(
+                wing_loading_far_1,
+                thrust_loading_far_1,
+                color="k",
+                label="Landing",
+            )
             plt.plot(
                 wing_loading_far_2,
                 thrust_loading_far_2,
                 color="m",
                 label="Failed Approach",
             )
-            plt.plot(wing_loading_far_3, thrust_loading_far_3, color="r", label="Takeoff")
+            plt.plot(
+                wing_loading_far_3,
+                thrust_loading_far_3,
+                color="r",
+                label="Takeoff",
+            )
             plt.plot(wing_loading_far_4, thrust_loading_far_4, color="b", label="Climb")
-            plt.plot(wing_loading_far_5, thrust_loading_far_5, color="g", label="Cruise")
+            plt.plot(
+                wing_loading_far_5,
+                thrust_loading_far_5,
+                color="g",
+                label="Cruise",
+            )
             plt.scatter(
                 OP_wing_loading,
                 OP_thrust_loading,

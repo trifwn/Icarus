@@ -1,5 +1,4 @@
-"""
-! TODO: Deprecate this module. The pressure coefficients should be added to
+"""! TODO: Deprecate this module. The pressure coefficients should be added to
 !       the post_process module of Solvers.F2W_section and then called.
 !       This is the way it is done for the wake in GNVP
 

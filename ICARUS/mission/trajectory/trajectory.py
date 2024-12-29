@@ -1,5 +1,5 @@
+import contextlib
 from functools import partial
-from re import A
 from typing import Any
 from typing import Callable
 
@@ -12,7 +12,6 @@ from jaxtyping import Array
 from jaxtyping import ArrayLike
 from jaxtyping import Bool
 from jaxtyping import Float
-from jaxtyping import Scalar
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -128,7 +127,7 @@ class MissionTrajectory:
         amps: float,
     ) -> None:
         dh_dx = self.dy_dx(X[0])
-        dh2_dx2 = self.d2y_dx2(X[0])
+        # dh2_dx2 = self.d2y_dx2(X[0])
         m = self.vehicle.mass
         G = 9.81
 
@@ -142,7 +141,10 @@ class MissionTrajectory:
         gamma = jnp.rad2deg(dh_dx)
 
         thrust = self.vehicle.motor.thrust(velocity=jnp.linalg.norm(V), current=amps)
-        lift, drag, torque = self.vehicle.get_aerodynamic_forces(jnp.linalg.norm(V), aoa)
+        lift, drag, torque = self.vehicle.get_aerodynamic_forces(
+            jnp.linalg.norm(V),
+            aoa,
+        )
         # Compute the forces
         thrust_x = thrust * jnp.cos(alpha)
         thrust_y = thrust * jnp.sin(alpha)
@@ -162,17 +164,12 @@ class MissionTrajectory:
             # + Elevator lift due to control
         ) / m
 
-        ACC = jnp.array([acc_x, acc_y], dtype=float).squeeze()
+        acceleration = jnp.array([acc_x, acc_y], dtype=float).squeeze()
 
-        fx = ACC[0] * m
-        fy = ACC[1] * m
+        fx = acceleration[0] * m
+        fy = acceleration[1] * m
 
-        L = lift
-        T = thrust
-        D = drag
-        TORQUE = torque
-
-        step_successful = jnp.isnan(ACC).any()
+        step_successful = jnp.isnan(acceleration).any()
         if not step_successful:
             # Register the state
             self.times.append(t)
@@ -188,10 +185,10 @@ class MissionTrajectory:
             self.forces["x"].append(float(fx.item()))
             self.forces["y"].append(float(fy.item()))
 
-            self.forces["lift"].append(float(L.item()))
-            self.forces["thrust"].append(float(T.item()))
-            self.forces["drag"].append(float(D.item()))
-            self.forces["torque"].append(float(TORQUE.item()))
+            self.forces["lift"].append(float(lift.item()))
+            self.forces["thrust"].append(float(thrust.item()))
+            self.forces["drag"].append(float(drag.item()))
+            self.forces["torque"].append(float(torque.item()))
 
             self.control_inputs["aoa"].append(aoa)
             self.control_inputs["engine_amps"].append(amps)
@@ -201,14 +198,13 @@ class MissionTrajectory:
             self.orientation["gamma"].append(float(gamma.item()))
         else:
             jprint("State not appended")
-            jprint("F: {}", ACC)
-            jprint("{}", jnp.isnan(ACC).any())
+            jprint("F: {}", acceleration)
+            jprint("{}", jnp.isnan(acceleration).any())
 
     @partial(jax.jit, static_argnums=(0,))
     def get_control(
         self,
     ) -> Float[Array, "2"]:
-
         aoa = jnp.array([0])
         amps = jnp.array([30])
         return jnp.array([aoa, amps])
@@ -221,16 +217,14 @@ class MissionTrajectory:
     @partial(jax.jit, static_argnums=(0,))
     def f_to_trim(
         self,
-        aoa: float | Float[Array, ""],
-        thrust: float | Float[Array, ""],
+        aoa: float | Float[Array, "..."],
+        thrust: float | Float[Array, "..."],
         V: Float[Array, "2"],
         dh_dx: float,
         dh2_dx2: float,
-    ) -> Float[Array, ""]:
-        """
-
-        Args:
-            aoa (float): In degrees
+    ) -> Float[Array, "..."]:
+        """Args:
+        aoa (float): In degrees
 
         """
         G = 9.81
@@ -238,7 +232,7 @@ class MissionTrajectory:
 
         lift, _, _ = self.vehicle.get_aerodynamic_forces(jnp.linalg.norm(V), aoa)
         alpha = jnp.deg2rad(aoa) + jnp.arctan(dh_dx)
-        residual: Float[Array, ''] = (
+        residual: Float[Array, ...] = (
             thrust * (jnp.sin(alpha) - dh_dx * jnp.cos(alpha))
             + lift * (dh_dx**2 + 1) / jnp.sqrt(dh_dx**2 + 1)
             - m * G
@@ -256,8 +250,7 @@ class MissionTrajectory:
         aoa_prev_deg: float,
         engine_amps: float,
     ) -> tuple[Float, Float, Float, Float, Float, Float]:
-        """
-        From the controller get all the variables that are marked as trim variables then solve the system of equations that ensure the forces normal to the trajectory are zero.
+        """From the controller get all the variables that are marked as trim variables then solve the system of equations that ensure the forces normal to the trajectory are zero.
 
         Args:
             t (float): Time
@@ -265,17 +258,26 @@ class MissionTrajectory:
             V (FloatArray): Velocity
             aoa_prev (float): Previous Angle of Attack in degrees
             engine_amps (float): Engine Amps
-        """
 
+        """
         # Get Trajectory Information
         dh_dx: float = self.dy_dx(X[0])
         dh2_dx2: float = self.d2y_dx2(X[0])
 
-        thrust = self.vehicle.motor.thrust(velocity=jnp.linalg.norm(V), current=engine_amps)
+        thrust = self.vehicle.motor.thrust(
+            velocity=jnp.linalg.norm(V),
+            current=engine_amps,
+        )
 
         x0 = jnp.atleast_1d(jnp.deg2rad(aoa_prev_deg))
         self.broyden.verbose = 0
-        sol = self.broyden.run(init_params=x0, thrust=thrust, V=V, dh_dx=dh_dx, dh2_dx2=dh2_dx2)
+        sol = self.broyden.run(
+            init_params=x0,
+            thrust=thrust,
+            V=V,
+            dh_dx=dh_dx,
+            dh2_dx2=dh2_dx2,
+        )
         # jprint("sol : {}", sol)
         # sol = fsolve(f_to_trim, aoa_prev_deg, xtol=1e-09)
 
@@ -286,7 +288,7 @@ class MissionTrajectory:
         is_failed = residual > 1e-6
         is_failed = jnp.any(is_failed)
 
-        def true_fun() -> Float[Array, ""]:
+        def true_fun() -> Float[Array, "..."]:
             jprint(
                 "Trim Failed:\tTime: {}, Residual: {}, AoA: {}",
                 t,
@@ -294,12 +296,18 @@ class MissionTrajectory:
                 aoa_new,
             )
             # Print diagnostic information the args to the function
-            jprint("\tArgs: thrust: {}, V: {}, dh_dx: {}, dh2_dx2: {}", thrust, V, dh_dx, dh2_dx2)
+            jprint(
+                "\tArgs: thrust: {}, V: {}, dh_dx: {}, dh2_dx2: {}",
+                thrust,
+                V,
+                dh_dx,
+                dh2_dx2,
+            )
             jprint("\tx0: {}", x0)
             jprint("\tResidual: {}", residual)
             return jnp.atleast_1d(aoa_new)
 
-        def false_fun() -> Float[Array, ""]:
+        def false_fun() -> Float[Array, "..."]:
             # jprint("Trim Successful:\tTime: {}, Residual: {}, AoA: {}", t, self.f_to_trim(aoa_new, thrust, V, dh_dx, dh2_dx2), aoa_new)
             return aoa_new
 
@@ -311,7 +319,10 @@ class MissionTrajectory:
         )
 
         # Get the aerodynamic forces
-        lift, drag, torque = self.vehicle.get_aerodynamic_forces(jnp.linalg.norm(V), aoa_new)
+        lift, drag, torque = self.vehicle.get_aerodynamic_forces(
+            jnp.linalg.norm(V),
+            aoa_new,
+        )
         return aoa_new, amps_new, lift, thrust, drag, torque
 
     @partial(jax.jit, static_argnums=(0,))
@@ -322,7 +333,6 @@ class MissionTrajectory:
         V: Float[Array, "2"],
         prev_state: Float[Array, "2"],
     ) -> tuple[Float[Array, "2"], Float[Array, "8"]]:
-
         G: float = 9.81
         m: float = self.vehicle.mass
 
@@ -352,47 +362,52 @@ class MissionTrajectory:
             # + Elevator lift due to control
         ) / m
 
-        F: Float[Array, "dim1"] = jnp.array([acc_x, acc_y], dtype=float).squeeze()
+        F: Float[Array, ...] = jnp.array([acc_x, acc_y], dtype=float).squeeze()
 
         state_now = jnp.array([aoa, amps])
         return F, state_now
 
     @partial(jax.jit, static_argnums=(0,))
-    def timestep(self, t: float, y: Float[Array, '4'], *args: Any) -> Float[Array, '4']:
-        x: Float[Array, '2'] = y[:2]
-        v: Float[Array, '2'] = y[2:]
+    def timestep(self, t: float, y: Float[Array, "4"], *args: Any) -> Float[Array, "4"]:
+        x: Float[Array, 2] = y[:2]
+        v: Float[Array, 2] = y[2:]
         current_state = self.get_control()
 
-        def normal() -> Float[Array, '4']:
+        def normal() -> Float[Array, "4"]:
             xdot = self.dxdt(x, v).reshape(-1)
             vdot, _ = self.dvdt(t, x, v, current_state)
             vdot = vdot.reshape(-1)
             return jnp.hstack([xdot, vdot])
 
-        def problem() -> Float[Array, '4']:
+        def problem() -> Float[Array, "4"]:
             return jnp.array([jnp.nan, jnp.nan, jnp.nan, jnp.nan])
 
-        def error_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
-            def nan_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
+        def error_check(curr_y: Float[Array, "4"]) -> Bool[Array, "..."]:
+            def nan_check(curr_y: Float[Array, "4"]) -> Bool[Array, "..."]:
                 return jnp.isnan(curr_y).any()
 
-            def crash_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
+            def crash_check(curr_y: Float[Array, "4"]) -> Bool[Array, "..."]:
                 return curr_y[1] < self.operating_floor
 
-            def negative_v_check(curr_y: Float[Array, "4"]) -> Bool[Array, ""]:
+            def negative_v_check(curr_y: Float[Array, "4"]) -> Bool[Array, "..."]:
                 return curr_y[2] < 0
 
-            def handle_error(_: Any) -> Bool[ArrayLike, ""]:
+            def handle_error(_: Any) -> Bool[ArrayLike, "1"]:
                 # jprint("Error encountered at time: {}", t)
                 # jprint("State: {}", curr_y)
                 return True
 
-            def ok(_: Any) -> Bool[ArrayLike, ""]:
+            def ok(_: Any) -> Bool[ArrayLike, "1"]:
                 return False
 
             nan_result = lax.cond(nan_check(curr_y), handle_error, ok, None)
             crash_result = lax.cond(crash_check(curr_y), handle_error, ok, None)
-            negative_v_result = lax.cond(negative_v_check(curr_y), handle_error, ok, None)
+            negative_v_result = lax.cond(
+                negative_v_check(curr_y),
+                handle_error,
+                ok,
+                None,
+            )
 
             return nan_result | crash_result | negative_v_result
 
@@ -403,7 +418,11 @@ class MissionTrajectory:
             normal,
         )
 
-    def plot_history(self, axs: list[Axes] | None = None, fig: Figure | None = None) -> None:
+    def plot_history(
+        self,
+        axs: list[Axes] | None = None,
+        fig: Figure | None = None,
+    ) -> None:
         print(type(axs))
 
         if isinstance(axs, ndarray):
@@ -413,15 +432,14 @@ class MissionTrajectory:
         if not isinstance(axs, list):
             fig = plt.figure()
             all_axs: list[Axes] = fig.subplots(3, 2, squeeze=False).flatten().tolist()
-            axes_provided = False
         else:
             all_axs = axs
-            axes_provided = True
 
         if fig is None:
             fig = all_axs[0].get_figure()
             if fig is None:
-                raise ValueError("The figure is None")
+                msg = "The figure is None"
+                raise ValueError(msg)
 
         fig.suptitle(f"Trajectory: {self.name}")
         # Axes 0 is the Trajectory
@@ -430,16 +448,29 @@ class MissionTrajectory:
         x_arr = jnp.array([i for i in x if i == i], dtype=float)
         h = self.y(x_arr)
 
-        all_axs[0].plot(self.positions["x"], self.positions["y"], label="Trajectory", color="blue")
+        all_axs[0].plot(
+            self.positions["x"],
+            self.positions["y"],
+            label="Trajectory",
+            color="blue",
+        )
         all_axs[0].plot(x_arr, h, label="Function", color="Black", linestyle="--")
         all_axs[0].set_title("Trajectory")
         all_axs[0].set_xlabel("x")
         all_axs[0].set_ylabel("y")
         # On the same ax with different scale also plot the angle gamma
-        ax2: Axes = all_axs[0].twinx()  # type: ignore
+        ax2: Axes = all_axs[0].twinx()
         color = "tab:red"
-        ax2.plot(self.positions["x"], self.orientation["gamma"], label="Gamma", color=color)
-        ax2.set_ylabel("Angle Gamma [rad]", color=color)  # we already handled the x-label with ax1
+        ax2.plot(
+            self.positions["x"],
+            self.orientation["gamma"],
+            label="Gamma",
+            color=color,
+        )
+        ax2.set_ylabel(
+            "Angle Gamma [rad]",
+            color=color,
+        )  # we already handled the x-label with ax1
         ax2.tick_params(axis="y", labelcolor=color)
 
         # Axes 1 is the Velocity
@@ -462,7 +493,7 @@ class MissionTrajectory:
         all_axs[2].set_xlabel("Time")
 
         # Axes 3 is the Control Inputs
-        for key in self.control_inputs.keys():
+        for key in self.control_inputs:
             all_axs[3].plot(self.times, self.control_inputs[key], label=key)
         all_axs[3].set_title("Control Inputs")
         all_axs[3].set_xlabel("Time")
@@ -481,11 +512,9 @@ class MissionTrajectory:
 
         # Clear the legends
         for ax in all_axs:
-            try:
+            with contextlib.suppress(AttributeError):
                 # Clear the legends
                 ax.get_legend().remove()
-            except AttributeError:
-                pass
             ax.legend()
             ax.grid()
 

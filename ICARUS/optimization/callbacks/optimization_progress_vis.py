@@ -10,27 +10,21 @@ from ICARUS.optimization.callbacks.optimization_callback import OptimizationCall
 
 
 class OptimizationProgress(OptimizationCallback):
-    """
-    Class to visualize the design variables change during optimization.
-    """
+    """Class to visualize the design variables change during optimization."""
 
     def __init__(
         self,
         has_jacobian: bool = False,
         has_hessian: bool = False,
     ):
-        """
-        Initialize the class.
-        """
+        """Initialize the class."""
         self.lines: dict[str, Line2D] = {}
         self.axes: dict[str, Axes] = {}
         self.has_jacobian = has_jacobian
         self.has_hessian = has_hessian
 
     def setup(self) -> None:
-        """
-        Create a figure to visualize the optimization progress.
-        """
+        """Create a figure to visualize the optimization progress."""
         self.fig = plt.figure(figsize=(10, 10))
         self.fig.show()
 
@@ -130,9 +124,7 @@ class OptimizationProgress(OptimizationCallback):
         penalty: float,
         **kwargs: Any,
     ) -> None:
-        """
-        Update the figure with the current design variables.
-        """
+        """Update the figure with the current design variables."""
         if not hasattr(self, "fig") or not hasattr(self, "lines"):
             self.setup()
 
@@ -142,6 +134,7 @@ class OptimizationProgress(OptimizationCallback):
         try:
             # Get the data of the line
             xdata, ydata = line.get_data()
+            print(xdata, ydata)
             if result.fun > 1e10:
                 return
             # Append the new data
@@ -149,7 +142,7 @@ class OptimizationProgress(OptimizationCallback):
             ydata = np.append(ydata, result.fun)
             # Set the new data of the line
             line.set_data(xdata, ydata)
-        except:
+        except AttributeError:
             pass
 
         # Update the best objective function value

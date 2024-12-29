@@ -5,12 +5,11 @@ import numpy as np
 
 # HELPER FUNCTIONS
 def shape_like(in1: Any, in2: Any) -> Any:
-    if type(in1) == type(in2):
+    if type(in1) is type(in2):
         return in1
-    elif isinstance(in1, float) and isinstance(in2, np.ndarray):
+    if isinstance(in1, float) and isinstance(in2, np.ndarray):
         return np.array([in1] * len(in2))
-    else:
-        raise (ValueError("Invalid input types"))
+    raise (ValueError("Invalid input types"))
 
 
 def lift_drag_min_drag(cl: float, cd_0: float, AR: float, oswald: float) -> float:
@@ -20,23 +19,21 @@ def lift_drag_min_drag(cl: float, cd_0: float, AR: float, oswald: float) -> floa
 def get_climb_rate(no_of_engines: int) -> float:
     if no_of_engines == 4:
         return 3 / 100
-    elif no_of_engines == 3:
+    if no_of_engines == 3:
         return 2.7 / 100
-    elif no_of_engines == 2:
+    if no_of_engines == 2:
         return 2.4 / 100
-    else:
-        raise ValueError("Invalid number of engines")
+    raise ValueError("Invalid number of engines")
 
 
 def get_climb_rate_failed_approach(no_of_engines: int) -> float:
     if no_of_engines == 4:
         return 2.7 / 100
-    elif no_of_engines == 3:
+    if no_of_engines == 3:
         return 2.4 / 100
-    elif no_of_engines == 2:
+    if no_of_engines == 2:
         return 2.1 / 100
-    else:
-        raise ValueError("Invalid number of engines")
+    raise ValueError("Invalid number of engines")
 
 
 def drag_coeff_skin(

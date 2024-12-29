@@ -148,13 +148,55 @@ def plot_sensitivity(
                 # style = f"{c}{m}--"
 
                 label = f"{plane.name} - {solver} - {var}"
-                axs[0].scatter(epsilon, fx, color=c, marker=m, label=label, linewidth=3.0)
-                axs[1].scatter(epsilon, fy, color=c, marker=m, label=label, linewidth=3.0)
-                axs[2].scatter(epsilon, fz, color=c, marker=m, label=label, linewidth=3.0)
+                axs[0].scatter(
+                    epsilon,
+                    fx,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    linewidth=3.0,
+                )
+                axs[1].scatter(
+                    epsilon,
+                    fy,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    linewidth=3.0,
+                )
+                axs[2].scatter(
+                    epsilon,
+                    fz,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    linewidth=3.0,
+                )
 
-                axs[3].scatter(epsilon, mx, color=c, marker=m, label=label, linewidth=3.0)
-                axs[4].scatter(epsilon, my, color=c, marker=m, label=label, linewidth=3.0)
-                axs[5].scatter(epsilon, mz, color=c, marker=m, label=label, linewidth=3.0)
+                axs[3].scatter(
+                    epsilon,
+                    mx,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    linewidth=3.0,
+                )
+                axs[4].scatter(
+                    epsilon,
+                    my,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    linewidth=3.0,
+                )
+                axs[5].scatter(
+                    epsilon,
+                    mz,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    linewidth=3.0,
+                )
 
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {plane.name},{solver},{var}")

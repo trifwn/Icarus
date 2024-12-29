@@ -5,17 +5,17 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.database import DB
-from ICARUS.database.database2D import Database_2D
+from ICARUS.database import Database
+from ICARUS.database import Database_2D
 
 
-def read_polars_2d(XFLRdir: str) -> None:
-    """
-    Reads the polars from XFLR5 and stores them in the database.
+def read_polars_2d(DB: Database, XFLRdir: str) -> None:
+    """Reads the polars from XFLR5 and stores them in the database.
 
     Args:
         DB (Database_2D | Database): Database Object
         XFLRdir (str): XFLR directory
+
     """
     HOMEDIR: str = DB.HOMEDIR
     foils_db: Database_2D = DB.foils_db
@@ -70,7 +70,7 @@ def read_polars_2d(XFLRdir: str) -> None:
                             engine="python",
                         )
                     except pd.errors.EmptyDataError:
-                        print(f"Error")
+                        print("Error")
                         continue
 
                     dat.columns = pd.Index(xfoilcols, dtype="str")
@@ -90,7 +90,12 @@ def read_polars_2d(XFLRdir: str) -> None:
                     if "XFLR" not in foils_db._raw_data[name].keys():
                         foils_db._raw_data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                    reyn_str = np.format_float_scientific(
+                        reyn,
+                        sign=False,
+                        precision=3,
+                        min_digits=3,
+                    ).replace(
                         "+",
                         "",
                     )
@@ -119,7 +124,12 @@ def read_polars_2d(XFLRdir: str) -> None:
                     if "XFLR" not in foils_db._raw_data[name].keys():
                         foils_db._raw_data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace(
+                    reyn_str = np.format_float_scientific(
+                        reyn,
+                        sign=False,
+                        precision=3,
+                        min_digits=3,
+                    ).replace(
                         "+",
                         "",
                     )
@@ -149,18 +159,23 @@ def read_polars_2d(XFLRdir: str) -> None:
                     if "XFLR" not in foils_db._raw_data[name].keys():
                         foils_db._raw_data[name]["XFLR"] = {}
 
-                    reyn_str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
+                    reyn_str = np.format_float_scientific(
+                        reyn,
+                        sign=False,
+                        precision=3,
+                        min_digits=3,
+                    ).replace("+", "")
                     foils_db._raw_data[name]["XFLR"][reyn_str] = dat
             os.chdir(XFLRdir)
     os.chdir(HOMEDIR)
 
 
 def read_polars_3d(
+    DB: Database,
     filename: str,
     plane_name: str,
 ) -> DataFrame | None:
-    """
-    Reads the plane polars (3d) from XFLR5 and stores them in the database.
+    """Reads the plane polars (3d) from XFLR5 and stores them in the database.
 
     Args:
         filename (str): Plane polar filename
@@ -168,13 +183,14 @@ def read_polars_3d(
 
     Returns:
         DataFrame | None: _description_
+
     """
     if f"XFLR_{plane_name}" not in DB.vehicles_db.polars.keys():
         # import csv into pandas Dataframe and skip first 7 rows
         df: DataFrame = pd.read_csv(
             filename,
             skiprows=7,
-            sep=r'\s+',
+            sep=r"\s+",
             on_bad_lines="skip",
         )
         # rename columns
@@ -184,9 +200,8 @@ def read_polars_3d(
         df = df.astype(float)
         DB.vehicles_db.polars[f"XFLR_{plane_name}"] = df
         return df
-    else:
-        print("Polar Already Exists!")
-        return None
+    print("Polar Already Exists!")
+    return None
 
 
 xfoilcols: list[str] = [

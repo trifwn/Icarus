@@ -17,8 +17,7 @@ def gnvp7_geometry(plot: bool = False) -> None:
 
 
 def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
-    """
-    Get the geometry from the gnvp results and the airplane. Has to convert to meshgrid to be able to
+    """Get the geometry from the gnvp results and the airplane. Has to convert to meshgrid to be able to
     sort the data.
 
     Args:
@@ -26,12 +25,11 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
 
     Returns:
         tuple[list[FloatArray], list[FloatArray]]: Meshgrid of the geometry from the gnvp results and the airplane.
+
     """
     from .benchmark_plane_test import get_bmark_plane
 
-    if gnvp_version == 3:
-        airplane, _ = get_bmark_plane("bmark")
-    elif gnvp_version == 7:
+    if gnvp_version == 3 or gnvp_version == 7:
         airplane, _ = get_bmark_plane("bmark")
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
@@ -49,7 +47,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     case: str = angle_to_case(2.0)
     # Get the grid data from the gnvp results
     _, _, grid_gnvp = get_wake_data(airplane, case)
-    mesh_grid_gnvp: list[FloatArray] = np.meshgrid(
+    mesh_grid_gnvp = np.meshgrid(
         grid_gnvp,
     )  # converts the array to a meshgrid
 
@@ -67,7 +65,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     grid_plane = (
         grid_plane.reshape(shape[0] * shape[1] * shape[2], shape[3]) - airplane.CG
     )  # reshapes the array to a 2D array and subtracts the CG
-    mesh_grid_plane: list[FloatArray] = np.meshgrid(
+    mesh_grid_plane = np.meshgrid(
         grid_plane,
     )  # converts the array to a meshgrid
     if plot:

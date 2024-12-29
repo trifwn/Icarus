@@ -10,9 +10,7 @@ from ICARUS.vehicle.plane import Airplane
 
 
 class DesignVariableVisualizer(OptimizationCallback):
-    """
-    Class to visualize the design variables change during optimization.
-    """
+    """Class to visualize the design variables change during optimization."""
 
     def __init__(
         self,
@@ -20,21 +18,19 @@ class DesignVariableVisualizer(OptimizationCallback):
         design_variables: list[str],
         bounds: dict[str, tuple[float, float]],
     ):
+        """Inputs:
+        design_variables: list[str]
+            The list of design variables to visualize.
+        bounds: dict[str, tuple[float, float]]
+            The bounds of each design variable.
         """
-        Inputs:
-            design_variables: list[str]
-                The list of design variables to visualize.
-            bounds: dict[str, tuple[float, float]]
-                The bounds of each design variable.
-        """
-        self.design_variables = {name: plane.__getattribute__(name) for name in design_variables}
+        self.design_variables = {name: plane.get_property(name) for name in design_variables}
         self.bounds = bounds
         self.axes: dict[str, Axes] = {}
         self.lines: dict[str, Line2D] = {}
 
     def setup(self) -> None:
-        """
-        Setup the figure for visualization. The figure should consist of n
+        """Setup the figure for visualization. The figure should consist of n
         subplots, where n is the number of design variables. Each subplot
         should contain a line plot of the design variable value, and a line
         plot of the design variable bounds. Additionally, each subplot should
@@ -60,7 +56,12 @@ class DesignVariableVisualizer(OptimizationCallback):
 
             # Add initial design variable values and bounds
             initial_value = self.design_variables[var_name]
-            ax.axhline(y=initial_value, color="orange", linestyle="--", label="Initial Value")
+            ax.axhline(
+                y=initial_value,
+                color="orange",
+                linestyle="--",
+                label="Initial Value",
+            )
 
             lower, upper = self.bounds[var_name]
             ax.axhline(y=lower, color="red", linestyle="--", label="Lower Bound")
@@ -102,9 +103,7 @@ class DesignVariableVisualizer(OptimizationCallback):
         design_variables: dict[str, float],
         **kwargs: Any,
     ) -> None:
-        """
-        Update the figure with the current design variables.
-        """
+        """Update the figure with the current design variables."""
         if not hasattr(self, "fig"):
             self.setup()
 

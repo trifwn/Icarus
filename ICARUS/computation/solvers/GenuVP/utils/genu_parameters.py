@@ -1,6 +1,4 @@
-"""
-Class to define the parameters for the GenuVP solvers.
-"""
+"""Class to define the parameters for the GenuVP solvers."""
 
 from typing import Any
 
@@ -25,8 +23,7 @@ class GenuParameters:
         environment: Environment,
         solver_options: dict[str, Any] | Struct,
     ) -> None:
-        """
-        Set the parameters for the gnvp3 solver.
+        """Set the parameters for the gnvp3 solver.
 
         Args:
             bodies_dicts (list[dict[str, Any]]): List of dicts with the surface parameters
@@ -40,6 +37,7 @@ class GenuParameters:
 
         Returns:
             dict[str, Any]: dict with all the parameters to define the simulation
+
         """
         n_bodies: int = len(genu_bodies)
         num_airfoils: int = len(plane.airfoils)

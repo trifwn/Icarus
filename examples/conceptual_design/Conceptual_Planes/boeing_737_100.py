@@ -56,7 +56,11 @@ CD_0 = 0.02
 # LANDING
 OSWALD_LANDING = 0.7
 CL_APP: float = CL_MAX / 1.69
-CD_LANDING: float = drag_coeff_skin(cd_0=CD_0, flap_extension=30, landing_gear_cd=0.015)  # degrees
+CD_LANDING: float = drag_coeff_skin(
+    cd_0=CD_0,
+    flap_extension=30,
+    landing_gear_cd=0.015,
+)  # degrees
 
 # TAKEOFF
 CL_TAKEOFF: float = CL_MAX / 1.21
@@ -64,12 +68,18 @@ CL_TAKEOFF: float = CL_MAX / 1.21
 # CLIMB
 OSWALD_CLIMB = 0.7
 CL_CLIMB: float = CL_MAX / 1.44
-CD_CLIMB: float = drag_coeff_skin(cd_0=CD_0, flap_extension=30, landing_gear_cd=0)  # degrees
+CD_CLIMB: float = drag_coeff_skin(
+    cd_0=CD_0,
+    flap_extension=30,
+    landing_gear_cd=0,
+)  # degrees
 
 # CRUISE
 ## MAX L/D
 OSWALD_CRUISE = 0.85
-CL_CRUISE = np.sqrt(CD_0 * (np.pi * OSWALD_CRUISE * ASPECT_RATIO))  # / np.sqrt(1 - CRUISE_MACH**2)
+CL_CRUISE = np.sqrt(
+    CD_0 * (np.pi * OSWALD_CRUISE * ASPECT_RATIO),
+)  # / np.sqrt(1 - CRUISE_MACH**2)
 CD_CRUISE: float = 2 * CD_0
 L_OVER_D = CL_CRUISE / CD_CRUISE
 

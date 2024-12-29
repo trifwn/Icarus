@@ -1,5 +1,4 @@
-"""
-=================================================
+"""=================================================
 ICARUS Airplane Visualization and Graphics Module
 =================================================
 
@@ -58,7 +57,7 @@ __all__ = [
     "gnvp_convergence",
     "gnvp_sensitivity",
     "gnvp_strips",
-    "plot_gnvp_wake",
+    "gnvp_wake",
 ]
 
 # Get all the visualization functions

@@ -4,7 +4,7 @@ from time import sleep
 from typing import Any
 
 from ICARUS.computation.solvers.Foil2Wake import files_f2w as ff2w
-
+from ICARUS import Foil_Section_exe
 
 def sequential_run(
     CASEDIR: str,
@@ -25,12 +25,6 @@ def sequential_run(
     f_trip_low: float = solver_options["f_trip_low"]
     f_trip_upper: float = solver_options["f_trip_upper"]
     Ncrit: float = solver_options["Ncrit"]
-
-    # Create files from mock
-    ff2w.setup_f2w(
-        HOMEDIR=HOMEDIR,
-        CASEDIR=CASEDIR,
-    )
 
     # IO FILES
     ff2w.io_file(airfile, name)
@@ -59,7 +53,7 @@ def sequential_run(
     with open(f"{name}.out", "w") as fout:
         with open(f"io_{name}.files") as fin:
             subprocess.call(
-                [os.path.join(CASEDIR, "foil_section")],
+                [Foil_Section_exe],
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
@@ -68,10 +62,8 @@ def sequential_run(
         # os.rmdir("TMP.dir")
         pass
         # os.remove("SOLOUTI*")
-    except (FileNotFoundError, OSError) as error:
+    except (FileNotFoundError, OSError):
         pass
 
     sleep(1.0)
     os.chdir(HOMEDIR)
-
-    pass

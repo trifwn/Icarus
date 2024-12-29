@@ -6,11 +6,11 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS import APPHOME
+from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers import setup_of_script
 from ICARUS.core.types import FloatArray
 
-OFBASE = os.path.join(APPHOME, "ICARUS", "Solvers", "OpenFoam", "files")
+OFBASE = os.path.join(INSTALL_DIR, "ICARUS", "Solvers", "OpenFoam", "files")
 
 
 class MeshType(Enum):
@@ -95,9 +95,7 @@ def constant_folder(
     filename: str = os.path.join(CASEDIR, "constant", "transportProperties")
     with open(filename, encoding="UTF-8", newline="\n") as file:
         data: list[str] = file.readlines()
-    data[20] = (
-        f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1/reynolds,sign=False,precision=3)};\n"
-    )
+    data[20] = f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1/reynolds,sign=False,precision=3)};\n"
     with open(filename, "w", encoding="UTF-8") as file:
         file.writelines(data)
 

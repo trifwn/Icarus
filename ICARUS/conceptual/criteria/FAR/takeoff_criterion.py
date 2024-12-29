@@ -8,8 +8,7 @@ def far_3_takeoff(
     l_t: float,
     sigma: float = 1,
 ) -> tuple[FloatArray, FloatArray]:
-    """
-    Returns the thrust loading for a given wing loading, cl_max and takeoff distance
+    """Returns the thrust loading for a given wing loading, cl_max and takeoff distance
 
     Args:
         wing_loading (float): Wing loading
@@ -18,6 +17,7 @@ def far_3_takeoff(
 
     Returns:
         tuple: Wing Loading, Thrust loading
+
     """
     thrust_loading = 37.5 * wing_loading / (sigma * cl * l_t)
 

@@ -11,8 +11,7 @@ from ICARUS.computation.solvers.AVL.files.polars import case_run
 from ICARUS.computation.solvers.AVL.files.polars import case_setup
 from ICARUS.computation.solvers.AVL.post_process.post import collect_avl_polar_forces
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB3D
+from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
@@ -20,10 +19,11 @@ from ICARUS.vehicle.plane import Airplane
 def avl_angle_run(
     plane: Airplane,
     state: State,
-    solver2D: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str,
+    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str,
     angles: FloatArray | list[float],
     solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
+    DB = Database.get_instance()
     PLANEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="AVL",
@@ -37,7 +37,11 @@ def avl_angle_run(
     state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 
 
-def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | list[float]) -> DataFrame:
+def process_avl_angles_run(
+    plane: Airplane,
+    state: State,
+    angles: FloatArray | list[float],
+) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
 
@@ -48,9 +52,15 @@ def process_avl_angles_run(plane: Airplane, state: State, angles: FloatArray | l
 
     Returns:
         DataFrame: Forces Calculated
+
     """
-    forces: DataFrame = collect_avl_polar_forces(plane=plane, state=state, angles=angles)
+    forces: DataFrame = collect_avl_polar_forces(
+        plane=plane,
+        state=state,
+        angles=angles,
+    )
     plane.save()
+    DB = Database.get_instance()
     CASEDIR = DB.vehicles_db.get_plane_directory(
         plane=plane,
     )

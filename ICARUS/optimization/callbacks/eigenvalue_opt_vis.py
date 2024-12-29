@@ -37,13 +37,19 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         zeros = np.zeros(4)
 
         # Longitudal Mode
-        x: list[float] = [ele.real for ele in self.goal_longitudal]
-        y: list[float] = [ele.imag for ele in self.goal_longitudal]
+        x: list[float] = [float(ele.real) for ele in self.goal_longitudal]
+        y: list[float] = [float(ele.imag) for ele in self.goal_longitudal]
         axs[0].scatter(x, y, color="r", marker="d", label="Desired")
         x = [ele.real for ele in self.zero_longitudal]
         y = [ele.imag for ele in self.zero_longitudal]
         axs[0].scatter(x, y, color="b", marker="o", label="Start")
-        collection_long = axs[0].scatter(zeros, zeros, color="k", marker="x", label="Current")
+        collection_long = axs[0].scatter(
+            zeros,
+            zeros,
+            color="k",
+            marker="x",
+            label="Current",
+        )
         axs[0].grid()
         axs[0].set_title("Longitudal Eigenvalues")
         axs[0].legend()
@@ -58,7 +64,13 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         x = [ele.real for ele in self.zero_lateral]
         y = [ele.imag for ele in self.zero_lateral]
         axs[1].scatter(x, y, color="b", marker="o", label="Start")
-        collection_lat = axs[1].scatter(zeros, zeros, color="k", marker="x", label="Current")
+        collection_lat = axs[1].scatter(
+            zeros,
+            zeros,
+            color="k",
+            marker="x",
+            label="Current",
+        )
         axs[1].grid()
         axs[1].set_title("Lateral Eigenvalues")
         axs[1].legend()
@@ -124,12 +136,16 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
 
         self.axs[0].relim()
         self.axs[0].ignore_existing_data_limits = True
-        self.axs[0].update_datalim(self.collection_long.get_datalim(self.axs[0].transData))
+        self.axs[0].update_datalim(
+            self.collection_long.get_datalim(self.axs[0].transData),
+        )
         self.axs[0].autoscale_view()
 
         self.axs[1].relim()
         self.axs[1].ignore_existing_data_limits = True
-        self.axs[1].update_datalim(self.collection_lat.get_datalim(self.axs[1].transData))
+        self.axs[1].update_datalim(
+            self.collection_lat.get_datalim(self.axs[1].transData),
+        )
         self.axs[1].autoscale_view()
 
         self.fig.canvas.draw()

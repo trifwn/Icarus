@@ -14,6 +14,7 @@ def latest_time(REYNDIR: str, name: str) -> tuple[int | None, float | None, bool
     Returns:
         Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle
                                                     where the simulation is, and an error flag.
+
     """
 
     def get_angle() -> float | None:
@@ -25,12 +26,12 @@ def latest_time(REYNDIR: str, name: str) -> tuple[int | None, float | None, bool
                 continue
             if name == "pos.out" and folder.startswith("m"):
                 continue
-            elif name == "pos.out" and not folder.startswith("m"):
+            if name == "pos.out" and not folder.startswith("m"):
                 angle = float(folder)
 
             if name == "neg.out" and not folder.startswith("m"):
                 continue
-            elif name == "neg.out" and folder.startswith("m"):
+            if name == "neg.out" and folder.startswith("m"):
                 angle = float(folder[1:])
             angles.append(angle)
 

@@ -37,7 +37,7 @@ class ControllerVariable:
 
 class ObserverVariableType(Enum):
     P = 1
-    I = 2
+    Int = 2
     D = 3
     PI = 4
     PD = 5

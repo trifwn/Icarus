@@ -15,8 +15,6 @@ class Mission:
             self.add_segment(segment)
         self.fitness = fitness
         self.constrains = constraints
-        pass
 
     def add_segment(self, segment: MissionSegment) -> None:
         self.segments[segment.name] = segment
-        pass

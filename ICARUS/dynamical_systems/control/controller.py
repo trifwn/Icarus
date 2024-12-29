@@ -13,14 +13,13 @@ class MissionController:
         for var in control_variables:
             self.control_vector[var.name] = var.value
 
-    def control_law(self, time: float, x: FloatArray | jnp.ndarray, v: FloatArray | jnp.ndarray) -> None:
-        if time < 30:
-            self.control_vector["aoa"] = "TRIM"
-            self.control_vector["engine_amps"] = 30
-        elif time < 120:
-            self.control_vector["aoa"] = "TRIM"
-            self.control_vector["engine_amps"] = 30
-        elif time < 210:
+    def control_law(
+        self,
+        time: float,
+        x: FloatArray | jnp.ndarray,
+        v: FloatArray | jnp.ndarray,
+    ) -> None:
+        if time < 30 or time < 120 or time < 210:
             self.control_vector["aoa"] = "TRIM"
             self.control_vector["engine_amps"] = 30
         else:

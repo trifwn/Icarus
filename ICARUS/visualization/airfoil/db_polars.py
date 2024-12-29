@@ -8,7 +8,7 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.airfoils.airfoil_polars import Polars
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
@@ -38,8 +38,8 @@ def plot_airfoils_polars(
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
         aoa_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
         title (str, optional): Figure Title. Defaults to "Aero Coefficients".
-    """
 
+    """
     number_of_plots = len(plots) + 1
 
     # Divide the plots equally
@@ -66,16 +66,20 @@ def plot_airfoils_polars(
     if solvers == ["All"]:
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
+    DB = Database.get_instance()
     for j, airfoil_name in enumerate(airfoil_names):
-
         for i, solver in enumerate(solvers):
             try:
-                polar: Polars = DB.foils_db.get_polars(airfoil_name=airfoil_name, solver=solver)
-            except (AirfoilNotFoundError,) as e:
-                print(f"Airfoil {airfoil_name} Solver: {solver} doesn't exist in the database")
+                polar: Polars = DB.foils_db.get_polars(
+                    airfoil_name=airfoil_name,
+                    solver=solver,
+                )
+            except AirfoilNotFoundError:
+                print(
+                    f"Airfoil {airfoil_name} Solver: {solver} doesn't exist in the database",
+                )
                 continue
             try:
-
                 available_reynolds = polar.reynolds_nums
                 # Find the closest reynolds number to the given reynolds
                 reyn = min(available_reynolds, key=lambda x: abs(float(x) - reynolds))

@@ -1,20 +1,16 @@
 import os
 import time
-from typing import Any
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from ICARUS import APPHOME
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
 from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
-from ICARUS.database import DB
-from ICARUS.database import EXTERNAL_DB
+from ICARUS.database import Database
 
 
 def main() -> None:
@@ -22,7 +18,7 @@ def main() -> None:
     start_time: float = time.time()
 
     # SETUP DB CONNECTION
-    read_polars_2d(EXTERNAL_DB)
+    # read_polars_2d(EXTERNAL_DB)
 
     # RUN SETUP
     calcXFoil: bool = True
@@ -34,36 +30,28 @@ def main() -> None:
     print(f"\tXfoil: {calcXFoil}")
     print(f"\tOpenfoam: {calcOpenFoam}")
 
-    # LOAD AIRFOILS
+    # CHANGE THIS TO YOUR DATABASE FOLDER
+    database_folder = "E:\\Icarus\\Data"
 
-    # airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
-    # airfoil_names: list[str] = ["2412", "4415"]
-
-    # Load From DB
+    # Load the database
+    DB = Database(database_folder)
     DB.load_data()
     print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
-    print(f"Total number of computed airfoil data {len(list(DB.foils_db._raw_data.keys()))}")
-    print(f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}")
+    print(
+        f"Total number of computed airfoil data {len(list(DB.foils_db._raw_data.keys()))}",
+    )
+    print(
+        f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}",
+    )
 
-    # all_airfoils = list(DB.foils_db.airfoils.keys())
-    # airfoils_to_compute = [
-    #     airfoil
-    #     for airfoil in all_airfoils
-    #     if (
-    #         airfoil.upper().startswith("AG")
-    #         or airfoil.upper().startswith("CLARK")
-    #         or airfoil.upper().startswith("DAE")
-    #         or airfoil.upper().startswith("E")
-    #         # or airfoil.upper().startswith('H')
-    #         # or airfoil.upper().startswith('M')
-    #         # or airfoil.upper().startswith('N')
-    #         # or airfoil.upper().startswith('O')
-    #         # or airfoil.upper().startswith('S')
-    #         # or airfoil.upper().startswith('W')
-    #     )
-    # ]
+    # airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
     airfoils_to_compute: list[Airfoil] = []
     airfoils_to_compute.append(DB.get_airfoil("NACA4415"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA4412"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA0008"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA0012"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA0015"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA2412"))
     for airfoil in airfoils_to_compute:
         airfoil.repanel_spl(160)
 
@@ -102,8 +90,8 @@ def main() -> None:
     )
 
     # Transition to turbulent Boundary Layer
-    ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 1.0}
-    ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 1.0}
+    # ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 1.0}
+    # ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 1.0}
     Ncrit = 9
 
     #   ############################## START LOOP ###########################################

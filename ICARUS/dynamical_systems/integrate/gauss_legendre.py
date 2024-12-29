@@ -5,7 +5,6 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jit
 from jax import lax
-from jax.debug import print as jprint
 
 from ..base_system import DynamicalSystem
 from .base_integrator import Integrator
@@ -34,7 +33,7 @@ class GaussLegendreIntegrator(Integrator):
 
         # Number of Gauss-Legendre nodes and weights
         self.n = n
-        self.nodes, self.weights = np.polynomial.legendre.leggauss(self.n)  # type: ignore
+        self.nodes, self.weights = np.polynomial.legendre.leggauss(self.n)
 
     @partial(jit, static_argnums=(0,))
     def step(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
@@ -66,7 +65,9 @@ class GaussLegendreIntegrator(Integrator):
             er = error(k1, k2)
             return (jnp.linalg.norm(er) > self.tol) & (iteration < self.max_iter)
 
-        def body_fun(args: tuple[int, jnp.ndarray, jnp.ndarray]) -> tuple[int, jnp.ndarray, jnp.ndarray]:
+        def body_fun(
+            args: tuple[int, jnp.ndarray, jnp.ndarray],
+        ) -> tuple[int, jnp.ndarray, jnp.ndarray]:
             iteration, k1, k2 = args
             er = error(k1, k2)
             j1 = self.system.jacobian(t, x + (a11 * self.dt * k1 + a12 * self.dt * k2))
@@ -132,7 +133,12 @@ class GaussLegendreIntegrator(Integrator):
 
         # return x_next
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         num_steps = jnp.ceil((tf - t0) / self.dt).astype(int)
 
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
@@ -143,10 +149,18 @@ class GaussLegendreIntegrator(Integrator):
         return times, trajectory
 
     @partial(jit, static_argnums=(0,))
-    def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def _simulate(
+        self,
+        trajectory: jnp.ndarray,
+        times: jnp.ndarray,
+        num_steps: int,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the Gauss-Legendre method and
         # stores the results in the trajectory array
-        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
+        def body(
+            i: int,
+            args: tuple[jnp.ndarray, jnp.ndarray],
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             t = times[i - 1] + self.dt
             x = trajectory[i - 1]

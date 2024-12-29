@@ -19,7 +19,10 @@ from ICARUS.computation.solvers.Xfoil.analyses.angles import (
 
 mach_option = FloatInput(name="mach", description="Mach number")
 
-multi_reynolds_option = ListFloatInput(name="reynolds", description="List of Reynold's numbers to run")
+multi_reynolds_option = ListFloatInput(
+    name="reynolds",
+    description="List of Reynold's numbers to run",
+)
 min_angle = FloatInput(
     "min_aoa",
     "Minimum angle of attack",

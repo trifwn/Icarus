@@ -16,9 +16,9 @@ if TYPE_CHECKING:
 
 
 def get_panel_contribution(
-    panel: Float[Array, "..."],
-    control_point: Float[Array, "3"],
-) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
+    panel: Float[Array, ...],
+    control_point: Float[Array, 3],
+) -> tuple[Float[Array, 3], Float[Array, 3]]:
     U, Ustar = voring(
         control_point[0],
         control_point[1],
@@ -34,12 +34,13 @@ get_panel_contribution = jit(get_panel_contribution)
 def compute_row(
     i: int,
     PANEL_NUM: int,
-    panels: Float[Array, "{PANEL_NUM}  4 3"],
-    control_points: Float[Array, "{PANEL_NUM} 3"],
-    control_nj: Float[Array, "{PANEL_NUM} 3"],
-) -> tuple[Float[Array, "{PANEL_NUM} {PANEL_NUM}"], Float[Array, "{PANEL_NUM} {PANEL_NUM}"]]:
-
-    def compute_contributions(j: Int[Array, '']) -> tuple[Float[Array, '3'], Float[Array, '3']]:
+    panels: Float[Array, ...],
+    control_points: Float[Array, ...],
+    control_nj: Float[Array, ...],
+) -> tuple[Float[Array, ...], Float[Array, ...]]:
+    def compute_contributions(
+        j: Int[Array, ...],
+    ) -> tuple[Float[Array, 3], Float[Array, 3]]:
         # Calculate contributions from all panels
         U, Ustar = get_panel_contribution(
             panels[j],
@@ -53,9 +54,15 @@ def compute_row(
 
 def get_LHS(
     plane: LSPT_Plane,
-) -> tuple[Float[Array, "{plane.PANEL_NUM} {plane.PANEL_NUM}"], Float[Array, "{plane.PANEL_NUM} {plane.PANEL_NUM}"]]:
+) -> tuple[Float[Array, ...], Float[Array, ...]]:
     a_rows, b_rows = vmap(
-        lambda i: compute_row(i, plane.PANEL_NUM, plane.panels, plane.control_points, plane.control_nj),
+        lambda i: compute_row(
+            i,
+            plane.PANEL_NUM,
+            plane.panels,
+            plane.control_points,
+            plane.control_nj,
+        ),
     )(jnp.arange(plane.PANEL_NUM))
     a_np = jnp.reshape(a_rows, (plane.PANEL_NUM, plane.PANEL_NUM))
     b_np = jnp.reshape(b_rows, (plane.PANEL_NUM, plane.PANEL_NUM))
@@ -74,9 +81,8 @@ def get_LHS(
     return a_np, b_np
 
 
-def get_RHS(plane: LSPT_Plane, Q: Array) -> Float[Array, "{plane.PANEL_NUM}"]:
-
-    def compute_rhs(i: Int[Array, '']) -> Float[Array, '']:
+def get_RHS(plane: LSPT_Plane, Q: Array) -> Float[Array, ...]:
+    def compute_rhs(i: Int[Array, ...]) -> Float[Array, ...]:
         return -jnp.dot(Q, plane.control_nj[i])
 
     RHS = vmap(compute_rhs)(jnp.arange(plane.PANEL_NUM))

@@ -1,6 +1,4 @@
-"""
-Trim module
-"""
+"""Trim module"""
 
 from __future__ import annotations
 
@@ -14,13 +12,11 @@ if TYPE_CHECKING:
 
 
 class TrimNotPossible(Exception):
-    "Raise when Trim is not Possible due to Negative CL At trim angle"
-    pass
+    """Raise when Trim is not Possible due to Negative CL At trim angle"""
 
 
 class TrimOutsidePolars(Exception):
-    "Raise when Trim can't be computed due to Cm not crossing zero at the imported polars"
-    pass
+    """Raise when Trim can't be computed due to Cm not crossing zero at the imported polars"""
 
 
 def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
@@ -41,7 +37,6 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     - Engine fuel consumption   ! NOT IMPLEMENTED YET
     - Engine fuel remaining     ! NOT IMPLEMENTED YET
     """
-
     # Find the index of the closest positive value to zero
     Cm = state.polar["Cm"]
     try:
@@ -49,10 +44,12 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         # Find the index of the closest negative value to zero
         trim_loc2: int = int((-Cm[Cm < 0] - 0).idxmin())
     except ValueError as e:
-        logging.debug("Trim not possible due to Cm not crossing zero at the imported polars")
+        logging.debug(
+            "Trim not possible due to Cm not crossing zero at the imported polars",
+        )
         logging.debug(e)
         logging.debug(Cm)
-        raise TrimOutsidePolars()
+        raise TrimOutsidePolars
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0
     d_aoa = state.polar["AoA"][trim_loc2] - state.polar["AoA"][trim_loc1]
@@ -66,12 +63,11 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
             d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
         else:
             d2_cd = 0
+    elif trim_loc1 != len(state.polar["CD"]) - 1:
+        trim_loc3 = trim_loc1 + 1
+        d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
     else:
-        if trim_loc1 != len(state.polar["CD"])- 1:
-            trim_loc3 = trim_loc1 + 1
-            d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]    
-        else:
-            d2_cd = 0
+        d2_cd = 0
 
     aoa_trim = state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
 
@@ -84,7 +80,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     )
 
     if cl_trim <= 0:
-        raise TrimNotPossible()
+        raise TrimNotPossible
     # Find the trim velocity
     S: float = state.S
     dens: float = state.environment.air_density
@@ -98,7 +94,9 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         print(
             f"Cm is {state.polar['Cm'][trim_loc1]} instead of 0 at AoA = {state.polar['AoA'][trim_loc1]}",
         )
-        print(f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}")
+        print(
+            f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}",
+        )
         print(f"Trim velocity is {U_CRUISE} m/s")
 
     # Calculate the static margin
@@ -123,7 +121,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     # Find where the slope is zero
     from scipy.optimize import fsolve
 
-    x_neutral_point = fsolve(movement, x_cg, xtol= 1e-5)[0]
+    x_neutral_point = fsolve(movement, x_cg, xtol=1e-5)[0]
     static_margin = (x_neutral_point - x_cg) / mac
 
     trim: dict[str, float] = {

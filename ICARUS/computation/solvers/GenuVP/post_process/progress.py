@@ -16,8 +16,8 @@ def latest_time(
 
     Returns:
         Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle where the simulation is, and an error flag.
-    """
 
+    """
     filename: str = os.path.join(CASEDIR, f"gnvp{genu_version}.out")
     try:
         with open(filename, "rb") as f:

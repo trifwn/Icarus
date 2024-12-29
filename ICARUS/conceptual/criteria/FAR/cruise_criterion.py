@@ -13,8 +13,7 @@ def far_5_cruise_speed(
     cl: float,
     e: float,
 ) -> tuple[FloatArray, FloatArray]:
-    """
-    Returns the thrust loading for a given wing loading, altitude, MACH, cd_0, AR, cl and e
+    """Returns the thrust loading for a given wing loading, altitude, MACH, cd_0, AR, cl and e
 
     Args:
         wing_loading (float): Wing loading
@@ -27,6 +26,7 @@ def far_5_cruise_speed(
 
     Returns:
         _type_: Thrust loading
+
     """
     q_over_mach_sq = (
         1478.36 - 0.0523741 * altitude + 6.90146 * (10**-7) * altitude**2 - 3.32065 * (10**-12) * altitude**3

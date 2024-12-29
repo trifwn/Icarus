@@ -4,8 +4,7 @@ from ICARUS.core.types import FloatArray
 
 
 def y_rotation_stability_axes(angle: float) -> FloatArray:
-    """
-    Returns the rotation matrix for a rotation around the y axis
+    """Returns the rotation matrix for a rotation around the y axis
     The convention for stability axes is with the x-axis pointing forward.
     So it is x and z are opposite of the general coordinate system.
 
@@ -14,6 +13,7 @@ def y_rotation_stability_axes(angle: float) -> FloatArray:
 
     Returns:
         FloatArray: Rotation matrix
+
     """
     return np.array(
         [
@@ -28,8 +28,7 @@ def rotate_vector(
     vector: FloatArray,
     R: FloatArray,
 ) -> FloatArray:
-    """
-    Returns the rotated vectorsummary
+    """Returns the rotated vectorsummary
 
     Args:
         vector (FloatArray): Vector to be rotated
@@ -37,5 +36,6 @@ def rotate_vector(
 
     Returns:
         FloatArray: Rotated vector
+
     """
     return np.array(np.dot(R, vector), dtype=float)

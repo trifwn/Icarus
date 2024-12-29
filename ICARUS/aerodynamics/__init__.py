@@ -1,5 +1,4 @@
-"""
-=============================
+"""=============================
 Potential aerodynamics Module
 =============================
 
@@ -35,4 +34,4 @@ from . import biot_savart
 from . import lifting_surfaces
 from . import wing_lspt
 
-__all__ = ["lifting_surfaces", "biot_savart", "wing_lspt"]
+__all__ = ["biot_savart", "lifting_surfaces", "wing_lspt"]

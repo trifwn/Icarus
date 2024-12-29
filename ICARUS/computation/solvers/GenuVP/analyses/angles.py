@@ -21,8 +21,7 @@ from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParamete
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB3D
+from ICARUS.database import Database
 from ICARUS.database.utils import angle_to_case
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
@@ -47,8 +46,7 @@ def gnvp_angle_case(
     genu_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
-    """
-    Run a single angle simulation in GNVP3
+    """Run a single angle simulation in GNVP3
 
     Args:
         plane (Airplane): Airplane Object
@@ -64,7 +62,9 @@ def gnvp_angle_case(
 
     Returns:
         str: Case Done Message
+
     """
+    DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
     PLANEDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
@@ -139,6 +139,7 @@ def run_gnvp_angles(
         angles (list[float]): List of angles to run
         gnvp_version (int): Version of GenuVP solver
         solver_options (dict[str, Any]): Solver Options
+
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
@@ -156,7 +157,7 @@ def run_gnvp_angles(
         plane.orientation,
     )
     print("Running Angles in Sequential Mode")
-
+    DB = Database.get_instance()
     PLANEDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver=f"GenuVP{gnvp_version}",
@@ -234,6 +235,7 @@ def run_gnvp_angles_parallel(
         timestep (float): Timestep between each iteration
         angles (list[float] | FloatArray): List of angles to run
         solver_options (dict[str, Any]): Solver Options
+
     """
     bodies_dict: list[GenuSurface] = []
 
@@ -250,7 +252,6 @@ def run_gnvp_angles_parallel(
         plane.CG,
         plane.orientation,
     )
-    from multiprocessing import Pool
 
     stop_event = Event()
     print("Running Angles in Parallel Mode")
@@ -260,6 +261,7 @@ def run_gnvp_angles_parallel(
             num_processes = CPU_TO_USE
         else:
             num_processes = int((CPU_TO_USE) / 3)
+        from multiprocessing import Pool
         with Pool(num_processes) as pool:
             args_list = [
                 (
@@ -283,6 +285,7 @@ def run_gnvp_angles_parallel(
                 print(f"Could not run GNVP got: {e}")
                 stop_event.set()
 
+    DB = Database.get_instance()
     PLANEDIR: str = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver=f"GenuVP{genu_version}",
@@ -321,7 +324,11 @@ def process_gnvp_angles_run_7(plane: Airplane, state: State) -> DataFrame:
     return process_gnvp_angles_run(plane, state, 7)
 
 
-def process_gnvp_angles_run(plane: Airplane, state: State, gvnp_version: int) -> DataFrame:
+def process_gnvp_angles_run(
+    plane: Airplane,
+    state: State,
+    gvnp_version: int,
+) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
 
@@ -332,7 +339,9 @@ def process_gnvp_angles_run(plane: Airplane, state: State, gvnp_version: int) ->
 
     Returns:
         DataFrame: Forces Calculated
+
     """
+    DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
     PLANEDIR = DB.vehicles_db.get_plane_directory(
         plane=plane,

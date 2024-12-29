@@ -5,8 +5,7 @@ from typing import Callable
 
 
 class DiscretizationType(Enum):
-    """
-    Discretization types for ICARUS
+    """Discretization types for ICARUS
      3.0        equal         |   |   |   |   |   |   |   |   |
      2.0        sine          || |  |   |    |    |     |     |
      1.0        cosine        ||  |    |      |      |    |  ||
@@ -25,8 +24,7 @@ class DiscretizationType(Enum):
 
 
 class DistributionType(Enum):
-    """
-    Distribution types for ICARUS
+    """Distribution types for ICARUS
     1.0        linear
     2.0        parabolic
     3.0        cubic
@@ -43,8 +41,7 @@ class DistributionType(Enum):
 
 
 class SymmetryAxes(Enum):
-    """
-    Symmetry axes for ICARUS
+    """Symmetry axes for ICARUS
     XZ plane = "Y"
     XY plane = "Z"
     YZ plane = "X"
@@ -64,7 +61,10 @@ def equal_spacing_function(Ni: int, N: int, stretching: float) -> float:
     return (Ni / (N - 1)) * stretching
 
 
-def equal_spacing_function_factory(N: int, stretching: float = 1) -> Callable[[int], float]:
+def equal_spacing_function_factory(
+    N: int,
+    stretching: float = 1,
+) -> Callable[[int], float]:
     """Returns a function that returns a linearly spaced array of length N."""
 
     def equal_spacing_function(
@@ -81,7 +81,12 @@ def equal_spacing_function_factory(N: int, stretching: float = 1) -> Callable[[i
 ############################
 
 
-def linear_distribution_function_factory(x0: float, x1: float, y0: float, y1: float) -> Callable[[float], float]:
+def linear_distribution_function_factory(
+    x0: float,
+    x1: float,
+    y0: float,
+    y1: float,
+) -> Callable[[float], float]:
     """Returns a function that returns a linearly distributed array of length N."""
 
     def linear_distribution_function(

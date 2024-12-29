@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
+from ICARUS.database import Database
 
 
 def save_multiple_reyn(
@@ -14,7 +14,8 @@ def save_multiple_reyn(
     polars: list[dict[str, FloatArray]],
     reynolds: list[float],
 ) -> None:
-    airfoil_dir: str = os.path.join(DB.foils_db.DATADIR, f"{airfoil.name.upper()}")
+    DB = Database.get_instance()
+    airfoil_dir: str = os.path.join(DB.foils_db.DB2D, f"{airfoil.name.upper()}")
     for i, reyn_data in enumerate(polars):
         if len(reyn_data) == 0:
             continue
@@ -45,7 +46,9 @@ def save_multiple_reyn(
     # If the airfoil doesn't exist in the DB, save it
     files_in_folder = os.listdir(airfoil_dir)
     if airfoil.file_name in files_in_folder:
-        logging.info(f"{airfoil.name.upper()} already exists in the database. We do not need to save it.")
+        logging.info(
+            f"{airfoil.name.upper()} already exists in the database. We do not need to save it.",
+        )
     else:
         airfoil.save_selig(airfoil_dir)
 

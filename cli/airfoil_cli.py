@@ -1,8 +1,8 @@
-"""
-ICARUS CLI for computing Airfoils
+"""ICARUS CLI for computing Airfoils
 
 Returns:
     None: None
+
 """
 
 import time
@@ -23,7 +23,7 @@ from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 from ICARUS.core.struct import Struct
-from ICARUS.database import DB
+from ICARUS.database import Database
 
 from .cli_home import cli_home
 
@@ -86,7 +86,7 @@ def get_airfoil_NACA() -> Airfoil:
             return get_airfoil_NACA()
 
 
-def get_airfoil_db() -> Airfoil:
+def get_airfoil_db(DB: Database) -> Airfoil:
     airfoils: Struct = DB.foils_db.airfoils
     airfoil_question: list[List] = [
         List(
@@ -105,10 +105,10 @@ def get_airfoil_db() -> Airfoil:
         return airfoil
     except Exception as e:
         print(e)
-        return get_airfoil_db()
+        return get_airfoil_db(DB)
 
 
-def select_airfoil_source() -> Airfoil:
+def select_airfoil_source(DB: Database) -> Airfoil:
     airfoil_source_question: list[List] = [
         List(
             "airfoil_source",
@@ -123,16 +123,15 @@ def select_airfoil_source() -> Airfoil:
         exit()
     if answer["airfoil_source"] == "File":
         return get_airfoil_file()
-    elif answer["airfoil_source"] == "NACA Digits":
+    if answer["airfoil_source"] == "NACA Digits":
         return get_airfoil_NACA()
-    elif answer["airfoil_source"] == "Database":
-        return get_airfoil_db()
-    else:
-        print("Error")
-        return select_airfoil_source()
+    if answer["airfoil_source"] == "Database":
+        return get_airfoil_db(DB)
+    print("Error")
+    return select_airfoil_source(DB)
 
 
-def airfoil_cli(return_home: bool = False) -> None:
+def airfoil_cli(DB: Database, return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
 
@@ -154,7 +153,7 @@ def airfoil_cli(return_home: bool = False) -> None:
 
     for i in range(N):
         print("\n")
-        airfoil: Airfoil = select_airfoil_source()
+        airfoil: Airfoil = select_airfoil_source(DB)
         airfoils.append(airfoil)
 
         select_solver_quest: list[Checkbox] = [
@@ -218,7 +217,10 @@ def airfoil_cli(return_home: bool = False) -> None:
             f2w_options.airfoil = airfoil
 
             # Run Solver
-            f2w_solvers[airfoil.name].define_analysis(f2w_options, f2w_solver_parameters)
+            f2w_solvers[airfoil.name].define_analysis(
+                f2w_options,
+                f2w_solver_parameters,
+            )
             f2w_solvers[airfoil.name].execute()
 
             # Get Results
@@ -281,4 +283,5 @@ def airfoil_cli(return_home: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    airfoil_cli()
+    DB = Database("./Data")
+    airfoil_cli(DB)

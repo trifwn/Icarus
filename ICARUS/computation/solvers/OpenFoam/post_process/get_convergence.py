@@ -10,6 +10,7 @@ def get_convergence_data(HOMEDIR: str, CASEDIR: str) -> None:
     Args:
         HOMEDIR (str): Home Directory
         CASEDIR (str): Case Directory
+
     """
     os.chdir(CASEDIR)
     call(["/bin/bash", "-c", f"{logOFscript}"])

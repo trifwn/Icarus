@@ -23,23 +23,23 @@ def setup_plot() -> tuple[Figure, list[Axes]]:
     axs[0, 0].plot(zeros, zeros, label="Goal")
 
     # Plot Distance Travelled
-    axs[0, 1].plot(zeros, zeros, label=f"Course")
+    axs[0, 1].plot(zeros, zeros, label="Course")
 
     # Plot Elevator Angle
-    axs[0, 2].plot(zeros, zeros, label=f"Angle")
+    axs[0, 2].plot(zeros, zeros, label="Angle")
 
     # Plot Velocity
-    axs[1, 0].plot(zeros, zeros, label=f"Magnitude")
-    axs[1, 0].plot(zeros, zeros, label=f"Vx")
-    axs[1, 0].plot(zeros, zeros, label=f"Vh")
+    axs[1, 0].plot(zeros, zeros, label="Magnitude")
+    axs[1, 0].plot(zeros, zeros, label="Vx")
+    axs[1, 0].plot(zeros, zeros, label="Vh")
 
     # Plot Thrust
-    axs[1, 1].plot(zeros, zeros, label=f"Required")
-    axs[1, 1].plot(zeros, zeros, label=f"Min Available")
-    axs[1, 1].plot(zeros, zeros, label=f"Max Available")
+    axs[1, 1].plot(zeros, zeros, label="Required")
+    axs[1, 1].plot(zeros, zeros, label="Min Available")
+    axs[1, 1].plot(zeros, zeros, label="Max Available")
 
     # Plot AOA
-    axs[1, 2].plot(zeros, zeros, label=f"AoA")
+    axs[1, 2].plot(zeros, zeros, label="AoA")
     # axs[1,2].plot(zeros, zeros, label=f"Trajectory Angle")
 
     # Set Labels, Titles and Grids

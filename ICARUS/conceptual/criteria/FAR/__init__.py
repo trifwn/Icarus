@@ -1,5 +1,4 @@
-"""
-===============================================================
+"""===============================================================
 ICARUS Module for adding FAR Criteria to the Conceptual Design
 ===============================================================
 
@@ -61,13 +60,13 @@ from . import takeoff_criterion
 from . import useful_load
 
 __all__ = [
-    "takeoff_criterion",
     "climb_criterion",
     "cruise_criterion",
     "failed_approach_criterion",
-    "landing_criterion",
-    "range",
-    "useful_load",
     "get_all_criteria",
     "helper_functions",
+    "landing_criterion",
+    "range",
+    "takeoff_criterion",
+    "useful_load",
 ]

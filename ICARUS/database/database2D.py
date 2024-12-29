@@ -12,47 +12,44 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS import APPHOME
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.airfoils.airfoil_polars import AirfoilData
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.core.struct import Struct
-
-from . import DB2D
-from . import EXTERNAL_DB
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
 
 
 class AirfoilNotFoundError(Exception):
-    """
-    Exception raised when an airfoil is not found in the database.
-    """
+    """Exception raised when an airfoil is not found in the database."""
 
     def __init__(self, airfoil_name: str) -> None:
-        """
-        Initialize the AirfoilNotFoundError class.
+        """Initialize the AirfoilNotFoundError class.
 
         Args:
             airfoil_name (str): Airfoil name
+
         """
         message = f"Airfoil {airfoil_name} not found in database!"
         super().__init__(message)
 
 
 class PolarsNotFoundError(Exception):
-    """
-    Exception raised when polars are not found in the database.
-    """
+    """Exception raised when polars are not found in the database."""
 
-    def __init__(self, airfoil_name: str, solver: str = "None", solvers_found: list[str] = ["None"]) -> None:
-        """
-        Initialize the PolarsNotFoundError class.
+    def __init__(
+        self,
+        airfoil_name: str,
+        solver: str = "None",
+        solvers_found: list[str] | None= None,
+    ) -> None:
+        """Initialize the PolarsNotFoundError class.
 
         Args:
             airfoil_name (str): Airfoil name
             solver (str): Solver name
+
         """
         if solver:
             message = f"Polars for airfoil {airfoil_name} not found in database for solver {solver}! The available solvers are {solvers_found}"
@@ -62,42 +59,58 @@ class PolarsNotFoundError(Exception):
 
 
 class Database_2D:
-    """
-    Database class to store 2d simulation objects (airfoils), analyses and results (polars).
-    """
+    """Database class to store 2d simulation objects (airfoils), analyses and results (polars)."""
 
-    def __init__(self) -> None:
-        """
-        Initialize the Database_2D class.
-        """
+    _instance = None
+
+    def __new__(cls, *args, **kwargs) -> Database_2D:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls) -> Database_2D:
+        if cls._instance is None:
+            raise ValueError("Database_2D not initialized!")
+        return cls._instance
+
+    def __init__(
+        self,
+        APPHOME: str,
+        location: str,
+        EXTERNAL_DB: str | None = None,
+    ) -> None:
+        """Initialize the Database_2D class."""
         self.HOMEDIR: str = APPHOME
-        self.DATADIR: str = DB2D
-        if not os.path.isdir(self.DATADIR):
-            os.makedirs(self.DATADIR)
+        self.DB2D: str = location
+        if not os.path.isdir(self.DB2D):
+            os.makedirs(self.DB2D)
 
         # !TODO: Make data private
         self._raw_data = Struct()
         self.polars: dict[str, AirfoilData] = {}
         self.airfoils = Struct()
 
+        self.EXTERNAL_DB = EXTERNAL_DB
+
     def get_airfoils(self) -> list[str]:
-        """
-        Returns the available airfoils in the database.
+        """Returns the available airfoils in the database.
 
         Returns:
             list[str]: List of airfoil names
+
         """
         return list(self.airfoils.keys())
 
     def get_airfoil(self, airfoil_name: str) -> Airfoil:
-        """
-        Returns the airfoil object from the database.
+        """Returns the airfoil object from the database.
 
         Args:
             name (str): Airfoil name
 
         Returns:
             Airfoil: Airfoil object
+
         """
         airfoil_name = airfoil_name.upper()
         try:
@@ -113,8 +126,7 @@ class Database_2D:
                 raise AirfoilNotFoundError(airfoil_name)
 
     def get_polars(self, airfoil_name: str, solver: str = "Any") -> Polars:
-        """
-        Returns the polars object from the database.
+        """Returns the polars object from the database.
 
         Args:
             airfoil_name (str): Airfoil name
@@ -122,6 +134,7 @@ class Database_2D:
 
         Returns:
             Polars: Polars object
+
         """
         if airfoil_name not in self.airfoils.keys():
             self.add_airfoil(airfoil_name)
@@ -145,16 +158,16 @@ class Database_2D:
         airfoil: Airfoil,
         reynolds: list[float] | FloatArray,
         angles: list[float] | FloatArray,
-        solver_name: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
+        solver_name: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
         trips: tuple[float, float] = (0.3, 0.3),
     ) -> None:
-        """
-        Computes the polars for an airfoil at a given reynolds number and angles of attack.
+        """Computes the polars for an airfoil at a given reynolds number and angles of attack.
 
         Args:
             airfoil (Airfoil): Airfoil object
             reynolds (float): Reynolds number
             angles (list[float]): List of angles of attack
+
         """
         if isinstance(reynolds, float):
             reynolds = [reynolds]
@@ -174,8 +187,7 @@ class Database_2D:
         )
 
     def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
-        """
-        Returns the data object from the database.
+        """Returns the data object from the database.
 
         Args:
             airfoil_name (str): Airfoil name
@@ -183,6 +195,7 @@ class Database_2D:
 
         Returns:
             DataFrame: Data object
+
         """
         if airfoil_name not in self._raw_data.keys():
             try:
@@ -198,30 +211,31 @@ class Database_2D:
         return data
 
     def load_data(self) -> None:
-        """
-        Scans the filesystem and load all the data.
+        """Scans the filesystem and load all the data.
         Scans the filesystem and loads data if not already loaded.
         """
         # Accessing Database Directory
-        if not os.path.isdir(DB2D):
-            print(f"Creating DB2D directory at {DB2D}...")
-            os.makedirs(DB2D, exist_ok=True)
+        if not os.path.isdir(self.DB2D):
+            print(f"Creating self.DB2D directory at {self.DB2D}...")
+            os.makedirs(self.DB2D, exist_ok=True)
 
         # Get Folders
-        airfoil_folders: list[str] = next(os.walk(DB2D))[1]
+        airfoil_folders: list[str] = next(os.walk(self.DB2D))[1]
         for airfoil_folder in airfoil_folders:
             logging.info(f"Scanning {airfoil_folder}...")
-            # Enter DB2D
-            os.chdir(DB2D)
-            airfoil_folder_path = os.path.join(DB2D, airfoil_folder)
+            # Enter self.DB2D
+            os.chdir(self.DB2D)
+            airfoil_folder_path = os.path.join(self.DB2D, airfoil_folder)
             os.chdir(airfoil_folder_path)
 
             # Load Airfoil Object
             try:
                 self.add_airfoil(airfoil_folder)
             except FileNotFoundError:
-                logging.error(f"Airfoil {airfoil_folder} not found in DB2D or EXTERNAL DB")
-                print(f"Airfoil {airfoil_folder} not found in DB2D or EXTERNAL DB")
+                logging.exception(
+                    f"Airfoil {airfoil_folder} not found in self.DB2D or EXTERNAL DB",
+                )
+                print(f"Airfoil {airfoil_folder} not found in self.DB2D or EXTERNAL DB")
                 continue
 
             # Load Airfoil Data
@@ -239,45 +253,46 @@ class Database_2D:
             return
 
         # If not Create Data and Polars
-        else:
-            logging.info(f"Loaded data for airfoil {airfoil_folder}")
-            self._raw_data[airfoil_folder] = Struct()
-            for j in data[airfoil_folder].keys():
-                for k in data[airfoil_folder][j].keys():
-                    if k not in self._raw_data[airfoil_folder].keys():
-                        self._raw_data[airfoil_folder][k] = Struct()
-                    self._raw_data[airfoil_folder][k][j] = data[airfoil_folder][j][k]
+        logging.info(f"Loaded data for airfoil {airfoil_folder}")
+        self._raw_data[airfoil_folder] = Struct()
+        for j in data[airfoil_folder].keys():
+            for k in data[airfoil_folder][j].keys():
+                if k not in self._raw_data[airfoil_folder].keys():
+                    self._raw_data[airfoil_folder][k] = Struct()
+                self._raw_data[airfoil_folder][k][j] = data[airfoil_folder][j][k]
 
-            # Create Polar Object
-            for solver in self._raw_data[airfoil_folder].keys():
-                self.polars[airfoil_folder] = AirfoilData(
-                    name=airfoil_folder,
-                    data=self._raw_data[airfoil_folder],
-                )
-            return
+        # Create Polar Object
+        for solver in self._raw_data[airfoil_folder].keys():
+            self.polars[airfoil_folder] = AirfoilData(
+                name=airfoil_folder,
+                data=self._raw_data[airfoil_folder],
+            )
+        return
 
     def read_airfoil_data_folder(self, airfoil_folder: str) -> Struct:
-        """
-        Scans the reynolds subdirectories and loads the data.
+        """Scans the reynolds subdirectories and loads the data.
 
         Args:
             airfoil_folder (str): Airfoil folder
 
         Returns:
             Struct: A struct containing the polars for all reynolds.
+
         """
         airfoil_data = Struct()
         # Read the reynolds subdirectories
-        airfoil_folder_path = os.path.join(DB2D, airfoil_folder)
+        airfoil_folder_path = os.path.join(self.DB2D, airfoil_folder)
         folders: list[str] = next(os.walk(airfoil_folder_path))[1]  # folder = reynolds subdir
 
         for folder in folders:
-            airfoil_data[folder[9:]] = self.scan_different_solver(airfoil_folder_path, folder)
+            airfoil_data[folder[9:]] = self.scan_different_solver(
+                airfoil_folder_path,
+                folder,
+            )
         return airfoil_data
 
     def scan_different_solver(self, airfoil_dir: str, airfoil_subdir: str) -> Struct:
-        """
-        Scans the different solver files and loads the data.
+        """Scans the different solver files and loads the data.
 
         Args:
             airfoil_dir (str): Airfoil directory
@@ -288,6 +303,7 @@ class Database_2D:
 
         Returns:
             Struct: Struct containing the polars for all solvers.
+
         """
         current_reynolds_data: Struct = Struct()
         subdir = os.path.join(airfoil_dir, airfoil_subdir)
@@ -317,20 +333,20 @@ class Database_2D:
                 try:
                     if current_reynolds_data[name]["CL"].isnull().values.all() or current_reynolds_data[name].empty:
                         del current_reynolds_data[name]
-                except:
+                except KeyError:
                     del current_reynolds_data[name]
 
         return current_reynolds_data
 
     def add_airfoil(self, airfoil_folder: str) -> None:
-        """
-        Adds an airfoil to the database.
+        """Adds an airfoil to the database.
 
         Args:
             airfoil_folder (str):
 
         Raises:
-            FileNotFoundError: If the airfoil is not found in the DB2D or EXTERNAL DB and cant be generated from NACA Digits.
+            FileNotFoundError: If the airfoil is not found in the self.DB2D or EXTERNAL DB and cant be generated from NACA Digits.
+
         """
         # Handle NACA airfoils first since we have analytical expressions for them
         if airfoil_folder.upper().startswith("NACA") and (
@@ -338,8 +354,8 @@ class Database_2D:
         ):
             try:
                 naca_foil = Airfoil.naca(airfoil_folder[4:], n_points=200)
-                # Save the airfoil to the DB2D
-                airfoil_dir = os.path.join(DB2D, airfoil_folder.upper())
+                # Save the airfoil to the self.DB2D
+                airfoil_dir = os.path.join(self.DB2D, airfoil_folder.upper())
                 # Create the directory if it doesn't exist
                 os.makedirs(airfoil_dir, exist_ok=True)
                 naca_foil.save_selig(airfoil_dir)
@@ -348,36 +364,43 @@ class Database_2D:
                 logging.info(f"Loaded airfoil {airfoil_folder} from NACA Digits")
                 return
             except Exception as e:
-                print(f"Error loading airfoil {airfoil_folder} from NACA Digits. Got error: {e}")
+                print(
+                    f"Error loading airfoil {airfoil_folder} from NACA Digits. Got error: {e}",
+                )
 
-        # Read the airfoil from the DB2D if it exists
-        path_exists = os.path.exists(os.path.join(DB2D, airfoil_folder.upper()))
+        # Read the airfoil from the self.DB2D if it exists
+        path_exists = os.path.exists(os.path.join(self.DB2D, airfoil_folder.upper()))
         if path_exists:
             try:
-                filename = os.path.join(DB2D, airfoil_folder.upper(), airfoil_folder.lower())
+                filename = os.path.join(
+                    self.DB2D,
+                    airfoil_folder.upper(),
+                    airfoil_folder.lower(),
+                )
                 self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
-                logging.info(f"Loaded airfoil {airfoil_folder} from DB2D")
+                logging.info(f"Loaded airfoil {airfoil_folder} from self.DB2D")
             except Exception as e:
-                print(f"Error loading airfoil {airfoil_folder} from DB2D. Got error: {e}")
+                print(
+                    f"Error loading airfoil {airfoil_folder} from self.DB2D. Got error: {e}",
+                )
         # Try to load from the WEB
         else:
             try:
-                self.airfoils[airfoil_folder] = Airfoil.load_from_web(airfoil_folder.lower())
+                self.airfoils[airfoil_folder] = Airfoil.load_from_web(
+                    airfoil_folder.lower(),
+                )
                 print(f"Loaded airfoil {airfoil_folder} from WEB")
-                logging.info(f"Loaded airfoil {airfoil_folder} from web and saved to DB")
+                logging.info(
+                    f"Loaded airfoil {airfoil_folder} from web and saved to DB",
+                )
                 return
             except FileNotFoundError:
-                # raise FileNotFoundError()
-
+                if self.EXTERNAL_DB is None:
+                    raise FileNotFoundError(
+                        f"Couldnt Find airfoil {airfoil_folder} in self.DB2D",
+                    )
                 # Search for the airfoil in the EXTERNAL DB
-                try:
-                    # Try to load from web
-                    self.airfoils[airfoil_folder] = Airfoil.load_from_web(airfoil_folder.lower())
-                    logging.info(f"Loaded airfoil {airfoil_folder} from WEB")
-                    return
-                except FileNotFoundError:
-                    pass
-                folders: list[str] = os.walk(EXTERNAL_DB).__next__()[1]
+                folders: list[str] = os.walk(self.EXTERNAL_DB).__next__()[1]
                 flag = False
                 name: str = ""
                 for folder in folders:
@@ -397,15 +420,21 @@ class Database_2D:
 
                 if flag:
                     # list the files in the airfoil folder
-                    flap_files: list[str] = os.listdir(os.path.join(EXTERNAL_DB, name))
+                    flap_files: list[str] = os.listdir(
+                        os.path.join(self.EXTERNAL_DB, name),
+                    )
                     # check if the airfoil is in the flap folder
                     if name + ".dat" in flap_files:
                         # load the airfoil from the flap folder
-                        filename = os.path.join(EXTERNAL_DB, name, name + ".dat")
+                        filename = os.path.join(self.EXTERNAL_DB, name, name + ".dat")
                         self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
-                        logging.info(f"Loaded airfoil {airfoil_folder} from EXTERNAL DB")
+                        logging.info(
+                            f"Loaded airfoil {airfoil_folder} from EXTERNAL DB",
+                        )
                 else:
-                    raise FileNotFoundError(f"Couldnt Find airfoil {airfoil_folder} in DB2D or EXTERNAL DB")
+                    raise FileNotFoundError(
+                        f"Couldnt Find airfoil {airfoil_folder} in self.DB2D or EXTERNAL DB",
+                    )
 
     @staticmethod
     def generate_airfoil_directories(
@@ -413,8 +442,9 @@ class Database_2D:
         reynolds: float,
         angles: list[float] | FloatArray,
     ) -> tuple[str, str, str, list[str]]:
+        db = Database_2D.get_instance()
         AFDIR: str = os.path.join(
-            DB2D,
+            db.DB2D,
             f"{airfoil.name.upper()}",
         )
         os.makedirs(AFDIR, exist_ok=True)
@@ -426,7 +456,12 @@ class Database_2D:
             airfoil.save_selig(AFDIR)
             sleep(0.1)
 
-        reynolds_str: str = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3)
+        reynolds_str: str = np.format_float_scientific(
+            reynolds,
+            sign=False,
+            precision=3,
+            min_digits=3,
+        )
 
         REYNDIR: str = os.path.join(
             AFDIR,
@@ -444,19 +479,20 @@ class Database_2D:
             folder = Database_2D.angle_to_dir(angle)
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
-        return APPHOME, AFDIR, REYNDIR, ANGLEDIRS
+        from ICARUS import INSTALL_DIR
+        return INSTALL_DIR, AFDIR, REYNDIR, ANGLEDIRS
 
     # STATIC METHODS
     @staticmethod
     def angle_to_dir(angle: float) -> str:
-        """
-        Converts an angle to a directory name.
+        """Converts an angle to a directory name.
 
         Args:
             angle (float): Angle
 
         Returns:
             str: Directory name
+
         """
         if angle >= 0:
             folder: str = str(angle)[::-1].zfill(7)[::-1]
@@ -466,14 +502,14 @@ class Database_2D:
 
     @staticmethod
     def dir_to_angle(folder: str) -> float:
-        """
-        Converts a directory name to an angle.
+        """Converts a directory name to an angle.
 
         Args:
             folder (str): Directory name
 
         Returns:
             float: Angle
+
         """
         if folder.startswith("m"):
             angle = -float(folder[1:])
@@ -483,27 +519,27 @@ class Database_2D:
 
     @staticmethod
     def get_reynolds_from_dir(folder: str) -> float:
-        """
-        Gets the reynolds number from a directory name.
+        """Gets the reynolds number from a directory name.
 
         Args:
             folder (str): Directory name
 
         Returns:
             float: Reynolds number
+
         """
         return float(folder[10:].replace("_", "e"))
 
     @staticmethod
     def get_dir_from_reynolds(reynolds: float) -> str:
-        """
-        Gets the directory name from a reynolds number.
+        """Gets the directory name from a reynolds number.
 
         Args:
             reynolds (float): Reynolds number
 
         Returns:
             str: Directory name
+
         """
         return f"Reynolds_{reynolds}"
 
@@ -515,6 +551,7 @@ class Database_2D:
 
         Args:
             df (pandas.DataFrame): Dataframe with NaN values
+
         """
         CLs: list[str] = []
         CDs: list[str] = []
@@ -547,8 +584,7 @@ class Database_2D:
         aoa: float,
         solver: str,
     ) -> tuple[float, float, float]:
-        """
-        Interpolates the polars from the database.
+        """Interpolates the polars from the database.
 
         Args:
             reynolds (float): Reynolds number
@@ -558,6 +594,7 @@ class Database_2D:
 
         Returns:
             tuple[float, float, float]: CL, CD, Cm
+
         """
         if airfoil_name not in self.polars.keys():
             if f"NACA{airfoil_name}" in self.polars.keys():
@@ -572,10 +609,14 @@ class Database_2D:
         min_reynolds_stored: float = min(reynolds_stored)
 
         if reynolds > max_reynolds_stored:
-            raise ValueError(f"Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}")
+            raise ValueError(
+                f"Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}",
+            )
 
         if reynolds < min_reynolds_stored:
-            raise ValueError(f"Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}")
+            raise ValueError(
+                f"Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
+            )
 
         reynolds_stored.sort()
         upper_reynolds: float | None = None
@@ -594,7 +635,9 @@ class Database_2D:
                     break
 
         if not upper_reynolds or not lower_reynolds:
-            raise ValueError(f"Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}")
+            raise ValueError(
+                f"Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}",
+            )
 
         # Get the polars for the 2 reynolds numbers
         upper_polar: DataFrame = polars.get_reynolds_subtable(upper_reynolds)
@@ -611,9 +654,15 @@ class Database_2D:
             Cm_low: float = float(np.interp(aoa, lower_polar["AoA"], lower_polar["Cm"]))
 
             # Interpolate between the 2 CL, CD and Cm values
-            CL = float(np.interp(reynolds, [lower_reynolds, upper_reynolds], [CL_low, CL_up]))
-            CD = float(np.interp(reynolds, [lower_reynolds, upper_reynolds], [CD_low, CD_up]))
-            Cm = float(np.interp(reynolds, [lower_reynolds, upper_reynolds], [Cm_low, Cm_up]))
+            CL = float(
+                np.interp(reynolds, [lower_reynolds, upper_reynolds], [CL_low, CL_up]),
+            )
+            CD = float(
+                np.interp(reynolds, [lower_reynolds, upper_reynolds], [CD_low, CD_up]),
+            )
+            Cm = float(
+                np.interp(reynolds, [lower_reynolds, upper_reynolds], [Cm_low, Cm_up]),
+            )
         except KeyError as e:
             print(airfoil_name)
             print(upper_reynolds)

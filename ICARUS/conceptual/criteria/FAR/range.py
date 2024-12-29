@@ -9,8 +9,7 @@ def range_criterion(
     l_over_d: float,
     sfc: float,
 ) -> float:
-    """
-    Returns the Fuel fraction for a given range, mach, l_d_dmin, sfc and altitude
+    """Returns the Fuel fraction for a given range, mach, l_d_dmin, sfc and altitude
 
     Args:
         range (float): Range in nautical miles
@@ -21,6 +20,7 @@ def range_criterion(
 
     Returns:
         _type_: Fuel fraction
+
     """
     a = 577  # speed of sound
     B: float = a * mach * l_over_d / sfc  # Breguet range

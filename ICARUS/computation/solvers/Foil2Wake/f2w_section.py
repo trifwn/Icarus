@@ -11,7 +11,6 @@ from ICARUS.computation.solvers.Foil2Wake.analyses.angles import (
 )
 from ICARUS.computation.solvers.Foil2Wake.analyses.angles import run_single_reynolds
 from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.solver_parameters import BoolParameter
 from ICARUS.computation.solvers.solver_parameters import FloatParameter
 from ICARUS.computation.solvers.solver_parameters import IntParameter
 from ICARUS.computation.solvers.solver_parameters import Parameter

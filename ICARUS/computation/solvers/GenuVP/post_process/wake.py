@@ -3,8 +3,7 @@ import os
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB3D
+from ICARUS.database import Database
 from ICARUS.vehicle.plane import Airplane
 
 from .max_iter import get_max_iterations_3
@@ -14,8 +13,7 @@ def get_wake_data_3(
     plane: Airplane,
     case: str,
 ) -> tuple[FloatArray, FloatArray, FloatArray]:
-    """
-    Get the wake data from a given case by reading the YOURS.WAK file.
+    """Get the wake data from a given case by reading the YOURS.WAK file.
 
     Args:
         plane (Airplane): Airplane Object
@@ -23,7 +21,9 @@ def get_wake_data_3(
 
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
+
     """
+    DB = Database.get_instance()
     CASEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="GenuVP3",
@@ -67,8 +67,7 @@ def nwake_data_7(
     plane: Airplane,
     case: str,
 ) -> FloatArray:
-    """
-    Get the wake data from a given case by reading the YOURS.WAK file.
+    """Get the wake data from a given case by reading the YOURS.WAK file.
 
     Args:
         plane (Airplane): Airplane Object
@@ -76,7 +75,9 @@ def nwake_data_7(
 
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
+
     """
+    DB = Database.get_instance()
     CASEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="GenuVP7",
@@ -114,8 +115,7 @@ def wake_data_7(
     plane: Airplane,
     case: str,
 ) -> FloatArray:
-    """
-    Get the wake data from a given case by reading the YOURS.WAK file.
+    """Get the wake data from a given case by reading the YOURS.WAK file.
 
     Args:
         plane (Airplane): Airplane Object
@@ -123,7 +123,9 @@ def wake_data_7(
 
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
+
     """
+    DB = Database.get_instance()
     CASEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="GenuVP7",
@@ -155,8 +157,7 @@ def grid_data_7(
     plane: Airplane,
     case: str,
 ) -> FloatArray:
-    """
-    Get the wake data from a given case by reading the YOURS.WAK file.
+    """Get the wake data from a given case by reading the YOURS.WAK file.
 
     Args:
         plane (Airplane): Airplane Object
@@ -164,7 +165,9 @@ def grid_data_7(
 
     Returns:
         tuple[FloatArray, FloatArray, FloatArray]: A1: The Particle Wake, B1: The near Wake, C1: The Grid
+
     """
+    DB = Database.get_instance()
     CASEDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="GenuVP7",

@@ -5,13 +5,9 @@ from typing import Any
 import pandas as pd
 from numpy import ndarray
 
-from ICARUS.aerodynamics import assemble_matrix
-from ICARUS.aerodynamics.biot_savart import symm_wing_panels
-from ICARUS.aerodynamics.biot_savart import voring
 from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB3D
+from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
@@ -23,14 +19,15 @@ def run_lstp_angles(
     angles: FloatArray | list[float],
     solver_options: dict[str, Any],
 ) -> None:
-    """
-    Function to run the wing LLT solver
+    """Function to run the wing LLT solver
 
     Args:
         plane (Airplane): Airplane Object
         options (dict[str, Any]): Options
         solver_options (dict[str, Any]): Solver Options
+
     """
+    DB = Database.get_instance()
     LSPTDIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="LSPT",
@@ -62,7 +59,8 @@ def save_results(
     state: State,
     df: pd.DataFrame,
 ) -> None:
-    plane_dir: str = os.path.join(DB.vehicles_db.DATADIR, plane.name)
+    DB = Database.get_instance()
+    plane_dir: str = os.path.join(DB.vehicles_db.DB3D, plane.name)
     try:
         os.chdir(plane_dir)
     except FileNotFoundError:
@@ -70,7 +68,7 @@ def save_results(
         os.chdir(plane_dir)
 
     # Save the Forces
-    df.to_csv(f"forces.lspt", index=False)
+    df.to_csv("forces.lspt", index=False)
     os.chdir(DB.HOMEDIR)
 
     # Save the Plane
@@ -78,7 +76,7 @@ def save_results(
 
     logging.info("Adding Results to Database")
     # Add plane to database
-    file_plane: str = os.path.join(DB3D, plane.name, f"{plane.name}.json")
+    file_plane: str = os.path.join(DB.DB3D, plane.name, f"{plane.name}.json")
     _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
 
     # Add Forces to Database

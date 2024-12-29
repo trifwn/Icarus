@@ -26,7 +26,7 @@ class CrankNicolsonIntegrator(Integrator):
             predicted_state = x + 0.5 * self.dt * (k1 + k2)
             return predicted_state - x - self.dt * self.system(t + 0.5 * self.dt, predicted_state)
 
-        def cond_fun(er: jnp.ndarray) -> jnp.bool_:
+        def cond_fun(er: jnp.ndarray) -> jnp.ndarray:
             """Loop condition based on error norm."""
             return jnp.linalg.norm(er) > self.tol
 
@@ -36,11 +36,20 @@ class CrankNicolsonIntegrator(Integrator):
             er = error(x1)
             return x1 - jnp.linalg.solve(j, er)
 
-        x_next = lax.while_loop(cond_fun, body_fun, x + 0.5 * self.dt * self.system(t, x))
+        x_next = lax.while_loop(
+            cond_fun,
+            body_fun,
+            x + 0.5 * self.dt * self.system(t, x),
+        )
 
         return x_next
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         num_steps = jnp.ceil((tf - t0) / self.dt).astype(int)
 
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
@@ -50,10 +59,18 @@ class CrankNicolsonIntegrator(Integrator):
         return times, trajectory
 
     @partial(jit, static_argnums=(0,))
-    def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def _simulate(
+        self,
+        trajectory: jnp.ndarray,
+        times: jnp.ndarray,
+        num_steps: int,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the Crank-Nicolson method and
         # stores the results in the trajectory array
-        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
+        def body(
+            i: int,
+            args: tuple[jnp.ndarray, jnp.ndarray],
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             t = times[i - 1] + self.dt
             x = trajectory[i - 1]

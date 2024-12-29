@@ -5,7 +5,6 @@ from ICARUS.vehicle.plane import Airplane
 
 class MissionAnalysis:
     def __init__(self, mission: Mission, solver: Solver, vehicle: Airplane) -> None:
-
         self.mission: Mission = mission
         self.solver: Solver = solver
         self.vehicle: Airplane = vehicle

@@ -1,12 +1,11 @@
-"""
-ICARUS CLI Visualization module
-
-"""
+"""ICARUS CLI Visualization module"""
 
 from typing import Any
 
 from inquirer import List
 from inquirer import prompt
+
+from ICARUS.database import Database
 
 from .airfoil_vis import aifoil_visualization_cli
 from .cli_home import cli_home
@@ -36,14 +35,13 @@ def ask_visualization_category() -> str:
         return ask_visualization_category()
 
 
-def visualization_cli(return_home: bool = True) -> None:
-    """
-    CLI for visualization of Computed data stored in the ICARUS Database
+def visualization_cli(DB: Database, return_home: bool = True) -> None:
+    """CLI for visualization of Computed data stored in the ICARUS Database
 
     Args:
         return_home (bool, optional): Whether to loop back to the home of the cli. Defaults to True.
-    """
 
+    """
     # Ask what to visualize airplane or airfoil
     vis_category: str = ask_visualization_category()
     if vis_category == "airfoil":
@@ -58,4 +56,4 @@ def visualization_cli(return_home: bool = True) -> None:
 
 
 if __name__ == "__main__":
-    visualization_cli()
+    visualization_cli(DB=Database("./Data"))

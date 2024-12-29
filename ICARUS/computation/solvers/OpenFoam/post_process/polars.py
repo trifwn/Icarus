@@ -10,8 +10,7 @@ from ICARUS.computation.solvers.OpenFoam.post_process.get_aero_coefficients impo
 
 
 def make_polars(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> DataFrame:
-    """
-    Function to make polars from OpenFoam results
+    """Function to make polars from OpenFoam results
 
     Args:
         CASEDIR (str): Case Directory
@@ -19,6 +18,7 @@ def make_polars(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> DataFrame:
         angles (list[float]): Angles to make polars for
     Returns:
         DataFrame: Dataframe Containing CL, CD, CM for all angles
+
     """
     os.chdir(CASEDIR)
     cd: list[float] = []

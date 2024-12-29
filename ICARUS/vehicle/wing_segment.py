@@ -49,8 +49,7 @@ class WingSegment(WingSurface):
         controls: list[ControlSurface] = [NoControl],
         is_lifting: bool = True,
     ):
-        """
-        Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
+        """Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
         is discretized into a number of panels in the spanwise and chordwise directions. The wing segment
         is basically a constructor of a Lifting_Surface.
 
@@ -74,6 +73,7 @@ class WingSegment(WingSurface):
             chord_spacing (DiscretizationType, optional): Discretization type for the chordwise direction. Defaults to DiscretizationType.EQUAL.
             N (int, optional): Number of panels for the span . Defaults to 15.
             M (int, optional): Number of panels for the chord. Defaults to 5.
+
         """
         # Set the distributions of the wing segment
         self._dihedral_distribution = spanwise_dihedral_distibution
@@ -207,12 +207,18 @@ class WingSegment(WingSurface):
         elif self._span_spacing == DiscretizationType.USER_DEFINED:
             pass
         else:
-            raise NotImplementedError(f"Spanwise discretization type {self.span_spacing} not implemented")
+            raise NotImplementedError(
+                f"Spanwise discretization type {self.span_spacing} not implemented",
+            )
 
         # Define chordwise discretization
         if self._chord_spacing == DiscretizationType.EQUAL:
             # Define the chordwise discretization function
-            chord_disc_fun: Callable[[int], float] = partial(equal_spacing_function, N=self.M, stretching=1.0)
+            chord_disc_fun: Callable[[int], float] = partial(
+                equal_spacing_function,
+                N=self.M,
+                stretching=1.0,
+            )
             # equal_spacing_function_factory(M)
         elif self._chord_spacing == DiscretizationType.USER_DEFINED:
             try:
@@ -220,7 +226,9 @@ class WingSegment(WingSurface):
             except AttributeError:
                 raise AttributeError("Chord discretization function not defined")
         else:
-            raise NotImplementedError(f"Chordwise discretization type {self.chord_spacing} not implemented")
+            raise NotImplementedError(
+                f"Chordwise discretization type {self.chord_spacing} not implemented",
+            )
 
         # Create lifting surface object from the super().from_span_percentage_function constructor
         instance = super().from_span_percentage_functions(
@@ -448,7 +456,7 @@ class WingSegment(WingSurface):
             N=state["N"],
             M=state["M"],
             mass=state["mass"],
-            controls=state['controls'],
+            controls=state["controls"],
         )
 
     def __getstate__(self) -> dict[str, Any]:

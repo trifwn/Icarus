@@ -6,16 +6,15 @@ from xmltodict import parse
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.database import EXTERNAL_DB
+from ICARUS.database import Database
 from ICARUS.vehicle.plane import Airplane
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
-from ICARUS.database import DB
+
 
 def parse_xfl_project(filename: str) -> Airplane:
-    """
-    Function to parse the xflr5 project file as exported in xml format.
+    """Function to parse the xflr5 project file as exported in xml format.
     Shortcomings:
     - No airfoil morphing. XFLR can interpolate in between airfoils, but this is not implemented.
 
@@ -24,7 +23,9 @@ def parse_xfl_project(filename: str) -> Airplane:
 
     Returns:
         Airplane: Airplane Object Equivalent to XFLR5 design
+
     """
+    DB = Database.get_instance()
     with open(filename) as f:
         my_xml: str = f.read()
 
@@ -133,20 +134,30 @@ def parse_xfl_project(filename: str) -> Airplane:
                 # if not, raise an error
 
                 # list the folders in the EXTERNAL DB
-                folders: list[str] = os.listdir(EXTERNAL_DB)
+                folders: list[str] = os.listdir(DB.EXTERNAL_DB)
                 if foil_name in folders:
                     # list the files in the flap folder
-                    flap_files: list[str] = os.listdir(os.path.join(EXTERNAL_DB, foil_name))
+                    flap_files: list[str] = os.listdir(
+                        os.path.join(DB.EXTERNAL_DB, foil_name),
+                    )
                     # check if the airfoil is in the flap folder
                     if foil_name + ".dat" in flap_files:
                         # load the airfoil from the flap folder
-                        filename = os.path.join(EXTERNAL_DB, foil_name, foil_name + ".dat")
+                        filename = os.path.join(
+                            DB.EXTERNAL_DB,
+                            foil_name,
+                            foil_name + ".dat",
+                        )
                         airfoil: Airfoil = Airfoil.load_from_file(filename)
                         airfoil.name = f"{foil + 'fl'}"
                     else:
-                        raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in EXTERNAL DB")
+                        raise FileNotFoundError(
+                            f"Couldnt Find airfoil {foil_name} in EXTERNAL DB",
+                        )
                 else:
-                    raise FileNotFoundError(f"Couldnt Find airfoil {foil_name} in EXTERNAL DB")
+                    raise FileNotFoundError(
+                        f"Couldnt Find airfoil {foil_name} in EXTERNAL DB",
+                    )
 
             airfoil = DB.get_airfoil(foil)
 
@@ -160,10 +171,8 @@ def parse_xfl_project(filename: str) -> Airplane:
             if airfoil_prev is not None:
                 # if i  is in [2,3]:
                 # XFLR Positions c/4 points where as I position LE.
-                if N_prev > 10:
-                    N_prev = 10
-                if M_prev > 6:
-                    M_prev = 6
+                N_prev = min(N_prev, 10)
+                M_prev = min(M_prev, 6)
 
                 span = 2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
                 pos = origin + wing_position + section_position  # - np.array((chord_prev / 4, 0, 0))
@@ -184,7 +193,9 @@ def parse_xfl_project(filename: str) -> Airplane:
                 )
                 lifting_surfaces.append(surf)
                 if is_symmetric:
-                    section_position += np.array([0, span / 2, np.sin(dihedral_prev * np.pi / 180) * span / 2])
+                    section_position += np.array(
+                        [0, span / 2, np.sin(dihedral_prev * np.pi / 180) * span / 2],
+                    )
                 else:
                     section_position += np.array(
                         [

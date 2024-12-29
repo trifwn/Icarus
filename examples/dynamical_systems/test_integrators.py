@@ -49,7 +49,7 @@ def test_all_integrators(
     integrator_beuler = BackwardEulerIntegrator(dt0, system2)
     integrator_rk45 = RK45Integrator(dt0, system2)
     integrator_gauss_legendre = GaussLegendreIntegrator(dt0, system2, n=4)
-    integrator_crank_nicolson = CrankNicolsonIntegrator(dt0, system2)
+    # integrator_crank_nicolson = CrankNicolsonIntegrator(dt0, system2)
 
     integrators = [
         integrator_feuler,
@@ -57,7 +57,7 @@ def test_all_integrators(
         integrator_rk45,
         integrator_beuler,
         integrator_gauss_legendre,
-        # integrator_crank_nicolson
+        # integrator_crank_nicolson,
     ]
 
     if isinstance(system, SecondOrderSystem):
@@ -70,7 +70,11 @@ def test_all_integrators(
     for integrator in integrators:
         print(f"Simulating using {integrator.name} integrator")
         time_s = time()
-        t_data[integrator.name], x_data[integrator.name] = integrator.simulate(x0, t0, t_end)
+        t_data[integrator.name], x_data[integrator.name] = integrator.simulate(
+            x0,
+            t0,
+            t_end,
+        )
         time_e = time()
         print(f"\tSimulated using {integrator.name} integrator")
         print(f"\tTime taken: {time_e - time_s} seconds")
@@ -82,7 +86,7 @@ def test_all_integrators(
             system,
             [t0, t_end],
             x0,
-            method='RK45',
+            method="RK45",
             t_eval=np.linspace(0, t_end, 1000),
             rtol=1e-6,
             atol=1e-6,
@@ -90,7 +94,7 @@ def test_all_integrators(
         t_data["scipy_rk45"] = sol.t
         x_data["scipy_rk45"] = sol.y.T
         time_e = time()
-        print(f"\tSimulated using scipy RK45")
+        print("\tSimulated using scipy RK45")
         print(f"\tTime taken: {time_e - time_s} seconds")
 
     plot_results(x_data, t_data)

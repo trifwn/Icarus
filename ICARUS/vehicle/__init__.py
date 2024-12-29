@@ -1,5 +1,4 @@
-"""
-=======================================
+"""=======================================
 ICARUS vehicles Package
 =======================================
 
@@ -64,7 +63,7 @@ Surface Connections
 
 """
 
-__all__ = ["strip", "surface", "merged_wing", "plane", "surface_connections"]
+__all__ = ["merged_wing", "plane", "strip", "surface", "surface_connections"]
 
 from . import merged_wing
 from . import plane

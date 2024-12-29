@@ -4,21 +4,19 @@ from ICARUS.flight_dynamics.stability.state_space import LongitudalStateSpace
 
 
 class StabilityDerivativesDS(Struct):
-    """
-    Class to store stability derivatives of Dynamic Analysis.
-    """
+    """Class to store stability derivatives of Dynamic Analysis."""
 
     def __init__(
         self,
         longitudal_state_space: LongitudalStateSpace,
         lateral_state_space: LateralStateSpace,
     ) -> None:
-        """
-        Initialize Stability Derivatives
+        """Initialize Stability Derivatives
 
         Args:
             longitudal_state_space (LongitudalStateSpace): Longitudal State Space Object
             lateral_state_space (LateralStateSpace): Lateral Space Object
+
         """
         self.X: dict[str, float] = longitudal_state_space.X
         self.Y: dict[str, float] = lateral_state_space.Y
@@ -28,11 +26,11 @@ class StabilityDerivativesDS(Struct):
         self.N: dict[str, float] = lateral_state_space.N
 
     def __str__(self) -> str:
-        """
-        String Representation of Stability Derivatives
+        """String Representation of Stability Derivatives
 
         Returns:
             str: String Representation of Stability Derivatives
+
         """
         string = "Dimensional Stability Derivatives:\n"
         string += "\nLongitudal Derivatives\n"

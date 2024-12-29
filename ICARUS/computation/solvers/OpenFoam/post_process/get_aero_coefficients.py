@@ -10,6 +10,7 @@ def get_coefficients(angle: float) -> str | None:
         angle (float): Angle for which coefficients are required
     Returns:
         str | None: String Containing Coefficients or None if not found
+
     """
     if angle >= 0:
         folder: str = str(angle)[::-1].zfill(7)[::-1]

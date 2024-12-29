@@ -23,16 +23,18 @@ def longitudal_pertrubations(
     if epsilon is None:
         del epsilon
         if state.trim == {}:
-            print("You should not really set the disturbance epsilon without a trim because it will contain default values. Instead either trim the plane or set the epsilon values manually")
-            u_trim = 1.
+            print(
+                "You should not really set the disturbance epsilon without a trim because it will contain default values. Instead either trim the plane or set the epsilon values manually",
+            )
+            u_trim = 1.0
         else:
             u_trim = state.trim["U"]
 
         epsilon = {
-            "u": 0.01 * u_trim, 
-            "w": 0.01 * u_trim, 
-            "q": 0.005 * u_trim, 
-            "theta": 0.01
+            "u": 0.01 * u_trim,
+            "w": 0.01 * u_trim,
+            "q": 0.005 * u_trim,
+            "theta": 0.01,
         }  # /plane.trim["U"]
 
     for var in ["u", "w", "q", "theta"]:
@@ -64,16 +66,18 @@ def lateral_pertrubations(
     if epsilon is None:
         del epsilon
         if state.trim == {}:
-            print("You should not really set the disturbance epsilon without a trim because it will contain default values. Instead either trim the plane or set the epsilon values manually")
-            u_trim = 1.
+            print(
+                "You should not really set the disturbance epsilon without a trim because it will contain default values. Instead either trim the plane or set the epsilon values manually",
+            )
+            u_trim = 1.0
         else:
             u_trim = state.trim["U"]
 
         epsilon = {
-            "v": 0.01 * u_trim, 
-            "p": 0.005 * u_trim, 
-            "r": 0.005 * u_trim, 
-            "phi": 0.01
+            "v": 0.01 * u_trim,
+            "p": 0.005 * u_trim,
+            "r": 0.005 * u_trim,
+            "phi": 0.01,
         }
 
     for var in ["v", "p", "r", "phi"]:

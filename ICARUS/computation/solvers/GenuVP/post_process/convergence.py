@@ -8,30 +8,28 @@ from pandas import DataFrame
 def get_loads_convergence(file: str, genu_version: int) -> DataFrame:
     if genu_version == 3:
         return get_loads_convergence_3(file)
-    elif genu_version == 7:
+    if genu_version == 7:
         logging.info("Load Convergence for GenuVP7 not implemented")
         df = DataFrame()
         return df
-    else:
-        raise ValueError(f"GenuVP version {genu_version} not recognized")
+    raise ValueError(f"GenuVP version {genu_version} not recognized")
 
 
 def get_error_convergence(file: str, df: DataFrame, gnvp_version: int) -> DataFrame:
     if gnvp_version == 3:
         return add_error_convergence_3(file, df)
-    elif gnvp_version == 7:
+    if gnvp_version == 7:
         logging.info("Error Convergence for GenuVP7 not implemented")
         df = DataFrame()
         return df
-    else:
-        raise ValueError(f"GenuVP version {gnvp_version} not recognized")
+    raise ValueError(f"GenuVP version {gnvp_version} not recognized")
 
 
 # GET THE SCANNING FROM THE DATABASE AND MAKE DF WITH IT
 def get_loads_convergence_3(file: str) -> DataFrame:
     df = DataFrame()
     try:
-        df = pd.read_csv(file, sep=r'\s+', names=cols)
+        df = pd.read_csv(file, sep=r"\s+", names=cols)
     except Exception as e:
         print(f"Cant Load {file} as Loads_Aero.dat!\nGot error {e}")
     finally:

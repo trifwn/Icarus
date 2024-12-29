@@ -10,10 +10,12 @@ def separate_angles(
         all_angles (list[float]): Angles to separate
     Returns:
         tuple[list[float], list[float]]: Tuple of positive and negative angles
+
     """
     pangles: list[float] = []
     nangles: list[float] = []
     for ang in all_angles:
+        ang = float(ang)
         if ang > 0:
             pangles.append(ang)
         elif ang == 0:

@@ -1,5 +1,4 @@
-"""
-===============================================
+"""===============================================
 ICARUS Computation Module
 ===============================================
 
@@ -34,4 +33,4 @@ from . import results
 from . import solvers
 from . import workflow
 
-__all__ = ['solvers', 'analyses', 'workflow', 'results']
+__all__ = ["analyses", "results", "solvers", "workflow"]

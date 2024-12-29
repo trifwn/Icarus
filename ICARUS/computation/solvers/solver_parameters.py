@@ -3,7 +3,13 @@ from typing import Any
 
 
 class Parameter:
-    def __init__(self, name: str, default_value: Any, description: str, value_type: Any = None):
+    def __init__(
+        self,
+        name: str,
+        default_value: Any,
+        description: str,
+        value_type: Any = None,
+    ):
         self.name = name
         self.default_value = default_value
         self.description = description

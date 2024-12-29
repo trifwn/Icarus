@@ -11,8 +11,8 @@ from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import AVL_exe
+from ICARUS import AVL_exe
+from ICARUS.database import Database
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
@@ -53,15 +53,23 @@ def avl_mass(
     f_io.write("#  Mass & Inertia breakdown.\n")
     f_io.write("#-------------------------------------------------\n")
     f_io.write("\n")
-    f_io.write("#  Names and scalings for units to be used for trim and eigenmode calculations.\n")
-    f_io.write("#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n")
-    f_io.write("#  Lunit value will also scale all lengths and areas in the AVL input file.\n")
+    f_io.write(
+        "#  Names and scalings for units to be used for trim and eigenmode calculations.\n",
+    )
+    f_io.write(
+        "#  The Lunit and Munit values scale the mass, xyz, and inertia table data below.\n",
+    )
+    f_io.write(
+        "#  Lunit value will also scale all lengths and areas in the AVL input file.\n",
+    )
     f_io.write("Lunit = 1 m\n")
     f_io.write("Munit = 1 kg\n")
     f_io.write("Tunit = 1.0 s\n")
     f_io.write("\n")
     f_io.write("#-------------------------\n")
-    f_io.write("#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n")
+    f_io.write(
+        "#  Gravity and density to be used as default values in trim setup (saves runtime typing).\n",
+    )
     f_io.write("#  Must be in the unit names given above (m,kg,s).\n")
     f_io.write(f"g   = {env.GRAVITY}\n")
     f_io.write(f"rho = {env.air_density}\n")
@@ -71,7 +79,9 @@ def avl_mass(
     f_io.write("#  x y z  is location of item's own CG.\n")
     f_io.write("#  Ixx... are item's inertias about item's own CG.\n")
     f_io.write("#\n")
-    f_io.write("#  x,y,z system here must be exactly the same one used in the .avl input file\n")
+    f_io.write(
+        "#  x,y,z system here must be exactly the same one used in the .avl input file\n",
+    )
     f_io.write("#     (same orientation, same origin location, same length units)\n")
     f_io.write("#\n")
     f_io.write("#  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz\n")
@@ -116,9 +126,11 @@ def avl_geo(
     else:
         f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
 
-    f_io.write(f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n")
+    f_io.write(
+        f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n",
+    )
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
-    f_io.write(f" 0.0000                               | CDp  (optional)\n")
+    f_io.write(" 0.0000                               | CDp  (optional)\n")
 
     surfaces: list[WingSurface] = []
     surfaces_ids = []
@@ -136,7 +148,7 @@ def avl_geo(
         f_io.write(f"#SURFACE {i} name {surf.name}\n")
 
     # Use control from AVL vs ICARUS
-    if solver_options["use_avl_control"]:
+    if "use_avl_control" in solver_options:
         plane.__control__({k: 0.0 for k in plane.control_vars})
         use_avl_control = True
     else:
@@ -148,7 +160,9 @@ def avl_geo(
         f_io.write("\n")
 
         # SURFACE DEFINITION
-        f_io.write(f"#-------------Surface {i+1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n")
+        f_io.write(
+            f"#-------------Surface {i+1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n",
+        )
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}                 | surface name string \n")
         f_io.write("#Nchord    Cspace   [ Nspan Sspace ]\n")
@@ -172,11 +186,11 @@ def avl_geo(
         f_io.write("\n")
 
         viscous = True
-        if "inviscid" in solver_options.keys():
+        if "inviscid" in solver_options:
             if solver_options["inviscid"]:
                 viscous = False
 
-        if surf.is_lifting == False:
+        if not surf.is_lifting:
             viscous = False
             f_io.write("\n")
             f_io.write("NOWAKE\n")
@@ -202,7 +216,7 @@ def avl_geo(
                 f"#------------ {surf.name} SECTION---{j+1} of {len(surf.strips)} of---------------------|  (keyword)\n",
             )
             f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
-            f_io.write(f"SECTION\n")
+            f_io.write("SECTION\n")
 
             if j == 0:
                 f_io.write(
@@ -259,7 +273,7 @@ def avl_geo(
                             x_hinge = 1 - control_surf.constant_chord / strip.mean_chord
                         else:
                             x_hinge = control_surf.chord_function(strip_span / span)
-                        hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
+                        # hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
                         sgndup = -1 if control_surf.inverse_symmetric else 1
                         f_io.write(
                             f"{cname} {-cgain}  {x_hinge} {0.} {0.} {0.} {sgndup} \n",
@@ -275,7 +289,11 @@ def avl_geo(
                 reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
                 # Get the airfoil polar
                 try:
-                    polar_obj: Polars = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
+                    DB = Database.get_instance()
+                    polar_obj: Polars = DB.foils_db.get_polars(
+                        strip_airfoil.name,
+                        solver=solver2D,
+                    )
                     reyns_computed = polar_obj.reynolds_nums
 
                     # print("We have computed polars for the following reynolds numbers:")
@@ -312,12 +330,17 @@ def avl_geo(
                             reynolds=[reynolds],
                             angles=np.linspace(-8, 20, 29),
                         )
-                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
+                        polar_obj = DB.foils_db.get_polars(
+                            strip_airfoil.name,
+                            solver=solver2D,
+                        )
 
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
                     f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-                    f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
+                    f_io.write(
+                        f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n",
+                    )
                     f_io.write("\n")
                 except (
                     PolarsNotFoundError,
@@ -326,7 +349,9 @@ def avl_geo(
                     ReynoldsNotIncluded,
                     FileNotFoundError,
                 ):
-                    print(f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute")
+                    print(
+                        f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute",
+                    )
                     DB.foils_db.compute_polars(
                         airfoil=strip_airfoil,
                         solver_name=solver2D,
@@ -335,12 +360,17 @@ def avl_geo(
                     )
 
                     try:
-                        polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
+                        polar_obj = DB.foils_db.get_polars(
+                            strip_airfoil.name,
+                            solver=solver2D,
+                        )
 
                         f_io.write("CDCL\n")
                         cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
                         f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-                        f_io.write(f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n")
+                        f_io.write(
+                            f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n",
+                        )
                         f_io.write("\n")
                     except PolarsNotFoundError:
                         DB.foils_db.compute_polars(
@@ -351,10 +381,12 @@ def avl_geo(
                             trips=(0.3, 0.3),
                         )
                         try:
-                            polar_obj = DB.foils_db.get_polars(strip_airfoil.name, solver=solver2D)
+                            polar_obj = DB.foils_db.get_polars(
+                                strip_airfoil.name,
+                                solver=solver2D,
+                            )
                         except PolarsNotFoundError:
                             print(f"\tCould not compute polar for {strip_airfoil.name}")
-                            pass
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"
@@ -368,11 +400,11 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
 
     f_io = StringIO()
     f_io.write(f"mass {plane.name}.mass\n")
-    f_io.write(f"quit\n")
+    f_io.write("quit\n")
     contents: str = f_io.getvalue().expandtabs(4)
 
-    input_fname: str = os.path.join(f"inertia_scr")
-    log_fname = os.path.join(f"inertia_log.txt")
+    input_fname: str = os.path.join("inertia_scr")
+    log_fname = os.path.join("inertia_log.txt")
 
     with open(input_fname, "w", encoding="utf-8") as f:
         f.writelines(contents)
@@ -402,7 +434,10 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
 
 
-def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> list[DataFrame]:
+def get_effective_aoas(
+    plane: Airplane,
+    angles: FloatArray | list[float],
+) -> list[DataFrame]:
     # for i, s in enumerate(plane.surfaces)
     #     if i0
     #         start += plane.surfaces[i-1].N2
@@ -416,23 +451,27 @@ def get_effective_aoas(plane: Airplane, angles: FloatArray | list[float]) -> lis
 
     from ICARUS.database.utils import angle_to_case
 
+    DB = Database.get_instance()
     for i, angle in enumerate(angles):
-        path = os.path.join(DB.vehicles_db.DATADIR, plane.name, "AVL", f"fs_{angle_to_case(angle)}.txt")
+        path = os.path.join(
+            DB.vehicles_db.DB3D,
+            plane.name,
+            "AVL",
+            f"fs_{angle_to_case(angle)}.txt",
+        )
         file = open(path)
         lines = file.readlines()
         file.close()
 
         head: list[float] = []
         surfs: list[float] = []
-        for j, l in enumerate(lines):
-            if l.startswith(f"    j     Xle "):
+        for j, k in enumerate(lines):
+            if k.startswith("    j     Xle "):
                 head.append(j)
-            elif len(l) > 56 and (
-                l[47].isdigit()
-                or l[46].isdigit()
-                or l[56].isdigit()
-                and not l.startswith("  Xref")
-                and not l.startswith("  Sref")
+            elif len(k) > 56 and (
+                k[47].isdigit()
+                or k[46].isdigit()
+                or (k[56].isdigit() and not k.startswith("  Xref") and not k.startswith("  Sref"))
             ):
                 surfs.append(j)
 

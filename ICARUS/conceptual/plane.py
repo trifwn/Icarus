@@ -6,7 +6,14 @@ from .engine import ConceptualEngine
 
 
 class ConceptualPlane:
-    def __init__(self, S: float, AR: float, a0: float, m: float, engine: ConceptualEngine) -> None:
+    def __init__(
+        self,
+        S: float,
+        AR: float,
+        a0: float,
+        m: float,
+        engine: ConceptualEngine,
+    ) -> None:
         """Constructor for the Conceptual Plane Class
 
         Args:
@@ -33,6 +40,7 @@ class ConceptualPlane:
 
         Args:
             angle_of_attack (float): Angle of attack of the wing
+
         """
         cl_3d = self.cl_2d(angle_of_attack) / (1 + (2 / self.AR))
 
@@ -49,6 +57,7 @@ class ConceptualPlane:
 
         Args:
             angle_of_attack (float): Angle of attack of the wing
+
         """
         cl = 2 * np.pi * (angle_of_attack - self.a0)
 
@@ -57,15 +66,18 @@ class ConceptualPlane:
     def cd0(self) -> float:
         return 0.05
 
-    def cd(self, angle_of_attack: float | FloatArray, velocity: float) -> FloatArray | float:
-        """
-        Returns the value of cd based on the aoa
+    def cd(
+        self,
+        angle_of_attack: float | FloatArray,
+        velocity: float,
+    ) -> FloatArray | float:
+        """Returns the value of cd based on the aoa
 
         Args:
             angle_of_attack (float): AOA
             velocity (float): Velocity
-        """
 
+        """
         cd = self.cl(angle_of_attack) * velocity**2 + self.cd0()
         return cd
 
@@ -76,5 +88,5 @@ class ConceptualPlane:
             velocity (float): _description_
             aoa (float): _description_
             amperes (float): _description_
+
         """
-        pass

@@ -7,7 +7,7 @@ from jaxtyping import Array
 from jaxtyping import ArrayLike
 from jaxtyping import Float
 
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.propulsion.engine import Engine
 from ICARUS.vehicle.plane import Airplane
 
@@ -19,6 +19,8 @@ class MissionVehicle:
         engine: Engine,
         solver: str = "AVL",
     ) -> None:
+        DB = Database.get_instance()
+
         self.airplane: Airplane = airplane
         self.motor: Engine = engine
         self.polar_data = DB.vehicles_db.get_polars(airplane.name)
@@ -54,7 +56,11 @@ class MissionVehicle:
         self,
         velocity: Float[ArrayLike, "..."],
         aoa: Float[ArrayLike, "..."],
-    ) -> tuple[Float[ArrayLike, "..."], Float[ArrayLike, "..."], Float[ArrayLike, "..."]]:
+    ) -> tuple[
+        Float[ArrayLike, "..."],
+        Float[ArrayLike, "..."],
+        Float[ArrayLike, "..."],
+    ]:
         cl, cd, cm = self.interpolate_polars(aoa)
 
         density = 1.225

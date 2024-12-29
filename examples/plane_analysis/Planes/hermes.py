@@ -10,8 +10,7 @@ from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def hermes(name: str) -> Airplane:
-    """
-    Function to get the hermes plane.
+    """Function to get the hermes plane.
     Consisting of the main wing, elevator rudder and masses as constructed.
 
     Args:
@@ -19,6 +18,7 @@ def hermes(name: str) -> Airplane:
 
     Returns:
         Airplane: hermes Airplane object
+
     """
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
 

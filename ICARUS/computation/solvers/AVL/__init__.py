@@ -1,3 +1,1 @@
-"""
-AVL Python Package
-"""
+"""AVL Python Package"""

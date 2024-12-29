@@ -8,6 +8,7 @@ def clean_open_foam(HOMEDIR: str, CASEDIR: str) -> None:
     Args:
         HOMEDIR (str): Home Directory
         CASEDIR (str): Case Directory
+
     """
     os.chdir(CASEDIR)
     for folder in next(os.walk("."))[1]:

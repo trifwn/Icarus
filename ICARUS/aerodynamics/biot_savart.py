@@ -35,6 +35,7 @@ def vortexL(
 
     Returns:
         u,v,w: induced velocities
+
     """
     crossx = (yp - y1) * (zp - z2) - (zp - z1) * (yp - y2)
     crossy = -(xp - x1) * (zp - z2) + (zp - z1) * (xp - x2)
@@ -43,13 +44,13 @@ def vortexL(
     cross_mag = crossx**2 + crossy**2 + crossz**2
     r1 = jnp.sqrt((xp - x1) ** 2 + (yp - y1) ** 2 + (zp - z1) ** 2)
     r2 = jnp.sqrt((xp - x2) ** 2 + (yp - y2) ** 2 + (zp - z2) ** 2)
-    r0 = jnp.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+    # r0 = jnp.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
     r0dr1 = (x2 - x1) * (xp - x1) + (y2 - y1) * (yp - y1) + (z2 - z1) * (zp - z1)
     r0dr2 = (x2 - x1) * (xp - x2) + (y2 - y1) * (yp - y2) + (z2 - z1) * (zp - z2)
 
-    epsilon: float = 0.0001
-    d = cross_mag / r0
+    # epsilon: float = 0.0001
+    # d = cross_mag / r0
     filt = 1  # - np.exp(-(d/epsilon)**2)
     K = filt * (gamma / (4 * jnp.pi * cross_mag)) * (r0dr1 / r1 - r0dr2 / r2)
     u = K * crossx
@@ -78,9 +79,9 @@ def voring(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    panel: Float[Array, "4 3"],
+    panel: Float[Array, "..."],
     gamma: float = 1.0,
-) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
+) -> tuple[Float[Array, "..."], Float[Array, "..."]]:
     """Vorticity Ring Element. Computes the velocities induced at a point x,y,z
     by a vortex ring given its grid lower corner coordinates
 
@@ -95,6 +96,7 @@ def voring(
 
     Returns:
         U: induced velocities vector
+
     """
     l_right = panel[0]
     l_left = panel[1]
@@ -168,11 +170,11 @@ def hshoe2(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    k: Int[Array, ""],
-    j: Int[Array, ""],
-    grid: Float[Array, "n m"],
+    k: Int[Array, "..."],
+    j: Int[Array, "..."],
+    grid: Float[Array, "..."],
     gamma: float = 1,
-) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
+) -> tuple[Float[Array, "..."], Float[Array, "..."]]:
     """Vorticity Horseshow Element. Computes the velocities induced at a point x,y,z
     by a horseshow Vortex given its grid lower corner coordinates
 
@@ -187,6 +189,7 @@ def hshoe2(
 
     Returns:
         U: induced velocities vector
+
     """
     u1, v1, w1 = vortexL(
         x,
@@ -242,9 +245,9 @@ def hshoeSL2(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    i: Int[Array, ""],
-    j: Int[Array, ""],
-    grid: Float[Array, "n m"],
+    i: Int[Array, "1"],
+    j: Int[Array, "1"],
+    grid: Float[Array, "1"],
     gamma: float = 1,
 ) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
     """Slanted Horseshoe Element To Work with Panels
@@ -260,6 +263,7 @@ def hshoeSL2(
 
     Returns:
         U, Ustar: induced velocities vector
+
     """
     u1, v1, w1 = vortexL(
         x,
@@ -340,11 +344,10 @@ def symm_wing_panels(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    panel: Float[Array, "4 3"],
+    panel: Float[Array, "..."],
     gamma: float = 1.0,
-) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
-    """
-    Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
+) -> tuple[Float[Array, "..."], Float[Array, "..."]]:
+    """Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
     using the slanted horseshow model and accounting for a symmetric wing around the x axis.
 
     Args:
@@ -358,8 +361,8 @@ def symm_wing_panels(
 
     Returns:
         tuple[FloatArray, FloatArray]: _description_
-    """
 
+    """
     U1, U1st = voring(x, y, z, panel, gamma)
     U2, U2st = voring(x, -y, z, panel, gamma)
 
@@ -372,12 +375,11 @@ def ground_effect(
     x: Scalar,
     y: Scalar,
     z: Scalar,
-    i: Int[Array, ""],
-    j: Int[Array, ""],
-    panel: Float[Array, "n m"],
+    i: Int[Array, '1'],
+    j: Int[Array, '1'],
+    panel: Float[Array, "..."],
 ) -> tuple[Float[Array, "3"], Float[Array, "3"]]:
-    """
-    Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
+    """Computes the induced velocities at a point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices,
     using the slanted horseshow model and accounting for the ground effect by reflecting the panels along the z axis.
 
     Args:
@@ -390,6 +392,7 @@ def ground_effect(
 
     Returns:
         tuple[FloatArray, FloatArray]: The induced velocities at the point (x,y,z) by panel[i,j] the velocities induce only by the chordwise vortices
+
     """
     U1, U1st = hshoeSL2(x, y, z, i, j, panel)
     U2, U2st = hshoeSL2(x, y, -z, i, j, panel)
@@ -409,5 +412,9 @@ try:
     hshoeSL2 = jax.jit(hshoeSL2)
     symm_wing_panels = jax.jit(symm_wing_panels)
     ground_effect = jax.jit(ground_effect)
-except:
-    pass
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        "JAX not installed. Skipping JIT... the functions will run in python!",
+    )

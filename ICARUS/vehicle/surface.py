@@ -11,7 +11,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import ControlType
 from ICARUS.vehicle.control_surface import NoControl
@@ -122,7 +122,10 @@ class WingSurface:
 
         if chord_discretization_function is None:
             self.chord_spacing = DiscretizationType.EQUAL
-            self.chord_discretization_function = equal_spacing_function_factory(M, stretching=1.0)
+            self.chord_discretization_function = equal_spacing_function_factory(
+                M,
+                stretching=1.0,
+            )
         else:
             self.chord_discretization_function = chord_discretization_function
             self.chord_spacing = DiscretizationType.USER_DEFINED
@@ -137,6 +140,7 @@ class WingSurface:
         self.twist_angles: FloatArray = twist_angles
 
         # Define the airfoil
+        DB = Database.get_instance()
         if isinstance(root_airfoil, str):
             root_airfoil = DB.get_airfoil(root_airfoil)
         self._root_airfoil: Airfoil = root_airfoil
@@ -255,6 +259,7 @@ class WingSurface:
         x_offsets: FloatArray = np.empty(N, dtype=float)
         twist_angles: FloatArray = np.empty(N, dtype=float)
 
+        DB = Database.get_instance()
         # Define Airfoils
         if isinstance(root_airfoil, str):
             root_airfoil_obj: Airfoil = DB.get_airfoil(root_airfoil)
@@ -449,7 +454,9 @@ class WingSurface:
         self.grid_lower = rotated_points.reshape(self.grid_lower.shape)
 
         # Rotate Panels
-        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(self.grid)
+        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(
+            self.grid,
+        )
 
         (
             self.panels_lower,
@@ -565,11 +572,11 @@ class WingSurface:
 
     @root_airfoil.setter
     def root_airfoil(self, value: str | Airfoil) -> None:
+        DB = Database.get_instance()
         if isinstance(value, str):
             value = DB.get_airfoil(value)
         self._root_airfoil = value
         self.calculate_wing_parameters()
-        return None
 
     @property
     def tip_airfoil(self) -> Airfoil:
@@ -577,6 +584,7 @@ class WingSurface:
 
     @tip_airfoil.setter
     def tip_airfoil(self, value: str | Airfoil) -> None:
+        DB = Database.get_instance()
         if isinstance(value, str):
             value = DB.get_airfoil(value)
         self._tip_airfoil = value
@@ -669,8 +677,7 @@ class WingSurface:
                 mass=self.mass / 2,
             )
             return left, right
-        else:
-            raise ValueError("Cannot Split Body it is not symmetric")
+        raise ValueError("Cannot Split Body it is not symmetric")
 
     def generate_airfoils(self) -> None:
         """Generate Airfoils for the Wing"""
@@ -690,9 +697,11 @@ class WingSurface:
                 )
 
             # Apply the control vector to the airfoil
-            for control, control_val in zip(self.controls, self.control_vector.values()):
+            for control, control_val in zip(
+                self.controls,
+                self.control_vector.values(),
+            ):
                 if (eta >= control.span_position_start) and (eta <= control.span_position_end):
-
                     if control.constant_chord != 0:
                         airfoil_j = airfoil_j.flap(
                             flap_hinge_chord_percentage=1 - control.constant_chord / self._chord_dist[j],
@@ -777,7 +786,9 @@ class WingSurface:
         self.all_strips = [*strips, *symmetric_strips]
 
     def create_grid(self) -> None:
-        chord_eta = np.array([self.chord_discretization_function(int(i)) for i in range(0, self.M)])
+        chord_eta = np.array(
+            [self.chord_discretization_function(int(i)) for i in range(self.M)],
+        )
         chord_eta[-1] -= 1e-7
         chord_eta[0] += 1e-7
 
@@ -817,7 +828,10 @@ class WingSurface:
         zs_camber = np.array(airf_camber).T
 
         # Rotate according to R_MAT
-        coordinates = np.matmul(self.R_MAT, np.vstack([xs.flatten(), ys.flatten(), zs_camber.flatten()]))
+        coordinates = np.matmul(
+            self.R_MAT,
+            np.vstack([xs.flatten(), ys.flatten(), zs_camber.flatten()]),
+        )
         coordinates = coordinates.reshape((3, self.M, self.N))
 
         coordinates_upper = np.matmul(
@@ -881,7 +895,9 @@ class WingSurface:
         self.grid_upper = coordinates_upper.transpose(2, 1, 0).reshape(-1, 3)
         self.grid_lower = coordinates_lower.transpose(2, 1, 0).reshape(-1, 3)
 
-        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(self.grid)
+        (self.panels, self.control_points, self.control_nj) = self.grid_to_panels(
+            self.grid,
+        )
 
         (
             self.panels_lower,
@@ -895,7 +911,10 @@ class WingSurface:
             self.control_nj_upper,
         ) = self.grid_to_panels(self.grid_upper)
 
-    def grid_to_panels(self, grid: FloatArray) -> tuple[FloatArray, FloatArray, FloatArray]:
+    def grid_to_panels(
+        self,
+        grid: FloatArray,
+    ) -> tuple[FloatArray, FloatArray, FloatArray]:
         num_panels = (self.N - 1) * (self.M - 1)
         grid = grid.reshape(self.N, self.M, 3)
 
@@ -948,7 +967,7 @@ class WingSurface:
         return panels, control_points, control_nj
 
     def calculate_mean_chords(self) -> None:
-        "Finds the Mean Aerodynamic Chord (mean_aerodynamic_chord) of the wing."
+        """Finds the Mean Aerodynamic Chord (mean_aerodynamic_chord) of the wing."""
         # Vectorized calculation for mean_aerodynamic_chord
         num = np.sum(
             ((self._chord_dist[:-1] + self._chord_dist[1:]) / 2) ** 2 * (self._span_dist[1:] - self._span_dist[:-1]),
@@ -959,20 +978,21 @@ class WingSurface:
         self.mean_aerodynamic_chord = float(num) / float(denum)
 
         # Vectorized calculation for standard_mean_chord
-        num = np.sum((self._chord_dist[:-1] + self._chord_dist[1:]) / 2 * (self._span_dist[1:] - self._span_dist[:-1]))
+        num = np.sum(
+            (self._chord_dist[:-1] + self._chord_dist[1:]) / 2 * (self._span_dist[1:] - self._span_dist[:-1]),
+        )
         denum = np.sum(self._span_dist[1:] - self._span_dist[:-1])
         self.standard_mean_chord = float(num) / float(denum)
 
     def calculate_area(self) -> None:
         """Finds the area of the wing."""
-
         rm1 = np.linalg.inv(self.R_MAT)
 
         grid_upper = self.grid_upper.reshape(self.N, self.M, 3)
         # Vectorized calculation for the upper surface
         _, y1_upper, _ = np.matmul(rm1, grid_upper[1:, 0, :].T)
         _, y2_upper, _ = np.matmul(rm1, grid_upper[:-1, 0, :].T)
-        chord_dist_upper = self._chord_dist[:-1] + self._chord_dist[1:]
+        # chord_dist_upper = self._chord_dist[:-1] + self._chord_dist[1:]
         # self.S = 2 * np.sum((y1_upper - y2_upper) * chord_dist_upper / 2)
 
         dspan = self._span_dist[1:] - self._span_dist[:-1]
@@ -992,13 +1012,19 @@ class WingSurface:
         AB2_up = g_up[1:, 1:, :] - g_up[:-1, 1:, :]
         AD1_up = g_up[:-1, 1:, :] - g_up[:-1, :-1, :]
         AD2_up = g_up[1:, 1:, :] - g_up[1:, :-1, :]
-        area_up = np.linalg.norm(np.cross((AB1_up + AB2_up) / 2, (AD1_up + AD2_up) / 2), axis=-1)
+        area_up = np.linalg.norm(
+            np.cross((AB1_up + AB2_up) / 2, (AD1_up + AD2_up) / 2),
+            axis=-1,
+        )
 
         AB1_low = g_low[1:, :-1, :] - g_low[:-1, :-1, :]
         AB2_low = g_low[1:, 1:, :] - g_low[:-1, 1:, :]
         AD1_low = g_low[:-1, 1:, :] - g_low[:-1, :-1, :]
         AD2_low = g_low[1:, 1:, :] - g_low[1:, :-1, :]
-        area_low = np.linalg.norm(np.cross((AB1_low + AB2_low) / 2, (AD1_low + AD2_low) / 2), axis=-1)
+        area_low = np.linalg.norm(
+            np.cross((AB1_low + AB2_low) / 2, (AD1_low + AD2_low) / 2),
+            axis=-1,
+        )
 
         self.area = float(np.sum(area_up) + np.sum(area_low))
 
@@ -1057,9 +1083,13 @@ class WingSurface:
         z = ((z_upp1 + z_upp2) / 2 + (z_low1 + z_low2) / 2) / 2
 
         if self.is_symmetric_y:
-            x_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * x)
+            x_cm = np.sum(
+                self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * x,
+            )
             y_cm = 0
-            z_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * z)
+            z_cm = np.sum(
+                self.volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * z,
+            )
         else:
             x_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * x)
             y_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * y)
@@ -1068,12 +1098,12 @@ class WingSurface:
         return np.array((x_cm, y_cm, z_cm)) / self.volume
 
     def calculate_inertia(self, mass: float, cog: FloatArray) -> FloatArray:
-        """
-        Calculates the inertia of the wing about the center of gravity.
+        """Calculates the inertia of the wing about the center of gravity.
 
         Args:
             mass (float): Mass of the wing. Used to have dimensional inertia
             cog (FloatArray): Center of Gravity of the wing.
+
         """
         grid_upper = self.grid_upper.reshape(self.N, self.M, 3)
         grid_lower = self.grid_lower.reshape(self.N, self.M, 3)
@@ -1095,9 +1125,15 @@ class WingSurface:
         else:
             yd = ((y_upp + y_low) / 2 - cog[1]) ** 2
 
-        I_xx = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd + zd))
-        I_yy = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + zd))
-        I_zz = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + yd))
+        I_xx = np.sum(
+            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd + zd),
+        )
+        I_yy = np.sum(
+            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + zd),
+        )
+        I_zz = np.sum(
+            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + yd),
+        )
 
         xd = (x_upp + x_low) / 2 - cog[0]
         zd = (z_upp + z_low) / 2 - cog[2]
@@ -1107,15 +1143,20 @@ class WingSurface:
         else:
             yd = (y_upp + y_low) / 2 - cog[1]
 
-        I_xz = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * zd))
-        I_xy = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * yd))
-        I_yz = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd * zd))
+        I_xz = np.sum(
+            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * zd),
+        )
+        I_xy = np.sum(
+            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * yd),
+        )
+        I_yz = np.sum(
+            self.volume_distribution.reshape(self.N - 1, self.M - 1) * (yd * zd),
+        )
 
         return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.volume)
 
     def get_grid(self, which: str = "camber") -> FloatArray | list[FloatArray]:
-        """
-        Returns the Grid of the Wing.
+        """Returns the Grid of the Wing.
 
         Args:
             which (str, optional): upper, lower or camber. Defaults to "camber".
@@ -1125,6 +1166,7 @@ class WingSurface:
 
         Returns:
             FloatArray: Grid of the Wing.
+
         """
         if which == "camber":
             grid = self.grid
@@ -1140,9 +1182,9 @@ class WingSurface:
             gsym = grid[::-1, :, :] * reflection
             grid = grid[1:, :, :]
             grid = np.concatenate((gsym, grid))
-            pass
         else:
             grid = grid
+        print(f"Grid shape: {grid.shape} for surface {self.name}")
         return grid
 
     def plot(
@@ -1240,13 +1282,11 @@ class WingSurface:
         if isinstance(func, types.MethodType):
             func_name = func.__func__.__name__
             return {"py/method": [func.__self__, func_name]}
-        elif isinstance(func, types.FunctionType):
+        if isinstance(func, types.FunctionType):
             if func.__name__ == "<lambda>":
                 return {"py/lambda": func.__code__.co_code}
-            else:
-                return {"py/function": func.__module__ + "." + func.__name__}
-        else:
-            return None
+            return {"py/function": func.__module__ + "." + func.__name__}
+        return None
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         chord_discretization_func_info = state.get("chord_discretization_function")

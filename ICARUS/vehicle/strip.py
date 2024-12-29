@@ -12,8 +12,7 @@ from ICARUS.core.types import FloatArray
 
 
 class Strip:
-    """
-    Class to define a strip of a wing or lifting surface.
+    """Class to define a strip of a wing or lifting surface.
     It assumes the strip is defined by the position of two trailing edge points
     and the airfoil. It then calcutes all intermediate points based on the chord
     distribution.
@@ -31,8 +30,7 @@ class Strip:
         end_airfoil: Airfoil | None = None,
         eta: float = 0.0,
     ) -> None:
-        """
-        Initialize the Strip class.
+        """Initialize the Strip class.
 
         Args:
             start_leading_edge (FloatArray | list[float]): Starting point of the strip.
@@ -41,6 +39,7 @@ class Strip:
             end_leading_edge (FloatArray | list[float]): Ending point of the strip.
             end_chord (float): Ending chord.
             end_airfoil (Airfoil, optional): Ending airfoil. Defaults to None. If None, the starting airfoil is used.
+
         """
         self.x0: float = start_leading_edge[0]
         self.y0: float = start_leading_edge[1]
@@ -75,12 +74,12 @@ class Strip:
     def return_symmetric(
         self,
     ) -> Strip:
-        """
-        Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
+        """Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
         It also adds a small gap if the strip located along the x axis.
 
         Returns:
             tuple[list[float], list[float], Airfoil, float, float]: Symmetric Strip initializer
+
         """
         start_point: list[float] = [self.x1, -self.y1, self.z1]
         if self.y0 == 0:
@@ -101,12 +100,12 @@ class Strip:
         return symm_strip
 
     def set_airfoils(self, airfoil: Airfoil, airfoil2: Airfoil | None = None) -> None:
-        """
-        Used to set or change the Airfoil.
+        """Used to set or change the Airfoil.
 
         Args:
             airfoil (Airfoil): Airfoil for the starting section.
             airfoil2 (Airfoil, optional): Airfoil for the ending section. Defaults to None. If None, the starting airfoil is used.
+
         """
         self.airfoil_start = airfoil
         if airfoil2 is not None:
@@ -115,11 +114,11 @@ class Strip:
             self.airfoil_end = airfoil
 
     def get_root_strip(self) -> FloatArray:
-        """
-        Returns the root strip of the wing.
+        """Returns the root strip of the wing.
 
         Returns:
             FloatArray: Array of points defining the root.
+
         """
         strip: list[FloatArray] = [
             self.x0 + self.chords[0] * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
@@ -129,11 +128,11 @@ class Strip:
         return np.array(strip)
 
     def get_tip_strip(self) -> FloatArray:
-        """
-        Returns the tip strip of the wing.
+        """Returns the tip strip of the wing.
 
         Returns:
             FloatArray: Array of points defining the tip.
+
         """
         strip: list[FloatArray] = [
             self.x1 + self.chords[1] * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
@@ -154,6 +153,7 @@ class Strip:
             n_points: number of points to interpolate in the span direction
         Returns:
             tuple[FloatArray, FloatArray, FloatArray]: suction side, camber line and pressure side coordinates of the section at the given index
+
         """
         x: FloatArray = np.linspace(
             start=self.x0,
@@ -283,14 +283,14 @@ class Strip:
             plt.show()
 
     def __eq__(self, other: object) -> bool:
-        """
-        Compares two strips. They are considered equal if the leading edge points, the chord and the airfoil are the same.
+        """Compares two strips. They are considered equal if the leading edge points, the chord and the airfoil are the same.
 
         Args:
             __value (Strip): Strip to compare
 
         Returns:
             bool: True if the strips are equal, False otherwise.
+
         """
         if not isinstance(other, Strip):
             return NotImplemented
@@ -306,5 +306,4 @@ class Strip:
             and self.airfoil_end == other.airfoil_end
         ):
             return True
-        else:
-            return False
+        return False

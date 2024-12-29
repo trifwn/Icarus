@@ -14,25 +14,19 @@ if TYPE_CHECKING:
 
 
 class PlaneSurfaceVisCallback(OptimizationCallback):
-    """
-    Class to visualize the design variables change during optimization.
-    """
+    """Class to visualize the design variables change during optimization."""
 
     def __init__(
         self,
         plane: Airplane,
         surface_name: str,
     ):
-        """
-        Initialize the class.
-        """
+        """Initialize the class."""
         self.initial_plane = plane
         self.surface_name = surface_name
 
     def setup(self) -> None:
-        """
-        Create a 3D plot to visualize the plane geometry.
-        """
+        """Create a 3D plot to visualize the plane geometry."""
         self.fig = plt.figure(figsize=(10, 10))
         ax: Axes = self.fig.subplots(1)  # type: ignore
         self.ax = ax
@@ -83,9 +77,7 @@ class PlaneSurfaceVisCallback(OptimizationCallback):
         self.fig.canvas.flush_events()
 
     def update(self, plane: Airplane, *args: Any, **kwargs: Any) -> None:
-        """
-        Update the visualization.
-        """
+        """Update the visualization."""
         # Update the current plane geometry
         # Add a plot for the initial plane geometry
         for surface in plane.surfaces:

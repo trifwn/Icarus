@@ -1,5 +1,3 @@
-from typing import Any
-
 import numpy as np
 
 from ICARUS.core.types import DataDict
@@ -28,6 +26,7 @@ def wing_var_chord_offset(
 
     Returns:
         Airplane: _description_
+
     """
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     wing_position: FloatArray = np.array(

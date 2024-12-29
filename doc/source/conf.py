@@ -1,5 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 #
+import os
+import sys
 from typing import Any
 
 import matplotlib
@@ -24,13 +26,13 @@ extensions: list[str] = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
-    'autoclasstoc',
-    'sphinx.ext.mathjax',
+    "autoclasstoc",
+    "sphinx.ext.mathjax",
     "sphinx.ext.doctest",
-    'sphinx.ext.napoleon',
+    "sphinx.ext.napoleon",
     "sphinx.ext.todo",
-    'sphinx_sitemap',
-    'sphinx_design',
+    "sphinx_sitemap",
+    "sphinx_design",
     "sphinx_markdown_parser",
     "matplotlib.sphinxext.plot_directive",
     "IPython.sphinxext.ipython_console_highlighting",
@@ -39,14 +41,14 @@ extensions: list[str] = [
 
 # Do some matplotlib config in case users have a matplotlibrc that will break
 # things
-matplotlib.use('agg')
+matplotlib.use("agg")
 plt.ioff()
 
 # The suffix(es) of source filenames.
 source_suffix: dict[str, str] = {
-    '.rst': 'restructuredtext',
-    '.ipynb': 'myst-nb',
-    '.myst': 'myst-nb',
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".myst": "myst-nb",
 }
 
 # Templates
@@ -74,11 +76,11 @@ html_theme_options = {
 }
 
 html_additional_pages: dict[str, Any] = {}
-html_extra_path: list[str] = ['robots.txt']
+html_extra_path: list[str] = ["robots.txt"]
 html_use_modindex = True
 html_domain_indices = False
 html_copy_source = False
-html_file_suffix = '.html'
+html_file_suffix = ".html"
 
 ##############################################################################
 # -- Options for LaTeX output ------------------------------------------------
@@ -136,8 +138,7 @@ nb_execution_mode = "auto"
 ##############################################################################
 
 # Specify the location of your code
-import os
-import sys
+
 
 sys.path.insert(0, os.path.abspath("/home/tryfonas/data/Uni/Software/hermes/ICARUS"))
 # sys.path.insert(0, os.path.abspath("/home/tryfonas/data/Uni/Software/hermes/examples"))

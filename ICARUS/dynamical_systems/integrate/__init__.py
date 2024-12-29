@@ -8,14 +8,14 @@ from .rk4 import RK4Integrator
 from .rk45 import RK45Integrator
 
 __all__ = [
-    "Integrator",
     "BackwardEulerIntegrator",
+    "CrankNicolsonIntegrator",
     "ForwardEulerIntegrator",
+    "GaussLegendreIntegrator",
+    "Integrator",
+    "NewmarkIntegrator",
     "RK4Integrator",
     "RK45Integrator",
-    "CrankNicolsonIntegrator",
-    "GaussLegendreIntegrator",
-    "NewmarkIntegrator",
 ]
 
 integrators = {

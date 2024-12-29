@@ -1,5 +1,4 @@
-"""
-Airfoil class to represent an airfoil. Inherits from airfoil class from the airfoils module.
+"""Airfoil class to represent an airfoil. Inherits from airfoil class from the airfoils module.
 The airfoil class is used to generate, store, and manipulate airfoils. To initialize the class
 you need to pass the upper and lower surface coordinates. The class also contains alternative
 constructors to generate airfoils from NACA 4 and 5 digit identifiers.
@@ -78,12 +77,12 @@ if TYPE_CHECKING:
 
 
 class Airfoil(af.Airfoil):  # type: ignore
-    """
-    Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
+    """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
 
     Args:
         af : Airfoil class from the airfoils module
+
     """
 
     def __init__(
@@ -93,16 +92,15 @@ class Airfoil(af.Airfoil):  # type: ignore
         name: str,
         n_points: int = 200,
     ) -> None:
-        """
-        Initialize the Airfoil class
+        """Initialize the Airfoil class
 
         Args:
             upper (FloatArray): Upper surface coordinates
             lower (FloatArray): Lower surface coordinates
             naca (str): NACA 4 digit identifier (e.g. 0012)
             n_points (int): Number of points to be used to generate the airfoil. It interpolates between upper and lower
-        """
 
+        """
         lower, upper = self.close_airfoil(lower, upper)
         super().__init__(upper, lower)
         name = name.replace(" ", "")
@@ -179,12 +177,16 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.n_lower = self._x_lower.shape[0]
         self.selig = self.to_selig()
 
-    def repanel_from_internal(self, n_points: int, distribution: str = "cosine") -> None:
-        """
-        Repanels the airfoil to have n_points
+    def repanel_from_internal(
+        self,
+        n_points: int,
+        distribution: str = "cosine",
+    ) -> None:
+        """Repanels the airfoil to have n_points
 
         Args:
             n_points (int): Number of points to generate
+
         """
         if distribution == "cosine":
             beta = np.linspace(0, np.pi, int(n_points // 2))
@@ -218,7 +220,11 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.selig = self.to_selig()
         self.selig_original = self.selig
 
-    def close_airfoil(self, lower: FloatArray, upper: FloatArray) -> tuple[FloatArray, FloatArray]:
+    def close_airfoil(
+        self,
+        lower: FloatArray,
+        upper: FloatArray,
+    ) -> tuple[FloatArray, FloatArray]:
         # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
         # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
         # Identify the upper surface trailing edge and leading edge
@@ -281,14 +287,14 @@ class Airfoil(af.Airfoil):  # type: ignore
         return lower, upper
 
     def thickness(self, x: FloatArray) -> FloatArray:
-        """
-        Returns the thickness of the airfoil at the given x coordinates
+        """Returns the thickness of the airfoil at the given x coordinates
 
         Args:
             x (FloatArray): X coordinates
 
         Returns:
             FloatArray: _description_
+
         """
         thickness: FloatArray = self.y_upper(x) - self.y_lower(x)
         # Remove Nan
@@ -299,21 +305,21 @@ class Airfoil(af.Airfoil):  # type: ignore
         return thickness
 
     def max_thickness(self) -> float:
-        """
-        Returns the maximum thickness of the airfoil
+        """Returns the maximum thickness of the airfoil
 
         Returns:
             float: Maximum thickness
+
         """
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
         return float(np.max(thickness))
 
     def max_thickness_location(self) -> float:
-        """
-        Returns the location of the maximum thickness of the airfoil
+        """Returns the location of the maximum thickness of the airfoil
 
         Returns:
             float: Location of the maximum thickness
+
         """
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
         return float(np.argmax(thickness) / self.n_points)
@@ -370,8 +376,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         eta: float,
         n_points: int,
     ) -> Airfoil:
-        """
-        Returns a new airfoil morphed between two airfoils
+        """Returns a new airfoil morphed between two airfoils
 
         Notes:
             * This is an alternative constructor for the Airfoil class
@@ -387,15 +392,15 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         Returns:
             Airfoil: New airfoil morphed between the two airfoils
-        """
 
+        """
         if not 0 <= eta <= 1:
-            raise ValueError(f"'eta' must be in range [0,1], given eta is {float(eta):.3f}")
+            raise ValueError(
+                f"'eta' must be in range [0,1], given eta is {float(eta):.3f}",
+            )
         # Round to 2 decimals
         eta = round(eta, 2)
-        if eta == 0.0:
-            return airfoil1
-        elif eta == 1.0:
+        if eta == 0.0 or eta == 1.0:
             return airfoil1
 
         ksi = np.linspace(0, np.pi, n_points // 2)
@@ -478,8 +483,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
     @classmethod
     def naca(cls, naca: str, n_points: int = 200) -> Airfoil:
-        """
-        Initialize the Airfoil class from a NACA 4 digit identifier.
+        """Initialize the Airfoil class from a NACA 4 digit identifier.
 
         Args:
             naca (str): NACA 4 digit identifier (e.g. 0012) can also take NACA0012
@@ -490,6 +494,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         Returns:
             Airfoil: airfoil class object
+
         """
         re_4digits: re.Pattern[str] = re.compile(r"\b(?:NACA\s*)?(\d{4})\b")
         re_5digits: re.Pattern[str] = re.compile(r"\b(?:NACA\s*)?(\d{5})\b")
@@ -500,14 +505,10 @@ class Airfoil(af.Airfoil):  # type: ignore
         naca = naca.replace("_", "")
         naca = naca.replace(" ", "")
         if re_5digits.match(naca):
-            l: float = float(naca[0]) / 10
-            p: float = float(naca[1]) / 100
-            q: float = float(naca[2]) / 1000
-            xx: float = float(naca[3:5]) / 1000
             upper, lower = gen_NACA5_airfoil(naca, n_points)
             self: Airfoil = cls(upper, lower, f"naca{naca}", n_points)
             return self
-        elif re_4digits.match(naca):
+        if re_4digits.match(naca):
             m: float = float(naca[0]) / 100
             p = float(naca[1]) / 10
             xx = float(naca[2:4]) / 100
@@ -515,21 +516,20 @@ class Airfoil(af.Airfoil):  # type: ignore
             self = cls(upper, lower, f"naca{naca}", n_points)
             self.set_naca4_digits(p, m, xx)
             return self
-        else:
-            raise af.NACADefintionError(
-                "Identifier not recognised as valid NACA 4 definition",
-            )
+        raise af.NACADefintionError(
+            "Identifier not recognised as valid NACA 4 definition",
+        )
 
     @classmethod
     def load_from_file(cls, filename: str) -> Airfoil:
-        """
-        Initialize the Airfoil class from a file.
+        """Initialize the Airfoil class from a file.
 
         Args:
             filename (str): Name of the file to load the airfoil from
 
         Returns:
             Airfoil: Airfoil class object
+
         """
         x: list[float] = []
         y: list[float] = []
@@ -572,8 +572,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         flap_hinge_thickness_percentage: float = 0.5,
         chord_extension: float = 1,
     ) -> FlappedAirfoil | Airfoil:
-        """
-        Function to generate a flapped airfoil. The flap is defined by the flap hinge, the chord extension and the flap angle.
+        """Function to generate a flapped airfoil. The flap is defined by the flap hinge, the chord extension and the flap angle.
 
         Args:
             flap_hinge (float): Chordwise location of the flap hinge
@@ -582,6 +581,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         Returns:
             Airfoil: Flapped airfoil
+
         """
         flap_hinge_1 = flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
         if flap_angle == 0 or flap_hinge_1 == 1.0:
@@ -786,38 +786,38 @@ class Airfoil(af.Airfoil):  # type: ignore
         return flapped
 
     def set_naca4_digits(self, p: float, m: float, xx: float) -> None:
-        """
-        Class to store the NACA 4 digits parameters for the airfoil in the object
+        """Class to store the NACA 4 digits parameters for the airfoil in the object
 
         Args:
             p (float): Camber parameter
             m (float): Position of max camber
             xx (float): Thickness
+
         """
         self.p: float = p
         self.m: float = m
         self.xx: float = xx
 
-    def set_naca5_digits(self, l: float, p: float, q: float, xx: float) -> None:
-        """
-        Class to store the NACA 4 digits parameters for the airfoil in the object
+    def set_naca5_digits(self, ll: float, p: float, q: float, xx: float) -> None:
+        """Class to store the NACA 5 digits parameters for the airfoil in the object
 
         Args:
-            p (float): Camber parameter
-            m (float): Position of max camber
+            ll (float): Leading edge radius
+            p (float): Maximum camber
+            q (float): Position of maximum camber
             xx (float): Thickness
+
         """
-        self.l: float = l
-        self.p = p
+        self.l: float = ll
+        self.p: float = p
         self.q: float = q
-        self.xx = xx
+        self.xx: float = xx
 
     def camber_line_naca4(
         self,
         points: float | FloatArray | list[float],
     ) -> FloatArray:
-        """
-        Function to generate the camber line for a NACA 4 digit airfoil.
+        """Function to generate the camber line for a NACA 4 digit airfoil.
         Returns the camber line for a given set of x coordinates.
 
         Args:
@@ -825,6 +825,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         Returns:
             FloatArray: X,Y coordinates of the camber line
+
         """
         p: float = self.p
         m: float = self.m
@@ -836,35 +837,33 @@ class Airfoil(af.Airfoil):  # type: ignore
             else:
                 result = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
             return np.array(result)
-        else:
-            if isinstance(points, list):
-                points = np.array(points, dtype=float)
-            if isinstance(points, int):
-                points = np.array(float(points))
+        if isinstance(points, list):
+            points = np.array(points, dtype=float)
+        if isinstance(points, int):
+            points = np.array(float(points))
 
-            results: FloatArray = np.zeros_like(points)
-            for i, x in enumerate(points.tolist()):
-                if x < p:
-                    results[i] = m / p**2 * (2 * p * x - x**2)
-                else:
-                    results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
-            return results
+        results: FloatArray = np.zeros_like(points)
+        for i, x in enumerate(points.tolist()):
+            if x < p:
+                results[i] = m / p**2 * (2 * p * x - x**2)
+            else:
+                results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
+        return results
 
     def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:
-        """
-        Returns the camber line for a given set of x coordinates
+        """Returns the camber line for a given set of x coordinates
 
         Args:
             x (float | list[float] | FloatArray): X coordinates
 
         Returns:
             FloatArray: Camber line
+
         """
         return np.array(super().camber_line(x), dtype=float)
 
     def to_selig(self) -> FloatArray:
-        """
-        Returns the airfoil in the selig format.
+        """Returns the airfoil in the selig format.
         Meaning that the airfoil runs run from the trailing edge, round the leading edge,
         back to the trailing edge in either direction:
         """
@@ -912,10 +911,7 @@ class Airfoil(af.Airfoil):  # type: ignore
 
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:
-        """
-        Fetches the airfoil data from the web. Specifically from the UIUC airfoil database.
-        """
-
+        """Fetches the airfoil data from the web. Specifically from the UIUC airfoil database."""
         db_url = "https://m-selig.ae.illinois.edu/ads/coord_database.html"
         base_url = "https://m-selig.ae.illinois.edu/ads/"
         response = requests.get(db_url)
@@ -945,30 +941,40 @@ class Airfoil(af.Airfoil):  # type: ignore
                         # Save the downloaded data locally with the filename
                         dirname = airfoil_name.upper()
 
-                        from ICARUS.database import DB2D
+                        from ICARUS.database import Database
+
+                        DB = Database.get_instance()
+                        DB2D = DB.DB2D
 
                         os.makedirs(os.path.join(DB2D, dirname), exist_ok=True)
                         filename = os.path.join(DB2D, dirname, filename)
                         with open(filename, "wb") as f:
                             f.write(response.content)
-                        print(f"Downloaded: {filename} from {download_url}. Creating Airfoil obj...")
+                        print(
+                            f"Downloaded: {filename} from {download_url}. Creating Airfoil obj...",
+                        )
                         return cls.load_from_file(filename)
-                    else:
-                        raise FileNotFoundError(f"Error downloading {filename}: {response.status_code}")
+                    raise FileNotFoundError(
+                        f"Error downloading {filename}: {response.status_code}",
+                    )
                 except requests.exceptions.RequestException as e:
                     raise FileNotFoundError(f"Error downloading {filename}: {e}")
         raise FileNotFoundError(f"Error fetching {db_url}: {response.status_code}")
 
-    def save_selig(self, directory: str | None = None, header: bool = False, inverse: bool = False) -> None:
-        """
-        Saves the airfoil in the selig format.
+    def save_selig(
+        self,
+        directory: str | None = None,
+        header: bool = False,
+        inverse: bool = False,
+    ) -> None:
+        """Saves the airfoil in the selig format.
 
         Args:
             directory (str, optional): Directory to save the airfoil. Defaults to None.
             header (bool, optional): Whether to include the header. Defaults to False.
             inverse (bool, optional): Whether to save the airfoil in the reverse selig format. Defaults to False.
-        """
 
+        """
         if directory is not None:
             file_name = os.path.join(directory, self.file_name)
         else:
@@ -1011,11 +1017,11 @@ class Airfoil(af.Airfoil):  # type: ignore
                 file.write(f"{x:.6f} {y:.6f}\n")
 
     def save_le(self, directory: str | None = None) -> None:
-        """
-        Saves the airfoil in the revese selig format.
+        """Saves the airfoil in the revese selig format.
 
         Args:
             directory (str, optional): Directory to save the airfoil. Defaults to None.
+
         """
         x = [*self._x_lower[:], *self._x_upper[::-1]]
         y = [*self._y_lower[:], *self._y_upper[::-1]]
@@ -1046,13 +1052,13 @@ class Airfoil(af.Airfoil):  # type: ignore
         ax: Axes | None = None,
         overide_color: str | None = None,
     ) -> None:
-        """
-        Plots the airfoil in the selig format
+        """Plots the airfoil in the selig format
 
         Args:
             camber (bool, optional): Whether to plot the camber line. Defaults to False.
             scatter (bool, optional): Whether to plot the airfoil as a scatter plot. Defaults to False.
             max_thickness (bool, optional): Whether to plot the max thickness. Defaults to False.
+
         """
         pts = self.selig
         x, y = pts

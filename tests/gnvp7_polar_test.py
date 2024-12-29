@@ -33,7 +33,6 @@ def gnvp7_run(run_parallel: bool = True) -> None:
     NoAoA = (AoAmax - AoAmin) + 1
     angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all]
-    u_freestream = 20
     maxiter = 30
     timestep = 0.004
 
@@ -67,3 +66,7 @@ def gnvp7_run(run_parallel: bool = True) -> None:
     _ = gnvp7.get_results()
     airplane.save()
     # getRunOptions()
+
+
+if __name__ == "__main__":
+    gnvp7_run(False)

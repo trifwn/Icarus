@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
-
-from ICARUS import APPHOME
 
 from .analysesDB import AnalysesDB
 from .database2D import Database_2D
@@ -19,17 +18,31 @@ class Database:
     # Create only one instance of the database
     _instance = None
 
-    def __new__(cls) -> Database:
+    def __new__(cls, *args, **kwargs) -> Database:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self) -> None:
-        """Initializes the Database"""
+    @classmethod
+    def get_instance(cls) -> Database:
+        if cls._instance is None:
+            raise ValueError("Database not initialized")
+        return cls._instance
+
+    def __init__(self, APPHOME: str) -> None:
+        """Initializes the Database
+        Args:
+            APPHOME (str): The path to the database directory
+        """
         self.HOMEDIR: str = APPHOME
-        self.foils_db: Database_2D = Database_2D()
-        self.vehicles_db: Database_3D = Database_3D()
-        self.analyses_db: AnalysesDB = AnalysesDB()
+        self.DB2D: str = os.path.join(APPHOME, "2D")
+        self.DB3D: str = os.path.join(APPHOME, "3D")
+        self.ANALYSESDB: str = os.path.join(APPHOME, "Analyses")
+        self.EXTERNAL_DB: str = os.path.join(APPHOME, "3d_Party")
+
+        self.foils_db: Database_2D = Database_2D(APPHOME, self.DB2D)
+        self.vehicles_db: Database_3D = Database_3D(APPHOME, self.DB3D)
+        self.analyses_db: AnalysesDB = AnalysesDB(APPHOME, self.ANALYSESDB)
 
     def load_data(self) -> None:
         """Loads all the data from the databases"""
@@ -48,7 +61,7 @@ class Database:
     def inspect(self) -> None:
         """Prints the content of the database"""
         print("Master Database Contents:")
-        print("")
+        print()
         print("------------------------------------------------")
         print(f"|        {self.foils_db}                          |")
         print("------------------------------------------------")
@@ -63,7 +76,7 @@ class Database:
             string += "|\t\t\t\t\t\t|\n|\t\t\t\t\t\t|"
             print(string)
         print("-----------------------------------------")
-        print("")
+        print()
 
         print("------------------------------------------------")
         print(f"|        {self.vehicles_db}             |")
@@ -77,7 +90,7 @@ class Database:
             string += "|\n|"
             print(string)
         print("-----------------------------------------")
-        print("")
+        print()
 
     # def __enter__(self, obj):
     #     if isinstance(obj, Airplane):

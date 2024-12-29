@@ -12,14 +12,14 @@ from ICARUS.core.types import FloatArray
 
 
 def make_polars(CASEDIR: str, HOMEDIR: str) -> DataFrame:
-    """
-    Make the polars from the forces and return a dataframe with them
+    """Make the polars from the forces and return a dataframe with them
 
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
     Returns:
         DataFrame: Dataframe Containing CL, CD, CM for all angles
+
     """
     os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]
@@ -54,14 +54,14 @@ def make_polars_bash(
     CASEDIR: str,
     HOMEDIR: str,
 ) -> FloatArray:
-    """
-    Make the polars from the forces and return an np array with them
+    """Make the polars from the forces and return an np array with them
 
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
     Returns:
         FloatArray: Polars
+
     """
     os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]

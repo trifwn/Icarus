@@ -9,11 +9,10 @@ from matplotlib.lines import Line2D
 from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 from numpy import ndarray
-from pandas import Series
 
-from ICARUS import APPHOME
+from ICARUS import INSTALL_DIR
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.propulsion.engine import Engine
 from ICARUS.vehicle.plane import Airplane
 
@@ -38,7 +37,7 @@ def setup_plot(
     if len(airplanes) == 1:
         fig.suptitle(f"{airplanes[0]} CG Investigation", fontsize=16)
     else:
-        fig.suptitle(f"Aero Coefficients", fontsize=16)
+        fig.suptitle("Aero Coefficients", fontsize=16)
 
     for ax_row in axs:
         for ax in ax_row:
@@ -71,6 +70,7 @@ def setup_plot(
             "AVL",
         ]
 
+    DB = Database.get_instance()
     polars = [DB.vehicles_db.get_polars(airplane) for airplane in airplanes]
     cm_lines = {}
     cd_lines = {}
@@ -86,7 +86,7 @@ def setup_plot(
                 cl: FloatArray = polar[f"{solver} CL"].to_numpy()
                 cd: FloatArray = polar[f"{solver} CD"].to_numpy()
                 cm: FloatArray = polar[f"{solver} Cm"].to_numpy()
-                style = f"--"
+                style = "--"
                 label = f"{airplanes[i]} - {solver}"
 
                 try:
@@ -122,10 +122,38 @@ def setup_plot(
                         markersize=3.5,
                         linewidth=1,
                     )
-                    (cl_line,) = axs[1, 0].plot(aoa, cl, style, label=label, markersize=3.5, linewidth=1)
-                    (cm_line,) = axs[0, 0].plot(aoa, cm, style, label=label, markersize=3.5, linewidth=1)
-                    (cd_line,) = axs[0, 1].plot(aoa, cd, style, label=label, markersize=3.5, linewidth=1)
-                    (clcd_line,) = axs[1, 1].plot(aoa, cl / cd, style, label=label, markersize=3.5, linewidth=1)
+                    (cl_line,) = axs[1, 0].plot(
+                        aoa,
+                        cl,
+                        style,
+                        label=label,
+                        markersize=3.5,
+                        linewidth=1,
+                    )
+                    (cm_line,) = axs[0, 0].plot(
+                        aoa,
+                        cm,
+                        style,
+                        label=label,
+                        markersize=3.5,
+                        linewidth=1,
+                    )
+                    (cd_line,) = axs[0, 1].plot(
+                        aoa,
+                        cd,
+                        style,
+                        label=label,
+                        markersize=3.5,
+                        linewidth=1,
+                    )
+                    (clcd_line,) = axs[1, 1].plot(
+                        aoa,
+                        cl / cd,
+                        style,
+                        label=label,
+                        markersize=3.5,
+                        linewidth=1,
+                    )
 
                     cm_lines[airplanes[i]] = cm_line
                     cd_lines[airplanes[i]] = cd_line
@@ -165,7 +193,9 @@ def setup_plot(
 
         # Get the zero lift aoa
         cl_sorted_idx = np.argsort(cl)
-        aoa_zero_lift: float = float(np.interp(0.0, cl[cl_sorted_idx], aoas[cl_sorted_idx]))
+        aoa_zero_lift: float = float(
+            np.interp(0.0, cl[cl_sorted_idx], aoas[cl_sorted_idx]),
+        )
         cm_zero_lift = np.interp(aoa_zero_lift, aoas, np.array(cm))
 
         # Scatter the zero lift aoa on the cm plot
@@ -204,11 +234,11 @@ def cg_investigation(
     title: str = "Aero Coefficients",
     engine: Engine | None = None,
 ) -> None:
-
     if isinstance(airplane_names, str):
         airplane_names = [airplane_names]
 
     # Get the plane from the database
+    DB = Database.get_instance()
     planes: list[Airplane] = [DB.get_vehicle(airplane_name) for airplane_name in airplane_names]
 
     fig, cl_lines, cd_lines, cm_lines, clcd_lines, collections, annots = setup_plot(
@@ -236,7 +266,6 @@ def cg_investigation(
 
     # Update function for slider
     def update(new_cg: float) -> None:
-
         for airplane in airplane_names:
             cm_line = cm_lines[airplane]
             cl_line = cl_lines[airplane]
@@ -246,7 +275,7 @@ def cg_investigation(
             annot = annots[airplane]
 
             cl = np.array(cl_line.get_ydata())
-            cd = np.array(cd_line.get_ydata())
+            # cd = np.array(cd_line.get_ydata())
             initial_CM = initial_CMs[airplane]
             aoas_now = aoas[airplane]
 
@@ -315,7 +344,7 @@ if __name__ == "__main__":
         "bmark",
     ]
 
-    engine_dir = f"{APPHOME}/Data/Engine/Motor_1/"
+    engine_dir = f"{INSTALL_DIR}/Data/Engine/Motor_1/"
 
     engine = Engine()
     engine.load_data_from_df(engine_dir)

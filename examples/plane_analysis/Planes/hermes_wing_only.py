@@ -1,8 +1,6 @@
 import numpy as np
 
-from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
 from ICARUS.vehicle.plane import Airplane
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -17,8 +15,8 @@ def hermes_main_wing(name: str) -> Airplane:
         name (str): Name assinged to plane
     Returns:
         Airplane: Plane consisting of hermes V main wing
-    """
 
+    """
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
 
     wing_position: FloatArray = np.array(
@@ -32,7 +30,7 @@ def hermes_main_wing(name: str) -> Airplane:
 
     main_wing = WingSegment(
         name="wing",
-        root_airfoil=DB.get_airfoil("NACA4415"),
+        root_airfoil="NACA4415",
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,

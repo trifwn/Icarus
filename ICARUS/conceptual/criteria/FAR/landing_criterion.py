@@ -12,8 +12,7 @@ def far_1_landing(
     thrust_loading: FloatArray,
     sigma: float = 1,
 ) -> tuple[FloatArray, FloatArray]:
-    """
-    Returns the wing loading for a given cl_max and vstall
+    """Returns the wing loading for a given cl_max and vstall
 
     Args:
         l_landing (float): Landing Distance
@@ -24,8 +23,8 @@ def far_1_landing(
 
     Returns:
         _type_: (wing_loading, thrust_loading)
-    """
 
+    """
     wing_loading: float = l_landing * sigma * cl_approach / (0.3 * 17.15**2)
     wing_loading_arr: FloatArray = shape_like(wing_loading, thrust_loading)
     return (wing_loading_arr, thrust_loading)
@@ -37,8 +36,8 @@ def far_inverse_landing_criterion_cl_max(
     sigma: float = 1,
 ) -> float:
     cl_app: float = (17.15 / V_app) ** 2 * (wing_loading / sigma)
-    landing_dist: float = 0.3 * V_app**2
-    cl_max: float = cl_app * 1.69
+    # landing_dist: float = 0.3 * V_app**2
+    # cl_max: float = cl_app * 1.69
     return cl_app * 1.69
 
 

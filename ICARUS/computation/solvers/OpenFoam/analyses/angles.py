@@ -15,7 +15,7 @@ from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import (
 from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import serial_monitor
 from ICARUS.computation.solvers.OpenFoam.files.setup_case import setup_open_foam
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
+from ICARUS.database import Database
 
 
 def run_angle(
@@ -27,8 +27,8 @@ def run_angle(
     Args:
         REYNDIR (str): REYNOLDS CASE DIRECTORY
         ANGLEDIR (float): ANGLE DIRECTORY
+
     """
-    pass
     os.chdir(ANGLEDIR)
     call(["/bin/bash", "-c", f"{runOFscript}"])
     os.chdir(REYNDIR)
@@ -38,13 +38,13 @@ def run_angles(
     REYNDIR: str,
     ANGLEDIRS: list[str],
 ) -> None:
-    """
-    Function to run multiple Openfoam Simulations (many AoAs) after they
+    """Function to run multiple Openfoam Simulations (many AoAs) after they
     are already setup
 
     Args:
         REYNDIR (str): Reynolds Parent Directory
         ANGLEDIRS (list[str]): Angle Directory
+
     """
     with Pool(processes=CPU_TO_USE - 2) as pool:
         args_list: list[tuple[str, str]] = [(REYNDIR, angle_dir) for angle_dir in ANGLEDIRS]
@@ -58,8 +58,7 @@ def angles_serial(
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-    """
-    Runs OpenFoam for multiple angles in serial (same subproccess)
+    """Runs OpenFoam for multiple angles in serial (same subproccess)
 
     Args:
         airfoil (Airfoil): Airfoil Object
@@ -67,7 +66,9 @@ def angles_serial(
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         solver_options (dict[str, Any]): Solver Options in a dictionary
+
     """
+    DB = Database.get_instance()
     HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
@@ -128,8 +129,7 @@ def angles_parallel(
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-    """
-    Runs OpenFoam for multiple angles in parallel (different subproccesses)
+    """Runs OpenFoam for multiple angles in parallel (different subproccesses)
 
     Args:
         airfoil (Airfoil): Airfoil Object
@@ -137,7 +137,9 @@ def angles_parallel(
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         solver_options (dict[str, Any]): Dictionary of solver options
+
     """
+    DB = Database.get_instance()
     HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,

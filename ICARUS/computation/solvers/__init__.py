@@ -1,5 +1,4 @@
-"""
-============================================
+"""============================================
 ICARUS Input Output package
 ============================================
 
@@ -21,7 +20,7 @@ from . import Icarus_LSPT
 from . import OpenFoam
 from . import Xfoil
 
-_all_ = ["OpenFoam", "Xfoil", "Foil2Wake", "GenuVP", "XFLR5", "Icarus_LSPT"]
+__all__ = ["XFLR5", "Foil2Wake", "GenuVP", "Icarus_LSPT", "OpenFoam", "Xfoil"]
 
 import os
 

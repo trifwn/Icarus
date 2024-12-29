@@ -12,35 +12,33 @@ def tabs(num: int) -> str:
 
 
 def ff(num: float) -> str:
-    return str(np.format_float_scientific(num, sign=False, precision=3, min_digits=3).zfill(5))
+    return str(
+        np.format_float_scientific(num, sign=False, precision=3, min_digits=3).zfill(5),
+    )
 
 
 def ff2(num: float) -> str:
     if num >= 0:
         return f"{num:2.5f}"
-    else:
-        return f"{num:2.4f}"
+    return f"{num:2.4f}"
 
 
 def ff3(num: float) -> str:
     if num >= 10:
         return f"{num:2.5f}"
-    elif num >= 0:
+    if num >= 0:
         return f"{num:2.6f}"
-    else:
-        return f"{num:2.5f}"
+    return f"{num:2.5f}"
 
 
 def ff4(num: float) -> str:
     if num >= 0:
         return f"{num:1.4e}"
-    else:
-        return f"{num:1.3e}"
+    return f"{num:1.3e}"
 
 
 def ff5(num: float, n_digits: int = 10) -> str:
-    """
-    Given a float, return a string of the number in scientific notation
+    """Given a float, return a string of the number in scientific notation
     that is n_digits characters long in total including the sign and decimal point.
     e.g ff4(0.000000000) ->  "0.0000e+00"
     e.g ff4(0.000000001) ->  "1.0000e-09"
@@ -57,10 +55,8 @@ def ff5(num: float, n_digits: int = 10) -> str:
 
     Returns:
         str: The float in scientific notation
+
     """
-    if num == 0:
+    if num == 0 or num > 0:
         return f"{num:1.{n_digits - 7}e}"
-    elif num > 0:
-        return f"{num:1.{n_digits - 7}e}"
-    else:
-        return f"{num:1.{n_digits - 8}e}"
+    return f"{num:1.{n_digits - 8}e}"

@@ -9,8 +9,8 @@ def angle_to_case(angle: float) -> str:
 
     Returns:
         str: folder name
-    """
 
+    """
     if angle >= 0:
         folder: str = str(angle)[::-1].zfill(7)[::-1] + "_AoA"
     else:
@@ -26,8 +26,8 @@ def disturbance_to_case(dst: Disturbance) -> str:
 
     Returns:
         str: folder name
-    """
 
+    """
     if dst.var == "Trim":
         folder: str = "Trim"
     elif dst.is_positive:

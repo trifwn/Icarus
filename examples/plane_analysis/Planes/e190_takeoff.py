@@ -4,8 +4,7 @@ import numpy as np
 
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import EXTERNAL_DB
+from ICARUS.database import Database
 from ICARUS.vehicle.plane import Airplane
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -18,8 +17,7 @@ def e190_takeoff_generator(
     chord_extension: float = 1.3,
     flap_angle: float = 35,
 ) -> Airplane:
-    """
-    Function to get the embraer e190 plane.
+    """Function to get the embraer e190 plane.
     Consisting of the main wing, elevator rudder and masses as constructed.
 
     Args:
@@ -27,8 +25,10 @@ def e190_takeoff_generator(
 
     Returns:
         Airplane: hermes Airplane object
+
     """
-    read_polars_2d(EXTERNAL_DB)
+    DB = Database("./Data")
+    read_polars_2d(DB, DB.EXTERNAL_DB)
     from ICARUS.airfoils.airfoil import Airfoil
 
     naca64418: Airfoil = DB.foils_db.airfoils["NACA64418"]

@@ -1,22 +1,24 @@
-"""
-==================
+"""==================
 Merged Wing Class
 ==================
 """
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.strip import Strip
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 
+if TYPE_CHECKING:
+    from ICARUS.vehicle.strip import Strip
+
 
 class MergedWing(WingSurface):
-    "Class to represent a Wing of an airplane"
+    """Class to represent a Wing of an airplane"""
 
     def __init__(
         self,
@@ -24,12 +26,12 @@ class MergedWing(WingSurface):
         wing_segments: list[WingSurface],
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
     ) -> None:
-        """
-        Initializes the Wing Object
+        """Initializes the Wing Object
 
         Args:
             name (str): Name of the wing e.g. Main Wing
             wing_segments (list[Lifting_Surface]): List of Wing_Segments
+
         """
         self.name: str = name
         # Create a grid of points to store all Wing Segments
@@ -79,7 +81,9 @@ class MergedWing(WingSurface):
             if symmetries == SymmetryAxes.NONE:
                 # Check if all wing segments share same symmetries
                 for symmetry_type in SymmetryAxes.__members__.values():
-                    if all([symmetry_type in segment.symmetries for segment in wing_segments]):
+                    if all(
+                        [symmetry_type in segment.symmetries for segment in wing_segments],
+                    ):
                         merged_wing_symmetries.append(symmetry_type)
             else:
                 merged_wing_symmetries = [symmetries]
@@ -101,7 +105,10 @@ class MergedWing(WingSurface):
         self._tip_chord = wing_segments[-1]._tip_chord
 
         # Get the twist distributions
-        self.twist_angles = np.hstack([segment.twist_angles for segment in wing_segments], dtype=float).flatten()
+        self.twist_angles = np.hstack(
+            [segment.twist_angles for segment in wing_segments],
+            dtype=float,
+        ).flatten()
 
         # Define the airfoils
         airfoils: list[Airfoil] = []
@@ -185,9 +192,7 @@ class MergedWing(WingSurface):
         ####### Calculate Wing Parameters ########
 
     def create_grid(self) -> None:
-        """
-        Creates a grid of points to represent the wing
-        """
+        """Creates a grid of points to represent the wing"""
         # Each wing segment has a grid of points that represent the wing segment
         # We need to combine all these points to create a grid for the entire wing
         # Combining the points will create some panels that are not present in the wing
@@ -204,7 +209,10 @@ class MergedWing(WingSurface):
         NM = 0
         # Stack all the grid points of the wing segments
         for segment in self.wing_segments:
-            grid[NM : NM + segment.M * segment.N, :] = np.reshape(segment.grid, (segment.M * segment.N, 3))
+            grid[NM : NM + segment.M * segment.N, :] = np.reshape(
+                segment.grid,
+                (segment.M * segment.N, 3),
+            )
             grid_lower[NM : NM + segment.M * segment.N, :] = np.reshape(
                 segment.grid_upper,
                 (segment.M * segment.N, 3),
@@ -265,9 +273,7 @@ class MergedWing(WingSurface):
         self.control_nj_upper = control_nj_upper
 
     def create_strips(self) -> None:
-        """
-        Creates the strips for the wing
-        """
+        """Creates the strips for the wing"""
         self.strips = []
         self.all_strips = []
         for segment in self.wing_segments:
@@ -276,13 +282,11 @@ class MergedWing(WingSurface):
             self.all_strips.extend(segment.all_strips)
 
     def calculate_area(self) -> None:
-        """
-        Calculates the area of the wing
-        """
+        """Calculates the area of the wing"""
         self.area = 0.0
         self.S = 0.0
         for segment in self.wing_segments:
-            if segment.is_lifting == False:
+            if not segment.is_lifting:
                 continue
             segment.calculate_area()
             self.area += segment.area
@@ -301,24 +305,25 @@ class MergedWing(WingSurface):
         self.standard_mean_chord = smac / self.area
 
     def calculate_volume(self) -> None:
-        """
-        Calculates the volume of the wing
-        """
+        """Calculates the volume of the wing"""
         volume = 0.0
         volume_distribution: list[FloatArray] = []
 
         for segment in self.wing_segments:
             segment.calculate_volume()
             volume += segment.volume
-            volume_distribution.append(np.reshape(segment.volume_distribution, ((segment.N - 1) * (segment.M - 1))))
+            volume_distribution.append(
+                np.reshape(
+                    segment.volume_distribution,
+                    ((segment.N - 1) * (segment.M - 1)),
+                ),
+            )
 
         self.volume = volume
         self.volume_distribution = np.hstack(volume_distribution, dtype=float).flatten()
 
     def calculate_inertia(self, mass: float, cog: FloatArray) -> FloatArray:
-        """
-        Calculates the inertia of the wing
-        """
+        """Calculates the inertia of the wing"""
         # Divide the mass of the wing among the segments based on their area
         # This is done to calculate the inertia of each segment
 
@@ -329,9 +334,7 @@ class MergedWing(WingSurface):
         return inertia
 
     def calculate_center_mass(self) -> FloatArray:
-        """
-        Calculates the center of mass of the wing
-        """
+        """Calculates the center of mass of the wing"""
         cog = np.zeros(3, dtype=float)
         x_cm = 0.0
         y_cm = 0.0
@@ -348,9 +351,7 @@ class MergedWing(WingSurface):
         return cog
 
     def get_grid(self, which: str = "camber") -> list[FloatArray]:
-        """
-        Returns the grid of the wing
-        """
+        """Returns the grid of the wing"""
         grids: list[FloatArray] = []
         for segment in self.wing_segments:
             grid = segment.get_grid(which)

@@ -46,7 +46,7 @@ def avl_run() -> None:
     avl.execute()
 
     end_time: float = time.perf_counter()
-    print(f"AVL Run took: --- %s seconds ---" % (end_time - start_time))
+    print("AVL Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing AVL Running... Done")
 
     _ = avl.get_results()

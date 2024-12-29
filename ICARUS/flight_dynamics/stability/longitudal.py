@@ -6,7 +6,6 @@ from typing import Any
 from pandas import DataFrame
 
 from ICARUS.flight_dynamics.stability.state_space import LongitudalStateSpace
-from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics.state import State
@@ -26,8 +25,8 @@ def longitudal_stability_finite_differences(
 
     Args:
         State (State): State of the airplane
-    """
 
+    """
     pert: DataFrame = state.pertrubation_results
     eps: dict[str, float] = state.epsilons
 
@@ -55,16 +54,16 @@ def longitudal_stability_finite_differences(
 
         # back = rotate_forces(back, state.trim["AoA"])
         # front = rotate_forces(front, state.trim["AoA"])
-        Xf = float(front[f"Fx"].to_numpy())
-        Xb = float(back[f"Fx"].to_numpy())
+        Xf = float(front["Fx"].to_numpy())
+        Xb = float(back["Fx"].to_numpy())
         X[var] = (Xf - Xb) / de
 
-        Zf = float(front[f"Fz"].to_numpy())
-        Zb = float(back[f"Fz"].to_numpy())
+        Zf = float(front["Fz"].to_numpy())
+        Zb = float(back["Fz"].to_numpy())
         Z[var] = (Zf - Zb) / de
 
-        Mf = float(front[f"My"].to_numpy())
-        Mb = float(back[f"My"].to_numpy())
+        Mf = float(front["My"].to_numpy())
+        Mb = float(back["My"].to_numpy())
         M[var] = (Mf - Mb) / de
 
     X["w_dot"] = 0

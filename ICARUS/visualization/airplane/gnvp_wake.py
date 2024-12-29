@@ -1,6 +1,7 @@
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -10,11 +11,21 @@ from ICARUS.database.utils import angle_to_case
 from ICARUS.vehicle.plane import Airplane
 
 
-def plot_gnvp3_wake(plane: Airplane, case: str, scale: bool = True, figsize: tuple[int, int] = (16, 7)) -> None:
+def plot_gnvp3_wake(
+    plane: Airplane,
+    case: str,
+    scale: bool = True,
+    figsize: tuple[int, int] = (16, 7),
+) -> None:
     plot_gnvp_wake(gnvp_version=3, plane=plane, case=case, scale=scale, figsize=figsize)
 
 
-def plot_gnvp7_wake(plane: Airplane, case: str, scale: bool = True, figsize: tuple[int, int] = (16, 7)) -> None:
+def plot_gnvp7_wake(
+    plane: Airplane,
+    case: str,
+    scale: bool = True,
+    figsize: tuple[int, int] = (16, 7),
+) -> None:
     plot_gnvp_wake(gnvp_version=7, plane=plane, case=case, scale=scale, figsize=figsize)
 
 
@@ -25,16 +36,15 @@ def plot_gnvp_wake(
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    """
-    Visualize the wake of a given plane
+    """Visualize the wake of a given plane
 
     Args:
         plane (Airplane): Plane Object
         case (str): Case Name
         scale (str): Whether to plot on a true scale or not
         figsize (tuple[int,int]): Figure Size. Defaults to (16, 7).
-    """
 
+    """
     if gnvp_version == 3:
         get_wake_data = get_wake_data_3
     elif gnvp_version == 7:
@@ -56,9 +66,27 @@ def plot_gnvp_wake(
     ax.set_ylim(-plane.span / 2, plane.span / 2)
     ax.set_zlim(-1, 1)
 
-    ax.scatter(xs=A1[:, 0], ys=A1[:, 1], zs=A1[:, 2], color="r", s=5)  # WAKE   # type: ignore
-    ax.scatter(xs=B1[:, 0], ys=B1[:, 1], zs=B1[:, 2], color="k", s=5)  # NEARWAKE   # type: ignore
-    ax.scatter(xs=C1[:, 0], ys=C1[:, 1], zs=C1[:, 2], color="g", s=5)  # GRID       # type: ignore
+    ax.scatter(
+        xs=A1[:, 0],
+        ys=A1[:, 1],
+        zs=A1[:, 2],
+        color="r",
+        s=5,
+    )  # WAKE   # type: ignore
+    ax.scatter(
+        xs=B1[:, 0],
+        ys=B1[:, 1],
+        zs=B1[:, 2],
+        color="k",
+        s=5,
+    )  # NEARWAKE   # type: ignore
+    ax.scatter(
+        xs=C1[:, 0],
+        ys=C1[:, 1],
+        zs=C1[:, 2],
+        color="g",
+        s=5,
+    )  # GRID       # type: ignore
 
     plane.visualize(fig, ax, movement=-np.array(plane.CG), show_masses=False)
     if scale:
@@ -82,7 +110,9 @@ if __name__ == "__main__":
     import os
 
     folder_name: str = os.path.basename(os.getcwd())
-    from ICARUS.database import DB
+    from ICARUS.database import Database
+
+    DB = Database.get_instance()
 
     print(DB.vehicles_db.get_planenames())
     if folder_name in DB.vehicles_db.get_planenames():
@@ -99,7 +129,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--gnvp", type=int, default=3, help="Genu Version")
-    parser.add_argument("-a", "--angle", type=float, default=2.0, help="Angle of Attack")
+    parser.add_argument(
+        "-a",
+        "--angle",
+        type=float,
+        default=2.0,
+        help="Angle of Attack",
+    )
     args = parser.parse_args()
     gnvp_version: int = args.gnvp
     case: float = args.angle
@@ -111,4 +147,4 @@ if __name__ == "__main__":
         plot_gnvp7_wake(plane, case_str)
     else:
         print(f"GNVP Version error! Got Version {gnvp_version} ")
-        exit()
+        sys.exit()

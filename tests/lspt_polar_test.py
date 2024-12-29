@@ -49,7 +49,7 @@ def lspt_run() -> None:
     lspt.execute()
 
     end_time: float = time.perf_counter()
-    print(f"LSPT Run took: --- %s seconds ---" % (end_time - start_time))
+    print("LSPT Run took: --- %s seconds ---" % (end_time - start_time))
     print("Testing GNVP Running... Done")
 
     _ = lspt.get_results()

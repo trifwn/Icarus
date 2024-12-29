@@ -3,12 +3,13 @@ import numpy as np
 
 class Environment:
     def __init__(self, name: str) -> None:
-        """
-        Definition of the Environment object
+        """Definition of the Environment object
 
         # !TODO: IMPLEMENT https://pypi.org/project/ambiance/
+
         Args:
             name (str): Name of the environment
+
         """
         self.name: str = name
         self.GRAVITY: float = 9.81
@@ -45,25 +46,24 @@ class Environment:
         self.air_prandtl_number: float = 0.71
 
     def _set_altitude(self, h: float, units: str = "SI") -> None:
-        """
-        Set the altitude of the environment
+        """Set the altitude of the environment
 
         Args:
             h (float): Altitude in meters or feet
             units (str, optional): Defaults to 'SI'.
+
         """
         if units == "Imperial":
             h *= 0.3048
         self.altitude = h
 
     def _set_temperature_from_altitude(self, h: float) -> None:
-        """
-        Reference from https://www.omnicalculator.com/physics/altitude-temperature
+        """Reference from https://www.omnicalculator.com/physics/altitude-temperature
 
         Args:
             h (float): Altitude in meters
-        """
 
+        """
         if h < 11000:
             self.temperature = self.reference_temperature + 15.04 - 0.00649 * h
         elif h < 15000:
@@ -76,12 +76,12 @@ class Environment:
             self.temperature = self.reference_temperature - 87.05
 
     def _set_pressure_from_altitude_and_temperature(self, h: float, T: float) -> None:
-        """
-        Reference from https://www.omnicalculator.com/physics/air-pressure-at-altitude
+        """Reference from https://www.omnicalculator.com/physics/air-pressure-at-altitude
 
         Args:
             h (float): Altitude in meters
             T (float): Temperature in Kelvin
+
         """
         self.temperature = T
         self._set_altitude(h)
@@ -90,9 +90,12 @@ class Environment:
             -self.GRAVITY * self.air_molar_mass * (h - self.reference_altitude) / (self.UNIVERSAL_GAS_CONSTANT * T),
         )
 
-    def set_temperature_and_pressure_from_altitude(self, h: float, units: str = "SI") -> None:
-        """
-        Sets the temperature, pressure and altitude of the environment.
+    def set_temperature_and_pressure_from_altitude(
+        self,
+        h: float,
+        units: str = "SI",
+    ) -> None:
+        """Sets the temperature, pressure and altitude of the environment.
         It uses the standard atmosphere model and approximations from:
         1) https://www.omnicalculator.com/physics/air-pressure-at-altitude
         2) https://www.omnicalculator.com/physics/altitude-temperature
@@ -100,6 +103,7 @@ class Environment:
         Args:
             h (float): Altitude in meters
             units (str, optional): Defaults to "SI". Can be "SI" or "Imperial"
+
         """
         if units == "Imperial":
             h *= 0.3048

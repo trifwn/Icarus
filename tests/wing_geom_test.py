@@ -12,13 +12,13 @@ def geom() -> None:
 
     S = bmark.S
     MAC = bmark.mean_aerodynamic_chord
-    AR = bmark.aspect_ratio
+    # AR = bmark.aspect_ratio
     CG = bmark.CG
     INERTIA = bmark.total_inertia
 
     S_act: tuple[float] = (4.0,)
     MAC_act: tuple[float] = (0.8,)
-    AREA_act: tuple[float] = (4.0608,)
+    # AREA_act: tuple[float] = (4.0608,)
     CG_act: FloatArray = np.array([0.361, 0.0, 0.0])
     I_act: FloatArray = np.array(
         [2.077, 0.017, 2.094, 0.0, 0.0, 0.0],

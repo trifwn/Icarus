@@ -17,8 +17,7 @@ def return_cps(
     ftrip_up: float = 1.0,
     Ncrit: float = 9,
 ) -> tuple[list[Any], list[Any], FloatArray]:
-    """
-    !TO BE DEPRECATED! SHOULD BE LOGGED AUTOMATICALLY AND NOT RETURNED
+    """!TO BE DEPRECATED! SHOULD BE LOGGED AUTOMATICALLY AND NOT RETURNED
 
     Args:
         Reyn (float): _description_
@@ -31,6 +30,7 @@ def return_cps(
 
     Returns:
         _type_: _description_
+
     """
     xf = XFoil()
     xf.Re = Reyn

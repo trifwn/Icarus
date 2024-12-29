@@ -1,5 +1,4 @@
-"""
-Genu Surface Class
+"""Genu Surface Class
 A class to define lifting surfaces for the GenuVP solvers.
 """
 
@@ -12,8 +11,7 @@ class GenuSurface:
     airfoil_names: dict[str, int] = {}
 
     def __init__(self, surf: WingSurface, idx: int) -> None:
-        """
-        Converts a Wing Object to an object that can be used
+        """Converts a Wing Object to an object that can be used
         for making the input files of GNVP3 and GNVP7
 
         Args:
@@ -22,6 +20,7 @@ class GenuSurface:
 
         Returns:
             dict[str, Any]: Dict with the surface parameters
+
         """
         if surf.is_symmetric_y:
             N: int = 2 * surf.N - 1

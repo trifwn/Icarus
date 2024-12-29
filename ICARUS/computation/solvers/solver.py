@@ -9,9 +9,7 @@ from ICARUS.core.struct import Struct
 
 
 class Solver:
-    """
-    Abstract class to represent a solver. It is used to run analyses.
-    """
+    """Abstract class to represent a solver. It is used to run analyses."""
 
     def __init__(
         self,
@@ -21,8 +19,7 @@ class Solver:
         available_analyses: list[Analysis],
         solver_parameters: list[Parameter] = [],
     ) -> None:
-        """
-        Initialize the Solver class.
+        """Initialize the Solver class.
 
         Args:
             name (str): Solver Name.
@@ -30,11 +27,12 @@ class Solver:
             fidelity (int): Fidelity of the solver.
             solver_parameters (list[SolverParameter]): List of Solver Parameters.
             available_analyses (list[Analysis]): List of available Analyses.
+
         """
         self.name: str = name
         self.type: str = solver_type
         try:
-            assert type(fidelity) == int, "Fidelity must be an integer"
+            assert isinstance(fidelity, int), "Fidelity must be an integer"
         except AssertionError:
             print("Fidelity must be an integer")
         self.fidelity: int = fidelity
@@ -47,9 +45,7 @@ class Solver:
         }
 
     def print_analysis_options(self) -> None:
-        """
-        Print the options of the selected analysis.
-        """
+        """Print the options of the selected analysis."""
         if self.mode is not None:
             print(self.analyses[self.mode])
         else:
@@ -61,8 +57,7 @@ class Solver:
         return list(self.analyses.keys())
 
     def print_solver_parameters(self) -> None:
-        """
-        Get Solver Options for the current analysis. Solver Options refer to internal solver settings not
+        """Get Solver Options for the current analysis. Solver Options refer to internal solver settings not
         the analysis itself.
 
         """
@@ -85,11 +80,11 @@ class Solver:
         print(string)
 
     def select_analysis(self, identifier: str | int) -> None:
-        """
-        Set the analysis to be used.
+        """Set the analysis to be used.
 
         Args:
             analysis (str): Analysis Name.
+
         """
         if isinstance(identifier, str):
             self.mode = identifier
@@ -99,8 +94,7 @@ class Solver:
             raise ValueError("Invalid Analysis Identifier")
 
     def get_analysis_options(self, verbose: bool = False) -> Struct:
-        """
-        Get the options of the selected analysis.
+        """Get the options of the selected analysis.
 
         Args:
             verbose (bool, optional): Displays the option if True. Defaults to False.
@@ -110,6 +104,7 @@ class Solver:
 
         Returns:
             Struct: Struct Object containing the analysis options.
+
         """
         # Convert Option Object to struct
         ret: Struct = Struct()
@@ -122,16 +117,12 @@ class Solver:
         return ret
 
     def set_analysis_options(self, options: Struct | dict[str, Any]) -> None:
-        """
-        Set
-        """
+        """Set"""
         for key in options.keys():
             self.analyses[self.mode].options[key].value = options[key]
 
     def get_solver_parameters(self, verbose: bool = False) -> Struct:
-        """
-        Get the solver parameters of the selected analysis.
-        """
+        """Get the solver parameters of the selected analysis."""
         # Convert Option Object to struct
         ret = Struct()
         for option in self.solver_parameters.values():
@@ -141,9 +132,7 @@ class Solver:
         return ret
 
     def set_solver_parameters(self, parameters: Struct | dict[str, Any]) -> None:
-        """
-        Set the solver parameters of the selected analysis.
-        """
+        """Set the solver parameters of the selected analysis."""
         for key in parameters.keys():
             if key in self.solver_parameters:
                 self.solver_parameters[key].value = parameters[key]
@@ -153,27 +142,26 @@ class Solver:
         options: Struct | dict[str, Any],
         solver_parameters: Struct | dict[str, Any],
     ) -> None:
-        """
-        Set the options of the selected analysis.
+        """Set the options of the selected analysis.
 
         Args:
             options (Struct): Struct Object containing the analysis options.
+
         """
         if self.mode is not None:
             self.set_analysis_options(options)
             self.set_solver_parameters(solver_parameters)
 
     def execute(self, parallel: bool = False) -> Any:
-        """
-        Run the selected analysis.
+        """Run the selected analysis.
 
         Args:
             parallel (bool, optional): Run in parallel. Defaults to False.
 
         Returns:
             Any: Analysis Results or Error Code.
-        """
 
+        """
         analysis: Analysis = self.analyses[self.mode]
         print(f"Running Solver {self.name}:\n\tAnalysis {analysis.name}...")
 
@@ -193,8 +181,7 @@ class Solver:
         return res
 
     def get_results(self, analysis_name: str | None = None) -> DataFrame | int:
-        """
-        Get the results of the selected analysis.
+        """Get the results of the selected analysis.
 
         Args:
             analysis_name (str | None, optional): Analysis Name. If false it runs
@@ -202,27 +189,27 @@ class Solver:
 
         Returns:
             DataFrame | int: DataFrame with simulation Results or Error Code.
+
         """
         if analysis_name is None:
             if self.mode is None:
                 print("Analysis not selected or provided")
                 return -1
             analysis: Analysis = self.analyses[self.mode]
+        elif analysis_name in self.analyses.keys():
+            analysis = self.analyses[analysis_name]
         else:
-            if analysis_name in self.analyses.keys():
-                analysis = self.analyses[analysis_name]
-            else:
-                print("Analysis not available")
-                return -1
+            print("Analysis not available")
+            return -1
         res: DataFrame | int = analysis.get_results()
         return res
 
     def __str__(self) -> str:
-        """
-        String representation of the Solver.
+        """String representation of the Solver.
 
         Returns:
             str: String representation of the Solver.
+
         """
         string: str = f"{self.type} Solver {self.name}:\n"
         string += "Available Analyses Are: \n"

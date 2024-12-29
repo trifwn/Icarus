@@ -35,6 +35,6 @@ def set_solver_parameters(solver: Solver) -> None:
             exit()
         try:
             solver.set_solver_parameters(answer)
-        except:
+        except Exception:
             print("Unable to set parameters! Try Again")
             return set_solver_parameters(solver)

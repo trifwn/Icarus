@@ -8,8 +8,7 @@ def interpolate(
     ya: FloatArray | list[float],
     queryPoints: FloatArray | list[float],
 ) -> FloatArray:
-    """
-    A cubic spline interpolation on a given set of points (x,y)
+    """A cubic spline interpolation on a given set of points (x,y)
     Recalculates everything on every call which is far from efficient but does the job for now
     should eventually be replaced by an external helper class
 
@@ -20,8 +19,8 @@ def interpolate(
 
     Returns:
         FloatArray: coordinates of the points to interpolate
-    """
 
+    """
     # PreCompute() from Paint Mono which in turn adapted:
     # NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING
     # ISBN 0-521-43108-5, page 113, section 3.3.

@@ -1,15 +1,17 @@
-from time import sleep
-
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ICARUS.database import DB
-
-airfoil = DB.get_airfoil("NACA0009")
-
-import numpy as np
-
+from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 from ICARUS.core.types import FloatArray
+from ICARUS.database import Database
+
+# CHANGE THIS TO YOUR DATABASE FOLDER
+database_folder = "E:\\Icarus\\Data"
+
+# Load the database
+DB = Database(database_folder)
+airfoil = DB.get_airfoil("NACA0009")
 
 # PARAMETERS FOR ESTIMATION
 chord_max: float = 0.5
@@ -48,11 +50,6 @@ ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 0.2}
 Ncrit = 9
 
 
-from ICARUS.computation.solvers.solver import Solver
-
-# # Xfoil
-from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
-
 print(f"\nRunning airfoil {airfoil}\n")
 
 for flap_angle in np.arange(-12.5, -30, -2.5):
@@ -64,7 +61,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
         flap_angle=flap_angle,
         chord_extension=1.0,
     )
-    airfoil_flap.repanel_spl(100)
+    airfoil_flap.repanel_spl(200)
 
     xfoil: Solver = Xfoil()
 
@@ -87,7 +84,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     # Set Solver Options
     solver_parameters.max_iter = 200
     solver_parameters.Ncrit = 9
-    solver_parameters.xtr = (0.4, 0.4)
+    solver_parameters.xtr = (0.2, 0.1)
     solver_parameters.print = False
     solver_parameters.repanel_n = 140
 
@@ -99,7 +96,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     # Get polar
     polar = DB.foils_db.get_polars(airfoil_flap.name.upper())
     polar.data
-    print('\n\n\n')
+    print("\n\n\n")
     # fig = polar.plot()
     # fig.show()
     # plt.show(block=True)

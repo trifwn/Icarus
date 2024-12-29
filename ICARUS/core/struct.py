@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import ItemsView
+from collections.abc import Iterator
+from collections.abc import KeysView
+from collections.abc import ValuesView
 from typing import Any
-from typing import ItemsView
-from typing import Iterator
-from typing import KeysView
-from typing import ValuesView
 
 
 class Struct:
@@ -33,7 +33,7 @@ class Struct:
         return self._data[key]
 
     def __iter__(self) -> Iterator[str]:
-        "Iterate over Struct"
+        """Iterate over Struct"""
         return self._data.__iter__()
 
     def __setitem__(self, key: str, value: Any) -> None:
@@ -47,8 +47,7 @@ class Struct:
         del self._data[key]
 
     def __getattr__(self, key: str) -> Any:
-        """
-        Get an attribute from the Struct instance by key.
+        """Get an attribute from the Struct instance by key.
         Raises AttributeError if the key is not found.
         """
         try:
@@ -63,8 +62,7 @@ class Struct:
         self[key] = value
 
     def __delattr__(self, name: str) -> None:
-        """
-        Delete an attribute from the Struct instance by name.
+        """Delete an attribute from the Struct instance by name.
         Raises AttributeError if the attribute is not found.
         """
         if name in self._data:
@@ -78,7 +76,7 @@ class Struct:
 
     def __repr__(self) -> str:
         """Return a string representation of the Struct instance."""
-        items: list[str] = [f"{key}={repr(value)}" for key, value in self._data.items()]
+        items: list[str] = [f"{key}={value!r}" for key, value in self._data.items()]
         return f"Struct({', '.join(items)})"
 
     def __str__(self) -> str:
@@ -109,6 +107,7 @@ class Struct:
 
         Args:
             state (dict): _description_
+
         """
         for key, value in state.items():
             if isinstance(value, dict):
@@ -124,6 +123,7 @@ class Struct:
 
         Args:
             other (Any): Dictionary-like object
+
         """
         for key, value in other.items():
             if isinstance(value, dict):
@@ -137,6 +137,7 @@ class Struct:
 
         Returns:
             Struct: Inverted Object
+
         """
         # This allows us to invert the dictionary using the ~ operator
         return self.invert_nested_dict()
@@ -150,6 +151,7 @@ class Struct:
 
         Returns:
             Struct: Inverted Dict
+
         """
 
         def _invert_nested_dict(dd: dict[Any, Any], depth: int) -> dict[str, Any]:
@@ -175,11 +177,12 @@ class Struct:
 
         Args:
             indent (int, optional): Indentation Level. Defaults to 0.
+
         """
         for key, value in self.items():
             print("--|" * indent + f"- {key}:", end="")
             if isinstance(value, Struct):
-                print("")
+                print()
                 value.tree(indent + 1)
             else:
                 print(f" {value}")

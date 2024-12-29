@@ -8,7 +8,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
@@ -38,9 +38,10 @@ def plot_airplane_polars(
 
     Returns:
         tuple[ndarray, Figure]: Array of Axes and Figure
+
     """
     number_of_plots = len(plots) + 1
-
+    DB = Database.get_instance()
     # Divide the plots equally
     sqrt_num = number_of_plots**0.5
     i: int = int(np.ceil(sqrt_num))

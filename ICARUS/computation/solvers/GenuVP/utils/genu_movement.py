@@ -6,9 +6,7 @@ from ICARUS.vehicle.surface import WingSurface
 
 
 class Movement:
-    """
-    Class to specify a generalized Movement as defined in the gnvp3 manual.
-    """
+    """Class to specify a generalized Movement as defined in the gnvp3 manual."""
 
     def __init__(
         self,
@@ -16,8 +14,7 @@ class Movement:
         rotation: dict[str, Any],
         translation: dict[str, Any],
     ) -> None:
-        """
-        Initialize the Movement Class
+        """Initialize the Movement Class
 
         Args:
             name (str): Name of the Movement
@@ -35,6 +32,7 @@ class Movement:
                                         4) t2: float \
                                         5) a1: float \
                                         6) a2: float \
+
         """
         self.name: str = name
         self.rotation_type: int = rotation["type"]
@@ -59,8 +57,7 @@ class Movement:
 
 
 def distrubance2movement(disturbance: Disturbance) -> Movement:
-    """
-    Converts a disturbance to a movement
+    """Converts a disturbance to a movement
 
     Args:
         disturbance (Disturbance): Disturbance Object
@@ -70,6 +67,7 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
 
     Returns:
         Movement: Movement Object
+
     """
     if disturbance.type == "Derivative":
         t1: float = -1
@@ -120,8 +118,7 @@ def define_movements(
     orientation: FloatArray | list[float],
     disturbances: list[Disturbance] = [],
 ) -> list[list[Movement]]:
-    """
-    Define Movements for the surfaces.
+    """Define Movements for the surfaces.
 
     Args:
         surfaces (list[Wing]): List of Wing Objects
@@ -131,6 +128,7 @@ def define_movements(
 
     Returns:
         list[list[Movement]]: A list of movements for each surface of the plane so that the center of gravity is at the origin.
+
     """
     movement: list[list[Movement]] = []
     all_axes = ("pitch", "roll", "yaw")

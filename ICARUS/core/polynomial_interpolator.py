@@ -21,9 +21,13 @@ class Polynomial2DInterpolator:
         self.z_mean = jnp.empty(0)
         self.z_std = jnp.empty(0)
 
-    def fit(self, x: Float[Array, "..."], y: Float[Array, "..."], z: Float[Array, "..."]) -> None:
-        """
-        Works in the following way:
+    def fit(
+        self,
+        x: Float[Array, "..."],
+        y: Float[Array, "..."],
+        z: Float[Array, "..."],
+    ) -> None:
+        """Works in the following way:
 
         A = np.array([X*0+1, X, Y, X**2, X**2*Y, X**2*Y**2, Y**2, X*Y**2, X*Y]).T
         B = zp
@@ -38,6 +42,7 @@ class Polynomial2DInterpolator:
             x (Array): x values
             y (Array): y values
             z (Array): z values
+
         """
         # Normalize the input data
         x_mean, x_std = jnp.mean(x), jnp.std(x)
@@ -81,7 +86,11 @@ class Polynomial2DInterpolator:
 
     partial(jax.jit, static_argnums=(0,))
 
-    def __call__(self, x: Float[Array, "..."], y: Float[Array, "..."]) -> Float[Array, "..."]:
+    def __call__(
+        self,
+        x: Float[Array, "..."],
+        y: Float[Array, "..."],
+    ) -> Float[Array, "..."]:
         # If the arrays are scalar convert to 1D arrays
         x = jnp.atleast_1d(x)
         y = jnp.atleast_1d(y)
@@ -96,7 +105,9 @@ class Polynomial2DInterpolator:
         y_dim = y.shape
         # Assert that the dimensions of x and y are the same
         if not x_dim == y_dim:
-            raise ValueError(f"The dimensions of x and y must be equal got x.dim = {x_dim} and y.dim = {y_dim} ")
+            raise ValueError(
+                f"The dimensions of x and y must be equal got x.dim = {x_dim} and y.dim = {y_dim} ",
+            )
 
         # Normalize the input data
         x = (x - self.x_mean) / self.x_std

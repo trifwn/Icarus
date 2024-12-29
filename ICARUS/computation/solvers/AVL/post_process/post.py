@@ -4,8 +4,7 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB3D
+from ICARUS.database import Database
 from ICARUS.database.utils import angle_to_case
 from ICARUS.database.utils import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
@@ -28,21 +27,11 @@ def csplit(input_file: str, pattern: str) -> list[str]:
     return sections
 
 
-# def moving_vars_assignment(plane, state):
-#     RESULTS_DIR = os.path.join(DB3D, plane.directory, "AVL")
-#     file = os.path.join(RESULTS_DIR, f"mov_log.txt")
-#     with open(file, encoding="utf-8") as f:
-#         con = f.readlines()
-#     for surf in plane.surfaces:
-#         surf.moving_surfs["avl_vars"] = []
-
-#         for n in surf.moving_surfs["names"]:
-#             for l in con:
-#                 if l.find(f"->  {n}") != -1:
-#                     surf.moving_surfs["avl_vars"].append(l[2:4])
-
-
-def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray | list[float]) -> DataFrame:
+def collect_avl_polar_forces(
+    plane: Airplane,
+    state: State,
+    angles: FloatArray | list[float],
+) -> DataFrame:
     """POST-PROCESSING OF POLAR RUNS - RETURNS AN ARRAY WITH THE FOLLOWING ORDER OF VECTORS: AOA,CL,CD,CM
 
     Args:
@@ -52,12 +41,13 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
 
     Returns:
         FloatArray: Array with the following order of vectors: AOA,CL,CD,CM
-    """
 
+    """
     AoAs = []
     CLs = []
     CDs = []
     Cms = []
+    DB = Database.get_instance()
     RESULTS_DIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="AVL",
@@ -108,7 +98,8 @@ def collect_avl_polar_forces(plane: Airplane, state: State, angles: FloatArray |
 
 
 def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
-    DYNDIR = os.path.join(DB3D, plane.name, "AVL", "Dynamics")
+    DB = Database.get_instance()
+    DYNDIR = os.path.join(DB.DB3D, plane.name, "AVL", "Dynamics")
     results = []
     # pertrubation_df: DataFrame = DataFrame()
 
@@ -186,7 +177,11 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
     return pertrubation_df
 
 
-def implicit_dynamics_post(plane: Airplane, state: State) -> tuple[list[complex], list[complex]]:
+def implicit_dynamics_post(
+    plane: Airplane,
+    state: State,
+) -> tuple[list[complex], list[complex]]:
+    DB = Database.get_instance()
     DYNAMICS_DIR = DB.vehicles_db.get_case_directory(
         airplane=plane,
         solver="AVL",
@@ -209,12 +204,16 @@ def implicit_dynamics_post(plane: Airplane, state: State) -> tuple[list[complex]
 
         Returns:
             tuple[FloatArray, FloatArray, FloatArray]: Longitudal EigenVector, Lateral EigenVector, Mode
+
         """
         mode = complex(float(lines[index][10:22]), float(lines[index][24:36]))
         long_vecs = np.zeros((4), dtype=complex)
         lat_vecs = np.zeros((4), dtype=complex)
-        for i in range(0, 4):
-            long_vecs[i] = complex(float(lines[index + i + 1][8:18]), float(lines[index + i + 1][19:28]))
+        for i in range(4):
+            long_vecs[i] = complex(
+                float(lines[index + i + 1][8:18]),
+                float(lines[index + i + 1][19:28]),
+            )
 
             lat_vecs[i] = complex(
                 float(lines[index + i + 1][40:50]),

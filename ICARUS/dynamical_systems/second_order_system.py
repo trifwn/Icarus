@@ -13,8 +13,7 @@ from .first_order_system import NonLinearSystem
 
 
 class SecondOrderSystem(DynamicalSystem):
-    """
-    This class is for second order systems of the form:
+    """This class is for second order systems of the form:
     M(u,t) u'' + C(u,t) u' + f_int(u,t) u = f_ext(u,t)
     """
 
@@ -54,7 +53,11 @@ class SecondOrderSystem(DynamicalSystem):
         if isinstance(f_ext, jnp.ndarray):
             if f_ext.shape == () or f_ext.shape == (1,):
                 f_ext = f_ext.reshape(-1, 1)
-            f_ext_fun: Callable[[float, jnp.ndarray], jnp.ndarray] = lambda t, x: f_ext
+
+            def fun(t: float, x: jnp.ndarray) -> jnp.ndarray:
+                return f_ext
+
+            f_ext_fun = jit(fun)
         else:
             f_ext_fun = f_ext
 
@@ -106,8 +109,10 @@ class SecondOrderSystem(DynamicalSystem):
                 a = (f_ext - f_int * u - C * v) / M  # Solve for the acceleration
                 a = a.reshape(-1, 1).squeeze()
                 return jnp.concatenate([v, a], axis=0).squeeze()
-            else:
-                a = jnp.linalg.solve(M, f_ext - f_int @ u - C @ v).squeeze()  # Solve for the acceleration
+            a = jnp.linalg.solve(
+                M,
+                f_ext - f_int @ u - C @ v,
+            ).squeeze()  # Solve for the acceleration
         else:
             raise ValueError("Mass matrix M must be a square matrix")
         return jnp.concatenate([v, a], axis=0).squeeze()

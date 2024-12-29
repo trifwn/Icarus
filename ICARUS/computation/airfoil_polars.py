@@ -14,11 +14,10 @@ def compute_polars(
     trips: tuple[float, float] = (1.0, 1.0),
     aoas: list[float] | FloatArray = np.linspace(-10, 16, 53),
     mach: float = 0.0,
-    solver_name: Literal['Xfoil', 'Foil2Wake', 'OpenFoam'] | str = 'Xfoil',
+    solver_name: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
     repanel: int = 140,
     plot_polars: bool = False,
 ) -> None:
-
     if solver_name == "Xfoil":
         from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 
@@ -99,12 +98,14 @@ def compute_polars(
     solver.print_analysis_options()
 
     # RUN
-    solver.execute(parallel=True)
+    solver.execute(parallel=False)
     # Get polar
     if plot_polars:
         import matplotlib.pyplot as plt
 
-        from ICARUS.database import DB
+        from ICARUS.database import Database
+
+        DB = Database.get_instance()
 
         polar = DB.foils_db.get_polars(airfoil.name.upper())
         fig = polar.plot()

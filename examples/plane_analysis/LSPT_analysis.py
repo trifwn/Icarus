@@ -1,5 +1,4 @@
-"""
-Module to run multiple 3D simulations for different aircrafts sequentially.
+"""Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 
@@ -19,11 +18,17 @@ from ICARUS.core.types import FloatArray
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
+from ICARUS.database import Database
 
 
 def main() -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
+
+    # # DB CONNECTION
+    database_folder = "E:\\Icarus\\Data"
+    # Load the database
+    DB = Database(database_folder)
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -45,7 +50,10 @@ def main() -> None:
         print("--------------------------------------------------")
 
         # # Import Environment
-        EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
+        EARTH_ISA._set_pressure_from_altitude_and_temperature(
+            ALTITUDE[airplane.name],
+            TEMPERATURE[airplane.name],
+        )
         print(EARTH_ISA)
         state = State(
             name="Unstick",

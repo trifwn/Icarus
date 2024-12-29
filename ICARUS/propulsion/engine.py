@@ -69,7 +69,9 @@ class Engine:
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(211)
         cm = plt.get_cmap("gist_rainbow")
-        for count, throtle_lvl in enumerate(np.sort(self.motor["Throttle [%]"].unique())):
+        for count, throtle_lvl in enumerate(
+            np.sort(self.motor["Throttle [%]"].unique()),
+        ):
             throtle_lvl_data = self.motor[self.motor["Throttle [%]"] == throtle_lvl]
             ax.plot(
                 throtle_lvl_data["Airspeed [m/s]"],
@@ -86,7 +88,9 @@ class Engine:
 
         # Add current plot
         ax = fig.add_subplot(212)
-        for count, throtle_lvl in enumerate(np.sort(self.motor["Throttle [%]"].unique())):
+        for count, throtle_lvl in enumerate(
+            np.sort(self.motor["Throttle [%]"].unique()),
+        ):
             throtle_lvl_data = self.motor[self.motor["Throttle [%]"] == throtle_lvl]
             ax.plot(
                 throtle_lvl_data["Airspeed [m/s]"],
@@ -110,7 +114,10 @@ class Engine:
         c = ax.scatter(x=x, y=y, c=z, cmap="viridis")
         fig.colorbar(c, label="Thrust [N]")
         # Plot interpolated surface
-        x_grid, y_grid = jnp.meshgrid(jnp.linspace(min(x), max(x), 100), np.linspace(min(y), max(y), 100))
+        x_grid, y_grid = jnp.meshgrid(
+            jnp.linspace(min(x), max(x), 100),
+            np.linspace(min(y), max(y), 100),
+        )
         z_interp = self.thrust_model(x_grid, y_grid).reshape(x_grid.shape)
 
         CS = ax.contourf(x_grid, y_grid, z_interp, cmap="viridis", alpha=0.5, levels=30)
@@ -131,7 +138,10 @@ class Engine:
         fig.colorbar(c, label="Current [A]")
 
         # Plot interpolated surface
-        x_grid, y_grid = jnp.meshgrid(jnp.linspace(min(x), max(x), 100), jnp.linspace(min(y), max(y), 100))
+        x_grid, y_grid = jnp.meshgrid(
+            jnp.linspace(min(x), max(x), 100),
+            jnp.linspace(min(y), max(y), 100),
+        )
         z_interp = self.current_model(x_grid, y_grid).reshape(x_grid.shape)
         CS = ax.contourf(x_grid, y_grid, z_interp, cmap="viridis", alpha=0.5, levels=30)
         ax.clabel(CS, inline=True, fontsize=10, fmt="%2.2f")

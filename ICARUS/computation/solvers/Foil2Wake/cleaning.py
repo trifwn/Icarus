@@ -4,13 +4,13 @@ from ICARUS.database.database2D import Database_2D
 
 
 def remove_results(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> None:
-    """
-    Removes Simulation results for a given case
+    """Removes Simulation results for a given case
 
     Args:
         CASEDIR (str): Case Directory
         HOMEDIR (str): Home Directory
         angles (list[float]): Angles to remove
+
     """
     try:
         os.chdir(CASEDIR)

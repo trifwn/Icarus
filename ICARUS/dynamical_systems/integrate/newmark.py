@@ -1,7 +1,6 @@
 from functools import partial
 
 import jax.numpy as jnp
-import numpy as np
 from jax import jit
 from jax import lax
 
@@ -52,11 +51,16 @@ class NewmarkIntegrator(Integrator):
         u_new += self.beta * self.dt**2 * a_new
         return u_new, v_new, a_new
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         num_steps = jnp.ceil((tf - t0) / self.dt).astype(int)
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
         trajectory = trajectory.at[0].set(x0)
-        times = jnp.linspace(t0, tf, num_steps + 1)  # type: ignore
+        times = jnp.linspace(t0, tf, num_steps + 1)
 
         # Split function into two parts
         # return self._simulate(trajectory, times, num_steps)
@@ -86,5 +90,10 @@ class NewmarkIntegrator(Integrator):
             return times, trajectory, accelaration
 
         a0 = jnp.zeros_like(x0[: x0.shape[0] // 2]).squeeze()
-        times, trajectory, _ = lax.fori_loop(1, num_steps + 1, body, (times, trajectory, a0))
+        times, trajectory, _ = lax.fori_loop(
+            1,
+            num_steps + 1,
+            body,
+            (times, trajectory, a0),
+        )
         return times, trajectory

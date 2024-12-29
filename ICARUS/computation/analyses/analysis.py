@@ -21,8 +21,7 @@ jsonpickle_numpy.register_handlers()
 
 
 class Analysis:
-    """
-    Analysis Class. Used to define an analysis and store all the necessary information for it.
+    """Analysis Class. Used to define an analysis and store all the necessary information for it.
     The analysis can be run by calling the object. The results can be obtained by calling the get_results function.
 
     Args:
@@ -44,8 +43,7 @@ class Analysis:
         parallel_execute_fun: Callable[..., Any] | None = None,
         unhook: Callable[..., Any] | None = None,
     ) -> None:
-        """
-        Initializes an Analysis object
+        """Initializes an Analysis object
 
         Args:
             solver_name (str): Name of the associated solver
@@ -53,6 +51,7 @@ class Analysis:
             options (list[Options]): Analysis options
             run_function (Callable[..., Any]): Function to run the analysis
             unhook (Callable[...,Any] | None, optional): Function to run after the analysis Mainly for post processing. Defaults to None.
+
         """
         self.solver_name: str = solver_name
         self.name: str = analysis_name
@@ -70,11 +69,11 @@ class Analysis:
             self.unhook = lambda: 0
 
     def __str__(self) -> str:
-        """
-        String representation of the analysis
+        """String representation of the analysis
 
         Returns:
             str: Name and Options of the analysis
+
         """
         string = StringIO()
         string.write(f"Available Options of {self.solver_name} for {self.name}: \n\n")
@@ -98,7 +97,9 @@ class Analysis:
                     value = opt.value
             else:
                 value = "N/A"
-            table.append([opt.name, value, opt.description])  # TODO ADD __REPR__ INSTEAD OF __STR__
+            table.append(
+                [opt.name, value, opt.description],
+            )  # TODO ADD __REPR__ INSTEAD OF __STR__
         string.write(tabulate(table[1:], headers=table[0], tablefmt="github"))
         string.write(
             "\n\nIf there are Multiple Values, or complex datatypes, or N/A you should inspect them sepretly by calling the option name\n",
@@ -107,11 +108,11 @@ class Analysis:
         return string.getvalue()
 
     def check_if_defined(self) -> bool:
-        """
-        Checks if all options have been set.
+        """Checks if all options have been set.
 
         Returns:
             bool: True if all options have been set, False otherwise
+
         """
         flag: bool = True
         for option in self.options.values():
@@ -120,12 +121,16 @@ class Analysis:
                 flag = False
         return flag
 
-    def __call__(self, solver_parameters: list[Parameter] | None, parallel: bool = False) -> Any:
-        """
-        Runs the analysis
+    def __call__(
+        self,
+        solver_parameters: list[Parameter] | None,
+        parallel: bool = False,
+    ) -> Any:
+        """Runs the analysis
 
         Returns:
             Any: Analysis Results as set by the unhook function
+
         """
         if self.check_if_defined():
             kwargs: dict[str, Any] = {option.name: option.value for option in self.options.values()}
@@ -138,29 +143,27 @@ class Analysis:
                     logging.info("Parallel Execution not supported for this analysis")
                 logging.info("Running Serially")
                 res: Any = self.execute(**kwargs, solver_options=solver_options)
+            elif parallel:
+                logging.info("Running Analysis in Parallel")
+                res = self.parallel_execute(**kwargs, solver_options=solver_options)
             else:
-                if parallel:
-                    logging.info("Running Analysis in Parallel")
-                    res = self.parallel_execute(**kwargs, solver_options=solver_options)
-                else:
-                    logging.info("Running Analysis in Serial")
-                    res = self.execute(**kwargs, solver_options=solver_options)
+                logging.info("Running Analysis in Serial")
+                res = self.execute(**kwargs, solver_options=solver_options)
 
             print("Analysis Completed")
             return res
-        else:
-            print(
-                f"Options not set for {self.name} of {self.solver_name}. Here is what was passed:",
-            )
-            print(self)
-            return -1
+        print(
+            f"Options not set for {self.name} of {self.solver_name}. Here is what was passed:",
+        )
+        print(self)
+        return -1
 
     def get_results(self) -> DataFrame | int:
-        """
-        Function to get the results. Calls the unhooks function.
+        """Function to get the results. Calls the unhooks function.
 
         Returns:
             DataFrame | int: Results of the analysis or error code
+
         """
         # print("Getting Results")
         args_needed = list(inspect.signature(self.unhook).parameters.keys())
@@ -174,9 +177,7 @@ class Analysis:
         return encoded
 
     def __lshift__(self, other: dict[str, Any]) -> Analysis:
-        """
-        overloading operator <<
-        """
+        """Overloading operator <<"""
         if not isinstance(other, dict):
             raise TypeError("Can only << a dict")
 
@@ -195,7 +196,13 @@ class Analysis:
 
     def __getstate__(
         self,
-    ) -> tuple[str, str, list[Input], Callable[..., Any], Callable[..., DataFrame | int]]:
+    ) -> tuple[
+        str,
+        str,
+        list[Input],
+        Callable[..., Any],
+        Callable[..., DataFrame | int],
+    ]:
         return (
             self.solver_name,
             self.name,

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from pandas import DataFrame
 
 from ICARUS.flight_dynamics.stability.state_space import LateralStateSpace
-from ICARUS.flight_dynamics.stability.state_space import StateSpace
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics.state import State
@@ -40,16 +39,16 @@ def lateral_stability_finite_differences(
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
 
-        Yf = float(front[f"Fy"].to_numpy())
-        Yb = float(back[f"Fy"].to_numpy())
+        Yf = float(front["Fy"].to_numpy())
+        Yb = float(back["Fy"].to_numpy())
         Y[var] = (Yf - Yb) / de
 
-        Lf = float(front[f"Mx"].to_numpy())
-        Lb = float(back[f"Mx"].to_numpy())
+        Lf = float(front["Mx"].to_numpy())
+        Lb = float(back["Mx"].to_numpy())
         L[var] = (Lf - Lb) / de
 
-        Nf = float(front[f"Mz"].to_numpy())
-        Nb = float(back[f"Mz"].to_numpy())
+        Nf = float(front["Mz"].to_numpy())
+        Nb = float(back["Mz"].to_numpy())
         N[var] = (Nf - Nb) / de
 
     lateral_state_space = LateralStateSpace(state, Y, L, N)

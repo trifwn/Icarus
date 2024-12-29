@@ -7,7 +7,7 @@ from numpy import ndarray
 from pandas import Series
 
 from ICARUS.core.struct import Struct
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
@@ -36,8 +36,8 @@ def plot_airfoil_reynolds(
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
         aoa_bounds (_type_, optional): Angle of Attack Bounds. Defaults to None.
         title (str, optional): Figure Title. Defaults to "Aero Coefficients".
-    """
 
+    """
     # Get the number of plots
     number_of_plots = len(plots) + 1
 
@@ -62,6 +62,7 @@ def plot_airfoil_reynolds(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     # Get the data from the database
+    DB = Database.get_instance()
     data: Struct = DB.foils_db._raw_data
 
     for j, solver in enumerate(solvers):

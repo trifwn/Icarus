@@ -9,8 +9,7 @@ from ICARUS.vehicle.plane import Airplane
 
 
 class Input:
-    """
-    Class that represents options for an analysis. It stores the name, value, description and type of the option
+    """Class that represents options for an analysis. It stores the name, value, description and type of the option
 
     Args:
         name (str): Name of the option.
@@ -20,6 +19,7 @@ class Input:
     Methods:
         __str__(): Returns a string representation of the option.
         __repr__(): Returns a string representation of the option.
+
     """
 
     def __init__(self, name: str, description: str, value_type: Any = None) -> None:

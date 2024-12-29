@@ -20,8 +20,7 @@ def gnvp_strips_3d(
     NBs: list[int],
     category: str = "Wind",
 ) -> DataFrame:
-    """
-    Function to plot the 3D strips of a given airplane.
+    """Function to plot the 3D strips of a given airplane.
 
     Args:
         pln (Airplane): Plane Object
@@ -31,6 +30,7 @@ def gnvp_strips_3d(
 
     Returns:
         DataFrame: DataFrame of the strip data
+
     """
     all_strip_data, body_data = get_strip_data(pln, case, NBs)
     fig: Figure = plt.figure()
@@ -69,8 +69,7 @@ def gnvp_strips_2d(
     NB: int | list[int],
     category: str = "Wind",
 ) -> DataFrame | int:
-    """
-    Plots the 2D strips of a given airplane.
+    """Plots the 2D strips of a given airplane.
 
     Args:
         pln (Airplane): Airplane Object
@@ -80,6 +79,7 @@ def gnvp_strips_2d(
 
     Returns:
         DataFrame | int: Returns the strip data if successful, 0 otherwise
+
     """
     if isinstance(NB, list):
         if len(NB) >= 1:

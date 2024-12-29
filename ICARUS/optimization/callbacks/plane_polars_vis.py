@@ -43,14 +43,13 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
             CD = self.initial_state.polar["CD"].to_numpy()
             Cm = self.initial_state.polar["Cm"].to_numpy()
             cl_over_cd = CL / CD
-        except:
+        except AttributeError:
             aoa = np.array([], dtype=float)
             CL = np.array([], dtype=float)
             CD = np.array([], dtype=float)
             Cm = np.array([], dtype=float)
             cl_over_cd = np.array([], dtype=float)
 
-        #
         axs[0].plot(aoa, CL, label="Initial", color="b", linestyle="--", linewidth=1)
         # Set origin axies lines
         axs[0].axhline(0, color="k", linewidth=0.5)
@@ -103,7 +102,14 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
         axs[2].legend()
         axs[2].grid()
 
-        axs[3].plot(aoa, cl_over_cd, label="Initial", color="b", linestyle="--", linewidth=1)
+        axs[3].plot(
+            aoa,
+            cl_over_cd,
+            label="Initial",
+            color="b",
+            linestyle="--",
+            linewidth=1,
+        )
         axs[3].axhline(0, color="k", linewidth=0.5)
         axs[3].axvline(0, color="k", linewidth=0.5)
         line = Line2D(
@@ -217,10 +223,14 @@ class AirplanePolarOptimizationVisualizer(OptimizationCallback):
             collection = self.collections["CD"]
             collection.set_offsets(np.array([state.trim["AoA"], state.trim["CD"]]))
             collection = self.collections["CL_CD"]
-            collection.set_offsets(np.array([state.trim["AoA"], state.trim["CL"] / state.trim["CD"]]))
+            collection.set_offsets(
+                np.array([state.trim["AoA"], state.trim["CL"] / state.trim["CD"]]),
+            )
             # Add text annotations for state trim velocity and aoa
             if isinstance(self.text, Text):
-                self.text.set_text(f"AoA: {state.trim['AoA']:.2f} with V: {state.trim['U']:.2f}")
+                self.text.set_text(
+                    f"AoA: {state.trim['AoA']:.2f} with V: {state.trim['U']:.2f}",
+                )
             else:
                 self.text = axs[0].text(
                     x=state.trim["AoA"],

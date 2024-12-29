@@ -1,5 +1,3 @@
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -15,11 +13,15 @@ from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd
 from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
 from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
 from ICARUS.computation.solvers.AVL.analyses.polars import process_avl_angles_run
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_3d
-from ICARUS.database import EXTERNAL_DB
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
+from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
+from ICARUS.database.db import Database
+# CHANGE THIS TO YOUR DATABASE FOLDER
+database_folder = "E:\\Icarus\\Data"
+# Load the database
+DB = Database(database_folder)
 plane = hermes("hermes")
 
 env = EARTH_ISA
@@ -32,29 +34,25 @@ angles = np.linspace(-10, 10, 11)
 avl_angle_run(plane, state, solver2D, angles)
 pol_df = process_avl_angles_run(plane, state, angles)
 
-from ICARUS.database import EXTERNAL_DB
 
-XFLR5PLANEDIR: str = os.path.join(EXTERNAL_DB, f"{plane.name}.txt")
-read_polars_3d(XFLR5PLANEDIR, plane.name)
-
-# from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
-# planenames = [plane.name]
-# plot_airplane_polars(
-#     planenames,
-#     solvers=["AVL"],
-#     plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
-#     size=(6, 7),
-# )
-from ICARUS.computation.solvers.XFLR5.dynamic_analysis import xflr_eigs
-
-eig_file = os.path.join(EXTERNAL_DB, "hermes_eig.txt")
-xflr_long, xflr_late = xflr_eigs(eig_file)
+planenames = [plane.name]
+plot_airplane_polars(
+    planenames,
+    solvers=["AVL"],
+    plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
+    size=(6, 7),
+)
 
 avl_dynamic_analysis_implicit(plane=plane, state=state, solver2D=solver2D)
 impl_long, impl_late = process_avl_impl_res(plane, state)
 
 # aoa_trim, u_trim = avldyn.trim_conditions(PLANEDIR, plane)
-unstick = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestream=UINF)
+unstick = State(
+    name="Unstick",
+    airplane=plane,
+    environment=EARTH_ISA,
+    u_freestream=UINF,
+)
 
 unstick.add_polar(
     polar=pol_df,
@@ -99,24 +97,16 @@ else:
 
 unstick.plot_eigenvalues(axs=axs)
 
-x = [ele.real for ele in xflr_late]
-y = [ele.imag for ele in xflr_late]
-axs[0].scatter(x, y, marker="x", label="XFLR LAT", color="k")
-
-x = [ele.real for ele in xflr_long]
-y = [ele.imag for ele in xflr_long]
-axs[1].scatter(x, y, marker="o", label="XFLR LONG", color="k")
-
 x = [ele.real for ele in impl_late]
 y = [ele.imag for ele in impl_late]
-axs[0].scatter(x, y, marker="x", label="IMPL LATE", color="m")
+axs[0].scatter(x, y, marker="x", label="Implicit", color="m")
 
 x = [ele.real for ele in impl_long]
 y = [ele.imag for ele in impl_long]
-axs[1].scatter(x, y, marker="o", label="IMPL LONG", color="m")
+axs[1].scatter(x, y, marker="o", label="Implicit", color="m")
 
+axs[0].set_title("Lateral")
+axs[1].set_title("Longitudinal")
 axs[0].legend()
 axs[1].legend()
-import matplotlib.pyplot as plt
-
 plt.show()

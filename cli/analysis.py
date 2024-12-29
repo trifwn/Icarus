@@ -7,7 +7,6 @@ from cli.options import get_option
 from cli.options import input_options
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.computation.solvers.solver import Solver
-from ICARUS.core.struct import Struct
 from ICARUS.vehicle.plane import Airplane
 
 
@@ -44,7 +43,7 @@ def set_analysis_options(solver: Solver, obj: Airplane | Airfoil) -> None:
 
             answers[option.name] = get_state(obj)
             continue
-        elif option.name == "solver2D":
+        if option.name == "solver2D":
             from cli.airplane_cli import get_2D_polars_solver
 
             answers[option.name] = get_2D_polars_solver()
@@ -64,6 +63,6 @@ def set_analysis_options(solver: Solver, obj: Airplane | Airfoil) -> None:
         print("Options set")
         _ = solver.get_analysis_options(verbose=True)
 
-    except:
+    except Exception:
         print("Unable to set options! Try Again")
         return set_analysis_options(solver, obj)

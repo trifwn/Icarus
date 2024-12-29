@@ -1,5 +1,4 @@
-"""
-Module to run multiple 3D simulations for different aircrafts sequentially.
+"""Module to run multiple 3D simulations for different aircrafts sequentially.
 It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
@@ -12,7 +11,7 @@ from pandas import DataFrame
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
@@ -23,10 +22,13 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
-    from ICARUS.database import EXTERNAL_DB
+    database_folder = "E:\\Icarus\\Data"
+    # Load the database
+    DB = Database(database_folder)
 
-    read_polars_2d(EXTERNAL_DB)
+    from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+
+    read_polars_2d(DB, DB.EXTERNAL_DB)
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -43,26 +45,25 @@ def main() -> None:
 
     # filename: str = "Data/3d_Party/plane_1.xml"
     # airplane = parse_xfl_project(filename)
-    from Planes.e190_cruise import e190_cruise
+    # from Planes.e190_cruise import e190_cruise
+    from Planes.hermes import hermes
 
-    from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-
-    hermes_3: Airplane = e190_cruise(name="E190")
+    hermes_3: Airplane = hermes(name="hermes")
     planes.append(hermes_3)
 
     # planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"E190": 1e-3}
-    maxiter: dict[str, int] = {"E190": 100}
-    UINF: dict[str, float] = {"E190": 20}
-    ALTITUDE: dict[str, int] = {"E190": 0}
+    timestep: dict[str, float] = {"hermes": 1e-3}
+    maxiter: dict[str, int] = {"hermes": 100}
+    UINF: dict[str, float] = {"hermes": 20}
+    ALTITUDE: dict[str, int] = {"hermes": 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"E190": 273 + 15}
+    TEMPERATURE: dict[str, int] = {"hermes": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"E190": True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"E190": False}
+    STATIC_ANALYSIS: dict[str, float] = {"hermes": True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {"hermes": False}
 
     # Get Solver
     GNVP_VERSION = 3
@@ -83,7 +84,10 @@ def main() -> None:
         print("--------------------------------------------------")
 
         # # Import Environment
-        EARTH_ISA._set_pressure_from_altitude_and_temperature(ALTITUDE[airplane.name], TEMPERATURE[airplane.name])
+        EARTH_ISA._set_pressure_from_altitude_and_temperature(
+            ALTITUDE[airplane.name],
+            TEMPERATURE[airplane.name],
+        )
         state = State(
             name="Unstick",
             airplane=airplane,
@@ -91,6 +95,7 @@ def main() -> None:
             u_freestream=UINF[airplane.name],
         )
         print(EARTH_ISA)
+        state.save(f"{DB.DB3D}/{airplane.directory}")
 
         if STATIC_ANALYSIS[airplane.name]:
             # ## AoA Run
@@ -129,7 +134,6 @@ def main() -> None:
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
-            polars: DataFrame | int = gnvp.get_results()
             airplane.save()
 
             from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
@@ -155,7 +159,11 @@ def main() -> None:
             if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
             try:
-                state.add_polar(polar=forces, polar_prefix="GenuVP3 2D", is_dimensional=True)
+                state.add_polar(
+                    polar=forces,
+                    polar_prefix="GenuVP3 2D",
+                    is_dimensional=True,
+                )
                 unstick = state
             except Exception as error:
                 print("Got errro")

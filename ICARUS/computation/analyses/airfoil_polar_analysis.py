@@ -10,9 +10,15 @@ from ICARUS.computation.analyses.input import ListFloatInput
 airfoil_option = AirfoilInput()
 mach_option = FloatInput(name="mach", description="Mach number")
 
-multi_reynolds_option = ListFloatInput(name="reynolds", description="List of Reynold's numbers to run")
+multi_reynolds_option = ListFloatInput(
+    name="reynolds",
+    description="List of Reynold's numbers to run",
+)
 
-reynolds_option = FloatInput(name="reynolds", description="List of Reynold's numbers to run")
+reynolds_option = FloatInput(
+    name="reynolds",
+    description="List of Reynold's numbers to run",
+)
 
 angles = ListFloatInput("angles", "List of angles to run polars")
 

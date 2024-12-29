@@ -2,15 +2,13 @@ from functools import partial
 
 import jax.numpy as jnp
 from jax import jit
-from jax import lax
 
 from ..base_system import DynamicalSystem
 from .base_integrator import Integrator
 
 
 class RK45Integrator(Integrator):
-    """
-    This class implements the Runge-Kutta Fehlberg 4(5) method for solving ODEs
+    """This class implements the Runge-Kutta Fehlberg 4(5) method for solving ODEs
     RK45 is a 5th order method with an embedded 4th order method for error estimation
     """
 
@@ -63,14 +61,24 @@ class RK45Integrator(Integrator):
         # Adjust step size based on error
         delta = 0.84 * (tol / jnp.max(error)) ** 0.25
         delta = jnp.clip(delta, 0.1, 1.1)
-        dt = dt * delta  # type: ignore
+        dt = dt * delta
         return x_4, dt
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         times, trajectory = self._simulate(x0, t0, tf)
         return times, trajectory
 
-    def _simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def _simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.while that integrates the system using the RK45 method and
         # stores the results in the trajectory array
 

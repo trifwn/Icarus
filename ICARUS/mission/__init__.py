@@ -1,5 +1,4 @@
-"""
-=================================
+"""=================================
 ICARUS Mission Modelling Package
 =================================
 
@@ -49,10 +48,10 @@ from . import segment
 from . import trajectory
 
 __all__ = [
-    "mission_analysis",
     "mission",
-    "segment",
-    "trajectory",
+    "mission_analysis",
     "mission_performance",
     "mission_vehicle",
+    "segment",
+    "trajectory",
 ]

@@ -20,8 +20,7 @@ from ICARUS.computation.solvers.Foil2Wake.files_interface import sequential_run
 from ICARUS.computation.solvers.Foil2Wake.post_process.polars import make_polars
 from ICARUS.computation.solvers.Foil2Wake.utils import separate_angles
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import DB2D
+from ICARUS.database import Database
 
 
 def f2w_single_reynolds(
@@ -31,6 +30,7 @@ def f2w_single_reynolds(
     angles: list[float] | FloatArray,
     solver_options: dict[str, Any],
 ) -> None:
+    DB = Database.get_instance()
     HOMEDIR, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
@@ -72,6 +72,7 @@ def run_single_reynolds(
     solver_options: dict[str, Any],
     position: int = 1,
 ) -> None:
+    DB = Database.get_instance()
     HOMEDIR, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
@@ -80,7 +81,12 @@ def run_single_reynolds(
 
     nangles, pangles = separate_angles(angles)
     max_iter: int = solver_options["max_iter"]
-    reyn_str: str = np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(
+    reyn_str: str = np.format_float_scientific(
+        reynolds,
+        sign=False,
+        precision=3,
+        min_digits=3,
+    ).zfill(
         8,
     )
 
@@ -147,6 +153,7 @@ def run_multiple_reynolds_parallel(
     solver_options: dict[str, float],
 ) -> None:
     REYNDIRS: list[str] = []
+    DB = Database.get_instance()
     for reyn in reynolds:
         _, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
             airfoil=airfoil,
@@ -203,7 +210,7 @@ def process_f2w_run(
     reynolds: list[float] | float,
 ) -> dict[str, DataFrame]:
     polars: dict[str, DataFrame] = {}
-
+    DB = Database.get_instance()
     if isinstance(reynolds, float):
         reynolds_list: list[float] = [reynolds]
     elif isinstance(reynolds, list):
@@ -216,15 +223,20 @@ def process_f2w_run(
         )
 
     for reyn in reynolds_list:
-        reynolds_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).replace("+", "")
+        reynolds_str: str = np.format_float_scientific(
+            reyn,
+            sign=False,
+            precision=3,
+            min_digits=3,
+        ).replace("+", "")
 
         CASEDIR: str = os.path.join(
-            DB.foils_db.DATADIR,
+            DB.foils_db.DB2D,
             f"{airfoil.name.upper()}",
             f"Reynolds_{reynolds_str}",
         )
 
         polars[reynolds_str] = make_polars(CASEDIR, DB.HOMEDIR)
-    resutls_folder = os.path.join(DB2D, airfoil.name.upper())
+    resutls_folder = os.path.join(DB.DB2D, airfoil.name.upper())
     DB.foils_db.add_airfoil_data(resutls_folder)
     return polars

@@ -19,6 +19,6 @@ def calc_mach(velocity: float, speed_of_sound: float) -> float:
 
     Returns:
         float: Mach Number of speed
-    """
 
+    """
     return velocity / speed_of_sound

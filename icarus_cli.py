@@ -1,6 +1,4 @@
-"""
-Entry point for the ICARUS CLI.
-"""
+"""Entry point for the ICARUS CLI."""
 
 from cli.cli_home import cli_home
 

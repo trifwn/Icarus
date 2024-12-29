@@ -4,8 +4,7 @@ from typing import Any
 
 
 def tail(f: BufferedReader | IO[Any], lines: int = 20) -> list[bytes]:
-    """
-    Return The last N lines of a file
+    """Return The last N lines of a file
 
     Args:
         f (File): File to tail
@@ -13,6 +12,7 @@ def tail(f: BufferedReader | IO[Any], lines: int = 20) -> list[bytes]:
 
     Returns:
         list[bytes]: Last N lines
+
     """
     total_lines_wanted: int = lines
 

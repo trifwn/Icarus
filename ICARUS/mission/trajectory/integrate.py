@@ -1,5 +1,7 @@
 import jax
 import numpy as np
+from scipy.integrate import RK45
+from scipy.integrate import solve_ivp
 
 from ICARUS.core.types import FloatArray
 from ICARUS.mission.trajectory.trajectory import MissionTrajectory
@@ -31,6 +33,7 @@ def RK4systems(
 
     Returns:
         _type_: _description_
+
     """
     # print("Starting Simulation")
     # print(f"Initial X: {x0}")
@@ -70,15 +73,15 @@ def RK4systems(
         l4, state4 = trajectory.dvdt(ti, xi + k3, vi + l3, state3)
         l4 = dt * l4
 
-        k = (k1 + 2 * k2 + 2 * k3 + k4) / 6
-        l = (l1 + 2 * l2 + 2 * l3 + l4) / 6
+        kk = (k1 + 2 * k2 + 2 * k3 + k4) / 6
+        ll = (l1 + 2 * l2 + 2 * l3 + l4) / 6
 
         # Average the states
         state = (state1 + 2 * state2 + 2 * state3 + state4) / 6
         states.append(state)
 
-        x.append(xi + k)
-        v.append(vi + l)
+        x.append(xi + kk)
+        v.append(vi + ll)
 
         if np.isnan(xi).any() or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any()) or np.isinf(vi).any():
             print(f"Blew UP at step: {i}\tTime {t[i]}")
@@ -102,7 +105,9 @@ def RK4systems(
             success = False
             break
     if success:
-        print(f"Simulation Completed Successfully at time {t[-1]}\tTime {t[i]}Max Distance: {x[-1][0]}")
+        print(
+            f"Simulation Completed Successfully at time {t[-1]}\tTime {t[i]}Max Distance: {x[-1][0]}",
+        )
     else:
         # Return the last valid state
         pass
@@ -118,9 +123,6 @@ def RK4systems(
     return t, np.array(x), np.array(v), states
 
 
-from scipy.integrate import RK45
-
-
 def RK45_scipy_integrator(
     t0: float,
     tend: float,
@@ -134,7 +136,14 @@ def RK45_scipy_integrator(
     x = [np.array([*x0, *v0])]
     t = [t0]
 
-    r = RK45(fun=trajectory.timestep, t0=t0, y0=[*x0, *v0], t_bound=tend, max_step=dt, vectorized=False)
+    r = RK45(
+        fun=trajectory.timestep,
+        t0=t0,
+        y0=[*x0, *v0],
+        t_bound=tend,
+        max_step=dt,
+        vectorized=False,
+    )
     while r.status == "running":
         r.step()
         t.append(r.t)
@@ -145,12 +154,11 @@ def RK45_scipy_integrator(
     positions = xs[:, :2]
     velocities = xs[:, 2:]
 
-    print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
+    print(
+        f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}",
+    )
     print(status)
     return np.array(t), positions, velocities
-
-
-from scipy.integrate import solve_ivp
 
 
 def scipy_ivp_integrator(
@@ -160,10 +168,17 @@ def scipy_ivp_integrator(
     v0: FloatArray,
     trajectory: MissionTrajectory,
 ) -> tuple[FloatArray, FloatArray, FloatArray]:
-
     t = [t0]
-    r = solve_ivp(trajectory.timestep, (t0, tend), [*x0, *v0], t_eval=t, vectorized=False)
+    r = solve_ivp(
+        trajectory.timestep,
+        (t0, tend),
+        [*x0, *v0],
+        t_eval=t,
+        vectorized=False,
+    )
     x = r.y
 
-    print(f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}")
+    print(
+        f"Simulation Completed Successfully at time {t[-1]}       Max Distance: {x[-1][0]}",
+    )
     return np.array(t), x[:, :2], x[:, 2:]

@@ -14,5 +14,10 @@ class Integrator:
     def step(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         raise NotImplementedError

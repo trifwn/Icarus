@@ -6,23 +6,17 @@ from ICARUS.vehicle.plane import Airplane
 
 
 class PlaneGeometryVisualization(OptimizationCallback):
-    """
-    Class to visualize the design variables change during optimization.
-    """
+    """Class to visualize the design variables change during optimization."""
 
     def __init__(
         self,
         plane: Airplane,
     ):
-        """
-        Initialize the class.
-        """
+        """Initialize the class."""
         self.initial_plane = plane
 
     def setup(self) -> None:
-        """
-        Create a 3D plot to visualize the plane geometry.
-        """
+        """Create a 3D plot to visualize the plane geometry."""
         self.fig = plt.figure(figsize=(10, 10))
         self.fig.show()
 
@@ -62,9 +56,7 @@ class PlaneGeometryVisualization(OptimizationCallback):
         self.fig.canvas.flush_events()
 
     def update(self, plane: Airplane) -> None:
-        """
-        Update the visualization.
-        """
+        """Update the visualization."""
         # Update the current plane geometry
         plane.visualize(self.fig, self.current_ax)
         # Update the figure

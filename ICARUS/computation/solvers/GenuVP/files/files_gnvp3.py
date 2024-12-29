@@ -18,14 +18,17 @@ from ICARUS.core.formatting import ff3
 from ICARUS.core.formatting import ff4
 from ICARUS.core.formatting import ff5
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import EXTERNAL_DB
-from ICARUS.database import GenuVP3_exe
+from ICARUS.database import Database
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError
 
 
-def line(value: Any, var_name: str, description: str, file: TextIOWrapper) -> None:
+def line(
+    value: Any,
+    var_name: str,
+    description: str,
+    file: TextIOWrapper | StringIO,
+) -> None:
     # the value should be added on the first 15 columns after that we should have the
     # var_name on the 16 column and then the description on 25 column
     # Depending on the type of value we should use different formatting. We should also
@@ -52,13 +55,12 @@ def line(value: Any, var_name: str, description: str, file: TextIOWrapper) -> No
     file.write(line)
 
 
-def blankline(f: TextIOWrapper) -> None:
+def blankline(f: StringIO | TextIOWrapper) -> None:
     f.write("                                                                <blank>\n")
 
 
 def file_name(input: str, file_ext: str) -> str:
-    """
-    Trim the input to 12 characters so as to be read by fortran
+    """Trim the input to 12 characters so as to be read by fortran
 
     Args:
         input (str): file name
@@ -66,6 +68,7 @@ def file_name(input: str, file_ext: str) -> str:
 
     Returns:
         str: trimmed file name
+
     """
     name_len = 12 - len(file_ext)
     if len(input) > name_len:
@@ -76,10 +79,7 @@ def file_name(input: str, file_ext: str) -> str:
 
 
 def input_file() -> None:
-    """
-    Creates the input file for GNVP3
-    """
-
+    """Creates the input file for GNVP3"""
     fname: str = "input"
     with open(fname, "w", encoding="utf-8") as f:
         f.write("dfile.yours\n")
@@ -101,14 +101,19 @@ def dfile(params: GenuParameters) -> None:
 
     Args:
         params (GenuParameters): An object containing all parameter values
+
     """
     fname: str = "dfile.yours"
     with open(fname, "w", encoding="utf-8") as f:
         line(0, "ISTART", "(=0 for a full run, =1 for a rerun)')", f)
         blankline(f)
         blankline(f)
-        f.write("Three lines follow where text can be included as HEADER of the main OUTPUT file\n")
-        f.write("<------------------  maximum line length  ------------------------------------->\n")
+        f.write(
+            "Three lines follow where text can be included as HEADER of the main OUTPUT file\n",
+        )
+        f.write(
+            "<------------------  maximum line length  ------------------------------------->\n",
+        )
         f.write("SIMULATION---------------------------\n")
         f.write("-------------------------------------\n")
         f.write("-------------------------------------\n")
@@ -169,7 +174,12 @@ def dfile(params: GenuParameters) -> None:
         f.write("\n")
         f.write("b. The TIME parameters\n")
         blankline(f)
-        line(params.maxiter, "NTIMER", "number of the last time step to be performed", f)
+        line(
+            params.maxiter,
+            "NTIMER",
+            "number of the last time step to be performed",
+            f,
+        )
         line(params.timestep, "DT", "time step", f)
         line(0, "IDT", "if IDT=1 then DT is the number of steps per rotation", f)
         line(1, "OMEAGT", "the rotation speed for the definition of the PERIOD", f)
@@ -192,7 +202,12 @@ def dfile(params: GenuParameters) -> None:
             "=0(no action), 1(leading-edge separ. takes place)",
             f,
         )
-        line(params.NTIMEL, "NTIMEL", "time step that leading-edge separation starts", f)
+        line(
+            params.NTIMEL,
+            "NTIMEL",
+            "time step that leading-edge separation starts",
+            f,
+        )
         line(0.0, "AZIMIN", "the initial azimuthal angle", f)
         blankline(f)
         f.write("c. The SOLUTION parameters\n")
@@ -231,7 +246,12 @@ def dfile(params: GenuParameters) -> None:
         line(1, "ADIMT", "the  time  scale used for the non-dimentionalisation", f)
         line(0, "IUINFC", "0(no action), 1(UINF varies)", f)
         line(1, "IAXISUI", "=1,2,3 gives the direction of UINF that varies", f)
-        line(0.00, "TIUINF(1)", "time parameters of the variation   *** 5 periods ***", f)
+        line(
+            0.00,
+            "TIUINF(1)",
+            "time parameters of the variation   *** 5 periods ***",
+            f,
+        )
         line(0.00, "TIUINF(2)", ".shear exponent", f)
         line(0.00, "TIUINF(3)", ".xronos pou arxizei to INWIND", f)
         line(0.00, "TIUINF(4)", ".tower impact factor", f)
@@ -291,7 +311,12 @@ def dfile(params: GenuParameters) -> None:
             f,
         )
         line(params.IDIVVRP, "IDIVVRP", "Parameter for the subdivision of particles", f)
-        line(params.FLENSC, "FLENSC", "Length scale for the subdivision of particles", f)
+        line(
+            params.FLENSC,
+            "FLENSC",
+            "Length scale for the subdivision of particles",
+            f,
+        )
         line(params.NREWAK, "NREWAK", "Parameter for merging of particles", f)
         line(params.NMER, "NMER", "Parameter for merging of particles", f)
         line(params.XREWAK, "XREWAK", "X starting distance of merging", f)
@@ -325,7 +350,9 @@ def dfile(params: GenuParameters) -> None:
             "the data file for the geometry of the configuration",
             f,
         )
-        f.write("                       (See DGEOM-3.frm format file, Subr. INITGEO and\n")
+        f.write(
+            "                       (See DGEOM-3.frm format file, Subr. INITGEO and\n",
+        )
         f.write("                        gnvp-3.txt)\n")
         line(0, "IYNELST", "(1=BEAMDYN,2-ALCYONE,3=GAST)", f)
         f.write("\n")
@@ -341,6 +368,7 @@ def geofile(
     Args:
         movements (list[list[Movement]]): List of Movements for each body
         bd_dicts (GenuSurface): List of Bodies in GenuSurface format
+
     """
     fname = "hermes.geo"
     # with open(fname, "r") as file:
@@ -378,13 +406,13 @@ def geofile(
 
 
 def geo_body_header(data: list[str], body: GenuSurface, NB: int) -> None:
-    """
-    Crates the header of each body in the geo file.
+    """Crates the header of each body in the geo file.
 
     Args:
         data (list[str]): List of string to append to and write to file
         body (GenuSurface): Body in GenuSurface format
         NB (int): Body Number
+
     """
     data.append(f"Body Number   NB = {NB}\n")
     data.append("               <blank>\n")
@@ -405,14 +433,14 @@ def geo_body_header(data: list[str], body: GenuSurface, NB: int) -> None:
 
 
 def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
-    """
-    Add Movement Data to Geo File.
+    """Add Movement Data to Geo File.
 
     Args:
         data (list[str]): Data to append to
         mov (Movement): Movement Object
         i (int): Index of Movement
         NB (int): Body Number
+
     """
     data.append(f"NB={NB}, lev={i}  ( {mov.name} )\n")
     data.append("Rotation\n")
@@ -446,12 +474,12 @@ def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
 
 
 def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
-    """
-    Create Polars CL-CD-Cm files for each airfoil
+    """Create Polars CL-CD-Cm files for each airfoil
 
     Args:
         bodies (list[GenuSurface]): list of bodies in GenuSurface format
         solver (str): preferred solver
+
     """
     for bod in bodies:
         fname: str = f"{bod.cld_fname}"
@@ -464,6 +492,7 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
         REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
         DR_REYNOLDS = np.diff(REYNOLDS_BINS)
         try:
+            DB = Database.get_instance()
             polars: Polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
             reyns_computed = polars.reynolds_nums
 
@@ -503,7 +532,9 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
             ReynoldsNotIncluded,
             FileNotFoundError,
         ):
-            print(f"\tPolar for {bod.airfoil_name} not found in database. Trying to recompute")
+            print(
+                f"\tPolar for {bod.airfoil_name} not found in database. Trying to recompute",
+            )
 
             DB.foils_db.compute_polars(
                 airfoil=DB.get_airfoil(bod.airfoil_name),
@@ -521,9 +552,14 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
         f_io.write("------ Mach number dependence included\n")
         blankline(f_io)
         line(2, "NSPAN", "Number of positions for which CL-CD data are given", f_io)
-        line(len(polars.reynolds_nums), "! NMACH", "Mach numbers for which CL-CD are given", f_io)
-        for _ in range(0, len(polars.reynolds_nums)):
-            f_io.write(f"0.08\n")
+        line(
+            len(polars.reynolds_nums),
+            "! NMACH",
+            "Mach numbers for which CL-CD are given",
+            f_io,
+        )
+        for _ in range(len(polars.reynolds_nums)):
+            f_io.write("0.08\n")
         f_io.write("! Reyn numbers for which CL-CD are given\n")
         for reyn in polars.reynolds_keys:
             f_io.write(f"{reyn.zfill(5)}\n")
@@ -560,17 +596,22 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
     Args:
         bodies (list[GenuSurface]): list of bodies in GenuSurface format
         params (GenuParameters): Genu Parameters object containing all parameters
+
     """
     for bod in bodies:
         fname: str = bod.bld_fname
         with open(fname, "w", encoding="UTF-8") as f:
             f.write(f"INPUT FILE FOR {bod.name}\n")
             f.write("0\n")
-            f.write("IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]\n")
+            f.write(
+                "IFTYP      INDEXFL    NFILFD      [IFTYP=1-->NACA, =2-->Read data from NFILFD]\n",
+            )
 
             # Check Whether to split a symmetric body into two parts
             if not params.Use_Grid:
-                f.write(f'1          {"".join(char for char in bod.airfoil_name if char.isdigit())}\n')
+                f.write(
+                    f'1          {"".join(char for char in bod.airfoil_name if char.isdigit())}\n',
+                )
             else:
                 f.write(
                     f'0          {"".join(char for char in bod.airfoil_name if char.isdigit())}       {bod.name}.WG\n',
@@ -581,25 +622,36 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
                     grid: FloatArray | list[FloatArray] = bod.grid
                     f_wg.write("\n")
                     if isinstance(grid, list):
+                        grid = np.array(grid)
+
+                    if len(np.shape(grid)) == 3:
                         for subgrid in grid:
                             for nstrip in subgrid:
                                 for point in nstrip:
                                     f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
                                 f_wg.write("\n")
-                    else:
+                    elif len(np.shape(grid)) == 2:
                         for n_strip in grid:  # For each strip
                             for m_point in n_strip:  # For each point in the strip
                                 # Grid Coordinates
                                 # f_wg.write(f"{ff4(m_point[0])} {ff4(m_point[1])} {ff4(m_point[2])}\n")
                                 f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
                             f_wg.write("\n")
+                    else:
+                        for point in grid:
+                            f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
+                        f_wg.write("\n")
 
             blankline(f)
-            f.write("IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n")
+            f.write(
+                "IFWRFL     IFWRDS     IFWRWG      [=0, no action, =1, write results]\n",
+            )
             f.write("1          1          1\n")
             blankline(f)
             f.write("NFILFL     NFILDS     NFILWG      [corresponding file names]\n")
-            f.write(f"{file_name(bod.name,'FL')}{file_name(bod.name,'DS')}{file_name(bod.name,'OWG')}\n")
+            f.write(
+                f"{file_name(bod.name,'FL')}{file_name(bod.name,'DS')}{file_name(bod.name,'OWG')}\n",
+            )
             blankline(f)
             f.write("XOO        YOO        ZOO\n")
             f.write(f"{ff4(bod.x_0)} {ff4(bod.y_0)} {ff4(bod.z_0)}\n")
@@ -617,55 +669,103 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             )
             offset: float = round(bod.offset / (bod.y_end - bod.y_0), ndigits=5)
 
-            f.write(f"IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
+            f.write("IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
             f.write(f"1          0           0.         {ff5(bod.y_end - bod.y_0,8)}\n")
             blankline(f)
-            f.write("IEXCH      NFILCH      FCCH(1)    FCCH(2)   FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)\n")
+            f.write(
+                "IEXCH      NFILCH      FCCH(1)    FCCH(2)   FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)\n",
+            )
             f.write(
                 f"4                      {ff4(bod.root_chord)} {ff4(-step)}     0.         0.         0.         0.\n",
             )
             blankline(f)
-            f.write("IEXTW      NFILTW      FCTW(1)    FCTW(2)   FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)\n")
-            f.write(f"4                      0.        0         0.         0.         0.         0.\n")
+            f.write(
+                "IEXTW      NFILTW      FCTW(1)    FCTW(2)   FCTW(3)    FCTW(4)    FCTW(5)    FCTW(6)\n",
+            )
+            f.write(
+                "4                      0.        0         0.         0.         0.         0.\n",
+            )
             blankline(f)
-            f.write(f"IEXXO      NFILXO      FCXO(1)    FCXO(2)   FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)\n")
-            f.write(f"4                      {ff4(0.)} {ff4(offset)}     0.         0.         0.         0.\n")
+            f.write(
+                "IEXXO      NFILXO      FCXO(1)    FCXO(2)   FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)\n",
+            )
+            f.write(
+                f"4                      {ff4(0.)} {ff4(offset)}     0.         0.         0.         0.\n",
+            )
             blankline(f)
-            f.write("IEXZO      NFILZO      FCZO(1)    FCZO(2)   FCZO(3)    FCZO(4)    FCZO(5)    FCZO(6)\n")
-            f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
+            f.write(
+                "IEXZO      NFILZO      FCZO(1)    FCZO(2)   FCZO(3)    FCZO(4)    FCZO(5)    FCZO(6)\n",
+            )
+            f.write(
+                "4                      0.         0.         0.         0.         0.         0.\n",
+            )
             blankline(f)
-            f.write("IEXXS      NFILXS      FCXS(1)    FCXS(2)   FCXS(3)    FCXS(4)    FCXS(5)    FCXS(6)\n")
-            f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
+            f.write(
+                "IEXXS      NFILXS      FCXS(1)    FCXS(2)   FCXS(3)    FCXS(4)    FCXS(5)    FCXS(6)\n",
+            )
+            f.write(
+                "4                      0.         0.         0.         0.         0.         0.\n",
+            )
             blankline(f)
-            f.write("IEXRT      NFILRT      FCRT(1)    FCRT(2)   FCRT(3)    FCRT(4)    FCRT(5)    FCRT(6)\n")
-            f.write(f"4                      0.         0.         0.         0.         0.         0.\n")
+            f.write(
+                "IEXRT      NFILRT      FCRT(1)    FCRT(2)   FCRT(3)    FCRT(4)    FCRT(5)    FCRT(6)\n",
+            )
+            f.write(
+                "4                      0.         0.         0.         0.         0.         0.\n",
+            )
             blankline(f)
 
-            f.write("C  INDEXFL    index of the airfoil (e.g. 4412 for NACA 4-digits airfoil)\n")
-            f.write("C  NFILxx     xx = KS, RC, CH, TH, XO, ZO, RT input file names for the\n")
-            f.write("C                                             corresponding distributions\n")
+            f.write(
+                "C  INDEXFL    index of the airfoil (e.g. 4412 for NACA 4-digits airfoil)\n",
+            )
+            f.write(
+                "C  NFILxx     xx = KS, RC, CH, TH, XO, ZO, RT input file names for the\n",
+            )
+            f.write(
+                "C                                             corresponding distributions\n",
+            )
             f.write("C  IEXxx      parameter defining the type of interpolation\n")
             f.write("C         I)  in s. DISTRB\n")
-            f.write("C             xx distributions (xx=KS for AKSI(.), xx=RC for RC(.))\n")
+            f.write(
+                "C             xx distributions (xx=KS for AKSI(.), xx=RC for RC(.))\n",
+            )
             f.write("C             =1 for linear interpolation\n")
             f.write("C             =2 for sinusoinal interpolation\n")
             f.write("C             =3 for double sinusoidal interpolation\n")
             f.write("C             =5 for reading the disribution of xx from file\n")
             f.write("C                (NNB(xx=KS)/NCW(xx=RC) must be equal to NUPO)\n")
             f.write("C        II)  in s. CATAN\n")
-            f.write("C             xx distributions (xx=CH for CH(.), xx=TW for TW(.),\n")
-            f.write("C                xx=XO for XO(.), xx=ZO for ZO(.), xx=RT for RT(.))\n")
+            f.write(
+                "C             xx distributions (xx=CH for CH(.), xx=TW for TW(.),\n",
+            )
+            f.write(
+                "C                xx=XO for XO(.), xx=ZO for ZO(.), xx=RT for RT(.))\n",
+            )
             f.write("C             =4 for polynomial interpolation\n")
-            f.write("C             =5 for reading the disributions of xx and DxxDR from file\n")
+            f.write(
+                "C             =5 for reading the disributions of xx and DxxDR from file\n",
+            )
             f.write("C                (NCW must be equal to NUPO)\n")
-            f.write("C             =6 for reading the disributions of xx and DxxDR from file\n")
+            f.write(
+                "C             =6 for reading the disributions of xx and DxxDR from file\n",
+            )
             f.write("C                and interpolate both according RC(.)\n")
-            f.write("C             =7 for reading the disribution ONLY of xx from file and\n")
-            f.write("C                calculate DxxDR using 2nd order finite differences\n")
+            f.write(
+                "C             =7 for reading the disribution ONLY of xx from file and\n",
+            )
+            f.write(
+                "C                calculate DxxDR using 2nd order finite differences\n",
+            )
             f.write("C                schemes. (NCW must be equal to NUPO)\n")
-            f.write("C             =8 for reading the disribution ONLY of xx from file,\n")
-            f.write("C                interpolate according RC(.) and  calculate DxxDR using\n")
-            f.write("C                2nd order finite differences shemes according RC(.)\n")
+            f.write(
+                "C             =8 for reading the disribution ONLY of xx from file,\n",
+            )
+            f.write(
+                "C                interpolate according RC(.) and  calculate DxxDR using\n",
+            )
+            f.write(
+                "C                2nd order finite differences shemes according RC(.)\n",
+            )
             f.write("C  NUPOxx     number of data pairs for the distributions:\n")
             f.write("C             AKSI(.), RC(.), CH(.), TW(.), XO(.), ZO(.), RT(.)\n")
             f.write("C             NUPOxx is read from the 2nd line of file  NFILxx\n")
@@ -673,9 +773,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
 
 
 def hybrid_wake() -> None:
-    """
-    Creates the hybrid wake file for GNVP3
-    """
+    """Creates the hybrid wake file for GNVP3"""
     fname: str = "hyb.inf"
     with open(fname, "w", encoding="utf-8") as f:
         f.write("Data for the Hybrid wake calculations \n")
@@ -693,7 +791,8 @@ def make_input_files(
     params: GenuParameters,
     solver: str,
 ) -> None:
-    read_polars_2d(EXTERNAL_DB)
+    DB = Database.get_instance()
+    read_polars_2d(DB, DB.EXTERNAL_DB)
     os.chdir(ANGLEDIR)
 
     # Input File
@@ -708,15 +807,6 @@ def make_input_files(
     bldFiles(bodies, params)
     # CLD FILES
     cldFiles(bodies, params, solver)
-    if "gnvp3" not in next(os.walk("."))[2]:
-        src: str = GenuVP3_exe
-        dst: str = os.path.join(ANGLEDIR, "gnvp3")
-        try:
-            os.symlink(src, dst)
-        except OSError:
-            import shutil
-
-            shutil.copy(src, dst)
     os.chdir(HOMEDIR)
 
 
@@ -726,6 +816,7 @@ def remove_results(CASEDIR: str, HOMEDIR: str) -> None:
     Args:
         CASEDIR (str): _description_
         HOMEDIR (str): _description_
+
     """
     os.chdir(CASEDIR)
     os.remove("strip*")

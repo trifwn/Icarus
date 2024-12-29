@@ -35,7 +35,9 @@ def serial_monitor(
             progress_bars[position].desc = f"\t\t{reyn_str}-{name}-{angle} Progress"
 
         if error:
-            progress_bars[position].write(f"Analysis encountered Error at {reyn_str} {angle}")
+            progress_bars[position].write(
+                f"Analysis encountered Error at {reyn_str} {angle}",
+            )
             break
 
         if time is None:
@@ -73,7 +75,12 @@ def parallel_monitor(
 
     with ThreadPoolExecutor(max_workers=min(2 * len(reynolds), CPU_TO_USE)) as executor:
         for i, reyn in enumerate(reynolds):
-            reyn_str: str = np.format_float_scientific(reyn, sign=False, precision=3, min_digits=3).zfill(8)
+            reyn_str: str = np.format_float_scientific(
+                reyn,
+                sign=False,
+                precision=3,
+                min_digits=3,
+            ).zfill(8)
             for j, name in enumerate(["pos", "neg"]):
                 pbar = tqdm(
                     total=max_iter,

@@ -7,11 +7,11 @@ from jaxtyping import Float
 
 def CubicSpline_factory(
     x: Float[Array, "..."],
-    y: Float[Array, "{x.shape}"],
+    y: Float[Array, "..."],
 ) -> Callable[[Float[Array, "..."]], Float[Array, "..."]]:
     cs = interpax_CubicSpline(x, y, check=False)
 
-    def spline(x: Float[Array, "..."]) -> Float[Array, "{x.shape}"]:
+    def spline(x: Float[Array, "..."]) -> Float[Array, "..."]:
         return cs(x)
 
     return spline

@@ -13,8 +13,7 @@ from ICARUS.flight_dynamics.state import State
 
 
 def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
-    """
-    Convert the forces to polars and return a dataframe with them.
+    """Convert the forces to polars and return a dataframe with them.
 
     Args:
         CASEDIR (str): Case Directory
@@ -23,9 +22,10 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
 
     Returns:
         DataFrame: Resulting Polars
+
     """
     GNVPDIR = os.path.join(CASEDIR, f"GenuVP{gnvp_version}")
-    print(f"CASEDIR ")
+    print("CASEDIR ")
     os.chdir(GNVPDIR)
 
     folders: list[str] = next(os.walk("."))[1]
@@ -62,7 +62,12 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
     return df
 
 
-def forces_to_pertrubation_results(DYNDIR: str, HOMEDIR: str, state: State, gnvp_version: int) -> DataFrame:
+def forces_to_pertrubation_results(
+    DYNDIR: str,
+    HOMEDIR: str,
+    state: State,
+    gnvp_version: int,
+) -> DataFrame:
     os.chdir(DYNDIR)
     folders: list[str] = next(os.walk("."))[1]
     print("Logging Pertrubations")

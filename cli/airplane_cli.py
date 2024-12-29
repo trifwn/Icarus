@@ -1,11 +1,11 @@
-"""
-ICARUS CLI for Airplane Analysis
+"""ICARUS CLI for Airplane Analysis
 
 Raises:
     NotImplementedError: _description_
 
 Returns:
     None: None
+
 """
 
 import time
@@ -27,7 +27,7 @@ from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 from ICARUS.core.struct import Struct
-from ICARUS.database import DB
+from ICARUS.database.db import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
@@ -72,33 +72,32 @@ def get_airplane_file(load_from: str) -> Airplane:
     if answers is None:
         print("Exited by User")
         exit()
-    else:
-        if load_from == "xflr5":
-            plane: Airplane = parse_xfl_project(answers["airplane_file"])
-            return plane
-        elif load_from == "avl":
-            print("Not implemented yet")
-            raise NotImplementedError
-            # plane: Airplane = parse_avl_project(answers["airf_file"])
-        elif load_from == "json":
-            try:
-                with open(answers["airplane_file"], encoding="UTF-8") as f:
-                    json_obj: str = f.read()
-                    try:
-                        plane: Airplane = jsonpickle.decode(json_obj)  # type: ignore
-                        return plane
-                    except Exception as error:
-                        print(f"Error decoding Plane object! Got error {error}")
-                        return get_airplane_file(load_from)
-            except FileNotFoundError:
-                print(f"File {answers['airplane_file']} not found")
-                return get_airplane_file(load_from)
-        else:
-            print("Error")
+    elif load_from == "xflr5":
+        plane: Airplane = parse_xfl_project(answers["airplane_file"])
+        return plane
+    elif load_from == "avl":
+        print("Not implemented yet")
+        raise NotImplementedError
+        # plane: Airplane = parse_avl_project(answers["airf_file"])
+    elif load_from == "json":
+        try:
+            with open(answers["airplane_file"], encoding="UTF-8") as f:
+                json_obj: str = f.read()
+                try:
+                    plane: Airplane = jsonpickle.decode(json_obj)  # type: ignore
+                    return plane
+                except Exception as error:
+                    print(f"Error decoding Plane object! Got error {error}")
+                    return get_airplane_file(load_from)
+        except FileNotFoundError:
+            print(f"File {answers['airplane_file']} not found")
             return get_airplane_file(load_from)
+    else:
+        print("Error")
+        return get_airplane_file(load_from)
 
 
-def get_airplane_db() -> Airplane:
+def get_airplane_db(DB: Database) -> Airplane:
     planes: list[str] = DB.vehicles_db.get_planenames()
     airplane_question: list[List] = [
         List(
@@ -117,10 +116,10 @@ def get_airplane_db() -> Airplane:
         return airplane
     except Exception as e:
         print(e)
-        return get_airplane_db()
+        return get_airplane_db(DB)
 
 
-def select_airplane_source() -> Airplane:
+def select_airplane_source(DB: Database) -> Airplane:
     airplane_source_question: list[List] = [
         List(
             "airplane_source",
@@ -140,20 +139,18 @@ def select_airplane_source() -> Airplane:
         exit()
     if answer["airplane_source"] == "File":
         return get_airplane_file(load_from="json")
-    elif answer["airplane_source"] == "Database":
-        return get_airplane_db()
-    elif answer["airplane_source"] == "Load from XFLR5":
+    if answer["airplane_source"] == "Database":
+        return get_airplane_db(DB)
+    if answer["airplane_source"] == "Load from XFLR5":
         return get_airplane_file(load_from="xflr5")
-    elif answer["airplane_source"] == "Load from AVL":
+    if answer["airplane_source"] == "Load from AVL":
         return get_airplane_file(load_from="avl")
-    else:
-        print("Error")
-        return select_airplane_source()
+    print("Error")
+    return select_airplane_source(DB)
 
 
 def set_environment_options(earth: Environment) -> Environment:
-    """
-    Function to set the options for the environment. It first displays the
+    """Function to set the options for the environment. It first displays the
     environment options and then asks the user if he wants to change any of
     them. The user can set the values manually or he can use the built in
     functions to define them from the altitude
@@ -163,6 +160,7 @@ def set_environment_options(earth: Environment) -> Environment:
 
     Returns:
         Environment: environment to use
+
     """
     print("########################################################################")
     print("Environment:")
@@ -264,9 +262,8 @@ def get_state(airplane: Airplane) -> State:
             airplane=airplane,
             u_freestream=uinf,
         )
-    else:
-        print("Error")
-        return get_state(airplane)
+    print("Error")
+    return get_state(airplane)
 
 
 def get_2D_polars_solver() -> str:
@@ -283,11 +280,11 @@ def get_2D_polars_solver() -> str:
         exit()
     if answer["solver"] == "Xfoil":
         return "Xfoil"
-    elif answer["solver"] == "Foil2Wake":
+    if answer["solver"] == "Foil2Wake":
         return "Foil2Wake"
-    elif answer["solver"] == "XFLR":
+    if answer["solver"] == "XFLR":
         return "XFLR"
-    elif answer["solver"] == "Use-All-Hierarchical":
+    if answer["solver"] == "Use-All-Hierarchical":
         print("We will interpolate the 2D polars from all solvers in the Database.")
         print("You must specify the order of preference of the solvers. A solver with")
         print("a lower number will have a higher priority. For example if you specify")
@@ -309,7 +306,9 @@ def get_2D_polars_solver() -> str:
             print("Exited by User")
             exit()
 
-        print("This is not fully implemented yet, so we will just use the first priority solver")
+        print(
+            "This is not fully implemented yet, so we will just use the first priority solver",
+        )
 
         # rank solvers by priority
         solver_ranking: dict[str, float] = {}
@@ -320,9 +319,8 @@ def get_2D_polars_solver() -> str:
         # return the first solver
         return list(solver_ranking.keys())[0]
 
-    else:
-        print("Error")
-        return get_2D_polars_solver()
+    print("Error")
+    return get_2D_polars_solver()
 
 
 def set_solver_parameters(solver: Solver) -> None:
@@ -352,12 +350,12 @@ def set_solver_parameters(solver: Solver) -> None:
             exit()
         try:
             solver.set_solver_parameters(answer)
-        except:
+        except Exception:
             print("Unable to set parameters! Try Again")
             return set_solver_parameters(solver)
 
 
-def airplane_cli(return_home: bool = False) -> None:
+def airplane_cli(DB: Database, return_home: bool = False) -> None:
     """2D CLI"""
     start_time: float = time.time()
 
@@ -379,7 +377,7 @@ def airplane_cli(return_home: bool = False) -> None:
 
     for i in range(N):
         print("\n")
-        vehicle: Airplane = select_airplane_source()
+        vehicle: Airplane = select_airplane_source(DB)
         airplanes.append(vehicle)
 
         select_solver_quest: list[Checkbox] = [
@@ -500,4 +498,4 @@ def airplane_cli(return_home: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    airplane_cli()
+    airplane_cli(DB=Database("./Data"))

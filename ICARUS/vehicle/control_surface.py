@@ -20,9 +20,7 @@ def default_chord_function_factory(
 
 
 class ControlSurface:
-    """
-    Class to represent aerodynamic control surfaces e.g. elevator, rudder, flaps etc.
-    """
+    """Class to represent aerodynamic control surfaces e.g. elevator, rudder, flaps etc."""
 
     def __init__(
         self,
@@ -36,8 +34,7 @@ class ControlSurface:
         inverse_symmetric: bool = False,
         constant_chord: float = 0,
     ) -> None:
-        """
-        Initialize the control surface object.
+        """Initialize the control surface object.
 
         Args:
             name (str): Name of the control surface.
@@ -47,6 +44,7 @@ class ControlSurface:
             chord_extension (float, optional): Chord extension of the control surface. Defaults to 1.0.
             local_rotation_axis (FloatArray): Local rotation axis of the control surface. Defaults to np.array([0.0, 1.0, 0.0]) which is the y-axis.
             chord_function (Callable[[float], float] | None, optional): Function to calculate the chord length. Defaults to None.
+
         """
         self.name = name
         self.type = ControlType.AIRFOIL

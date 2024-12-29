@@ -19,7 +19,12 @@ class ForwardEulerIntegrator(Integrator):
     def step(self, t: float, x: jnp.ndarray) -> jnp.ndarray:
         return x + self.dt * self.system(t, x)
 
-    def simulate(self, x0: jnp.ndarray, t0: float, tf: float) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def simulate(
+        self,
+        x0: jnp.ndarray,
+        t0: float,
+        tf: float,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         # If the number of steps is not an integer, we will use the ceil function to round up to the nearest integer
         num_steps = jnp.ceil((tf - t0) / self.dt).squeeze().astype(int)
 
@@ -27,16 +32,24 @@ class ForwardEulerIntegrator(Integrator):
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
         trajectory = trajectory.at[0].set(x0)
 
-        times = jnp.linspace(start=t0, stop=tf, num=num_steps + 1)  # type: ignore
+        times = jnp.linspace(t0, tf, num_steps + 1, endpoint=True)
         times, trajectory = self._simulate(trajectory, times, num_steps)
 
         return times, trajectory
 
     @partial(jit, static_argnums=(0,))
-    def _simulate(self, trajectory: jnp.ndarray, times: jnp.ndarray, num_steps: int) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def _simulate(
+        self,
+        trajectory: jnp.ndarray,
+        times: jnp.ndarray,
+        num_steps: int,
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         # Create a loop using lax.fori_loop that integrates the system using the forward Euler method and
         # stores the results in the trajectory array
-        def body(i: int, args: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
+        def body(
+            i: int,
+            args: tuple[jnp.ndarray, jnp.ndarray],
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
             times, trajectory = args
             x = trajectory[i - 1]
             t = times[i - 1]

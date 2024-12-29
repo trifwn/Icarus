@@ -56,6 +56,7 @@ class Airplane_Dynamics_Optimizer(Airplane_Optimizer):
     def run_all_callbacks(self, intermediate_result: OptimizeResult) -> None:
         # Run Callbacks
         for callback in self.callback_list:
+            print(f"Running {callback} callback")
             callback.update(
                 plane=self.current_obj,
                 state=self.state,

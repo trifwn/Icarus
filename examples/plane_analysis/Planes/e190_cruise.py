@@ -3,20 +3,16 @@
 import numpy as np
 
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
-from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
-from ICARUS.database import EXTERNAL_DB
+from ICARUS.database import Database
 from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.plane import Airplane
-from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
 
 def e190_cruise(name: str) -> Airplane:
-    """
-    Function to get the embraer e190 plane.
+    """Function to get the embraer e190 plane.
     Consisting of the main wing, elevator rudder and masses as constructed.
 
     Args:
@@ -24,9 +20,10 @@ def e190_cruise(name: str) -> Airplane:
 
     Returns:
         Airplane: hermes Airplane object
+
     """
-    read_polars_2d(EXTERNAL_DB)
-    airfoils: Struct = DB.foils_db.airfoils
+    DB = Database("./Data")
+    read_polars_2d(DB, DB.EXTERNAL_DB)
 
     from ICARUS.airfoils.airfoil import Airfoil
 

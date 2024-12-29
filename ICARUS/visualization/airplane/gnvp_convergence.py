@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.figure import Figure
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database import DB
+from ICARUS.database import Database
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
@@ -24,7 +24,9 @@ def plot_convergence(
         solvers (list[str], optional): Solvers to show. Defaults to ["All"].
         plot_error (bool, optional): Wheter to plot the relative error or not. Defaults to True.
         size (tuple[int,int], optional): Size of the figure. Defaults to (10, 10).
+
     """
+    DB = Database.get_instance()
     data = DB.vehicles_db.convergence_data
 
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
@@ -109,12 +111,60 @@ def plot_convergence(
                 m = markers[i].get_marker()
 
                 label: str = f"{plane} - {solver} - {ang_num}"
-                axs[0, 0].plot(it, fx, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
-                axs[0, 1].plot(it, fy, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
-                axs[0, 2].plot(it, fz, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
-                axs[1, 0].plot(it, mx, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
-                axs[1, 1].plot(it, my, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
-                axs[1, 2].plot(it, mz, color=c, marker=m, label=label, markersize=2.0, linewidth=1)
+                axs[0, 0].plot(
+                    it,
+                    fx,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
+                )
+                axs[0, 1].plot(
+                    it,
+                    fy,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
+                )
+                axs[0, 2].plot(
+                    it,
+                    fz,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
+                )
+                axs[1, 0].plot(
+                    it,
+                    mx,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
+                )
+                axs[1, 1].plot(
+                    it,
+                    my,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
+                )
+                axs[1, 2].plot(
+                    it,
+                    mz,
+                    color=c,
+                    marker=m,
+                    label=label,
+                    markersize=2.0,
+                    linewidth=1,
+                )
 
                 axs[2, 0].plot(
                     it2,

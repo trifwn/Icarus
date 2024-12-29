@@ -15,8 +15,7 @@ def far_2_failed_approach(
     e: float,
     wing_loading: FloatArray,
 ) -> tuple[FloatArray, FloatArray]:
-    """
-    Returns the thrust loading for a given number of engines, cl_max, cd, AR and e
+    """Returns the thrust loading for a given number of engines, cl_max, cd, AR and e
 
     Args:
         no_of_engines (int): Number of engines
@@ -29,6 +28,7 @@ def far_2_failed_approach(
 
     Returns:
         tuple: Wing Loading, Thrust loading
+
     """
     N = no_of_engines
 

@@ -7,7 +7,9 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 
 
-def flatten_axes(_axs: list[Axes] | ndarray[Any, Any] | Axes | SubplotBase) -> list[Axes]:
+def flatten_axes(
+    _axs: list[Axes] | ndarray[Any, Any] | Axes | SubplotBase,
+) -> list[Axes]:
     if isinstance(_axs, ndarray):
         axs: list[Axes] = _axs.flatten().tolist()
     elif isinstance(_axs, Axes):
@@ -20,13 +22,13 @@ def flatten_axes(_axs: list[Axes] | ndarray[Any, Any] | Axes | SubplotBase) -> l
 
 
 def create_subplots(
-    nrows=1,
-    ncols=1,
-    sharex=False,
-    sharey=False,
-    squeeze=True,
-    subplot_kw=None,
-    gridspec_kw=None,
+    nrows: int = 1,
+    ncols: int = 1,
+    sharex: bool = False,
+    sharey: bool = False,
+    squeeze: bool = True,
+    subplot_kw: dict[str, Any] | None = None,
+    gridspec_kw: dict[str, Any] | None = None,
 ) -> tuple[Figure, list[Axes]]:
     fig = plt.figure()
     _axs = fig.subplots(
