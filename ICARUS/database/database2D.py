@@ -16,6 +16,7 @@ from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.airfoils.airfoil_polars import AirfoilData
 from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.core.struct import Struct
+from ICARUS.airfoils.airfoil_polars import PolarNotAccurate, ReynoldsNotIncluded
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -152,7 +153,7 @@ class Database_2D:
         airfoil_data: AirfoilData = self.polars[airfoil_name.upper()]
         polar = airfoil_data.get_polars(solver=solver)
         return polar
-    
+
     def get_airfoil_data(self, airfoil_name: str) -> AirfoilData:
         """Returns the solvers available for a given airfoil.
 
@@ -211,6 +212,78 @@ class Database_2D:
             repanel=110,
             trips=trips,
         )
+
+    def find_or_compute_polars(
+        self,
+        airfoil: Airfoil,
+        reynolds: float,
+        aoa: list[float] | FloatArray,
+        solver_name: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
+        REYNOLDS_BINS: list[float] | FloatArray = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8],
+    ) -> Polars:
+        NUM_BINS = len(REYNOLDS_BINS)
+        try:
+            polars = self.get_polars(airfoil.name, solver=solver_name)
+            reyns_computed = polars.reynolds_nums
+
+            # Check if the reynolds number is within the range of the computed polars
+            # To be within the range of the computed polars the reynolds number must be
+            # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]
+            # If the reynolds number is not within the range of the computed polars, the polar is recomputed
+
+            # Find the bin corresponding to the each computed reynolds number
+            reyns_bin = int(np.digitize(reynolds, REYNOLDS_BINS, right = True))
+            reyns_bin = max(reyns_bin, 1)
+            reyns_bin = min(reyns_bin, NUM_BINS - 1)
+            
+            reynolds_found = False
+            DR_REYNOLDS = np.diff(REYNOLDS_BINS)
+            if not (reyns_bin == 0 or reyns_bin == NUM_BINS):
+                tolerance = DR_REYNOLDS[reyns_bin] / 2
+                for computed_reyn in reyns_computed:
+                    if abs(computed_reyn - reynolds) < tolerance:
+                        reynolds_found = True
+                
+            if not reynolds_found:
+                self.compute_polars(
+                    airfoil=airfoil,
+                    solver_name=solver_name,
+                    reynolds=[REYNOLDS_BINS[reyns_bin - 1], REYNOLDS_BINS[reyns_bin]],
+                    angles=aoa,
+                    trips=(1.0, 1.0),
+                )
+            return self.get_polars(airfoil.name, solver=solver_name)
+        except (
+            PolarsNotFoundError,
+            AirfoilNotFoundError,
+            PolarNotAccurate,
+            ReynoldsNotIncluded,
+            FileNotFoundError,
+        ):
+            print(
+                f"\tPolar for {airfoil.name} not found in database. Trying to recompute with stricter trip conditions..."
+            )
+            self.compute_polars(
+                airfoil=airfoil,
+                solver_name=solver_name,
+                reynolds=[reynolds],
+                angles=aoa,
+                trips=(0.3, 0.3),
+            )
+            try:
+                return self.get_polars(airfoil.name, solver=solver_name)
+            except PolarsNotFoundError:
+                print(
+                    f"\tPolar for {airfoil.name} not found in database. Trying to recompute with even stricter trip conditions..."
+                )
+                self.compute_polars(
+                    airfoil=airfoil,
+                    solver_name=solver_name,
+                    reynolds=[reynolds],
+                    angles=aoa,
+                    trips=(0.01, 0.1),
+                )
+                return self.get_polars(airfoil.name, solver=solver_name)
 
     def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
         """Returns the data object from the database.

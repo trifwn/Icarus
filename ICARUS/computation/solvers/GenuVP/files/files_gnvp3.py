@@ -485,72 +485,22 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
         fname: str = f"{bod.cld_fname}"
 
         # Get the airfoil polar
-        reynolds = bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc
+        reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
         RE_MIN = 8e4
-        RE_MAX = 4.5e6
+        RE_MAX = 1e7
         NUM_BINS = 12
         REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
-        DR_REYNOLDS = np.diff(REYNOLDS_BINS)
         try:
             DB = Database.get_instance()
-            polars: Polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
-            reyns_computed = polars.reynolds_nums
-
-            # print("We have computed polars for the following reynolds numbers:")
-            # print(reyns_computed)
-            # print(f"Reynolds number for this strip: {reynolds}")
-
-            # Check if the reynolds number is within the range of the computed polars
-            # To be within the range of the computed polars the reynolds number must be
-            # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]
-            # If the reynolds number is not within the range of the computed polars, the polar is recomputed
-
-            # Find the bin corresponding to the each computed reynolds number
-            reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 2
-            if reyns_bin > NUM_BINS - 2:
-                reyns_bin = NUM_BINS - 2
-            if reyns_bin < 0:
-                reyns_bin = 0
-            
-            # print(REYNOLDS_BINS)
-            # print(f"Reynolds bin: {reyns_bin}")
-            cond = False
-            for i, reyns in enumerate(reyns_computed):
-                if reyns - DR_REYNOLDS[reyns_bin] < reynolds < reyns + DR_REYNOLDS[reyns_bin]:
-                    cond = True
-                    # print(f"\tReynolds number {reynolds} is within the range of the computed polars")
-                    # print(f"   Reynolds number: {reyns} +/- {DR_REYNOLDS[reyns_bin]}")
-                    break
-
-            if not cond:
-                DB.foils_db.compute_polars(
-                    airfoil=DB.get_airfoil(bod.airfoil_name),
-                    solver_name=solver,
-                    reynolds=[float(reynolds)],
-                    angles=np.linspace(-8, 20, 29),
-                )
-                polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
-        except (
-            PolarsNotFoundError,
-            AirfoilNotFoundError,
-            PolarNotAccurate,
-            ReynoldsNotIncluded,
-            FileNotFoundError,
-        ):
-            print(
-                f"\tPolar for {bod.airfoil_name} not found in database. Trying to recompute",
+            polars: Polars = DB.foils_db.find_or_compute_polars(
+                airfoil= DB.get_airfoil(bod.airfoil_name),
+                reynolds= reynolds,
+                solver_name= solver,
+                aoa= np.linspace(-10, 16, 53),
+                REYNOLDS_BINS= REYNOLDS_BINS,
             )
-
-            DB.foils_db.compute_polars(
-                airfoil=DB.get_airfoil(bod.airfoil_name),
-                solver_name=solver,
-                reynolds=REYNOLDS_BINS,
-                angles=np.linspace(-10, 16, 53),
-            )
-            try:
-                polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
-            except PolarsNotFoundError:
-                raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
+        except PolarsNotFoundError:
+            raise ValueError(f"Airfoil Polars for {bod.airfoil_name} not found in the database and could not be computed. Please compute the polars first.")
 
         f_io = StringIO()
         f_io.write(f"------ CL and CD data input file for {bod.airfoil_name}\n")

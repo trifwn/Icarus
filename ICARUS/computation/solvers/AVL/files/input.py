@@ -288,50 +288,20 @@ def avl_geo(
                 # Calculate average reynolds number
                 reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
                 # Get the airfoil polar
+
+                RE_MIN = 8e4
+                RE_MAX = 1e7
+                NUM_BINS = 12
+                REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
                 try:
                     DB = Database.get_instance()
-                    polar_obj: Polars = DB.foils_db.get_polars(
-                        strip_airfoil.name,
-                        solver=solver2D,
+                    polar_obj: Polars = DB.foils_db.find_or_compute_polars(
+                        airfoil=strip_airfoil,
+                        reynolds= reynolds,
+                        solver_name= solver2D,
+                        aoa= np.linspace(-10, 16, 53),
+                        REYNOLDS_BINS= REYNOLDS_BINS,
                     )
-                    reyns_computed = polar_obj.reynolds_nums
-
-                    # print("We have computed polars for the following reynolds numbers:")
-                    # print(reyns_computed)
-                    # print(f"Reynolds number for this strip: {reynolds}")
-
-                    RE_MIN = 8e4
-                    RE_MAX = 1.5e6
-                    NUM_BINS = 12
-                    REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
-                    DR_REYNOLDS = np.diff(REYNOLDS_BINS)
-
-                    # Check if the reynolds number is within the range of the computed polars
-                    # To be within the range of the computed polars the reynolds number must be
-                    # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]
-                    # If the reynolds number is not within the range of the computed polars, the polar is recomputed
-
-                    # Find the bin corresponding to the each computed reynolds number
-                    reyns_bin = np.digitize(reynolds, REYNOLDS_BINS)
-                    # print(REYNOLDS_BINS)
-                    # print(f"Reynolds bin: {reyns_bin}")
-                    if not (reyns_bin == 0 or reyns_bin == NUM_BINS):
-                        tolerance = DR_REYNOLDS[reyns_bin] / 2
-                        for computed_reyn in reyns_computed:
-                            if abs(computed_reyn - reynolds) < tolerance:
-                                break
-
-                    else:
-                        DB.foils_db.compute_polars(
-                            airfoil=strip_airfoil,
-                            solver_name=solver2D,
-                            reynolds=[reynolds],
-                            angles=np.linspace(-8, 20, 29),
-                        )
-                        polar_obj = DB.foils_db.get_polars(
-                            strip_airfoil.name,
-                            solver=solver2D,
-                        )
 
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
@@ -340,51 +310,8 @@ def avl_geo(
                         f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n",
                     )
                     f_io.write("\n")
-                except (
-                    PolarsNotFoundError,
-                    AirfoilNotFoundError,
-                    PolarNotAccurate,
-                    ReynoldsNotIncluded,
-                    FileNotFoundError,
-                ):
-                    print(
-                        f"\tPolar for {strip_airfoil.name} not found in database. Trying to recompute",
-                    )
-                    DB.foils_db.compute_polars(
-                        airfoil=strip_airfoil,
-                        solver_name=solver2D,
-                        reynolds=[reynolds],
-                        angles=np.linspace(-10, 20, 31),
-                    )
-
-                    try:
-                        polar_obj = DB.foils_db.get_polars(
-                            strip_airfoil.name,
-                            solver=solver2D,
-                        )
-
-                        f_io.write("CDCL\n")
-                        cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
-                        f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
-                        f_io.write(
-                            f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n",
-                        )
-                        f_io.write("\n")
-                    except PolarsNotFoundError:
-                        DB.foils_db.compute_polars(
-                            airfoil=strip_airfoil,
-                            solver_name=solver2D,
-                            reynolds=[reynolds],
-                            angles=np.linspace(-10, 20, 31),
-                            trips=(0.3, 0.3),
-                        )
-                        try:
-                            polar_obj = DB.foils_db.get_polars(
-                                strip_airfoil.name,
-                                solver=solver2D,
-                            )
-                        except PolarsNotFoundError:
-                            print(f"\tCould not compute polar for {strip_airfoil.name}")
+                except PolarsNotFoundError:
+                    print(f"\tCould not compute polar for {strip_airfoil.name}")
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"
