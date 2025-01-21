@@ -27,16 +27,13 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         symmetries=SymmetryAxes.Y,
         span=2 * 2.5,
         sweep_offset=0.0,
-        root_chord=0.8,
-        tip_chord=0.8,
+        root_chord=1.0,
+        tip_chord=1.0,
         N=10,
         M=5,
         mass=1,
     )
     airplane = Airplane(Simplewing.name, [Simplewing])
-    # print(airplane.CG)
-    # airplane.CG = np.array([0.337, 0, 0])
-
     u_inf = 20
     state = State(
         name="Unstick",
@@ -44,5 +41,4 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         u_freestream=u_inf,
         environment=EARTH_ISA,
     )
-
     return airplane, state

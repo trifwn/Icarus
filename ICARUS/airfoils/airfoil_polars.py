@@ -140,6 +140,7 @@ class AirfoilData:
         self.polars = {}
         for solver, dat in data.items():
             self.polars[solver] = Polars(name, dat)
+        self.solvers = list(self.polars.keys())
 
     def get_polars(self, solver: str) -> Polars:
         if solver == "Any":

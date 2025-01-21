@@ -124,9 +124,9 @@ def run_gnvp_angles(
     solver2D: str,
     maxiter: int,
     timestep: float,
-    angles: list[float],
+    angles: list[float] | FloatArray,
     gnvp_version: int,
-    solver_options: dict[str, Any],
+    solver_options: dict[str, Any] | Struct, 
 ) -> None:
     """Run Multiple Angles Simulation in GNVP3
 
@@ -214,6 +214,8 @@ def run_gnvp_angles(
         # Join
         job.join()
         job_monitor.join()
+    GenuSurface.airfoil_names = {}
+    GenuSurface.surf_names = {}
 
 
 def run_gnvp_angles_parallel(

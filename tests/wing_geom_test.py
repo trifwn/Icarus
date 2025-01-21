@@ -16,12 +16,12 @@ def geom() -> None:
     CG = bmark.CG
     INERTIA = bmark.total_inertia
 
-    S_act: tuple[float] = (4.0,)
-    MAC_act: tuple[float] = (0.8,)
+    S_act: tuple[float] = (5.0,)
+    MAC_act: tuple[float] = (1.0,)
     # AREA_act: tuple[float] = (4.0608,)
-    CG_act: FloatArray = np.array([0.361, 0.0, 0.0])
+    CG_act: FloatArray = np.array([0.451, 0.0, 0.0])
     I_act: FloatArray = np.array(
-        [2.077, 0.017, 2.094, 0.0, 0.0, 0.0],
+        [2.077, 0.026, 2.103, 0.0, 0.0, 0.0],
     )
 
     np.testing.assert_almost_equal(S, S_act, decimal=4)

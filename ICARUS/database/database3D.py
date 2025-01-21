@@ -153,7 +153,7 @@ class Database_3D:
         else:
             try:
                 self.states[vehicle_name][state_obj.name] = state_obj
-            except KeyError:
+            except ( KeyError, TypeError):
                 self.states[vehicle_name] = {}
                 self.states[vehicle_name][state_obj.name] = state_obj
 

@@ -312,18 +312,16 @@ def avl_geo(
                     # If the reynolds number is not within the range of the computed polars, the polar is recomputed
 
                     # Find the bin corresponding to the each computed reynolds number
-                    reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 1
+                    reyns_bin = np.digitize(reynolds, REYNOLDS_BINS)
                     # print(REYNOLDS_BINS)
                     # print(f"Reynolds bin: {reyns_bin}")
-                    cond = False
-                    for i, reyns in enumerate(reyns_computed):
-                        if reyns - DR_REYNOLDS[reyns_bin] < reynolds < reyns + DR_REYNOLDS[reyns_bin]:
-                            cond = True
-                            # print(f"\tReynolds number {reynolds} is within the range of the computed polars")
-                            # print(f"   Reynolds number: {reyns} +/- {DR_REYNOLDS[reyns_bin]}")
-                            break
+                    if not (reyns_bin == 0 or reyns_bin == NUM_BINS):
+                        tolerance = DR_REYNOLDS[reyns_bin] / 2
+                        for computed_reyn in reyns_computed:
+                            if abs(computed_reyn - reynolds) < tolerance:
+                                break
 
-                    if not cond:
+                    else:
                         DB.foils_db.compute_polars(
                             airfoil=strip_airfoil,
                             solver_name=solver2D,

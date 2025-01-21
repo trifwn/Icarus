@@ -61,19 +61,18 @@ def plot_airfoil_polars(
 
     # Get the data from the database
     DB = Database.get_instance()
-    data: Struct = DB.foils_db._raw_data
-    db_solvers = data[airfoil_name]
+    airfoil_data = DB.foils_db.get_airfoil_data(airfoil_name)
+    solvers = [solver for solver in solvers if solver in airfoil_data.solvers]
+    solvers_not_in_db = [solver for solver in solvers if solver not in airfoil_data.solvers]
+    if solvers_not_in_db:
+        print(f"Solver(s) {solvers_not_in_db} not in database")
 
-    for i, solver in enumerate(db_solvers):
-        if solver not in solvers:
-            print(f"Skipping {solver} is not in {solvers}")
-            continue
-
-        for j, reynolds in enumerate(db_solvers[solver].keys()):
-            print(reynolds, solver)
+    for i, solver in enumerate(solvers):
+        polar_obj = airfoil_data.get_polars(solver)
+        reynolds_list = polar_obj.reynolds_nums
+        for j, reynolds in enumerate(reynolds_list):
             try:
-                polar: DataFrame = db_solvers[solver][reynolds]
-
+                polar = polar_obj.get_reynolds_subtable(reynolds)
                 # Sort the data by AoA
                 polar = polar.sort_values(by="AoA")
                 if aoa_bounds is not None:
@@ -90,7 +89,7 @@ def plot_airfoil_polars(
 
                     x: Series[float] = polar[f"{key0}"]
                     y: Series[float] = polar[f"{key1}"]
-                    c = colors_(j / len(db_solvers[solver].keys()))
+                    c = colors_(j / len(reynolds_list))
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reynolds} - {solver}"
                     try:

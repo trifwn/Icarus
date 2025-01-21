@@ -152,6 +152,32 @@ class Database_2D:
         airfoil_data: AirfoilData = self.polars[airfoil_name.upper()]
         polar = airfoil_data.get_polars(solver=solver)
         return polar
+    
+    def get_airfoil_data(self, airfoil_name: str) -> AirfoilData:
+        """Returns the solvers available for a given airfoil.
+
+        Args:
+            airfoil_name (str): Airfoil name
+
+        Returns:
+            list[str]: List of solver names
+
+        """
+        if airfoil_name not in self.airfoils.keys():
+            self.add_airfoil(airfoil_name)
+
+        airfoil_name = airfoil_name.upper()
+        if airfoil_name.upper() not in self.polars.keys():
+            try:
+                # Try to load the airfoil from the DB or EXTERNAL DB
+                self.add_airfoil_data(airfoil_name.upper())
+                if airfoil_name.upper() not in self.polars.keys():
+                    raise PolarsNotFoundError(airfoil_name)
+            except (FileNotFoundError, StopIteration):
+                raise AirfoilNotFoundError(airfoil_name)
+
+        airfoil_data: AirfoilData = self.polars[airfoil_name.upper()]
+        return airfoil_data
 
     def compute_polars(
         self,

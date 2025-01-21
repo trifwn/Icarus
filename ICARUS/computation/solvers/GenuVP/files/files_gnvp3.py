@@ -487,7 +487,7 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
         # Get the airfoil polar
         reynolds = bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc
         RE_MIN = 8e4
-        RE_MAX = 1.5e6
+        RE_MAX = 4.5e6
         NUM_BINS = 12
         REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
         DR_REYNOLDS = np.diff(REYNOLDS_BINS)
@@ -506,7 +506,12 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
             # If the reynolds number is not within the range of the computed polars, the polar is recomputed
 
             # Find the bin corresponding to the each computed reynolds number
-            reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 1
+            reyns_bin = np.digitize(reynolds, REYNOLDS_BINS) - 2
+            if reyns_bin > NUM_BINS - 2:
+                reyns_bin = NUM_BINS - 2
+            if reyns_bin < 0:
+                reyns_bin = 0
+            
             # print(REYNOLDS_BINS)
             # print(f"Reynolds bin: {reyns_bin}")
             cond = False
