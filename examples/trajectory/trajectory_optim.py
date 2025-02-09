@@ -24,6 +24,7 @@ from ICARUS.mission.trajectory.integrate import RK4systems
 from ICARUS.mission.trajectory.trajectory import MissionTrajectory
 from ICARUS.propulsion.engine import Engine
 from ICARUS.vehicle.plane import Airplane
+import os
 
 # Get the percision of the jax library
 jax.config.update("jax_enable_x64", True)
@@ -33,10 +34,10 @@ print("Jax has been configured to use the following devices: ", jax.devices())
 print(jax.numpy.ones(3).devices())
 
 
-DB = Database(f"{INSTALL_DIR}/Data")
-# #  Load Plane and Engine
-engine_dir = f"{INSTALL_DIR}/Data/Engine/Motor_1/"
+DB = Database(os.path.join(INSTALL_DIR, "Data"))
 
+# #  Load Plane and Engine
+engine_dir = os.path.join(DB.HOMEDIR, "Engine", "Motor_1")
 engine = Engine()
 engine.load_data_from_df(engine_dir)
 # engine.plot_engine_map()

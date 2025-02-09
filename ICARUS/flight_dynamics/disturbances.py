@@ -1,5 +1,5 @@
 class Disturbance:
-    """Class for represanting disturbances"""
+    """Class for representing disturbances"""
 
     def __init__(self, variable: str | None, amplitude_value: float) -> None:
         if amplitude_value > 0:

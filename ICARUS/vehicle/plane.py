@@ -649,13 +649,6 @@ class Airplane(Optimizable):
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 
-    # def __str__(self):
-    #     str = f"Plane Object for {self.name}\n"
-    #     str += f"Surfaces:\n"
-    #     for i,surfaces in enumerate(self.surfaces):
-    #         str += f"\t{surfaces.name} NB={i} with Area: {surfaces.S}, Inertia: {surfaces.I}, Mass: {surfaces.M}\n"
-    #     return str
-
     def __str__(self) -> str:
         string: str = f"Plane Object: {self.name}"
         return string
