@@ -14,9 +14,10 @@ from pandas import DataFrame
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.airfoils.airfoil_polars import AirfoilData
+from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.struct import Struct
-from ICARUS.airfoils.airfoil_polars import PolarNotAccurate, ReynoldsNotIncluded
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -232,10 +233,10 @@ class Database_2D:
             # If the reynolds number is not within the range of the computed polars, the polar is recomputed
 
             # Find the bin corresponding to the each computed reynolds number
-            reyns_bin = int(np.digitize(reynolds, REYNOLDS_BINS, right = True))
+            reyns_bin = int(np.digitize(reynolds, REYNOLDS_BINS, right=True))
             reyns_bin = max(reyns_bin, 1)
             reyns_bin = min(reyns_bin, NUM_BINS - 1)
-            
+
             reynolds_found = False
             DR_REYNOLDS = np.diff(REYNOLDS_BINS)
             if not (reyns_bin == 0 or reyns_bin == NUM_BINS):
@@ -243,7 +244,7 @@ class Database_2D:
                 for computed_reyn in reyns_computed:
                     if abs(computed_reyn - reynolds) < tolerance:
                         reynolds_found = True
-                
+
             if not reynolds_found:
                 self.compute_polars(
                     airfoil=airfoil,
@@ -261,7 +262,7 @@ class Database_2D:
             FileNotFoundError,
         ):
             print(
-                f"\tPolar for {airfoil.name} not found in database. Trying to recompute with stricter trip conditions..."
+                f"\tPolar for {airfoil.name} not found in database. Trying to recompute with stricter trip conditions...",
             )
             self.compute_polars(
                 airfoil=airfoil,
@@ -274,7 +275,7 @@ class Database_2D:
                 return self.get_polars(airfoil.name, solver=solver_name)
             except PolarsNotFoundError:
                 print(
-                    f"\tPolar for {airfoil.name} not found in database. Trying to recompute with even stricter trip conditions..."
+                    f"\tPolar for {airfoil.name} not found in database. Trying to recompute with even stricter trip conditions...",
                 )
                 self.compute_polars(
                     airfoil=airfoil,

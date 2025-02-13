@@ -66,7 +66,7 @@ def plot_convergence(
     fig.delaxes(axs[2, 2])
     # Fill plots with data
     if solvers == ["All"]:
-        solvers = ["", "2D"]#, "DS2D"]
+        solvers = ["", "2D"]  # , "DS2D"]
 
     cases = data[plane]
     i = 0

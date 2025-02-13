@@ -8,12 +8,9 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS import AVL_exe
-from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
-from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
@@ -297,10 +294,10 @@ def avl_geo(
                     DB = Database.get_instance()
                     polar_obj: Polars = DB.foils_db.find_or_compute_polars(
                         airfoil=strip_airfoil,
-                        reynolds= reynolds,
-                        solver_name= solver2D,
-                        aoa= np.linspace(-10, 16, 53),
-                        REYNOLDS_BINS= REYNOLDS_BINS,
+                        reynolds=reynolds,
+                        solver_name=solver2D,
+                        aoa=np.linspace(-10, 16, 53),
+                        REYNOLDS_BINS=REYNOLDS_BINS,
                     )
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)

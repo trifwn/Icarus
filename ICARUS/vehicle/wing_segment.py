@@ -11,11 +11,13 @@ from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
-from ICARUS.vehicle.utils import DiscretizationType, cosine_spacing_function, sine_spacing_function
+from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.utils import DistributionType
 from ICARUS.vehicle.utils import SymmetryAxes
+from ICARUS.vehicle.utils import cosine_spacing_function
 from ICARUS.vehicle.utils import equal_spacing_function
 from ICARUS.vehicle.utils import linear_distribution_function_factory
+from ICARUS.vehicle.utils import sine_spacing_function
 
 
 class WingSegment(WingSurface):
@@ -231,9 +233,9 @@ class WingSegment(WingSurface):
         elif self._chord_spacing == DiscretizationType.SINE:
             chord_disc_fun = partial(
                 sine_spacing_function,
-                N= -self.M,
+                N=-self.M,
                 stretching=1.0,
-                factor = 0.5,
+                factor=0.5,
             )
         elif self._chord_spacing == DiscretizationType.USER_DEFINED:
             try:

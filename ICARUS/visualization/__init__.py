@@ -25,9 +25,8 @@ This module contains classes and routines for visualization. The module is divid
 
 """
 
-
-from matplotlib.markers import MarkerStyle
 import distinctipy
+from matplotlib.markers import MarkerStyle
 
 markers_str: list[str | int] = list(MarkerStyle.markers.keys())
 markers = [MarkerStyle(marker) for marker in markers_str]

@@ -296,7 +296,8 @@ def run_pertrubation_parallel(
         kwargs={
             "CASEDIRS": CASEDIRS,
             "variables": [
-                f"{dst.var} - {dst.amplitude:.4f}" if dst.amplitude else f"{dst.var}" for dst in disturbances],
+                f"{dst.var} - {dst.amplitude:.4f}" if dst.amplitude else f"{dst.var}" for dst in disturbances
+            ],
             "max_iter": maxiter,
             "refresh_progress": refresh_progress,
             "genu_version": genu_version,

@@ -121,10 +121,10 @@ class Database_3D:
     def get_states(self, name: str) -> dict[str, State]:
         print(f"Getting States for {name}")
         if name in self.states.keys():
-            return self.states[name] 
+            return self.states[name]
         self.read_plane_data(name)
         try:
-            return self.states[name] 
+            return self.states[name]
         except KeyError:
             raise ValueError(f"No States found for {name}")
 
@@ -174,7 +174,7 @@ class Database_3D:
         else:
             try:
                 self.states[vehicle_name][state_obj.name] = state_obj
-            except ( KeyError, TypeError):
+            except (KeyError, TypeError):
                 self.states[vehicle_name] = {}
                 self.states[vehicle_name][state_obj.name] = state_obj
 

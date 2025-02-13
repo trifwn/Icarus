@@ -1,8 +1,9 @@
 from __future__ import annotations
-import numpy as np
 
 from enum import Enum
 from typing import Callable
+
+import numpy as np
 
 
 class DiscretizationType(Enum):
@@ -66,7 +67,6 @@ def cosine_spacing_function(Ni: int, N: int, stretching: float) -> float:
     """Returns a cosine spaced array of length N."""
     return 0.5 * (1 - np.cos(np.pi * Ni / (N))) * stretching
 
-
 def sine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 0) -> float:
     """Returns a sine spaced array of length N."""
     if N < 0:
@@ -77,6 +77,7 @@ def sine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 0)
     y = (1 - factor) * y + factor * (Ni / (N - 1))
     y = y * stretching
     return y
+
 
 def equal_spacing_function_factory(
     N: int,

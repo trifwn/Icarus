@@ -3,10 +3,10 @@ It computes the polars for each aircraft and then computes the dynamics.
 It is also possible to do a pertubation analysis for each aircraft.
 """
 
+import os
 import time
 
 import numpy as np
-import os
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.solver import Solver
@@ -137,12 +137,15 @@ def main() -> None:
             )
             airplane.save()
 
-            from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run_3
+            from ICARUS.computation.solvers.GenuVP.analyses.angles import (
+                process_gnvp_angles_run_3,
+            )
 
             process_gnvp_angles_run_3(airplane, state)
 
             from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
-            avl_angle_run(airplane, state, 'Xfoil', angles)
+
+            avl_angle_run(airplane, state, "Xfoil", angles)
 
             # from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 

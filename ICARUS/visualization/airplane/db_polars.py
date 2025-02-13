@@ -1,5 +1,6 @@
 from typing import Any
 
+import distinctipy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -10,7 +11,6 @@ from pandas import Series
 
 from ICARUS.database import Database
 from ICARUS.visualization import markers
-import distinctipy
 
 
 def plot_airplane_polars(

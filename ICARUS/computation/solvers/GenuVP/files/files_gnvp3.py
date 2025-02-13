@@ -6,9 +6,7 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
 from ICARUS.airfoils.airfoil_polars import Polars
-from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
@@ -19,7 +17,6 @@ from ICARUS.core.formatting import ff4
 from ICARUS.core.formatting import ff5
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.database.database2D import PolarsNotFoundError
 
 
@@ -493,14 +490,16 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
         try:
             DB = Database.get_instance()
             polars: Polars = DB.foils_db.find_or_compute_polars(
-                airfoil= DB.get_airfoil(bod.airfoil_name),
-                reynolds= reynolds,
-                solver_name= solver,
-                aoa= np.linspace(-10, 16, 53),
-                REYNOLDS_BINS= REYNOLDS_BINS,
+                airfoil=DB.get_airfoil(bod.airfoil_name),
+                reynolds=reynolds,
+                solver_name=solver,
+                aoa=np.linspace(-10, 16, 53),
+                REYNOLDS_BINS=REYNOLDS_BINS,
             )
         except PolarsNotFoundError:
-            raise ValueError(f"Airfoil Polars for {bod.airfoil_name} not found in the database and could not be computed. Please compute the polars first.")
+            raise ValueError(
+                f"Airfoil Polars for {bod.airfoil_name} not found in the database and could not be computed. Please compute the polars first.",
+            )
 
         f_io = StringIO()
         f_io.write(f"------ CL and CD data input file for {bod.airfoil_name}\n")

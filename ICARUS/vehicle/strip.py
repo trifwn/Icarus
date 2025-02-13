@@ -189,7 +189,7 @@ class Strip:
         camber_line: FloatArray = np.vstack(
             [
                 x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, len(airfoil._x_lower)), 
+                y[idx] + np.repeat(0, len(airfoil._x_lower)),
                 z[idx] + c[idx] * airfoil.camber_line(airfoil._x_lower),
             ],
             dtype=float,
@@ -198,7 +198,7 @@ class Strip:
         suction_side: FloatArray = np.vstack(
             [
                 x[idx] + c[idx] * airfoil._x_upper,
-                y[idx] + np.repeat(0, len(airfoil._x_upper)), 
+                y[idx] + np.repeat(0, len(airfoil._x_upper)),
                 z[idx] + c[idx] * airfoil.y_upper(airfoil._x_upper),
             ],
             dtype=float,
@@ -298,7 +298,7 @@ class Strip:
 
         if pltshow:
             plt.show()
-        
+
     def plot_points(
         self,
         prev_fig: Figure | None = None,

@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import jax
@@ -24,7 +25,6 @@ from ICARUS.mission.trajectory.integrate import RK4systems
 from ICARUS.mission.trajectory.trajectory import MissionTrajectory
 from ICARUS.propulsion.engine import Engine
 from ICARUS.vehicle.plane import Airplane
-import os
 
 # Get the percision of the jax library
 jax.config.update("jax_enable_x64", True)

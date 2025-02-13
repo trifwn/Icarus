@@ -126,7 +126,7 @@ def run_gnvp_angles(
     timestep: float,
     angles: list[float] | FloatArray,
     gnvp_version: int,
-    solver_options: dict[str, Any] | Struct, 
+    solver_options: dict[str, Any] | Struct,
 ) -> None:
     """Run Multiple Angles Simulation in GNVP3
 
