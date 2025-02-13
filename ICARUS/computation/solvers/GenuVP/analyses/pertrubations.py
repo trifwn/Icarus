@@ -29,6 +29,7 @@ from ICARUS.vehicle.surface import WingSurface
 
 
 def gnvp_disturbance_case(
+    DB: Database,
     plane: Airplane,
     solver2D: str,
     maxiter: int,
@@ -164,6 +165,7 @@ def run_pertrubation_serial(
         job = Thread(
             target=gnvp_disturbance_case,
             kwargs={
+                "DB": DB,
                 "plane": plane,
                 "solver2D": solver2D,
                 "maxiter": maxiter,
@@ -181,7 +183,7 @@ def run_pertrubation_serial(
         )
         pbar = tqdm(
             total=maxiter,
-            desc=f"DST:{dst.var} - {dst.amplitude}",
+            desc=f"DST:{dst.var} - {dst.amplitude:.4f}" if dst.amplitude else f"DST:{dst.var}",
             position=i,
             leave=True,
             colour="RED",
@@ -260,6 +262,7 @@ def run_pertrubation_parallel(
         with Pool(num_processes) as pool:
             args_list = [
                 (
+                    DB,
                     plane,
                     solver2D,
                     maxiter,
@@ -292,7 +295,8 @@ def run_pertrubation_parallel(
         target=parallel_monitor,
         kwargs={
             "CASEDIRS": CASEDIRS,
-            "variables": [f"{dst.var} - {dst.amplitude}" for dst in disturbances],
+            "variables": [
+                f"{dst.var} - {dst.amplitude:.4f}" if dst.amplitude else f"{dst.var}" for dst in disturbances],
             "max_iter": maxiter,
             "refresh_progress": refresh_progress,
             "genu_version": genu_version,
@@ -349,6 +353,7 @@ def sensitivity_serial(
         solver_options (dict[str, Any] | Struct): Solver Options
 
     """
+    DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
@@ -361,6 +366,7 @@ def sensitivity_serial(
 
     for dst in state.sensitivities[var]:
         msg: str = gnvp_disturbance_case(
+            DB,
             plane,
             solver2D,
             maxiter,

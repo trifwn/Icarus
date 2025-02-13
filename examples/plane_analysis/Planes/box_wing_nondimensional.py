@@ -38,8 +38,8 @@ def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
         N=15,
         M=8,
         mass=1,
-        span_spacing=DiscretizationType.EQUAL,
-        chord_spacing=DiscretizationType.EQUAL,
+        span_spacing=DiscretizationType.LINEAR,
+        chord_spacing=DiscretizationType.LINEAR,
     )
     airplane = Airplane(box_wing.name, [box_wing])
     # print(airplane.CG)

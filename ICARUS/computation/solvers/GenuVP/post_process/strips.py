@@ -11,6 +11,7 @@ def get_strip_data(
     plane: Airplane,
     case: str,
     NBs: list[int],
+    genuvp_version: int,
 ) -> tuple[DataFrame, DataFrame]:
     """Function to get strip data from a case simulation.
 
@@ -26,7 +27,7 @@ def get_strip_data(
     DB = Database.get_instance()
     directory = DB.vehicles_db.get_case_directory(
         airplane=plane,
-        solver="GenuVP7",
+        solver=f"GenuVP{genuvp_version}",
         case=case,
     )
     files: list[str] = os.listdir(directory)

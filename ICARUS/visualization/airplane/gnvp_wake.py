@@ -52,7 +52,7 @@ def plot_gnvp_wake(
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
 
-    A1, B1, C1 = get_wake_data(plane, case)
+    XP, QP, VP, GP, B1, C1 = get_wake_data(plane, case)
 
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
@@ -66,13 +66,17 @@ def plot_gnvp_wake(
     ax.set_ylim(-plane.span / 2, plane.span / 2)
     ax.set_zlim(-1, 1)
 
-    ax.scatter(
-        xs=A1[:, 0],
-        ys=A1[:, 1],
-        zs=A1[:, 2],
-        color="r",
+    p = ax.scatter(
+        xs=XP[:, 0],
+        ys=XP[:, 1],
+        zs=XP[:, 2],
+        c=np.linalg.norm(QP, axis=1),
         s=5,
     )  # WAKE   # type: ignore
+
+    # Add color bar which maps values to colors
+    fig.colorbar(p, ax=ax)
+
     ax.scatter(
         xs=B1[:, 0],
         ys=B1[:, 1],

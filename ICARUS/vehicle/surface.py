@@ -121,7 +121,7 @@ class WingSurface:
         self.num_grid_points: int = self.N * self.M
 
         if chord_discretization_function is None:
-            self.chord_spacing = DiscretizationType.EQUAL
+            self.chord_spacing = DiscretizationType.LINEAR
             self.chord_discretization_function = equal_spacing_function_factory(
                 M,
                 stretching=1.0,
@@ -785,7 +785,7 @@ class WingSurface:
             symmetric_strips = [strip.return_symmetric() for strip in strips]
 
         self.strips = strips
-        self.all_strips = [*strips, *symmetric_strips]
+        self.all_strips = [*strips, *symmetric_strips[::-1]]
 
     def create_grid(self) -> None:
         chord_eta = np.array(
@@ -808,13 +808,12 @@ class WingSurface:
 
         for j in range(self.N):
             airf_j: Airfoil = self.airfoils[j]
-            x_pos = airf_j.min_x + chord_eta * (airf_j.max_x - airf_j.min_x)
 
-            airf_z_up_i = airf_j.y_upper(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
-            airf_z_low_i = airf_j.y_lower(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
-            airf_camber_i = (
-                airf_j.camber_line(x_pos) * (self._chord_dist[j] * airf_j.norm_factor) + self._zoffset_dist[j]
-            )
+            z_0 = self._zoffset_dist[j]
+            chord = self._chord_dist[j] * airf_j.norm_factor
+            airf_z_up_i = airf_j.y_upper(chord_eta) * chord + z_0
+            airf_z_low_i = airf_j.y_lower(chord_eta) * chord + z_0
+            airf_camber_i = airf_j.camber_line(chord_eta) * chord + z_0
 
             airf_z_up.append(airf_z_up_i)
             airf_z_low.append(airf_z_low_i)
@@ -1178,9 +1177,10 @@ class WingSurface:
             grid = self.grid_lower
         else:
             raise ValueError("which must be either camber, upper or lower")
+
+        grid = grid.reshape(self.N, self.M, 3)
         if self.is_symmetric_y is True:
             reflection = np.array([1, -1, 1])
-            grid = grid.reshape(self.N, self.M, 3)
             gsym = grid[::-1, :, :] * reflection
             grid = grid[1:, :, :]
             grid = np.concatenate((gsym, grid))
@@ -1346,7 +1346,7 @@ class WingSurface:
             "is_lifting": self.is_lifting,
             "chord_discretization_function": (
                 self.serialize_function(self.chord_discretization_function)
-                if self.chord_spacing is not DiscretizationType.EQUAL
+                if self.chord_spacing is not DiscretizationType.LINEAR
                 else None
             ),
             "controls": self.controls,

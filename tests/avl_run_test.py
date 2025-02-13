@@ -26,8 +26,8 @@ def avl_run() -> None:
     options: Struct = avl.get_analysis_options(verbose=True)
     solver_parameters: Struct = avl.get_solver_parameters(verbose=True)
 
-    AoAmin = -3
-    AoAmax = 3
+    AoAmin = -10
+    AoAmax = 10
     NoAoA = (AoAmax - AoAmin) + 1
     angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all]

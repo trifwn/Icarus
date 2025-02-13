@@ -419,6 +419,8 @@ class State:
             directory (str): Directory to save the state to.
 
         """
+        # Check if directory exists
+        os.makedirs(directory, exist_ok=True) 
         fname: str = os.path.join(directory, f"{self.name}_state.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())

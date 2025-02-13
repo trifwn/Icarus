@@ -21,7 +21,16 @@ def airplane_polars(plot: bool = False) -> None:
 
         plot_airplane_polars(
             airplane_names=planenames,
-            solvers=["All"],
+            solvers = [
+                "GenuVP3 Potential",
+                "GenuVP3 2D",
+                # "GenuVP3 ONERA",
+                "GenuVP7 Potential",
+                "GenuVP7 2D",
+                "LSPT Potential",
+                "LSPT 2D",
+                "AVL",
+            ],
             size=(10, 10),
             title="Benchmark Airplane Polars",
         )

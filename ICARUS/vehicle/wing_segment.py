@@ -11,7 +11,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
-from ICARUS.vehicle.utils import DiscretizationType
+from ICARUS.vehicle.utils import DiscretizationType, cosine_spacing_function, sine_spacing_function
 from ICARUS.vehicle.utils import DistributionType
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.utils import equal_spacing_function
@@ -41,8 +41,8 @@ class WingSegment(WingSurface):
         spanwise_dihedral_distibution: DistributionType = DistributionType.LINEAR,
         spanwise_twist_distribution: DistributionType = DistributionType.LINEAR,
         # Geometry discretization
-        span_spacing: DiscretizationType = DiscretizationType.EQUAL,
-        chord_spacing: DiscretizationType = DiscretizationType.EQUAL,
+        span_spacing: DiscretizationType | str = DiscretizationType.LINEAR,
+        chord_spacing: DiscretizationType | str = DiscretizationType.SINE,
         N: int = 15,
         M: int = 5,
         mass: float = 1.0,
@@ -85,7 +85,9 @@ class WingSegment(WingSurface):
         self._spanwise_twist_distribution = spanwise_twist_distribution
 
         self._span_spacing = span_spacing
-        self._chord_spacing = chord_spacing
+        self._chord_spacing = (
+            chord_spacing if isinstance(chord_spacing, DiscretizationType) else DiscretizationType[chord_spacing]
+        )
 
         # Set the airfoils of the wing segment
         if isinstance(root_airfoil, str):
@@ -200,7 +202,7 @@ class WingSegment(WingSurface):
 
         #### DESCRITIZATIONS ####
         # Define spanwise discretization
-        if self._span_spacing == DiscretizationType.EQUAL:
+        if self._span_spacing == DiscretizationType.LINEAR:
             # Define the spanwise discretization function
             span_disc_fun = partial(equal_spacing_function, N=self.N, stretching=1.0)
             # equal_spacing_function_factory(N)
@@ -212,7 +214,7 @@ class WingSegment(WingSurface):
             )
 
         # Define chordwise discretization
-        if self._chord_spacing == DiscretizationType.EQUAL:
+        if self._chord_spacing == DiscretizationType.LINEAR:
             # Define the chordwise discretization function
             chord_disc_fun: Callable[[int], float] = partial(
                 equal_spacing_function,
@@ -220,6 +222,19 @@ class WingSegment(WingSurface):
                 stretching=1.0,
             )
             # equal_spacing_function_factory(M)
+        elif self._chord_spacing == DiscretizationType.COSINE:
+            chord_disc_fun = partial(
+                cosine_spacing_function,
+                N=self.M,
+                stretching=1.0,
+            )
+        elif self._chord_spacing == DiscretizationType.SINE:
+            chord_disc_fun = partial(
+                sine_spacing_function,
+                N= -self.M,
+                stretching=1.0,
+                factor = 0.5,
+            )
         elif self._chord_spacing == DiscretizationType.USER_DEFINED:
             try:
                 chord_disc_fun = self.chord_discretization_function

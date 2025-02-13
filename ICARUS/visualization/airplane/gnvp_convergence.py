@@ -66,7 +66,7 @@ def plot_convergence(
     fig.delaxes(axs[2, 2])
     # Fill plots with data
     if solvers == ["All"]:
-        solvers = ["", "2D", "DS2D"]
+        solvers = ["", "2D"]#, "DS2D"]
 
     cases = data[plane]
     i = 0
@@ -107,7 +107,7 @@ def plot_convergence(
                     mz = np.abs(mz.iloc[1:].values - mz.iloc[:-1].values)
 
                 j += 1
-                c = colors_(j / len(solvers))
+                c = colors_[j]
                 m = markers[i].get_marker()
 
                 label: str = f"{plane} - {solver} - {ang_num}"
@@ -191,6 +191,6 @@ def plot_convergence(
     for axR in axs:
         for ax in axR:
             ax.grid(which="both", axis="both")
-            ax.set_yscale("log")
+            # ax.set_yscale("log")
 
     axs[2, 1].legend(bbox_to_anchor=(1, -0.25), ncol=2, fancybox=True, loc="lower left")

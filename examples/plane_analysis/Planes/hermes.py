@@ -41,7 +41,7 @@ def hermes(name: str) -> Airplane:
         sweep_offset=0,
         root_chord=0.159,
         tip_chord=0.072,
-        N=30,
+        N=20,
         M=10,
         mass=0.670,
     )
@@ -66,8 +66,8 @@ def hermes(name: str) -> Airplane:
         root_dihedral_angle=0,
         root_chord=0.130,
         tip_chord=0.03,
-        N=10,
-        M=5,
+        N=12,
+        M=8,
         mass=0.06,
     )
 
@@ -91,7 +91,7 @@ def hermes(name: str) -> Airplane:
         root_dihedral_angle=0,
         root_chord=0.2,
         tip_chord=0.1,
-        N=10,
+        N=12,
         M=5,
         mass=0.04,
     )

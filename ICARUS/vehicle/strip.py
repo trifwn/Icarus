@@ -178,7 +178,7 @@ class Strip:
 
         # Relative position of the point wrt to the start and end of the strip
         heta: float = (idx + 1) / (n_points_span + 1)
-
+        self.n_points = len(self.airfoil_start._x_upper)
         airfoil: Airfoil = Airfoil.morph_new_from_two_foils(
             self.airfoil_start,
             self.airfoil_end,
@@ -186,28 +186,28 @@ class Strip:
             self.airfoil_start.n_points,
         )
 
-        camber_line: FloatArray = np.array(
+        camber_line: FloatArray = np.vstack(
             [
                 x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, airfoil.n_points),
+                y[idx] + np.repeat(0, len(airfoil._x_lower)), 
                 z[idx] + c[idx] * airfoil.camber_line(airfoil._x_lower),
             ],
             dtype=float,
         )
 
-        suction_side: FloatArray = np.array(
+        suction_side: FloatArray = np.vstack(
             [
                 x[idx] + c[idx] * airfoil._x_upper,
-                y[idx] + np.repeat(0, airfoil.n_points),
+                y[idx] + np.repeat(0, len(airfoil._x_upper)), 
                 z[idx] + c[idx] * airfoil.y_upper(airfoil._x_upper),
             ],
             dtype=float,
         )
 
-        pressure_side: FloatArray = np.array(
+        pressure_side: FloatArray = np.vstack(
             [
                 x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, airfoil.n_points),
+                y[idx] + np.repeat(0, len(airfoil._x_lower)),
                 z[idx] + c[idx] * airfoil.y_lower(airfoil._x_lower),
             ],
             dtype=float,
@@ -259,9 +259,18 @@ class Strip:
             x_pressure, y_pressure, z_pressure = pressure
 
             for key in to_plot:
-                xs[key].append(x_camber + movement[0])
-                ys[key].append(y_camber + movement[1])
-                zs[key].append(z_camber + movement[2])
+                if key == "camber":
+                    xs[key].extend(x_camber + movement[0])
+                    ys[key].extend(y_camber + movement[1])
+                    zs[key].extend(z_camber + movement[2])
+                elif key == "suction":
+                    xs[key].extend(x_suction + movement[0])
+                    ys[key].extend(y_suction + movement[1])
+                    zs[key].extend(z_suction + movement[2])
+                elif key == "pressure":
+                    xs[key].extend(x_pressure + movement[0])
+                    ys[key].extend(y_pressure + movement[1])
+                    zs[key].extend(z_pressure + movement[2])
 
         for key in to_plot:
             X: FloatArray = np.array(xs[key])
@@ -269,6 +278,10 @@ class Strip:
             Z: FloatArray = np.array(zs[key])
 
             if color is not None:
+                if len(X.shape) == 1:
+                    X = X.reshape(1, -1)
+                    Y = Y.reshape(1, -1)
+                    Z = Z.reshape(1, -1)
                 my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
                     Z.shape[0],
                     Z.shape[1],
@@ -276,8 +289,74 @@ class Strip:
                 )
                 ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
             else:
+                if len(X.shape) == 1:
+                    X = X.reshape(1, -1)
+                    Y = Y.reshape(1, -1)
+                    Z = Z.reshape(1, -1)
                 my_color = "red"
                 ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
+
+        if pltshow:
+            plt.show()
+        
+    def plot_points(
+        self,
+        prev_fig: Figure | None = None,
+        prev_ax: Axes3D | None = None,
+        movement: FloatArray | None = None,
+        color: tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
+    ) -> None:
+        pltshow = False
+
+        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
+            fig: Figure = prev_fig
+            ax: Axes3D = prev_ax
+        else:
+            fig = plt.figure()
+            ax = fig.add_subplot(projection="3d")  # type: ignore
+            ax.set_title("Strip Points")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+            ax.axis("scaled")
+            ax.view_init(30, 150)
+            pltshow = True
+
+        if movement is None:
+            movement = np.zeros(3)
+
+        x_coords: list[float] = []
+        y_coords: list[float] = []
+        z_coords: list[float] = []
+
+        N: int = 10
+        for i in range(N):
+            suction, camber, pressure = self.get_interpolated_section(i, N)
+
+            x_camber, y_camber, z_camber = camber
+            x_suction, y_suction, z_suction = suction
+            x_pressure, y_pressure, z_pressure = pressure
+
+            x_coords.extend(x_suction + movement[0])
+            y_coords.extend(y_suction + movement[1])
+            z_coords.extend(z_suction + movement[2])
+
+            x_coords.extend(x_camber + movement[0])
+            y_coords.extend(y_camber + movement[1])
+            z_coords.extend(z_camber + movement[2])
+
+            x_coords.extend(x_pressure + movement[0])
+            y_coords.extend(y_pressure + movement[1])
+            z_coords.extend(z_pressure + movement[2])
+
+        X: FloatArray = np.array(x_coords)
+        Y: FloatArray = np.array(y_coords)
+        Z: FloatArray = np.array(z_coords)
+
+        if color is not None:
+            ax.scatter(X, Y, Z, c=color)
+        else:
+            ax.scatter(X, Y, Z)
 
         if pltshow:
             plt.show()

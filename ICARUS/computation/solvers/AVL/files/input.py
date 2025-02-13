@@ -302,7 +302,6 @@ def avl_geo(
                         aoa= np.linspace(-10, 16, 53),
                         REYNOLDS_BINS= REYNOLDS_BINS,
                     )
-
                     f_io.write("CDCL\n")
                     cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
                     f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")

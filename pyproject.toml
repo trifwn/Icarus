@@ -46,7 +46,8 @@ dependencies = [
     "optimistix",
     'jaxopt',
     "optax",
-    "nbconvert"
+    "nbconvert",
+    "distinctipy",
 ]
 dynamic = ["version"]
 

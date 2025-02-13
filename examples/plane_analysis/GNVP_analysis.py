@@ -6,6 +6,7 @@ It is also possible to do a pertubation analysis for each aircraft.
 import time
 
 import numpy as np
+import os
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.solver import Solver
@@ -55,7 +56,7 @@ def main() -> None:
     # embraer.visualize()
 
     timestep: dict[str, float] = {"hermes": 1e-3}
-    maxiter: dict[str, int] = {"hermes": 100}
+    maxiter: dict[str, int] = {"hermes": 300}
     UINF: dict[str, float] = {"hermes": 20}
     ALTITUDE: dict[str, int] = {"hermes": 0}
 
@@ -63,7 +64,7 @@ def main() -> None:
     TEMPERATURE: dict[str, int] = {"hermes": 273 + 15}
 
     STATIC_ANALYSIS: dict[str, float] = {"hermes": True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"hermes": False}
+    DYNAMIC_ANALYSIS: dict[str, float] = {"hermes": True}
 
     # Get Solver
     GNVP_VERSION = 3
@@ -95,7 +96,7 @@ def main() -> None:
             u_freestream=UINF[airplane.name],
         )
         print(EARTH_ISA)
-        state.save(f"{DB.DB3D}/{airplane.directory}")
+        state.save(os.path.join(DB.DB3D, airplane.directory))
 
         if STATIC_ANALYSIS[airplane.name]:
             # ## AoA Run
@@ -107,9 +108,9 @@ def main() -> None:
             gnvp.select_analysis(analysis)
             options: Struct = gnvp.get_analysis_options()
             solver_parameters: Struct = gnvp.get_solver_parameters()
-            AOA_MIN = -5
-            AOA_MAX = 4
-            NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
+            AOA_MIN = -6
+            AOA_MAX = 10
+            NO_AOA: int = 2 * (AOA_MAX - AOA_MIN) + 1
             angles: FloatArray = np.linspace(
                 AOA_MIN,
                 AOA_MAX,
@@ -117,7 +118,7 @@ def main() -> None:
             )
 
             options.plane = airplane
-            options.solver2D = "XFLR"
+            options.solver2D = "Xfoil"
             options.state = state
             options.maxiter = maxiter[airplane.name]
             options.timestep = timestep[airplane.name]
@@ -130,32 +131,40 @@ def main() -> None:
             gnvp.print_analysis_options()
 
             polars_time: float = time.time()
-            gnvp.execute()
+            gnvp.execute(parallel=True)
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
             airplane.save()
 
-            from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
+            from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run_3
 
-            solvers = [
-                "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",
-                "GenuVP3 2D" if GNVP_VERSION == 3 else "GenuVP7 2D",
-                "GenuVP3 ONERA" if GNVP_VERSION == 3 else "GenuVP7 ONERA",
-            ]
-            axs, fig = plot_airplane_polars(
-                [airplane.name],
-                solvers,
-                plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
-                size=(6, 7),
-            )
+            process_gnvp_angles_run_3(airplane, state)
+
+            from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+            avl_angle_run(airplane, state, 'Xfoil', angles)
+
+            # from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
+
+            # solvers = [
+            #     "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",
+            #     "GenuVP3 2D" if GNVP_VERSION == 3 else "GenuVP7 2D",
+            #     "GenuVP3 ONERA" if GNVP_VERSION == 3 else "GenuVP7 ONERA",
+            #     'AVL',
+            # ]
+            # axs, fig = plot_airplane_polars(
+            #     [airplane.name],
+            #     solvers,
+            #     plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
+            #     size=(6, 7),
+            # )
             # Pause to see the plots for 2 seconds
             time.sleep(2)
 
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            forces = DB.vehicles_db.forces[airplane.name]
+            forces = DB.vehicles_db.get_forces(airplane.name)
             if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
             try:
@@ -206,7 +215,7 @@ def main() -> None:
             options.solver2D = "Xfoil"
             options.maxiter = maxiter[airplane.name]
             options.timestep = timestep[airplane.name]
-            options.angle = unstick.trim["AoA"]
+            # options.angle = unstick.trim["AoA"]
 
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
@@ -216,7 +225,7 @@ def main() -> None:
 
             pert_time: float = time.time()
             print("Running Pertrubations")
-            gnvp.execute()
+            gnvp.execute(parallel=True)
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
             # Get Results And Save

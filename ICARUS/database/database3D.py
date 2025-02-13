@@ -93,6 +93,17 @@ class Database_3D:
             return pol[[col for col in pol.columns if col.startswith(solver) or col == "AoA"]]
         return pol
 
+    def get_forces(self, name: str) -> DataFrame:
+        if name in self.forces.keys():
+            forces_obj: DataFrame = self.forces[name]
+            return forces_obj
+        self.read_plane_data(name)
+        try:
+            forces_obj = self.forces[name]
+            return forces_obj
+        except KeyError:
+            raise ValueError(f"No Forces found for {name}")
+
     def get_vehicle(self, name: str) -> Airplane:
         if name in self.planes.keys():
             plane_object: Airplane = self.planes[name]
@@ -106,6 +117,16 @@ class Database_3D:
 
         self.planes[name] = plane_obj
         return plane_obj
+
+    def get_states(self, name: str) -> dict[str, State]:
+        print(f"Getting States for {name}")
+        if name in self.states.keys():
+            return self.states[name] 
+        self.read_plane_data(name)
+        try:
+            return self.states[name] 
+        except KeyError:
+            raise ValueError(f"No States found for {name}")
 
     def read_all_data(self) -> None:
         if not os.path.isdir(self.DB3D):

@@ -9,8 +9,8 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.database import Database
-from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
+import distinctipy
 
 
 def plot_airplane_polars(
@@ -20,7 +20,7 @@ def plot_airplane_polars(
         ["AoA", "CL"],
         ["AoA", "CD"],
         ["AoA", "Cm"],
-        ["CL", "CD"],
+        ["AoA", "CL/CD"],
     ],
     size: tuple[int, int] = (10, 10),
     title: str = "Aerodynamic Coefficients",
@@ -71,6 +71,7 @@ def plot_airplane_polars(
             "AVL",
         ]
 
+    colors_ = distinctipy.get_colors(len(airplane_names) * len(solvers))
     for i, airplane in enumerate(airplane_names):
         flag = False
         for j, solver in enumerate(solvers):
@@ -106,11 +107,11 @@ def plot_airplane_polars(
 
                         x: Series[float] = polar[f"{key0}"]
                         y: Series[float] = polar[f"{key1}"]
-                        if len(solvers) == 1:
-                            c = colors_(j / len(airplane_names))
+                        if len(airplane_names) == 1:
+                            c = colors_[j]
                             m = markers[j].get_marker()
                         else:
-                            c = colors_(j / len(solvers))
+                            c = colors_[j]
                             m = markers[i].get_marker()
                         label: str = f"{airplane} - {solver}"
                         try:
@@ -121,7 +122,7 @@ def plot_airplane_polars(
                                 color=c,
                                 marker=m,
                                 label=label,
-                                markersize=3.5,
+                                markersize=5,
                                 linewidth=1,
                             )
                         except ValueError as e:

@@ -12,7 +12,7 @@ from .max_iter import get_max_iterations_3
 def get_wake_data_3(
     plane: Airplane,
     case: str,
-) -> tuple[FloatArray, FloatArray, FloatArray]:
+) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, FloatArray, FloatArray]:
     """Get the wake data from a given case by reading the YOURS.WAK file.
 
     Args:
@@ -32,35 +32,44 @@ def get_wake_data_3(
     fname: str = os.path.join(CASEDIR, "YOURS.WAK")
     with open(fname) as file:
         data: list[str] = file.readlines()
-    a: list[list[float]] = []
+    positions: list[list[float]] = []
+    vorticity: list[list[float]] = []
+    velocity: list[list[float]] = []
+    deformation: list[list[float]] = []
+
     b: list[list[float]] = []
     c: list[list[float]] = []
     iteration = 0
-    flag: bool = True
     maxiter: int = get_max_iterations_3(plane, case)
     for i, line in enumerate(data):
-        if line.startswith("  WAKE"):
+        if line.startswith("WAKE"):
             foo: list[str] = line.split()
             iteration = int(foo[3])
             continue
         if iteration >= maxiter:
             foo = line.split()
-            if (len(foo) == 4) and flag:
-                _, x, y, z = (float(i) for i in foo)
-                a.append([x, y, z])
+            if len(foo) == 13:
+                i, x, y, z, vx, vy, vz, ux, uy, uz, gx, gy, gz = (float(i) for i in foo)
+                positions.append([x, y, z])
+                vorticity.append([vx, vy, vz])
+                velocity.append([ux, uy, uz])
+                deformation.append([gx, gy, gz])
             elif len(foo) == 3:
                 x, y, z = (float(i) for i in foo)
-                flag = False
                 b.append([x, y, z])
             elif len(foo) == 4:
                 _, x, y, z = (float(i) for i in foo)
                 c.append([x, y, z])
 
-    A1: FloatArray = np.array(a, dtype=float)
+    XP: FloatArray = np.array(positions, dtype=float)
+    QP: FloatArray = np.array(vorticity, dtype=float)
+    VP: FloatArray = np.array(velocity, dtype=float)
+    GP: FloatArray = np.array(deformation, dtype=float)
+
     B1: FloatArray = np.array(b, dtype=float)
     C1: FloatArray = np.array(c, dtype=float)
 
-    return A1, B1, C1
+    return XP, QP, VP, GP, B1, C1
 
 
 def nwake_data_7(
@@ -114,7 +123,7 @@ def nwake_data_7(
 def wake_data_7(
     plane: Airplane,
     case: str,
-) -> FloatArray:
+) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray]:
     """Get the wake data from a given case by reading the YOURS.WAK file.
 
     Args:
@@ -148,9 +157,11 @@ def wake_data_7(
             pass
             # print(foo)
 
-    A: FloatArray = np.array(a, dtype=float)
-
-    return A
+    XP: FloatArray = np.array(a, dtype=float)
+    QP: FloatArray = np.array(a, dtype=float)
+    UP: FloatArray = np.array(a, dtype=float)
+    GP: FloatArray = np.array(a, dtype=float)
+    return XP, QP, UP, GP
 
 
 def grid_data_7(
@@ -201,9 +212,9 @@ def grid_data_7(
 def get_wake_data_7(
     plane: Airplane,
     case: str,
-) -> tuple[FloatArray, FloatArray, FloatArray]:
-    A = wake_data_7(plane, case)
+) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, FloatArray, FloatArray]:
+    XP, QP, UP, GP = wake_data_7(plane, case)
     B = nwake_data_7(plane, case)
     C = grid_data_7(plane, case)
 
-    return A, B, C
+    return XP, QP, UP, GP, B, C

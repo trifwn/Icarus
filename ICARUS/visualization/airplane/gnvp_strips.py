@@ -18,6 +18,7 @@ def gnvp_strips_3d(
     pln: Airplane,
     case: str,
     NBs: list[int],
+    genuvp_version: int = 3,
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -32,7 +33,7 @@ def gnvp_strips_3d(
         DataFrame: DataFrame of the strip data
 
     """
-    all_strip_data, body_data = get_strip_data(pln, case, NBs)
+    all_strip_data, body_data = get_strip_data(pln, case, NBs, genuvp_version)
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
     ax.set_title(f"{pln.name} {category} Data")
@@ -67,6 +68,7 @@ def gnvp_strips_2d(
     pln: Airplane,
     case: str,
     NB: int | list[int],
+    genuvp_version: int = 3,
     category: str = "Wind",
 ) -> DataFrame | int:
     """Plots the 2D strips of a given airplane.
@@ -90,7 +92,7 @@ def gnvp_strips_2d(
     if type(NB) is not int:
         return 0
 
-    stripDat, data = get_strip_data(pln, case, [NB])
+    stripDat, data = get_strip_data(pln, case, [NB], genuvp_version)
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")

@@ -46,7 +46,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     # Get the Case Name
     case: str = angle_to_case(2.0)
     # Get the grid data from the gnvp results
-    _, _, grid_gnvp = get_wake_data(airplane, case)
+    XP, QP, VP, GP, near_wake, grid_gnvp = get_wake_data(airplane, case)
     mesh_grid_gnvp = np.meshgrid(
         grid_gnvp,
     )  # converts the array to a meshgrid

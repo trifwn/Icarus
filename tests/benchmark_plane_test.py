@@ -21,7 +21,7 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
 
     Simplewing = WingSegment(
         name=name,
-        root_airfoil="NACA0012",
+        root_airfoil="NACA2412",
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,
@@ -29,8 +29,8 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         sweep_offset=0.0,
         root_chord=1.0,
         tip_chord=1.0,
-        N=10,
-        M=5,
+        N=15,
+        M=8,
         mass=1,
     )
     airplane = Airplane(Simplewing.name, [Simplewing])

@@ -29,8 +29,8 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     options: Struct = gnvp3.get_analysis_options(verbose=True)
     solver_parameters: Struct = gnvp3.get_solver_parameters()
 
-    AoAmin = -3
-    AoAmax = 3
+    AoAmin = -5
+    AoAmax = 5
     NoAoA = (AoAmax - AoAmin) + 1
     angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
     angles: list[float] = [ang for ang in angles_all]
