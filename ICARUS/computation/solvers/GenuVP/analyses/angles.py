@@ -266,7 +266,7 @@ def run_gnvp_angles_parallel(
         if genu_version == 3:
             num_processes = int(CPU_TO_USE)
         else:
-            num_processes = int((CPU_TO_USE) / 3)
+            num_processes = int((CPU_TO_USE))
         with Pool(num_processes) as pool:
             args_list = [
                 (

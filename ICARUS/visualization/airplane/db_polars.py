@@ -109,7 +109,7 @@ def plot_airplane_polars(
                         y: Series[float] = polar[f"{key1}"]
                         if len(airplane_names) == 1:
                             c = colors_[j]
-                            m = markers[j].get_marker()
+                            m = 'o' 
                         else:
                             c = colors_[j]
                             m = markers[i].get_marker()

@@ -56,7 +56,7 @@ def main() -> None:
     # embraer.visualize()
 
     timestep: dict[str, float] = {"hermes": 1e-3}
-    maxiter: dict[str, int] = {"hermes": 300}
+    maxiter: dict[str, int] = {"hermes": 100}
     UINF: dict[str, float] = {"hermes": 20}
     ALTITUDE: dict[str, int] = {"hermes": 0}
 
@@ -110,7 +110,7 @@ def main() -> None:
             solver_parameters: Struct = gnvp.get_solver_parameters()
             AOA_MIN = -6
             AOA_MAX = 10
-            NO_AOA: int = 2 * (AOA_MAX - AOA_MIN) + 1
+            NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
             angles: FloatArray = np.linspace(
                 AOA_MIN,
                 AOA_MAX,
@@ -173,7 +173,7 @@ def main() -> None:
             try:
                 state.add_polar(
                     polar=forces,
-                    polar_prefix="GenuVP3 2D",
+                    polar_prefix="GenuVP3 Potential",
                     is_dimensional=True,
                 )
                 unstick = state

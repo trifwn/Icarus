@@ -378,7 +378,7 @@ def geofile(
         data.append("               <blank>\n")
         NB: int = bod.NB
         geo_body_header(data, bod, NB)
-        data.append(f"{len(movements[i])+1}           LEVEL  the level of movement\n")
+        data.append(f"{len(movements[i]) + 1}           LEVEL  the level of movement\n")
         data.append("               <blank>\n")
         data.append("Give  data for every level\n")
         # PITCH, ROLL, YAW, Movements to CG with angular velocity
@@ -564,11 +564,11 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             # Check Whether to split a symmetric body into two parts
             if not params.Use_Grid:
                 f.write(
-                    f'1          {"".join(char for char in bod.airfoil_name if char.isdigit())}\n',
+                    f"1          {''.join(char for char in bod.airfoil_name if char.isdigit())}\n",
                 )
             else:
                 f.write(
-                    f'0          {"".join(char for char in bod.airfoil_name if char.isdigit())}       {bod.name}.WG\n',
+                    f"0          {''.join(char for char in bod.airfoil_name if char.isdigit())}       {bod.name}.WG\n",
                 )
                 # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
                 # Specify option 0 to read the file
@@ -603,7 +603,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             blankline(f)
             f.write("NFILFL     NFILDS     NFILWG      [corresponding file names]\n")
             f.write(
-                f"{file_name(bod.name,'FL')}{file_name(bod.name,'DS')}{file_name(bod.name,'OWG')}\n",
+                f"{file_name(bod.name, 'FL')}{file_name(bod.name, 'DS')}{file_name(bod.name, 'OWG')}\n",
             )
             blankline(f)
             f.write("XOO        YOO        ZOO\n")
@@ -623,7 +623,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             offset: float = round(bod.offset / (bod.y_end - bod.y_0), ndigits=5)
 
             f.write("IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
-            f.write(f"1          0           0.         {ff5(bod.y_end - bod.y_0,8)}\n")
+            f.write(f"1          0           0.         {ff5(bod.y_end - bod.y_0, 8)}\n")
             blankline(f)
             f.write(
                 "IEXCH      NFILCH      FCCH(1)    FCCH(2)   FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)\n",
@@ -643,7 +643,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
                 "IEXXO      NFILXO      FCXO(1)    FCXO(2)   FCXO(3)    FCXO(4)    FCXO(5)    FCXO(6)\n",
             )
             f.write(
-                f"4                      {ff4(0.)} {ff4(offset)}     0.         0.         0.         0.\n",
+                f"4                      {ff4(0.0)} {ff4(offset)}     0.         0.         0.         0.\n",
             )
             blankline(f)
             f.write(
@@ -760,6 +760,9 @@ def make_input_files(
     bldFiles(bodies, params)
     # CLD FILES
     cldFiles(bodies, params, solver)
+    # Check if gnvp.out exists and remove it
+    if os.path.exists("gnvp.out"):
+        os.remove("gnvp.out")
     os.chdir(HOMEDIR)
 
 

@@ -57,7 +57,7 @@ def dfile(params: GenuParameters) -> None:
 
     # Simulation options
     f_io.write(f"** Read the simulation options{tabs(9)}<blank>\n")
-    f_io.write(f"0{tabs(3)}IYNPMESH\n")
+    f_io.write(f"1{tabs(3)}IYNPMESH\n")
     f_io.write(f"0{tabs(3)}IYNSG\n")
     f_io.write(f"0{tabs(3)}IYNCHVOR\n")
     f_io.write(f"10000{tabs(2)}NTIMEHYB{tabs(11)}<blank>\n")
@@ -121,7 +121,7 @@ def dfile(params: GenuParameters) -> None:
     inc: float = np.arctan2(u_z, u_x) * 180 / np.pi
 
     f_io.write(f"** Read the INFLOW parameters{tabs(9)}<blank>\n")
-    f_io.write(f"0.{tabs(3)}UREF{tabs(2)}reference velocity\n")
+    f_io.write(f"1.{tabs(3)}UREF{tabs(2)}reference velocity\n")
     f_io.write(f"{ff2(u_inf)}{tabs(3)}AUINF{tabs(2)}wind velocity\n")
     f_io.write(f" {ff2(yaw)}{tabs(2)}YawAngle{tabs(1)}Yaw Angle [deg]  ! in Z always\n")
     f_io.write(
@@ -392,17 +392,24 @@ def grid_file(bod: GenuSurface) -> None:
         grid: FloatArray | list[FloatArray] = bod.grid
         f_wg.write("\n")
         if isinstance(grid, list):
+            grid = np.array(grid)
+
+        if len(np.shape(grid)) == 4:
             for subgrid in grid:
                 for nstrip in subgrid:
                     for point in nstrip:
                         f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
                     f_wg.write("\n")
-        else:
+        elif len(np.shape(grid)) == 3:
             for n_strip in grid:  # For each strip
                 for m_point in n_strip:  # For each point in the strip
                     # Grid Coordinates
                     f_wg.write(f"{m_point[0]} {m_point[1]} {m_point[2]}\n")
                 f_wg.write("\n")
+        elif len(np.shape(grid)) == 2:
+            for point in grid:
+                f_wg.write(f"{point[0]} {point[1]} {point[2]}\n")
+            f_wg.write("\n")
 
 
 def topology_files(
@@ -493,17 +500,17 @@ def body_movements(
     f_io.write("Give Flap data\n")
     f_io.write("0           IYNFlap\n")
     f_io.write("            SpanFl1  SpanFl2\n")
-    f_io.write("72.016   82.304    ! =0.7*RTIP, 0.8*RTIP, RTIP=102.88m\n")
+    f_io.write("_ _    ! =0.7*RTIP, 0.8*RTIP, RTIP=102.88m\n")
     f_io.write("            AKSIo  AFlap  Freq  Phase\n")
     f_io.write(
-        "0.9  10. 6.0318576  0.     ! AKSIo[]  AFLap[deg]  Freq[rad/s]  Phase[deg]\n",
+        "0.  0. 0.  0.     ! AKSIo[]  AFLap[deg]  Freq[rad/s]  Phase[deg]\n",
     )
     f_io.write("-------------------------------------------------------------------\n")
     f_io.write("Give  data for every level\n")
 
     for j, mov in enumerate(movements):
         f_io.write(
-            f"NB={NB}, lev={NB-j}  ({mov.translation_axis} axis {mov.name} rotation)\n",
+            f"NB={NB}, lev={NB - j}  ({mov.translation_axis} axis {mov.name} rotation)\n",
         )
         f_io.write("Rotation\n")
         f_io.write(f"{int(mov.rotation_type)}           IMOVEAB  type of movement\n")
@@ -547,27 +554,21 @@ def pm_file() -> None:
     """Write the pm.input file used for the vortex particle parallelization."""
     fname = "pm.input"
     with open(fname, "w", encoding="utf-8") as file:
-        file.write(f"8.0{tabs(2)}8.0{tabs(1)}8.0{tabs(3)}! Dpm[X,Y,Z)\n")
+        file.write(f"0.2{tabs(2)}0.2{tabs(1)}0.2{tabs(3)}! Dpm[X,Y,Z)\n")
         file.write(f"4{tabs(6)}! projection fun\n")
         file.write(f"2{tabs(6)}! boundary cond type\n")
         file.write(f"1{tabs(6)}! Variable/Constant Volume(0,1)\n")
         file.write(f"0{tabs(6)}! EPSVOL\n")
         file.write(f"8{tabs(6)}! ncoarse\n")
-        file.write(f"4  1  1{tabs(3)}! Number of Blocks[i,j,k) == np\n")
+        file.write(f"1  1  1{tabs(3)}! Number of Blocks[i,j,k) == np\n")
         file.write(f"1  1{tabs(4)}! remesh(0,1)/Number of Particels per cell\n")
         file.write(f"1  3{tabs(4)}! tree(0,1),Number of levels\n")
-        file.write(f"12{tabs(6)}! Number of threads       ==max(available threads)\n")
+        file.write(f"1{tabs(6)}! Number of threads       ==max(available threads)\n")
         file.write("0\n")
         file.write("0\n")
         file.write(f"0{tabs(6)}! IPMWRITE  number of pm time series, max value 10\n")
-
         # First num is the iteration to start writing the pm file and the second is the number of iterations to write the pm file
-        file.write("649  72\n")
-        file.write("900 90\n")
-        file.write("1008  72\n")
-        file.write("1200 90\n")
-        file.write("4410 90\n")
-
+        file.write("0 0\n")
 
 def cld_files(
     bodies: list[GenuSurface],
@@ -660,7 +661,7 @@ def body_connections(NBs: int, name: str) -> None:
         f_io.write(f"<{i} connection>\n")
         f_io.write(f"2{tabs(4)}! Type of connection single btype=3\n")
         f_io.write(f"1{tabs(4)}! Number of bodies\n")
-        f_io.write(f"{i+1} {1} {1}{tabs(3)}! Index of connected Body\n")
+        f_io.write(f"{i + 1} {1} {1}{tabs(3)}! Index of connected Body\n")
         f_io.write("<end of connection>\n")
     with open(f"{name}.bcon", "w", encoding="utf-8") as file:
         file.write(f_io.getvalue().expandtabs(4))

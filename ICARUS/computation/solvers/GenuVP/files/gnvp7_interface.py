@@ -24,8 +24,10 @@ def gnvp7_execute(HOMEDIR: str, ANGLEDIR: str) -> int:
 
     """
     os.chdir(ANGLEDIR)
+    os.makedirs(os.path.join(ANGLEDIR, "vpm_case"), exist_ok=True)
 
-    cmd = f"module load mkl compiler openmpi > /dev/null ; mpirun '-n' '4' '{GenuVP7_exe}'"
+    # cmd = f"module load mkl compiler openmpi/intel > /dev/null ; mpirun '-n' '4' '{GenuVP7_exe}'"
+    cmd = f"module load mkl compiler openmpi/intel > /dev/null ; '{GenuVP7_exe}'"
     # cmd = "gnvp7"
     with open("input", encoding="utf-8") as fin:
         with open("gnvp7.out", "w", encoding="utf-8") as fout:

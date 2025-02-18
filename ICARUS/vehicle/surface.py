@@ -534,6 +534,8 @@ class WingSurface:
 
     @property
     def aspect_ratio(self) -> float:
+        if self.is_symmetric_y:
+            return (self.span**2) / self.S / 2
         return (self.span**2) / self.S
 
     @property
