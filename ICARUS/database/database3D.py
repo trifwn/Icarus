@@ -310,7 +310,9 @@ class Database_3D:
             logging.debug(
                 f"No forces.gnvp{gnvp_version} file found in {vehicle_folder} folder at {self.DB3D}!\nNo polars Created as well",
             )
-            print("Probl")
+            print(
+                f"No forces.gnvp{gnvp_version} file found in {vehicle_folder} folder at {self.DB3D}!\nNo polars Created as well",
+            )
 
         for case in cases:
             # Load States

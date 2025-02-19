@@ -144,23 +144,29 @@ def wake_data_7(
 
     with open(fname) as file:
         data: list[str] = file.readlines()
-    a: list[list[float]] = []
+    positions: list[list[float]] = []
+    charges: list[list[float]] = []
     for line in data:
         foo: list[str] = line.split()
         if len(foo) == 0:
             continue
         try:
-            foo = foo[:3]
-            x, y, z = (float(num) for num in foo)
-            a.append([x, y, z])
-        except ValueError:
+            (
+                x, y, z , 
+                i, ivr_nb, 
+                vx, vy, vz,
+                ale, gam, aavr, rvrp,
+                xpn, ypn, zpn,
+            ) = (float(num) for num in foo)
+            positions.append([x, y, z])
+            charges.append([vx, vy, vz])
+        except ValueError as e:
             pass
-            # print(foo)
 
-    XP: FloatArray = np.array(a, dtype=float)
-    QP: FloatArray = np.array(a, dtype=float)
-    UP: FloatArray = np.array(a, dtype=float)
-    GP: FloatArray = np.array(a, dtype=float)
+    XP: FloatArray = np.array(positions, dtype=float)
+    QP: FloatArray = np.array(charges, dtype=float)
+    UP: FloatArray = np.array(positions, dtype=float)
+    GP: FloatArray = np.array(positions, dtype=float)
     return XP, QP, UP, GP
 
 

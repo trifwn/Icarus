@@ -9,7 +9,7 @@ from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_3
 from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.database.utils import angle_to_case
 from ICARUS.vehicle.plane import Airplane
-
+from ICARUS.database.utils import case_to_angle
 
 def plot_gnvp3_wake(
     plane: Airplane,
@@ -32,7 +32,7 @@ def plot_gnvp7_wake(
 def plot_gnvp_wake(
     gnvp_version: int,
     plane: Airplane,
-    case: str,
+    case: str | float,
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
@@ -45,6 +45,9 @@ def plot_gnvp_wake(
         figsize (tuple[int,int]): Figure Size. Defaults to (16, 7).
 
     """
+    if isinstance(case, float):
+        case = angle_to_case(case)
+
     if gnvp_version == 3:
         get_wake_data = get_wake_data_3
     elif gnvp_version == 7:
@@ -57,7 +60,7 @@ def plot_gnvp_wake(
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
-    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case}")
+    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case_to_angle(case)}")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)

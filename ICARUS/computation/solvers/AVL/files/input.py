@@ -300,7 +300,7 @@ def avl_geo(
                         REYNOLDS_BINS=REYNOLDS_BINS,
                     )
                     f_io.write("CDCL\n")
-                    cl, cd = polar_obj.get_cl_cd_parabolic(reynolds)
+                    cl, cd, _ = polar_obj.get_cl_cd_parabolic(reynolds)
                     f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
                     f_io.write(
                         f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n",

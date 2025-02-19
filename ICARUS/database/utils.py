@@ -17,6 +17,22 @@ def angle_to_case(angle: float) -> str:
         folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1] + "_AoA"
     return folder
 
+def case_to_angle(case: str) -> float:
+    """Convert case folder name to angle
+
+    Args:
+        case (str): folder name
+
+    Returns:
+        float: Angle of simulation
+
+    """
+    if case[0] == "m":
+        angle: float = -float(case[1:7])
+    else:
+        angle = float(case[:7])
+    return angle
+
 
 def disturbance_to_case(dst: Disturbance) -> str:
     """Convert disturbance to case folder name
