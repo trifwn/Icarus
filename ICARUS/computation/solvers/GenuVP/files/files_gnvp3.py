@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
@@ -483,18 +483,13 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
 
         # Get the airfoil polar
         reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
-        RE_MIN = 8e4
-        RE_MAX = 1e7
-        NUM_BINS = 12
-        REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
         try:
             DB = Database.get_instance()
-            polars: Polars = DB.foils_db.find_or_compute_polars(
+            polars: AirfoilPolars = DB.get_or_compute_airfoil_polars(
                 airfoil=DB.get_airfoil(bod.airfoil_name),
                 reynolds=reynolds,
                 solver_name=solver,
                 aoa=np.linspace(-10, 16, 53),
-                REYNOLDS_BINS=REYNOLDS_BINS,
             )
         except PolarsNotFoundError:
             raise ValueError(

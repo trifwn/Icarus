@@ -23,7 +23,9 @@ def main() -> None:
     start_time: float = time.time()
 
     # # DB CONNECTION
-    database_folder = "E:\\Icarus\\Data"
+    database_folder = os.path.join("/mnt/e/ICARUS", "Data")
+    print(database_folder)
+    # "E:\\Icarus\\Data"
     # Load the database
     DB = Database(database_folder)
 
@@ -63,11 +65,11 @@ def main() -> None:
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
     TEMPERATURE: dict[str, int] = {"hermes": 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"hermes": True}
+    STATIC_ANALYSIS: dict[str, float] = {"hermes": False}
     DYNAMIC_ANALYSIS: dict[str, float] = {"hermes": True}
 
     # Get Solver
-    GNVP_VERSION = 3
+    GNVP_VERSION = 7
     if GNVP_VERSION == 7:
         from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
 
@@ -138,10 +140,11 @@ def main() -> None:
             airplane.save()
 
             from ICARUS.computation.solvers.GenuVP.analyses.angles import (
-                process_gnvp_angles_run_3,
+                process_gnvp_angles_run,
             )
 
-            process_gnvp_angles_run_3(airplane, state)
+            process_gnvp_angles_run(airplane, state, GNVP_VERSION)
+            state.save(os.path.join(DB.DB3D, airplane.directory))
 
             from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
 
@@ -167,14 +170,14 @@ def main() -> None:
         if DYNAMIC_ANALYSIS[airplane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            forces = DB.vehicles_db.get_forces(airplane.name)
+            forces = DB.get_vehicle_polars(airplane)
             if not isinstance(forces, DataFrame):
                 raise ValueError(f"Polars for {airplane.name} not found in DB")
             try:
                 state.add_polar(
                     polar=forces,
-                    polar_prefix="GenuVP3 Potential",
-                    is_dimensional=True,
+                    polar_prefix=f"GenuVP{GNVP_VERSION} Potential",
+                    is_dimensional=False,
                 )
                 unstick = state
             except Exception as error:

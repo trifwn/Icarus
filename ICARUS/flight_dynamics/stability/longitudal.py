@@ -37,6 +37,8 @@ def longitudal_stability_finite_differences(
     trim_state: DataFrame = pert[pert["Type"] == "Trim"]
 
     for var in ["u", "q", "w", "theta"]:
+        if state.scheme is None:
+            state.scheme = "Central"
         if state.scheme == "Central":
             front: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
             back: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]

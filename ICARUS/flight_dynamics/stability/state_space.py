@@ -85,7 +85,7 @@ class LateralStateSpace:
         self.spiral: float = 0.0
         self.n_modes = 3
         eigenvalue_analysis(self)
-        self.classify_modes()
+        # self.classify_modes()
 
     def classify_modes(self) -> None:
         """Classify the modes based on the eigenvalues. On the lateral case, the modes are:
@@ -220,7 +220,7 @@ class LongitudalStateSpace:
         self.overdamped_short_period: list[float] = [0.0, 0.0]
         self.n_modes: int = 2
         eigenvalue_analysis(self)
-        self.classify_modes()
+        # self.classify_modes()
 
     def classify_modes(self) -> None:
         """Classify the modes based on the eigenvalues. On the longitudinal case, the modes are:

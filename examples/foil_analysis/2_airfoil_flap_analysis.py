@@ -94,7 +94,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     # RUN
     xfoil.execute(parallel=False)
     # Get polar
-    polar = DB.foils_db.get_polars(airfoil_flap.name.upper())
+    polar = DB.get_airfoil_polars(airfoil_flap)
     polar.data
     print("\n\n\n")
     # fig = polar.plot()

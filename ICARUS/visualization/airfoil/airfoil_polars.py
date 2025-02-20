@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import Series
 
+from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.database import Database
 
 from .. import colors_
@@ -13,7 +14,7 @@ from .. import markers
 
 
 def plot_airfoil_polars(
-    airfoil_name: str,
+    airfoil: str | Airfoil,
     solvers: list[str] | str = "All",
     plots: list[list[str]] = [
         ["AoA", "CL"],
@@ -59,9 +60,15 @@ def plot_airfoil_polars(
 
     # Get the data from the database
     DB = Database.get_instance()
-    airfoil_data = DB.foils_db.get_airfoil_data(airfoil_name)
+    airfoil_data = DB.get_airfoil_data(airfoil)
     solvers = [solver for solver in solvers if solver in airfoil_data.solvers]
     solvers_not_in_db = [solver for solver in solvers if solver not in airfoil_data.solvers]
+
+    if isinstance(airfoil, Airfoil):
+        airfoil_name = airfoil.name
+    else:
+        airfoil_name = airfoil
+
     if solvers_not_in_db:
         print(f"Solver(s) {solvers_not_in_db} not in database")
 
@@ -87,7 +94,7 @@ def plot_airfoil_polars(
 
                     x: Series[float] = polar[f"{key0}"]
                     y: Series[float] = polar[f"{key1}"]
-                    c = colors_(j / len(reynolds_list))
+                    c = colors_[j]
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reynolds} - {solver}"
                     try:

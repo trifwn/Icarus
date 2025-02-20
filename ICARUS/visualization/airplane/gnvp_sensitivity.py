@@ -143,7 +143,7 @@ def plot_sensitivity(
                     mz = mz - mz_trim
 
                 j += 1
-                c = colors_(i / len(vars2s))
+                c = colors_[i]
                 m = markers[j]
                 # style = f"{c}{m}--"
 

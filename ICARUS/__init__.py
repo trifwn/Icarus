@@ -50,6 +50,7 @@ try:
     import jax
 
     # Set precision to 64 bits
+    jax.config.update("jax_platforms", "cpu")
     jax.config.update("jax_enable_x64", True)
     HAS_JAX = True
 
@@ -66,12 +67,17 @@ except ImportError:
 ### SOLVER EXECUTABLES ###
 
 if platform_os == "Windows":
+    multiprocessing.set_start_method("spawn")
     GenuVP3_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp3.exe")
     GenuVP7_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp7.exe")
     F2W_exe: str = os.path.join(INSTALL_DIR, "bin", "f2w.exe")
     Foil_Section_exe: str = os.path.join(INSTALL_DIR, "bin", "foil_section.exe")
     AVL_exe: str = os.path.join(INSTALL_DIR, "bin", "avl.exe")
 elif platform_os == "Linux":
+    try:
+        multiprocessing.set_start_method("forkserver")
+    except RuntimeError:
+        pass
     GenuVP3_exe = os.path.join(INSTALL_DIR, "bin", "gnvp3")
     GenuVP7_exe = os.path.join(INSTALL_DIR, "bin", "gnvp7")
     # F2W_exe = os.path.join(APPHOME, "bin", "f2w")

@@ -31,6 +31,7 @@ from ICARUS.vehicle.surface import WingSurface
 def gnvp_disturbance_case(
     DB: Database,
     plane: Airplane,
+    state: State,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -66,8 +67,9 @@ def gnvp_disturbance_case(
     """
     DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = DB.vehicles_db.get_case_directory(
+    PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{genu_version}",
     )
     airfoils: list[str] = plane.airfoils
@@ -167,6 +169,7 @@ def run_pertrubation_serial(
             kwargs={
                 "DB": DB,
                 "plane": plane,
+                "state": state,
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
@@ -191,8 +194,9 @@ def run_pertrubation_serial(
         )
         progress_bars.append(pbar)
         folder: str = disturbance_to_case(dst)
-        PLANEDIR: str = DB.vehicles_db.get_case_directory(
+        PLANEDIR: str = DB.get_vehicle_case_directory(
             airplane=plane,
+            state=state,
             solver=f"GenuVP{genu_version}",
         )
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
@@ -258,7 +262,7 @@ def run_pertrubation_parallel(
         if genu_version == 3:
             num_processes = CPU_TO_USE
         else:
-            num_processes = int(CPU_TO_USE / 3)
+            num_processes = int(CPU_TO_USE)
         with Pool(num_processes) as pool:
             args_list = [
                 (
@@ -283,8 +287,9 @@ def run_pertrubation_parallel(
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
     folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
-    GENUDIR: str = DB.vehicles_db.get_case_directory(
+    GENUDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{genu_version}",
     )
     CASEDIRS: list[str] = [os.path.join(GENUDIR, "Dynamics", folder) for folder in folders]
@@ -369,6 +374,7 @@ def sensitivity_serial(
         msg: str = gnvp_disturbance_case(
             DB,
             plane,
+            state,
             solver2D,
             maxiter,
             timestep,
@@ -410,6 +416,7 @@ def sensitivity_parallel(
         solver_options (dict[str, Any] | Struct): Solver Options
 
     """
+    DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
@@ -431,7 +438,9 @@ def sensitivity_parallel(
     with Pool(num_processes) as pool:
         args_list = [
             (
+                DB,
                 plane,
+                state,
                 solver2D,
                 maxiter,
                 timestep,
@@ -477,8 +486,9 @@ def proccess_pertrubation_res(
     """
     DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = DB.vehicles_db.get_case_directory(
+    DYNDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{gnvp_version}",
         case="Dynamics",
     )
@@ -489,14 +499,16 @@ def proccess_pertrubation_res(
         gnvp_version,
     )
     forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
-
+    print(forces)
     state.set_pertrubation_results(forces)
     state.stability_fd()
     # Save the state
-    PLANEDIR = DB.vehicles_db.get_plane_directory(
-        plane=plane,
+    CASEDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver=f"GenuVP{gnvp_version}",
     )
-    state.save(PLANEDIR)
+    state.save(CASEDIR)
     DB.vehicles_db.states[plane.name] = state
 
     return forces

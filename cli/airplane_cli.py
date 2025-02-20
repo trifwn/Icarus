@@ -98,7 +98,7 @@ def get_airplane_file(load_from: str) -> Airplane:
 
 
 def get_airplane_db(DB: Database) -> Airplane:
-    planes: list[str] = DB.vehicles_db.get_planenames()
+    planes: list[str] = DB.get_vehicle_names()
     airplane_question: list[List] = [
         List(
             "plane_name",
@@ -112,7 +112,7 @@ def get_airplane_db(DB: Database) -> Airplane:
         exit()
 
     try:
-        airplane: Airplane = DB.vehicles_db.planes[answer["plane_name"]]
+        airplane: Airplane = DB.get_vehicle(answer["plane_name"])
         return airplane
     except Exception as e:
         print(e)

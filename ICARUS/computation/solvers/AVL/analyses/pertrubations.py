@@ -69,13 +69,13 @@ def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
     state.stability_fd()
     # Save the state
     DB = Database.get_instance()
-    PLANEDIR = DB.vehicles_db.get_plane_directory(
-        plane=plane,
+    CASEDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver="AVL",
     )
-    state.save(PLANEDIR)
-
+    state.save(CASEDIR)
     DB.vehicles_db.states[plane.name] = state
-
     return forces
 
 

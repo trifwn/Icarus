@@ -7,7 +7,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.database import Database
 from ICARUS.database.database2D import AirfoilNotFoundError
 from ICARUS.visualization import colors_
@@ -70,8 +70,8 @@ def plot_airfoils_polars(
     for j, airfoil_name in enumerate(airfoil_names):
         for i, solver in enumerate(solvers):
             try:
-                polar: Polars = DB.foils_db.get_polars(
-                    airfoil_name=airfoil_name,
+                polar: AirfoilPolars = DB.get_airfoil_polars(
+                    airfoil=airfoil_name,
                     solver=solver,
                 )
             except AirfoilNotFoundError:
@@ -121,7 +121,7 @@ def plot_airfoils_polars(
 
                     x: Series[float] = polar_df[f"{key0}"]
                     y: Series[float] = polar_df[f"{key1}"]
-                    c = colors_(j / len(airfoil_names))
+                    c = colors_[j]
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reyn} - {solver}"
                     try:

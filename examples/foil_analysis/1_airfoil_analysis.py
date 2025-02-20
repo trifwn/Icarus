@@ -23,7 +23,7 @@ def main() -> None:
 
     # Load the database
     DB = Database(database_folder)
-    DB.load_data()
+    DB.load_all_data()
 
     # RUN SETUP
     calcXFoil: bool = True
@@ -35,12 +35,12 @@ def main() -> None:
     print(f"\tXfoil: {calcXFoil}")
     print(f"\tOpenfoam: {calcOpenFoam}")
 
-    print(f"Total number of loaded airfoils {len(list(DB.foils_db.airfoils.keys()))}")
+    print(f"Total number of loaded airfoils {len(list(DB.airfoils.keys()))}")
     print(
         f"Total number of computed airfoil data {len(list(DB.foils_db._raw_data.keys()))}",
     )
     print(
-        f"Total number of computed airfoil polars {len(list(DB.foils_db.polars.keys()))}",
+        f"Total number of computed airfoil polars {len(list(DB.airfoil_polars.keys()))}",
     )
 
     # airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
@@ -219,7 +219,7 @@ def main() -> None:
         )
         try:
             # Get polar
-            polar = DB.foils_db.get_polars(airfoil.name)
+            polar = DB.get_airfoil_polars(airfoil)
             airfoil_folder = os.path.join("Data/images/")
             polar.plot()
             plt.show(block=True)

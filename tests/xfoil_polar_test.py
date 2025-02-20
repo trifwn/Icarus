@@ -19,7 +19,7 @@ def xfoil_run() -> None:
 
     # Load the database
     DB = Database(database_folder)
-    DB.load_data()
+    DB.load_all_data()
 
     airfoils_to_compute: list[Airfoil] = []
     airfoils_to_compute.append(DB.get_airfoil("NACA4415"))
@@ -109,7 +109,7 @@ def xfoil_run() -> None:
 
         try:
             # Get polar
-            polar = DB.foils_db.get_polars(airfoil.name)
+            polar = DB.get_airfoil_polars(airfoil)
             airfoil_folder = os.path.join(DB.DB2D, "images")
             os.makedirs(airfoil_folder, exist_ok=True)
             polar.plot()

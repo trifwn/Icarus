@@ -27,7 +27,7 @@ def plot_convergence(
 
     """
     DB = Database.get_instance()
-    data = DB.vehicles_db.convergence_data
+    data = DB.vehicles_db.transient_data
 
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig: Figure = plt.figure(figsize=size)

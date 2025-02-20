@@ -36,6 +36,7 @@ class StopRunningThreadError(Exception):
 def gnvp_angle_case(
     DB: Database,
     plane: Airplane,
+    state: State,
     solver2D: str,
     maxiter: int,
     timestep: float,
@@ -66,8 +67,9 @@ def gnvp_angle_case(
 
     """
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR: str = DB.vehicles_db.get_case_directory(
+    PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{genu_version}",
     )
     airfoils: list[str] = plane.airfoils
@@ -158,8 +160,9 @@ def run_gnvp_angles(
     )
     print("Running Angles in Sequential Mode")
     DB = Database.get_instance()
-    PLANEDIR: str = DB.vehicles_db.get_case_directory(
+    PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{gnvp_version}",
     )
     progress_bars: list[tqdm[NoReturn]] = []
@@ -172,6 +175,7 @@ def run_gnvp_angles(
             kwargs={
                 "DB": DB,
                 "plane": plane,
+                "state": state,
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
@@ -266,12 +270,13 @@ def run_gnvp_angles_parallel(
         if genu_version == 3:
             num_processes = int(CPU_TO_USE)
         else:
-            num_processes = int((CPU_TO_USE))
+            num_processes = int(CPU_TO_USE)
         with Pool(num_processes) as pool:
             args_list = [
                 (
                     DB,
                     plane,
+                    state,
                     solver2D,
                     maxiter,
                     timestep,
@@ -293,8 +298,9 @@ def run_gnvp_angles_parallel(
                 print(f"Could not run GNVP got: {e}")
                 stop_event.set()
 
-    PLANEDIR: str = DB.vehicles_db.get_case_directory(
+    PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{genu_version}",
     )
     folders: list[str] = [angle_to_case(angle) for angle in angles]
@@ -334,7 +340,7 @@ def process_gnvp_angles_run_7(plane: Airplane, state: State) -> DataFrame:
 def process_gnvp_angles_run(
     plane: Airplane,
     state: State,
-    gvnp_version: int,
+    gnvp_version: int,
 ) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
@@ -350,30 +356,32 @@ def process_gnvp_angles_run(
     """
     DB = Database.get_instance()
     HOMEDIR: str = DB.HOMEDIR
-    PLANEDIR = DB.vehicles_db.get_plane_directory(
-        plane=plane,
+    CASEDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver=f"GenuVP{gnvp_version}",
     )
 
-    forces: DataFrame = log_forces(PLANEDIR, HOMEDIR, gvnp_version)
+    forces: DataFrame = log_forces(CASEDIR, HOMEDIR, gnvp_version)
     plane.save()
     state.add_polar(
         polar=forces,
-        polar_prefix=f"GenuVP{gvnp_version}",
+        polar_prefix=f"GenuVP{gnvp_version}",
         is_dimensional=True,
     )
-    state.save(PLANEDIR)
+    state.save(CASEDIR)
 
     logging.info("Adding Results to Database")
     # Add Plane to Database
-    file_plane: str = os.path.join(PLANEDIR, f"{plane.name}.json")
-    _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
+    file_plane: str = os.path.join(CASEDIR, f"{plane.name}.json")
+    _ = DB.load_vehicle(name=plane.name, file=file_plane)
 
     # Add Results to Database
-    DB.vehicles_db.load_gnvp_data(
-        plane=plane,
+    DB.load_vehicle_solver_data(
+        vehicle=plane,
         state=state,
-        vehicle_folder=plane.directory,
-        gnvp_version=gvnp_version,
+        folder=CASEDIR,
+        solver=f"GenuVP{gnvp_version}",
     )
 
     return forces

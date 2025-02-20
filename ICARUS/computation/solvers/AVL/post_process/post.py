@@ -48,8 +48,9 @@ def collect_avl_polar_forces(
     CDs = []
     Cms = []
     DB = Database.get_instance()
-    RESULTS_DIR = DB.vehicles_db.get_case_directory(
+    RESULTS_DIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
     )
     for angle in angles:
@@ -87,13 +88,6 @@ def collect_avl_polar_forces(
         columns=["AoA", "AVL Fz", "AVL Fx", "AVL My"],
     )
     polar_df = polar_df.sort_values("AoA").reset_index(drop=True)
-
-    PLANEDIR = DB.vehicles_db.get_plane_directory(
-        plane=plane,
-    )
-    filename = os.path.join(PLANEDIR, "forces.avl")
-
-    polar_df.to_csv(filename, index=False, float_format="%.10f")
     return polar_df
 
 
@@ -182,8 +176,9 @@ def implicit_dynamics_post(
     state: State,
 ) -> tuple[list[complex], list[complex]]:
     DB = Database.get_instance()
-    DYNAMICS_DIR = DB.vehicles_db.get_case_directory(
+    DYNAMICS_DIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
         case="Dynamics",
     )

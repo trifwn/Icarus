@@ -1,10 +1,11 @@
 import os
 
 from ICARUS.database.db import Database
+from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
 
-def get_max_iterations_3(plane: Airplane, case: str) -> int:
+def get_max_iterations_3(plane: Airplane, state: State, case: str) -> int:
     """Function to get Max Iterations that simulation ran for given an
     airplane object and a case directory
 
@@ -17,8 +18,9 @@ def get_max_iterations_3(plane: Airplane, case: str) -> int:
 
     """
     DB = Database.get_instance()
-    CASEDIR = DB.vehicles_db.get_case_directory(
+    CASEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="GenuVP3",
         case=case,
     )

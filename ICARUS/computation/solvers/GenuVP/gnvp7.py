@@ -113,7 +113,7 @@ solver_parameters: list[Parameter] = [
     ),
     IntParameter(
         "Movement_Levels",
-        4,
+        17,
         "NLEVELT number of movements levels",
     ),
     IntParameter(

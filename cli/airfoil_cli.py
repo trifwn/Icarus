@@ -87,12 +87,11 @@ def get_airfoil_NACA() -> Airfoil:
 
 
 def get_airfoil_db(DB: Database) -> Airfoil:
-    airfoils: Struct = DB.foils_db.airfoils
     airfoil_question: list[List] = [
         List(
             "airfoil",
             message="Which airfoil do you want to load",
-            choices=[airf_name for airf_name in airfoils.keys()],
+            choices=[airf_name for airf_name in DB.airfoils.keys()],
         ),
     ]
     answer: dict[Any, Any] | None = prompt(airfoil_question)
@@ -101,7 +100,7 @@ def get_airfoil_db(DB: Database) -> Airfoil:
         exit()
 
     try:
-        airfoil: Airfoil = airfoils[answer["airfoil"]]
+        airfoil: Airfoil = DB.get_airfoil(answer["airfoil"])
         return airfoil
     except Exception as e:
         print(e)

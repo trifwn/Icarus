@@ -20,7 +20,7 @@ def airplane_polars(plot: bool = False) -> None:
         from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
 
         plot_airplane_polars(
-            airplane_names=planenames,
+            airplanes=planenames,
             solvers=[
                 "GenuVP3 Potential",
                 "GenuVP3 2D",
@@ -37,8 +37,8 @@ def airplane_polars(plot: bool = False) -> None:
 
     solvers = ["GNVP3 2D", "GNVP7 2D", "LSPT 2D"]
     for pol in solvers:
-        computed = DB.vehicles_db.get_polars(planenames[0], pol)
-        desired = DB.vehicles_db.get_polars(planenames[0], "AVL")
+        computed = DB.get_vehicle_polars(planenames[0], pol)
+        desired = DB.get_vehicle_polars(planenames[0], "AVL")
         try:
             AoA_d: Series[float] = desired["AoA"].astype(float)
             AoA: Series[float] = computed["AoA"].astype(float)

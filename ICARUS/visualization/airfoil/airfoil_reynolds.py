@@ -6,7 +6,6 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import Series
 
-from ICARUS.core.struct import Struct
 from ICARUS.database import Database
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
@@ -63,14 +62,13 @@ def plot_airfoil_reynolds(
 
     # Get the data from the database
     DB = Database.get_instance()
-    data: Struct = DB.foils_db._raw_data
-
     for j, solver in enumerate(solvers):
         try:
-            polar = data[airfoil_name][solver][reynolds]
+            polar = DB.get_airfoil_polars(airfoil_name, solver)
+            df = polar.df
             if aoa_bounds is not None:
                 # Get data where AoA is in AoA bounds
-                polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
+                df = df.loc[(df["AoA"] >= aoa_bounds[0]) & (df["AoA"] <= aoa_bounds[1])]
             for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                 key0 = f"{plot[0]}"
                 key1 = f"{plot[1]}"
@@ -80,9 +78,9 @@ def plot_airfoil_reynolds(
                 if plot[1] == "AoA":
                     key1 = "AoA"
 
-                x: Series[float] = polar[f"{key0}"]
-                y: Series[float] = polar[f"{key1}"]
-                c = colors_(j / len(solvers))
+                x: Series[float] = df[f"{key0}"]
+                y: Series[float] = df[f"{key1}"]
+                c = colors_[j]
                 m = markers[i].get_marker()
                 label: str = f"{airfoil_name}: {reynolds} - {solver}"
                 try:

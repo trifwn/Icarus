@@ -67,6 +67,7 @@ def cosine_spacing_function(Ni: int, N: int, stretching: float) -> float:
     """Returns a cosine spaced array of length N."""
     return 0.5 * (1 - np.cos(np.pi * Ni / (N))) * stretching
 
+
 def sine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 0) -> float:
     """Returns a sine spaced array of length N."""
     if N < 0:
@@ -75,7 +76,7 @@ def sine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 0)
     else:
         y = np.sin(np.pi / (2 * (N - 1)) * Ni)
     y = (1 - factor) * y + factor * (Ni / (N - 1))
-    y = y * stretching
+    y: float = y * stretching
     return y
 
 

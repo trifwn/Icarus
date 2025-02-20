@@ -11,14 +11,16 @@ from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.GenuVP.post_process.strips import get_strip_data
+from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
 
 def gnvp_strips_3d(
-    pln: Airplane,
+    plane: Airplane,
+    state: State,
     case: str,
     NBs: list[int],
-    genuvp_version: int = 3,
+    gnvp_version: int = 3,
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -33,24 +35,25 @@ def gnvp_strips_3d(
         DataFrame: DataFrame of the strip data
 
     """
-    all_strip_data, body_data = get_strip_data(pln, case, NBs, genuvp_version)
+    all_strip_data, body_data = get_strip_data(plane, state, case, NBs, gnvp_version)
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
-    ax.set_title(f"{pln.name} {category} Data")
+    ax.set_title(f"{plane.name} {category} Data")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)
     ax.axis("scaled")
-    ax.set_xlim(-pln.span / 2, pln.span / 2)
-    ax.set_ylim(-pln.span / 2, pln.span / 2)
-    ax.set_zlim(-pln.span / 2, pln.span / 2)
+    ax.set_xlim(-plane.span / 2, plane.span / 2)
+    ax.set_ylim(-plane.span / 2, plane.span / 2)
+    ax.set_zlim(-plane.span / 2, plane.span / 2)
     max_value: float = body_data[category].max()
     min_value: float = body_data[category].min()
 
     norm = Normalize(vmin=min_value, vmax=max_value)
     cmap: Colormap = cm.get_cmap("viridis", 12)
 
-    for i, wg in enumerate(pln.surfaces):
+    for i, wg in enumerate(plane.surfaces):
+        print(f"Plotting Body {i + 1}, Name: {wg.name}, NBs: {NBs}")
         if i + 1 not in NBs:
             continue
         for j, surf in enumerate(wg.all_strips):
@@ -58,17 +61,18 @@ def gnvp_strips_3d(
 
             strip_values: list[float] = [float(item) for item in strip_df[category].values]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
-            surf.plot(fig, ax, None, color)
+            surf.plot(fig, ax, color=color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()
     return all_strip_data
 
 
 def gnvp_strips_2d(
-    pln: Airplane,
+    plane: Airplane,
+    state: State,
     case: str,
     NB: int | list[int],
-    genuvp_version: int = 3,
+    gnvp_version: int = 3,
     category: str = "Wind",
 ) -> DataFrame | int:
     """Plots the 2D strips of a given airplane.
@@ -92,10 +96,10 @@ def gnvp_strips_2d(
     if type(NB) is not int:
         return 0
 
-    stripDat, data = get_strip_data(pln, case, [NB], genuvp_version)
+    stripDat, data = get_strip_data(plane, state, case, [NB], gnvp_version)
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
-    ax.set_title(f"{pln.name} {pln.surfaces[NB-1].name} {category} Data")
+    ax.set_title(f"{plane.name} {plane.surfaces[NB - 1].name} {category} Data")
     ax.set_xlabel("Spanwise")
     # ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)

@@ -244,33 +244,33 @@ class Strip:
         if movement is None:
             movement = np.zeros(3)
 
-        to_plot = ["suction", "camber", "pressure"]
+        to_plot = ["camber"]
 
         xs: dict[str, list[float]] = {key: [] for key in to_plot}
         ys: dict[str, list[float]] = {key: [] for key in to_plot}
         zs: dict[str, list[float]] = {key: [] for key in to_plot}
 
-        N: int = 10
-        for i in range(N):
-            suction, camber, pressure = self.get_interpolated_section(i, N)
+        N_span: int = 10
+        for i in range(N_span):
+            suction, camber, pressure = self.get_interpolated_section(i, N_span)
 
-            x_camber, y_camber, z_camber = camber
-            x_suction, y_suction, z_suction = suction
-            x_pressure, y_pressure, z_pressure = pressure
+            x_camber, y_camber, z_camber = (camber.T + movement).T
+            x_suction, y_suction, z_suction = (suction.T + movement).T
+            x_pressure, y_pressure, z_pressure = (pressure.T + movement).T
 
             for key in to_plot:
                 if key == "camber":
-                    xs[key].extend(x_camber + movement[0])
-                    ys[key].extend(y_camber + movement[1])
-                    zs[key].extend(z_camber + movement[2])
+                    xs[key].append(x_camber)
+                    ys[key].append(y_camber)
+                    zs[key].append(z_camber)
                 elif key == "suction":
-                    xs[key].extend(x_suction + movement[0])
-                    ys[key].extend(y_suction + movement[1])
-                    zs[key].extend(z_suction + movement[2])
+                    xs[key].append(x_suction)
+                    ys[key].append(y_suction)
+                    zs[key].append(z_suction)
                 elif key == "pressure":
-                    xs[key].extend(x_pressure + movement[0])
-                    ys[key].extend(y_pressure + movement[1])
-                    zs[key].extend(z_pressure + movement[2])
+                    xs[key].append(x_pressure)
+                    ys[key].append(y_pressure)
+                    zs[key].append(z_pressure)
 
         for key in to_plot:
             X: FloatArray = np.array(xs[key])
@@ -278,10 +278,6 @@ class Strip:
             Z: FloatArray = np.array(zs[key])
 
             if color is not None:
-                if len(X.shape) == 1:
-                    X = X.reshape(1, -1)
-                    Y = Y.reshape(1, -1)
-                    Z = Z.reshape(1, -1)
                 my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
                     Z.shape[0],
                     Z.shape[1],
@@ -289,10 +285,6 @@ class Strip:
                 )
                 ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
             else:
-                if len(X.shape) == 1:
-                    X = X.reshape(1, -1)
-                    Y = Y.reshape(1, -1)
-                    Z = Z.reshape(1, -1)
                 my_color = "red"
                 ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
 

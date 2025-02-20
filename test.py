@@ -3,7 +3,9 @@ import unittest
 from tests.airplane_polars_test import airplane_polars
 from tests.avl_run_test import avl_run
 from tests.gnvp3_polar_test import gnvp3_run
+from tests.gnvp7_polar_test import gnvp7_run
 from tests.solver_geom_test import gnvp3_geometry
+from tests.solver_geom_test import gnvp7_geometry
 from tests.wing_geom_test import geom
 
 
@@ -20,11 +22,11 @@ class BaseAirplaneTests(unittest.TestCase):
     def test3_geometry_gnvp3(self) -> None:
         gnvp3_geometry(plot=True)
 
-    # def test5_gnvp7_run(self) -> None:
-    #     gnvp7_run(run_parallel=True)
+    def test5_gnvp7_run(self) -> None:
+        gnvp7_run(run_parallel=True)
 
-    # def test6_geometry_gnvp7(self) -> None:
-    #     gnvp7_geometry(plot=True)
+    def test6_geometry_gnvp7(self) -> None:
+        gnvp7_geometry(plot=True)
 
     # def test7_lspt_run(self) -> None:
     #     lspt_run()

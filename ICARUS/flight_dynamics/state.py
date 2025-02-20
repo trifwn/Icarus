@@ -107,6 +107,7 @@ class State:
         self.trim_dynamic_pressure = 0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
+        self.scheme: str = "Central"
         self.epsilons: dict[str, float] = {}
         self.polar: DataFrame = DataFrame()
         self.disturbances: list[dst] = []
@@ -274,7 +275,7 @@ class State:
 
     def add_all_pertrubations(
         self,
-        scheme: str,
+        scheme: str | None = None,
         epsilon: dict[str, float] | None = None,
     ) -> None:
         """Function to add a perturbations to the airplane for
@@ -283,7 +284,9 @@ class State:
         - scheme: "Central", "Forward", "Backward"
         - epsilon: Disturbance Magnitudes
         """
-        self.scheme: str = scheme
+        if scheme is None:
+            scheme = "Central"
+        self.scheme = scheme
         self.epsilons = {}
 
         self.disturbances = [
@@ -342,6 +345,7 @@ class State:
             x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
             # extract imaginary part
             y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
+            axs_now[i].set_title("Longitudal Eigenvalues")
             axs_now[i].scatter(x, y, label="Longitudal", color="r")
             i += 1
 
@@ -351,6 +355,7 @@ class State:
             # extract imaginary part
             y = [ele.imag for ele in self.state_space.lateral.eigenvalues]
             marker_x = MarkerStyle("x")
+            axs_now[i].set_title("Lateral Eigenvalues")
             axs_now[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
 
         for j in range(i + 1):
@@ -368,16 +373,16 @@ class State:
         ss = io.StringIO()
         ss.write(f"State: {self.name}\n")
         ss.write(f"Trim: {self.trim}\n")
-        ss.write(f"\n{45*'--'}\n")
+        ss.write(f"\n{45 * '--'}\n")
 
         if hasattr(self, "state_space"):
             ss.write("\nLongitudal State:\n")
             ss.write(
-                f"Eigen Values: {[round(item,3) for item in self.state_space.longitudal.eigenvalues]}\n",
+                f"Eigen Values: {[round(item, 3) for item in self.state_space.longitudal.eigenvalues]}\n",
             )
             ss.write("Eigen Vectors:\n")
             for item in self.state_space.longitudal.eigenvectors:
-                ss.write(f"\t{[round(i,3) for i in item]}\n")
+                ss.write(f"\t{[round(i, 3) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
                 tabulate(
@@ -387,15 +392,15 @@ class State:
                 ),
             )
 
-            ss.write(f"\n\n{45*'--'}\n")
+            ss.write(f"\n\n{45 * '--'}\n")
 
             ss.write("\nLateral State:\n")
             ss.write(
-                f"Eigen Values: {[round(item,3) for item in self.state_space.lateral.eigenvalues]}\n",
+                f"Eigen Values: {[round(item, 3) for item in self.state_space.lateral.eigenvalues]}\n",
             )
             ss.write("Eigen Vectors:\n")
             for item in self.state_space.lateral.eigenvectors:
-                ss.write(f"\t{[round(i,3) for i in item]}\n")
+                ss.write(f"\t{[round(i, 3) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
                 tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f"),

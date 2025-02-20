@@ -14,8 +14,8 @@ from pandas import DataFrame
 
 from ICARUS.airfoils.airfoil import Airfoil
 from ICARUS.airfoils.airfoil_polars import AirfoilData
+from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.airfoils.airfoil_polars import PolarNotAccurate
-from ICARUS.airfoils.airfoil_polars import Polars
 from ICARUS.airfoils.airfoil_polars import ReynoldsNotIncluded
 from ICARUS.core.struct import Struct
 
@@ -95,7 +95,7 @@ class Database_2D:
 
         self.EXTERNAL_DB = EXTERNAL_DB
 
-    def get_airfoils(self) -> list[str]:
+    def get_airfoil_names(self) -> list[str]:
         """Returns the available airfoils in the database.
 
         Returns:
@@ -127,7 +127,7 @@ class Database_2D:
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)
 
-    def get_polars(self, airfoil_name: str, solver: str = "Any") -> Polars:
+    def get_polars(self, airfoil: str | Airfoil, solver: str | None = None) -> AirfoilPolars:
         """Returns the polars object from the database.
 
         Args:
@@ -138,24 +138,24 @@ class Database_2D:
             Polars: Polars object
 
         """
-        if airfoil_name not in self.airfoils.keys():
-            self.add_airfoil(airfoil_name)
+        if isinstance(airfoil, str):
+            airfoil = self.get_airfoil(airfoil)
 
-        airfoil_name = airfoil_name.upper()
-        if airfoil_name.upper() not in self.polars.keys():
+        airfoil_name = airfoil.name.upper()
+        if airfoil_name not in self.polars.keys():
             try:
                 # Try to load the airfoil from the DB or EXTERNAL DB
-                self.add_airfoil_data(airfoil_name.upper())
-                if airfoil_name.upper() not in self.polars.keys():
+                self.load_airfoil_data(airfoil_name)
+                if airfoil_name not in self.polars.keys():
                     raise PolarsNotFoundError(airfoil_name)
             except (FileNotFoundError, StopIteration):
                 raise AirfoilNotFoundError(airfoil_name)
 
-        airfoil_data: AirfoilData = self.polars[airfoil_name.upper()]
+        airfoil_data: AirfoilData = self.polars[airfoil_name]
         polar = airfoil_data.get_polars(solver=solver)
         return polar
 
-    def get_airfoil_data(self, airfoil_name: str) -> AirfoilData:
+    def get_airfoil_data(self, airfoil: str | Airfoil) -> AirfoilData:
         """Returns the solvers available for a given airfoil.
 
         Args:
@@ -165,6 +165,13 @@ class Database_2D:
             list[str]: List of solver names
 
         """
+        if isinstance(airfoil, str):
+            airfoil_name = airfoil.upper()
+        elif isinstance(airfoil, Airfoil):
+            airfoil_name = airfoil.name.upper()
+        else:
+            raise ValueError("airfoil must be a string or an Airfoil object")
+
         if airfoil_name not in self.airfoils.keys():
             self.add_airfoil(airfoil_name)
 
@@ -172,7 +179,7 @@ class Database_2D:
         if airfoil_name.upper() not in self.polars.keys():
             try:
                 # Try to load the airfoil from the DB or EXTERNAL DB
-                self.add_airfoil_data(airfoil_name.upper())
+                self.load_airfoil_data(airfoil_name.upper())
                 if airfoil_name.upper() not in self.polars.keys():
                     raise PolarsNotFoundError(airfoil_name)
             except (FileNotFoundError, StopIteration):
@@ -214,15 +221,23 @@ class Database_2D:
             trips=trips,
         )
 
-    def find_or_compute_polars(
+    def get_or_compute_polars(
         self,
         airfoil: Airfoil,
         reynolds: float,
         aoa: list[float] | FloatArray,
         solver_name: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-        REYNOLDS_BINS: list[float] | FloatArray = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8],
-    ) -> Polars:
-        NUM_BINS = len(REYNOLDS_BINS)
+        REYNOLDS_BINS: list[float] | FloatArray | None = None,
+    ) -> AirfoilPolars:
+        if REYNOLDS_BINS is None:
+            RE_MIN = 1e4
+            RE_MAX = 1e8
+            BINS_PER_DECADE = 5
+            NUM_BINS = BINS_PER_DECADE * int(np.log10(RE_MAX / RE_MIN))
+            REYNOLDS_BINS = np.logspace(np.log10(RE_MIN), np.log10(RE_MAX), NUM_BINS)
+        else:
+            NUM_BINS = len(REYNOLDS_BINS)
+
         try:
             polars = self.get_polars(airfoil.name, solver=solver_name)
             reyns_computed = polars.reynolds_nums
@@ -286,7 +301,7 @@ class Database_2D:
                 )
                 return self.get_polars(airfoil.name, solver=solver_name)
 
-    def get_data(self, airfoil_name: str, solver: str) -> dict[str, DataFrame]:
+    def get_data(self, airfoil: str | Airfoil, solver: str | None = None) -> dict[str, DataFrame]:
         """Returns the data object from the database.
 
         Args:
@@ -297,6 +312,13 @@ class Database_2D:
             DataFrame: Data object
 
         """
+        if isinstance(airfoil, str):
+            airfoil = self.get_airfoil(airfoil)
+        elif isinstance(airfoil, Airfoil):
+            airfoil_name = airfoil.name.upper()
+        else:
+            raise ValueError("airfoil must be a string or an Airfoil object")
+
         if airfoil_name not in self._raw_data.keys():
             try:
                 # Try to load the airfoil from the DB or EXTERNAL DB
@@ -304,13 +326,16 @@ class Database_2D:
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)
 
+        if solver is None:
+            solver = self._raw_data[airfoil_name].keys()[0]
+
         if solver not in self._raw_data[airfoil_name].keys():
             raise ValueError(f"Solver {solver} not found in database!")
 
         data: dict[str, DataFrame] = self._raw_data[airfoil_name][solver]
         return data
 
-    def load_data(self) -> None:
+    def load_all_data(self) -> None:
         """Scans the filesystem and load all the data.
         Scans the filesystem and loads data if not already loaded.
         """
@@ -339,10 +364,15 @@ class Database_2D:
                 continue
 
             # Load Airfoil Data
-            self.add_airfoil_data(airfoil_folder)
+            self.load_airfoil_data(airfoil_folder)
         os.chdir(self.HOMEDIR)
 
-    def add_airfoil_data(self, airfoil_folder: str) -> None:
+    def load_airfoil_data(self, airfoil: str | Airfoil) -> None:
+        if isinstance(airfoil, Airfoil):
+            airfoil_folder = airfoil.name.upper()
+        else:
+            airfoil_folder = airfoil.upper()
+
         data = Struct()
         # Load Computed Data
         data[airfoil_folder] = self.read_airfoil_data_folder(airfoil_folder)
@@ -704,7 +734,7 @@ class Database_2D:
                 raise ValueError(f"Airfoil {airfoil_name} not in database!")
 
         airfoil_data: AirfoilData = self.polars[airfoil_name]
-        polars: Polars = airfoil_data.get_polars(solver=solver)
+        polars: AirfoilPolars = airfoil_data.get_polars(solver=solver)
         reynolds_stored: list[float] = polars.reynolds_nums
         max_reynolds_stored: float = max(reynolds_stored)
         min_reynolds_stored: float = min(reynolds_stored)

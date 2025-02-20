@@ -71,7 +71,7 @@ def setup_plot(
         ]
 
     DB = Database.get_instance()
-    polars = [DB.vehicles_db.get_polars(airplane) for airplane in airplanes]
+    polars = [DB.get_vehicle_polars(airplane) for airplane in airplanes]
     cm_lines = {}
     cd_lines = {}
     cl_lines = {}

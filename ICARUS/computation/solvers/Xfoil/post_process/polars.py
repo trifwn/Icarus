@@ -15,7 +15,7 @@ def save_multiple_reyn(
     reynolds: list[float],
 ) -> None:
     DB = Database.get_instance()
-    airfoil_dir: str = os.path.join(DB.foils_db.DB2D, f"{airfoil.name.upper()}")
+    airfoil_dir: str = os.path.join(DB.DB2D, f"{airfoil.name.upper()}")
     for i, reyn_data in enumerate(polars):
         if len(reyn_data) == 0:
             continue
@@ -28,9 +28,7 @@ def save_multiple_reyn(
                 pass
             os.chdir(airfoil_dir)
 
-        reyndir: str = (
-            f"Reynolds_{np.format_float_scientific(reynolds[i],sign=False,precision=3, min_digits=3).replace('+', '')}"
-        )
+        reyndir: str = f"Reynolds_{np.format_float_scientific(reynolds[i], sign=False, precision=3, min_digits=3).replace('+', '')}"
         os.makedirs(reyndir, exist_ok=True)
         os.chdir(reyndir)
         df: DataFrame = DataFrame(reyn_data).T.rename(
@@ -54,11 +52,4 @@ def save_multiple_reyn(
 
     # Add Results to Database
     print(f"Adding {airfoil.name.upper()} to the database")
-    DB.foils_db.add_airfoil_data(airfoil.name.upper())
-    # DB.foils_db.update_airfoil(airfoil)
-    # DB.vehicles_db.load_gnvp_data(
-    #     plane=plane,
-    #     state=state,
-    #     vehicle_folder=plane.directory,
-    #     gnvp_version=gvnp_version,
-    # )
+    DB.load_airfoil_data(airfoil)

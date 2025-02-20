@@ -24,15 +24,16 @@ def avl_angle_run(
     solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
     DB = Database.get_instance()
-    PLANEDIR = DB.vehicles_db.get_case_directory(
+    PLANEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
     )
     os.makedirs(PLANEDIR, exist_ok=True)
     case_def(plane, state, angles)
     make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
-    case_setup(plane)
-    case_run(plane, angles)
+    case_setup(plane, state)
+    case_run(plane, state, angles)
     polar_df = process_avl_angles_run(plane, state, angles)
     state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 
@@ -54,16 +55,21 @@ def process_avl_angles_run(
         DataFrame: Forces Calculated
 
     """
+    DB = Database.get_instance()
     forces: DataFrame = collect_avl_polar_forces(
         plane=plane,
         state=state,
         angles=angles,
     )
-    plane.save()
-    DB = Database.get_instance()
-    CASEDIR = DB.vehicles_db.get_plane_directory(
-        plane=plane,
+    CASEDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver="AVL",
     )
+    filename = os.path.join(CASEDIR, "forces.avl")
+    forces.to_csv(filename, index=False, float_format="%.10f")
+
+    plane.save()
     state.add_polar(
         polar=forces,
         polar_prefix="AVL",
@@ -74,13 +80,14 @@ def process_avl_angles_run(
     logging.info("Adding Results to Database")
     # Add Plane to Database
     file_plane: str = os.path.join(CASEDIR, f"{plane.name}.json")
-    _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
+    _ = DB.load_vehicle(name=plane.name, file=file_plane)
 
     # Add Results to Database
-    DB.vehicles_db.load_avl_data(
-        plane=plane,
+    DB.load_vehicle_solver_data(
+        vehicle=plane,
         state=state,
-        vehicle_folder=plane.directory,
+        folder=plane.directory,
+        solver="AVL",
     )
 
     return forces

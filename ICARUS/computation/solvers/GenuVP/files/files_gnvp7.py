@@ -6,7 +6,7 @@ from io import StringIO
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
@@ -16,6 +16,7 @@ from ICARUS.core.formatting import sps
 from ICARUS.core.formatting import tabs
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.database.database2D import PolarsNotFoundError
 
 
 def input_file(maxiter: float, timestep: float) -> None:
@@ -332,7 +333,7 @@ def geofile(
         f_io.write(f"{tabs(16)}<blank>\n")
 
         # Write the movements
-        f_io.write(f"{len(movements[i])}{tabs(3)}LEVEL   the level of movement\n")
+        f_io.write(f"{len(movements[i]) + 1}{tabs(3)}LEVEL   the level of movement\n")
         f_io.write(f"{bod.move_fname}{tabs(2)}FILMOV\n")
         body_movements(movements=movements[i], NB=NB, fname=bod.move_fname)
         f_io.write(f"{tabs(16)}<blank>\n")
@@ -510,9 +511,9 @@ def body_movements(
 
     for j, mov in enumerate(movements):
         f_io.write(
-            f"NB={NB}, lev={NB - j}  ({mov.translation_axis} axis {mov.name} rotation)\n",
+            f"NB={NB}, lev={j}  ({mov.translation_axis} axis {mov.name} rotation)\n",
         )
-        f_io.write("Rotation\n")
+        f_io.write(f"Rotation {mov.rotation_str}\n")
         f_io.write(f"{int(mov.rotation_type)}           IMOVEAB  type of movement\n")
         f_io.write(
             f"{int(mov.rotation_axis)}           NAXISA   =1,2,3 axis of rotation\n",
@@ -526,7 +527,7 @@ def body_movements(
         f_io.write("0.          AMOVEAB  -3  3d  value of amplitude\n")
         f_io.write("0.          AMOVEAB  -4  4th value of amplitude!---->phase\n")
         f_io.write("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
-        f_io.write("Translation\n")
+        f_io.write(f"Translation {mov.translation_str}\n")
         f_io.write(f"{int(mov.translation_type)}           IMOVEUB  type of movement\n")
         f_io.write(
             f"{int(mov.translation_axis)}           NAXISU   =1,2,3 axis of translation\n",
@@ -570,8 +571,10 @@ def pm_file() -> None:
         # First num is the iteration to start writing the pm file and the second is the number of iterations to write the pm file
         file.write("0 0\n")
 
+
 def cld_files(
     bodies: list[GenuSurface],
+    polars: list[AirfoilPolars],
     solver: str,
 ) -> None:
     """Write the .cld files for the airfoils. These files contain the CL-CD-CM polars
@@ -582,27 +585,21 @@ def cld_files(
         solver (str): preferred solver
 
     """
-    DB = Database.get_instance()
-    for bod in bodies:
+    for polar, bod in zip(polars, bodies):
         fname: str = f"{bod.cld_fname}"
-        try:
-            polars: Polars = DB.foils_db.get_polars(bod.airfoil_name, solver=solver)
-
-        except KeyError:
-            raise KeyError(f"Airfoil {bod.airfoil_name} not found in database")
 
         f_io = StringIO()
         f_io.write(f"CL-CD POLARS by {solver}\n")
 
         # WRITE MACH AND REYNOLDS NUMBERS
         f_io.write(
-            f"{len(polars.reynolds_nums)}  ! Mach/Reynolds combs for which CL-CD are given\n",
+            f"{len(polar.reynolds_nums)}  ! Mach/Reynolds combs for which CL-CD are given\n",
         )
-        for i, _ in enumerate(polars.reynolds_nums):
+        for i, _ in enumerate(polar.reynolds_nums):
             f_io.write(f"0.08000{tabs(1)}")
         f_io.write("MACH\n")
 
-        for reyn in polars.reynolds_keys:
+        for reyn in polar.reynolds_keys:
             f_io.write(f"{reyn.zfill(4)}{tabs(1)}")
         f_io.write("Reynolds\n")
 
@@ -610,9 +607,9 @@ def cld_files(
         f_io.write("\n")
 
         # GET ALL 2D Airfoil POLARS IN ONE TABLE
-        df: DataFrame = polars.df
+        df: DataFrame = polar.df
         # Get Angles
-        angles: FloatArray = polars.angles
+        angles: FloatArray = polar.angles
         # FILL FILE
         for radpos in [-100.0, 100.0]:
             f_io.write(f"!profile: {radpos}\n")
@@ -621,11 +618,11 @@ def cld_files(
             )
 
             anglenum: int = len(angles)
-            flap_angle: float = polars.flap_angle  # Flap Angle
-            a_zero_pot: float = polars.a_zero_pot  # Potential Zero Lift Angle
-            cm_pot: float = polars.cm_pot  # Potential Cm at Zero Lift Angle
-            a_zero: float = polars.a_zero_visc  # Viscous Zero Lift Angle
-            cl_slope: float = polars.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
+            flap_angle: float = polar.flap_angle  # Flap Angle
+            a_zero_pot: float = polar.a_zero_pot  # Potential Zero Lift Angle
+            cm_pot: float = polar.cm_pot  # Potential Cm at Zero Lift Angle
+            a_zero: float = polar.a_zero_visc  # Viscous Zero Lift Angle
+            cl_slope: float = polar.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
 
             f_io.write(f"{anglenum} ")
             for item in [flap_angle, a_zero_pot, cm_pot, a_zero, cl_slope]:
@@ -682,17 +679,11 @@ def wake_connections(name: str) -> None:
         file.write(f_io.getvalue().expandtabs(4))
 
 
-def angles_inp(
-    airfoils: list[str],
-    solver: str,
-) -> None:
-    DB = Database.get_instance()
+def angles_inp(polars) -> None:
     angles: list[float] = []
     # Find all distinct angles in foil_dat.
-    for airf in airfoils:
-        polars: Polars = DB.foils_db.get_polars(airf, solver=solver)
-        # foil_dat[airf][solver]
-        angles.extend(polars.angles)
+    for polar in polars:
+        angles.extend(polar.angles)
     angles = [angle for angle in angles if not np.isnan(angle)]
     angles = list(set(angles))
     angles.sort()
@@ -735,10 +726,27 @@ def make_input_files(
     wake_connections(params.name)
     # WAKE Files
     wake_files(genu_bodies)
+
+    polars = []
+    for bod in genu_bodies:
+        reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
+        try:
+            DB = Database.get_instance()
+            polar: AirfoilPolars = DB.get_or_compute_airfoil_polars(
+                airfoil=DB.get_airfoil(bod.airfoil_name),
+                reynolds=reynolds,
+                solver_name=solver,
+                aoa=np.linspace(-10, 16, 53),
+            )
+        except PolarsNotFoundError:
+            raise ValueError(
+                f"Airfoil Polars for {bod.airfoil_name} not found in the database and could not be computed. Please compute the polars first.",
+            )
+        polars.append(polar)
     # ANGLES File
-    angles_inp(airfoils, solver)
+    angles_inp(polars)
     # CLD FILES
-    cld_files(genu_bodies, solver)
+    cld_files(genu_bodies, polars, solver)
     os.chdir(HOMEDIR)
 
 

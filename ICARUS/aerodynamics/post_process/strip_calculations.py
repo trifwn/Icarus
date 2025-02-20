@@ -6,6 +6,8 @@ import jax.numpy as jnp
 import numpy as np
 from jax import Array
 
+from ICARUS.core.types import FloatArray
+
 if TYPE_CHECKING:
     from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
     from ICARUS.flight_dynamics.state import State
@@ -17,7 +19,7 @@ def get_potential_loads(
     ws: Array,
     gammas: Array,
     verbose: bool = True,
-) -> tuple[float, float, float, float, float, float, float, float, float, np.ndarray, np.ndarray]:
+) -> tuple[float, float, float, float, float, float, float, float, float, FloatArray, FloatArray]:
     dens: float = state.environment.air_density
     umag = state.u_freestream
 

@@ -28,8 +28,9 @@ def run_lstp_angles(
 
     """
     DB = Database.get_instance()
-    LSPTDIR = DB.vehicles_db.get_case_directory(
+    LSPTDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="LSPT",
     )
 
@@ -57,31 +58,29 @@ def run_lstp_angles(
 def save_results(
     plane: Airplane,
     state: State,
-    df: pd.DataFrame,
+    forces_df: pd.DataFrame,
 ) -> None:
     DB = Database.get_instance()
-    plane_dir: str = os.path.join(DB.vehicles_db.DB3D, plane.name)
-    try:
-        os.chdir(plane_dir)
-    except FileNotFoundError:
-        os.makedirs(plane_dir, exist_ok=True)
-        os.chdir(plane_dir)
+    CASEDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver="LSPT",
+    )
+    filename = os.path.join(CASEDIR, "forces.lspt")
+    forces_df.to_csv(filename, index=False, float_format="%.10f")
+
+    plane.save()
+    state.add_polar(
+        polar=forces_df,
+        polar_prefix="LSPT",
+        is_dimensional=True,
+    )
 
     # Save the Forces
-    df.to_csv("forces.lspt", index=False)
-    os.chdir(DB.HOMEDIR)
-
-    # Save the Plane
-    plane.save()
-
-    logging.info("Adding Results to Database")
     # Add plane to database
+    logging.info("Adding Results to Database")
     file_plane: str = os.path.join(DB.DB3D, plane.name, f"{plane.name}.json")
-    _ = DB.vehicles_db.load_plane(name=plane.name, file=file_plane)
+    _ = DB.load_vehicle(name=plane.name, file=file_plane)
 
     # Add Forces to Database
-    DB.vehicles_db.load_lspt_data(
-        plane=plane,
-        state=state,
-        vehicle_folder=plane.directory,
-    )
+    DB.load_vehicle_solver_data(vehicle=plane, state=state, folder=plane.directory, solver="LSPT")

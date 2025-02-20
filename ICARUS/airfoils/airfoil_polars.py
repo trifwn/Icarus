@@ -139,16 +139,16 @@ class AirfoilData:
 
         self.polars = {}
         for solver, dat in data.items():
-            self.polars[solver] = Polars(name, dat)
+            self.polars[solver] = AirfoilPolars(name, dat)
         self.solvers = list(self.polars.keys())
 
-    def get_polars(self, solver: str) -> Polars:
-        if solver == "Any":
+    def get_polars(self, solver: str | None = None) -> AirfoilPolars:
+        if solver is None:
             return self.polars[list(self.polars.keys())[0]]
         return self.polars[solver]
 
 
-class Polars:
+class AirfoilPolars:
     """Airfoil Polars Class"""
 
     def __init__(
@@ -647,8 +647,8 @@ class Polars:
         else:
             curve = self.get_reynolds_subtable(reynolds)
         try:
-            pos_stall_idx = self.get_positive_stall_idx(curve["CL"]/ curve["CD"])
-            neg_stall_idx = self.get_negative_stall_idx(curve["CL"]/ curve["CD"])
+            pos_stall_idx = self.get_positive_stall_idx(curve["CL"] / curve["CD"])
+            neg_stall_idx = self.get_negative_stall_idx(curve["CL"] / curve["CD"])
             min_cdcl_idx = self.get_cl_cd_minimum_idx(curve["CL"], curve["CD"])
         except ValueError:
             print(curve["CL"])
@@ -681,38 +681,39 @@ class Polars:
         """Plot AVL Drag Polar"""
         curve: DataFrame = self.get_reynolds_subtable(reynolds)
         cl_points, cd_points, aoa_points = self.get_cl_cd_parabolic(reynolds)
-       
-        def cdcl(CL):
+
+        def cdcl(CL: float) -> tuple[float, float]:
+            """Compute the CD and CD_CL for a given CL using a parabolic model."""
             # Constants
             CLINC = 0.2
             CDINC = 0.0500
             CLMIN, CL0, CLMAX = cl_points
             CDMIN, CD0, CDMAX = cd_points
             # Some matching parameters to make slopes smooth at stall joins
-            CDX1 = 2.0 * (CDMIN - CD0) * (CLMIN - CL0) / (CLMIN - CL0)**2
-            CDX2 = 2.0 * (CDMAX - CD0) * (CLMAX - CL0) / (CLMAX - CL0)**2
+            CDX1 = 2.0 * (CDMIN - CD0) * (CLMIN - CL0) / (CLMIN - CL0) ** 2
+            CDX2 = 2.0 * (CDMAX - CD0) * (CLMAX - CL0) / (CLMAX - CL0) ** 2
             CLFAC = 1.0 / CLINC
             # Four formulas are used for CD, depending on the CL
             if CL < CLMIN:
                 # Negative stall drag model (slope matches lower side, quadratic drag rise)
-                CD = CDMIN + CDINC * (CLFAC * (CL - CLMIN))**2 + CDX1 * (1.0 - (CL - CL0) / (CLMIN - CL0))
+                CD = CDMIN + CDINC * (CLFAC * (CL - CLMIN)) ** 2 + CDX1 * (1.0 - (CL - CL0) / (CLMIN - CL0))
                 CD_CL = CDINC * CLFAC * 2.0 * (CL - CLMIN)
             elif CL < CL0:
                 # Quadratic matching negative stall and minimum drag point with zero slope
-                CD = CD0 + (CDMIN - CD0) * (CL - CL0)**2 / (CLMIN - CL0)**2
-                CD_CL = (CDMIN - CD0) * 2.0 * (CL - CL0) / (CLMIN - CL0)**2
+                CD = CD0 + (CDMIN - CD0) * (CL - CL0) ** 2 / (CLMIN - CL0) ** 2
+                CD_CL = (CDMIN - CD0) * 2.0 * (CL - CL0) / (CLMIN - CL0) ** 2
             elif CL < CLMAX:
                 # Quadratic matching positive stall and minimum drag point with zero slope
-                CD = CD0 + (CDMAX - CD0) * (CL - CL0)**2 / (CLMAX - CL0)**2
-                CD_CL = (CDMAX - CD0) * 2.0 * (CL - CL0) / (CLMAX - CL0)**2
+                CD = CD0 + (CDMAX - CD0) * (CL - CL0) ** 2 / (CLMAX - CL0) ** 2
+                CD_CL = (CDMAX - CD0) * 2.0 * (CL - CL0) / (CLMAX - CL0) ** 2
             else:
                 # Positive stall drag model (slope matches upper side, quadratic drag rise)
-                CD = CDMAX + CDINC * (CLFAC * (CL - CLMAX))**2 - CDX2 * (1.0 - (CL - CL0) / (CLMAX - CL0))
+                CD = CDMAX + CDINC * (CLFAC * (CL - CLMAX)) ** 2 - CDX2 * (1.0 - (CL - CL0) / (CLMAX - CL0))
                 CD_CL = CDINC * CLFAC * 2.0 * (CL - CLMAX)
             return CD, CD_CL
 
-        cl_range  = np.linspace(curve['CL'].min(), curve['CL'].max(), 100)
-        aoa_range = np.interp(cl_range, curve['CL'], curve['AoA'])
+        cl_range = np.linspace(curve["CL"].min(), curve["CL"].max(), 100)
+        aoa_range = np.interp(cl_range, curve["CL"], curve["AoA"])
         cd_avl = [cdcl(c)[0] for c in cl_range]
 
         # Create the plot
@@ -730,7 +731,7 @@ class Polars:
         # Plot the CL/CD vs AoA curve
         axs[1].plot(curve["AoA"], curve["CL"] / curve["CD"])
         axs[1].scatter(aoa_points, cl_points / cd_points, color="red")
-        axs[1].plot(aoa_range, cl_range/cd_avl,  linestyle=":")
+        axs[1].plot(aoa_range, cl_range / cd_avl, linestyle=":")
         axs[1].set_xlabel("AoA")
         axs[1].set_ylabel("CL/CD")
         axs[1].set_title("CL/CD vs AoA")

@@ -407,6 +407,8 @@ class WingSegment(WingSurface):
 
     @property
     def span_spacing(self) -> DiscretizationType:
+        if isinstance(self._span_spacing, str):
+            return DiscretizationType[self._span_spacing]
         return self._span_spacing
 
     @span_spacing.setter

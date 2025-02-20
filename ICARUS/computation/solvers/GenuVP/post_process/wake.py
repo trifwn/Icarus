@@ -4,6 +4,7 @@ import numpy as np
 
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
 from .max_iter import get_max_iterations_3
@@ -11,6 +12,7 @@ from .max_iter import get_max_iterations_3
 
 def get_wake_data_3(
     plane: Airplane,
+    state: State,
     case: str,
 ) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, FloatArray, FloatArray]:
     """Get the wake data from a given case by reading the YOURS.WAK file.
@@ -24,8 +26,9 @@ def get_wake_data_3(
 
     """
     DB = Database.get_instance()
-    CASEDIR = DB.vehicles_db.get_case_directory(
+    CASEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="GenuVP3",
         case=case,
     )
@@ -40,7 +43,7 @@ def get_wake_data_3(
     b: list[list[float]] = []
     c: list[list[float]] = []
     iteration = 0
-    maxiter: int = get_max_iterations_3(plane, case)
+    maxiter: int = get_max_iterations_3(plane, state, case)
     for i, line in enumerate(data):
         if line.startswith("WAKE"):
             foo: list[str] = line.split()
@@ -74,6 +77,7 @@ def get_wake_data_3(
 
 def nwake_data_7(
     plane: Airplane,
+    state: State,
     case: str,
 ) -> FloatArray:
     """Get the wake data from a given case by reading the YOURS.WAK file.
@@ -87,8 +91,9 @@ def nwake_data_7(
 
     """
     DB = Database.get_instance()
-    CASEDIR = DB.vehicles_db.get_case_directory(
+    CASEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="GenuVP7",
         case=case,
     )
@@ -122,6 +127,7 @@ def nwake_data_7(
 
 def wake_data_7(
     plane: Airplane,
+    state: State,
     case: str,
 ) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray]:
     """Get the wake data from a given case by reading the YOURS.WAK file.
@@ -135,8 +141,9 @@ def wake_data_7(
 
     """
     DB = Database.get_instance()
-    CASEDIR = DB.vehicles_db.get_case_directory(
+    CASEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="GenuVP7",
         case=case,
     )
@@ -152,15 +159,25 @@ def wake_data_7(
             continue
         try:
             (
-                x, y, z , 
-                i, ivr_nb, 
-                vx, vy, vz,
-                ale, gam, aavr, rvrp,
-                xpn, ypn, zpn,
+                x,
+                y,
+                z,
+                i,
+                ivr_nb,
+                vx,
+                vy,
+                vz,
+                ale,
+                gam,
+                aavr,
+                rvrp,
+                xpn,
+                ypn,
+                zpn,
             ) = (float(num) for num in foo)
             positions.append([x, y, z])
             charges.append([vx, vy, vz])
-        except ValueError as e:
+        except ValueError as _:
             pass
 
     XP: FloatArray = np.array(positions, dtype=float)
@@ -172,6 +189,7 @@ def wake_data_7(
 
 def grid_data_7(
     plane: Airplane,
+    state: State,
     case: str,
 ) -> FloatArray:
     """Get the wake data from a given case by reading the YOURS.WAK file.
@@ -185,8 +203,9 @@ def grid_data_7(
 
     """
     DB = Database.get_instance()
-    CASEDIR = DB.vehicles_db.get_case_directory(
+    CASEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="GenuVP7",
         case=case,
     )
@@ -217,10 +236,11 @@ def grid_data_7(
 
 def get_wake_data_7(
     plane: Airplane,
+    state: State,
     case: str,
 ) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, FloatArray, FloatArray]:
-    XP, QP, UP, GP = wake_data_7(plane, case)
-    B = nwake_data_7(plane, case)
-    C = grid_data_7(plane, case)
+    XP, QP, UP, GP = wake_data_7(plane, state, case)
+    B = nwake_data_7(plane, state, case)
+    C = grid_data_7(plane, state, case)
 
     return XP, QP, UP, GP, B, C

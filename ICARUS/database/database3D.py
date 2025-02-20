@@ -45,12 +45,12 @@ class Database_3D:
         self.polars: Struct = Struct()
         self.planes: Struct = Struct()
         self.states: Struct = Struct()
-        self.convergence_data: Struct = Struct()
+        self.transient_data: Struct = Struct()
 
         if not os.path.isdir(self.DB3D):
             os.makedirs(self.DB3D)
 
-    def get_planenames(self) -> list[str]:
+    def get_vehicle_names(self) -> list[str]:
         """Returns the list of planenames in the database.
 
         Returns:
@@ -59,10 +59,13 @@ class Database_3D:
         """
         return list(self.planes.keys())
 
-    def load_data(self) -> None:
+    def load_all_data(self) -> None:
         self.read_all_data()
 
-    def get_state(self, vehicle: str, state: str) -> State:
+    def get_state(self, vehicle: str | Airplane, state: str) -> State:
+        if isinstance(vehicle, Airplane):
+            vehicle = vehicle.name
+
         if vehicle not in self.states.keys():
             # Try to Load Vehicle object
             self.get_vehicle(vehicle)
@@ -78,31 +81,41 @@ class Database_3D:
         except KeyError:
             raise ValueError(f"No State found for {state}")
 
-    def get_polars(self, name: str, solver: str | None = None) -> DataFrame:
-        if name in self.polars.keys():
-            polar_obj: DataFrame = self.polars[name]
+    def get_polars(self, vehicle: str | Airplane, solver: str | None = None) -> DataFrame:
+        from ICARUS.vehicle.plane import Airplane
+
+        if isinstance(vehicle, Airplane):
+            vehicle = vehicle.name
+
+        if vehicle in self.polars.keys():
+            polar_obj: DataFrame = self.polars[vehicle]
             pol = polar_obj
-        self.read_plane_data(name)
+        self.read_plane_data(vehicle)
         try:
-            polar_obj = self.polars[name]
+            polar_obj = self.polars[vehicle]
             pol = polar_obj
         except KeyError:
-            raise ValueError(f"No Polars found for {name}")
+            raise ValueError(f"No Polars found for {vehicle}")
 
         if solver is not None:
             return pol[[col for col in pol.columns if col.startswith(solver) or col == "AoA"]]
         return pol
 
-    def get_forces(self, name: str) -> DataFrame:
-        if name in self.forces.keys():
-            forces_obj: DataFrame = self.forces[name]
+    def get_forces(self, vehicle: str | Airplane) -> DataFrame:
+        from ICARUS.vehicle.plane import Airplane
+
+        if isinstance(vehicle, Airplane):
+            vehicle = vehicle.name
+
+        if vehicle in self.forces.keys():
+            forces_obj: DataFrame = self.forces[vehicle]
             return forces_obj
-        self.read_plane_data(name)
+        self.read_plane_data(vehicle)
         try:
-            forces_obj = self.forces[name]
+            forces_obj = self.forces[vehicle]
             return forces_obj
         except KeyError:
-            raise ValueError(f"No Forces found for {name}")
+            raise ValueError(f"No Forces found for {vehicle}")
 
     def get_vehicle(self, name: str) -> Airplane:
         if name in self.planes.keys():
@@ -110,7 +123,7 @@ class Database_3D:
             return plane_object
         # Try to Load Vehicle object
         file_plane: str = os.path.join(self.DB3D, name, f"{name}.json")
-        plane_obj: Airplane | None = self.load_plane(name, file_plane)
+        plane_obj: Airplane | None = self.load_vehicle(name, file_plane)
         print(f"Loaded Plane {plane_obj}")
         if plane_obj is None:
             raise ValueError(f"No Vehicle Object Found at {file_plane}")
@@ -118,15 +131,21 @@ class Database_3D:
         self.planes[name] = plane_obj
         return plane_obj
 
-    def get_states(self, name: str) -> dict[str, State]:
-        print(f"Getting States for {name}")
-        if name in self.states.keys():
-            return self.states[name]
-        self.read_plane_data(name)
+    def get_states(self, vehicle: str | Airplane) -> dict[str, State]:
+        # Import Airplane here to avoid circular imports
+        from ICARUS.vehicle.plane import Airplane
+
+        if isinstance(vehicle, Airplane):
+            vehicle = vehicle.name
+
+        print(f"Getting States for {vehicle}")
+        if vehicle in self.states.keys():
+            return self.states[vehicle]
+        self.read_plane_data(vehicle)
         try:
-            return self.states[name]
+            return self.states[vehicle]
         except KeyError:
-            raise ValueError(f"No States found for {name}")
+            raise ValueError(f"No States found for {vehicle}")
 
     def read_all_data(self) -> None:
         if not os.path.isdir(self.DB3D):
@@ -154,69 +173,48 @@ class Database_3D:
             vehicle_folder,
             f"{vehicle_folder}.json",
         )
-        plane_obj: Airplane | None = self.load_plane(
+        plane_obj: Airplane | None = self.load_vehicle(
             name=vehicle_folder,
             file=file_plane,
         )
         if plane_obj is None:
-            vehicle_name = vehicle_folder
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
-        else:
-            # print(f"Loaded Plane {plane_obj}")
-            # plane_obj.visualize()
-            self.planes[plane_obj.name] = plane_obj
-            vehicle_name = plane_obj.name
+            return None
+
+        self.planes[plane_obj.name] = plane_obj
+        vehicle_name = plane_obj.name
 
         # Load Vehicle State
-        state_obj: State | None = self.load_plane_state(vehicle_folder_path)
-        if state_obj is None:
-            logging.debug(f"No State Object Found at {vehicle_folder_path}")
-        else:
-            try:
-                self.states[vehicle_name][state_obj.name] = state_obj
-            except (KeyError, TypeError):
-                self.states[vehicle_name] = {}
-                self.states[vehicle_name][state_obj.name] = state_obj
 
-        solver_folders = next(os.walk(os.path.join(self.DB3D, vehicle_folder)))[1]
-        for solver_folder in solver_folders:
-            logging.debug(f"Entering {solver_folder}")
-            if solver_folder == "GenuVP3":
-                self.load_gnvp_data(
-                    plane=plane_obj,
-                    state=state_obj,
-                    vehicle_folder=vehicle_folder,
-                    gnvp_version=3,
-                )
-            elif solver_folder == "GenuVP7":
-                self.load_gnvp_data(
-                    plane=plane_obj,
-                    state=state_obj,
-                    vehicle_folder=vehicle_folder,
-                    gnvp_version=7,
-                )
-            elif solver_folder == "LSPT":
-                self.load_lspt_data(
-                    plane=plane_obj,
-                    state=state_obj,
-                    vehicle_folder=vehicle_folder,
-                )
-            elif solver_folder == "AVL":
-                self.load_avl_data(
-                    plane=plane_obj,
-                    state=state_obj,
-                    vehicle_folder=vehicle_folder,
-                )
-            # elif solver_folder == "XFLR5":
-            #     self.load_xflr5_data(vehicle_name, gnvp_version=3)
-            else:
-                logging.debug(f"Unknow Solver directory {solver_folder}")
+        state_folders = next(os.walk(os.path.join(self.DB3D, vehicle_folder)))[1]
+        for state_folder in state_folders:
+            solver_folders = next(os.walk(os.path.join(vehicle_folder_path, state_folder)))[1]
+            for solver_folder in solver_folders:
+                solver_folder_path = os.path.join(vehicle_folder_path, state_folder, solver_folder)
 
-            os.chdir(vehicle_folder_path)
+                state_obj: State | None = self.load_plane_state(solver_folder_path)
+                if state_obj is None:
+                    logging.debug(f"No State Object Found at {solver_folder_path}")
+                    continue
 
+                if vehicle_name not in self.states.keys():
+                    self.states[vehicle_name] = {}
+                    self.states[vehicle_name][state_obj.name] = state_obj
+
+                # Load Solver Data
+                try:
+                    self.load_solver_data(
+                        vehicle=plane_obj,
+                        state=state_obj,
+                        folder=solver_folder_path,
+                        solver=solver_folder,
+                    )
+                except ValueError:
+                    print(f"Unknown Solver {solver_folder} for {vehicle_name}")
+                os.chdir(vehicle_folder_path)
         os.chdir(DIRNOW)
 
-    def load_plane(self, name: str, file: str) -> Airplane | None:
+    def load_vehicle(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.
 
         Args:
@@ -271,26 +269,48 @@ class Database_3D:
                     raise TypeError(f"Expected State object, got {type(obj)}")
         return state
 
+    def load_solver_data(self, vehicle: Airplane, state: State, folder: str, solver: str) -> None:
+        if solver == "GenuVP3":
+            self.load_gnvp_data(
+                vehicle=vehicle,
+                state=state,
+                folder=folder,
+                gnvp_version=3,
+            )
+        elif solver == "GenuVP7":
+            self.load_gnvp_data(
+                vehicle=vehicle,
+                state=state,
+                folder=folder,
+                gnvp_version=7,
+            )
+        elif solver == "LSPT":
+            self.load_lspt_data(
+                vehicle=vehicle,
+                state=state,
+                folder=folder,
+            )
+        elif solver == "AVL":
+            self.load_avl_data(
+                vehicle=vehicle,
+                state=state,
+                folder=folder,
+            )
+        else:
+            raise ValueError(f"Solver {solver} not recognized")
+
     def load_gnvp_data(
         self,
-        plane: Airplane | None,
-        state: State | None,
-        vehicle_folder: str,
+        vehicle: Airplane,
+        state: State,
+        folder: str,
         gnvp_version: int,
     ) -> None:
-        genudir = os.path.join(self.DB3D, vehicle_folder, f"GenuVP{gnvp_version}")
-        os.chdir(genudir)
-        cases: list[str] = next(os.walk("."))[1]
-
-        if plane is None:
-            vehicle_name = vehicle_folder
-        else:
-            vehicle_name = plane.name
-
+        vehicle_name = vehicle.name
         # Load Forces from forces file and store them in the raw_data dict.
         # If the file doesn't exist it tries to create it by loading the plane object
         # and running the make_polars function. If that fails as weall it logs an error.
-        forces_file: str = os.path.join("..", f"forces.gnvp{gnvp_version}")
+        forces_file: str = os.path.join(folder, f"forces.gnvp{gnvp_version}")
         try:
             forces_df = pd.read_csv(forces_file)
             forces_df = forces_df.sort_values("AoA").reset_index(drop=True)
@@ -301,19 +321,23 @@ class Database_3D:
                 f"GenuVP{gnvp_version} ONERA",
             ]:
                 self.add_polars_from_forces(
-                    plane=plane,
+                    plane=vehicle,
                     state=state,
                     forces=forces_df,
                     prefix=name,
                 )
         except FileNotFoundError:
             logging.debug(
-                f"No forces.gnvp{gnvp_version} file found in {vehicle_folder} folder at {self.DB3D}!\nNo polars Created as well",
+                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
             )
             print(
-                f"No forces.gnvp{gnvp_version} file found in {vehicle_folder} folder at {self.DB3D}!\nNo polars Created as well",
+                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
             )
 
+        if gnvp_version == 7:
+            return
+
+        cases: list[str] = next(os.walk(folder))[1]
         for case in cases:
             # Load States
             if case == "Dynamics":
@@ -323,83 +347,71 @@ class Database_3D:
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
             # the convergence data from gnvp.out. If successfull it adds the error data to the
             # dataframe containing the loads and stores it in the convergence_data dict.
-            RESULTS_DIR = os.path.join(
-                self.DB3D,
-                vehicle_folder,
-                f"GenuVP{gnvp_version}",
-                case,
-            )
-            loads_file: str = os.path.join(RESULTS_DIR, "LOADS_aer.dat")
-            log_file = os.path.join(RESULTS_DIR, f"gnvp{gnvp_version}.out")
+            run_directory = os.path.join(folder, case)
+            loads_file: str = os.path.join(run_directory, "LOADS_aer.dat")
+            log_file = os.path.join(run_directory, f"gnvp{gnvp_version}.out")
 
             # Load Convergence
             load_convergence: DataFrame = get_loads_convergence(
                 loads_file,
                 gnvp_version,
             )
+            # print(load_convergence)
             convergence: DataFrame = get_error_convergence(
                 log_file,
                 load_convergence,
                 gnvp_version,
             )
-            if vehicle_name not in self.convergence_data.keys():
-                self.convergence_data[vehicle_name] = Struct()
-            self.convergence_data[vehicle_name][case] = convergence
+            if vehicle_name not in self.transient_data.keys():
+                self.transient_data[vehicle_name] = Struct()
+            self.transient_data[vehicle_name][case] = convergence
 
     def load_lspt_data(
         self,
-        plane: Airplane | None,
-        state: State | None,
-        vehicle_folder: str,
+        vehicle: Airplane,
+        state: State,
+        folder: str,
     ) -> None:
-        if plane is None:
-            vehicle_name = vehicle_folder
-        else:
-            vehicle_name = plane.name
-
-        file_lspt: str = os.path.join(self.DB3D, vehicle_folder, "forces.lspt")
+        vehicle_name = vehicle.name
+        file_lspt: str = os.path.join(folder, "forces.lspt")
         try:
             forces_df = pd.read_csv(file_lspt)
             self.add_forces(vehicle_name, forces_df)
             logging.info(f"Loading Forces from {file_lspt}")
             for name in ["LSPT Potential", "LSPT 2D"]:
                 self.add_polars_from_forces(
-                    plane=plane,
+                    plane=vehicle,
                     state=state,
                     forces=forces_df,
                     prefix=name,
                 )
         except FileNotFoundError:
             logging.debug(
-                f"No forces.lspt file found in {vehicle_folder} folder at {self.DB3D}!\nNo polars Created as well",
+                f"No forces.lspt file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
             )
 
     def load_avl_data(
         self,
-        plane: Airplane | None,
-        state: State | None,
-        vehicle_folder: str,
+        vehicle: Airplane,
+        state: State,
+        folder: str,
     ) -> None:
-        if plane is None:
-            vehicle_name = vehicle_folder
-        else:
-            vehicle_name = plane.name
-
-        file_avl: str = os.path.join(self.DB3D, vehicle_folder, "forces.avl")
+        vehicle_name = vehicle.name
+        forces_file: str = os.path.join(folder, "forces.avl")
         try:
-            forces_df = pd.read_csv(file_avl)
+            forces_df = pd.read_csv(forces_file)
             self.add_forces(vehicle_name, forces_df)
-            logging.info(f"Loading AVL Forces from {file_avl}")
+            logging.info(f"Loading AVL Forces from {forces_file}")
             for name in ["AVL"]:
                 self.add_polars_from_forces(
-                    plane=plane,
+                    plane=vehicle,
                     state=state,
                     forces=forces_df,
                     prefix=name,
                 )
         except FileNotFoundError:
             logging.debug(
-                f"No forces.avl file found in {vehicle_folder} folder at {self.DB3D}!\nNo polars Created as well",
+                f"No forces.avl file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
             )
 
     def add_polars_from_forces(
@@ -469,16 +481,15 @@ class Database_3D:
     def get_case_directory(
         self,
         airplane: Airplane,
+        state: State,
         solver: str,
         case: str | None = None,
-        subcase: str | None = None,
     ) -> str:
-        directory = airplane.directory
         if solver not in ["GenuVP3", "GenuVP7", "LSPT", "AVL"]:
             raise ValueError(f"Solver {solver} not recognized")
 
-        if case is None:
-            return os.path.join(self.DB3D, directory, solver)
-        if subcase is not None:
-            return os.path.join(self.DB3D, directory, solver, case, subcase)
-        return os.path.join(self.DB3D, directory, solver, case)
+        airplane_path = os.path.join(self.DB3D, airplane.directory)
+        state_path = os.path.join(airplane_path, state.name)
+        solver_path = os.path.join(state_path, solver)
+        case_path = os.path.join(solver_path, case) if case is not None else solver_path
+        return case_path

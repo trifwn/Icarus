@@ -10,11 +10,12 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.database import Database
+from ICARUS.vehicle.plane import Airplane
 from ICARUS.visualization import markers
 
 
 def plot_airplane_polars(
-    airplane_names: list[str],
+    airplanes: list[str] | list[Airplane],
     solvers: list[str] = ["All"],
     plots: list[list[str]] = [
         ["AoA", "CL"],
@@ -71,12 +72,15 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors_ = distinctipy.get_colors(len(airplane_names) * len(solvers))
-    for i, airplane in enumerate(airplane_names):
+    colors_ = distinctipy.get_colors(len(airplanes) * len(solvers))
+    for i, airplane in enumerate(airplanes):
+        if isinstance(airplane, Airplane):
+            airplane = airplane.name
+
         flag = False
         for j, solver in enumerate(solvers):
             try:
-                polar: DataFrame = DB.vehicles_db.get_polars(airplane)
+                polar: DataFrame = DB.get_vehicle_polars(airplane)
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
                         polar[f"{solver} CL/CD"] = polar[f"{solver} CL"] / polar[f"{solver} CD"]
@@ -107,9 +111,9 @@ def plot_airplane_polars(
 
                         x: Series[float] = polar[f"{key0}"]
                         y: Series[float] = polar[f"{key1}"]
-                        if len(airplane_names) == 1:
+                        if len(airplanes) == 1:
                             c = colors_[j]
-                            m = 'o' 
+                            m = "o"
                         else:
                             c = colors_[j]
                             m = markers[i].get_marker()

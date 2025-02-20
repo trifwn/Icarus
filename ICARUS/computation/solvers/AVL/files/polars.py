@@ -23,13 +23,14 @@ def case_def(
 ) -> None:
     li = []
     DB = Database.get_instance()
-    PLANEDIR = DB.vehicles_db.get_case_directory(
+    PLANEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
     )
     for i, angle in enumerate(angles):
         li.append("---------------------------------------------")
-        li.append(f"Run case  {i+1}:  -{angle}_deg- ")
+        li.append(f"Run case  {i + 1}:  -{angle}_deg- ")
         li.append(" ")
         li.append(f" alpha        ->  alpha       =  {angle}")
         li.append("beta         ->  beta        =   0.00000")
@@ -45,11 +46,12 @@ def case_def(
     np.savetxt(os.path.join(PLANEDIR, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
 
 
-def case_setup(plane: Airplane) -> None:
+def case_setup(plane: Airplane, state: State) -> None:
     HOMEDIR = os.getcwd()
     DB = Database.get_instance()
-    PLANEDIR = DB.vehicles_db.get_case_directory(
+    PLANEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
     )
     os.chdir(PLANEDIR)
@@ -83,11 +85,12 @@ def case_setup(plane: Airplane) -> None:
 
 
 # EXECUTION
-def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
+def case_run(plane: Airplane, state: State, angles: FloatArray | list[float]) -> None:
     HOMEDIR = os.getcwd()
     DB = Database.get_instance()
-    PLANEDIR = DB.vehicles_db.get_case_directory(
+    PLANEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
     )
 
@@ -99,7 +102,7 @@ def case_run(plane: Airplane, angles: FloatArray | list[float]) -> None:
     li_2.append("MSET 0")
     li_2.append("oper")
     for i, angle in enumerate(angles):
-        li_2.append(f"{i+1}")
+        li_2.append(f"{i + 1}")
         li_2.append("x")
         li_2.append("FT")
         li_2.append(f"{angle_to_case(angle)}.txt")

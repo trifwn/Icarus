@@ -107,7 +107,7 @@ def compute_polars(
 
         DB = Database.get_instance()
 
-        polar = DB.foils_db.get_polars(airfoil.name.upper())
+        polar = DB.get_airfoil_polars(airfoil)
         fig = polar.plot()
         fig.show()
         plt.pause(10.0)

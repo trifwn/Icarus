@@ -8,7 +8,7 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS import AVL_exe
-from ICARUS.airfoils.airfoil_polars import Polars
+from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database.database2D import PolarsNotFoundError
@@ -158,7 +158,7 @@ def avl_geo(
 
         # SURFACE DEFINITION
         f_io.write(
-            f"#-------------Surface {i+1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n",
+            f"#-------------Surface {i + 1} of {len(surfaces)} Surf Id {surfaces_ids[i]}-----------------\n",
         )
         f_io.write("SURFACE                      | (keyword)\n")
         f_io.write(f"{surf.name}                 | surface name string \n")
@@ -210,14 +210,14 @@ def avl_geo(
         # cntrl_index = 1
         for j, strip in enumerate(surf.strips):
             f_io.write(
-                f"#------------ {surf.name} SECTION---{j+1} of {len(surf.strips)} of---------------------|  (keyword)\n",
+                f"#------------ {surf.name} SECTION---{j + 1} of {len(surf.strips)} of---------------------|  (keyword)\n",
             )
             f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
             f_io.write("SECTION\n")
 
             if j == 0:
                 f_io.write(
-                    f"   {strip.x0}    {strip.y0}    {strip.z0}    {strip.chords[0]}   {strip.twists[0]*180/np.pi}   {1}    {span_spacing}   \n",
+                    f"   {strip.x0}    {strip.y0}    {strip.z0}    {strip.chords[0]}   {strip.twists[0] * 180 / np.pi}   {1}    {span_spacing}   \n",
                 )
                 f_io.write("\n")
                 f_io.write("AFILE \n")
@@ -228,7 +228,7 @@ def avl_geo(
                 strip_r = np.array([strip.x0, strip.y0, strip.z0])
             elif j == len(surf.strips) - 1:
                 f_io.write(
-                    f"   {strip.x1}    {strip.y1}    {strip.z1}    {strip.chords[1]}   {strip.twists[1]*180/np.pi}   {1}    {span_spacing}   \n",
+                    f"   {strip.x1}    {strip.y1}    {strip.z1}    {strip.chords[1]}   {strip.twists[1] * 180 / np.pi}   {1}    {span_spacing}   \n",
                 )
                 f_io.write("\n")
                 f_io.write("AFILE \n")
@@ -239,7 +239,7 @@ def avl_geo(
                 strip_r = np.array([strip.x1, strip.y1, strip.z1])
             else:
                 f_io.write(
-                    f"   {(strip.x0 + strip.x1)/2}    {(strip.y0+strip.y1)/2}    {(strip.z0+strip.z1)/2}    {strip.mean_chord}   {strip.mean_twist*180/np.pi}   {1}    {span_spacing}   \n",
+                    f"   {(strip.x0 + strip.x1) / 2}    {(strip.y0 + strip.y1) / 2}    {(strip.z0 + strip.z1) / 2}    {strip.mean_chord}   {strip.mean_twist * 180 / np.pi}   {1}    {span_spacing}   \n",
                 )
                 f_io.write("\n")
                 f_io.write("AFILE \n")
@@ -273,7 +273,7 @@ def avl_geo(
                         # hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
                         sgndup = -1 if control_surf.inverse_symmetric else 1
                         f_io.write(
-                            f"{cname} {-cgain}  {x_hinge} {0.} {0.} {0.} {sgndup} \n",
+                            f"{cname} {-cgain}  {x_hinge} {0.0} {0.0} {0.0} {sgndup} \n",
                         )
 
             # Save Airfoil file
@@ -286,18 +286,13 @@ def avl_geo(
                 reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
                 # Get the airfoil polar
 
-                RE_MIN = 8e4
-                RE_MAX = 1e7
-                NUM_BINS = 12
-                REYNOLDS_BINS = np.logspace(-2.2, 0, NUM_BINS) * (RE_MAX - RE_MIN) + RE_MIN
                 try:
                     DB = Database.get_instance()
-                    polar_obj: Polars = DB.foils_db.find_or_compute_polars(
+                    polar_obj: AirfoilPolars = DB.get_or_compute_airfoil_polars(
                         airfoil=strip_airfoil,
                         reynolds=reynolds,
                         solver_name=solver2D,
                         aoa=np.linspace(-10, 16, 53),
-                        REYNOLDS_BINS=REYNOLDS_BINS,
                     )
                     f_io.write("CDCL\n")
                     cl, cd, _ = polar_obj.get_cl_cd_parabolic(reynolds)
@@ -375,7 +370,7 @@ def get_effective_aoas(
     DB = Database.get_instance()
     for i, angle in enumerate(angles):
         path = os.path.join(
-            DB.vehicles_db.DB3D,
+            DB.DB3D,
             plane.name,
             "AVL",
             f"fs_{angle_to_case(angle)}.txt",

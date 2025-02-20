@@ -23,7 +23,7 @@ class MissionVehicle:
 
         self.airplane: Airplane = airplane
         self.motor: Engine = engine
-        self.polar_data = DB.vehicles_db.get_polars(airplane.name)
+        self.polar_data = DB.get_vehicle_polars(airplane.name)
         self.solver_name: str = solver
 
         self.inertias: float = airplane.total_inertia[0]

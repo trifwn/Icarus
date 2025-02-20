@@ -653,6 +653,9 @@ class Airplane(Optimizable):
         string: str = f"Plane Object: {self.name}"
         return string
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def __copy__(self) -> Airplane:
         return Airplane(
             name=self.name,

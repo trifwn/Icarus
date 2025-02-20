@@ -4,11 +4,13 @@ from typing import Any
 from pandas import DataFrame
 
 from ICARUS.database import Database
+from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
 
 def get_strip_data(
     plane: Airplane,
+    state: State,
     case: str,
     NBs: list[int],
     genuvp_version: int,
@@ -25,8 +27,9 @@ def get_strip_data(
 
     """
     DB = Database.get_instance()
-    directory = DB.vehicles_db.get_case_directory(
+    directory = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver=f"GenuVP{genuvp_version}",
         case=case,
     )

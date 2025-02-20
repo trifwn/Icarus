@@ -23,8 +23,9 @@ def implicit_eigs(
 ) -> None:
     # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL
     DB = Database.get_instance()
-    DYNAMICS_DIR = DB.vehicles_db.get_case_directory(
+    DYNAMICS_DIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
         case="Dynamics",
     )
@@ -84,8 +85,9 @@ def finite_difs(
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
 ) -> None:
     DB = Database.get_instance()
-    DYNAMICS_DIR = DB.vehicles_db.get_case_directory(
+    DYNAMICS_DIR = DB.get_vehicle_case_directory(
         airplane=plane,
+        state=state,
         solver="AVL",
         case="Dynamics",
     )
@@ -149,7 +151,7 @@ def finite_difs(
             print(f"Got unexpected var {dst.var}")
             continue
 
-        f_io.write(f"{int(i+1)}\n")
+        f_io.write(f"{int(i + 1)}\n")
         f_io.write("a\n")
         f_io.write("a\n")
         f_io.write(f"{aoa}\n")

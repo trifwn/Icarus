@@ -1,7 +1,6 @@
 import numpy as np
 
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
-from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.plane import Airplane
@@ -13,8 +12,6 @@ from ICARUS.vehicle.wing_segment import WingSegment
 def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
     DB: Database = Database("./Data")
     read_polars_2d(DB, DB.EXTERNAL_DB)
-    airfoils: Struct = DB.foils_db.airfoils
-
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     wing_position: FloatArray = np.array(
         [0, 0.0, 0.0],
@@ -27,7 +24,7 @@ def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
 
     box_wing = WingSegment(
         name=name,
-        root_airfoil=airfoils[f"NACA{naca}"],
+        root_airfoil=DB.get_airfoil(f"NACA{naca}"),
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,

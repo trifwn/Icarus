@@ -36,7 +36,6 @@ class Movement:
         """
         self.name: str = name
         self.rotation_type: int = rotation["type"]
-
         self.rotation_axis: int = rotation["axis"]
 
         self.rot_t1: float = rotation["t1"]
@@ -45,8 +44,12 @@ class Movement:
         self.rot_a1: float = rotation["a1"]
         self.rot_a2: float = rotation["a2"]
 
-        self.translation_type: int = translation["type"]
+        if "str" in rotation.keys():
+            self.rotation_str: str = rotation["str"]
+        else:
+            self.rotation_str = ""
 
+        self.translation_type: int = translation["type"]
         self.translation_axis: int = translation["axis"]
 
         self.translation_t1: float = translation["t1"]
@@ -54,6 +57,11 @@ class Movement:
 
         self.translation_a1: float = translation["a1"]
         self.translation_a2: float = translation["a2"]
+
+        if "str" in translation.keys():
+            self.translation_str: str = translation["str"]
+        else:
+            self.translation_str = ""
 
 
 def distrubance2movement(disturbance: Disturbance) -> Movement:
@@ -74,7 +82,7 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
         t2: float = 0
         a1: float | None = 0
         a2: float | None = disturbance.amplitude
-        distType = 8
+        distType = 100
     elif disturbance.type == "Value":
         t1 = -1
         t2 = 0.0
@@ -100,6 +108,7 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
         "t2": t2,
         "a1": a1,
         "a2": a2,
+        "str": f"{disturbance.name} {disturbance.axis} {disturbance.amplitude} {disturbance.type}",
     }
 
     if disturbance.isRotational:

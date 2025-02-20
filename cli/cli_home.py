@@ -128,10 +128,10 @@ def cli_home() -> None:
             mode = answers["Mode"]
             if mode == "2D":
                 airfoil_cli(DB, return_home=True)
-                DB.foils_db.load_data()
+                DB.foils_db.load_all_data()
             elif mode == "3D":
                 airplane_cli(DB, return_home=True)
-                DB.vehicles_db.load_data()
+                DB.vehicles_db.load_all_data()
             elif mode == "Visualization":
                 visualization_cli(DB, return_home=True)
         else:

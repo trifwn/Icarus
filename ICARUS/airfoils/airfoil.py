@@ -794,9 +794,9 @@ class Airfoil(af.Airfoil):  # type: ignore
             xx (float): Thickness
 
         """
-        self.p: float = p
+        self.p = p
+        self.xx = xx
         self.m: float = m
-        self.xx: float = xx
 
     def set_naca5_digits(self, ll: float, p: float, q: float, xx: float) -> None:
         """Class to store the NACA 5 digits parameters for the airfoil in the object

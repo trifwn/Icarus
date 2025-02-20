@@ -24,15 +24,12 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
         DataFrame: Resulting Polars
 
     """
-    GNVPDIR = os.path.join(CASEDIR, f"GenuVP{gnvp_version}")
-    print("CASEDIR ")
-    os.chdir(GNVPDIR)
-
+    os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]
     # print("Making Polars")
     pols: list[list[float]] = []
     for folder in folders:
-        os.chdir(os.path.join(GNVPDIR, folder))
+        os.chdir(os.path.join(CASEDIR, folder))
         files: list[str] = next(os.walk("."))[2]
         if "LOADS_aer.dat" in files:
             name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
@@ -42,7 +39,7 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
             else:
                 a = [name, *dat]
             pols.append(a)
-        os.chdir(f"{GNVPDIR}")
+        os.chdir(f"{CASEDIR}")
     if gnvp_version == 7:
         cols = cols_7
     elif gnvp_version == 3:

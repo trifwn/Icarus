@@ -8,30 +8,35 @@ from mpl_toolkits.mplot3d import Axes3D
 from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_3
 from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.database.utils import angle_to_case
-from ICARUS.vehicle.plane import Airplane
 from ICARUS.database.utils import case_to_angle
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
+
 
 def plot_gnvp3_wake(
     plane: Airplane,
+    state: State,
     case: str,
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    plot_gnvp_wake(gnvp_version=3, plane=plane, case=case, scale=scale, figsize=figsize)
+    plot_gnvp_wake(gnvp_version=3, state=state, plane=plane, case=case, scale=scale, figsize=figsize)
 
 
 def plot_gnvp7_wake(
     plane: Airplane,
+    state: State,
     case: str,
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    plot_gnvp_wake(gnvp_version=7, plane=plane, case=case, scale=scale, figsize=figsize)
+    plot_gnvp_wake(gnvp_version=7, state=state, plane=plane, case=case, scale=scale, figsize=figsize)
 
 
 def plot_gnvp_wake(
     gnvp_version: int,
     plane: Airplane,
+    state: State,
     case: str | float,
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
@@ -55,7 +60,7 @@ def plot_gnvp_wake(
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
 
-    XP, QP, VP, GP, B1, C1 = get_wake_data(plane, case)
+    XP, QP, VP, GP, B1, C1 = get_wake_data(plane, state, case)
 
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
@@ -121,10 +126,12 @@ if __name__ == "__main__":
 
     DB = Database.get_instance()
 
-    print(DB.vehicles_db.get_planenames())
-    if folder_name in DB.vehicles_db.get_planenames():
-        plane: Airplane = DB.vehicles_db.planes[folder_name]
-    else:
+    print(DB.get_vehicle_names())
+    try:
+        plane: Airplane = DB.get_vehicle(folder_name)
+        states = DB.get_vehicle_states(plane)
+        state: State = list(states.items())[0][1]
+    except KeyError:
         print(f"Plane {folder_name} not found in the database")
         exit()
 
@@ -149,9 +156,9 @@ if __name__ == "__main__":
 
     case_str: str = angle_to_case(case)
     if gnvp_version == 3:
-        plot_gnvp3_wake(plane, case_str)
+        plot_gnvp3_wake(plane, state, case_str)
     elif gnvp_version == 7:
-        plot_gnvp7_wake(plane, case_str)
+        plot_gnvp7_wake(plane, state, case_str)
     else:
         print(f"GNVP Version error! Got Version {gnvp_version} ")
         sys.exit()

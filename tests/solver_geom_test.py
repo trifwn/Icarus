@@ -30,7 +30,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     from .benchmark_plane_test import get_bmark_plane
 
     if gnvp_version == 3 or gnvp_version == 7:
-        airplane, _ = get_bmark_plane("bmark")
+        airplane, state = get_bmark_plane("bmark")
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
     # Get The correct wake data function
@@ -46,7 +46,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
     # Get the Case Name
     case: str = angle_to_case(0.0)
     # Get the grid data from the gnvp results
-    XP, QP, VP, GP, near_wake, grid_gnvp = get_wake_data(airplane, case)
+    XP, QP, VP, GP, near_wake, grid_gnvp = get_wake_data(airplane, state, case)
     mesh_grid_gnvp = np.meshgrid(
         grid_gnvp,
     )  # converts the array to a meshgrid
@@ -69,6 +69,6 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
         grid_plane,
     )  # converts the array to a meshgrid
     if plot:
-        plot_gnvp_wake(airplane, case)
+        plot_gnvp_wake(airplane, state, case)
 
     np.testing.assert_almost_equal(mesh_grid_plane, mesh_grid_gnvp, decimal=3)

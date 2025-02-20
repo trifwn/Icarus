@@ -31,7 +31,7 @@ def f2w_single_reynolds(
     solver_options: dict[str, Any],
 ) -> None:
     DB = Database.get_instance()
-    HOMEDIR, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
+    HOMEDIR, _, REYNDIR, _ = DB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,
@@ -73,7 +73,7 @@ def run_single_reynolds(
     position: int = 1,
 ) -> None:
     DB = Database.get_instance()
-    HOMEDIR, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
+    HOMEDIR, _, REYNDIR, _ = DB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,
@@ -155,7 +155,7 @@ def run_multiple_reynolds_parallel(
     REYNDIRS: list[str] = []
     DB = Database.get_instance()
     for reyn in reynolds:
-        _, _, REYNDIR, _ = DB.foils_db.generate_airfoil_directories(
+        _, _, REYNDIR, _ = DB.generate_airfoil_directories(
             airfoil=airfoil,
             reynolds=reyn,
             angles=angles,
@@ -231,12 +231,12 @@ def process_f2w_run(
         ).replace("+", "")
 
         CASEDIR: str = os.path.join(
-            DB.foils_db.DB2D,
+            DB.DB2D,
             f"{airfoil.name.upper()}",
             f"Reynolds_{reynolds_str}",
         )
 
         polars[reynolds_str] = make_polars(CASEDIR, DB.HOMEDIR)
     resutls_folder = os.path.join(DB.DB2D, airfoil.name.upper())
-    DB.foils_db.add_airfoil_data(resutls_folder)
+    DB.load_airfoil_data(resutls_folder)
     return polars

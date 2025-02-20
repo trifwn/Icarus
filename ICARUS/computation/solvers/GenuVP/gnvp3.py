@@ -235,17 +235,3 @@ class GenuVP3(Solver):
 # EXAMPLE USAGE
 if __name__ == "__main__":
     pass
-# from ICARUS.database.utils import angle_to_case
-# import os
-
-# HOMEDIR = os.getcwd()
-# gnvp3 = GenuVP3()
-# analysis = gnvp3.get_analyses_names()[0]
-# gnvp3.select_analysis(analysis)
-# options = gnvp3.get_analysis_options()
-
-# plane = list(DB.vehicles_db.planes.items())[0][1]
-# CASEDIR = plane.CASEDIR + "/" + angle_to_case(0.0) + "/"
-# options["HOMEDIR"] = HOMEDIR
-# options["CASEDIR"] = CASEDIR
-# # gnvp3.run()

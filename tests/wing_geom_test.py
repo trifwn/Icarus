@@ -16,7 +16,7 @@ def geom() -> None:
     CG = bmark.CG
     INERTIA = bmark.total_inertia
 
-    S_act: tuple[float] = (5.0,)
+    S_act: tuple[float] = (10.0,)
     MAC_act: tuple[float] = (1.0,)
     # AREA_act: tuple[float] = (4.0608,)
     CG_act: FloatArray = np.array([0.451, 0.0, 0.0])

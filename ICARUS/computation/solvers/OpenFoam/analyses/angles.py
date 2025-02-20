@@ -69,7 +69,7 @@ def angles_serial(
 
     """
     DB = Database.get_instance()
-    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.foils_db.generate_airfoil_directories(
+    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,
@@ -140,7 +140,7 @@ def angles_parallel(
 
     """
     DB = Database.get_instance()
-    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.foils_db.generate_airfoil_directories(
+    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,
