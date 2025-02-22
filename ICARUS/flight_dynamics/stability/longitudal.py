@@ -35,7 +35,6 @@ def longitudal_stability_finite_differences(
     M: dict[Any, float] = {}
     pert = pert.sort_values(by=["Epsilon"]).reset_index(drop=True)
     trim_state: DataFrame = pert[pert["Type"] == "Trim"]
-
     for var in ["u", "q", "w", "theta"]:
         if state.scheme is None:
             state.scheme = "Central"
@@ -54,19 +53,26 @@ def longitudal_stability_finite_differences(
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
 
-        # back = rotate_forces(back, state.trim["AoA"])
-        # front = rotate_forces(front, state.trim["AoA"])
         Xf = float(front["Fx"].to_numpy())
         Xb = float(back["Fx"].to_numpy())
         X[var] = (Xf - Xb) / de
+        if state.scheme == "Central":
+            # Add 2nd order derivative
+            X[var] = X[var] + (Xf - 2 * float(trim_state["Fx"].to_numpy()) + Xb) / de
 
         Zf = float(front["Fz"].to_numpy())
         Zb = float(back["Fz"].to_numpy())
         Z[var] = (Zf - Zb) / de
+        if state.scheme == "Central":
+            # Add 2nd order derivative
+            Z[var] = Z[var] + (Zf - 2 * float(trim_state["Fz"].to_numpy()) + Zb) / de
 
         Mf = float(front["My"].to_numpy())
         Mb = float(back["My"].to_numpy())
         M[var] = (Mf - Mb) / de
+        if state.scheme == "Central":
+            # Add 2nd order derivative
+            M[var] = M[var] + (Mf - 2 * float(trim_state["My"].to_numpy()) + Mb) / de
 
     X["w_dot"] = 0
     Z["w_dot"] = 0

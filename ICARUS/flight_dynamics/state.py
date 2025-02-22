@@ -5,6 +5,7 @@ import os
 from typing import TYPE_CHECKING
 from typing import Any
 
+import distinctipy
 import jsonpickle
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,8 +13,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.figure import SubFigure
 from matplotlib.markers import MarkerStyle
-from pandas import DataFrame
-from pandas import Index
+from pandas import DataFrame, Series
 from tabulate import tabulate
 
 from ICARUS.core.struct import Struct
@@ -109,10 +109,13 @@ class State:
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
         self.scheme: str = "Central"
         self.epsilons: dict[str, float] = {}
-        self.polar: DataFrame = DataFrame()
         self.disturbances: list[dst] = []
         self.pertrubation_results: DataFrame = DataFrame()
         self.sensitivities: Struct = Struct()
+
+        # Polars
+        self.polar: DataFrame = DataFrame()
+        self.polar_prefix: str | None = None
 
     @property
     def name(self) -> str:
@@ -239,38 +242,89 @@ class State:
         # Remove prefix from polar columns
         if polar_prefix is not None:
             cols: list[str] = list(polar.columns)
-            if "Fz" not in cols and "CL" not in cols:
-                for i, col in enumerate(cols):
-                    cols[i] = col.replace(f"{polar_prefix} ", "")
-                polar.columns = Index(cols, dtype="str")
+            if is_dimensional:
+                if "Fz" not in cols:
+                    polar["Fz"] = polar[f"{polar_prefix} Fz"]
+                    polar["Fx"] = polar[f"{polar_prefix} Fx"]
+                    polar["My"] = polar[f"{polar_prefix} My"]
+            else:
+                if "CL" not in cols:
+                    polar["CL"] = polar[f"{polar_prefix} CL"]
+                    polar["CD"] = polar[f"{polar_prefix} CD"]
+                    polar["Cm"] = polar[f"{polar_prefix} Cm"]
+            self.polar_prefix = polar_prefix
 
         if is_dimensional:
-            self.polar = self.make_aero_coefficients(polar)
+            polar = self.make_aero_coefficients(polar)
+
+        # Merge the df with the old data on the AoA column
+        if not self.polar.empty:
+            for col in polar.keys():
+                if col in self.polar.columns and col != "AoA":
+                    self.polar.drop(col, axis=1, inplace=True)
+
+            self.polar = self.polar.merge(
+                polar,
+                on="AoA",
+                how="outer",
+            )
         else:
             self.polar = polar
 
         # GET TRIM STATE
         try:
+            print(f"Trimming with {polar_prefix}, {self.polar.columns}")
+
             self.trim = trim_state(self, verbose=verbose)
-            self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0  # NOW WE UPDATE IT
+            self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
         except TrimNotPossible:
             self.trimmable = False
             self.trim = {}
             self.trim_dynamic_pressure = np.nan
 
+    def get_polar_prefixes(self) -> list[str]:
+        cols_pol = [col for col in self.polar.columns if "CL" in col]
+        return list(set(col[:-3] for col in cols_pol if col != "CL"))
+
+    def print_trim(self) -> None:
+        if not self.trim:
+            print("State Not Trimmed")
+        else:
+            print(f"Trim State (Calculated with {self.polar_prefix})")
+            for key, value in self.trim.items():
+                print(f"\t{key}: {value:.3f}")
+
+    def change_polar_prefix(self, polar_prefix: str) -> None:
+        self.polar_prefix = polar_prefix
+        self.polar['CL'] = self.polar[f"{polar_prefix} CL"]
+        self.polar['CD'] = self.polar[f"{polar_prefix} CD"]
+        self.polar['Cm'] = self.polar[f"{polar_prefix} Cm"]
+        try:
+            self.trim = trim_state(self, verbose=False)
+            self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
+        except TrimNotPossible:
+            self.trim_dynamic_pressure = np.nan
+            self.trim = {}
+            self.trimmable = False
+    
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()
         S: float = self.S
         MAC: float = self.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
 
-        data["CL"] = forces["Fz"] / (dynamic_pressure * S)
-        data["CD"] = forces["Fx"] / (dynamic_pressure * S)
-        data["Cm"] = forces["My"] / (dynamic_pressure * S * MAC)
-        data["CL/CD"] = data["CL"] / data["CD"]
-        # data["Cn"] = forces["Mz"] / (dynamic_pressure * S * span)
-        # data["Cl"] = forces["Mx"] / (dynamic_pressure * S * span)
-        data["AoA"] = forces["AoA"]
+        for key in forces.columns:
+            if key.endswith("Fz"):
+                fz = forces[key]
+                data[f"{key[:-2]}CL"] = fz / (dynamic_pressure * S)
+            if key.endswith("Fx"):
+                fy = forces[key]
+                data[f"{key[:-2]}CD"] = fy / (dynamic_pressure * S)
+            if key.endswith("My"):
+                mx = forces[key]
+                data[f"{key[:-2]}Cm"] = mx / (dynamic_pressure * S * MAC)
+            if key.endswith("AoA"):
+                data["AoA"] = forces[key]
         return data
 
     def add_all_pertrubations(
@@ -341,23 +395,41 @@ class State:
 
         i = 0
         if plot_longitudal:
-            # extract real part
-            x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
-            # extract imaginary part
-            y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
             axs_now[i].set_title("Longitudal Eigenvalues")
-            axs_now[i].scatter(x, y, label="Longitudal", color="r")
+            # extract real part and imaginary part
+            x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
+            y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
+
+            # Get the xs where x>0
+            x_pos = [x[j] for j in range(len(x)) if x[j] > 0]
+            y_pos = [y[j] for j in range(len(x)) if x[j] > 0]
+
+            # Get the xs where x<0
+            x_neg = [x[j] for j in range(len(x)) if x[j] < 0]
+            y_neg = [y[j] for j in range(len(x)) if x[j] < 0]
+
+            axs_now[i].scatter(x_pos, y_pos, label="Longitudal", color="r", marker=MarkerStyle("x"))
+            axs_now[i].scatter(x_neg, y_neg, label="Longitudal", color="r", marker=MarkerStyle("o"))
+            axs_now[i].legend(["Stable", "Unstable"], loc="best")
             i += 1
 
         if plot_lateral:
-            # extract real part
-            x = [ele.real for ele in self.state_space.lateral.eigenvalues]
-            # extract imaginary part
-            y = [ele.imag for ele in self.state_space.lateral.eigenvalues]
-            marker_x = MarkerStyle("x")
             axs_now[i].set_title("Lateral Eigenvalues")
-            axs_now[i].scatter(x, y, label="Lateral", color="b", marker=marker_x)
+            # extract real and imaginary parts
+            x = [ele.real for ele in self.state_space.lateral.eigenvalues]
+            y = [ele.imag for ele in self.state_space.lateral.eigenvalues]
 
+            # Get the xs where x>0
+            x_pos = [x[j] for j in range(len(x)) if x[j] > 0]
+            y_pos = [y[j] for j in range(len(x)) if x[j] > 0]
+
+            # Get the xs where x<0
+            x_neg = [x[j] for j in range(len(x)) if x[j] < 0]
+            y_neg = [y[j] for j in range(len(x)) if x[j] < 0]
+
+            axs_now[i].scatter(x_pos, y_pos, label="Lateral", color="b", marker=MarkerStyle("x"))
+            axs_now[i].scatter(x_neg, y_neg, label="Lateral", color="b", marker=MarkerStyle("o"))
+            axs_now[i].legend(["Stable", "Unstable"], loc="best")
         for j in range(i + 1):
             axs_now[j].set_ylabel("Imaginary")
             axs_now[j].set_xlabel("Real")
@@ -368,6 +440,113 @@ class State:
             pass
         else:
             fig.show()
+
+    def plot_polars(
+        self,
+        prefixes: list[str] | None = None,
+        plots: list[list[str]] = [
+            ["AoA", "CL"],
+            ["AoA", "CD"],
+            ["AoA", "Cm"],
+            ["AoA", "CL/CD"],
+        ],
+        dimensional: bool = False,
+        title: str | None = None,
+    ) -> tuple[Figure, np.ndarray[Any, Any]]:
+        """Function to plot stored polars
+
+        Args:
+            prefixes (list[str], optional): List of solvers to plot. Defaults to ["All"].
+            plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
+            dimensional (bool, optional): If true we convert to forces and moments. Defaults to False.
+            title (str, optional): Figure Title. Defaults to "Aero Coefficients".
+
+        Returns:
+            tuple[ndarray, Figure]: Array of Axes and Figure
+        """
+        if title is None:
+            title = f"{self.airplane.name}: {self.name}" 
+            if dimensional:
+                title += " Aerodynamic Forces"
+            else:
+                title += " Aerodynamic Coefficients"
+        number_of_plots = len(plots) + 1
+        # Divide the plots equally
+        sqrt_num = number_of_plots**0.5
+        i: int = int(np.ceil(sqrt_num))
+        j: int = int(np.floor(sqrt_num))
+
+        fig: Figure = plt.figure(figsize=(10, 10))
+        axs: np.ndarray[Axes] = fig.subplots(i, j)  # type: ignore
+        fig.suptitle(f"{title}", fontsize=16)
+
+        for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+            ax.set_xlabel(plot[0])
+            ax.set_ylabel(plot[1])
+            ax.set_title(f"{plot[1]} vs {plot[0]}")
+            ax.grid()
+            ax.axhline(y=0, color="k")
+            ax.axvline(x=0, color="k")
+
+        prefixes_available = self.get_polar_prefixes()
+        if prefixes is None:
+            prefixes_to_plot = [prefix for prefix in prefixes_available if not prefix.endswith("ONERA")]
+        else:
+            prefixes_to_plot = [prefix for prefix in prefixes if prefix in prefixes_available]
+
+        colors_ = distinctipy.get_colors(len(prefixes_to_plot))
+        axs = axs.flatten()
+        polar: DataFrame = self.polar.copy()
+
+        S: float = self.S
+        MAC: float = self.mean_aerodynamic_chord
+        dynamic_pressure: float = self.dynamic_pressure
+
+        for j, prefix in enumerate(prefixes_to_plot):
+            if dimensional:
+                polar[f"{prefix} CL"] = polar[f"{prefix} CL"] * dynamic_pressure * S
+                polar[f"{prefix} CD"] = polar[f"{prefix} CD"] * dynamic_pressure * S
+                polar[f"{prefix} Cm"] = polar[f"{prefix} Cm"] * dynamic_pressure * S * MAC
+
+            for plot, ax in zip(plots, axs[: len(plots)]):
+                if plot[0] == "CL/CD" or plot[1] == "CL/CD":
+                    polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                if plot[0] == "CD/CL" or plot[1] == "CD/CL":
+                    polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+
+                key0 = f"{prefix} {plot[0]}"
+                key1 = f"{prefix} {plot[1]}"
+
+                if plot[0] == "AoA":
+                    key0 = "AoA"
+                if plot[1] == "AoA":
+                    key1 = "AoA"
+
+                x: Series[float] = polar[f"{key0}"]
+                y: Series[float] = polar[f"{key1}"]
+                c = colors_[j]
+                ax.plot(
+                    x,
+                    y,
+                    ls="--",
+                    color=c,
+                    label=f" {prefix}",
+                    marker=MarkerStyle("o"),
+                    markersize=5,
+                    linewidth=1.5,
+                )
+
+        # Remove empty plots
+        for ax in axs.flatten()[len(plots) :]:
+            ax.remove()
+
+        handles, labels = axs.flatten()[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="lower right", ncol=2)
+        # Adjust the plots
+        fig.tight_layout()
+        fig.subplots_adjust(top=0.9, bottom=0.1)
+        fig.show()
+        return fig, axs
 
     def __str__(self) -> str:
         ss = io.StringIO()

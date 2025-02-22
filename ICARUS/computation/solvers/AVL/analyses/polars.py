@@ -86,8 +86,7 @@ def process_avl_angles_run(
     DB.load_vehicle_solver_data(
         vehicle=plane,
         state=state,
-        folder=plane.directory,
+        folder=CASEDIR,
         solver="AVL",
     )
-
     return forces

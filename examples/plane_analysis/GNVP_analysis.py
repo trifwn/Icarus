@@ -58,7 +58,7 @@ def main() -> None:
     # embraer.visualize()
 
     timestep: dict[str, float] = {"hermes": 1e-3}
-    maxiter: dict[str, int] = {"hermes": 100}
+    maxiter: dict[str, int] = {"hermes": 50}
     UINF: dict[str, float] = {"hermes": 20}
     ALTITUDE: dict[str, int] = {"hermes": 0}
 
@@ -147,7 +147,6 @@ def main() -> None:
             state.save(os.path.join(DB.DB3D, airplane.directory))
 
             from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
-
             avl_angle_run(airplane, state, "Xfoil", angles)
 
             # from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
@@ -176,13 +175,13 @@ def main() -> None:
             try:
                 state.add_polar(
                     polar=forces,
-                    polar_prefix=f"GenuVP{GNVP_VERSION} Potential",
+                    polar_prefix=f"GenuVP{GNVP_VERSION} 2D",
                     is_dimensional=False,
                 )
                 unstick = state
             except Exception as error:
                 print("Got errro")
-                print(error)
+                raise (error)
                 continue
 
             # ### Pertrubations

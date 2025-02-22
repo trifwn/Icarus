@@ -606,7 +606,7 @@ class Database_2D:
 
         ANGLEDIRS: list[str] = []
         for angle in angles:
-            folder = Database_2D.angle_to_dir(angle)
+            folder = Database_2D.angle_to_dir(float(angle))
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
         from ICARUS import INSTALL_DIR

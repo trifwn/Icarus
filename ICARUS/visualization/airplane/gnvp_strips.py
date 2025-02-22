@@ -104,8 +104,7 @@ def gnvp_strips_2d(
     # ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)
     x: list[int] = [i for i, data in enumerate(data[category])]
-    ax.scatter(x, data[category])
-
+    ax.plot(x, data[category], "ro-")
+    ax.grid()
     fig.show()
-    plt.show()
     return stripDat

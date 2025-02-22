@@ -15,8 +15,8 @@ from ICARUS.visualization import markers
 
 
 def plot_airplane_polars(
-    airplanes: list[str] | list[Airplane],
-    solvers: list[str] = ["All"],
+    airplanes: list[str] | list[Airplane] | str | Airplane,
+    prefixes: list[str] = ["All"],
     plots: list[list[str]] = [
         ["AoA", "CL"],
         ["AoA", "CD"],
@@ -30,17 +30,20 @@ def plot_airplane_polars(
     """Function to plot airplane polars for a given list of airplanes and solvers
 
     Args:
-        data (dict[str, DataFrame]): Dictionary of airplane polars
-        airplanes (list[str]): List of airplanes to plot
-        solvers (list[str], optional): List of Solvers to plot. Defaults to ["All"].
+        airplanes (list[str] | list[Airplane] | str | Airplane): List of airplanes to plot.
+        prefixes (list[str], optional): List of solvers to plot. Defaults to ["All"].
         plots (list[list[str]], optional): List of plots to plot. Defaults to [["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"], ["CL", "CD"]].
         size (tuple[int, int], optional): Figure Size. Defaults to (10, 10).
         title (str, optional): Figure Title. Defaults to "Aero Coefficients".
+        operating_point (dict[str, float], optional): Operating points to plot. Defaults to {}.
 
     Returns:
         tuple[ndarray, Figure]: Array of Axes and Figure
 
     """
+    if isinstance(airplanes, str) or isinstance(airplanes, Airplane):
+        airplanes = [airplanes]
+
     number_of_plots = len(plots) + 1
     DB = Database.get_instance()
     # Divide the plots equally
@@ -60,8 +63,8 @@ def plot_airplane_polars(
         ax.axhline(y=0, color="k")
         ax.axvline(x=0, color="k")
 
-    if solvers == ["All"]:
-        solvers = [
+    if prefixes == ["All"]:
+        prefixes = [
             "GenuVP3 Potential",
             "GenuVP3 2D",
             "GenuVP3 ONERA",
@@ -72,20 +75,20 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors_ = distinctipy.get_colors(len(airplanes) * len(solvers))
+    colors_ = distinctipy.get_colors(len(airplanes) * len(prefixes))
     for i, airplane in enumerate(airplanes):
         if isinstance(airplane, Airplane):
             airplane = airplane.name
 
         flag = False
-        for j, solver in enumerate(solvers):
+        for j, prefix in enumerate(prefixes):
             try:
                 polar: DataFrame = DB.get_vehicle_polars(airplane)
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
-                        polar[f"{solver} CL/CD"] = polar[f"{solver} CL"] / polar[f"{solver} CD"]
+                        polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
                     if plot[0] == "CD/CL" or plot[1] == "CD/CL":
-                        polar[f"{solver} CD/CL"] = polar[f"{solver} CD"] / polar[f"{solver} CL"]
+                        polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
 
                     if airplane.startswith("XFLR"):
                         key0 = f"{plot[0]}"
@@ -101,8 +104,8 @@ def plot_airplane_polars(
                         flag = True
 
                     else:
-                        key0 = f"{solver} {plot[0]}"
-                        key1 = f"{solver} {plot[1]}"
+                        key0 = f"{prefix} {plot[0]}"
+                        key1 = f"{prefix} {plot[1]}"
 
                         if plot[0] == "AoA":
                             key0 = "AoA"
@@ -115,9 +118,9 @@ def plot_airplane_polars(
                             c = colors_[j]
                             m = "o"
                         else:
-                            c = colors_[j]
-                            m = markers[i].get_marker()
-                        label: str = f"{airplane} - {solver}"
+                            c = colors_[i]
+                            m = markers[j].get_marker()
+                        label: str = f"{airplane} - {prefix}"
                         try:
                             ax.plot(
                                 x,

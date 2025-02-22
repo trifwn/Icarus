@@ -36,6 +36,9 @@ def dfile(params: GenuParameters) -> None:
         params (GenuParameters): An object containing the parameters values
 
     """
+    nbodt = int(params.nBods)
+    nblades = int(params.nBlades)
+
     f_io = StringIO()
     # Header
     f_io.write(f"{tabs(16)}<blank>\n")
@@ -44,8 +47,6 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"{tabs(16)}<blank>\n")
 
     # Basic parameters
-    nbodt = int(params.nBods)
-    nblades = int(params.nBlades)
     f_io.write(f"** Read the BASIC parameters{tabs(9)}<blank>\n")
     f_io.write(f"1{tabs(3)}NSYMF{sps(6)}=1,2,3 (no-symm, axi-symm, Y-symm)\n")
     f_io.write(f"{nbodt}{tabs(3)}NBODT{sps(6)}number of bodies\n")
@@ -54,9 +55,9 @@ def dfile(params: GenuParameters) -> None:
         f"1{tabs(3)}IAXISRF{sps(4)}=1,2,3 gives the axis of rotation if IABSREF=1\n",
     )
     f_io.write(f"{params.NLEVELT}{tabs(3)}NLEVELT{sps(4)}number of movement levels\n")
-    f_io.write(f"0.{tabs(3)}OMEGAR{sps(5)}is the rotation speed of the RCS\n")
 
     # Simulation options
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the simulation options{tabs(9)}<blank>\n")
     f_io.write(f"1{tabs(3)}IYNPMESH\n")
     f_io.write(f"0{tabs(3)}IYNSG\n")
@@ -65,9 +66,9 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"18{tabs(3)}NHYBAV{tabs(12)}<blank>\n")
     f_io.write(f"360{tabs(3)}NTHYBP{tabs(12)}<blank>\n")
     f_io.write(f"0.15{tabs(2)}DGRLEN\n")
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # Time parameters
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the TIME parameters{tabs(10)}<blank>\n")
     f_io.write(
         f"1{tabs(3)}OMEGAT{sps(5)}the rotation speed for the definition of the PERIOD\n",
@@ -75,7 +76,6 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(
         f"{params.NMETH}{tabs(3)}NMETHT{sps(5)}=1 for Euler =2 for Adams Bashford time integrat. scheme\n",
     )
-
     # Tip emission parameters
     f_io.write(
         f"{params.NEMTIP}{tabs(3)}NEMTIP{sps(5)}=0,1. The latter means that tip-emission takes place\n",
@@ -89,28 +89,24 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(
         f"{ff2(params.NTIMEL)}{tabs(2)}NTIMEL{sps(5)}time step that leading-edge separation starts\n",
     )
-
     # Root emission parameters
-    f_io.write(
-        f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n",
-    )
+    f_io.write(f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n")
     f_io.write(f"0{tabs(3)}NTIMERO{sps(4)}time step that root emission starts\n")
     f_io.write(f"0.{tabs(3)}AZIMIN{sps(5)}the initial azimuthal angle\n")
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # Solution parameters
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the SOLUTION parameters{tabs(9)}<blank>\n")
     f_io.write(
-        f"0{tabs(3)}IMAT{sps(7)}=0 AS is calculated every timestep, =1 only once\n",
+        f"1{tabs(3)}IMAT{sps(7)}=0 AS is calculated every timestep, =1 only once\n",
     )
-    f_io.write(f"200{tabs(3)}ITERM{sps(6)}maximum number of potential iterations\n")
+    f_io.write(f"100{tabs(3)}ITERM{sps(6)}maximum number of potential iterations\n")
     f_io.write(
         f"{params.RELAXS}{tabs(3)}RELAXS{sps(5)}relaxation factor for the singularity distributions\n",
     )
     f_io.write(
         f"{params.EPSDS}{tabs(2)}EPSDS{sps(6)}convergence tolerance of the potential calculations\n",
     )
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # Inflow parameters
     u_x: float = params.u_freestream[0]
@@ -121,6 +117,7 @@ def dfile(params: GenuParameters) -> None:
     yaw: float = np.arctan2(u_y, u_x) * 180 / np.pi
     inc: float = np.arctan2(u_z, u_x) * 180 / np.pi
 
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the INFLOW parameters{tabs(9)}<blank>\n")
     f_io.write(f"1.{tabs(3)}UREF{tabs(2)}reference velocity\n")
     f_io.write(f"{ff2(u_inf)}{tabs(3)}AUINF{tabs(2)}wind velocity\n")
@@ -151,18 +148,18 @@ def dfile(params: GenuParameters) -> None:
     f_io.write(f"  0{tabs(3)}BotTowerR{tabs(1)}R tower bottom{tabs(1)}[m]\n")
     f_io.write(f"  0{tabs(3)}TopTowerR{tabs(1)}R tower top{tabs(2)}[m]\n")
     f_io.write(f"  0{tabs(2)}TowerH{tabs(2)}tower height{tabs(1)}[m]\n")
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # Geometrical parameters
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the geometrical parameters{tabs(8)}<blank>\n")
     f_io.write(f"1 {tabs(3)}IAXISUI{tabs(2)}axis of the global system\n")
     f_io.write(
         f"1.{tabs(3)}Refz{tabs(2)}reference Z position for the shear and the turbulent wind [defines Hub height]\n",
     )
     f_io.write(f"1.{tabs(3)}RTIP{tabs(2)}Radius of the blade\n")
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # EMISSION parameters
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the EMISSION parameters{tabs(9)}<blank>\n")
     f_io.write(
         f"{ff2(params.NNEVP0)}{tabs(3)}NNEVP0     per near-wake element of a thin wing\n",
@@ -174,13 +171,13 @@ def dfile(params: GenuParameters) -> None:
         f"{ff2(params.RELAXU)}{tabs(3)}RELAXU     relaxation factor for the emission velocity\n",
     )
     f_io.write(f"{ff2(params.NEMIS)}{tabs(2)}NEMISS     =0,1 (See CREATE)\n")
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # DEFORMATION parameters
     # DX: float = float(1.5 * np.linalg.norm(params.u_freestream) * params.timestep)
     # if DX > 0.005:
     # DX = 0.003
 
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** Read the DEFORMATION parameters{tabs(8)}<blank>\n")
     f_io.write(
         f"{ff2(params.EPSFB)}{tabs(2)}EPSFB      Cut-off length for the bound vorticity\n",
@@ -231,11 +228,11 @@ def dfile(params: GenuParameters) -> None:
         f"{ff2(params.XREWAK)}{tabs(2)}XREWAK     X starting distance of merging\n",
     )
     f_io.write(f"{ff2(params.RADMER)}{tabs(2)}RADMER     Radius for merging\n")
-    f_io.write(f"{tabs(16)}<blank>\n")
 
     # I/O specifications
     name: str = params.name
 
+    f_io.write(f"{tabs(16)}<blank>\n")
     f_io.write(f"** I/O specifications{tabs(11)}<blank>\n")
     f_io.write(f"{name}.TOT{tabs(1)}OFILE\n")
     f_io.write(f"{name}.SAS{tabs(1)}SUPAS\n")
@@ -361,10 +358,7 @@ def geofile(
         f_io.write(f"0{tabs(3)} ElastBody\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
-        # The Rotation Center and the Axis represent the axis and position around which Genu Calculates the Torque around which
-        # GNVP7 calculates the torque. The rotation center is the point around which the torque is calculated. The axis is the
-        # axis around which the torque is calculated. Should be noted that we first define them around the CG of the body. Should,
-        # one body move each new rot_center will be updated to reflect the movement, but the new CG will NOT!
+        # The Rotation Center and the Axis represent the axis and position around which Genu Calculates the Torque
         # cg: list[float] = params.CG.tolist()
         # f_io.write(f"{ff4(cg[0])} {ff4(cg[1])} {ff4(cg[2])}{tabs(2)}ROTOR Center !for WT (0.,0.,HubHeigth)\n")
         f_io.write(

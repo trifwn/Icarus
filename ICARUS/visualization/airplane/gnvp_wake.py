@@ -51,7 +51,7 @@ def plot_gnvp_wake(
 
     """
     if isinstance(case, float):
-        case = angle_to_case(case)
+        case_str = angle_to_case(case)
 
     if gnvp_version == 3:
         get_wake_data = get_wake_data_3
@@ -60,12 +60,12 @@ def plot_gnvp_wake(
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")
 
-    XP, QP, VP, GP, B1, C1 = get_wake_data(plane, state, case)
+    XP, QP, VP, GP, B1, C1 = get_wake_data(plane, state, case_str)
 
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
-    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case_to_angle(case)}")
+    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case_to_angle(case_str)}")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)

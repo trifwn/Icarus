@@ -47,8 +47,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         logging.debug(
             "Trim not possible due to Cm not crossing zero at the imported polars",
         )
-        logging.debug(e)
-        logging.debug(Cm)
+        logging.debug(f"Gave error: {e}")
         raise TrimOutsidePolars
 
     # from trimLoc1 and trimLoc2, interpolate the angle where Cm = 0

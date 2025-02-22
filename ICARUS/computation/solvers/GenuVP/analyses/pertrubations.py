@@ -13,7 +13,6 @@ from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_ca
 from ICARUS.computation.solvers.GenuVP.post_process.forces import (
     forces_to_pertrubation_results,
 )
-from ICARUS.computation.solvers.GenuVP.post_process.forces import rotate_gnvp_forces
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
@@ -173,8 +172,8 @@ def run_pertrubation_serial(
                 "solver2D": solver2D,
                 "maxiter": maxiter,
                 "timestep": timestep,
-                "u_freestream": state.u_freestream,
-                "angle": state.trim["U"],
+                "u_freestream": state.trim["U"],
+                "angle": state.trim["AoA"],
                 "environment": state.environment,
                 "surfaces": surfaces,
                 "bodies_dicts": bodies_dicts,
@@ -268,11 +267,12 @@ def run_pertrubation_parallel(
                 (
                     DB,
                     plane,
+                    state,
                     solver2D,
                     maxiter,
                     timestep,
-                    state.u_freestream,
                     state.trim["U"],
+                    state.trim["AoA"],
                     state.environment,
                     surfaces,
                     bodies_dicts,
@@ -485,21 +485,11 @@ def proccess_pertrubation_res(
 
     """
     DB = Database.get_instance()
-    HOMEDIR: str = DB.HOMEDIR
-    DYNDIR: str = DB.get_vehicle_case_directory(
-        airplane=plane,
-        state=state,
-        solver=f"GenuVP{gnvp_version}",
-        case="Dynamics",
-    )
     forces: DataFrame = forces_to_pertrubation_results(
-        DYNDIR,
-        HOMEDIR,
+        plane,
         state,
         gnvp_version,
     )
-    forces = rotate_gnvp_forces(forces, forces["AoA"], gnvp_version)
-    print(forces)
     state.set_pertrubation_results(forces)
     state.stability_fd()
     # Save the state
@@ -510,13 +500,4 @@ def proccess_pertrubation_res(
     )
     state.save(CASEDIR)
     DB.vehicles_db.states[plane.name] = state
-
     return forces
-
-
-# def processGNVPsensitivity(plane):
-#     HOMEDIR = DB.HOMEDIR
-#     DYNDIR = os.path.join(DB.vehiclesDB.DATADIR, plane.CASEDIR, "Dynamics")
-#     forces = forces2pertrubRes(DYNDIR, HOMEDIR)
-#     # rotatedforces = rotateForces(forces, forces["AoA"])
-#     return forces #rotatedforces

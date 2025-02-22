@@ -42,7 +42,7 @@ def hermes(name: str) -> Airplane:
         root_chord=0.159,
         tip_chord=0.072,
         N=20,
-        M=10,
+        M=15,
         mass=0.670,
     )
 
@@ -67,7 +67,7 @@ def hermes(name: str) -> Airplane:
         root_chord=0.130,
         tip_chord=0.03,
         N=12,
-        M=8,
+        M=14,
         mass=0.06,
     )
 
@@ -92,7 +92,7 @@ def hermes(name: str) -> Airplane:
         root_chord=0.2,
         tip_chord=0.1,
         N=12,
-        M=5,
+        M=12,
         mass=0.04,
     )
 

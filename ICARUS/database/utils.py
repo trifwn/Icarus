@@ -45,10 +45,34 @@ def disturbance_to_case(dst: Disturbance) -> str:
         str: folder name
 
     """
-    if dst.var == "Trim":
-        folder: str = "Trim"
-    elif dst.is_positive:
-        folder = "p" + str(dst.amplitude)[::-1].zfill(6)[::-1] + f"_{dst.var}"
+    if dst.var == "Trim" or dst.amplitude is None:
+        return "Trim"
+
+    amplitude: float = abs(dst.amplitude)
+    # Round to 6 decimal in scientific notation
+    amplitude_str = f"{amplitude:.3e}".zfill(9)
+    if dst.is_positive:
+        folder = "p" + amplitude_str + f"_{dst.var}"
     else:
-        folder = "m" + str(dst.amplitude)[::-1].strip("-").zfill(6)[::-1] + f"_{dst.var}"
+        folder = "m" + amplitude_str + f"_{dst.var}"
     return folder
+
+
+def case_to_disturbance(case: str) -> Disturbance:
+    """Convert case folder name to disturbance
+
+    Args:
+        case (str): folder name
+
+    Returns:
+        Disturbance: Disturbance
+
+    """
+    if case == "Trim":
+        dst: Disturbance = Disturbance("Trim", 0)
+    elif case[0] == "m":
+        print(case, case[8:], float(case[1:7]))
+        dst = Disturbance(case[9:], -float(case[1:7]))
+    else:
+        dst = Disturbance(case[9:], float(case[1:7]))
+    return dst

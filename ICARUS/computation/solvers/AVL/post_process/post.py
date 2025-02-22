@@ -93,10 +93,15 @@ def collect_avl_polar_forces(
 
 def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
     DB = Database.get_instance()
-    DYNDIR = os.path.join(DB.DB3D, plane.name, "AVL", "Dynamics")
-    results = []
-    # pertrubation_df: DataFrame = DataFrame()
+    DYNDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver="AVL",
+        case="Dynamics",
+    )
 
+    aoa = -state.trim["AoA"] * np.pi / 180
+    results = []
     for dst in state.disturbances:
         casefile = os.path.join(DYNDIR, disturbance_to_case(dst))
         if dst.var == "phi" or dst.var == "theta":
@@ -109,17 +114,28 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
         else:
             with open(casefile, encoding="utf-8") as f:
                 lines = f.readlines()
+
             x_axis = lines[19]
             y_axis = lines[20]
             z_axis = lines[21]
 
             try:
                 CX = float(x_axis[11:19])
-                Cl = float(x_axis[33:41])
                 CY = float(y_axis[11:19])
-                Cm = float(y_axis[33:41])
                 CZ = float(z_axis[11:19])
+
+                Cl = float(x_axis[33:41])
+                Cm = float(y_axis[33:41])
                 Cn = float(z_axis[33:41])
+
+                # # Rotate the forces to the body frame
+                # CX = CX * np.cos(aoa) - CZ * np.sin(aoa)
+                # CY = CY
+                # CZ = CX * np.sin(aoa) + CZ * np.cos(aoa)
+
+                # Cl = Cl * np.cos(aoa) - Cn * np.sin(aoa)
+                # Cm = Cm
+                # Cn = Cl * np.sin(aoa) + Cn * np.cos(aoa)
             except ValueError:
                 raise AVLPostReadError(f"Error reading file {casefile}")
 
@@ -130,8 +146,8 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
                     * float(
                         np.linalg.norm(
                             [
-                                state.trim["U"] * np.cos(state.trim["AoA"] * np.pi / 180) + dst.amplitude,
-                                state.trim["U"] * np.sin(state.trim["AoA"] * np.pi / 180),
+                                state.trim["U"] * np.cos(aoa) + dst.amplitude,
+                                state.trim["U"] * np.sin(aoa),
                             ],
                         ),
                     )
@@ -144,8 +160,8 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
                     * float(
                         np.linalg.norm(
                             [
-                                state.trim["U"] * np.cos(state.trim["AoA"] * np.pi / 180),
-                                state.trim["U"] * np.sin(state.trim["AoA"] * np.pi / 180) + dst.amplitude,
+                                state.trim["U"] * np.cos(aoa),
+                                state.trim["U"] * np.sin(aoa) + dst.amplitude,
                             ],
                         ),
                     )
@@ -165,10 +181,10 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
         else:
             ampl = float(dst.amplitude)
         results.append(np.array([ampl, dst.var, Fx, Fy, Fz, L, M, N]))
-
-    pertrubation_df = DataFrame(results, columns=cols)
-    pertrubation_df["Epsilon"] = pertrubation_df["Epsilon"].astype(float)
-    return pertrubation_df
+    df = DataFrame(results, columns=cols)
+    df = df.sort_values("Type").reset_index(drop=True)
+    df["Epsilon"] = df["Epsilon"].astype(float)
+    return df
 
 
 def implicit_dynamics_post(

@@ -21,7 +21,7 @@ def airplane_polars(plot: bool = False) -> None:
 
         plot_airplane_polars(
             airplanes=planenames,
-            solvers=[
+            prefixes=[
                 "GenuVP3 Potential",
                 "GenuVP3 2D",
                 # "GenuVP3 ONERA",

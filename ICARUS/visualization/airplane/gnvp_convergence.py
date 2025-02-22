@@ -2,16 +2,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
-from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.database.utils import angle_to_case
+from ICARUS.database.utils import disturbance_to_case
+from ICARUS.flight_dynamics.disturbances import Disturbance
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
 
-def plot_convergence(
+def plot_case_convergence(
     plane: str,
-    angles: list[float] | FloatArray = [],
-    solvers: list[str] = ["All"],
+    cases: list[float | str | Disturbance] = [],
+    metrics: list[str] = ["All"],
     plot_error: bool = True,
     size: tuple[int, int] = (10, 10),
 ) -> None:
@@ -20,15 +22,12 @@ def plot_convergence(
 
     Args:
         plane (str): Plane Name
-        angles (list[str], optional): Angles to show. Defaults to ["All"].
-        solvers (list[str], optional): Solvers to show. Defaults to ["All"].
+        cases (list[float | str | Disturbance], optional): Cases to show. Defaults to [].
+        metrics (list[str], optional): Metrics to show. Defaults to ["All"].
         plot_error (bool, optional): Wheter to plot the relative error or not. Defaults to True.
         size (tuple[int,int], optional): Size of the figure. Defaults to (10, 10).
 
     """
-    DB = Database.get_instance()
-    data = DB.vehicles_db.transient_data
-
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig: Figure = plt.figure(figsize=size)
     axs: np.ndarray = fig.subplots(3, 3)  # type: ignore
@@ -65,35 +64,44 @@ def plot_convergence(
 
     fig.delaxes(axs[2, 2])
     # Fill plots with data
-    if solvers == ["All"]:
-        solvers = ["", "2D"]  # , "DS2D"]
+    if metrics == ["All"]:
+        metrics = ["", "2D"]  # , "DS2D"]
 
-    cases = data[plane]
+    DB = Database.get_instance()
+    data = DB.vehicles_db.transient_data[plane]
     i = 0
-    for ang in cases.keys():
-        num = float("".join(c for c in ang if (c.isdigit() or c == ".")))
-        if ang.startswith("m"):
-            ang_num: float = -num
+    for i, case in enumerate(cases):
+        if isinstance(case, Disturbance):
+            name = disturbance_to_case(case)
+            key = f"Dynamics/{name}"
+        elif isinstance(case, float):
+            key = angle_to_case(case)
+            name = str(case)
+        elif isinstance(case, str):
+            key = case
+            name = case
         else:
-            ang_num = num
+            raise ValueError("Case must be a float, str or Disturbance")
 
-        if (ang_num not in angles) and (angles != []):
-            continue
-
-        runHist = cases[ang]
+        keys = list(data.keys())
+        if key not in keys:
+            print(f"Case {key} not found in database")
+            for k in keys:
+                print(k)
+        runHist = data[key]
         i += 1
         j = 0
-        for solver in solvers:
+        for metric in metrics:
             try:
                 it = runHist["TTIME"].astype(float)
                 it = it / it.iloc[0]
 
-                fx = np.abs(runHist[f"TFORC{solver}(1)"].astype(float))
-                fy = np.abs(runHist[f"TFORC{solver}(2)"].astype(float))
-                fz = np.abs(runHist[f"TFORC{solver}(3)"].astype(float))
-                mx = np.abs(runHist[f"TAMOM{solver}(1)"].astype(float))
-                my = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
-                mz = np.abs(runHist[f"TAMOM{solver}(2)"].astype(float))
+                fx = np.abs(runHist[f"TFORC{metric}(1)"].astype(float))
+                fy = np.abs(runHist[f"TFORC{metric}(2)"].astype(float))
+                fz = np.abs(runHist[f"TFORC{metric}(3)"].astype(float))
+                mx = np.abs(runHist[f"TAMOM{metric}(1)"].astype(float))
+                my = np.abs(runHist[f"TAMOM{metric}(2)"].astype(float))
+                mz = np.abs(runHist[f"TAMOM{metric}(2)"].astype(float))
                 error = runHist["ERROR"].astype(float)
                 errorM = runHist["ERRORM"].astype(float)
                 it2 = it
@@ -110,7 +118,7 @@ def plot_convergence(
                 c = colors_[j]
                 m = markers[i].get_marker()
 
-                label: str = f"{plane} - {solver} - {ang_num}"
+                label: str = f"{plane} - {metric} - {name}"
                 axs[0, 0].plot(
                     it,
                     fx,
@@ -185,7 +193,7 @@ def plot_convergence(
                     linewidth=1,
                 )
             except KeyError as e:
-                print(f"Run Doesn't Exist: {plane},{e},{ang}")
+                print(f"Run Doesn't Exist: {plane},{e},{name}")
 
     fig.tight_layout()
     for axR in axs:

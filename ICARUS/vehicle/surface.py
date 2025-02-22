@@ -188,7 +188,6 @@ class WingSurface:
 
         # Initialize Strips
         self.strips: list[Strip] = []
-        self.all_strips: list[Strip] = []
 
         # Initialize Mean Chords
         self.mean_aerodynamic_chord: float = 0.0
@@ -727,8 +726,6 @@ class WingSurface:
     def create_strips(self) -> None:
         """Create Strips given the Grid and airfoil"""
         strips: list[Strip] = []
-        symmetric_strips: list[Strip] = []
-
         i_range = np.arange(0, self.N - 1)
 
         start_points = np.array(
@@ -783,11 +780,14 @@ class WingSurface:
                 eta=eta,
             )
             strips.append(strip)
-        if self.is_symmetric_y:
-            symmetric_strips = [strip.return_symmetric() for strip in strips]
-
         self.strips = strips
-        self.all_strips = [*strips, *symmetric_strips[::-1]]
+
+    @property
+    def all_strips(self) -> list[Strip]:
+        symmetric_strips = [strip.return_symmetric() for strip in self.strips]
+        if self.is_symmetric_y:
+            return [*symmetric_strips[::-1], *self.strips]
+        return self.strips
 
     def create_grid(self) -> None:
         chord_eta = np.array(

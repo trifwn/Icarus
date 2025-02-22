@@ -906,7 +906,6 @@ class Airfoil(af.Airfoil):  # type: ignore
 
         x_points: FloatArray = np.hstack((x_up, x_lo)).T
         y_points: FloatArray = np.hstack((y_up, y_lo)).T
-
         return np.vstack((x_points, y_points))
 
     @classmethod

@@ -65,7 +65,7 @@ from typing import Any
 from typing import Callable
 
 from .db_polars import plot_airplane_polars
-from .gnvp_convergence import plot_convergence
+from .gnvp_convergence import plot_case_convergence
 from .gnvp_sensitivity import plot_sensitivity
 from .gnvp_strips import gnvp_strips_2d
 from .gnvp_strips import gnvp_strips_3d
@@ -73,7 +73,7 @@ from .gnvp_wake import plot_gnvp_wake
 
 __functions__: list[Callable[..., Any]] = [
     plot_airplane_polars,
-    plot_convergence,
+    plot_case_convergence,
     plot_sensitivity,
     gnvp_strips_2d,
     gnvp_strips_3d,

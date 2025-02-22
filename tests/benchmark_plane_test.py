@@ -30,7 +30,7 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         root_chord=1.0,
         tip_chord=1.0,
         N=15,
-        M=8,
+        M=10,
         mass=1,
     )
     airplane = Airplane(Simplewing.name, [Simplewing])

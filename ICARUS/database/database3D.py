@@ -41,10 +41,11 @@ class Database_3D:
     def __init__(self, APPHOME: str, location: str) -> None:
         self.HOMEDIR: str = APPHOME
         self.DB3D: str = location
-        self.forces: Struct = Struct()
-        self.polars: Struct = Struct()
         self.planes: Struct = Struct()
         self.states: Struct = Struct()
+
+        self.forces: Struct = Struct()
+        self.polars: Struct = Struct()
         self.transient_data: Struct = Struct()
 
         if not os.path.isdir(self.DB3D):
@@ -90,12 +91,13 @@ class Database_3D:
         if vehicle in self.polars.keys():
             polar_obj: DataFrame = self.polars[vehicle]
             pol = polar_obj
-        self.read_plane_data(vehicle)
-        try:
-            polar_obj = self.polars[vehicle]
-            pol = polar_obj
-        except KeyError:
-            raise ValueError(f"No Polars found for {vehicle}")
+        else:
+            self.read_plane_data(vehicle)
+            try:
+                polar_obj = self.polars[vehicle]
+                pol = polar_obj
+            except KeyError:
+                raise ValueError(f"No Polars found for {vehicle}")
 
         if solver is not None:
             return pol[[col for col in pol.columns if col.startswith(solver) or col == "AoA"]]
@@ -180,7 +182,6 @@ class Database_3D:
         if plane_obj is None:
             logging.debug(f"No Plane Object Found at {vehicle_folder_path}")
             return None
-
         self.planes[plane_obj.name] = plane_obj
         vehicle_name = plane_obj.name
 
@@ -263,7 +264,7 @@ class Database_3D:
                     json_obj: str = f.read()
 
                 obj: Any = jsonpickle.decode(json_obj)
-                if isinstance(obj, State):
+                if isinstance(obj, State) or obj.__class__.__name__ == "State":
                     state = obj
                 else:
                     raise TypeError(f"Expected State object, got {type(obj)}")
@@ -298,6 +299,7 @@ class Database_3D:
             )
         else:
             raise ValueError(f"Solver {solver} not recognized")
+        logging.info(f"Added Polars for {vehicle.name} {solver}")
 
     def load_gnvp_data(
         self,
@@ -338,11 +340,18 @@ class Database_3D:
             return
 
         cases: list[str] = next(os.walk(folder))[1]
+        if "Dynamics" in cases:
+            cases.remove("Dynamics")
+            dynamic_cases = next(os.walk(os.path.join(folder, "Dynamics")))[1]
+            cases.extend([f"Dynamics/{case}" for case in dynamic_cases])
+            pertrubations_file = os.path.join(folder, "Dynamics", f"pertrubations.gnvp{gnvp_version}")
+            pertrubations_df = pd.read_csv(pertrubations_file)
+            try:
+                state.set_pertrubation_results(pertrubations_df)
+            except Exception as error:
+                logging.debug(f"Error setting pertrubation results {error}")
+                state.pertrubation_results = pertrubations_df
         for case in cases:
-            # Load States
-            if case == "Dynamics":
-                continue
-
             # Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
             # the convergence data from gnvp.out. If successfull it adds the error data to the
@@ -453,6 +462,16 @@ class Database_3D:
             )
             # Sort the dataframe by AoA
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
+        try:
+            print(f"\tAdding Polars for {plane.name} {prefix} to State {state.name}")
+            state.add_polar(
+                polar=forces,
+                polar_prefix=prefix,
+                is_dimensional=True,
+                verbose=False,
+            )
+        except Exception as error:
+            logging.debug(f"Error adding polar {error}")
 
     def add_forces(self, planename: str, forces: DataFrame) -> None:
         if f"{planename}" not in self.forces.keys():
@@ -492,4 +511,7 @@ class Database_3D:
         state_path = os.path.join(airplane_path, state.name)
         solver_path = os.path.join(state_path, solver)
         case_path = os.path.join(solver_path, case) if case is not None else solver_path
+
+        if not os.path.isdir(case_path):
+            os.makedirs(case_path, exist_ok=True)
         return case_path

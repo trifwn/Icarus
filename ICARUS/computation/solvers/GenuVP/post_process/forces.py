@@ -9,7 +9,10 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.core.types import FloatArray
+from ICARUS.database.db import Database
+from ICARUS.database.utils import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.plane import Airplane
 
 
 def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
@@ -26,7 +29,6 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
     """
     os.chdir(CASEDIR)
     folders: list[str] = next(os.walk("."))[1]
-    # print("Making Polars")
     pols: list[list[float]] = []
     for folder in folders:
         os.chdir(os.path.join(CASEDIR, folder))
@@ -47,12 +49,16 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
     else:
         raise ValueError(f"GenuVP version {gnvp_version} does not exist")
 
+    # Create the DataFrame
     df: DataFrame = DataFrame(pols, columns=cols)
     df.pop("TIME")
     df.pop("PSI")
     df = df.sort_values("AoA").reset_index(drop=True)
     df = rotate_gnvp_forces(df, df["AoA"], gnvp_version)
-    df = df.sort_values("AoA").reset_index(drop=True)
+    df = set_default_name_to_use(df, gnvp_version, default_name_to_use="Potential")
+    df = df[["AoA"] + [col for col in df.columns if col != "AoA"]]
+
+    # Save the DataFrame
     forces_file: str = os.path.join(CASEDIR, f"forces.gnvp{gnvp_version}")
     df.to_csv(forces_file, index=False, float_format="%.10f")
     os.chdir(HOMEDIR)
@@ -60,57 +66,55 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
 
 
 def forces_to_pertrubation_results(
-    DYNDIR: str,
-    HOMEDIR: str,
+    plane: Airplane,
     state: State,
     gnvp_version: int,
 ) -> DataFrame:
-    os.chdir(DYNDIR)
-    folders: list[str] = next(os.walk("."))[1]
-    print("Logging Pertrubations")
-    pols: list[list[float | str]] = []
-    for folder in folders:
-        os.chdir(os.path.join(DYNDIR, folder))
-        files: list[str] = next(os.walk("."))[2]
-        if "LOADS_aer.dat" in files:
-            dat: FloatArray = np.loadtxt("LOADS_aer.dat")[-1]
-            if folder == "Trim":
-                pols.append([0, str(folder), *dat])
-                continue
+    DB = Database.get_instance()
 
-            # RECONSTRUCT NAME
-            value: str = ""
-            name: str = ""
-            flag = False
-            for c in folder[1:]:
-                if (c != "_") and (not flag):
-                    value += c
-                elif c == "_":
-                    flag = True
-                else:
-                    name += c
-            value_num: float = float(value)
-            if folder.startswith("m"):
-                value_num = -value_num
+    DYNDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver=f"GenuVP{gnvp_version}",
+        case="Dynamics",
+    )
 
-            pols.append([value_num, name, *dat])
-            os.chdir(os.path.join(DYNDIR, folder))
-        os.chdir(f"{DYNDIR}")
+    pols = []
+    for dst in state.disturbances:
+        case = disturbance_to_case(dst)
+        case_path = os.path.join(DYNDIR, case)
+        casefiles: list[str] = next(os.walk(case_path))[2]
+        if "LOADS_aer.dat" in casefiles:
+            loads_file = os.path.join(case_path, "LOADS_aer.dat")
+            dat: FloatArray = np.loadtxt(loads_file)[-1]
 
+            pols.append([dst.var, dst.amplitude if dst.amplitude else 0, *dat])
+
+    # Parse the File
     if gnvp_version == 7:
         cols = cols_7
     elif gnvp_version == 3:
         cols = cols_3
     else:
         raise ValueError(f"GenuVP version {gnvp_version} does not exist")
-    df: DataFrame = DataFrame(pols, columns=["Epsilon", "Type", *cols[1:]])
+
+    # Create the DataFrame
+    df: DataFrame = DataFrame(pols, columns=["Type", "Epsilon", *cols[1:]])
+
+    #
+    for col in df.columns:
+        if col.endswith("Fz") or col.endswith("Fx") or col.endswith("Fy"):
+            df[col] = -df[col]
+    print(df.columns)
+
     df.pop("TIME")
     df.pop("PSI")
     df = df.sort_values("Type").reset_index(drop=True)
-    df = rotate_gnvp_forces(df, state.trim["AoA"], gnvp_version)
+    # df = rotate_gnvp_forces(df, state.trim["AoA"], gnvp_version)
+    df = set_default_name_to_use(df, gnvp_version, default_name_to_use="Potential")
 
-    df.to_csv(f"pertrubations.gnvp{gnvp_version}", index=False)
-    os.chdir(HOMEDIR)
+    perturbation_file: str = os.path.join(DYNDIR, f"pertrubations.gnvp{gnvp_version}")
+    df.to_csv(perturbation_file, index=False)
     return df
 
 
@@ -118,7 +122,6 @@ def rotate_gnvp_forces(
     rawforces: DataFrame,
     alpha_deg: float | Series[float] | FloatArray,
     gnvp_version: int,
-    default_name_to_use: str = "2D",
 ) -> DataFrame:
     data = DataFrame()
     AoA: float | Series[float] | FloatArray = alpha_deg * np.pi / 180
@@ -155,15 +158,22 @@ def rotate_gnvp_forces(
             logging.debug(f"Key error {e}")
 
     data["AoA"] = alpha_deg
-    data["Fx"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fx"]
-    data["Fy"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fy"]
-    data["Fz"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Fz"]
-    data["Mx"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mx"]
-    data["My"] = data[f"GenuVP{gnvp_version} {default_name_to_use} My"]
-    data["Mz"] = data[f"GenuVP{gnvp_version} {default_name_to_use} Mz"]
     # Reindex the dataframe sort by AoA
     data = data.sort_values(by="AoA").reset_index(drop=True)
     return data
+
+
+def set_default_name_to_use(forces: DataFrame, gnvp_version: int, default_name_to_use: str | None = None) -> DataFrame:
+    if default_name_to_use is None:
+        default_name_to_use = "Potential"
+
+    forces["Fx"] = forces[f"GenuVP{gnvp_version} {default_name_to_use} Fx"]
+    forces["Fy"] = forces[f"GenuVP{gnvp_version} {default_name_to_use} Fy"]
+    forces["Fz"] = forces[f"GenuVP{gnvp_version} {default_name_to_use} Fz"]
+    forces["Mx"] = forces[f"GenuVP{gnvp_version} {default_name_to_use} Mx"]
+    forces["My"] = forces[f"GenuVP{gnvp_version} {default_name_to_use} My"]
+    forces["Mz"] = forces[f"GenuVP{gnvp_version} {default_name_to_use} Mz"]
+    return forces
 
 
 cols_3: list[str] = [

@@ -12,9 +12,9 @@ def eigenvalue_analysis(
     state_space_obj: LateralStateSpace | LongitudalStateSpace,
 ) -> None:
     # Compute Eigenvalues and Eigenvectors
-    eigvalLong, eigvecLong = np.linalg.eig(state_space_obj.A)
-    state_space_obj.eigenvalues = eigvalLong
-    state_space_obj.eigenvectors = eigvecLong
+    eigval_long, eigvec_long = np.linalg.eig(state_space_obj.A)
+    state_space_obj.eigenvalues = eigval_long
+    state_space_obj.eigenvectors = eigvec_long
 
 
 class LateralStateSpace:

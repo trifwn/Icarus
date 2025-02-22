@@ -230,7 +230,7 @@ def run_gnvp_angles_parallel(
     timestep: float,
     angles: list[float] | FloatArray,
     genu_version: int,
-    solver_options: dict[str, Any],
+    solver_options: dict[str, Any] | Struct,
 ) -> None:
     """Run all specified angle simulations in GNVP3 in parallel
 
