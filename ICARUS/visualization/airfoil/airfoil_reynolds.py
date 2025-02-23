@@ -15,7 +15,7 @@ from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
 
-def plot_airfoils_polar(
+def plot_airfoils_at_reynolds(
     airfoil_names: list[str],
     reynolds: float | None = None,
     solvers: list[str] | str = ["All"],
