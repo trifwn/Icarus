@@ -27,21 +27,20 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
         DataFrame: Resulting Polars
 
     """
-    os.chdir(CASEDIR)
-    folders: list[str] = next(os.walk("."))[1]
+    folders: list[str] = next(os.walk(CASEDIR))[1]
     pols: list[list[float]] = []
     for folder in folders:
-        os.chdir(os.path.join(CASEDIR, folder))
-        files: list[str] = next(os.walk("."))[2]
+        folder_path = os.path.join(CASEDIR, folder)
+        files: list[str] = next(os.walk(folder_path))[2]
         if "LOADS_aer.dat" in files:
             name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
-            dat: FloatArray = np.loadtxt("LOADS_aer.dat")[-1]
+            file_name = os.path.join(folder_path, "LOADS_aer.dat")
+            dat: FloatArray = np.loadtxt(file_name)[-1]
             if folder.startswith("m"):
                 a: list[float] = [-name, *dat]
             else:
                 a = [name, *dat]
             pols.append(a)
-        os.chdir(f"{CASEDIR}")
     if gnvp_version == 7:
         cols = cols_7
     elif gnvp_version == 3:
@@ -69,6 +68,7 @@ def forces_to_pertrubation_results(
     plane: Airplane,
     state: State,
     gnvp_version: int,
+    default_name_to_use: str | None = None,
 ) -> DataFrame:
     DB = Database.get_instance()
 
@@ -101,17 +101,18 @@ def forces_to_pertrubation_results(
     # Create the DataFrame
     df: DataFrame = DataFrame(pols, columns=["Type", "Epsilon", *cols[1:]])
 
-    #
     for col in df.columns:
-        if col.endswith("Fz") or col.endswith("Fx") or col.endswith("Fy"):
+        if col.endswith("Fz") or col.endswith("Fx") or col.endswith("Mx") or col.endswith("Mz"):
             df[col] = -df[col]
-    print(df.columns)
 
     df.pop("TIME")
     df.pop("PSI")
     df = df.sort_values("Type").reset_index(drop=True)
-    # df = rotate_gnvp_forces(df, state.trim["AoA"], gnvp_version)
-    df = set_default_name_to_use(df, gnvp_version, default_name_to_use="Potential")
+    if default_name_to_use is not None:
+        name = default_name_to_use
+    else:
+        name = "Potential"
+    df = set_default_name_to_use(df, gnvp_version, default_name_to_use=name)
 
     perturbation_file: str = os.path.join(DYNDIR, f"pertrubations.gnvp{gnvp_version}")
     df.to_csv(perturbation_file, index=False)

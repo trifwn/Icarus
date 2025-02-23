@@ -51,22 +51,23 @@ def main() -> None:
     # from Planes.e190_cruise import e190_cruise
     from Planes.hermes import hermes
 
-    hermes_3: Airplane = hermes(name="hermes")
+    name = "hermes_high"
+    hermes_3: Airplane = hermes(name=name)
     planes.append(hermes_3)
 
     # planes.append(airplane)
     # embraer.visualize()
 
-    timestep: dict[str, float] = {"hermes": 1e-3}
-    maxiter: dict[str, int] = {"hermes": 50}
-    UINF: dict[str, float] = {"hermes": 20}
-    ALTITUDE: dict[str, int] = {"hermes": 0}
+    timestep: dict[str, float] = {name: 1e-3}
+    maxiter: dict[str, int] = {name: 50}
+    UINF: dict[str, float] = {name: 20}
+    ALTITUDE: dict[str, int] = {name: 0}
 
     # OUR ATMOSPHERIC MODEL IS NOT COMPLETE TO HANDLE TEMPERATURE VS ALTITUDE
-    TEMPERATURE: dict[str, int] = {"hermes": 273 + 15}
+    TEMPERATURE: dict[str, int] = {name: 273 + 15}
 
-    STATIC_ANALYSIS: dict[str, float] = {"hermes": False}
-    DYNAMIC_ANALYSIS: dict[str, float] = {"hermes": True}
+    STATIC_ANALYSIS: dict[str, float] = {name: True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {name: True}
 
     # Get Solver
     GNVP_VERSION = 7
@@ -147,6 +148,7 @@ def main() -> None:
             state.save(os.path.join(DB.DB3D, airplane.directory))
 
             from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+
             avl_angle_run(airplane, state, "Xfoil", angles)
 
             # from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
@@ -175,7 +177,7 @@ def main() -> None:
             try:
                 state.add_polar(
                     polar=forces,
-                    polar_prefix=f"GenuVP{GNVP_VERSION} 2D",
+                    polar_prefix=f"GenuVP{GNVP_VERSION} Potential",
                     is_dimensional=False,
                 )
                 unstick = state
@@ -185,16 +187,6 @@ def main() -> None:
                 continue
 
             # ### Pertrubations
-            # epsilons = {
-            #     "u": 0.01,
-            #     "w": 0.01,
-            #     "q": 0.001,
-            #     "theta": 0.01 ,
-            #     "v": 0.01,
-            #     "p": 0.001,
-            #     "r": 0.001,
-            #     "phi": 0.001
-            # }
             epsilons = None
 
             unstick.add_all_pertrubations("Central", epsilons)

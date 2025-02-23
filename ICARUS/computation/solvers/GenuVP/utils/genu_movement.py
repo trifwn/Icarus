@@ -1,5 +1,7 @@
 from typing import Any
 
+import numpy as np
+
 from ICARUS.core.types import FloatArray
 from ICARUS.flight_dynamics.disturbances import Disturbance
 from ICARUS.vehicle.surface import WingSurface
@@ -64,7 +66,7 @@ class Movement:
             self.translation_str = ""
 
 
-def distrubance2movement(disturbance: Disturbance) -> Movement:
+def disturbance2movement(disturbance: Disturbance) -> Movement:
     """Converts a disturbance to a movement
 
     Args:
@@ -111,7 +113,15 @@ def distrubance2movement(disturbance: Disturbance) -> Movement:
         "str": f"{disturbance.name} {disturbance.axis} {disturbance.amplitude} {disturbance.type}",
     }
 
+    # We need to flip the disturbances as the refer to the stability axes
+    if disturbance.axis == 1 or disturbance.axis == 3:
+        disturbed["a1"] = -disturbed["a1"]
+        disturbed["a2"] = -disturbed["a2"]
+
     if disturbance.isRotational:
+        # Conver Rad 2 Deg
+        disturbed["a1"] = np.rad2deg(disturbed["a1"])
+        disturbed["a2"] = np.rad2deg(disturbed["a2"])
         Rotation: dict[str, Any] = disturbed
         Translation: dict[str, Any] = undisturbed
     else:
@@ -167,7 +177,7 @@ def define_movements(
 
         for disturbance in disturbances:
             if disturbance.type is not None:
-                sequence.append(distrubance2movement(disturbance))
+                sequence.append(disturbance2movement(disturbance))
 
         movement.append(sequence)
     return movement

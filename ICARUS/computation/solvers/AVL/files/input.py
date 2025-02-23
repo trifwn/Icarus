@@ -303,18 +303,18 @@ def avl_geo(
                     f_io.write("\n")
                 except PolarsNotFoundError:
                     print(f"\tCould not compute polar for {strip_airfoil.name}")
-            f_io.write("CLAF\n")
-            # This scales the effective dcl/da of the section airfoil as follows:
-            # dcl/da  =  2 pi CLaf
-            # The implementation is simply a chordwise shift of the control point
-            # relative to the bound vortex on each vortex element.
-            # The intent is to better represent the lift characteristics
-            # of thick airfoils, which typically have greater dcl/da values
-            # than thin airfoils.  A good estimate for CLaf from 2D potential
-            # flow theory is
-            # CLaf  =  1 + 0.77 t/c
-            f_io.write(f"{1 + 0.77 / strip.max_thickness}\n")
-            f_io.write("\n")
+            # f_io.write("CLAF\n")
+            # # This scales the effective dcl/da of the section airfoil as follows:
+            # # dcl/da  =  2 pi CLaf
+            # # The implementation is simply a chordwise shift of the control point
+            # # relative to the bound vortex on each vortex element.
+            # # The intent is to better represent the lift characteristics
+            # # of thick airfoils, which typically have greater dcl/da values
+            # # than thin airfoils.  A good estimate for CLaf from 2D potential
+            # # flow theory is
+            # # CLaf  =  1 + 0.77 t/c
+            # f_io.write(f"{1 + 0.77 / strip.max_thickness}\n")
+            # f_io.write("\n")
 
     contents: str = f_io.getvalue().expandtabs(4)
     fname = f"{PLANE_DIR}/{plane.name}.avl"

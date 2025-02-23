@@ -463,13 +463,14 @@ class Database_3D:
             # Sort the dataframe by AoA
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
         try:
-            print(f"\tAdding Polars for {plane.name} {prefix} to State {state.name}")
-            state.add_polar(
-                polar=forces,
-                polar_prefix=prefix,
-                is_dimensional=True,
-                verbose=False,
-            )
+            if prefix not in state.get_polar_prefixes():
+                print(f"\tAdding Polars for {plane.name} {prefix} to State {state.name}")
+                state.add_polar(
+                    polar=forces,
+                    polar_prefix=prefix,
+                    is_dimensional=True,
+                    verbose=False,
+                )
         except Exception as error:
             logging.debug(f"Error adding polar {error}")
 

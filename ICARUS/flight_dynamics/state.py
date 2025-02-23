@@ -13,7 +13,8 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.figure import SubFigure
 from matplotlib.markers import MarkerStyle
-from pandas import DataFrame, Series
+from pandas import DataFrame
+from pandas import Series
 from tabulate import tabulate
 
 from ICARUS.core.struct import Struct
@@ -27,6 +28,7 @@ from .perturbations import longitudal_pertrubations
 from .stability.lateral import lateral_stability_finite_differences
 from .stability.longitudal import longitudal_stability_finite_differences
 from .trim import TrimNotPossible
+from .trim import TrimOutsidePolars
 from .trim import trim_state
 
 if TYPE_CHECKING:
@@ -273,18 +275,16 @@ class State:
 
         # GET TRIM STATE
         try:
-            print(f"Trimming with {polar_prefix}, {self.polar.columns}")
-
             self.trim = trim_state(self, verbose=verbose)
             self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
-        except TrimNotPossible:
+        except (TrimNotPossible, TrimOutsidePolars):
             self.trimmable = False
             self.trim = {}
             self.trim_dynamic_pressure = np.nan
 
     def get_polar_prefixes(self) -> list[str]:
         cols_pol = [col for col in self.polar.columns if "CL" in col]
-        return list(set(col[:-3] for col in cols_pol if col != "CL"))
+        return list({col[:-3] for col in cols_pol if col != "CL"})
 
     def print_trim(self) -> None:
         if not self.trim:
@@ -296,9 +296,9 @@ class State:
 
     def change_polar_prefix(self, polar_prefix: str) -> None:
         self.polar_prefix = polar_prefix
-        self.polar['CL'] = self.polar[f"{polar_prefix} CL"]
-        self.polar['CD'] = self.polar[f"{polar_prefix} CD"]
-        self.polar['Cm'] = self.polar[f"{polar_prefix} Cm"]
+        self.polar["CL"] = self.polar[f"{polar_prefix} CL"]
+        self.polar["CD"] = self.polar[f"{polar_prefix} CD"]
+        self.polar["Cm"] = self.polar[f"{polar_prefix} Cm"]
         try:
             self.trim = trim_state(self, verbose=False)
             self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
@@ -306,7 +306,7 @@ class State:
             self.trim_dynamic_pressure = np.nan
             self.trim = {}
             self.trimmable = False
-    
+
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()
         S: float = self.S
@@ -375,6 +375,7 @@ class State:
         plot_lateral: bool = True,
         plot_longitudal: bool = True,
         axs: list[Axes] | None = None,
+        title: str | None = None,
     ) -> None:
         """Generate a plot of the eigenvalues."""
         if axs is not None:
@@ -385,7 +386,10 @@ class State:
             axs_now: list[Axes] = axs
         else:
             fig = plt.figure()
-            fig.suptitle("Eigenvalues")
+            if title is not None:
+                fig.suptitle(title)
+            else:
+                fig.suptitle("Eigenvalues")
 
             if plot_lateral and plot_longitudal:
                 axs_now = fig.subplots(1, 2)  # type: ignore
@@ -465,7 +469,7 @@ class State:
             tuple[ndarray, Figure]: Array of Axes and Figure
         """
         if title is None:
-            title = f"{self.airplane.name}: {self.name}" 
+            title = f"{self.airplane.name}: {self.name}"
             if dimensional:
                 title += " Aerodynamic Forces"
             else:

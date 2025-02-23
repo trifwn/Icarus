@@ -58,4 +58,4 @@ class Disturbance:
             self.var = variable
 
     def __str__(self) -> str:
-        return f"{self.name}:\tType:\t{self.type} and \tAmplitude:\t{self.amplitude}."
+        return f"{self.name}:\tType:\t{self.type} and \tAmplitude:\t{self.amplitude} and \tAxis:\t{self.axis}"

@@ -166,7 +166,6 @@ class MergedWing(WingSurface):
 
         # Initialize Strips
         self.strips: list[Strip] = []
-        self.all_strips: list[Strip] = []
 
         # Initialize mean chords
         self.mean_aerodynamic_chord: float = 0.0
@@ -275,11 +274,9 @@ class MergedWing(WingSurface):
     def create_strips(self) -> None:
         """Creates the strips for the wing"""
         self.strips = []
-        self.all_strips = []
         for segment in self.wing_segments:
             segment.create_strips()
             self.strips.extend(segment.strips)
-            self.all_strips.extend(segment.all_strips)
 
     def calculate_area(self) -> None:
         """Calculates the area of the wing"""

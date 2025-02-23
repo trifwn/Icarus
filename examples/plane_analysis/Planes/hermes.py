@@ -27,7 +27,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
     wing_orientation: FloatArray = np.array(
-        [2.8, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
         dtype=float,
     )
 
@@ -42,7 +42,7 @@ def hermes(name: str) -> Airplane:
         root_chord=0.159,
         tip_chord=0.072,
         N=20,
-        M=15,
+        M=35,
         mass=0.670,
     )
 
@@ -51,7 +51,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
     elevator_orientantion: FloatArray = np.array(
-        [0.0, 0.0, 0.0],
+        [-4.0, 0.0, 0.0],
         dtype=float,
     )
 
@@ -66,13 +66,13 @@ def hermes(name: str) -> Airplane:
         root_dihedral_angle=0,
         root_chord=0.130,
         tip_chord=0.03,
-        N=12,
-        M=14,
+        N=20,
+        M=20,
         mass=0.06,
     )
 
     rudder_position: FloatArray = np.array(
-        [0.47, 0.0, 0.01],
+        [0.47, 0.0, 0.1],
         dtype=float,
     )
     rudder_orientation: FloatArray = np.array(
@@ -91,8 +91,8 @@ def hermes(name: str) -> Airplane:
         root_dihedral_angle=0,
         root_chord=0.2,
         tip_chord=0.1,
-        N=12,
-        M=12,
+        N=20,
+        M=20,
         mass=0.04,
     )
 

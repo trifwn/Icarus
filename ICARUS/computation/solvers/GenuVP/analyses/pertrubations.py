@@ -472,6 +472,7 @@ def proccess_pertrubation_res(
     plane: Airplane,
     state: State,
     gnvp_version: int,
+    default_name_to_use: str | None = None,
 ) -> DataFrame:
     """Process the pertrubation results from the GNVP solver
 
@@ -489,6 +490,7 @@ def proccess_pertrubation_res(
         plane,
         state,
         gnvp_version,
+        default_name_to_use=default_name_to_use,
     )
     state.set_pertrubation_results(forces)
     state.stability_fd()

@@ -54,9 +54,9 @@ def collect_avl_polar_forces(
         solver="AVL",
     )
     for angle in angles:
-        file = os.path.join(RESULTS_DIR, f"{angle_to_case(angle)}.txt")
+        result_file = os.path.join(RESULTS_DIR, f"{angle_to_case(angle)}.txt")
 
-        with open(file, encoding="utf-8") as f:
+        with open(result_file, encoding="utf-8") as f:
             con = f.readlines()
 
         CL = con[23]
@@ -78,7 +78,7 @@ def collect_avl_polar_forces(
             else:
                 Cms.append(float(Cm[34:41]))
         except ValueError:
-            raise AVLPostReadError(f"Error reading file {file}")
+            raise AVLPostReadError(f"Error reading file {result_file}")
     Fz = np.array(CLs) * plane.S * state.dynamic_pressure
     Fx = np.array(CDs) * plane.S * state.dynamic_pressure
     My = np.array(Cms) * plane.S * state.dynamic_pressure * plane.mean_aerodynamic_chord
@@ -100,7 +100,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
         case="Dynamics",
     )
 
-    aoa = -state.trim["AoA"] * np.pi / 180
+    aoa = state.trim["AoA"] * np.pi / 180
     results = []
     for dst in state.disturbances:
         casefile = os.path.join(DYNDIR, disturbance_to_case(dst))

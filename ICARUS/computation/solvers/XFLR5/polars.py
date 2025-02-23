@@ -170,8 +170,7 @@ def read_polars_2d(DB: Database, XFLRdir: str) -> None:
     os.chdir(HOMEDIR)
 
 
-def read_polars_3d(
-    DB: Database,
+def read_XFLR5_polars(
     filename: str,
     plane_name: str,
 ) -> DataFrame | None:
@@ -185,23 +184,46 @@ def read_polars_3d(
         DataFrame | None: _description_
 
     """
-    if f"XFLR_{plane_name}" not in DB.vehicles_db.polars.keys():
-        # import csv into pandas Dataframe and skip first 7 rows
-        df: DataFrame = pd.read_csv(
-            filename,
-            skiprows=7,
-            sep=r"\s+",
-            on_bad_lines="skip",
-        )
-        # rename columns
-        df.rename(columns={"alpha": "AoA"}, inplace=True)
+    DB = Database.get_instance()
+    # import csv into pandas Dataframe and skip first 7 rows
+    df: DataFrame = pd.read_csv(
+        filename,
+        skiprows=7,
+        sep=r"\s+",
+        on_bad_lines="skip",
+    )
+    # rename columns
+    df.rename(columns={"alpha": "AoA"}, inplace=True)
 
-        # convert to float
-        df = df.astype(float)
-        DB.vehicles_db.polars[f"XFLR_{plane_name}"] = df
-        return df
-    print("Polar Already Exists!")
-    return None
+    # Renamce CL, CD, Cm columns
+    df.rename(
+        columns={
+            "CL": "XFLR5 CL",
+            "CD": "XFLR5 CD",
+            "Cm": "XFLR5 Cm",
+        },
+        inplace=True,
+    )
+    # Keep only the relevant columns and drop the rest
+    df = df[["AoA", "XFLR5 CL", "XFLR5 CD", "XFLR5 Cm"]]
+    df = df.astype(float)
+    df = df.reindex(columns=["AoA", "XFLR5 CL", "XFLR5 CD", "XFLR5 Cm"])
+    # Sort the dataframe by AoA
+    df = df.sort_values(by="AoA")
+
+    if plane_name not in DB.vehicles_db.polars.keys():
+        DB.vehicles_db.polars[plane_name] = df
+    else:
+        # Check if the XFLR Key is already in the database and drop the old one
+        cols = [col for col in DB.vehicles_db.polars[plane_name].columns if "XFLR5" in col]
+        DB.vehicles_db.polars[plane_name].drop(columns=cols, inplace=True)
+
+        DB.vehicles_db.polars[plane_name] = DB.vehicles_db.polars[plane_name].merge(
+            df,
+            on="AoA",
+            how="outer",
+        )
+    return df
 
 
 xfoilcols: list[str] = [

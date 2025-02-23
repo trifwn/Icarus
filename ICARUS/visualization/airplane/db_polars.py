@@ -80,60 +80,42 @@ def plot_airplane_polars(
         if isinstance(airplane, Airplane):
             airplane = airplane.name
 
-        flag = False
+        polar: DataFrame = DB.get_vehicle_polars(airplane)
         for j, prefix in enumerate(prefixes):
+            if len(airplanes) == 1:
+                c = colors_[j]
+                m = "o"
+            else:
+                c = colors_[i]
+                m = markers[j].get_marker()
+
             try:
-                polar: DataFrame = DB.get_vehicle_polars(airplane)
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
                         polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
                     if plot[0] == "CD/CL" or plot[1] == "CD/CL":
                         polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
 
-                    if airplane.startswith("XFLR"):
-                        key0 = f"{plot[0]}"
-                        key1 = f"{plot[1]}"
-                        ax.plot(
-                            polar[f"{key0}"],
-                            polar[f"{key1}"],
-                            label=f"{airplane} XFLR",
-                            markersize=1.5,
-                            color="m",
-                            linewidth=1,
-                        )
-                        flag = True
+                    key0 = f"{prefix} {plot[0]}"
+                    key1 = f"{prefix} {plot[1]}"
 
-                    else:
-                        key0 = f"{prefix} {plot[0]}"
-                        key1 = f"{prefix} {plot[1]}"
+                    if plot[0] == "AoA":
+                        key0 = "AoA"
+                    if plot[1] == "AoA":
+                        key1 = "AoA"
 
-                        if plot[0] == "AoA":
-                            key0 = "AoA"
-                        if plot[1] == "AoA":
-                            key1 = "AoA"
+                    x: Series[float] = polar[f"{key0}"]
+                    y: Series[float] = polar[f"{key1}"]
 
-                        x: Series[float] = polar[f"{key0}"]
-                        y: Series[float] = polar[f"{key1}"]
-                        if len(airplanes) == 1:
-                            c = colors_[j]
-                            m = "o"
-                        else:
-                            c = colors_[i]
-                            m = markers[j].get_marker()
-                        label: str = f"{airplane} - {prefix}"
-                        try:
-                            ax.plot(
-                                x,
-                                y,
-                                ls="--",
-                                color=c,
-                                marker=m,
-                                label=label,
-                                markersize=5,
-                                linewidth=1,
-                            )
-                        except ValueError as e:
-                            raise e
+                    ax.plot(
+                        x,
+                        y,
+                        color=c,
+                        marker=m,
+                        label=f"{airplane} - {prefix}",
+                        markersize=5,
+                        linewidth=1,
+                    )
 
                     if plot[0] == "AoA":
                         # Annotate the operating points in the plots
@@ -152,15 +134,8 @@ def plot_airplane_polars(
                                 linestyle="--",
                                 label=f"{op}",
                             )
-                if flag:
-                    break
             except KeyError as e:
                 print(f"For plane {airplane}: run {e} Does not exist")
-
-    # In the plots we created there is either one or two empty plots
-    # depending on the number of plots we demanded
-    # We need to remove the empty plots and add the legend to
-    # the empty space
 
     # Remove empty plots
     for ax in axs.flatten()[len(plots) :]:

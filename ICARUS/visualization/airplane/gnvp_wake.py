@@ -52,6 +52,8 @@ def plot_gnvp_wake(
     """
     if isinstance(case, float):
         case_str = angle_to_case(case)
+    else:
+        case_str = case
 
     if gnvp_version == 3:
         get_wake_data = get_wake_data_3
