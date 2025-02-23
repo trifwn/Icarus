@@ -44,7 +44,7 @@ def plot_airplane_polars(
     if isinstance(airplanes, str) or isinstance(airplanes, Airplane):
         airplanes = [airplanes]
 
-    number_of_plots = len(plots) + 1
+    number_of_plots = len(plots)
     DB = Database.get_instance()
     # Divide the plots equally
     sqrt_num = number_of_plots**0.5
@@ -52,8 +52,13 @@ def plot_airplane_polars(
     j: int = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray[Axes] = fig.subplots(i, j)  # type: ignore
+    axs = fig.subplots(i, j)  # type: ignore
     fig.suptitle(f"{title}", fontsize=16)
+
+    if isinstance(axs, Axes):
+        axs = np.array([axs])
+    elif isinstance(axs, list):
+        axs = np.array(axs)
 
     for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
         ax.set_xlabel(plot[0])
@@ -104,17 +109,19 @@ def plot_airplane_polars(
                     if plot[1] == "AoA":
                         key1 = "AoA"
 
-                    x: Series[float] = polar[f"{key0}"]
-                    y: Series[float] = polar[f"{key1}"]
+                    # Drop the NaN values
+                    df = polar[[f"{key0}", f"{key1}"]].dropna(axis="index")
+                    x: Series[float] = df[f"{key0}"]
+                    y: Series[float] = df[f"{key1}"]
 
                     ax.plot(
                         x,
                         y,
                         color=c,
                         marker=m,
-                        label=f"{airplane} - {prefix}",
                         markersize=5,
                         linewidth=1,
+                        label=f"{airplane} - {prefix}",
                     )
 
                     if plot[0] == "AoA":

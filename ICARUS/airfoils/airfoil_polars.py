@@ -239,7 +239,7 @@ class AirfoilPolars:
         if reynolds not in self.reynolds_keys:
             print(self.reynolds_keys)
             print(reynolds)
-            # raise ValueError(f"Reynolds Number {reynolds} is not in the list of Reynolds Numbers")
+            # raise ValueError(f"Reynolds Number {float(reynolds):,} is not in the list of Reynolds Numbers")
 
         # Get Reynolds Subtable
         df: DataFrame = self.df[
@@ -337,10 +337,10 @@ class AirfoilPolars:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        ax.plot(aoa, cl, label=f"Reynolds {reynolds}")
+        ax.plot(aoa, cl, label=f"Reynolds {float(reynolds):,}")
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Lift Coefficient")
-        ax.set_title(f"Reynolds {reynolds} Cl Curve")
+        ax.set_title(f"Reynolds {float(reynolds):,} Cl Curve")
         ax.legend()
         ax.grid(True)
         ax.axhline(0.0, color="k", linestyle="--")
@@ -363,10 +363,10 @@ class AirfoilPolars:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        ax.plot(aoa, cd, label=f"Reynolds {reynolds}")
+        ax.plot(aoa, cd, label=f"Reynolds {float(reynolds):,}")
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Drag Coefficient")
-        ax.set_title(f"Reynolds {reynolds} Cd Curve")
+        ax.set_title(f"Reynolds {float(reynolds):,} Cd Curve")
         ax.legend()
         ax.grid(True)
         ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--")
@@ -398,10 +398,10 @@ class AirfoilPolars:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        ax.plot(aoa, cl_over_cd, label=f"Reynolds {reynolds}")
+        ax.plot(aoa, cl_over_cd, label=f"Reynolds {float(reynolds):,}")
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Lift to Drag Ratio")
-        ax.set_title(f"Reynolds {reynolds} Cl/Cd Curve")
+        ax.set_title(f"Reynolds {float(reynolds):,} Cl/Cd Curve")
         ax.legend()
         ax.grid(True)
         ax.axvline(self.get_zero_lift_angle(cl), color="r", linestyle="--")

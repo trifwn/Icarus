@@ -10,7 +10,7 @@ from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
 
-def plot_case_convergence(
+def plot_case_transient(
     plane: str,
     cases: list[float | str | Disturbance] = [],
     metrics: list[str] = ["All"],

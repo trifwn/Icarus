@@ -45,15 +45,15 @@ from typing import Any
 from typing import Callable
 
 from . import airfoil_polars
-from . import airfoil_reynolds
+from . import db_polars
 from . import f2w_pressure
 
-__all__ = ["airfoil_polars", "airfoil_reynolds", "f2w_pressure"]
+__all__ = ["airfoil_polars", "db_polars", "f2w_pressure"]
 
 # Get all the visualization functions
 from .airfoil_polars import plot_airfoil_polars
-from .airfoil_reynolds import plot_airfoil_reynolds
+from .db_polars import plot_airfoils_polar
 
 # from .f2w_pressure import plot_angle_cp, plot_multiple_cps < Deprecated
 
-__functions__: list[Callable[..., Any]] = [plot_airfoil_polars, plot_airfoil_reynolds]
+__functions__: list[Callable[..., Any]] = [plot_airfoil_polars, plot_airfoils_polar]

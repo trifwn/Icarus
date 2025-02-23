@@ -152,7 +152,10 @@ class Database_2D:
                 raise AirfoilNotFoundError(airfoil_name)
 
         airfoil_data: AirfoilData = self.polars[airfoil_name]
-        polar = airfoil_data.get_polars(solver=solver)
+        try:
+            polar = airfoil_data.get_polars(solver=solver)
+        except KeyError:
+            raise PolarsNotFoundError(airfoil_name, solver, list(airfoil_data.polars.keys()))
         return polar
 
     def get_airfoil_data(self, airfoil: str | Airfoil) -> AirfoilData:

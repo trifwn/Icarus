@@ -96,7 +96,7 @@ def gnvp_strips_2d(
     if type(NB) is not int:
         return 0
 
-    stripDat, data = get_strip_data(plane, state, case, [NB], gnvp_version)
+    strip_data, data = get_strip_data(plane, state, case, [NB], gnvp_version)
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{plane.name} {plane.surfaces[NB - 1].name} {category} Data")
@@ -107,4 +107,4 @@ def gnvp_strips_2d(
     ax.plot(x, data[category], "ro-")
     ax.grid()
     fig.show()
-    return stripDat
+    return strip_data

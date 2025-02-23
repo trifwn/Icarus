@@ -14,7 +14,7 @@ from .. import markers
 
 
 def plot_airfoil_polars(
-    airfoil: str | Airfoil,
+    airfoil_name: str | Airfoil,
     solvers: list[str] | str = "All",
     plots: list[list[str]] = [
         ["AoA", "CL"],
@@ -60,14 +60,14 @@ def plot_airfoil_polars(
 
     # Get the data from the database
     DB = Database.get_instance()
-    airfoil_data = DB.get_airfoil_data(airfoil)
+    airfoil_data = DB.get_airfoil_data(airfoil_name)
     solvers = [solver for solver in solvers if solver in airfoil_data.solvers]
     solvers_not_in_db = [solver for solver in solvers if solver not in airfoil_data.solvers]
 
-    if isinstance(airfoil, Airfoil):
-        airfoil_name = airfoil.name
+    if isinstance(airfoil_name, Airfoil):
+        airfoil_name = airfoil_name.name
     else:
-        airfoil_name = airfoil
+        airfoil_name = airfoil_name
 
     if solvers_not_in_db:
         print(f"Solver(s) {solvers_not_in_db} not in database")
@@ -77,13 +77,32 @@ def plot_airfoil_polars(
         reynolds_list = polar_obj.reynolds_nums
         for j, reynolds in enumerate(reynolds_list):
             try:
-                polar = polar_obj.get_reynolds_subtable(reynolds)
+                polar_df = polar_obj.get_reynolds_subtable(reynolds)
                 # Sort the data by AoA
-                polar = polar.sort_values(by="AoA")
+                polar_df = polar_df.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar = polar.loc[(polar["AoA"] >= aoa_bounds[0]) & (polar["AoA"] <= aoa_bounds[1])]
+                    polar_df = polar_df.loc[(polar_df["AoA"] >= aoa_bounds[0]) & (polar_df["AoA"] <= aoa_bounds[1])]
+
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+                    if plot[1] == "CL/CD" or plot[1] == "CL/CD":
+                        polar_df["CL/CD"] = polar_df["CL"] / polar_df["CD"]
+                        # Get the index of the values that are greater than 200
+                        idx = polar_df[polar_df["CL/CD"] > 200].index
+                        idx2 = polar_df[polar_df["CL/CD"] < -200].index
+                        # Replace the values with 0
+                        polar_df.loc[idx, "CL/CD"] = 0
+                        polar_df.loc[idx2, "CL/CD"] = 0
+
+                    if plot[1] == "CD/CL" or plot[1] == "CD/CL":
+                        polar_df["CD/CL"] = polar_df["CD"] / polar_df["CL"]
+                        # If any value is infinite (or greater than 200), replace it with 0
+                        # Get the index of the values that are greater than 200
+                        idx = polar_df[polar_df["CD/CL"] > 200].index
+                        idx2 = polar_df[polar_df["CD/CL"] < -200].index
+                        # Replace the values with 0
+                        polar_df.loc[idx, "CD/CL"] = 0
+                        polar_df.loc[idx2, "CD/CL"] = 0
                     key0 = f"{plot[0]}"
                     key1 = f"{plot[1]}"
 
@@ -92,11 +111,11 @@ def plot_airfoil_polars(
                     if plot[1] == "AoA":
                         key1 = "AoA"
 
-                    x: Series[float] = polar[f"{key0}"]
-                    y: Series[float] = polar[f"{key1}"]
+                    x: Series[float] = polar_df[f"{key0}"]
+                    y: Series[float] = polar_df[f"{key1}"]
                     c = colors_[j]
                     m = markers[i].get_marker()
-                    label: str = f"{airfoil_name}: {reynolds} - {solver}"
+                    label: str = f"{airfoil_name}: {reynolds:,} - {solver}"
                     try:
                         ax.plot(
                             x,

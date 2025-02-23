@@ -10,12 +10,14 @@ from pandas import Series
 from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.database import Database
 from ICARUS.database.database2D import AirfoilNotFoundError
+from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 
 
-def plot_airfoils_polars(
+def plot_airfoils_polar(
     airfoil_names: list[str],
+    reynolds: float | None = None,
     solvers: list[str] | str = ["All"],
     plots: list[list[str]] = [
         ["AoA", "CL"],
@@ -23,7 +25,6 @@ def plot_airfoils_polars(
         ["AoA", "Cm"],
         ["CL", "CD"],
     ],
-    reynolds: float = 1e6,
     size: tuple[int, int] = (10, 10),
     aoa_bounds: list[float] | None = None,
     title: str = "Aero Coefficients",
@@ -74,16 +75,20 @@ def plot_airfoils_polars(
                     airfoil=airfoil_name,
                     solver=solver,
                 )
-            except AirfoilNotFoundError:
+            except (AirfoilNotFoundError, PolarsNotFoundError):
                 print(
                     f"Airfoil {airfoil_name} Solver: {solver} doesn't exist in the database",
                 )
                 continue
             try:
-                available_reynolds = polar.reynolds_nums
-                # Find the closest reynolds number to the given reynolds
-                reyn = min(available_reynolds, key=lambda x: abs(float(x) - reynolds))
-                # Find the closest reynolds number to the given reynolds
+                if reynolds is None:
+                    reyn_idx = int(len(polar.reynolds_nums) // 2)
+                    reyn = polar.reynolds_nums[reyn_idx]
+                    print(f"Reynolds number not provided for {airfoil_name}. Selecting Reynolds number: {reyn:,}")
+                else:
+                    available_reynolds = polar.reynolds_nums
+                    # Find the closest reynolds number to the given reynolds
+                    reyn = min(available_reynolds, key=lambda x: abs(float(x) - reynolds))
                 polar_df: DataFrame = polar.get_reynolds_subtable(reyn)
 
                 # Sort the data by AoA
@@ -123,7 +128,7 @@ def plot_airfoils_polars(
                     y: Series[float] = polar_df[f"{key1}"]
                     c = colors_[j]
                     m = markers[i].get_marker()
-                    label: str = f"{airfoil_name}: {reyn} - {solver}"
+                    label: str = f"{airfoil_name}: {reyn:,} - {solver}"
                     try:
                         ax.plot(
                             x,
