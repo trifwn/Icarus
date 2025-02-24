@@ -7,7 +7,7 @@ ICARUS Airplane Visualization and Graphics Module
     :noindex:
 
     ICARUS.visualization.airplane.gnvp_convergence
-    ICARUS.visualization.airplane.db_polars
+    ICARUS.visualization.airplane.airplane_polars
     ICARUS.visualization.airplane.gnvp_sensitivity
     ICARUS.visualization.airplane.gnvp_strips
     ICARUS.visualization.airplane.gnvp_wake
@@ -28,7 +28,7 @@ To see the results stored in the database, the following routines are available:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.visualization.airplane.db_polars - Plots the polars from the database
+    ICARUS.visualization.airplane.airplane_polars - Plots the polars from the database
 
 GNVP Visualization
 -------------------
@@ -46,14 +46,14 @@ There are also routines for the visualization of the results of the GNVP results
 
 """
 
-from . import db_polars
+from . import airplane_polars
 from . import gnvp_convergence
 from . import gnvp_sensitivity
 from . import gnvp_strips
 from . import gnvp_wake
 
 __all__ = [
-    "db_polars",
+    "airplane_polars",
     "gnvp_convergence",
     "gnvp_sensitivity",
     "gnvp_strips",
@@ -64,7 +64,7 @@ __all__ = [
 from typing import Any
 from typing import Callable
 
-from .db_polars import plot_airplane_polars
+from .airplane_polars import plot_airplane_polars
 from .gnvp_convergence import plot_case_transient
 from .gnvp_sensitivity import plot_sensitivity
 from .gnvp_strips import gnvp_strips_2d

@@ -6,7 +6,7 @@ ICARUS Airfoil Visualization and Graphics Module
     :hidden:
     :noindex:
 
-    ICARUS.visualization.db_polars
+    ICARUS.visualization.airfoil_polars
     ICARUS.visualization.airfoil_reynolds
     ICARUS.visualization.f2w_pressure
 
@@ -26,8 +26,8 @@ To inspect the data stored in the Database data there are 2 main routines:
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.visualization.airfoil.db_polars - Plots the polars from the database
-    ICARUS.visualization.airfoil.db_reynolds - Plots the polars from the database for a specific Reynolds number
+    ICARUS.visualization.airfoil.airfoil_polars - Plots the polars from the database
+    ICARUS.visualization.airfoil.airfoil_reynolds - Plots the polars from the database for a specific Reynolds number
 
 F2W Visualization
 -------------------

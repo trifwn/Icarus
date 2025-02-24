@@ -151,7 +151,7 @@ def main() -> None:
 
             avl_angle_run(airplane, state, "Xfoil", angles)
 
-            # from ICARUS.visualization.airplane.db_polars import plot_airplane_polars
+            # from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
 
             # solvers = [
             #     "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",
