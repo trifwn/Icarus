@@ -243,7 +243,6 @@ class Database_2D:
         try:
             polars = self.get_polars(airfoil.name, solver=solver_name)
             reyns_computed = polars.reynolds_nums
-
             # Check if the reynolds number is within the range of the computed polars
             # To be within the range of the computed polars the reynolds number must be
             # reyns_computed[i] - DR_REYNOLDS[matching] < reynolds_wanted < reyns_computed[i] + DR_REYNOLDS[matching]

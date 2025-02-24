@@ -121,13 +121,18 @@ def avl_geo(
         h = state.environment.altitude
         f_io.write(f"0     1     {-h}                      | iYsym  iZsym  Zsym\n")
     else:
-        f_io.write("0     0     0.0                      | iYsym  iZsym  Zsym\n")
+        f_io.write("0     0     0                      | iYsym  iZsym  Zsym\n")
 
     f_io.write(
         f"  {plane.S}     {plane.mean_aerodynamic_chord}     {plane.span}   | Sref   Cref   Bref\n",
     )
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
-    f_io.write(" 0.0000                               | CDp  (optional)\n")
+
+    if "CDp" in solver_options:
+        CDp = solver_options["CDp"]
+    else:
+        CDp = 0.0
+    f_io.write(f" {CDp}                               | CDp  (optional)\n")
 
     surfaces: list[WingSurface] = []
     surfaces_ids = []
@@ -207,56 +212,50 @@ def avl_geo(
         f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
         f_io.write("\n")
         f_io.write("\n")
-        # cntrl_index = 1
+        
         for j, strip in enumerate(surf.strips):
+            if j == 0:
+                x, y, z = strip.x0, strip.y0, strip.z0
+                chord = strip.chords[0]
+                twist = strip.twists[0]
+                N = 1
+                strip_airfoil = strip.airfoil_start
+            elif j == len(surf.strips) - 1:
+                x, y, z = strip.x1, strip.y1, strip.z1
+                chord = strip.chords[1]
+                twist = strip.twists[1]
+                N = 1
+                strip_airfoil = strip.airfoil_end
+            else:
+                x = (strip.x0 + strip.x1) / 2
+                y = (strip.y0 + strip.y1) / 2
+                z = (strip.z0 + strip.z1) / 2
+                chord = strip.mean_chord
+                twist = strip.mean_twist
+                N = 1
+                strip_airfoil = strip.airfoil_end
+            strip_r = np.array([x, y, z])
+
             f_io.write(
                 f"#------------ {surf.name} SECTION---{j + 1} of {len(surf.strips)} of---------------------|  (keyword)\n",
             )
             f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
             f_io.write("SECTION\n")
-
-            if j == 0:
-                f_io.write(
-                    f"   {strip.x0}    {strip.y0}    {strip.z0}    {strip.chords[0]}   {strip.twists[0] * 180 / np.pi}   {1}    {span_spacing}   \n",
-                )
-                f_io.write("\n")
-                f_io.write("AFILE \n")
-                f_io.write(f"{strip.airfoil_start.file_name}\n")
-                f_io.write("\n")
-                f_io.write("\n")
-                strip_airfoil = strip.airfoil_start
-                strip_r = np.array([strip.x0, strip.y0, strip.z0])
-            elif j == len(surf.strips) - 1:
-                f_io.write(
-                    f"   {strip.x1}    {strip.y1}    {strip.z1}    {strip.chords[1]}   {strip.twists[1] * 180 / np.pi}   {1}    {span_spacing}   \n",
-                )
-                f_io.write("\n")
-                f_io.write("AFILE \n")
-                f_io.write(f"{strip.airfoil_end.file_name}\n")
-                f_io.write("\n")
-                f_io.write("\n")
-                strip_airfoil = strip.airfoil_end
-                strip_r = np.array([strip.x1, strip.y1, strip.z1])
+            f_io.write(
+                f"   {x:.6f}    {y:.6f}    {z:.6f}    {chord:.6f}   {twist * 180 / np.pi:6f}   {N}    {span_spacing}   \n",
+            )
+            f_io.write("\n")
+            if strip_airfoil.file_name.upper().startswith("NACA"):
+                f_io.write("NACA \n")
+                f_io.write(f"{strip_airfoil.file_name[4:]}\n")
             else:
-                f_io.write(
-                    f"   {(strip.x0 + strip.x1) / 2}    {(strip.y0 + strip.y1) / 2}    {(strip.z0 + strip.z1) / 2}    {strip.mean_chord}   {strip.mean_twist * 180 / np.pi}   {1}    {span_spacing}   \n",
-                )
-                f_io.write("\n")
                 f_io.write("AFILE \n")
-                f_io.write(f"{strip.airfoil_end.file_name}\n")
-                f_io.write("\n")
-                f_io.write("\n")
-                strip_airfoil = strip.airfoil_end
-                strip_r = np.array(
-                    [
-                        (strip.x0 + strip.x1) / 2,
-                        (strip.y0 + strip.y1) / 2,
-                        (strip.z0 + strip.z1) / 2,
-                    ],
-                )
+                f_io.write(f"{strip_airfoil.file_name}\n")
+            f_io.write("\n")
+            f_io.write("\n")
 
             strip_span = (surf.R_MAT.T @ strip_r)[1]
-            span = surf.span / 2 if surface.is_symmetric_y else surf.span
+            span = surf.span
             if use_avl_control:
                 for control_surf in surf.controls:
                     if (strip_span >= control_surf.span_position_start * span) and (
@@ -298,7 +297,7 @@ def avl_geo(
                     cl, cd, _ = polar_obj.get_cl_cd_parabolic(reynolds)
                     f_io.write("!CL1   CD1   CL2   CD2    CL3  CD3\n")
                     f_io.write(
-                        f"{cl[0]}   {cd[0]}  {cl[1]}   {cd[1]}  {cl[2]}  {cd[2]}\n",
+                        f"{cl[0]:.8f}   {cd[0]:.8f}  {cl[1]:.8f}   {cd[1]:.8f}  {cl[2]:.8f}  {cd[2]:.8f}\n",
                     )
                     f_io.write("\n")
                 except PolarsNotFoundError:
