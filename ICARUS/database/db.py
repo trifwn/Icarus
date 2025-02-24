@@ -169,11 +169,11 @@ class Database:
         print("------------------------------------------------")
         print(f"|        {self.foils_db}                          |")
         print("------------------------------------------------")
-        for foil in self.foils_db._raw_data.keys():
+        for foil in self.foils_db.polars.keys():
             string = f"|{foil}\t\t\t\t\t|\n"
-            for solver in self.foils_db._raw_data[foil].keys():
+            for solver in self.foils_db.polars[foil].solvers:
                 string += f"|  - {solver}:"
-                reyns = list(self.foils_db._raw_data[foil][solver].keys())
+                reyns = list(self.foils_db.polars[foil].get_solver_reynolds(solver))
                 reyns_num = [float(reyn) for reyn in reyns]
                 string += f"\t Re: {min(reyns_num)} - {max(reyns_num)} "
                 string += "\t|\n"

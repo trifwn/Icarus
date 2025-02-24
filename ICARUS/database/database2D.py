@@ -43,7 +43,7 @@ class PolarsNotFoundError(Exception):
     def __init__(
         self,
         airfoil_name: str,
-        solver: str = "None",
+        solver: str | None = None,
         solvers_found: list[str] | None = None,
     ) -> None:
         """Initialize the PolarsNotFoundError class.
@@ -89,7 +89,6 @@ class Database_2D:
             os.makedirs(self.DB2D)
 
         # !TODO: Make data private
-        self._raw_data = Struct()
         self.polars: dict[str, AirfoilData] = {}
         self.airfoils = Struct()
 
@@ -304,40 +303,6 @@ class Database_2D:
                 )
                 return self.get_polars(airfoil.name, solver=solver_name)
 
-    def get_data(self, airfoil: str | Airfoil, solver: str | None = None) -> dict[str, DataFrame]:
-        """Returns the data object from the database.
-
-        Args:
-            airfoil_name (str): Airfoil name
-            solver (str): Solver name
-
-        Returns:
-            DataFrame: Data object
-
-        """
-        if isinstance(airfoil, str):
-            airfoil = self.get_airfoil(airfoil)
-        elif isinstance(airfoil, Airfoil):
-            airfoil_name = airfoil.name.upper()
-        else:
-            raise ValueError("airfoil must be a string or an Airfoil object")
-
-        if airfoil_name not in self._raw_data.keys():
-            try:
-                # Try to load the airfoil from the DB or EXTERNAL DB
-                self.add_airfoil(airfoil_name)
-            except FileNotFoundError:
-                raise AirfoilNotFoundError(airfoil_name)
-
-        if solver is None:
-            solver = self._raw_data[airfoil_name].keys()[0]
-
-        if solver not in self._raw_data[airfoil_name].keys():
-            raise ValueError(f"Solver {solver} not found in database!")
-
-        data: dict[str, DataFrame] = self._raw_data[airfoil_name][solver]
-        return data
-
     def load_all_data(self) -> None:
         """Scans the filesystem and load all the data.
         Scans the filesystem and loads data if not already loaded.
@@ -372,33 +337,35 @@ class Database_2D:
 
     def load_airfoil_data(self, airfoil: str | Airfoil) -> None:
         if isinstance(airfoil, Airfoil):
-            airfoil_folder = airfoil.name.upper()
+            airfoil_name = airfoil.name.upper()
         else:
-            airfoil_folder = airfoil.upper()
+            airfoil_name = airfoil.upper()
 
-        data = Struct()
         # Load Computed Data
-        data[airfoil_folder] = self.read_airfoil_data_folder(airfoil_folder)
+        data = self.read_airfoil_data_folder(airfoil_folder=airfoil_name)
 
         # Check if the data is empty
-        if not data[airfoil_folder]:
-            logging.info(f"No data found for airfoil {airfoil_folder}")
+        if not data:
+            logging.info(f"No data found for airfoil {airfoil_name}")
             return
-
-        # If not Create Data and Polars
-        logging.info(f"Loaded data for airfoil {airfoil_folder}")
-        self._raw_data[airfoil_folder] = Struct()
-        for j in data[airfoil_folder].keys():
-            for k in data[airfoil_folder][j].keys():
-                if k not in self._raw_data[airfoil_folder].keys():
-                    self._raw_data[airfoil_folder][k] = Struct()
-                self._raw_data[airfoil_folder][k][j] = data[airfoil_folder][j][k]
+        logging.info(f"Loading data for airfoil {airfoil_name}")
 
         # Create Polar Object
-        for solver in self._raw_data[airfoil_folder].keys():
-            self.polars[airfoil_folder] = AirfoilData(
-                name=airfoil_folder,
-                data=self._raw_data[airfoil_folder],
+        inverted_data: dict[str, dict[str, DataFrame]] = {}
+        for reynolds in data.keys():
+            for solver in data[reynolds].keys():
+                if solver not in inverted_data.keys():
+                    inverted_data[solver] = {}
+                inverted_data[solver][reynolds] = data[reynolds][solver]
+
+        if airfoil_name not in self.polars.keys():
+            self.polars[airfoil_name] = AirfoilData(
+                name=airfoil_name,
+                data=inverted_data,
+            )
+        else:
+            self.polars[airfoil_name].add_data(
+                data=inverted_data,
             )
         return
 

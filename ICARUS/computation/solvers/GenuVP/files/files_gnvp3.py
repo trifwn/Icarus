@@ -10,7 +10,6 @@ from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.formatting import ff2
 from ICARUS.core.formatting import ff3
 from ICARUS.core.formatting import ff4
@@ -739,10 +738,7 @@ def make_input_files(
     params: GenuParameters,
     solver: str,
 ) -> None:
-    DB = Database.get_instance()
-    read_polars_2d(DB, DB.EXTERNAL_DB)
     os.chdir(ANGLEDIR)
-
     # Input File
     input_file()
     # Hybrid Wake input file

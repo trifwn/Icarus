@@ -37,9 +37,6 @@ def main() -> None:
 
     print(f"Total number of loaded airfoils {len(list(DB.airfoils.keys()))}")
     print(
-        f"Total number of computed airfoil data {len(list(DB.foils_db._raw_data.keys()))}",
-    )
-    print(
         f"Total number of computed airfoil polars {len(list(DB.airfoil_polars.keys()))}",
     )
 

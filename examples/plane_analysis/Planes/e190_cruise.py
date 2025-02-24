@@ -1,5 +1,7 @@
 """This module defines the hermes plane object."""
 
+import os
+
 import numpy as np
 
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
@@ -23,7 +25,7 @@ def e190_cruise(name: str) -> Airplane:
 
     """
     DB = Database("./Data")
-    read_polars_2d(DB, DB.EXTERNAL_DB)
+    read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
 
     from ICARUS.airfoils.airfoil import Airfoil
 

@@ -135,17 +135,32 @@ class AirfoilData:
         data: Struct | dict[str, dict[str, DataFrame]],
     ) -> None:
         self.name = name
-        self.all_data = data
 
-        self.polars = {}
-        for solver, dat in data.items():
-            self.polars[solver] = AirfoilPolars(name, dat)
-        self.solvers = list(self.polars.keys())
+        self.polars: dict[str, AirfoilPolars] = {}
+        for solver, subdata in data.items():
+            self.add_solver(solver, subdata)
+
+    @property
+    def solvers(self) -> list[str]:
+        return list(self.polars.keys())
+
+    def get_solver_reynolds(self, solver: str) -> list[float]:
+        return self.polars[solver].reynolds_nums
 
     def get_polars(self, solver: str | None = None) -> AirfoilPolars:
         if solver is None:
             return self.polars[list(self.polars.keys())[0]]
         return self.polars[solver]
+
+    def get_polar_data(self, solver: str) -> DataFrame:
+        return self.polars[solver].df
+
+    def add_solver(self, solver: str, data: dict[str, DataFrame]) -> None:
+        self.polars[solver] = AirfoilPolars(self.name, data)
+
+    def add_data(self, data: dict[str, dict[str, DataFrame]]) -> None:
+        for solver, subdata in data.items():
+            self.add_solver(solver, subdata)
 
 
 class AirfoilPolars:

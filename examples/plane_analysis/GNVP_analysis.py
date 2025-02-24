@@ -16,22 +16,16 @@ from ICARUS.database import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 
+# DB CONNECTION
+database_folder = os.path.join("/mnt/e/ICARUS", "Data")
+DB = Database(database_folder)
+read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
 
-def main() -> None:
+def main(GNVP_VERSION) -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
-
-    # # DB CONNECTION
-    database_folder = os.path.join("/mnt/e/ICARUS", "Data")
-    print(database_folder)
-    # "E:\\Icarus\\Data"
-    # Load the database
-    DB = Database(database_folder)
-
-    from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
-
-    read_polars_2d(DB, DB.EXTERNAL_DB)
 
     # # Get Plane
     planes: list[Airplane] = []
@@ -69,8 +63,6 @@ def main() -> None:
     STATIC_ANALYSIS: dict[str, float] = {name: True}
     DYNAMIC_ANALYSIS: dict[str, float] = {name: True}
 
-    # Get Solver
-    GNVP_VERSION = 7
     if GNVP_VERSION == 7:
         from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
 
@@ -209,7 +201,7 @@ def main() -> None:
             # Set Options
             options.plane = airplane
             options.state = unstick
-            options.solver2D = "Xfoil"
+            options.solver2D = "XFLR"
             options.maxiter = maxiter[airplane.name]
             options.timestep = timestep[airplane.name]
             # options.angle = unstick.trim["AoA"]
@@ -237,4 +229,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(3)
+    main(7)
