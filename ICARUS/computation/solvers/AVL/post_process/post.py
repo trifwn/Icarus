@@ -184,6 +184,8 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
     df = DataFrame(results, columns=cols)
     df = df.sort_values("Type").reset_index(drop=True)
     df["Epsilon"] = df["Epsilon"].astype(float)
+    perturbation_file: str = os.path.join(DYNDIR, "pertrubations.avl")
+    df.to_csv(perturbation_file, index=False)
     return df
 
 

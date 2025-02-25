@@ -34,6 +34,9 @@ def longitudal_stability_finite_differences(
     Z: dict[Any, float] = {}
     M: dict[Any, float] = {}
     pert = pert.sort_values(by=["Epsilon"]).reset_index(drop=True)
+    # Remove Values where Fx is NaN
+    pert = pert[pert["Fx"].notna()]
+
     trim_state: DataFrame = pert[pert["Type"] == "Trim"]
     for var in ["u", "q", "w", "theta"]:
         if state.scheme is None:

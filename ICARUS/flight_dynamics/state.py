@@ -9,6 +9,7 @@ import distinctipy
 import jsonpickle
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.figure import SubFigure
@@ -277,22 +278,29 @@ class State:
         try:
             self.trim = trim_state(self, verbose=verbose)
             self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
-        except (TrimNotPossible, TrimOutsidePolars):
+        except (TrimNotPossible, TrimOutsidePolars) as e:
             self.trimmable = False
             self.trim = {}
             self.trim_dynamic_pressure = np.nan
+            raise e
 
     def get_polar_prefixes(self) -> list[str]:
         cols_pol = [col for col in self.polar.columns if "CL" in col]
         return list({col[:-3] for col in cols_pol if col != "CL"})
 
     def print_trim(self) -> None:
+        print(self.trim_to_string())
+
+    def trim_to_string(self) -> str:
+        ss = io.StringIO()
         if not self.trim:
-            print("State Not Trimmed")
+            ss.write("State Not Trimmed")
         else:
-            print(f"Trim State (Calculated with {self.polar_prefix})")
+            ss.write(f"Trim State (Calculated with {self.polar_prefix})\n")
             for key, value in self.trim.items():
-                print(f"\t{key}: {value:.3f}")
+                ss.write(f"\t{key}: {value:.3f}\n")
+
+        return ss.getvalue()
 
     def change_polar_prefix(self, polar_prefix: str) -> None:
         self.polar_prefix = polar_prefix
@@ -306,6 +314,15 @@ class State:
             self.trim_dynamic_pressure = np.nan
             self.trim = {}
             self.trimmable = False
+
+    def change_pertrubation_prefix(self, pertrubation_prefix: str) -> None:
+        self.pertrubation_results["Fx"] = self.pertrubation_results[f"{pertrubation_prefix} Fx"]
+        self.pertrubation_results["Fy"] = self.pertrubation_results[f"{pertrubation_prefix} Fy"]
+        self.pertrubation_results["Fz"] = self.pertrubation_results[f"{pertrubation_prefix} Fz"]
+        self.pertrubation_results["Mx"] = self.pertrubation_results[f"{pertrubation_prefix} Mx"]
+        self.pertrubation_results["My"] = self.pertrubation_results[f"{pertrubation_prefix} My"]
+        self.pertrubation_results["Mz"] = self.pertrubation_results[f"{pertrubation_prefix} Mz"]
+        self.stability_fd()
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()
@@ -362,7 +379,14 @@ class State:
         self,
         pertrubation_results: DataFrame,
     ) -> None:
-        self.pertrubation_results = pertrubation_results
+        if not pertrubation_results.empty:
+            for col in pertrubation_results.columns:
+                if col in self.polar.columns and col != "Epsilon" and col != "Type":
+                    self.polar.drop(col, axis=1, inplace=True)
+
+            self.pertrubation_results = pertrubation_results
+        else:
+            self.pertrubation_results = pertrubation_results
         self.stability_fd()
 
     def stability_fd(self) -> None:
@@ -376,20 +400,20 @@ class State:
         plot_longitudal: bool = True,
         axs: list[Axes] | None = None,
         title: str | None = None,
-    ) -> None:
+    ) -> tuple[list[Axes], Figure | SubFigure]:
         """Generate a plot of the eigenvalues."""
         if axs is not None:
             fig: Figure | SubFigure | None = axs[0].figure
             if fig is None:
                 fig = plt.figure()
-                fig.suptitle("Eigenvalues")
+                fig.suptitle(f"Eigenvalues for {self.airplane.name} at state {self.name}")
             axs_now: list[Axes] = axs
         else:
             fig = plt.figure()
             if title is not None:
                 fig.suptitle(title)
             else:
-                fig.suptitle("Eigenvalues")
+                fig.suptitle(f"Eigenvalues for {self.airplane.name} at state {self.name}")
 
             if plot_lateral and plot_longitudal:
                 axs_now = fig.subplots(1, 2)  # type: ignore
@@ -414,7 +438,6 @@ class State:
 
             axs_now[i].scatter(x_pos, y_pos, label="Longitudal", color="r", marker=MarkerStyle("x"))
             axs_now[i].scatter(x_neg, y_neg, label="Longitudal", color="r", marker=MarkerStyle("o"))
-            axs_now[i].legend(["Stable", "Unstable"], loc="best")
             i += 1
 
         if plot_lateral:
@@ -433,7 +456,6 @@ class State:
 
             axs_now[i].scatter(x_pos, y_pos, label="Lateral", color="b", marker=MarkerStyle("x"))
             axs_now[i].scatter(x_neg, y_neg, label="Lateral", color="b", marker=MarkerStyle("o"))
-            axs_now[i].legend(["Stable", "Unstable"], loc="best")
         for j in range(i + 1):
             axs_now[j].set_ylabel("Imaginary")
             axs_now[j].set_xlabel("Real")
@@ -444,6 +466,7 @@ class State:
             pass
         else:
             fig.show()
+        return axs_now, fig
 
     def plot_polars(
         self,
@@ -555,17 +578,24 @@ class State:
     def __str__(self) -> str:
         ss = io.StringIO()
         ss.write(f"State: {self.name}\n")
-        ss.write(f"Trim: {self.trim}\n")
+        ss.write(f"{self.trim_to_string()}\n")
         ss.write(f"\n{45 * '--'}\n")
+
+        def convert_to_str(num: complex) -> str:
+            # CHeck is it complex
+            try:
+                return f"{num.real:.3f} {num.imag:+.3f}j"
+            except AttributeError:
+                return f"{num:.3f}"
 
         if hasattr(self, "state_space"):
             ss.write("\nLongitudal State:\n")
             ss.write(
-                f"Eigen Values: {[round(item, 3) for item in self.state_space.longitudal.eigenvalues]}\n",
+                f"Eigen Values: {[convert_to_str(item) for item in self.state_space.longitudal.eigenvalues]}\n",
             )
             ss.write("Eigen Vectors:\n")
             for item in self.state_space.longitudal.eigenvectors:
-                ss.write(f"\t{[round(i, 3) for i in item]}\n")
+                ss.write(f"\t{[convert_to_str(i) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
                 tabulate(
@@ -579,11 +609,11 @@ class State:
 
             ss.write("\nLateral State:\n")
             ss.write(
-                f"Eigen Values: {[round(item, 3) for item in self.state_space.lateral.eigenvalues]}\n",
+                f"Eigen Values: {[convert_to_str(item) for item in self.state_space.lateral.eigenvalues]}\n",
             )
             ss.write("Eigen Vectors:\n")
             for item in self.state_space.lateral.eigenvectors:
-                ss.write(f"\t{[round(i, 3) for i in item]}\n")
+                ss.write(f"\t{[convert_to_str(i) for i in item]}\n")
             ss.write("\nThe State Space Matrix:\n")
             ss.write(
                 tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f"),

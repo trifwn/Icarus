@@ -78,7 +78,6 @@ def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
     DB.vehicles_db.states[plane.name] = state
     return forces
 
-
 def process_avl_impl_res(
     plane: Airplane,
     state: State,

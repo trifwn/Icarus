@@ -83,9 +83,8 @@ def plot_gnvp_wake(
         c=np.linalg.norm(QP, axis=1),
         s=5,
     )  # WAKE   # type: ignore
-
-    # Add color bar which maps values to colors
     fig.colorbar(p, ax=ax)
+
 
     ax.scatter(
         xs=B1[:, 0],

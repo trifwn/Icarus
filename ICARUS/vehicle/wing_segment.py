@@ -44,7 +44,7 @@ class WingSegment(WingSurface):
         spanwise_dihedral_distibution: DistributionType = DistributionType.LINEAR,
         spanwise_twist_distribution: DistributionType = DistributionType.LINEAR,
         # Geometry discretization
-        span_spacing: DiscretizationType | str = DiscretizationType.COSINE,
+        span_spacing: DiscretizationType | str = DiscretizationType.LINEAR,
         chord_spacing: DiscretizationType | str = DiscretizationType.COSINE,
         N: int = 15,
         M: int = 5,

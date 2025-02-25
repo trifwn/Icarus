@@ -160,6 +160,7 @@ class Database_3D:
                 self.read_plane_data(vehicle_folder)
             except Exception as error:
                 print(f"Error reading {vehicle_folder}! Got error {error}")
+                raise error
 
     def read_plane_data(self, vehicle_folder: str) -> None:
         logging.info(f"Adding Vehicle at {vehicle_folder}")
@@ -198,9 +199,10 @@ class Database_3D:
                     logging.debug(f"No State Object Found at {solver_folder_path}")
                     continue
 
+                state_name = f"{state_obj.name}_{solver_folder}"
                 if vehicle_name not in self.states.keys():
                     self.states[vehicle_name] = {}
-                    self.states[vehicle_name][state_obj.name] = state_obj
+                self.states[vehicle_name][state_name] = state_obj
 
                 # Load Solver Data
                 try:
@@ -338,7 +340,6 @@ class Database_3D:
 
         if gnvp_version == 7:
             return
-
         cases: list[str] = next(os.walk(folder))[1]
         if "Dynamics" in cases:
             cases.remove("Dynamics")
@@ -348,7 +349,10 @@ class Database_3D:
             pertrubations_df = pd.read_csv(pertrubations_file)
             try:
                 state.set_pertrubation_results(pertrubations_df)
+                state.stability_fd()
             except Exception as error:
+                print(f"Error setting pertrubation results {error} for {vehicle_name} GenuVP{gnvp_version}")
+                raise(error)
                 logging.debug(f"Error setting pertrubation results {error}")
                 state.pertrubation_results = pertrubations_df
         for case in cases:
@@ -418,6 +422,22 @@ class Database_3D:
                     forces=forces_df,
                     prefix=name,
                 )
+            
+            # Check if a Dynamics Folder exists
+            dynamics_folder = os.path.join(folder, "Dynamics")
+            pertrubations_file = os.path.join(folder, "Dynamics", "pertrubations.avl")
+            if os.path.isdir(dynamics_folder) and os.path.isfile(pertrubations_file):
+                # Load Dynamics Data
+                pertrubations_df = pd.read_csv(pertrubations_file)
+                try:
+                    state.set_pertrubation_results(pertrubations_df)
+                    state.stability_fd()
+                except ValueError as error:
+                    print(f"Error setting pertrubation results {error} for {vehicle_name} AVL")
+                    logging.debug(f"Error setting pertrubation results {error}")
+                    state.pertrubation_results = pertrubations_df
+
+
         except FileNotFoundError:
             logging.debug(
                 f"No forces.avl file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",

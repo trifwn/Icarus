@@ -212,7 +212,7 @@ def avl_geo(
         f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
         f_io.write("\n")
         f_io.write("\n")
-        
+
         for j, strip in enumerate(surf.strips):
             if j == 0:
                 x, y, z = strip.x0, strip.y0, strip.z0
@@ -245,12 +245,12 @@ def avl_geo(
                 f"   {x:.6f}    {y:.6f}    {z:.6f}    {chord:.6f}   {twist * 180 / np.pi:6f}   {N}    {span_spacing}   \n",
             )
             f_io.write("\n")
-            if strip_airfoil.file_name.upper().startswith("NACA"):
-                f_io.write("NACA \n")
-                f_io.write(f"{strip_airfoil.file_name[4:]}\n")
-            else:
-                f_io.write("AFILE \n")
-                f_io.write(f"{strip_airfoil.file_name}\n")
+            # if strip_airfoil.file_name.upper().startswith("NACA"):
+            #     f_io.write("NACA \n")
+            #     f_io.write(f"{strip_airfoil.file_name[4:]}\n")
+            # else:
+            f_io.write("AFILE \n")
+            f_io.write(f"{strip_airfoil.file_name}\n")
             f_io.write("\n")
             f_io.write("\n")
 
@@ -303,16 +303,20 @@ def avl_geo(
                 except PolarsNotFoundError:
                     print(f"\tCould not compute polar for {strip_airfoil.name}")
             # f_io.write("CLAF\n")
-            # # This scales the effective dcl/da of the section airfoil as follows:
-            # # dcl/da  =  2 pi CLaf
-            # # The implementation is simply a chordwise shift of the control point
-            # # relative to the bound vortex on each vortex element.
-            # # The intent is to better represent the lift characteristics
-            # # of thick airfoils, which typically have greater dcl/da values
-            # # than thin airfoils.  A good estimate for CLaf from 2D potential
-            # # flow theory is
-            # # CLaf  =  1 + 0.77 t/c
-            # f_io.write(f"{1 + 0.77 / strip.max_thickness}\n")
+            # This scales the effective dcl/da of the section airfoil as follows:
+            # dcl/da  =  2 pi CLaf
+            # The implementation is simply a chordwise shift of the control point
+            # relative to the bound vortex on each vortex element.
+            # The intent is to better represent the lift characteristics
+            # of thick airfoils, which typically have greater dcl/da values
+            # than thin airfoils.  A good estimate for CLaf from 2D potential
+            # flow theory is
+            # CLaf  =  1 + 0.77 t/c
+            # where t/c is the airfoil's thickness/chord ratio.  In practice,
+            # viscous effects will reduce the 0.77 factor to something less.
+            # Wind tunnel airfoil data or viscous airfoil calculations should
+            # be consulted before choosing a suitable CLaf value.
+            # f_io.write(f"{1 + 0.77 * strip.max_thickness}\n")
             # f_io.write("\n")
 
     contents: str = f_io.getvalue().expandtabs(4)
