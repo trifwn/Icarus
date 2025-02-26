@@ -8,14 +8,13 @@ Code and Tools to analyze the performance of low speed aircraft using different 
 
 ## Current Goals
 
-- Improve Examples
+- Improve Examples.
 - Create functional API (instead of object oriented on) for analysis
-- Convert to jax typing
+- Create Visualization decorators to abstract duplicate code.
+- Create import system.
 - Finish integrating Control Surfaces for AVL, GenuVP
 - Ameliorate Trajectory Calculations
 - Create Panel/Particle Solver (insted of LSPT) to deprecate external aerodynamic solvers.
-- Create Results Class to handle Analysis output.
-- Improve Airfoil Polar class to handle higher order jax compatible interpolations
 - Create Airplane Polar class
 - Create Workflow Class to combine Analyses Together
 
