@@ -14,7 +14,7 @@ def lateral_stability_finite_differences(
     state: State,
 ) -> LateralStateSpace:
     """This Function Requires the results from perturbation analysis"""
-    pertr: DataFrame = state.pertrubation_results.sort_values(
+    pert: DataFrame = state.pertrubation_results.sort_values(
         by=["Epsilon"],
     ).reset_index(drop=True)
     eps: dict[str, float] = state.epsilons
@@ -22,20 +22,20 @@ def lateral_stability_finite_differences(
     Y: dict[str, float] = {}
     L: dict[str, float] = {}
     N: dict[str, float] = {}
-    trimState: DataFrame = pertr[pertr["Type"] == "Trim"]
+    trimState: DataFrame = pert[pert["Type"] == "Trim"]
     for var in ["v", "p", "r", "phi"]:
         if state.scheme == "Central":
-            back: DataFrame = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
-            front: DataFrame = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
-            de: float = 2 * eps[var]
+            back: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
+            front: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
+            de: float = 2 * pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         elif state.scheme == "Forward":
             back = trimState
-            front = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] > 0)]
-            de = eps[var]
+            front = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
+            de: float = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         elif state.scheme == "Backward":
-            back = pertr[(pertr["Type"] == var) & (pertr["Epsilon"] < 0)]
+            back = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
             front = trimState
-            de = eps[var]
+            de: float = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
 

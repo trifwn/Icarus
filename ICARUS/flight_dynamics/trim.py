@@ -99,9 +99,9 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         print(f"Trim velocity is {U_CRUISE} m/s")
 
     # Calculate the static margin
-    aoas = state.polar["AoA"].to_numpy()
-    cls = state.polar["CL"].to_numpy()
-    cms = state.polar["Cm"].to_numpy()
+    aoas = state.polar["AoA"].to_numpy(dtype=float)
+    cls = state.polar["CL"].to_numpy(dtype=float)
+    cms = state.polar["Cm"].to_numpy(dtype=float)
     mac = state.mean_aerodynamic_chord
     x_cg: float = state.CG[0]
 
@@ -120,7 +120,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     # Find where the slope is zero
     from scipy.optimize import fsolve
 
-    x_neutral_point = fsolve(movement, x_cg, xtol=1e-5)[0]
+    x_neutral_point = fsolve(movement, float(x_cg), xtol=1e-5)[0]
     static_margin = (x_neutral_point - x_cg) / mac
 
     trim: dict[str, float] = {

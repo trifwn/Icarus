@@ -9,7 +9,6 @@ import distinctipy
 import jsonpickle
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.figure import SubFigure
@@ -378,7 +377,19 @@ class State:
     def set_pertrubation_results(
         self,
         pertrubation_results: DataFrame,
+        polar_prefix: str | None = None,
     ) -> None:
+        # Remove prefix from polar columns
+        if polar_prefix is not None:
+            cols: list[str] = list(pertrubation_results.columns)
+            if "Fx" not in cols:
+                pertrubation_results["Fx"] = pertrubation_results[f"{polar_prefix} Fx"]
+                pertrubation_results["Fy"] = pertrubation_results[f"{polar_prefix} Fy"]
+                pertrubation_results["Fz"] = pertrubation_results[f"{polar_prefix} Fz"]
+                pertrubation_results["Mx"] = pertrubation_results[f"{polar_prefix} Mx"]
+                pertrubation_results["My"] = pertrubation_results[f"{polar_prefix} My"]
+                pertrubation_results["Mz"] = pertrubation_results[f"{polar_prefix} Mz"]
+
         if not pertrubation_results.empty:
             for col in pertrubation_results.columns:
                 if col in self.polar.columns and col != "Epsilon" and col != "Type":

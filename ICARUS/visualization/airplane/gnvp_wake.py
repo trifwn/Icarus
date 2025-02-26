@@ -85,7 +85,6 @@ def plot_gnvp_wake(
     )  # WAKE   # type: ignore
     fig.colorbar(p, ax=ax)
 
-
     ax.scatter(
         xs=B1[:, 0],
         ys=B1[:, 1],

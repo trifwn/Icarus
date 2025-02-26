@@ -28,7 +28,7 @@ def longitudal_stability_finite_differences(
 
     """
     pert: DataFrame = state.pertrubation_results
-    eps: dict[str, float] = state.epsilons
+    # eps: dict[str, float] = state.epsilons
 
     X: dict[Any, float] = {}
     Z: dict[Any, float] = {}
@@ -44,15 +44,15 @@ def longitudal_stability_finite_differences(
         if state.scheme == "Central":
             front: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
             back: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
-            de: float = 2 * eps[var]
+            de: float = 2 * pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         elif state.scheme == "Forward":
             front = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
             back = trim_state
-            de = eps[var]
+            de: float = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         elif state.scheme == "Backward":
             front = trim_state
             back = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
-            de = eps[var]
+            de: float = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
 

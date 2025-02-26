@@ -248,4 +248,4 @@ def implicit_dynamics_post(
     return longitudal_matrix, lateral_matrix
 
 
-cols: list[str] = ["Epsilon", "Type", "Fx", "Fy", "Fz", "Mx", "My", "Mz"]
+cols: list[str] = ["Epsilon", "Type", "AVL Fx", "AVL Fy", "AVL Fz", "AVL Mx", "AVL My", "AVL Mz"]

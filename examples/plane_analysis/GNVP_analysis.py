@@ -10,18 +10,19 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 
 # DB CONNECTION
 database_folder = os.path.join("/mnt/e/ICARUS", "Data")
 DB = Database(database_folder)
 read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
+
 
 def main(GNVP_VERSION) -> None:
     """Main function to run the simulations."""
@@ -45,15 +46,12 @@ def main(GNVP_VERSION) -> None:
     # from Planes.e190_cruise import e190_cruise
     from Planes.hermes import hermes
 
-    name = "hermes_high"
+    name = "hermes"
     hermes_3: Airplane = hermes(name=name)
     planes.append(hermes_3)
 
-    # planes.append(airplane)
-    # embraer.visualize()
-
     timestep: dict[str, float] = {name: 1e-3}
-    maxiter: dict[str, int] = {name: 50}
+    maxiter: dict[str, int] = {name: 100}
     UINF: dict[str, float] = {name: 20}
     ALTITUDE: dict[str, int] = {name: 0}
 
@@ -61,7 +59,7 @@ def main(GNVP_VERSION) -> None:
     TEMPERATURE: dict[str, int] = {name: 273 + 15}
 
     STATIC_ANALYSIS: dict[str, float] = {name: True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {name: True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {name: False}
 
     if GNVP_VERSION == 7:
         from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
@@ -74,26 +72,26 @@ def main(GNVP_VERSION) -> None:
     else:
         raise ValueError("GNVP VERSION NOT FOUND")
 
-    for airplane in planes:
+    for plane in planes:
         print("--------------------------------------------------")
-        print(f"Running {airplane.name}")
+        print(f"Running {plane.name}")
         print("--------------------------------------------------")
 
         # # Import Environment
         EARTH_ISA._set_pressure_from_altitude_and_temperature(
-            ALTITUDE[airplane.name],
-            TEMPERATURE[airplane.name],
+            ALTITUDE[plane.name],
+            TEMPERATURE[plane.name],
         )
         state = State(
             name="Unstick",
-            airplane=airplane,
+            airplane=plane,
             environment=EARTH_ISA,
-            u_freestream=UINF[airplane.name],
+            u_freestream=UINF[plane.name],
         )
         print(EARTH_ISA)
-        state.save(os.path.join(DB.DB3D, airplane.directory))
+        state.save(os.path.join(DB.DB3D, plane.directory))
 
-        if STATIC_ANALYSIS[airplane.name]:
+        if STATIC_ANALYSIS[plane.name]:
             # ## AoA Run
             # 0: Single Angle of Attack (AoA) Run
             # 1: Angles Sequential
@@ -112,11 +110,11 @@ def main(GNVP_VERSION) -> None:
                 NO_AOA,
             )
 
-            options.plane = airplane
-            options.solver2D = "Xfoil"
+            options.plane = plane
+            options.solver2D = "XFLR"
             options.state = state
-            options.maxiter = maxiter[airplane.name]
-            options.timestep = timestep[airplane.name]
+            options.maxiter = maxiter[plane.name]
+            options.timestep = timestep[plane.name]
             options.angles = angles
 
             solver_parameters.Use_Grid = True
@@ -130,18 +128,17 @@ def main(GNVP_VERSION) -> None:
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
-            airplane.save()
+            plane.save()
 
             from ICARUS.computation.solvers.GenuVP.analyses.angles import (
                 process_gnvp_angles_run,
             )
 
-            process_gnvp_angles_run(airplane, state, GNVP_VERSION)
-            state.save(os.path.join(DB.DB3D, airplane.directory))
+            process_gnvp_angles_run(plane, state, GNVP_VERSION)
 
-            from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+            # from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
 
-            avl_angle_run(airplane, state, "Xfoil", angles)
+            # avl_angle_run(plane, state, "XFLR", angles)
 
             # from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
 
@@ -160,12 +157,12 @@ def main(GNVP_VERSION) -> None:
             # Pause to see the plots for 2 seconds
             time.sleep(2)
 
-        if DYNAMIC_ANALYSIS[airplane.name]:
+        if DYNAMIC_ANALYSIS[plane.name]:
             # # Dynamics
             # ### Define and Trim Plane
-            forces = DB.get_vehicle_polars(airplane)
+            forces = DB.get_vehicle_polars(plane)
             if not isinstance(forces, DataFrame):
-                raise ValueError(f"Polars for {airplane.name} not found in DB")
+                raise ValueError(f"Polars for {plane.name} not found in DB")
             try:
                 state.add_polar(
                     polar=forces,
@@ -199,11 +196,11 @@ def main(GNVP_VERSION) -> None:
             if options is None:
                 raise ValueError("Options not set")
             # Set Options
-            options.plane = airplane
+            options.plane = plane
             options.state = unstick
-            options.solver2D = "XFLR"
-            options.maxiter = maxiter[airplane.name]
-            options.timestep = timestep[airplane.name]
+            options.solver2D = "Xfoil"
+            options.maxiter = maxiter[plane.name]
+            options.timestep = timestep[plane.name]
             # options.angle = unstick.trim["AoA"]
 
             solver_parameters.Use_Grid = True
@@ -219,12 +216,8 @@ def main(GNVP_VERSION) -> None:
 
             # Get Results And Save
             _ = gnvp.get_results()
-
-            # Sensitivity ANALYSIS
-            # ADD SENSITIVITY ANALYSIS
-
     # print time program took
-    print("PROGRAM TERMINATED")
+    print(f"WORKFLOW FOR {GNVP_VERSION} TERMINATED")
     print(f"Execution took : --- {time.time() - start_time} seconds ---")
 
 

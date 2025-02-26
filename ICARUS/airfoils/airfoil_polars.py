@@ -424,7 +424,7 @@ class AirfoilPolars:
 
     def plot(self) -> Figure:
         # Create 2 subplots and unpack the output array immediately
-        fig, axs = plt.subplots(2, 2, figsize=(19.2, 10.8))
+        fig, axs = plt.subplots(2, 2, figsize=(10.2, 10.0))
 
         fig.suptitle(f"{self.name} Polars")
         for reyn in self.reynolds_nums:

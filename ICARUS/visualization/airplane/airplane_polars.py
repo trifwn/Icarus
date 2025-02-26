@@ -23,7 +23,7 @@ def plot_airplane_polars(
         ["AoA", "Cm"],
         ["AoA", "CL/CD"],
     ],
-    size: tuple[int, int] = (10, 10),
+    size: tuple[float, float] = (10.0, 10.0),
     title: str = "Aerodynamic Coefficients",
     operating_point: dict[str, float] = {},
 ) -> tuple[ndarray[Any, Any], Figure]:

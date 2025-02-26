@@ -337,9 +337,6 @@ class Database_3D:
             print(
                 f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
             )
-
-        if gnvp_version == 7:
-            return
         cases: list[str] = next(os.walk(folder))[1]
         if "Dynamics" in cases:
             cases.remove("Dynamics")
@@ -352,9 +349,12 @@ class Database_3D:
                 state.stability_fd()
             except Exception as error:
                 print(f"Error setting pertrubation results {error} for {vehicle_name} GenuVP{gnvp_version}")
-                raise(error)
+                # raise(error)
                 logging.debug(f"Error setting pertrubation results {error}")
                 state.pertrubation_results = pertrubations_df
+
+        if gnvp_version == 7:
+            return
         for case in cases:
             # Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
@@ -422,7 +422,7 @@ class Database_3D:
                     forces=forces_df,
                     prefix=name,
                 )
-            
+
             # Check if a Dynamics Folder exists
             dynamics_folder = os.path.join(folder, "Dynamics")
             pertrubations_file = os.path.join(folder, "Dynamics", "pertrubations.avl")
@@ -430,13 +430,12 @@ class Database_3D:
                 # Load Dynamics Data
                 pertrubations_df = pd.read_csv(pertrubations_file)
                 try:
-                    state.set_pertrubation_results(pertrubations_df)
+                    state.set_pertrubation_results(pertrubations_df, "AVL")
                     state.stability_fd()
-                except ValueError as error:
+                except (ValueError, KeyError) as error:
                     print(f"Error setting pertrubation results {error} for {vehicle_name} AVL")
                     logging.debug(f"Error setting pertrubation results {error}")
                     state.pertrubation_results = pertrubations_df
-
 
         except FileNotFoundError:
             logging.debug(

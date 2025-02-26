@@ -1,9 +1,10 @@
 import os
 import re
-import pandas as pd
-from ICARUS.database import Database
 from collections import defaultdict
 
+import pandas as pd
+
+from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.plane import Airplane
 
@@ -16,7 +17,7 @@ def to_number(token: str):
         return token
 
 
-def get_strip_data(plane:Airplane, state: State, case: str)->pd.DataFrame:
+def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
     DB = Database.get_instance()
     directory = DB.get_vehicle_case_directory(
         airplane=plane,
@@ -116,7 +117,7 @@ def get_strip_data(plane:Airplane, state: State, case: str)->pd.DataFrame:
     master_df = pd.concat(surfaces.values(), keys=list(surfaces.keys()), names=["surface_name"])
     # ('wing', np.int64(0)) -> 'wing'
     # ('wing', np.int64(1)) -> 'wing_1'
-    master_df.index = master_df.index.get_level_values(0) 
+    master_df.index = master_df.index.get_level_values(0)
 
     return master_df
 

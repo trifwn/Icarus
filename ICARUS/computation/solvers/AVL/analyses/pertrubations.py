@@ -65,7 +65,7 @@ def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
     """
     forces: DataFrame = finite_difs_post(plane, state)
 
-    state.set_pertrubation_results(forces)
+    state.set_pertrubation_results(forces, "AVL")
     state.stability_fd()
     # Save the state
     DB = Database.get_instance()
@@ -77,6 +77,7 @@ def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
     state.save(CASEDIR)
     DB.vehicles_db.states[plane.name] = state
     return forces
+
 
 def process_avl_impl_res(
     plane: Airplane,

@@ -79,10 +79,6 @@ unstick.get_pertrub()
 avl_dynamic_analysis_fd(plane, unstick, solver2D)
 df = process_avl_fd_res(plane, unstick)
 
-unstick.set_pertrubation_results(df)
-unstick.stability_fd()
-
-
 print(unstick)
 fig = plt.figure(figsize=(12, 6))
 _axs = fig.subplots(1, 2)

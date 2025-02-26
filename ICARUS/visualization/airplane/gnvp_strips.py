@@ -74,6 +74,7 @@ def gnvp_strips_2d(
     NB: int | list[int],
     gnvp_version: int = 3,
     category: str = "Wind",
+    ax: Axes | None = None,
 ) -> DataFrame | int:
     """Plots the 2D strips of a given airplane.
 
@@ -97,14 +98,18 @@ def gnvp_strips_2d(
         return 0
 
     strip_data, data = get_strip_data(plane, state, case, [NB], gnvp_version)
-    fig: Figure = plt.figure()
-    ax: Axes = fig.add_subplot()
+
+    if ax is None:
+        fig: Figure = plt.figure()
+        ax = fig.add_subplot()
+
     ax.set_title(f"{plane.name} {plane.surfaces[NB - 1].name} {category} Data")
     ax.set_xlabel("Spanwise")
     # ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)
     x: list[int] = [i for i, data in enumerate(data[category])]
-    ax.plot(x, data[category], "ro-")
+    ax.plot(x, data[category], "o-", label=f"GenuVP{gnvp_version} {category}")
     ax.grid()
-    fig.show()
+    if ax is None:
+        fig.show()
     return strip_data
