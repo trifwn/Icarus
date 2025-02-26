@@ -843,11 +843,11 @@ class Airfoil(af.Airfoil):  # type: ignore
             points = np.array(float(points))
 
         results: FloatArray = np.zeros_like(points)
-        for i, x in enumerate(points.tolist()):
-            if x < p:
-                results[i] = m / p**2 * (2 * p * x - x**2)
+        for i, xi in enumerate(points.tolist()):
+            if xi < p:
+                results[i] = m / p**2 * (2 * p * xi - xi**2)
             else:
-                results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
+                results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * xi - xi**2)
         return results
 
     def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:

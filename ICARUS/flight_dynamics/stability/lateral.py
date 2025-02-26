@@ -31,11 +31,11 @@ def lateral_stability_finite_differences(
         elif state.scheme == "Forward":
             back = trimState
             front = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]
-            de: float = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
+            de = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         elif state.scheme == "Backward":
             back = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
             front = trimState
-            de: float = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
+            de = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]["Epsilon"].to_numpy()[0]
         else:
             raise ValueError(f"Unknown Scheme {state.scheme}")
 

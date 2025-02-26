@@ -6,6 +6,7 @@ import re
 import shutil
 from time import sleep
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Literal
 
 import numpy as np
@@ -65,7 +66,7 @@ class Database_2D:
 
     _instance = None
 
-    def __new__(cls, *args, **kwargs) -> Database_2D:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Database_2D:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Literal
 
 from pandas import DataFrame
@@ -27,7 +28,7 @@ class Database:
     # Create only one instance of the database
     _instance = None
 
-    def __new__(cls, *args, **kwargs) -> Database:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Database:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance

@@ -29,8 +29,7 @@ def avl_run() -> None:
     AoAmin = -10
     AoAmax = 10
     NoAoA = (AoAmax - AoAmin) + 1
-    angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
-    angles: list[float] = [ang for ang in angles_all]
+    angles = np.linspace(AoAmin, AoAmax, NoAoA)
 
     options.plane = bmark
     options.state = state

@@ -33,7 +33,7 @@ class Database_3D:
 
     _instance = None
 
-    def __new__(cls, *args, **kwargs) -> Database_3D:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Database_3D:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -41,12 +41,12 @@ class Database_3D:
     def __init__(self, APPHOME: str, location: str) -> None:
         self.HOMEDIR: str = APPHOME
         self.DB3D: str = location
-        self.planes: Struct = Struct()
-        self.states: Struct = Struct()
+        self.planes: dict[str, Airplane] = {}
+        self.states: dict[str, dict[str, State]] = {}
 
-        self.forces: Struct = Struct()
-        self.polars: Struct = Struct()
-        self.transient_data: Struct = Struct()
+        self.forces: dict[str, DataFrame] = {}
+        self.polars: dict[str, DataFrame] = {}
+        self.transient_data: dict[str, Struct] = {}
 
         if not os.path.isdir(self.DB3D):
             os.makedirs(self.DB3D)

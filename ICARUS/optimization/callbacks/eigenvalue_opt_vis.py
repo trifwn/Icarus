@@ -40,8 +40,8 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         x: list[float] = [float(ele.real) for ele in self.goal_longitudal]
         y: list[float] = [float(ele.imag) for ele in self.goal_longitudal]
         axs[0].scatter(x, y, color="r", marker="d", label="Desired")
-        x = [ele.real for ele in self.zero_longitudal]
-        y = [ele.imag for ele in self.zero_longitudal]
+        x = [float(ele.real) for ele in self.zero_longitudal]
+        y = [float(ele.imag) for ele in self.zero_longitudal]
         axs[0].scatter(x, y, color="b", marker="o", label="Start")
         collection_long = axs[0].scatter(
             zeros,
@@ -58,11 +58,11 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
         axs[0].axvline(0, color="k", linewidth=0.5)
 
         # Lateral Mode
-        x = [ele.real for ele in self.goal_lateral]
-        y = [ele.imag for ele in self.goal_lateral]
+        x = [float(ele.real) for ele in self.goal_lateral]
+        y = [float(ele.imag) for ele in self.goal_lateral]
         axs[1].scatter(x, y, color="r", marker="d", label="Desired")
-        x = [ele.real for ele in self.zero_lateral]
-        y = [ele.imag for ele in self.zero_lateral]
+        x = [float(ele.real) for ele in self.zero_lateral]
+        y = [float(ele.imag) for ele in self.zero_lateral]
         axs[1].scatter(x, y, color="b", marker="o", label="Start")
         collection_lat = axs[1].scatter(
             zeros,

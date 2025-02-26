@@ -106,7 +106,7 @@ class State:
 
         # Initialize Trim
         self.trim: dict[str, float] = {}
-        self.trim_dynamic_pressure = 0
+        self.trim_dynamic_pressure = 0.0
 
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
         self.scheme: str = "Central"

@@ -67,7 +67,7 @@ def cosine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 
     """Returns a cosine spaced array of length N."""
     cosine = 0.5 * (1 - np.cos(np.pi * Ni / (N - 1)))
     linear = Ni / (N - 1)
-    y = (1 - factor) * cosine + factor * linear
+    y: float = (1 - factor) * cosine + factor * linear
     return y * stretching
 
 
