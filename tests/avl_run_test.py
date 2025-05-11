@@ -4,7 +4,6 @@ import numpy as np
 
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.struct import Struct
-from ICARUS.core.types import FloatArray
 
 
 def avl_run() -> None:

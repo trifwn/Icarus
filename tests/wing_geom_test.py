@@ -14,7 +14,7 @@ def geom() -> None:
     MAC = bmark.mean_aerodynamic_chord
     # AR = bmark.aspect_ratio
     CG = bmark.CG
-    INERTIA = bmark.total_inertia
+    INERTIA = bmark.inertia
 
     S_act: tuple[float] = (10.0,)
     MAC_act: tuple[float] = (1.0,)

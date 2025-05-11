@@ -31,7 +31,8 @@ class Airplane(Optimizable):
         surfaces: list[WingSurface],
         orientation: FloatOrListArray | None = None,
         point_masses: list[tuple[float, FloatArray, str]] | None = None,
-        cg_override: FloatArray | None = None,
+        cg_overwrite: FloatArray | None = None,
+        inertia_overwrite: FloatArray | None = None,
     ) -> None:
         """Initialize the Airplane class
 
@@ -40,7 +41,9 @@ class Airplane(Optimizable):
             surfaces (list[Wing]): List of the lifting surfaces of the plane (Wings)
             disturbances (list[Disturbance] | None, optional): Optional List of disturbances. Defaults to None.
             orientation (FloatOrListArray] | None, optional): Plane Orientation. Defaults to None.
-
+            point_masses (list[tuple[float, FloatArray, str]] | None, optional): List of point masses. Defaults to None.
+            cg_overwrite (FloatArray | None, optional): Center of gravity overwrite. Defaults to None.
+            inertia_overwrite (FloatArray | None, optional): Inertia overwrite. Defaults to None.
         """
         self.name: str = name
         self.surfaces: list[WingSurface] = surfaces
@@ -102,13 +105,19 @@ class Airplane(Optimizable):
         self.num_control_variables = len(control_vars)
         self.control_vector: dict[str, float] = {k: 0.0 for k in control_vars}
 
-        self.cg_override: FloatArray | None = cg_override
-        if cg_override is not None:
-            self.overide_mass = True
-            self._CG = cg_override
+        if cg_overwrite is not None:
+            self.overwrite_mass = True
+            self._CG = cg_overwrite
         else:
-            self.overide_mass = False
+            self.overwrite_mass = False
             self._CG = self.find_cg()
+
+        if inertia_overwrite is not None:
+            self.overwrite_inertia = True
+            self._inertia = inertia_overwrite
+        else:
+            self.overwrite_inertia = False
+            self._inertia = self.find_inertia(self.CG)
 
     def __control__(self, control_vector: dict[str, float]) -> None:
         # control_dict = {k: control_vector[k] for k in self.control_vars}
@@ -348,19 +357,25 @@ class Airplane(Optimizable):
 
     @property
     def CG(self) -> FloatArray:
-        if self.overide_mass:
+        if self.overwrite_mass:
             return self._CG
         return self.find_cg()
 
     @CG.setter
     def CG(self, cg: FloatArray) -> None:
         self._CG = cg
-        self.overide_mass = True
-        self.cg_override = cg
+        self.overwrite_mass = True
 
     @property
-    def total_inertia(self) -> FloatArray:
+    def inertia(self) -> FloatArray:
+        if self.overwrite_inertia:
+            return self._inertia
         return self.find_inertia(self.CG)
+
+    @inertia.setter
+    def inertia(self, inertia: FloatArray) -> None:
+        self._inertia = inertia
+        self.overwrite_inertia = True
 
     @property
     def masses(self) -> list[tuple[float, FloatArray, str]]:
@@ -623,7 +638,8 @@ class Airplane(Optimizable):
             surfaces=state["surfaces"],
             orientation=state["orientation"],
             point_masses=state["point_masses"],
-            cg_override=state["cg_override"],
+            cg_overwrite=state["cg_overwrite"],
+            inertia_overwrite=state["inertia_overwrite"],
         )
 
     def __getstate__(self) -> dict[str, Any]:
@@ -632,7 +648,8 @@ class Airplane(Optimizable):
             "surfaces": self.surfaces,
             "orientation": self.orientation,
             "point_masses": self.point_masses,
-            "cg_override": self.CG if self.overide_mass else None,
+            "cg_overwrite": self.CG if self.overwrite_mass else None,
+            "inertia_overwrite": self.inertia if self.overwrite_inertia else None,
         }
 
     def save(self) -> None:
@@ -662,7 +679,7 @@ class Airplane(Optimizable):
             surfaces=self.surfaces,
             orientation=self.orientation,
             point_masses=self.point_masses,
-            cg_override=self.CG if self.overide_mass else None,
+            cg_overwrite=self.CG if self.overwrite_mass else None,
         )
 
 

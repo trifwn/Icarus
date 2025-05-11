@@ -26,7 +26,7 @@ class MissionVehicle:
         self.polar_data = DB.get_vehicle_polars(airplane.name)
         self.solver_name: str = solver
 
-        self.inertias: float = airplane.total_inertia[0]
+        self.inertias: float = airplane.inertia[0]
         self.mass: float = airplane.M
 
         # Get the cl, cd, cm data
