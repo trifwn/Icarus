@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from math import e
 import types
 from typing import Any
 from typing import Callable
@@ -202,7 +203,7 @@ class WingSurface:
         self.volume: float = 0.0
 
         ####### Calculate Wing Parameters #######
-        self.calculate_wing_parameters()
+        self.define_wing_parameters()
         ####### Calculate Wing Parameters ########
 
     @classmethod
@@ -360,7 +361,7 @@ class WingSurface:
         self.panels_lower = panels_lower.reshape(-1, 4, 3)
 
         # Create New Strips
-        self.create_strips()
+        self.define_strips()
         # self.calculate_wing_parameters()
         self.calculate_volume()
 
@@ -471,7 +472,7 @@ class WingSurface:
             self.control_nj_upper,
         ) = self.grid_to_panels(self.grid_upper)
 
-        self.create_strips()
+        self.define_strips()
 
         # Store the new R_MAT
         self.R_MAT = R_MAT
@@ -579,7 +580,7 @@ class WingSurface:
         if isinstance(value, str):
             value = DB.get_airfoil(value)
         self._root_airfoil = value
-        self.calculate_wing_parameters()
+        self.define_wing_parameters()
 
     @property
     def tip_airfoil(self) -> Airfoil:
@@ -591,7 +592,7 @@ class WingSurface:
         if isinstance(value, str):
             value = DB.get_airfoil(value)
         self._tip_airfoil = value
-        self.calculate_wing_parameters()
+        self.define_wing_parameters()
 
     @property
     def mean_airfoil(self) -> Airfoil:
@@ -609,21 +610,21 @@ class WingSurface:
             self.root_airfoil.n_points,
         )
 
-    def calculate_wing_parameters(self) -> None:
+    def define_wing_parameters(self) -> None:
         """Calculate Wing Parameters"""
         # Generate airfoils
         self.generate_airfoils()
 
         # Create Grid
-        self.create_grid()
+        self.define_grid()
 
         # Create Surfaces
-        self.create_strips()
+        self.define_strips()
 
         # Calculate Areas
         self.calculate_area()
 
-        # Find Chords mean_aerodynamic_chord-standard_mean_chord
+        # Find Chords: mean_aerodynamic_chord , standard_mean_chord
         self.calculate_mean_chords()
 
         # Calculate Volumes
@@ -634,7 +635,7 @@ class WingSurface:
             self.N = N
         if M is not None:
             self.M = M
-        self.calculate_wing_parameters()
+        self.define_wing_parameters()
 
     def split_xz_symmetric_wing(self) -> tuple[WingSurface, WingSurface]:
         """Split Symmetric Wing into two Wings"""
@@ -686,12 +687,14 @@ class WingSurface:
         """Generate Airfoils for the Wing"""
         self.airfoils = []
         for j in range(self.N):
-            eta = j / (self.N - 1)
+            eta = (self._span_dist[j] - self._span_dist[0]) / (self.span / 2)
+            local_span_position = self._span_dist[j] - self._span_dist[0]
+            global_span_position = self._span_dist[j] + self.origin[1]
+            
             if self.root_airfoil == self.tip_airfoil:
                 airfoil_j = self.root_airfoil
             else:
                 # Calculate the heta position of the strip
-
                 airfoil_j = Airfoil.morph_new_from_two_foils(
                     self.root_airfoil,
                     self.tip_airfoil,
@@ -700,30 +703,39 @@ class WingSurface:
                 )
 
             # Apply the control vector to the airfoil
-            for control, control_val in zip(
-                self.controls,
-                self.control_vector.values(),
-            ):
-                if (eta >= control.span_position_start) and (eta <= control.span_position_end):
-                    if control.constant_chord != 0:
-                        airfoil_j = airfoil_j.flap(
-                            flap_hinge_chord_percentage=1 - control.constant_chord / self._chord_dist[j],
-                            chord_extension=control.chord_extension,
-                            flap_angle=control_val,
-                        )
+            for control in self.controls:
+                if control.type != ControlType.AIRFOIL:
+                    continue
 
+                if control.control_var not in self.control_vars:
+                    continue
+                control_val = self.control_vector[control.control_var]
+
+                if control.coordinate_system == "local":
+                    is_within = (local_span_position >= control.span_position_start) and (
+                        local_span_position <= control.span_position_end
+                    )
+                elif control.coordinate_system == "global":
+                    is_within = (global_span_position >= control.span_position_start) and (
+                        global_span_position <= control.span_position_end
+                    )
+                else:
+                    raise ValueError(f"Unknown coordinate system {control.coordinate_system}")
+
+                if is_within:
+                    if control.constant_chord != 0:
+                        flap_hinge = 1 - control.constant_chord / self._chord_dist[j]
                     else:
                         flap_hinge = control.chord_function(eta)
-                        if control.type == ControlType.AIRFOIL:
-                            airfoil_j = airfoil_j.flap(
-                                flap_hinge_chord_percentage=flap_hinge,
-                                chord_extension=control.chord_extension,
-                                flap_angle=control_val,
-                            )
-
+                      
+                    airfoil_j = airfoil_j.flap(
+                        flap_hinge_chord_percentage=flap_hinge,
+                        chord_extension=control.chord_extension,
+                        flap_angle=control_val,
+                    )
             self.airfoils.append(airfoil_j)
 
-    def create_strips(self) -> None:
+    def define_strips(self) -> None:
         """Create Strips given the Grid and airfoil"""
         strips: list[Strip] = []
         i_range = np.arange(0, self.N - 1)
@@ -789,7 +801,7 @@ class WingSurface:
             return [*symmetric_strips[::-1], *self.strips]
         return self.strips
 
-    def create_grid(self) -> None:
+    def define_grid(self) -> None:
         chord_eta = np.array(
             [self.chord_discretization_function(int(i)) for i in range(self.M)],
         )
@@ -1245,9 +1257,12 @@ class WingSurface:
 
     def __control__(self, control_vector: dict[str, float]) -> None:
         # Add the control vector to the wing
+        old_control_vector = self.control_vector.copy()
         for key in control_vector:
             self.control_vector[key] = control_vector[key]
-        self.calculate_wing_parameters()
+
+        if self.control_vector != old_control_vector:
+            self.define_wing_parameters()
 
     # def plot_surface(
     #     self,

@@ -165,12 +165,12 @@ class State:
 
     @property
     def inertia(self) -> tuple[float, float, float, float, float, float]:
-        Ix = float(self.airplane.total_inertia[0])
-        Iy = float(self.airplane.total_inertia[1])
-        Iz = float(self.airplane.total_inertia[2])
-        Ixz = float(self.airplane.total_inertia[3])
-        Ixy = float(self.airplane.total_inertia[4])
-        Iyz = float(self.airplane.total_inertia[5])
+        Ix = float(self.airplane.inertia[0])
+        Iy = float(self.airplane.inertia[1])
+        Iz = float(self.airplane.inertia[2])
+        Ixz = float(self.airplane.inertia[3])
+        Ixy = float(self.airplane.inertia[4])
+        Iyz = float(self.airplane.inertia[5])
         return Ix, Iy, Iz, Ixz, Ixy, Iyz
 
     @property

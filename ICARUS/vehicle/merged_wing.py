@@ -187,10 +187,19 @@ class MergedWing(WingSurface):
         self.control_vector = {control_var: 0.0 for control_var in self.control_vars}
 
         ####### Calculate Wing Parameters #######
-        self.calculate_wing_parameters()
+        self.define_wing_parameters()
         ####### Calculate Wing Parameters ########
 
-    def create_grid(self) -> None:
+    def generate_airfoils(self) -> None:
+        # Define the airfoils
+        airfoils: list[Airfoil] = []
+        for segment in self.wing_segments:
+            for airfoil in segment.airfoils:
+                if airfoil not in airfoils:
+                    airfoils.append(airfoil)
+        self.airfoils: list[Airfoil] = airfoils
+
+    def define_grid(self) -> None:
         """Creates a grid of points to represent the wing"""
         # Each wing segment has a grid of points that represent the wing segment
         # We need to combine all these points to create a grid for the entire wing
@@ -198,7 +207,7 @@ class MergedWing(WingSurface):
 
         NM = 0
         for segment in self.wing_segments:
-            segment.create_grid()
+            segment.define_grid()
             NM += segment.N * segment.M
 
         grid: FloatArray = np.empty((NM, 3), dtype=float)
@@ -271,11 +280,11 @@ class MergedWing(WingSurface):
         self.control_points_upper = control_points_upper
         self.control_nj_upper = control_nj_upper
 
-    def create_strips(self) -> None:
+    def define_strips(self) -> None:
         """Creates the strips for the wing"""
         self.strips = []
         for segment in self.wing_segments:
-            segment.create_strips()
+            segment.define_strips()
             self.strips.extend(segment.strips)
 
     def calculate_area(self) -> None:
@@ -421,13 +430,12 @@ class MergedWing(WingSurface):
 
     def __control__(self, control_vector: dict[str, float]) -> None:
         control_dict = {k: control_vector[k] for k in self.control_vars}
-        for surf in self.wing_segments:
-            surf_control_vec = {}
-            for name, value in control_dict.items():
-                if name in surf.control_vars:
-                    surf_control_vec[name] = value
-            surf.__control__(surf_control_vec)
-        self.calculate_wing_parameters()
+        for i in range(len(self.wing_segments)):
+            surf_control_vec = {
+                key: val for key, val in control_dict.items() if key in self.wing_segments[i].control_vars
+            }
+            self.wing_segments[i].__control__(surf_control_vec)
+        self.define_wing_parameters()
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         MergedWing.__init__(

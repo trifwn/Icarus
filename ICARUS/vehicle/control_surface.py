@@ -1,6 +1,6 @@
 from enum import Enum
 from functools import partial
-from typing import Callable
+from typing import Callable, Literal
 
 import numpy as np
 
@@ -12,9 +12,9 @@ class ControlType(Enum):
 
 
 def default_chord_function_factory(
+    span_position: float,
     chord_percentage_start: float,
     chord_percentage_end: float,
-    span_position: float,
 ) -> float:
     return chord_percentage_start + (chord_percentage_end - chord_percentage_start) * span_position
 
@@ -33,6 +33,7 @@ class ControlSurface:
         chord_function: Callable[[float], float] | None = None,
         inverse_symmetric: bool = False,
         constant_chord: float = 0,
+        coordinate_system: Literal["local", "global"] = "local",
     ) -> None:
         """Initialize the control surface object.
 
@@ -44,13 +45,16 @@ class ControlSurface:
             chord_extension (float, optional): Chord extension of the control surface. Defaults to 1.0.
             local_rotation_axis (FloatArray): Local rotation axis of the control surface. Defaults to np.array([0.0, 1.0, 0.0]) which is the y-axis.
             chord_function (Callable[[float], float] | None, optional): Function to calculate the chord length. Defaults to None.
-
+            inverse_symmetric (bool, optional): If True, the control surface is inverted. Defaults to False.
+            constant_chord (float, optional): If not 0, the chord length is constant. Defaults to 0.
+            coordinate_system (Literal["local", "global"], optional): Coordinate system of the control surface. Defaults to "local".
         """
         self.name = name
         self.type = ControlType.AIRFOIL
         self.control_var = control_vector_var
         self.span_position_start = span_positions[0]
         self.span_position_end = span_positions[1]
+        self.coordinate_system = coordinate_system
 
         self.chord_percentage_start = hinge_chord_percentages[0]
         # In between the chord percentages we should take a
@@ -71,6 +75,12 @@ class ControlSurface:
         self.constant_chord = constant_chord
         self.inverse_symmetric = inverse_symmetric
 
+    def __str__(self) -> str:
+        return f"ControlSurface(name={self.name}, type={self.type}, control_var={self.control_var}, span_position_start={self.span_position_start}, span_position_end={self.span_position_end}, chord_percentage_start={self.chord_percentage_start}, chord_percentage_end={self.chord_percentage_end}, chord_extension={self.chord_extension})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 NoControl = ControlSurface(
     name="none",
@@ -86,6 +96,7 @@ class Elevator(ControlSurface):
         self,
         span_positions: tuple[float, float],
         hinge_chord_percentages: tuple[float, float],
+        coordinate_system: Literal["local", "global"] = "local",
     ) -> None:
         super().__init__(
             name="elevator",
@@ -94,6 +105,7 @@ class Elevator(ControlSurface):
             hinge_chord_percentages=hinge_chord_percentages,
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
             chord_extension=1.0,
+            coordinate_system=coordinate_system,
         )
 
 
@@ -102,6 +114,7 @@ class Rudder(ControlSurface):
         self,
         span_positions: tuple[float, float],
         hinge_chord_percentages: tuple[float, float],
+        coordinate_system: Literal["local", "global"] = "local",
     ) -> None:
         super().__init__(
             name="rudder",
@@ -110,6 +123,7 @@ class Rudder(ControlSurface):
             hinge_chord_percentages=hinge_chord_percentages,
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
             chord_extension=1.0,
+            coordinate_system=coordinate_system,
         )
 
 
@@ -118,6 +132,7 @@ class Aileron(ControlSurface):
         self,
         span_positions: tuple[float, float],
         hinge_chord_percentages: tuple[float, float],
+        coordinate_system: Literal["local", "global"] = "local",
     ) -> None:
         super().__init__(
             name="aileron",
@@ -127,6 +142,7 @@ class Aileron(ControlSurface):
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
             chord_extension=1.0,
             inverse_symmetric=True,
+            coordinate_system=coordinate_system,
         )
 
 
@@ -136,6 +152,7 @@ class Flap(ControlSurface):
         span_positions: tuple[float, float],
         hinge_chord_percentages: tuple[float, float],
         chord_extension: float,
+        coordinate_system: Literal["local", "global"] = "local",
     ) -> None:
         super().__init__(
             name="flap",
@@ -144,4 +161,5 @@ class Flap(ControlSurface):
             hinge_chord_percentages=hinge_chord_percentages,
             local_rotation_axis=np.array([0.0, 1.0, 0.0]),
             chord_extension=chord_extension,
+            coordinate_system=coordinate_system,
         )
