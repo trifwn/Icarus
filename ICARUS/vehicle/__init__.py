@@ -9,7 +9,7 @@ ICARUS vehicles Package
     ICARUS.vehicle.strip
     ICARUS.vehicle.surface
     ICARUS.vehicle.merged_wing
-    ICARUS.vehicle.plane
+    ICARUS.vehicle.airplane
     ICARUS.vehicle.surface_connections
 
 
@@ -51,7 +51,7 @@ Plane
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.vehicle.plane - Plane class definition
+    ICARUS.vehicle.airplane - Plane class definition
 
 Surface Connections
 ===================

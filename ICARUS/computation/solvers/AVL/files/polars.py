@@ -9,7 +9,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database.utils import angle_to_case
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 # FUNCTIONS FOR POLAR RUN - AFTER THE USER DEFINES ARRAY OF ANGLES
 # THE CORRECT ORDER OF EXECUTION IS CASE_DEF - CASE_SETUP - CASE_RUN

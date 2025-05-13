@@ -10,7 +10,7 @@ from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.database.utils import angle_to_case
 from ICARUS.database.utils import case_to_angle
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def plot_gnvp3_wake(

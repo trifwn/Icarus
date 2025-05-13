@@ -25,7 +25,7 @@ from ICARUS.database import Database
 from ICARUS.database.utils import angle_to_case
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.surface import WingSurface
 
 

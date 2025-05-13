@@ -32,7 +32,7 @@ from .trim import TrimOutsidePolars
 from .trim import trim_state
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.vehicle.airplane import Airplane
 
 
 class ControlState:

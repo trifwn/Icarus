@@ -19,7 +19,7 @@ from .database3D import Database_3D
 
 if TYPE_CHECKING:
     from ICARUS.airfoils.airfoil import Airfoil
-    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.vehicle.airplane import Airplane
 
 
 class Database:

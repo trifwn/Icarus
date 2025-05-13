@@ -13,7 +13,7 @@ from ICARUS.computation.solvers.AVL.post_process.post import collect_avl_polar_f
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def avl_angle_run(

@@ -9,7 +9,7 @@ from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def run_lstp_angles(

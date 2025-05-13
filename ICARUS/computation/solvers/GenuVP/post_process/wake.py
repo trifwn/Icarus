@@ -5,7 +5,7 @@ import numpy as np
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 from .max_iter import get_max_iterations_3
 

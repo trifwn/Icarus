@@ -11,7 +11,7 @@ from ICARUS.optimization.callbacks.optimization_callback import OptimizationCall
 from ICARUS.optimization.optimizers.airplane.airplane_optimizer import (
     Airplane_Optimizer,
 )
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 class Airplane_Dynamics_Optimizer(Airplane_Optimizer):

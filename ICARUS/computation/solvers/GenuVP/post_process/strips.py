@@ -5,7 +5,7 @@ from pandas import DataFrame
 
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def get_strip_data(

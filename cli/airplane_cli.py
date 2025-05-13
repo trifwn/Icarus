@@ -31,7 +31,7 @@ from ICARUS.database.db import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 from .cli_home import cli_home
 

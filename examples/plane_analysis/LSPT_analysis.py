@@ -18,7 +18,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def main() -> None:

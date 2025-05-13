@@ -9,7 +9,7 @@ from jaxtyping import Float
 
 from ICARUS.database import Database
 from ICARUS.propulsion.engine import Engine
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 class MissionVehicle:

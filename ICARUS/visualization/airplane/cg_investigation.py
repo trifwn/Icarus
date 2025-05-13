@@ -14,7 +14,7 @@ from ICARUS import INSTALL_DIR
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.propulsion.engine import Engine
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def setup_plot(

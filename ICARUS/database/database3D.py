@@ -21,7 +21,7 @@ from ICARUS.core.struct import Struct
 from ICARUS.flight_dynamics.state import State
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.vehicle.airplane import Airplane
 
 jsonpickle_pd.register_handlers()
 
@@ -83,7 +83,7 @@ class Database_3D:
             raise ValueError(f"No State found for {state}")
 
     def get_polars(self, vehicle: str | Airplane, solver: str | None = None) -> DataFrame:
-        from ICARUS.vehicle.plane import Airplane
+        from ICARUS.vehicle.airplane import Airplane
 
         if isinstance(vehicle, Airplane):
             vehicle = vehicle.name
@@ -104,7 +104,7 @@ class Database_3D:
         return pol
 
     def get_forces(self, vehicle: str | Airplane) -> DataFrame:
-        from ICARUS.vehicle.plane import Airplane
+        from ICARUS.vehicle.airplane import Airplane
 
         if isinstance(vehicle, Airplane):
             vehicle = vehicle.name
@@ -135,7 +135,7 @@ class Database_3D:
 
     def get_states(self, vehicle: str | Airplane) -> dict[str, State]:
         # Import Airplane here to avoid circular imports
-        from ICARUS.vehicle.plane import Airplane
+        from ICARUS.vehicle.airplane import Airplane
 
         if isinstance(vehicle, Airplane):
             vehicle = vehicle.name

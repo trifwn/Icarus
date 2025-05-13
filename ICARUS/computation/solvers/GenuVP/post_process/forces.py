@@ -12,7 +12,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database.db import Database
 from ICARUS.database.utils import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:

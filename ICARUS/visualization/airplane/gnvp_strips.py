@@ -12,7 +12,7 @@ from pandas import DataFrame
 
 from ICARUS.computation.solvers.GenuVP.post_process.strips import get_strip_data
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def gnvp_strips_3d(

@@ -15,7 +15,7 @@ from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.merged_wing import MergedWing
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.wing_segment import WingSegment

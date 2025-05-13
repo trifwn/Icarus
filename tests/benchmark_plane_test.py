@@ -3,7 +3,7 @@ import numpy as np
 from ICARUS.core.types import FloatArray
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 

@@ -7,7 +7,7 @@ from ICARUS.optimization import MAX_FLOAT
 from ICARUS.optimization import MAX_INT
 from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
 from ICARUS.optimization.optimizers.general_optimizer import General_SOO_Optimizer
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 class Airplane_Optimizer(General_SOO_Optimizer):

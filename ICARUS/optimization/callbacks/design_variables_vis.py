@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 
 from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 class DesignVariableVisualizer(OptimizationCallback):

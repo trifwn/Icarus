@@ -24,7 +24,7 @@ from ICARUS.mission.mission_vehicle import MissionVehicle
 from ICARUS.mission.trajectory.integrate import RK4systems
 from ICARUS.mission.trajectory.trajectory import MissionTrajectory
 from ICARUS.propulsion.engine import Engine
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 # Get the percision of the jax library
 jax.config.update("jax_enable_x64", True)

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from ICARUS.core.struct import Struct
-    from ICARUS.vehicle.plane import Airplane
+    from ICARUS.vehicle.airplane import Airplane
 
 
 def plot_sensitivity(

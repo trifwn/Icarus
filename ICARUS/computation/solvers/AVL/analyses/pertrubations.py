@@ -11,7 +11,7 @@ from ICARUS.computation.solvers.AVL.post_process.post import finite_difs_post
 from ICARUS.computation.solvers.AVL.post_process.post import implicit_dynamics_post
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.plane import Airplane
+from ICARUS.vehicle.airplane import Airplane
 
 
 def avl_dynamic_analysis_implicit(
