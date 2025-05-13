@@ -689,7 +689,6 @@ class WingSurface:
     def generate_airfoils(self) -> None:
         """Generate Airfoils for the Wing"""
         self.airfoils = []
-        print(f"{self.name} Airfoils")
         for j in range(self.N):
             span = self._span_dist[-1] - self._span_dist[0]
             eta = (self._span_dist[j] - self._span_dist[0]) / (span)
