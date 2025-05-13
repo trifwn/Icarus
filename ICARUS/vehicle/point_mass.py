@@ -127,7 +127,165 @@ class PointMass(object):
 
         :param inertia: Inertia of the vehicle (kg*m^2).
         """
+        # Assume inertia is a 6D vector
+        if len(inertia) != 6:
+            raise ValueError("Inertia must be a 6D vector.")
         self._inertia = inertia
+    
+    @property
+    def I_xx(self) -> float:
+        """
+        Get the xx inertia of the vehicle.
+
+        :return: XX inertia of the vehicle (kg*m^2).
+        """
+        return self._inertia[0]
+    
+    @property
+    def I_yy(self) -> float:
+        """
+        Get the yy inertia of the vehicle.
+
+        Returns:
+            float: YY inertia of the vehicle (kg*m^2).
+        """
+        return self._inertia[1]
+    
+    @property
+    def I_zz(self) -> float:
+        """
+        Get the zz inertia of the vehicle.
+
+        Returns:
+            float: ZZ inertia of the vehicle (kg*m^2).
+        """
+        return self._inertia[2]
+    
+    @property
+    def I_xy(self) -> float:
+        """
+        Get the xy inertia of the vehicle.
+
+        Returns:
+            float: XY inertia of the vehicle (kg*m^2).
+        """
+        return self._inertia[3]
+    
+    @property
+    def I_xz(self) -> float:
+        """
+        Get the xz inertia of the vehicle.
+
+        Returns:
+            float: XZ inertia of the vehicle (kg*m^2).
+        """
+        return self._inertia[4]
+    
+    @property
+    def I_yz(self) -> float:
+        """
+        Get the yz inertia of the vehicle.
+
+        Returns:
+            float: YZ inertia of the vehicle (kg*m^2).
+        """
+        return self._inertia[5]
+    
+    @I_xx.setter
+    def I_xx(self, I_xx: float) -> None:
+        """
+        Set the xx inertia of the vehicle.
+
+        :param I_xx: XX inertia of the vehicle (kg*m^2).
+        """
+        self._inertia[0] = I_xx
+
+    @I_yy.setter
+    def I_yy(self, I_yy: float) -> None:
+        """
+        Set the yy inertia of the vehicle.
+
+        :param I_yy: YY inertia of the vehicle (kg*m^2).
+        """
+        self._inertia[1] = I_yy
+
+    @I_zz.setter
+    def I_zz(self, I_zz: float) -> None:
+        """
+        Set the zz inertia of the vehicle.
+
+        :param I_zz: ZZ inertia of the vehicle (kg*m^2).
+        """
+        self._inertia[2] = I_zz
+
+    @I_xy.setter
+    def I_xy(self, I_xy: float) -> None:
+        """
+        Set the xy inertia of the vehicle.
+
+        :param I_xy: XY inertia of the vehicle (kg*m^2).
+        """
+        self._inertia[3] = I_xy
+
+    @I_xz.setter
+    def I_xz(self, I_xz: float) -> None:
+        """
+        Set the xz inertia of the vehicle.
+
+        :param I_xz: XZ inertia of the vehicle (kg*m^2).
+        """
+        self._inertia[4] = I_xz
+
+    @I_yz.setter
+    def I_yz(self, I_yz: float) -> None:
+        """
+        Set the yz inertia of the vehicle.
+
+        :param I_yz: YZ inertia of the vehicle (kg*m^2).
+        """
+        self._inertia[5] = I_yz
+
+    @property
+    def inertia_matrix(self) -> FloatArray:
+        """
+        Get the inertia matrix of the vehicle.
+
+        :return: Inertia matrix of the vehicle (kg*m^2).
+        """
+        return np.array([
+            [self.I_xx, -self.I_xy, -self.I_xz],
+            [-self.I_xy, self.I_yy, -self.I_yz],
+            [-self.I_xz, -self.I_yz, self.I_zz],
+        ])
+
+    def __repr__(self) -> str:
+        """
+        Get the string representation of the point mass model.
+
+        :return: String representation of the point mass model.
+        """
+        return f"PointMass(name={self.name}, position={self.position}, mass={self.mass}, inertia={self.inertia})"
+    
+    def __str__(self) -> str:
+        """
+        Get the string representation of the point mass model.
+
+        :return: String representation of the point mass model.
+        """
+        return self.__repr__()
+    
+    def copy(self) -> "PointMass":
+        """
+        Create a copy of the point mass model.
+
+        :return: Copy of the point mass model.
+        """
+        return PointMass(
+            name=self.name,
+            position=self.position.copy(),
+            mass=self.mass,
+            inertia=self.inertia.copy(),
+        )
 
     @classmethod
     def from_distribution(
