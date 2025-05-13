@@ -1,6 +1,7 @@
 from enum import Enum
 from functools import partial
-from typing import Callable, Literal
+from typing import Callable
+from typing import Literal
 
 import numpy as np
 
@@ -17,7 +18,7 @@ def default_chord_function_factory(
     chord_percentage_end: float,
 ) -> float:
     val = (1 - eta) * chord_percentage_start + (chord_percentage_end) * eta
-    return val 
+    return val
 
 
 class ControlSurface:
@@ -100,13 +101,12 @@ class ControlSurface:
             gain=self.gain,
         )
 
+    def inverse_chord_function(self, eta: float) -> float:
+        return self.chord_function(1 - eta)
+
     def return_symmetric(self) -> "ControlSurface":
         """Return a symmetric version of the control surface."""
         if self.inverse_symmetric:
-
-            def inverse_chord_function(eta: float) -> float:
-                return self.chord_function(1 - eta)
-
             return ControlSurface(
                 name=self.name,
                 control_vector_var=self.control_var,
@@ -114,14 +114,14 @@ class ControlSurface:
                 hinge_chord_percentages=(self.chord_percentage_start, self.chord_percentage_end),
                 chord_extension=self.chord_extension,
                 local_rotation_axis=self.local_rotation_axis,
-                chord_function=inverse_chord_function,
-                inverse_symmetric= True,
+                chord_function=self.inverse_chord_function,
+                inverse_symmetric=True,
                 constant_chord=self.constant_chord,
                 coordinate_system=self.coordinate_system,
-                gain= - self.gain,
+                gain=-self.gain,
             )
         else:
-            return self.copy()
+            return self
 
 
 NoControl = ControlSurface(

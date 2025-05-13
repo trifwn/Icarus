@@ -67,7 +67,10 @@ except ImportError:
 ### SOLVER EXECUTABLES ###
 
 if platform_os == "Windows":
-    multiprocessing.set_start_method("spawn")
+    # Check if context has been set
+    if multiprocessing.get_start_method() != "spawn":
+        multiprocessing.set_start_method("spawn")
+
     GenuVP3_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp3.exe")
     GenuVP7_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp7.exe")
     F2W_exe: str = os.path.join(INSTALL_DIR, "bin", "f2w.exe")
@@ -75,7 +78,8 @@ if platform_os == "Windows":
     AVL_exe: str = os.path.join(INSTALL_DIR, "bin", "avl.exe")
 elif platform_os == "Linux":
     try:
-        multiprocessing.set_start_method("forkserver")
+        if multiprocessing.get_start_method() != "forkserver":
+            multiprocessing.set_start_method("forkserver")
     except RuntimeError:
         pass
     GenuVP3_exe = os.path.join(INSTALL_DIR, "bin", "gnvp3")

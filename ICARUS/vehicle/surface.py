@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from logging import root
-from math import e
 import types
 from typing import Any
 from typing import Callable

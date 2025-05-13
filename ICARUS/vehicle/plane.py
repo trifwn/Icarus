@@ -656,7 +656,7 @@ class Airplane(Optimizable):
     def __getstate__(self) -> dict[str, Any]:
         return {
             "name": self.name,
-            "surfaces": self.surface_dict.values(),
+            "surfaces": list(self.surface_dict.values()),
             "orientation": self.orientation,
             "point_masses": self.point_masses,
             "cg_overwrite": self.CG if self.overwrite_mass else None,
@@ -687,7 +687,7 @@ class Airplane(Optimizable):
     def __copy__(self) -> Airplane:
         return Airplane(
             name=self.name,
-            surfaces= list(self.surface_dict.values()),
+            surfaces=list(self.surface_dict.values()),
             orientation=self.orientation,
             point_masses=self.point_masses,
             cg_overwrite=self.CG if self.overwrite_mass else None,
