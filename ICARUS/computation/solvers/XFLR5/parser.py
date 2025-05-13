@@ -218,5 +218,4 @@ def parse_xfl_project(filename: str) -> Airplane:
         surfaces=lifting_surfaces,
     )
     airplane.add_point_masses(point_masses)
-    # airplane.visualize()
     return airplane

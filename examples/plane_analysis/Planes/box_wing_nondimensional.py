@@ -49,6 +49,6 @@ def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
 
 if __name__ == "__main__":
     airplane = get_box_wing("benchmark_plane")
-    # airplane.visualize()
+    # airplane.plot()
     print(airplane.span)
     print(airplane.aspect_ratio)
