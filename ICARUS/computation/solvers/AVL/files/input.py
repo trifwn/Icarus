@@ -14,8 +14,8 @@ from ICARUS.database import Database
 from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.wing_segment import WingSegment
@@ -89,9 +89,11 @@ def avl_mass(
             f"   {surf.mass}   {surf.CG[0]}  {surf.CG[1]}  {surf.CG[2]}   {surf.Ixx}   {surf.Iyy}   {surf.Izz} {surf.Ixy}   {surf.Ixz}   {surf.Iyz}   ! {surf.name}       \n",
         )
 
-    for i, m in enumerate(plane.masses[len(plane.surfaces) :]):
+    for mass in plane.point_masses:
+        pos = mass.position
+        inert = mass.inertia
         f_io.write(
-            f"   {m[0]}   {m[1][0]}  {m[1][1]}  {m[1][2]}   {0.0}   {0.0}   {0.0} {0.0}   {0.0}   {0.0}   ! {m[2]}     \n",
+            f"   {mass.mass}   {pos[0]}  {pos[1]}  {pos[2]}   {inert}   {inert}   {inert} {inert}   {inert}   {inert}   ! {mass.name}     \n",
         )
 
     content = f_io.getvalue().expandtabs(4)

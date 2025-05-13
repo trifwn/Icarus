@@ -46,13 +46,4 @@ def hermes_main_wing(name: str) -> Airplane:
 
     lifting_surfaces: list[WingSurface] = [main_wing]
     airplane = Airplane(name, lifting_surfaces)
-
-    # airplane.visAirplane()
-
-    # point_masses = [
-    #     (0.500 , np.array([-0.40, 0.0, 0.0], dtype = float)), # Motor
-    #     (1.000 , np.array([0.090, 0.0, 0.0], dtype = float)), # Battery
-    #     (0.900 , np.array([0.130, 0.0, 0.0], dtype = float)), # Payload
-    #     ]
-    # airplane.addMasses(point_masses)
     return airplane

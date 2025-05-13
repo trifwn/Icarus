@@ -14,6 +14,7 @@ from numpy import ndarray
 
 from ICARUS.optimization.optimizable import Optimizable
 from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.point_mass import PointMass
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -31,7 +32,7 @@ class Airplane(Optimizable):
         name: str,
         surfaces: list[WingSurface],
         orientation: FloatOrListArray | None = None,
-        point_masses: list[tuple[float, FloatArray, str]] | None = None,
+        point_masses: list[PointMass] | None = None,
         cg_overwrite: FloatArray | None = None,
         inertia_overwrite: FloatArray | None = None,
     ) -> None:
@@ -77,7 +78,7 @@ class Airplane(Optimizable):
             self.span = surfaces[0].span
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.point_masses: list[tuple[float, FloatArray, str]] = []
+        self.point_masses: list[PointMass] = []
         self.moments: list[FloatArray] = []
 
         self.M: float = 0
@@ -176,15 +177,15 @@ class Airplane(Optimizable):
 
         """
         for mass in self.point_masses:
-            if mass[2] == name:
+            if mass.name == name:
                 if axis == "x":
-                    return float(mass[1][0])
+                    return float(mass.position_x)
                 if axis == "y":
-                    return float(mass[1][1])
+                    return float(mass.position_y)
                 if axis == "z":
-                    return float(mass[1][2])
+                    return float(mass.position_z)
                 if axis == "xyz":
-                    return mass[1]
+                    return mass.position
                 raise PlaneDoesntContainAttr(
                     f"Plane doesn't contain attribute {axis}",
                 )
@@ -215,34 +216,35 @@ class Airplane(Optimizable):
 
         """
         for i, mass in enumerate(self.point_masses):
-            m, p, m_name = mass
-            if m_name == name:
+            if mass.name == name:
                 # Get the old mass tuple and delete it
 
                 if axis == "x":
                     if not isinstance(value, float):
                         raise ValueError("Value must be a float")
-                    p[0] = value
+                    mass.position_x = value
 
                 elif axis == "y":
                     if not isinstance(value, float):
                         raise ValueError("Value must be a float")
-                    p[1] = value
+                    mass.position_y = value
 
                 elif axis == "z":
                     if not isinstance(value, float):
                         raise ValueError("Value must be a float")
-                    p[2] = value
+                    mass.position_z = value
 
                 elif axis == "xyz":
                     if not isinstance(value, ndarray):
                         raise ValueError("Value must be a ndarray")
-                    p = value
-                    self.point_masses[i] = (m, p, name)
+                    mass.position = value
+
                 else:
                     raise PlaneDoesntContainAttr(
                         f"Plane doesn't contain attribute {axis}",
                     )
+
+                self.point_masses[i] = mass
                 return
 
         for surf in self.surfaces:
@@ -287,9 +289,35 @@ class Airplane(Optimizable):
             float: Mass of the point mass
 
         """
-        for m_mass, m_pos, m_name in self.point_masses:
-            if m_name == name:
-                return m_mass
+        for mass in self.point_masses:
+            if mass.name == name:
+                return mass.mass
+
+        for surf in self.surfaces:
+            if surf.name == name:
+                return surf.mass
+        raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
+
+    def get_inertia(self, name: str) -> FloatArray:
+        """Get the inertia of a point mass
+
+        Args:
+            name (str): Name of the point mass
+
+        Raises:
+            PlaneDoesntContainAttr: _description_
+
+        Returns:
+            FloatArray: Inertia of the point mass
+
+        """
+        for mass in self.point_masses:
+            if mass.name == name:
+                return mass.inertia
+
+        for surf in self.surfaces:
+            if surf.name == name:
+                return surf.inertia
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     def change_mass(self, name: str, new_mass: float) -> None:
@@ -301,10 +329,32 @@ class Airplane(Optimizable):
 
         """
         for i, mass in enumerate(self.point_masses):
-            _, p, m_name = mass
-            if m_name == name:
-                self.point_masses[i] = (new_mass, p, name)
+            if mass.name == name:
+                self.point_masses[i].mass = new_mass
                 return
+
+        for i, surf in enumerate(self.surfaces):
+            if surf.name == name:
+                self.surfaces[i].mass = new_mass
+                return
+        raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
+
+    def change_inertia(self, name: str, new_inertia: FloatArray) -> None:
+        """Change the inertia of a point mass
+
+        Args:
+            name (str): Name of the point mass
+            inertia (FloatArray): New inertia of the point mass
+
+        """
+        for i, mass in enumerate(self.point_masses):
+            if mass.name == name:
+                self.point_masses[i].inertia = new_inertia
+                return
+        # for i, surf in enumerate(self.surfaces):
+        #     if surf.name == name:
+        #         self.surfaces[i].inertia = new_inertia
+        #         return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     def get_property(self, name: str) -> Any:
@@ -351,6 +401,9 @@ class Airplane(Optimizable):
         elif name.endswith("_mass"):
             name = name.replace("_mass", "")
             self.change_mass(name, new_mass=value)
+        elif name.endswith("_inertia"):
+            name = name.replace("_inertia", "")
+            self.change_inertia(name, new_inertia=value)
         else:
             if hasattr(self, "surfaces"):
                 for surface in self.surfaces:
@@ -389,15 +442,17 @@ class Airplane(Optimizable):
         self.overwrite_inertia = True
 
     @property
-    def masses(self) -> list[tuple[float, FloatArray, str]]:
+    def masses(self) -> list[PointMass]:
         ret = []
         for surface in self.surfaces:
-            mass: tuple[float, FloatArray, str] = (
-                surface.mass,
-                surface.CG,
-                surface.name,
+            mass = PointMass(
+                name=surface.name,
+                position=surface.CG,
+                mass=surface.mass,
+                inertia=surface.inertia,
             )
             ret.append(mass)
+
         for point_mass in self.point_masses:
             ret.append(point_mass)
 
@@ -452,7 +507,7 @@ class Airplane(Optimizable):
 
     def add_point_masses(
         self,
-        masses: list[tuple[float, FloatArray, str]],
+        masses: list[PointMass] | PointMass,
     ) -> None:
         """Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
 
@@ -460,9 +515,12 @@ class Airplane(Optimizable):
             masses (tuple[float, NDArray[Shape[&#39;3,&#39;], Float]]): (mass, position) eg (3, np.array([0,0,0])
 
         """
+        if isinstance(masses, PointMass):
+            masses = [masses]
+
         for mass in masses:
             self.point_masses.append(mass)
-            self.M += mass[0]
+            self.M += mass.mass
         # self.CG = self.find_cg()
         # self.total_inertia = self.find_inertia(self.CG)
 
@@ -477,11 +535,11 @@ class Airplane(Optimizable):
         y_cm = 0.0
         z_cm = 0.0
         self.M = 0.0
-        for m, r, desc in self.masses:
-            self.M += m
-            x_cm += m * r[0]
-            y_cm += m * r[1]
-            z_cm += m * r[2]
+        for p_mass in self.masses:
+            self.M += p_mass.mass
+            x_cm += p_mass.mass * p_mass.position_x
+            y_cm += p_mass.mass * p_mass.position_y
+            z_cm += p_mass.mass * p_mass.position_z
         return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
     def find_inertia(self, point: FloatArray) -> FloatArray:
@@ -507,15 +565,15 @@ class Airplane(Optimizable):
             I_xy += inertia[4]
             I_yz += inertia[5]
 
-        for m, r_bod, _ in self.masses:
-            r = point - r_bod
-            I_xx += m * (r[1] ** 2 + r[2] ** 2)
-            I_yy += m * (r[0] ** 2 + r[2] ** 2)
-            I_zz += m * (r[0] ** 2 + r[1] ** 2)
-            I_xz += m * (r[0] * r[2])
-            I_xy += m * (r[0] * r[1])
-            I_yz += m * (r[1] * r[2])
+        for p_mass in self.masses:
+            r = point - p_mass.position
 
+            I_xx += p_mass.mass * (r[1] ** 2 + r[2] ** 2)
+            I_yy += p_mass.mass * (r[0] ** 2 + r[2] ** 2)
+            I_zz += p_mass.mass * (r[0] ** 2 + r[1] ** 2)
+            I_xz += p_mass.mass * (r[0] * r[2])
+            I_xy += p_mass.mass * (r[0] * r[1])
+            I_yz += p_mass.mass * (r[1] * r[2])
         return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz))
 
     def get_all_airfoils(self) -> list[str]:
@@ -580,23 +638,23 @@ class Airplane(Optimizable):
             surface.plot(thin, fig, ax, mov)
         # Add plot for masses
         if show_masses:
-            for m, r, desc in self.masses:
+            for p_mass in self.masses:
                 ax.scatter(
-                    r[0] + mov[0],
-                    r[1] + mov[1],
-                    r[2] + mov[2],
+                    p_mass.position[0] + mov[0],
+                    p_mass.position[1] + mov[1],
+                    p_mass.position[2] + mov[2],
                     marker="o",
-                    s=int(m * 50.0),
+                    s=int(p_mass.mass * 50.0),
                     color="r",
                 )
                 # Add label to indicate point mass name
                 # Text
                 if annotate:
                     ax.text(
-                        r[0] + mov[0],
-                        r[1] + mov[1],
-                        r[2] + mov[2],
-                        "%s" % (desc),
+                        p_mass.position[0] + mov[0],
+                        p_mass.position[1] + mov[1],
+                        p_mass.position[2] + mov[2],
+                        "%s" % (p_mass.name),
                         size=9,
                         zorder=1,
                         color="k",

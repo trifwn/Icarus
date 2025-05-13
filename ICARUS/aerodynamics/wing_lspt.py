@@ -20,8 +20,8 @@ from ICARUS.aerodynamics.post_process.strip_calculations import get_potential_lo
 from ICARUS.aerodynamics.strip_data import StripData
 from ICARUS.core.types import FloatArray
 from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.visualization.figure_setup import create_subplots
 from ICARUS.visualization.figure_setup import flatten_axes

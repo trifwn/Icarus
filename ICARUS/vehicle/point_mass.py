@@ -1,8 +1,10 @@
-from ICARUS.core.types import FloatArray
-from scipy.integrate import quad
 import numpy as np
+from scipy.integrate import quad
 
-class PointMass(object):
+from ICARUS.core.types import FloatArray
+
+
+class PointMass:
     """
     A simple point mass model for a vehicle.
     """
@@ -18,8 +20,8 @@ class PointMass(object):
         """
         self.name = name
         self._mass = mass
-        self._inertia = inertia
-        self._position = position
+        self._inertia: FloatArray = inertia
+        self._position: FloatArray = position
 
     @property
     def position(self) -> FloatArray:
@@ -28,7 +30,7 @@ class PointMass(object):
 
         :return: Position of the vehicle (m).
         """
-        return self._position 
+        return self._position
 
     @position.setter
     def position(self, position: FloatArray) -> None:
@@ -46,8 +48,8 @@ class PointMass(object):
 
         :return: X position of the vehicle (m).
         """
-        return self._position[0]
-    
+        return float(self._position[0])
+
     @property
     def position_y(self) -> float:
         """
@@ -55,7 +57,7 @@ class PointMass(object):
 
         :return: Y position of the vehicle (m).
         """
-        return self._position[1]
+        return float(self._position[1])
 
     @property
     def position_z(self) -> float:
@@ -64,8 +66,8 @@ class PointMass(object):
 
         :return: Z position of the vehicle (m).
         """
-        return self._position[2]
-    
+        return float(self._position[2])
+
     @position_x.setter
     def position_x(self, position_x: float) -> None:
         """
@@ -101,7 +103,7 @@ class PointMass(object):
         :return: Mass of the vehicle (kg).
         """
         return self._mass
-    
+
     @mass.setter
     def mass(self, mass: float) -> None:
         """
@@ -119,7 +121,7 @@ class PointMass(object):
         :return: Inertia of the vehicle (kg*m^2).
         """
         return self._inertia
-    
+
     @inertia.setter
     def inertia(self, inertia: FloatArray) -> None:
         """
@@ -131,7 +133,7 @@ class PointMass(object):
         if len(inertia) != 6:
             raise ValueError("Inertia must be a 6D vector.")
         self._inertia = inertia
-    
+
     @property
     def I_xx(self) -> float:
         """
@@ -139,8 +141,8 @@ class PointMass(object):
 
         :return: XX inertia of the vehicle (kg*m^2).
         """
-        return self._inertia[0]
-    
+        return float(self._inertia[0])
+
     @property
     def I_yy(self) -> float:
         """
@@ -149,8 +151,8 @@ class PointMass(object):
         Returns:
             float: YY inertia of the vehicle (kg*m^2).
         """
-        return self._inertia[1]
-    
+        return float(self._inertia[1])
+
     @property
     def I_zz(self) -> float:
         """
@@ -159,8 +161,8 @@ class PointMass(object):
         Returns:
             float: ZZ inertia of the vehicle (kg*m^2).
         """
-        return self._inertia[2]
-    
+        return float(self._inertia[2])
+
     @property
     def I_xy(self) -> float:
         """
@@ -169,8 +171,8 @@ class PointMass(object):
         Returns:
             float: XY inertia of the vehicle (kg*m^2).
         """
-        return self._inertia[3]
-    
+        return float(self._inertia[3])
+
     @property
     def I_xz(self) -> float:
         """
@@ -179,8 +181,8 @@ class PointMass(object):
         Returns:
             float: XZ inertia of the vehicle (kg*m^2).
         """
-        return self._inertia[4]
-    
+        return float(self._inertia[4])
+
     @property
     def I_yz(self) -> float:
         """
@@ -189,8 +191,8 @@ class PointMass(object):
         Returns:
             float: YZ inertia of the vehicle (kg*m^2).
         """
-        return self._inertia[5]
-    
+        return float(self._inertia[5])
+
     @I_xx.setter
     def I_xx(self, I_xx: float) -> None:
         """
@@ -252,11 +254,13 @@ class PointMass(object):
 
         :return: Inertia matrix of the vehicle (kg*m^2).
         """
-        return np.array([
-            [self.I_xx, -self.I_xy, -self.I_xz],
-            [-self.I_xy, self.I_yy, -self.I_yz],
-            [-self.I_xz, -self.I_yz, self.I_zz],
-        ])
+        return np.array(
+            [
+                [self.I_xx, -self.I_xy, -self.I_xz],
+                [-self.I_xy, self.I_yy, -self.I_yz],
+                [-self.I_xz, -self.I_yz, self.I_zz],
+            ],
+        )
 
     def __repr__(self) -> str:
         """
@@ -265,7 +269,7 @@ class PointMass(object):
         :return: String representation of the point mass model.
         """
         return f"PointMass(name={self.name}, position={self.position}, mass={self.mass}, inertia={self.inertia})"
-    
+
     def __str__(self) -> str:
         """
         Get the string representation of the point mass model.
@@ -273,7 +277,7 @@ class PointMass(object):
         :return: String representation of the point mass model.
         """
         return self.__repr__()
-    
+
     def copy(self) -> "PointMass":
         """
         Create a copy of the point mass model.
@@ -290,7 +294,7 @@ class PointMass(object):
     @classmethod
     def from_distribution(
         cls,
-        name : str,
+        name: str,
         position: FloatArray,
         mass: float,
         distribution,
@@ -300,7 +304,7 @@ class PointMass(object):
 
         :param position: Position of the vehicle (m).
         :param mass: Mass of the vehicle (kg).
-        :param distribution: Function to calculate the moments of inertia. F(x,y,z) = mass_fraction at (x,y,z) 
+        :param distribution: Function to calculate the moments of inertia. F(x,y,z) = mass_fraction at (x,y,z)
         """
         inertia = np.zeros(6)
 

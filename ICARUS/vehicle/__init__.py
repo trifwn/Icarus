@@ -73,10 +73,10 @@ __all__ = [
     "wing_segment",
 ]
 
-from . import control_surface
-from . import surface
-from . import wing_segment
-from . import merged_wing
 from . import airplane
+from . import control_surface
+from . import merged_wing
 from . import strip
+from . import surface
 from . import surface_connections
+from . import wing_segment

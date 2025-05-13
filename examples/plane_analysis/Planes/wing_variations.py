@@ -3,6 +3,7 @@ import numpy as np
 from ICARUS.core.types import DataDict
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle.point_mass import PointMass
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
@@ -56,10 +57,10 @@ def wing_var_chord_offset(
     lifting_surfaces: list[WingSurface] = [main_wing]
     # main_wing.plotWing()
 
-    added_masses: list[tuple[float, FloatArray, str]] = [
-        (0.500, np.array([-0.40, 0.0, 0.0], dtype=float), "motor"),  # Motor
-        (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"),  # Battery
-        (0.900, np.array([0.130, 0.0, 0.0], dtype=float), "payload"),  # Payload
+    added_masses: list[PointMass] = [
+        PointMass(mass=0.500, position=np.array([-0.40, 0.0, 0.0], dtype=float), name="motor"),  # Motor
+        PointMass(mass=1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="battery"),  # Battery
+        PointMass(mass=0.900, position=np.array([0.130, 0.0, 0.0], dtype=float), name="payload"),  # Payload
     ]
     airplane = Airplane(name, lifting_surfaces)
     airplane.add_point_masses(added_masses)
