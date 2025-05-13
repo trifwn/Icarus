@@ -521,7 +521,7 @@ class Airplane(Optimizable):
                     airfoils.append(f"{airfoil.name}")
         return airfoils
 
-    def visualize(
+    def plot(
         self,
         prev_fig: Figure | None = None,
         prev_ax: Axes3D | None = None,

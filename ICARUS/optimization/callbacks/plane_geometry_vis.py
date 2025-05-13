@@ -32,7 +32,7 @@ class PlaneGeometryVisualization(OptimizationCallback):
         self.initial_ax = ax
 
         # Add the plane geometry
-        self.initial_plane.visualize(self.fig, self.initial_ax)
+        self.initial_plane.plot(self.fig, self.initial_ax)
         # Add legend
         ax.legend()
 
@@ -47,7 +47,7 @@ class PlaneGeometryVisualization(OptimizationCallback):
         # Store the axes
         self.current_ax = ax
         # Add the plane geometry
-        self.initial_plane.visualize(self.fig, self.current_ax)
+        self.initial_plane.plot(self.fig, self.current_ax)
         # Add legend
         ax.legend()
 
@@ -58,7 +58,7 @@ class PlaneGeometryVisualization(OptimizationCallback):
     def update(self, plane: Airplane) -> None:
         """Update the visualization."""
         # Update the current plane geometry
-        plane.visualize(self.fig, self.current_ax)
+        plane.plot(self.fig, self.current_ax)
         # Update the figure
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()

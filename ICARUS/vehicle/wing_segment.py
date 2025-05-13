@@ -474,10 +474,10 @@ class WingSegment(WingSurface):
         self._tip_airfoil = value
 
     def __repr__(self) -> str:
-        return f"Wing Segment: {self.name} with {self.N} panels in the spanwise direction and {self.M} panels in the chordwise direction"
+        return f"{self.name} (Wing Segment): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
 
     def __str__(self) -> str:
-        return f"Wing Segment: {self.name} with {self.N} panels in the spanwise direction and {self.M} panels in the chordwise direction"
+        return f"{self.name} (Wing Segment): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         WingSegment.__init__(

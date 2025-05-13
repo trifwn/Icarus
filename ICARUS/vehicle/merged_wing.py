@@ -451,3 +451,11 @@ class MergedWing(WingSurface):
             "wing_segments": self.wing_segments,
             "symmetries": self.symmetries,
         }
+
+    def __repr__(self) -> str:
+        """Returns a string representation of the wing"""
+        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+    
+    def __str__(self) -> str:
+        """Returns a string representation of the wing"""
+        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
