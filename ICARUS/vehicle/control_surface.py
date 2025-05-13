@@ -16,7 +16,8 @@ def default_chord_function_factory(
     chord_percentage_start: float,
     chord_percentage_end: float,
 ) -> float:
-    return (1 - eta) * chord_percentage_start + (chord_percentage_end) * eta
+    val = (1 - eta) * chord_percentage_start + (chord_percentage_end) * eta
+    return val 
 
 
 class ControlSurface:
@@ -28,6 +29,7 @@ class ControlSurface:
         control_vector_var: str,
         span_positions: tuple[float, float],
         hinge_chord_percentages: tuple[float, float],
+        gain: float = 1.0,
         chord_extension: float = 1.0,
         local_rotation_axis: FloatArray = np.array([0.0, 1.0, 0.0]),
         chord_function: Callable[[float], float] | None = None,
@@ -54,7 +56,8 @@ class ControlSurface:
         self.control_var = control_vector_var
         self.span_position_start = span_positions[0]
         self.span_position_end = span_positions[1]
-        self.coordinate_system = coordinate_system
+        self.coordinate_system: Literal["local", "global"] = coordinate_system
+        self.gain = gain
 
         self.chord_percentage_start = hinge_chord_percentages[0]
         # In between the chord percentages we should take a
@@ -66,8 +69,8 @@ class ControlSurface:
         if chord_function is None:
             self.chord_function: Callable[[float], float] = partial(
                 default_chord_function_factory,
-                chord_percentage_start = self.chord_percentage_start,
-                chord_percentage_end = self.chord_percentage_end,
+                chord_percentage_start=self.chord_percentage_start,
+                chord_percentage_end=self.chord_percentage_end,
             )
         else:
             self.chord_function = chord_function
@@ -80,6 +83,45 @@ class ControlSurface:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def copy(self) -> "ControlSurface":
+        """Return a copy of the control surface."""
+        return ControlSurface(
+            name=self.name,
+            control_vector_var=self.control_var,
+            span_positions=(self.span_position_start, self.span_position_end),
+            hinge_chord_percentages=(self.chord_percentage_start, self.chord_percentage_end),
+            chord_extension=self.chord_extension,
+            local_rotation_axis=self.local_rotation_axis,
+            chord_function=self.chord_function,
+            inverse_symmetric=self.inverse_symmetric,
+            constant_chord=self.constant_chord,
+            coordinate_system=self.coordinate_system,
+            gain=self.gain,
+        )
+
+    def return_symmetric(self) -> "ControlSurface":
+        """Return a symmetric version of the control surface."""
+        if self.inverse_symmetric:
+
+            def inverse_chord_function(eta: float) -> float:
+                return self.chord_function(1 - eta)
+
+            return ControlSurface(
+                name=self.name,
+                control_vector_var=self.control_var,
+                span_positions=(self.span_position_start, self.span_position_end),
+                hinge_chord_percentages=(self.chord_percentage_start, self.chord_percentage_end),
+                chord_extension=self.chord_extension,
+                local_rotation_axis=self.local_rotation_axis,
+                chord_function=inverse_chord_function,
+                inverse_symmetric= True,
+                constant_chord=self.constant_chord,
+                coordinate_system=self.coordinate_system,
+                gain= - self.gain,
+            )
+        else:
+            return self.copy()
 
 
 NoControl = ControlSurface(

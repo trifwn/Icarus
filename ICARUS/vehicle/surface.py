@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from logging import root
 from math import e
 import types
 from typing import Any
@@ -165,7 +166,7 @@ class WingSurface:
         self._mass: float = mass
 
         # Store Span
-        span: float = spanwise_positions[-1] - spanwise_positions[0]
+        span: float = np.abs(spanwise_positions[-1] - spanwise_positions[0])
         if self.is_symmetric_y:
             self._span = span * 2
         else:
@@ -535,7 +536,7 @@ class WingSurface:
     @property
     def aspect_ratio(self) -> float:
         if self.is_symmetric_y:
-            return (self.span**2) / self.S / 2
+            return (self.span**2) / self.S
         return (self.span**2) / self.S
 
     @property
@@ -641,31 +642,32 @@ class WingSurface:
         """Split Symmetric Wing into two Wings"""
         if self.is_symmetric_y:
             left = WingSurface(
-                name=f"L{self.name}",
-                root_airfoil=self.tip_airfoil,
+                name=f"{self.name}_left",
                 origin=np.array(
                     [
-                        self._origin[0] + self._zoffset_dist[-1],
-                        self._origin[1] - self.span / 2,
-                        self._origin[2],
+                        self.origin[0],
+                        -self.origin[1],
+                        self.origin[2],
                     ],
                     dtype=float,
                 ),
                 orientation=self.orientation,
                 symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+                spanwise_positions=-self._span_dist[::-1],
                 chord_lengths=self._chord_dist[::-1],
-                spanwise_positions=self._span_dist[::-1],
-                x_offsets=self._xoffset_dist[::-1],
                 z_offsets=self._zoffset_dist[::-1],
+                x_offsets=self._xoffset_dist[::-1],
                 twist_angles=self.twist_angles[::-1],
+                root_airfoil=self.tip_airfoil,
                 tip_airfoil=self.root_airfoil,
                 N=self.N,
                 M=self.M,
                 mass=self.mass / 2,
+                controls=[control.return_symmetric() for control in self.controls],
             )
 
             right = WingSurface(
-                name=f"R{self.name}",
+                name=f"{self.name}_right",
                 root_airfoil=self.root_airfoil,
                 origin=self._origin,
                 orientation=self.orientation,
@@ -679,6 +681,7 @@ class WingSurface:
                 N=self.N,
                 M=self.M,
                 mass=self.mass / 2,
+                controls=[control for control in self.controls],
             )
             return left, right
         raise ValueError("Cannot Split Body it is not symmetric")
@@ -686,11 +689,14 @@ class WingSurface:
     def generate_airfoils(self) -> None:
         """Generate Airfoils for the Wing"""
         self.airfoils = []
+        print(f"{self.name} Airfoils")
         for j in range(self.N):
-            eta = (self._span_dist[j] - self._span_dist[0]) / (self.span / 2)
+            span = self._span_dist[-1] - self._span_dist[0]
+            eta = (self._span_dist[j] - self._span_dist[0]) / (span)
+
             local_span_position = self._span_dist[j] - self._span_dist[0]
             global_span_position = self._span_dist[j] + self.origin[1]
-            
+
             if self.root_airfoil == self.tip_airfoil:
                 airfoil_j = self.root_airfoil
             else:
@@ -727,11 +733,11 @@ class WingSurface:
                         flap_hinge = 1 - control.constant_chord / self._chord_dist[j]
                     else:
                         flap_hinge = control.chord_function(eta)
-                      
+
                     airfoil_j = airfoil_j.flap(
                         flap_hinge_chord_percentage=flap_hinge,
                         chord_extension=control.chord_extension,
-                        flap_angle=control_val,
+                        flap_angle=control_val * control.gain,
                     )
             self.airfoils.append(airfoil_j)
 
@@ -746,6 +752,7 @@ class WingSurface:
                 self._span_dist[i_range],
                 self._zoffset_dist[i_range],
             ],
+            dtype=float,
         )
         start_points = np.matmul(self.R_MAT, start_points) + self._origin[:, None]
 
@@ -755,6 +762,7 @@ class WingSurface:
                 self._span_dist[i_range + 1],
                 self._zoffset_dist[i_range + 1],
             ],
+            dtype=float,
         )
         end_points = np.matmul(self.R_MAT, end_points) + self._origin[:, None]
 
@@ -1369,3 +1377,11 @@ class WingSurface:
             "controls": self.controls,
         }
         return state
+
+    def __repr__(self) -> str:
+        """Returns a string representation of the wing"""
+        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+
+    def __str__(self) -> str:
+        """Returns a string representation of the wing"""
+        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"

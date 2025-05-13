@@ -427,6 +427,26 @@ class MergedWing(WingSurface):
     #     """
     #     for segment in self.wing_segments:
     #         segment.change_discretization(N, M)
+    def split_xz_symmetric_wing(self) -> tuple["MergedWing", "MergedWing"]:
+        """Splits the wing into two symmetric wings"""
+        left_wing_segments = []
+        right_wing_segments = []
+        for segment in self.wing_segments:
+            left, right = segment.split_xz_symmetric_wing()
+            left_wing_segments.append(left)
+            right_wing_segments.append(right)
+
+        left_wing = MergedWing(
+            name=f"{self.name}_left",
+            wing_segments=left_wing_segments,
+            symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+        )
+        right_wing = MergedWing(
+            name=f"{self.name}_right",
+            wing_segments=right_wing_segments,
+            symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+        )
+        return left_wing, right_wing
 
     def __control__(self, control_vector: dict[str, float]) -> None:
         control_dict = {k: control_vector[k] for k in self.control_vars}
@@ -455,7 +475,7 @@ class MergedWing(WingSurface):
     def __repr__(self) -> str:
         """Returns a string representation of the wing"""
         return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
-    
+
     def __str__(self) -> str:
         """Returns a string representation of the wing"""
         return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"

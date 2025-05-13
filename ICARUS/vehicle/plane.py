@@ -13,6 +13,7 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
 from ICARUS.optimization.optimizable import Optimizable
+from ICARUS.vehicle.merged_wing import MergedWing
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -46,8 +47,7 @@ class Airplane(Optimizable):
             inertia_overwrite (FloatArray | None, optional): Inertia overwrite. Defaults to None.
         """
         self.name: str = name
-        self.surfaces: list[WingSurface] = surfaces
-
+        self.surface_dict: dict[str, WingSurface] = {surf.name: surf for surf in surfaces}
         if orientation is None:
             self.orientation: FloatOrListArray = [
                 0.0,
@@ -105,6 +105,16 @@ class Airplane(Optimizable):
         self.num_control_variables = len(control_vars)
         self.control_vector: dict[str, float] = {k: 0.0 for k in control_vars}
 
+        surf_names = list(self.surface_dict.keys())
+        for name in surf_names:
+            surf = self.surface_dict[name]
+            if surf.is_symmetric_y and any([cont.inverse_symmetric for cont in self.surfaces[0].controls]):
+                # Split the surface into 2 symmetric surfaces
+                left, right = surf.split_xz_symmetric_wing()
+                self.surface_dict[f"{name}_left"] = left
+                self.surface_dict[f"{name}_right"] = right
+                self.surface_dict.pop(name)
+
         if cg_overwrite is not None:
             self.overwrite_mass = True
             self._CG = cg_overwrite
@@ -131,24 +141,25 @@ class Airplane(Optimizable):
             if surf_control_vec != {}:
                 print(f"Controlling {surf.name} with {surf_control_vec}")
 
-    # @property
-    # def surfaces(self) -> list[WingSurface]:
-    #     surfaces: list[WingSurface] = []
-    #     for surface in self._surfaces:
-    #         if isinstance(surface, MergedWing):
-    #             for s in surface.wing_segments:
-    #                 surfaces.append(s)
-    #         else:
-    #             surfaces.append(surface)
-    #     return surfaces
+    @property
+    def surfaces(self) -> list[WingSurface]:
+        return list(self.surface_dict.values())
 
-    # @property
-    # def strips(self) -> list[Strip]:
-    #     strips: list[Strip] = []
-    #     for surface in self.surfaces:
-    #         for strip in surface.strips:
-    #             strips.append(strip)
-    #     return strips
+    def wing_segments(self) -> list[WingSurface]:
+        """Get all the wing segments of the plane
+
+        Returns:
+            list[WingSurface]: List of all the wing segments of the plane
+
+        """
+        surfaces: list[WingSurface] = []
+        for surface_name, surface in self.surface_dict.items():
+            if isinstance(surface, MergedWing):
+                for s in surface.wing_segments:
+                    surfaces.append(s)
+            else:
+                surfaces.append(surface)
+        return surfaces
 
     def get_position(self, name: str, axis: str) -> float | FloatArray:
         """Return the x position of the point mass
@@ -645,7 +656,7 @@ class Airplane(Optimizable):
     def __getstate__(self) -> dict[str, Any]:
         return {
             "name": self.name,
-            "surfaces": self.surfaces,
+            "surfaces": self.surface_dict.values(),
             "orientation": self.orientation,
             "point_masses": self.point_masses,
             "cg_overwrite": self.CG if self.overwrite_mass else None,
@@ -676,7 +687,7 @@ class Airplane(Optimizable):
     def __copy__(self) -> Airplane:
         return Airplane(
             name=self.name,
-            surfaces=self.surfaces,
+            surfaces= list(self.surface_dict.values()),
             orientation=self.orientation,
             point_masses=self.point_masses,
             cg_overwrite=self.CG if self.overwrite_mass else None,
