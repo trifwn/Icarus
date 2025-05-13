@@ -63,10 +63,10 @@ Surface Connections
 
 """
 
-__all__ = ["merged_wing", "plane", "strip", "surface", "surface_connections"]
+__all__ = ["merged_wing", "airplane", "strip", "surface", "surface_connections"]
 
 from . import merged_wing
-from . import plane
+from . import airplane
 from . import strip
 from . import surface
 from . import surface_connections
