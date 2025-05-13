@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.integrate import quad
-
 from ICARUS.core.types import FloatArray
-
 
 class PointMass:
     """

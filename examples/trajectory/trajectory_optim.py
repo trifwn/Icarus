@@ -12,7 +12,7 @@ from diffrax import ODETerm
 from diffrax import PIDController
 from diffrax import SaveAt
 from diffrax import diffeqsolve
-from diffrax._event import DiscreteTerminatingEvent
+from diffrax import DiscreteTerminatingEvent
 from jax.debug import print as jprint
 from jaxtyping import Array
 from jaxtyping import Float

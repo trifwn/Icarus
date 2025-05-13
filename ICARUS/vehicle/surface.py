@@ -1298,9 +1298,6 @@ class WingSurface:
     #         ax.plot_trisurf(X, Y, Z, color=c)
     #     fig.show()
 
-    def __str__(self) -> str:
-        return f"Lifting Surface: {self.name} with {self.N} Panels and {self.M} Panels"
-
     def serialize_function(self, func: Callable[[Any], Any]) -> dict[str, Any] | None:
         if isinstance(func, types.MethodType):
             func_name = func.__func__.__name__
