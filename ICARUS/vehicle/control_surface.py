@@ -12,11 +12,11 @@ class ControlType(Enum):
 
 
 def default_chord_function_factory(
-    span_position: float,
+    eta: float,
     chord_percentage_start: float,
     chord_percentage_end: float,
 ) -> float:
-    return chord_percentage_start + (chord_percentage_end - chord_percentage_start) * span_position
+    return (1 - eta) * chord_percentage_start + (chord_percentage_end) * eta
 
 
 class ControlSurface:
@@ -66,8 +66,8 @@ class ControlSurface:
         if chord_function is None:
             self.chord_function: Callable[[float], float] = partial(
                 default_chord_function_factory,
-                self.chord_percentage_start,
-                self.chord_percentage_end,
+                chord_percentage_start = self.chord_percentage_start,
+                chord_percentage_end = self.chord_percentage_end,
             )
         else:
             self.chord_function = chord_function
