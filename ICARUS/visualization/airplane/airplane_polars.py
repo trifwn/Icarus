@@ -43,6 +43,7 @@ def plot_airplane_polars(
     """
     if isinstance(airplanes, str) or isinstance(airplanes, Airplane):
         airplanes = [airplanes]
+    assert isinstance(airplanes, list), "Airplanes must be a list of strings or Airplane objects"
 
     number_of_plots = len(plots)
     DB = Database.get_instance()

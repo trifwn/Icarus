@@ -501,5 +501,7 @@ def proccess_pertrubation_res(
         solver=f"GenuVP{gnvp_version}",
     )
     state.save(CASEDIR)
-    DB.vehicles_db.states[plane.name] = state
+    if plane.name not in DB.vehicles_db.states:
+        DB.vehicles_db.states[plane.name] = {}
+    DB.vehicles_db.states[plane.name][state.name] = state
     return forces

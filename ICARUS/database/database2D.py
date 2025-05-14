@@ -240,6 +240,7 @@ class Database_2D:
             REYNOLDS_BINS = np.logspace(np.log10(RE_MIN), np.log10(RE_MAX), NUM_BINS)
         else:
             NUM_BINS = len(REYNOLDS_BINS)
+        assert REYNOLDS_BINS is not None
 
         try:
             polars = self.get_polars(airfoil.name, solver=solver_name)
@@ -250,7 +251,7 @@ class Database_2D:
             # If the reynolds number is not within the range of the computed polars, the polar is recomputed
 
             # Find the bin corresponding to the each computed reynolds number
-            reyns_bin = int(np.digitize(reynolds, REYNOLDS_BINS, right=True))
+            reyns_bin = int(np.digitize(x=reynolds, bins=REYNOLDS_BINS, right=True))
             reyns_bin = max(reyns_bin, 1)
             reyns_bin = min(reyns_bin, NUM_BINS - 1)
 
