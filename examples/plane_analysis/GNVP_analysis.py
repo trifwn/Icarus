@@ -136,7 +136,7 @@ def main(GNVP_VERSION: int) -> None:
 
             process_gnvp_angles_run(plane, state, GNVP_VERSION)
 
-            # from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+            # from ICARUS.computation.solvers.AVL import avl_angle_run
 
             # avl_angle_run(plane, state, "XFLR", angles)
 

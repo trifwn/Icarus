@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 from io import StringIO
+from typing import Any
 from typing import Literal
 
 import numpy as np
@@ -26,7 +27,7 @@ def make_input_files(
     plane: Airplane,
     state: State,
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_options: dict[str, float] = {"use_avl_control": False},
+    solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
     control_vector = plane.control_vector
     avl_mass(directory, plane, state.environment)

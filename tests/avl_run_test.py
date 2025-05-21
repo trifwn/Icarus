@@ -14,7 +14,7 @@ def avl_run() -> None:
     bmark, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.computation.solvers.AVL.avl import AVL
+    from ICARUS.computation.solvers.AVL import AVL
 
     avl: Solver = AVL()
     analysis: str = avl.get_analyses_names()[0]

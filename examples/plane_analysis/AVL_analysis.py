@@ -3,16 +3,12 @@ import numpy as np
 from matplotlib.axes import Axes
 from Planes.hermes import hermes
 
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
-    avl_dynamic_analysis_fd,
-)
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
-    avl_dynamic_analysis_implicit,
-)
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd_res
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
-from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
-from ICARUS.computation.solvers.AVL.analyses.polars import process_avl_angles_run
+from ICARUS.computation.solvers.AVL import avl_dynamics_fd
+from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
+from ICARUS.computation.solvers.AVL import avl_polars
+from ICARUS.computation.solvers.AVL import process_avl_dynamics_fd
+from ICARUS.computation.solvers.AVL import process_avl_dynamics_impl
+from ICARUS.computation.solvers.AVL import process_avl_polars
 from ICARUS.database.db import Database
 from ICARUS.environment.definition import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
@@ -31,8 +27,8 @@ state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestrea
 
 angles = np.linspace(-10, 10, 11)
 
-avl_angle_run(plane, state, solver2D, angles)
-pol_df = process_avl_angles_run(plane, state, angles)
+avl_polars(plane, state, solver2D, angles)
+pol_df = process_avl_polars(plane, state, angles)
 
 
 planenames = [plane.name]
@@ -43,8 +39,8 @@ plot_airplane_polars(
     size=(6, 7),
 )
 
-avl_dynamic_analysis_implicit(plane=plane, state=state, solver2D=solver2D)
-impl_long, impl_late = process_avl_impl_res(plane, state)
+avl_dynamics_implicit(plane=plane, state=state, solver2D=solver2D)
+impl_long, impl_late = process_avl_dynamics_impl(plane, state)
 
 # aoa_trim, u_trim = avldyn.trim_conditions(PLANEDIR, plane)
 unstick = State(
@@ -76,8 +72,8 @@ epsilons = {
 unstick.add_all_pertrubations("Central", epsilons)
 unstick.get_pertrub()
 
-avl_dynamic_analysis_fd(plane, unstick, solver2D)
-df = process_avl_fd_res(plane, unstick)
+avl_dynamics_fd(plane, unstick, solver2D)
+df = process_avl_dynamics_fd(plane, unstick)
 
 print(unstick)
 fig = plt.figure(figsize=(12, 6))

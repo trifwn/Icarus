@@ -5,18 +5,18 @@ from typing import Literal
 
 from pandas import DataFrame
 
+from ICARUS.computation.solvers.AVL import collect_avl_polar_forces
 from ICARUS.computation.solvers.AVL.files.input import make_input_files
 from ICARUS.computation.solvers.AVL.files.polars import case_def
 from ICARUS.computation.solvers.AVL.files.polars import case_run
 from ICARUS.computation.solvers.AVL.files.polars import case_setup
-from ICARUS.computation.solvers.AVL.post_process.post import collect_avl_polar_forces
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 
 
-def avl_angle_run(
+def avl_polars(
     plane: Airplane,
     state: State,
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str,
@@ -34,11 +34,11 @@ def avl_angle_run(
     make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
     case_setup(plane, state)
     case_run(plane, state, angles)
-    polar_df = process_avl_angles_run(plane, state, angles)
+    polar_df = process_avl_polars(plane, state, angles)
     state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 
 
-def process_avl_angles_run(
+def process_avl_polars(
     plane: Airplane,
     state: State,
     angles: FloatArray | list[float],

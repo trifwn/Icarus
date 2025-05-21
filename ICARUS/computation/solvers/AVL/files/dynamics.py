@@ -1,6 +1,7 @@
 import os
 import subprocess
 from io import StringIO
+from typing import Any
 from typing import Literal
 
 import numpy as np
@@ -20,6 +21,7 @@ def implicit_eigs(
     plane: Airplane,
     state: State,
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
+    solver_options: dict[str, Any] = {},
 ) -> None:
     # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL
     DB = Database.get_instance()
@@ -36,6 +38,7 @@ def implicit_eigs(
         plane=plane,
         state=state,
         solver2D=solver2D,
+        solver_options=solver_options,
     )
     log = os.path.join(DYNAMICS_DIR, "eig_log.txt")
     os.makedirs(DYNAMICS_DIR, exist_ok=True)
@@ -83,6 +86,7 @@ def finite_difs(
     plane: Airplane,
     state: State,
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
+    solver_options: dict[str, Any] = {},
 ) -> None:
     DB = Database.get_instance()
     DYNAMICS_DIR = DB.get_vehicle_case_directory(
@@ -98,6 +102,7 @@ def finite_difs(
         plane=plane,
         state=state,
         solver2D=solver2D,
+        solver_options=solver_options,
     )
     os.chdir(DYNAMICS_DIR)
 

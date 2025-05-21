@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.AVL.post_process.strips import get_strip_data
+from ICARUS.computation.solvers.AVL import get_strip_data
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.surface import WingSurface

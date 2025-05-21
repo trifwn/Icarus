@@ -122,7 +122,7 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
     return master_df
 
 
-strip_cols_AVL = [
+AVL_strip_cols = [
     "j",
     "Xle",
     "Yle",

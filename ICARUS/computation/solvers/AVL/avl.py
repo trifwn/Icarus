@@ -2,15 +2,11 @@ from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAna
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
-    avl_dynamic_analysis_fd,
-)
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import (
-    avl_dynamic_analysis_implicit,
-)
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_fd_res
-from ICARUS.computation.solvers.AVL.analyses.pertrubations import process_avl_impl_res
-from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+from ICARUS.computation.solvers.AVL import avl_dynamics_fd
+from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
+from ICARUS.computation.solvers.AVL import avl_polars
+from ICARUS.computation.solvers.AVL import process_avl_dynamics_fd
+from ICARUS.computation.solvers.AVL import process_avl_dynamics_impl
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.solver_parameters import BoolParameter
 
@@ -25,7 +21,7 @@ class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
     def __init__(
         self,
     ) -> None:
-        super().__init__("AVL", avl_angle_run, unhook=None)
+        super().__init__("AVL", avl_polars, unhook=None)
 
 
 # class AVL_TrimAnalysis(BasePolarAnalysis):
@@ -37,15 +33,15 @@ class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
 
 class AVL_DynamicAnalysisFD(BaseDynamicAnalysis):
     def __init__(self) -> None:
-        super().__init__("AVL", avl_dynamic_analysis_fd, unhook=process_avl_fd_res)
+        super().__init__("AVL", avl_dynamics_fd, unhook=process_avl_dynamics_fd)
 
 
 class AVL_DynamicAnalysisImplicit(BaseDynamicAnalysis):
     def __init__(self) -> None:
         super().__init__(
             "AVL",
-            avl_dynamic_analysis_implicit,
-            unhook=process_avl_impl_res,
+            avl_dynamics_implicit,
+            unhook=process_avl_dynamics_impl,
         )
 
 

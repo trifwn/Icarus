@@ -4,26 +4,26 @@ from typing import Literal
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.AVL.analyses.polars import avl_angle_run
+from ICARUS.computation.solvers.AVL import avl_polars
+from ICARUS.computation.solvers.AVL import finite_difs_post
+from ICARUS.computation.solvers.AVL import implicit_dynamics_post
 from ICARUS.computation.solvers.AVL.files.dynamics import finite_difs
 from ICARUS.computation.solvers.AVL.files.dynamics import implicit_eigs
-from ICARUS.computation.solvers.AVL.post_process.post import finite_difs_post
-from ICARUS.computation.solvers.AVL.post_process.post import implicit_dynamics_post
 from ICARUS.database import Database
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 
 
-def avl_dynamic_analysis_implicit(
+def avl_dynamics_implicit(
     plane: Airplane,
     state: State,
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
     solver_options: dict[str, Any] = {},
 ) -> None:
-    implicit_eigs(plane=plane, state=state, solver2D=solver2D)
+    implicit_eigs(plane=plane, state=state, solver2D=solver2D, solver_options=solver_options)
 
 
-def avl_dynamic_analysis_fd(
+def avl_dynamics_fd(
     plane: Airplane,
     state: State,
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
@@ -36,7 +36,7 @@ def avl_dynamic_analysis_fd(
         num_aoa = (aoa_max - aoa_min) * 2 + 1
         angles = np.linspace(aoa_min, aoa_max, num_aoa)
 
-        avl_angle_run(
+        avl_polars(
             plane=plane,
             state=state,
             solver2D=solver2D,
@@ -47,11 +47,11 @@ def avl_dynamic_analysis_fd(
         print("Calculating the epsilons")
         state.add_all_pertrubations("Central")
         print(state.epsilons)
-    finite_difs(plane=plane, state=state, solver2D=solver2D)
-    process_avl_fd_res(plane, state)
+    finite_difs(plane=plane, state=state, solver2D=solver2D, solver_options=solver_options)
+    process_avl_dynamics_fd(plane, state)
 
 
-def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
+def process_avl_dynamics_fd(plane: Airplane, state: State) -> DataFrame:
     """Process the pertrubation results from the AVL solver
 
     Args:
@@ -81,7 +81,7 @@ def process_avl_fd_res(plane: Airplane, state: State) -> DataFrame:
     return forces
 
 
-def process_avl_impl_res(
+def process_avl_dynamics_impl(
     plane: Airplane,
     state: State,
 ) -> tuple[list[complex], list[complex]]:
