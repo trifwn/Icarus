@@ -57,7 +57,10 @@ class ControlState:
         return control_vector
 
     def __str__(self) -> str:
-        return f"Control Variables: {self.control_vars}"
+        string = "Control State: "
+        for key in self.control_vars:
+            string += f"{key}: {self.control_vector_dict[key]:.3f} "
+        return string
 
     def __hash__(self) -> int:
         """Unique hash for the control state. This is used to generate a unique name for the state.
