@@ -17,7 +17,7 @@ from inquirer import prompt
 from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
 from cli.solver import set_solver_parameters
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
 from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
 from ICARUS.computation.solvers.solver import Solver

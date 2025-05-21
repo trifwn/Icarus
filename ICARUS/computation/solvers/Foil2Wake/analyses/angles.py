@@ -9,7 +9,7 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers.Foil2Wake.analyses.monitor_progress import (
     parallel_monitor,
 )

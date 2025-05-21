@@ -4,10 +4,11 @@ import re
 import numpy as np
 from xmltodict import parse
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.point_mass import PointMass
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -30,7 +31,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     with open(filename) as f:
         my_xml: str = f.read()
 
-    dict = parse(
+    diction = parse(
         my_xml,
         encoding="utf-8",
         process_namespaces=False,
@@ -39,7 +40,7 @@ def parse_xfl_project(filename: str) -> Airplane:
 
     # version = dict["@version"]
     # units = dict["Units"]
-    plane = dict["Plane"]
+    plane = diction["Plane"]
 
     point_masses: list[PointMass] = []
     if plane["Inertia"] is not None:
@@ -67,7 +68,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     else:
         wings_xflr = [plane["wing"]]
 
-    lifting_surfaces: list[WingSurface] = []
+    lifting_surfaces: dict[str, WingSurface] = {}
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     for wing in wings_xflr:
         wing_position: FloatArray = np.array(
@@ -119,6 +120,7 @@ def parse_xfl_project(filename: str) -> Airplane:
         section_position: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
         dihedral_prev: float = 0
 
+        wing_segments = []
         for i, section in enumerate(wing["Sections"]["Section"]):
             # Get Section Details
             dihedral: float = float(section["Dihedral"])
@@ -197,7 +199,7 @@ def parse_xfl_project(filename: str) -> Airplane:
                     M=M_prev,
                     mass=mass,
                 )
-                lifting_surfaces.append(surf)
+                wing_segments.append(surf)
                 if is_symmetric:
                     section_position += np.array(
                         [0, span / 2, np.sin(dihedral_prev * np.pi / 180) * span / 2],
@@ -219,9 +221,15 @@ def parse_xfl_project(filename: str) -> Airplane:
             dihedral_prev = dihedral
             N_prev = N
             M_prev = M
+
+        lifting_surfaces[f"{name}"] = MergedWing(
+            name=name,
+            wing_segments=wing_segments,
+        )
     airplane: Airplane = Airplane(
         name=plane_name,
-        surfaces=lifting_surfaces,
+        main_wing=lifting_surfaces["wing"],
+        other_surfaces=[lifting_surface for name, lifting_surface in lifting_surfaces.items() if name != "wing"],
     )
     airplane.add_point_masses(point_masses)
     return airplane

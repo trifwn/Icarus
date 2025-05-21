@@ -30,7 +30,8 @@ class Airplane(Optimizable):
     def __init__(
         self,
         name: str,
-        surfaces: list[WingSurface],
+        main_wing: WingSurface,
+        other_surfaces: list[WingSurface] | None = None,
         orientation: FloatOrListArray | None = None,
         point_masses: list[PointMass] | None = None,
         cg_overwrite: FloatArray | None = None,
@@ -40,15 +41,14 @@ class Airplane(Optimizable):
 
         Args:
             name (str): Name of the plane
-            surfaces (list[Wing]): List of the lifting surfaces of the plane (Wings)
-            disturbances (list[Disturbance] | None, optional): Optional List of disturbances. Defaults to None.
-            orientation (FloatOrListArray] | None, optional): Plane Orientation. Defaults to None.
-            point_masses (list[tuple[float, FloatArray, str]] | None, optional): List of point masses. Defaults to None.
-            cg_overwrite (FloatArray | None, optional): Center of gravity overwrite. Defaults to None.
-            inertia_overwrite (FloatArray | None, optional): Inertia overwrite. Defaults to None.
+            main_wing (WingSurface): Main wing of the plane
+            other_surfaces (list[WingSurface]): Other surfaces of the plane
+            orientation (FloatOrListArray | None, optional): Orientation of the plane. Defaults to None.
+            point_masses (list[PointMass] | None, optional): Point masses of the plane. Defaults to None.
+            cg_overwrite (FloatArray | None, optional): Center of gravity of the plane. Defaults to None.
+            inertia_overwrite (FloatArray | None, optional): Inertia of the plane. Defaults to None.
         """
         self.name: str = name
-        self.surface_dict: dict[str, WingSurface] = {surf.name: surf for surf in surfaces}
         if orientation is None:
             self.orientation: FloatOrListArray = [
                 0.0,
@@ -58,24 +58,14 @@ class Airplane(Optimizable):
         else:
             self.orientation = orientation
 
-        found_wing: bool = False
-        self.S: float = 0
-        for surface in surfaces:
-            if surface.name.capitalize().startswith("MAIN"):
-                self.main_wing: WingSurface = surface
-                self.S = surface.S
-                self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
-                self.aspect_ratio: float = surface.aspect_ratio
-                self.span: float = surface.span
-                found_wing = True
-                break
+        self.main_wing_name: str = main_wing.name
 
-        if not found_wing:
-            self.main_wing = surfaces[0]
-            self.S = surfaces[0].S
-            self.mean_aerodynamic_chord = surfaces[0].mean_aerodynamic_chord
-            self.aspect_ratio = surfaces[0].aspect_ratio
-            self.span = surfaces[0].span
+        self.surface_dict: dict[str, WingSurface] = {}
+        self.surface_dict[main_wing.name] = main_wing
+
+        if other_surfaces is not None:
+            for surface in other_surfaces:
+                self.surface_dict[surface.name] = surface
 
         self.airfoils: list[str] = self.get_all_airfoils()
         self.point_masses: list[PointMass] = []
@@ -111,10 +101,7 @@ class Airplane(Optimizable):
             surf = self.surface_dict[name]
             if surf.is_symmetric_y and any([cont.inverse_symmetric for cont in self.surfaces[0].controls]):
                 # Split the surface into 2 symmetric surfaces
-                left, right = surf.split_xz_symmetric_wing()
-                self.surface_dict[f"{name}_left"] = left
-                self.surface_dict[f"{name}_right"] = right
-                self.surface_dict.pop(name)
+                self.surface_dict[name] = surf.split_xz_symmetric_wing()
 
         if cg_overwrite is not None:
             self.overwrite_mass = True
@@ -143,9 +130,70 @@ class Airplane(Optimizable):
                 print(f"Controlling {surf.name} with {surf_control_vec}")
 
     @property
+    def main_wing(self) -> WingSurface:
+        """Get the main wing of the plane
+
+        Returns:
+            WingSurface: Main wing of the plane
+
+        """
+        return self.surface_dict[self.main_wing_name]
+
+    @property
+    def S(self) -> float:
+        """Get the wing area of the plane
+
+        Returns:
+            float: Wing area of the plane
+
+        """
+        return self.main_wing.S
+
+    @property
+    def mean_aerodynamic_chord(self) -> float:
+        """Get the mean aerodynamic chord of the plane
+
+        Returns:
+            float: Mean aerodynamic chord of the plane
+
+        """
+        return self.main_wing.mean_aerodynamic_chord
+
+    @property
+    def aspect_ratio(self) -> float:
+        """Get the aspect ratio of the plane
+
+        Returns:
+            float: Aspect ratio of the plane
+
+        """
+        return self.main_wing.aspect_ratio
+
+    @property
+    def AR(self) -> float:
+        """Get the aspect ratio of the plane
+
+        Returns:
+            float: Aspect ratio of the plane
+
+        """
+        return self.main_wing.aspect_ratio
+
+    @property
+    def span(self) -> float:
+        """Get the span of the plane
+
+        Returns:
+            float: Span of the plane
+
+        """
+        return self.main_wing.span
+
+    @property
     def surfaces(self) -> list[WingSurface]:
         return list(self.surface_dict.values())
 
+    @property
     def wing_segments(self) -> list[WingSurface]:
         """Get all the wing segments of the plane
 
@@ -154,7 +202,7 @@ class Airplane(Optimizable):
 
         """
         surfaces: list[WingSurface] = []
-        for surface_name, surface in self.surface_dict.items():
+        for _, surface in self.surface_dict.items():
             if isinstance(surface, MergedWing):
                 for s in surface.wing_segments:
                     surfaces.append(s)
@@ -462,9 +510,8 @@ class Airplane(Optimizable):
         surfaces: list[WingSurface] = []
         for surface in self.surfaces:
             if surface.is_symmetric_y:
-                left, right = surface.split_xz_symmetric_wing()
-                surfaces.append(left)
-                surfaces.append(right)
+                split_surface = surface.split_xz_symmetric_wing()
+                surfaces.append(split_surface)
             else:
                 surfaces.append(surface)
         return surfaces
@@ -704,7 +751,8 @@ class Airplane(Optimizable):
         Airplane.__init__(
             self,
             name=state["name"],
-            surfaces=state["surfaces"],
+            main_wing=state["main_wing"],
+            other_surfaces=state["other_surfaces"],
             orientation=state["orientation"],
             point_masses=state["point_masses"],
             cg_overwrite=state["cg_overwrite"],
@@ -714,7 +762,8 @@ class Airplane(Optimizable):
     def __getstate__(self) -> dict[str, Any]:
         return {
             "name": self.name,
-            "surfaces": list(self.surface_dict.values()),
+            "main_wing": self.main_wing,
+            "other_surfaces": [surf for surf in self.surface_dict.values() if surf.name != self.main_wing_name],
             "orientation": self.orientation,
             "point_masses": self.point_masses,
             "cg_overwrite": self.CG if self.overwrite_mass else None,
@@ -736,7 +785,7 @@ class Airplane(Optimizable):
             f.write(self.to_json())
 
     def __str__(self) -> str:
-        string: str = f"Plane Object: {self.name}"
+        string: str = f"(Airplane): {self.name}"
         return string
 
     def __repr__(self) -> str:
@@ -745,7 +794,8 @@ class Airplane(Optimizable):
     def __copy__(self) -> Airplane:
         return Airplane(
             name=self.name,
-            surfaces=list(self.surface_dict.values()),
+            main_wing=self.main_wing,
+            other_surfaces=[surf for surf in self.surface_dict.values() if surf.name != self.main_wing_name],
             orientation=self.orientation,
             point_masses=self.point_masses,
             cg_overwrite=self.CG if self.overwrite_mass else None,

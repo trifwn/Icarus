@@ -5,7 +5,6 @@ import numpy as np
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.point_mass import PointMass
-from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -97,15 +96,13 @@ def hermes(name: str) -> Airplane:
         mass=0.04,
     )
 
-    lifting_surfaces: list[WingSurface] = [main_wing, elevator, rudder]
-
     point_masses = [
         PointMass(mass=0.500, position=np.array([-0.40, 0.0, 0.0], dtype=float), name="engine"),  # Engine
         PointMass(mass=1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="structure"),  # Structure
         PointMass(mass=0.900, position=np.array([0.130, 0.0, 0.0], dtype=float), name="payload"),  # Payload
-        # (1.000, np.array([0.090, 0.0, 0.0], dtype=float), "battery"),  # Battery
+        # PointMass(mass= 1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="battery"),  # Battery
     ]
-    airplane: Airplane = Airplane(name, lifting_surfaces)
+    airplane: Airplane = Airplane(name, main_wing=main_wing, other_surfaces=[elevator, rudder])
     airplane.add_point_masses(point_masses)
 
     return airplane

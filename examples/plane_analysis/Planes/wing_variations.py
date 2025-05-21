@@ -4,7 +4,6 @@ from ICARUS.core.types import DataDict
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.point_mass import PointMass
-from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -53,15 +52,12 @@ def wing_var_chord_offset(
         M=5,
         mass=0.670,
     )
-    # main_wing.plotWing()
-    lifting_surfaces: list[WingSurface] = [main_wing]
-    # main_wing.plotWing()
 
     added_masses: list[PointMass] = [
         PointMass(mass=0.500, position=np.array([-0.40, 0.0, 0.0], dtype=float), name="motor"),  # Motor
         PointMass(mass=1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="battery"),  # Battery
         PointMass(mass=0.900, position=np.array([0.130, 0.0, 0.0], dtype=float), name="payload"),  # Payload
     ]
-    airplane = Airplane(name, lifting_surfaces)
+    airplane = Airplane(name, main_wing=main_wing)
     airplane.add_point_masses(added_masses)
     return airplane

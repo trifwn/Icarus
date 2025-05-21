@@ -7,7 +7,7 @@ from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
 from ICARUS import CPU_TO_USE
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers.Xfoil.post_process.polars import save_multiple_reyn
 from ICARUS.core.types import FloatArray
 

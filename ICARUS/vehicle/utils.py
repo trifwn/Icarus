@@ -142,7 +142,7 @@ def cspacer(Ni: int, N: int, cspace: float) -> float:
         xpt[i] = f0 * xpt0 + f1 * xpt1 + f2 * xpt2
     xpt[1] = 0.0
     xpt[N] = 1.0
-    return xpt[Ni + 1]
+    return float(xpt[Ni + 1])
 
 
 def equal_spacing_function_factory(

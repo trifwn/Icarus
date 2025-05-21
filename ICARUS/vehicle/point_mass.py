@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 from scipy.integrate import quad
 
@@ -33,13 +35,13 @@ class PointMass:
         return self._position
 
     @position.setter
-    def position(self, position: FloatArray) -> None:
+    def position(self, value: FloatArray) -> None:
         """
         Set the position of the vehicle.
 
         :param position: Position of the vehicle (m).
         """
-        self._position = position
+        self._position = value
 
     @property
     def position_x(self) -> float:
@@ -69,31 +71,31 @@ class PointMass:
         return float(self._position[2])
 
     @position_x.setter
-    def position_x(self, position_x: float) -> None:
+    def position_x(self, value: float) -> None:
         """
         Set the x position of the vehicle.
 
         :param position_x: X position of the vehicle (m).
         """
-        self._position[0] = position_x
+        self._position[0] = value
 
     @position_y.setter
-    def position_y(self, position_y: float) -> None:
+    def position_y(self, value: float) -> None:
         """
         Set the y position of the vehicle.
 
         :param position_y: Y position of the vehicle (m).
         """
-        self._position[1] = position_y
+        self._position[1] = value
 
     @position_z.setter
-    def position_z(self, position_z: float) -> None:
+    def position_z(self, value: float) -> None:
         """
         Set the z position of the vehicle.
 
         :param position_z: Z position of the vehicle (m).
         """
-        self._position[2] = position_z
+        self._position[2] = value
 
     @property
     def mass(self) -> float:
@@ -194,58 +196,58 @@ class PointMass:
         return float(self._inertia[5])
 
     @I_xx.setter
-    def I_xx(self, I_xx: float) -> None:
+    def I_xx(self, value: float) -> None:
         """
         Set the xx inertia of the vehicle.
 
         :param I_xx: XX inertia of the vehicle (kg*m^2).
         """
-        self._inertia[0] = I_xx
+        self._inertia[0] = value
 
     @I_yy.setter
-    def I_yy(self, I_yy: float) -> None:
+    def I_yy(self, value: float) -> None:
         """
         Set the yy inertia of the vehicle.
 
         :param I_yy: YY inertia of the vehicle (kg*m^2).
         """
-        self._inertia[1] = I_yy
+        self._inertia[1] = value
 
     @I_zz.setter
-    def I_zz(self, I_zz: float) -> None:
+    def I_zz(self, value: float) -> None:
         """
         Set the zz inertia of the vehicle.
 
         :param I_zz: ZZ inertia of the vehicle (kg*m^2).
         """
-        self._inertia[2] = I_zz
+        self._inertia[2] = value
 
     @I_xy.setter
-    def I_xy(self, I_xy: float) -> None:
+    def I_xy(self, value: float) -> None:
         """
         Set the xy inertia of the vehicle.
 
         :param I_xy: XY inertia of the vehicle (kg*m^2).
         """
-        self._inertia[3] = I_xy
+        self._inertia[3] = value
 
     @I_xz.setter
-    def I_xz(self, I_xz: float) -> None:
+    def I_xz(self, value: float) -> None:
         """
         Set the xz inertia of the vehicle.
 
         :param I_xz: XZ inertia of the vehicle (kg*m^2).
         """
-        self._inertia[4] = I_xz
+        self._inertia[4] = value
 
     @I_yz.setter
-    def I_yz(self, I_yz: float) -> None:
+    def I_yz(self, value: float) -> None:
         """
         Set the yz inertia of the vehicle.
 
         :param I_yz: YZ inertia of the vehicle (kg*m^2).
         """
-        self._inertia[5] = I_yz
+        self._inertia[5] = value
 
     @property
     def inertia_matrix(self) -> FloatArray:
@@ -277,6 +279,33 @@ class PointMass:
         :return: String representation of the point mass model.
         """
         return self.__repr__()
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """
+        Set the state of the point mass model.
+
+        :param state: State of the point mass model.
+        """
+        PointMass.__init__(
+            self,
+            name=state["name"],
+            position=state["position"],
+            mass=state["mass"],
+            inertia=state["inertia"],
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        """
+        Get the state of the point mass model.
+
+        :return: State of the point mass model.
+        """
+        return {
+            "name": self.name,
+            "position": self.position,
+            "mass": self.mass,
+            "inertia": self.inertia,
+        }
 
     def copy(self) -> "PointMass":
         """

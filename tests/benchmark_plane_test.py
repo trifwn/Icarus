@@ -33,7 +33,7 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
         M=15,
         mass=1,
     )
-    airplane = Airplane(Simplewing.name, [Simplewing])
+    airplane = Airplane(Simplewing.name, main_wing=Simplewing)
     u_inf = 100
     state = State(
         name="Unstick",

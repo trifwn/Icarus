@@ -7,7 +7,7 @@ from typing import Any
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers import runOFscript
 from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import (
     parallel_monitor,

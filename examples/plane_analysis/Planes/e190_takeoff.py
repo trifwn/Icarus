@@ -8,7 +8,7 @@ from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.surface import WingSurface
+from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -31,7 +31,7 @@ def e190_takeoff_generator(
     """
     DB = Database("./Data")
     read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
-    from ICARUS.airfoils.airfoil import Airfoil
+    from ICARUS.airfoils import Airfoil
 
     naca64418: Airfoil = DB.get_airfoil("NACA64418")
     naca64418_fl: Airfoil = naca64418.flap(
@@ -121,9 +121,6 @@ def e190_takeoff_generator(
     )
     # rudder.plotWing()
 
-    lifting_surfaces: list[WingSurface] = [wing_1, wing_2, wing_3]
-    airplane: Airplane = Airplane(name, lifting_surfaces)
-
-    # Define the surface area of the main wing
-    airplane.S = wing_1.S + wing_2.S + wing_3.S
+    main_wing = MergedWing(name="main_wing", wing_segments=[wing_1, wing_2, wing_3])
+    airplane: Airplane = Airplane(name, main_wing=main_wing)
     return airplane

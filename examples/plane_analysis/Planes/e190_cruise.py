@@ -27,7 +27,7 @@ def e190_cruise(name: str) -> Airplane:
     DB = Database("./Data")
     read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
 
-    from ICARUS.airfoils.airfoil import Airfoil
+    from ICARUS.airfoils import Airfoil
 
     naca64418: Airfoil = DB.get_airfoil("NACA64418")
 
@@ -118,7 +118,7 @@ def e190_cruise(name: str) -> Airplane:
         [wing_1, wing_2, wing_3],
     )
 
-    airplane: Airplane = Airplane(name, [main_wing])
+    airplane: Airplane = Airplane(name, main_wing=main_wing)
     return airplane
 
 
