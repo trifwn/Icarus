@@ -20,10 +20,11 @@ from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
 from ICARUS.core.struct import Struct
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.airplane import Airplane
     from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
 
 jsonpickle_pd.register_handlers()
+
 
 class Database_3D:
     """Class to represent the 3D Database. It contains all the information and results
@@ -267,6 +268,7 @@ class Database_3D:
 
                 obj: Any = jsonpickle.decode(json_obj)
                 from ICARUS.flight_dynamics.state import State
+
                 if isinstance(obj, State) or obj.__class__.__name__ == "State":
                     state = obj
                 else:

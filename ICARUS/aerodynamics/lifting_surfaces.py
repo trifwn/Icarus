@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
+from typing import Any
 
 import pandas as pd
 from numpy import ndarray

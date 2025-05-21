@@ -5,13 +5,9 @@ import os
 from typing import TYPE_CHECKING
 from typing import Any
 
-import distinctipy
 import jsonpickle
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.figure import SubFigure
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Series
@@ -21,6 +17,8 @@ from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.stability.state_space import StateSpace
+from ICARUS.visualization import markers
+from ICARUS.visualization.polar_plot import polar_plot
 from ICARUS.visualization.pre_existing_figure import pre_existing_figure
 
 from .disturbances import Disturbance as dst
@@ -52,10 +50,9 @@ class ControlState:
 
     @property
     def control_vector(self) -> FloatArray:
-        control_vector = np.array(
+        return np.array(
             [self.control_vector_dict[key] for key in self.control_vars],
         )
-        return control_vector
 
     def __str__(self) -> str:
         string = "Control State: "
@@ -412,10 +409,10 @@ class State:
     @pre_existing_figure(subplots=(1, 2), default_title="AVL Eigenvalues")
     def plot_eigenvalues(
         self,
+        axs: list[Axes],
         plot_lateral: bool = True,
         plot_longitudal: bool = True,
-        axs: list[Axes] | None = None,
-    ) -> tuple[list[Axes], Figure | SubFigure]:
+    ) -> None:
         """Generate a plot of the eigenvalues."""
         # Initialize counter for axes indexing
         i = 0
@@ -453,8 +450,10 @@ class State:
             ax.axvline(0, color="black", lw=2)
             ax.grid(True)
 
+    @polar_plot(default_title="Polar Plots")
     def plot_polars(
         self,
+        axs: list[Axes],
         prefixes: list[str] | None = None,
         plots: list[list[str]] = [
             ["AoA", "CL"],
@@ -463,9 +462,10 @@ class State:
             ["AoA", "CL/CD"],
         ],
         dimensional: bool = False,
+        color: list[float] | None = None,
+        label: str | None = None,
         title: str | None = None,
-        axs: np.ndarray[Axes] | None = None,
-    ) -> tuple[Figure, np.ndarray[Any, Any]]:
+    ) -> None:
         """Function to plot stored polars
 
         Args:
@@ -477,23 +477,10 @@ class State:
         Returns:
             tuple[ndarray, Figure]: Array of Axes and Figure
         """
-        if title is None:
-            title = f"{self.airplane.name}: {self.name}"
-            if dimensional:
-                title += " Aerodynamic Forces"
-            else:
-                title += " Aerodynamic Coefficients"
-        number_of_plots = len(plots) + 1
-        # Divide the plots equally
-        sqrt_num = number_of_plots**0.5
-        i: int = int(np.ceil(sqrt_num))
-        j: int = int(np.floor(sqrt_num))
+        if title is not None and axs[0].figure:
+            axs[0].figure.suptitle(title)
 
-        fig: Figure = plt.figure(figsize=(10, 10))
-        axs: np.ndarray[Axes] = fig.subplots(i, j)  # type: ignore
-        fig.suptitle(f"{title}", fontsize=16)
-
-        for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
+        for plot, ax in zip(plots, axs[: len(plots)]):
             ax.set_xlabel(plot[0])
             ax.set_ylabel(plot[1])
             ax.set_title(f"{plot[1]} vs {plot[0]}")
@@ -507,10 +494,7 @@ class State:
         else:
             prefixes_to_plot = [prefix for prefix in prefixes if prefix in prefixes_available]
 
-        colors_ = distinctipy.get_colors(len(prefixes_to_plot))
-        axs = axs.flatten()
         polar: DataFrame = self.polar.copy()
-
         S: float = self.S
         MAC: float = self.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
@@ -537,29 +521,16 @@ class State:
 
                 x: Series[float] = polar[f"{key0}"]
                 y: Series[float] = polar[f"{key1}"]
-                c = colors_[j]
                 ax.plot(
                     x,
                     y,
                     ls="--",
-                    color=c,
-                    label=f" {prefix}",
-                    marker=MarkerStyle("o"),
+                    color=color if color is not None else None,
+                    label=f"{self.name} {prefix}" if label is None else f"{label} {prefix}",
+                    marker=markers[j],
                     markersize=5,
                     linewidth=1.5,
                 )
-
-        # Remove empty plots
-        for ax in axs.flatten()[len(plots) :]:
-            ax.remove()
-
-        handles, labels = axs.flatten()[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc="lower right", ncol=2)
-        # Adjust the plots
-        fig.tight_layout()
-        fig.subplots_adjust(top=0.9, bottom=0.1)
-        fig.show()
-        return fig, axs
 
     def __str__(self) -> str:
         ss = io.StringIO()

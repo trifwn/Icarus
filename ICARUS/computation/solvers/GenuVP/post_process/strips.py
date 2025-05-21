@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import os
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 from pandas import DataFrame
 
 from ICARUS.database import Database
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.airplane import Airplane
     from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
 
 
 def get_strip_data(

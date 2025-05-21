@@ -132,8 +132,8 @@ class MergedWing(WingSurface):
         self._zoffset_dist = np.array(_zoffset_dist, dtype=float)
 
         # Define Discretization
-        self.N = 0 # Should be NaN
-        self.M = sum([segment.M for segment in wing_segments]) 
+        self.N = 0  # Should be NaN
+        self.M = sum([segment.M for segment in wing_segments])
 
         self.num_grid_points = 0
         self.num_panels = 0
