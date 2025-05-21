@@ -21,6 +21,7 @@ from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.stability.state_space import StateSpace
+from ICARUS.visualization.pre_existing_figure import pre_existing_figure
 
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
@@ -408,79 +409,49 @@ class State:
         lateral_state_space = lateral_stability_finite_differences(self)
         self.state_space = StateSpace(longitudal_state_space, lateral_state_space)
 
+    @pre_existing_figure(subplots=(1, 2), default_title="AVL Eigenvalues")
     def plot_eigenvalues(
         self,
         plot_lateral: bool = True,
         plot_longitudal: bool = True,
         axs: list[Axes] | None = None,
-        title: str | None = None,
     ) -> tuple[list[Axes], Figure | SubFigure]:
         """Generate a plot of the eigenvalues."""
-        if axs is not None:
-            fig: Figure | SubFigure | None = axs[0].figure
-            if fig is None:
-                fig = plt.figure()
-                fig.suptitle(f"Eigenvalues for {self.airplane.name} at state {self.name}")
-            axs_now: list[Axes] = axs
-        else:
-            fig = plt.figure()
-            if title is not None:
-                fig.suptitle(title)
-            else:
-                fig.suptitle(f"Eigenvalues for {self.airplane.name} at state {self.name}")
-
-            if plot_lateral and plot_longitudal:
-                axs_now = fig.subplots(1, 2)  # type: ignore
-            else:
-                axs0 = fig.add_axes((0.1, 0.1, 0.8, 0.8))
-                axs_now = [axs0]
-
+        # Initialize counter for axes indexing
         i = 0
+        # Longitudal plot
         if plot_longitudal:
-            axs_now[i].set_title("Longitudal Eigenvalues")
-            # extract real part and imaginary part
-            x: list[float] = [ele.real for ele in self.state_space.longitudal.eigenvalues]
-            y: list[float] = [ele.imag for ele in self.state_space.longitudal.eigenvalues]
-
-            # Get the xs where x>0
-            x_pos = [x[j] for j in range(len(x)) if x[j] > 0]
-            y_pos = [y[j] for j in range(len(x)) if x[j] > 0]
-
-            # Get the xs where x<0
-            x_neg = [x[j] for j in range(len(x)) if x[j] < 0]
-            y_neg = [y[j] for j in range(len(x)) if x[j] < 0]
-
-            axs_now[i].scatter(x_pos, y_pos, label="Longitudal", color="r", marker=MarkerStyle("x"))
-            axs_now[i].scatter(x_neg, y_neg, label="Longitudal", color="r", marker=MarkerStyle("o"))
+            ax = axs[i]
+            ax.set_title("Longitudal Eigenvalues")
+            x = [ev.real for ev in self.state_space.longitudal.eigenvalues]
+            y = [ev.imag for ev in self.state_space.longitudal.eigenvalues]
+            x_pos = [xj for xj in x if xj > 0]
+            y_pos = [yj for xj, yj in zip(x, y) if xj > 0]
+            x_neg = [xj for xj in x if xj < 0]
+            y_neg = [yj for xj, yj in zip(x, y) if xj < 0]
+            ax.scatter(x_pos, y_pos, label="Longitudal", color="r", marker=MarkerStyle("x"))
+            ax.scatter(x_neg, y_neg, label="Longitudal", color="r", marker=MarkerStyle("o"))
             i += 1
 
+        # Lateral plot
         if plot_lateral:
-            axs_now[i].set_title("Lateral Eigenvalues")
-            # extract real and imaginary parts
-            x = [ele.real for ele in self.state_space.lateral.eigenvalues]
-            y = [ele.imag for ele in self.state_space.lateral.eigenvalues]
+            ax = axs[i]
+            ax.set_title("Lateral Eigenvalues")
+            x = [ev.real for ev in self.state_space.lateral.eigenvalues]
+            y = [ev.imag for ev in self.state_space.lateral.eigenvalues]
+            x_pos = [xj for xj in x if xj > 0]
+            y_pos = [yj for xj, yj in zip(x, y) if xj > 0]
+            x_neg = [xj for xj in x if xj < 0]
+            y_neg = [yj for xj, yj in zip(x, y) if xj < 0]
+            ax.scatter(x_pos, y_pos, label="Lateral", color="b", marker=MarkerStyle("x"))
+            ax.scatter(x_neg, y_neg, label="Lateral", color="b", marker=MarkerStyle("o"))
 
-            # Get the xs where x>0
-            x_pos = [x[j] for j in range(len(x)) if x[j] > 0]
-            y_pos = [y[j] for j in range(len(x)) if x[j] > 0]
-
-            # Get the xs where x<0
-            x_neg = [x[j] for j in range(len(x)) if x[j] < 0]
-            y_neg = [y[j] for j in range(len(x)) if x[j] < 0]
-
-            axs_now[i].scatter(x_pos, y_pos, label="Lateral", color="b", marker=MarkerStyle("x"))
-            axs_now[i].scatter(x_neg, y_neg, label="Lateral", color="b", marker=MarkerStyle("o"))
-        for j in range(i + 1):
-            axs_now[j].set_ylabel("Imaginary")
-            axs_now[j].set_xlabel("Real")
-            axs_now[j].axvline(0, color="black", lw=2)
-            axs_now[j].grid(True)
-            # axs[j].legend()
-        if isinstance(fig, SubFigure):
-            pass
-        else:
-            fig.show()
-        return axs_now, fig
+        # Common styling
+        for ax in axs[: i + 1]:
+            ax.set_xlabel("Real")
+            ax.set_ylabel("Imaginary")
+            ax.axvline(0, color="black", lw=2)
+            ax.grid(True)
 
     def plot_polars(
         self,
@@ -493,6 +464,7 @@ class State:
         ],
         dimensional: bool = False,
         title: str | None = None,
+        axs: np.ndarray[Axes] | None = None,
     ) -> tuple[Figure, np.ndarray[Any, Any]]:
         """Function to plot stored polars
 

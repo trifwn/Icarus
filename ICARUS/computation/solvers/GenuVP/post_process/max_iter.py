@@ -1,8 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 import os
 
 from ICARUS.database.db import Database
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
 
 
 def get_max_iterations_3(plane: Airplane, state: State, case: str) -> int:

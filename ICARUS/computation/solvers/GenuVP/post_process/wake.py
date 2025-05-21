@@ -1,11 +1,16 @@
-import os
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
+import os
 import numpy as np
 
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.core.types import FloatArray
 
 from .max_iter import get_max_iterations_3
 

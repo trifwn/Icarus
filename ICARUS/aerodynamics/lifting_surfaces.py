@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from numpy import ndarray
 
 from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
-from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.core.types import FloatArray
+    from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
 
 
 def run_lstp_angles(

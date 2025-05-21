@@ -11,7 +11,6 @@ from ICARUS.airfoils.airfoil_polars import AirfoilData
 from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
 
 from .analysesDB import AnalysesDB
 from .database2D import Database_2D
@@ -20,6 +19,7 @@ from .database3D import Database_3D
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
     from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.flight_dynamics.state import State
 
 
 class Database:

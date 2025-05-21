@@ -516,7 +516,6 @@ class WingSegment(WingSurface):
         )
 
     def __getstate__(self) -> dict[str, Any]:
-        print("Getting state of WingSegment with name:", self.name)
         assert isinstance(self.root_airfoil, Airfoil)
         assert isinstance(self.tip_airfoil, Airfoil)
         return {

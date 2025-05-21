@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from typing import Any
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -11,8 +14,10 @@ from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.GenuVP.post_process.strips import get_strip_data
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
 
 
 def gnvp_strips_3d(

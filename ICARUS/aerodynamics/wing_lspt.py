@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 
 import jax
@@ -14,15 +17,17 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 from pandas import DataFrame
 
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics.state import State
+    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.vehicle.surface import WingSurface
+
 from ICARUS.aerodynamics.assemble_matrix import get_LHS
 from ICARUS.aerodynamics.assemble_matrix import get_RHS
 from ICARUS.aerodynamics.post_process.strip_calculations import get_potential_loads
 from ICARUS.aerodynamics.strip_data import StripData
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.merged_wing import MergedWing
-from ICARUS.vehicle.surface import WingSurface
 from ICARUS.visualization.figure_setup import create_subplots
 from ICARUS.visualization.figure_setup import flatten_axes
 
