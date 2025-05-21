@@ -126,8 +126,6 @@ class Airplane(Optimizable):
                     surf_control_vec[name] = value
                     self.control_vector[name] = value
             surf.__control__(surf_control_vec)
-            if surf_control_vec != {}:
-                print(f"Controlling {surf.name} with {surf_control_vec}")
 
     @property
     def main_wing(self) -> WingSurface:

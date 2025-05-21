@@ -35,6 +35,7 @@ class MergedWing(WingSurface):
         self.name: str = name
         # Create a grid of points to store all Wing Segments
         self.wing_segments: list[WingSurface] = wing_segments
+        self.is_lifting = any([segment.is_lifting for segment in wing_segments])
 
         # Define the Coordinate System of the Merged Wing
         # For the orientation of the wing we default to 0,0,0
@@ -132,7 +133,7 @@ class MergedWing(WingSurface):
 
         # Define Discretization
         self.N = 0 # Should be NaN
-        self.M = 0 # Should be NaN
+        self.M = sum([segment.M for segment in wing_segments]) 
 
         self.num_grid_points = 0
         self.num_panels = 0

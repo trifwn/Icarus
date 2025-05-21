@@ -86,14 +86,14 @@ def avl_mass(
 
     for surf in plane.surfaces:
         f_io.write(
-            f"   {surf.mass}   {surf.CG[0]}  {surf.CG[1]}  {surf.CG[2]}   {surf.Ixx}   {surf.Iyy}   {surf.Izz} {surf.Ixy}   {surf.Ixz}   {surf.Iyz}   ! {surf.name}       \n",
+            f"   {surf.mass:.4e}  {surf.CG[0]:.4e}  {surf.CG[1]:.4e}  {surf.CG[2]:.4e}  {surf.Ixx:.4e}  {surf.Iyy:.4e}  {surf.Izz:.4e}  {surf.Ixy:.4e}  {surf.Ixz:.4e}  {surf.Iyz:.4e} ! {surf.name}       \n",
         )
 
     for mass in plane.point_masses:
         pos = mass.position
-        inert = mass.inertia
+        Ixx, Iyy, Izz, Ixy, Ixz, Iyz = mass.inertia
         f_io.write(
-            f"   {mass.mass}   {pos[0]}  {pos[1]}  {pos[2]}   {inert}   {inert}   {inert} {inert}   {inert}   {inert}   ! {mass.name}     \n",
+            f"   {mass.mass:.4e}  {pos[0]:.4e}  {pos[1]:.4e}  {pos[2]:.4e}  {Ixx:.4e}  {Iyy:.4e}  {Izz:.4e}  {Ixz:.4e}  {Ixz:.4e}  {Iyz:.4e} ! {mass.name}     \n",
         )
 
     content = f_io.getvalue().expandtabs(4)
@@ -139,7 +139,7 @@ def avl_geo(
     surfaces: list[WingSurface] = []
     surfaces_ids = []
     i = 0
-    for surface in plane.surfaces:
+    for surface in plane.wing_segments:
         i += 1
         if isinstance(surface, MergedWing):
             for sub_surface in surface.wing_segments:
