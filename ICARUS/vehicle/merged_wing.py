@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -24,7 +24,6 @@ class MergedWing(WingSurface):
         self,
         name: str,
         wing_segments: list[WingSurface],
-        symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
     ) -> None:
         """Initializes the Wing Object
 
@@ -76,25 +75,12 @@ class MergedWing(WingSurface):
         self.R_MAT: FloatArray = R_YAW.dot(R_PITCH).dot(R_ROLL)
 
         # Define Symmetries
-        merged_wing_symmetries: list[SymmetryAxes] = []
-        if isinstance(symmetries, SymmetryAxes):
-            if symmetries == SymmetryAxes.NONE:
-                # Check if all wing segments share same symmetries
-                for symmetry_type in SymmetryAxes.__members__.values():
-                    if all(
-                        [symmetry_type in segment.symmetries for segment in wing_segments],
-                    ):
-                        merged_wing_symmetries.append(symmetry_type)
-            else:
-                merged_wing_symmetries = [symmetries]
-        else:
-            merged_wing_symmetries = symmetries
-        self.symmetries: list[SymmetryAxes] = merged_wing_symmetries
-        self.is_symmetric_y: bool = True if SymmetryAxes.Y in self.symmetries else False
-
-        # Define Discretization
-        self.N = np.max([segment.N for segment in wing_segments])
-        self.M = np.max([segment.M for segment in wing_segments])
+        self.symmetries: list[SymmetryAxes] = []
+        for symmetry_type in SymmetryAxes.__members__.values():
+            if all(
+                [symmetry_type in segment.symmetries for segment in wing_segments],
+            ):
+                self.symmetries.append(symmetry_type)
 
         # Define Choord Lengths
         chords: list[float] = []
@@ -144,25 +130,24 @@ class MergedWing(WingSurface):
         self._xoffset_dist = np.array(_xoffset_dist, dtype=float)
         self._zoffset_dist = np.array(_zoffset_dist, dtype=float)
 
-        # Variable Initialization
-        NM = 0
+        # Define Discretization
+        self.N = int("nan")
+        self.M = int("nan")
+
+        self.num_grid_points = 0
+        self.num_panels = 0
         for segment in self.wing_segments:
-            NM += (segment.N) * (segment.M)
-        self.num_grid_points: int = NM
+            self.num_grid_points += segment.num_grid_points
+            self.num_panels += segment.num_panels
+
         # Grid Variables
-        self.grid: FloatArray = np.empty((NM, 3), dtype=float)  # Camber Line
-        self.grid_lower: FloatArray = np.empty((NM, 3), dtype=float)
-        self.grid_upper: FloatArray = np.empty((NM, 3), dtype=float)
+        self.grid: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)  # Camber Line
+        self.grid_lower: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)
+        self.grid_upper: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)
 
-        # Panel Variables
-        NM = 0
-        for segment in self.wing_segments:
-            NM += (segment.N - 1) * (segment.M - 1)
-        self.num_panels: int = NM
-
-        self.panels: FloatArray = np.empty((NM, 4, 3), dtype=float)
-        self.panels_lower: FloatArray = np.empty((NM, 4, 3), dtype=float)
-        self.panels_upper: FloatArray = np.empty((NM, 4, 3), dtype=float)
+        self.panels: FloatArray = np.empty((self.num_panels, 4, 3), dtype=float)
+        self.panels_lower: FloatArray = np.empty((self.num_panels, 4, 3), dtype=float)
+        self.panels_upper: FloatArray = np.empty((self.num_panels, 4, 3), dtype=float)
 
         # Initialize Strips
         self.strips: list[Strip] = []
@@ -208,7 +193,7 @@ class MergedWing(WingSurface):
         NM = 0
         for segment in self.wing_segments:
             segment.define_grid()
-            NM += segment.N * segment.M
+            NM += segment.num_grid_points
 
         grid: FloatArray = np.empty((NM, 3), dtype=float)
         grid_lower: FloatArray = np.empty((NM, 3), dtype=float)
@@ -217,19 +202,20 @@ class MergedWing(WingSurface):
         NM = 0
         # Stack all the grid points of the wing segments
         for segment in self.wing_segments:
-            grid[NM : NM + segment.M * segment.N, :] = np.reshape(
+            n_points = segment.num_grid_points
+            grid[NM : NM + n_points, :] = np.reshape(
                 segment.grid,
-                (segment.M * segment.N, 3),
+                (n_points, 3),
             )
-            grid_lower[NM : NM + segment.M * segment.N, :] = np.reshape(
+            grid_lower[NM : NM + n_points, :] = np.reshape(
                 segment.grid_upper,
-                (segment.M * segment.N, 3),
+                (n_points, 3),
             )
-            grid_upper[NM : NM + segment.M * segment.N, :] = np.reshape(
+            grid_upper[NM : NM + n_points, :] = np.reshape(
                 segment.grid_lower,
-                (segment.M * segment.N, 3),
+                (n_points, 3),
             )
-            NM += segment.M * segment.N
+            NM += n_points
 
         self.grid = grid
         self.grid_lower = grid_lower
@@ -237,7 +223,7 @@ class MergedWing(WingSurface):
 
         NM = 0
         for segment in self.wing_segments:
-            NM += (segment.N - 1) * (segment.M - 1)
+            NM += segment.num_panels
 
         panels: FloatArray = np.empty((NM, 4, 3), dtype=float)
         control_points: FloatArray = np.empty((NM, 3), dtype=float)
@@ -253,7 +239,7 @@ class MergedWing(WingSurface):
 
         NM = 0
         for segment in self.wing_segments:
-            inc = (segment.N - 1) * (segment.M - 1)
+            inc = segment.num_panels
             panels[NM : NM + inc, :, :] = segment.panels
             control_points[NM : NM + inc, :] = segment.control_points
             control_nj[NM : NM + inc, :] = segment.control_nj
@@ -292,8 +278,6 @@ class MergedWing(WingSurface):
         self.area = 0.0
         self.S = 0.0
         for segment in self.wing_segments:
-            if not segment.is_lifting:
-                continue
             segment.calculate_area()
             self.area += segment.area
             self.S += segment.S
@@ -321,7 +305,7 @@ class MergedWing(WingSurface):
             volume_distribution.append(
                 np.reshape(
                     segment.volume_distribution,
-                    ((segment.N - 1) * (segment.M - 1)),
+                    segment.num_panels,
                 ),
             )
 
@@ -345,6 +329,8 @@ class MergedWing(WingSurface):
         x_cm = 0.0
         y_cm = 0.0
         z_cm = 0.0
+        if self.mass == 0.0:
+            return np.array([0.0, 0.0, 0.0], dtype=float)
 
         for segment in self.wing_segments:
             cog_segment = segment.calculate_center_mass()
@@ -427,26 +413,18 @@ class MergedWing(WingSurface):
     #     """
     #     for segment in self.wing_segments:
     #         segment.change_discretization(N, M)
-    def split_xz_symmetric_wing(self) -> tuple["MergedWing", "MergedWing"]:
+    def split_xz_symmetric_wing(self) -> "MergedWing":
         """Splits the wing into two symmetric wings"""
-        left_wing_segments = []
-        right_wing_segments = []
+        wing_segments = []
         for segment in self.wing_segments:
-            left, right = segment.split_xz_symmetric_wing()
-            left_wing_segments.append(left)
-            right_wing_segments.append(right)
+            split_wing = segment.split_xz_symmetric_wing()
+            wing_segments.append(split_wing)
 
-        left_wing = MergedWing(
-            name=f"{self.name}_left",
-            wing_segments=left_wing_segments,
-            symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+        split_wing = MergedWing(
+            name=self.name,
+            wing_segments=wing_segments,
         )
-        right_wing = MergedWing(
-            name=f"{self.name}_right",
-            wing_segments=right_wing_segments,
-            symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
-        )
-        return left_wing, right_wing
+        return split_wing
 
     def __control__(self, control_vector: dict[str, float]) -> None:
         control_dict = {k: control_vector[k] for k in self.control_vars}
@@ -462,20 +440,18 @@ class MergedWing(WingSurface):
             self,
             state["name"],
             state["wing_segments"],
-            state["symmetries"],
         )
 
     def __getstate__(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "wing_segments": self.wing_segments,
-            "symmetries": self.symmetries,
         }
 
     def __repr__(self) -> str:
         """Returns a string representation of the wing"""
-        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+        return f"(Merged Wing): {self.name}: S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
 
     def __str__(self) -> str:
         """Returns a string representation of the wing"""
-        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+        return f"(Merged Wing): {self.name}: S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"

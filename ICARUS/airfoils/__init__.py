@@ -37,7 +37,9 @@ Airfoil Polars Analysis
 
 """
 
-from . import airfoil
-from . import airfoil_polars
+from .airfoil import Airfoil
+from .airfoil_polars import AirfoilPolars
+from .naca4 import NACA4
+from .naca5 import NACA5
 
-__all__ = ["airfoil", "airfoil_polars"]
+__all__ = ["Airfoil", "AirfoilPolars", "NACA4", "NACA5"]

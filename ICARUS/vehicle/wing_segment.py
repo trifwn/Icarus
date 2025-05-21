@@ -6,8 +6,9 @@ from typing import Callable
 
 import numpy as np
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
+from ICARUS.database.db import Database
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
@@ -96,14 +97,20 @@ class WingSegment(WingSurface):
 
         # Set the airfoils of the wing segment
         if isinstance(root_airfoil, str):
-            root_airfoil = Airfoil.naca(root_airfoil)
+            DB = Database.get_instance()
+            root_airfoil = DB.get_airfoil(root_airfoil)
         self._root_airfoil = root_airfoil
-        if tip_airfoil is not None:
-            if isinstance(tip_airfoil, str):
-                tip_airfoil = Airfoil.naca(tip_airfoil)
-        else:
+
+        if tip_airfoil is None:
             tip_airfoil = root_airfoil
+
+        if isinstance(tip_airfoil, str):
+            DB = Database.get_instance()
+            tip_airfoil = DB.get_airfoil(tip_airfoil)
         self._tip_airfoil = tip_airfoil
+
+        assert isinstance(self._root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
+        assert isinstance(self._tip_airfoil, Airfoil), "Tip Airfoil must be an Airfoil"
 
         # Set the symmetries of the wing segment
         if isinstance(symmetries, SymmetryAxes):
@@ -474,10 +481,10 @@ class WingSegment(WingSurface):
         self._tip_airfoil = value
 
     def __repr__(self) -> str:
-        return f"{self.name} (Wing Segment): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+        return f"(Wing Segment) {self.name}: S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
 
     def __str__(self) -> str:
-        return f"{self.name} (Wing Segment): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+        return f"(Wing Segment) {self.name}: S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         WingSegment.__init__(
@@ -509,6 +516,9 @@ class WingSegment(WingSurface):
         )
 
     def __getstate__(self) -> dict[str, Any]:
+        print("Getting state of WingSegment with name:", self.name)
+        assert isinstance(self.root_airfoil, Airfoil)
+        assert isinstance(self.tip_airfoil, Airfoil)
         return {
             "name": self.name,
             "origin": self.origin,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import types
+from copy import copy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
@@ -9,7 +10,9 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
+from ICARUS.core.serialization import deserialize_function
+from ICARUS.core.serialization import serialize_function
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.control_surface import ControlSurface
@@ -20,6 +23,9 @@ from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.utils import equal_spacing_function_factory
 
 from .strip import Strip
+
+if TYPE_CHECKING:
+    from ICARUS.vehicle.merged_wing import MergedWing
 
 
 class WingSurface:
@@ -111,7 +117,6 @@ class WingSurface:
         if isinstance(symmetries, SymmetryAxes):
             symmetries = [symmetries]
         self.symmetries: list[SymmetryAxes] = symmetries
-        self.is_symmetric_y: bool = True if SymmetryAxes.Y in symmetries else False
 
         # Define Discretization
         # TODO: Add logic to handle different discretization types
@@ -144,12 +149,18 @@ class WingSurface:
             DB = Database.get_instance()
             root_airfoil = DB.get_airfoil(root_airfoil)
         self._root_airfoil: Airfoil = root_airfoil
+
         if tip_airfoil is None:
-            tip_airfoil = root_airfoil
-        elif isinstance(tip_airfoil, str):
+            tip_airfoil = copy(root_airfoil)
+
+        if isinstance(tip_airfoil, str):
             DB = Database.get_instance()
             tip_airfoil = DB.get_airfoil(tip_airfoil)
         self._tip_airfoil: Airfoil = tip_airfoil
+
+        assert isinstance(self._root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
+        assert isinstance(self._tip_airfoil, Airfoil), "Tip Airfoil must be an Airfoil"
+
         self.airfoils: list[Airfoil] = [root_airfoil, tip_airfoil]
 
         # Store Origin Parameters
@@ -363,6 +374,21 @@ class WingSurface:
         self.define_strips()
         # self.calculate_wing_parameters()
         self.calculate_volume()
+
+    @property
+    def is_symmetric_y(self) -> bool:
+        """Check if the wing is symmetric in Y direction"""
+        return SymmetryAxes.Y in self.symmetries
+
+    @property
+    def is_symmetric_z(self) -> bool:
+        """Check if the wing is symmetric in Z direction"""
+        return SymmetryAxes.Z in self.symmetries
+
+    @property
+    def is_symmetric_x(self) -> bool:
+        """Check if the wing is symmetric in X direction"""
+        return SymmetryAxes.X in self.symmetries
 
     @property
     def span(self) -> float:
@@ -636,7 +662,7 @@ class WingSurface:
             self.M = M
         self.define_wing_parameters()
 
-    def split_xz_symmetric_wing(self) -> tuple[WingSurface, WingSurface]:
+    def split_xz_symmetric_wing(self) -> MergedWing:
         """Split Symmetric Wing into two Wings"""
         if self.is_symmetric_y:
             left = WingSurface(
@@ -656,8 +682,8 @@ class WingSurface:
                 z_offsets=self._zoffset_dist[::-1],
                 x_offsets=self._xoffset_dist[::-1],
                 twist_angles=self.twist_angles[::-1],
-                root_airfoil=self.tip_airfoil,
-                tip_airfoil=self.root_airfoil,
+                root_airfoil=copy(self.tip_airfoil),
+                tip_airfoil=copy(self.root_airfoil),
                 N=self.N,
                 M=self.M,
                 mass=self.mass / 2,
@@ -666,7 +692,7 @@ class WingSurface:
 
             right = WingSurface(
                 name=f"{self.name}_right",
-                root_airfoil=self.root_airfoil,
+                root_airfoil=copy(self.root_airfoil),
                 origin=self._origin,
                 orientation=self.orientation,
                 symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
@@ -675,13 +701,20 @@ class WingSurface:
                 x_offsets=self._xoffset_dist,
                 z_offsets=self._zoffset_dist,
                 twist_angles=self.twist_angles,
-                tip_airfoil=self.tip_airfoil,
+                tip_airfoil=copy(self.tip_airfoil),
                 N=self.N,
                 M=self.M,
                 mass=self.mass / 2,
-                controls=[control for control in self.controls],
+                controls=[copy(control) for control in self.controls],
             )
-            return left, right
+
+            from ICARUS.vehicle.merged_wing import MergedWing
+
+            split_wing = MergedWing(
+                name=self.name,
+                wing_segments=[left, right],
+            )
+            return split_wing
         raise ValueError("Cannot Split Body it is not symmetric")
 
     def generate_airfoils(self) -> None:
@@ -1298,32 +1331,9 @@ class WingSurface:
     #         ax.plot_trisurf(X, Y, Z, color=c)
     #     fig.show()
 
-    def serialize_function(self, func: Callable[[Any], Any]) -> dict[str, Any] | None:
-        if isinstance(func, types.MethodType):
-            func_name = func.__func__.__name__
-            return {"py/method": [func.__self__, func_name]}
-        if isinstance(func, types.FunctionType):
-            if func.__name__ == "<lambda>":
-                return {"py/lambda": func.__code__.co_code}
-            return {"py/function": func.__module__ + "." + func.__name__}
-        return None
-
     def __setstate__(self, state: dict[str, Any]) -> None:
-        chord_discretization_func_info = state.get("chord_discretization_function")
-        if chord_discretization_func_info:
-            func_type, func_info = list(chord_discretization_func_info.items())[0]
-            if func_type == "py/method":
-                obj, func_name = func_info
-                chord_discretization_function = getattr(obj, func_name)
-            elif func_type == "py/function":
-                module_name, func_name = func_info.rsplit(".", 1)
-                module = __import__(module_name, fromlist=[func_name])
-                chord_discretization_function = getattr(module, func_name)
-            else:
-                chord_discretization_function = None
-        else:
-            chord_discretization_function = None
-
+        func_dict = state.get("chord_discretization_function")
+        chord_discretization_function = deserialize_function(func_dict)
         WingSurface.__init__(
             self,
             name=state["name"],
@@ -1351,11 +1361,11 @@ class WingSurface:
             "name": self.name,
             "origin": self.origin,
             "orientation": self.orientation,
-            "spanwise_positions": self._span_dist,
-            "chord_lengths": self._chord_dist,
-            "x_offsets": self._xoffset_dist,
-            "z_offsets": self._zoffset_dist,
-            "twist_angles": self.twist_angles,
+            "spanwise_positions": np.array(self._span_dist, copy=True),
+            "chord_lengths": np.array(self._chord_dist, copy=True),
+            "x_offsets": np.array(self._xoffset_dist, copy=True),
+            "z_offsets": np.array(self._zoffset_dist, copy=True),
+            "twist_angles": np.array(self.twist_angles, copy=True),
             "root_airfoil": self.root_airfoil,
             "tip_airfoil": self.tip_airfoil,
             "N": self.N,
@@ -1364,7 +1374,7 @@ class WingSurface:
             "symmetries": self.symmetries,
             "is_lifting": self.is_lifting,
             "chord_discretization_function": (
-                self.serialize_function(self.chord_discretization_function)
+                serialize_function(self.chord_discretization_function)
                 if self.chord_spacing is not DiscretizationType.LINEAR
                 else None
             ),
@@ -1374,8 +1384,8 @@ class WingSurface:
 
     def __repr__(self) -> str:
         """Returns a string representation of the wing"""
-        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+        return f"(Wing Surface) {self.name}: S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
 
     def __str__(self) -> str:
         """Returns a string representation of the wing"""
-        return f"{self.name} (Merged Wing): S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"
+        return f"(Wing Surface) {self.name}: S={self.area:.2f} m^2, Span={self.span:.2f} m, MAC={self.mean_aerodynamic_chord:.2f} m"

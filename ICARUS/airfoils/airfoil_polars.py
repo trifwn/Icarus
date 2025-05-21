@@ -50,12 +50,12 @@ from pandas import DataFrame
 from pandas import Index
 from pandas import Series
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 
 
-# from ICARUS.airfoils.airfoil import Airfoil
+# from ICARUS.airfoils import Airfoil
 class PolarNotAccurate(Exception):
     """Exception Raised when the Polar is not accurate"""
 

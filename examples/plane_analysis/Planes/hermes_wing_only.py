@@ -2,7 +2,6 @@ import numpy as np
 
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -42,8 +41,5 @@ def hermes_main_wing(name: str) -> Airplane:
         M=5,
         mass=0.670,
     )
-    # main_wing.plotWing()
-
-    lifting_surfaces: list[WingSurface] = [main_wing]
-    airplane = Airplane(name, lifting_surfaces)
+    airplane = Airplane(name, main_wing=main_wing)
     return airplane

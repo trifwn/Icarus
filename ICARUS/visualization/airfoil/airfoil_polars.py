@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 from pandas import Series
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.database import Database
 
 from .. import colors_

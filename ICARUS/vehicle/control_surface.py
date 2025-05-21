@@ -1,10 +1,14 @@
+from copy import copy
 from enum import Enum
 from functools import partial
+from typing import Any
 from typing import Callable
 from typing import Literal
 
 import numpy as np
 
+from ICARUS.core.serialization import deserialize_function
+from ICARUS.core.serialization import serialize_function
 from ICARUS.core.types import FloatArray
 
 
@@ -68,12 +72,14 @@ class ControlSurface:
         self.local_rotation_axis = local_rotation_axis
 
         if chord_function is None:
+            self._is_chord_function_default = True
             self.chord_function: Callable[[float], float] = partial(
                 default_chord_function_factory,
                 chord_percentage_start=self.chord_percentage_start,
                 chord_percentage_end=self.chord_percentage_end,
             )
         else:
+            self._is_chord_function_default = False
             self.chord_function = chord_function
 
         self.constant_chord = constant_chord
@@ -114,7 +120,7 @@ class ControlSurface:
                 hinge_chord_percentages=(self.chord_percentage_start, self.chord_percentage_end),
                 chord_extension=self.chord_extension,
                 local_rotation_axis=self.local_rotation_axis,
-                chord_function=self.inverse_chord_function,
+                chord_function=copy(self.inverse_chord_function),
                 inverse_symmetric=True,
                 constant_chord=self.constant_chord,
                 coordinate_system=self.coordinate_system,
@@ -122,6 +128,43 @@ class ControlSurface:
             )
         else:
             return self
+
+    def __getstate__(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "type": self.type,
+            "control_var": self.control_var,
+            "span_position_start": self.span_position_start,
+            "span_position_end": self.span_position_end,
+            "chord_percentage_start": self.chord_percentage_start,
+            "chord_percentage_end": self.chord_percentage_end,
+            "chord_extension": self.chord_extension,
+            "local_rotation_axis": self.local_rotation_axis,
+            "chord_function": (
+                serialize_function(self.chord_function) if not self._is_chord_function_default else None
+            ),
+            "inverse_symmetric": self.inverse_symmetric,
+            "constant_chord": self.constant_chord,
+            "coordinate_system": self.coordinate_system,
+        }
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        func_dict = state.get("chord_function")
+        chord_function = deserialize_function(func_dict)
+
+        ControlSurface.__init__(
+            self,
+            name=state["name"],
+            control_vector_var=state["control_var"],
+            span_positions=(state["span_position_start"], state["span_position_end"]),
+            hinge_chord_percentages=(state["chord_percentage_start"], state["chord_percentage_end"]),
+            chord_extension=state["chord_extension"],
+            local_rotation_axis=state["local_rotation_axis"],
+            chord_function=chord_function,
+            inverse_symmetric=state["inverse_symmetric"],
+            constant_chord=state["constant_chord"],
+            coordinate_system=state["coordinate_system"],
+        )
 
 
 NoControl = ControlSurface(

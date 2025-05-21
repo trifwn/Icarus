@@ -24,7 +24,7 @@ DB = Database(database_folder)
 read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
 
 
-def main(GNVP_VERSION) -> None:
+def main(GNVP_VERSION: int) -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
 

@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 
 
@@ -70,7 +70,7 @@ class Strip:
         self.mean_chord: float = (start_chord + end_chord) / 2
         self.twists: list[float] = [start_twist, end_twist]
         self.mean_twist = (start_twist + end_twist) / 2
-        self.max_thickness: float = self.mean_airfoil.max_thickness()
+        self.max_thickness: float = self.mean_airfoil.max_thickness
 
     def return_symmetric(
         self,

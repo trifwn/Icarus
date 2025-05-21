@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils.airfoil_polars import AirfoilData
 from ICARUS.airfoils.airfoil_polars import AirfoilPolars
 from ICARUS.airfoils.airfoil_polars import PolarNotAccurate

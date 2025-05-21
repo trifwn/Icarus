@@ -1,4 +1,5 @@
-"""Airfoil class to represent an airfoil. Inherits from airfoil class from the airfoils module.
+"""
+Airfoil class to represent an airfoil. Inherits from airfoil class from the airfoils module.
 The airfoil class is used to generate, store, and manipulate airfoils. To initialize the class
 you need to pass the upper and lower surface coordinates. The class also contains alternative
 constructors to generate airfoils from NACA 4 and 5 digit identifiers.
@@ -64,19 +65,14 @@ import numpy as np
 import requests
 from matplotlib.axes import Axes
 
-from ICARUS.airfoils._naca5 import gen_NACA5_airfoil
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
     from ICARUS.airfoils.flapped_airfoil import FlappedAirfoil
-# # Airfoil
-# ##### 0 = Read from python module
-# ##### 1 = Read from airfoiltools.com
-# ##### 2 = load from file
 
 
-class Airfoil(af.Airfoil):  # type: ignore
+class Airfoil(af.Airfoil):
     """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
 
@@ -90,7 +86,6 @@ class Airfoil(af.Airfoil):  # type: ignore
         upper: FloatArray,
         lower: FloatArray,
         name: str,
-        n_points: int = 200,
     ) -> None:
         """Initialize the Airfoil class
 
@@ -98,8 +93,6 @@ class Airfoil(af.Airfoil):  # type: ignore
             upper (FloatArray): Upper surface coordinates
             lower (FloatArray): Lower surface coordinates
             naca (str): NACA 4 digit identifier (e.g. 0012)
-            n_points (int): Number of points to be used to generate the airfoil. It interpolates between upper and lower
-
         """
         lower, upper = self.close_airfoil(lower, upper)
         super().__init__(upper, lower)
@@ -107,7 +100,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         self.name: str = name
         self.file_name: str = name
 
-        self.n_points: int = n_points
+        self.n_points: int = upper.shape[1]
         # Repanel the airfoil
         # self.repanel(n_points=n_points, distribution="cosine")
         self.selig = self.to_selig()
@@ -304,6 +297,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         thickness[x > self.max_x] = 0
         return thickness
 
+    @property
     def max_thickness(self) -> float:
         """Returns the maximum thickness of the airfoil
 
@@ -314,6 +308,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
         return float(np.max(thickness))
 
+    @property
     def max_thickness_location(self) -> float:
         """Returns the location of the maximum thickness of the airfoil
 
@@ -479,7 +474,7 @@ class Airfoil(af.Airfoil):  # type: ignore
             # Round to 2 decimals in string format
             new_eta_str = f"{new_eta}"
             name = f"morphed_{airfoil1_parent_1}_{airfoil2_parent_2}_at_{new_eta_str}%"
-        return cls(upper, lower, name, n_points)
+        return cls(upper, lower, name)
 
     @classmethod
     def naca(cls, naca: str, n_points: int = 200) -> Airfoil:
@@ -505,17 +500,24 @@ class Airfoil(af.Airfoil):  # type: ignore
         naca = naca.replace("_", "")
         naca = naca.replace(" ", "")
         if re_5digits.match(naca):
-            upper, lower = gen_NACA5_airfoil(naca, n_points)
-            self: Airfoil = cls(upper, lower, f"naca{naca}", n_points)
-            return self
+            from .naca5 import NACA5
+
+            L = int(naca[0])
+            P = int(naca[1])
+            Q = int(naca[2])
+            assert Q in [0, 1], "Q must be 0 or 1"
+
+            XX = int(naca[3:5])
+            naca5 = NACA5(L=L, P=P, Q=Q, XX=XX, n_points=n_points)
+            return naca5
         if re_4digits.match(naca):
-            m: float = float(naca[0]) / 100
-            p = float(naca[1]) / 10
-            xx = float(naca[2:4]) / 100
-            upper, lower = af.gen_NACA4_airfoil(m, p, xx, n_points // 2)
-            self = cls(upper, lower, f"naca{naca}", n_points)
-            self.set_naca4_digits(p, m, xx)
-            return self
+            from .naca4 import NACA4
+
+            m = int(naca[0])
+            p = int(naca[1])
+            xx = int(naca[2:4])
+            naca4 = NACA4(M=m, P=p, XX=xx, n_points=n_points)
+            return naca4
         raise af.NACADefintionError(
             "Identifier not recognised as valid NACA 4 definition",
         )
@@ -559,7 +561,7 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_arr = np.array(y)
         lower, upper = cls.split_sides(x_arr, y_arr)
         try:
-            self: Airfoil = cls(upper, lower, os.path.split(filename)[-1], len(x))
+            self: Airfoil = cls(upper, lower, os.path.split(filename)[-1])
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
@@ -643,7 +645,6 @@ class Airfoil(af.Airfoil):  # type: ignore
         y_upper_after_flap = np.delete(y_upper_after_flap, problematic_indices)
 
         # TODO: Add points in the upper surface to smooth the flap
-
         upper: FloatArray = np.array(
             [
                 [*x_upper, *x_upper_after_flap],
@@ -777,78 +778,15 @@ class Airfoil(af.Airfoil):  # type: ignore
         #     ax.set_aspect('equal', 'box')
         #     plt.show()
 
-        flapped = Airfoil(
+        from .flapped_airfoil import FlappedAirfoil
+
+        flapped = FlappedAirfoil(
             upper,
             lower,
-            f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
-            n_points=self.n_points,
+            name=f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
+            parent=self,
         )
         return flapped
-
-    def set_naca4_digits(self, p: float, m: float, xx: float) -> None:
-        """Class to store the NACA 4 digits parameters for the airfoil in the object
-
-        Args:
-            p (float): Camber parameter
-            m (float): Position of max camber
-            xx (float): Thickness
-
-        """
-        self.p = p
-        self.xx = xx
-        self.m: float = m
-
-    def set_naca5_digits(self, ll: float, p: float, q: float, xx: float) -> None:
-        """Class to store the NACA 5 digits parameters for the airfoil in the object
-
-        Args:
-            ll (float): Leading edge radius
-            p (float): Maximum camber
-            q (float): Position of maximum camber
-            xx (float): Thickness
-
-        """
-        self.l: float = ll
-        self.p: float = p
-        self.q: float = q
-        self.xx: float = xx
-
-    def camber_line_naca4(
-        self,
-        points: float | FloatArray | list[float],
-    ) -> FloatArray:
-        """Function to generate the camber line for a NACA 4 digit airfoil.
-        Returns the camber line for a given set of x coordinates.
-
-        Args:
-            points (FloatArray): X coordinates for which we need the camber line
-
-        Returns:
-            FloatArray: X,Y coordinates of the camber line
-
-        """
-        p: float = self.p
-        m: float = self.m
-
-        if isinstance(points, float):
-            x: float = float(points)
-            if x < p:
-                result: float = m / p**2 * (2 * p * x - x**2)
-            else:
-                result = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
-            return np.array(result)
-        if isinstance(points, list):
-            points = np.array(points, dtype=float)
-        if isinstance(points, int):
-            points = np.array(float(points))
-
-        results: FloatArray = np.zeros_like(points)
-        for i, xi in enumerate(points.tolist()):
-            if xi < p:
-                results[i] = m / p**2 * (2 * p * xi - xi**2)
-            else:
-                results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * xi - xi**2)
-        return results
 
     def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:
         """Returns the camber line for a given set of x coordinates
@@ -978,9 +916,6 @@ class Airfoil(af.Airfoil):  # type: ignore
             file_name = os.path.join(directory, self.file_name)
         else:
             file_name = self.file_name
-        # if not file_name.endswith(".dat"):
-        #     file_name += ".dat"
-        # print(f"Saving airfoil to {file_name}")
 
         with open(file_name, "w") as file:
             if header:
@@ -1033,10 +968,6 @@ class Airfoil(af.Airfoil):  # type: ignore
             file_name = os.path.join(directory, self.file_name)
         else:
             file_name = self.file_name
-        # if not file_name.endswith(".dat"):
-        #     file_name += ".dat"
-
-        # print(f"Saving airfoil to {file_name}")
 
         with open(file_name, "w") as file:
             file.write(f"{self.name}\n\n")
@@ -1089,8 +1020,8 @@ class Airfoil(af.Airfoil):  # type: ignore
             _ax.plot(x, y, "k--")
 
         if max_thickness:
-            x = self.max_thickness_location()
-            thick = self.max_thickness()
+            x = self.max_thickness_location
+            thick = self.max_thickness
             y_up = self.y_upper(x)
             y_lo = self.y_lower(x)
             # Plot a line from the upper to the lower surface
@@ -1099,3 +1030,54 @@ class Airfoil(af.Airfoil):  # type: ignore
             _ax.text(x, y_lo, f"{thick:.3f}", ha="right", va="bottom")
         _ax.axis("scaled")
         _ax.set_title(f"Airfoil {self.name}")
+
+    # def __repr__(self) -> str:
+    #     """Returns the string representation of the airfoil
+
+    #     Returns:
+    #         str: String representation of the airfoil
+
+    #     """
+    #     return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+
+    def __str__(self) -> str:
+        """Returns the string representation of the airfoil
+
+        Returns:
+            str: String representation of the airfoil
+
+        """
+        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Sets the state of the airfoil
+
+        Args:
+            state (dict[str, Any]): State of the airfoil
+
+        """
+        upper = state["upper"]
+        lower = state["lower"]
+        # Convert to numpy arrays
+        upper = np.array(upper, dtype=float)
+        lower = np.array(lower, dtype=float)
+
+        Airfoil.__init__(
+            self,
+            name=state["name"],
+            upper=upper,
+            lower=lower,
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Returns the state of the airfoil
+
+        Returns:
+            dict[str, Any]: State of the airfoil
+
+        """
+        return {
+            "name": self.name,
+            "upper": np.vstack((self._x_upper, self._y_upper), dtype=float).tolist(),
+            "lower": np.vstack((self._x_lower, self._y_lower), dtype=float).tolist(),
+        }

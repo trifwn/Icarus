@@ -4,7 +4,7 @@ import os
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 

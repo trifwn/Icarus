@@ -3,7 +3,7 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 

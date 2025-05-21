@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ICARUS.airfoils.airfoil import Airfoil
+from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 
 
@@ -35,3 +35,12 @@ class FlappedAirfoil(Airfoil):
             flap_hinge_thickness_percentage,
             chord_extension,
         )
+
+    def __repr__(self) -> str:
+        """Returns the string representation of the airfoil
+
+        Returns:
+            str: String representation of the airfoil
+
+        """
+        return f"(Flapped Airfoil): {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
