@@ -1,7 +1,7 @@
 """DATA FROM EMBRAER E190 AIRCRAFT."""
 
 from ICARUS.conceptual.concept_airplane import ConceptAirplane
-from ICARUS.conceptual.criteria.FAR.landing_criterion import (
+from ICARUS.conceptual.criteria.FAR import (
     far_inverse_landing_criterion_cl_max,
 )
 

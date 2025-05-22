@@ -9,11 +9,11 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS import AVL_exe
-from ICARUS.airfoils.airfoil_polars import AirfoilPolars
+from ICARUS.airfoils import AirfoilPolars
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database.database2D import PolarsNotFoundError
-from ICARUS.environment.definition import Environment
+from ICARUS.database import PolarsNotFoundError
+from ICARUS.environment import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.surface import WingSurface
@@ -376,7 +376,7 @@ def get_effective_aoas(
     dfs = []
     import pandas as pd
 
-    from ICARUS.database.utils import angle_to_case
+    from ICARUS.database import angle_to_case
 
     DB = Database.get_instance()
     for i, angle in enumerate(angles):

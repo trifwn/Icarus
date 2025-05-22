@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from ICARUS.database.db import Database
+from ICARUS.database import Database
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics.state import State

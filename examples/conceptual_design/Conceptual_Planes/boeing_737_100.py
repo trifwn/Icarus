@@ -1,7 +1,7 @@
 import numpy as np
 
 from ICARUS.conceptual.concept_airplane import ConceptAirplane
-from ICARUS.conceptual.criteria.FAR.helper_functions import drag_coeff_skin
+from ICARUS.conceptual.criteria.FAR import drag_coeff_skin
 
 UNITS_IMPERIAL: dict[str, float] = {
     "m": 3.28084,

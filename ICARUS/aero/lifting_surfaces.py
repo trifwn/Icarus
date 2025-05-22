@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 from numpy import ndarray
 
-from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
+from ICARUS.aero.wing_lspt import LSPT_Plane
 from ICARUS.database import Database
 
 if TYPE_CHECKING:

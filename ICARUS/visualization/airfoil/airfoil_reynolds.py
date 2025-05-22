@@ -7,10 +7,10 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.airfoils.airfoil_polars import AirfoilPolars
+from ICARUS.airfoils import AirfoilPolars
 from ICARUS.database import Database
-from ICARUS.database.database2D import AirfoilNotFoundError
-from ICARUS.database.database2D import PolarsNotFoundError
+from ICARUS.database import AirfoilNotFoundError
+from ICARUS.database import PolarsNotFoundError
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 

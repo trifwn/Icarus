@@ -13,7 +13,7 @@ ICARUS Module for adding FAR Criteria to the Conceptual Design
     ICARUS.conceptual.criteria.FAR.range
     ICARUS.conceptual.criteria.FAR.useful_load
     ICARUS.conceptual.criteria.FAR.get_all_criteria
-    ICARUS.conceptual.criteria.FAR.helper_functions
+    ICARUS.conceptual.criteria.FAR
 
 .. module:: ICARUS.conceptual.criteria.FAR
     :platform: Unix, Windows
@@ -49,24 +49,44 @@ Helper Functions
 
 """
 
-from . import climb_criterion
-from . import cruise_criterion
-from . import failed_approach_criterion
-from . import get_all_criteria
-from . import helper_functions
-from . import landing_criterion
-from . import range
-from . import takeoff_criterion
-from . import useful_load
+from .landing_criterion import (
+    far_inverse_landing_criterion_cl_max,
+    far_inverse_landing_criterion_cl_max2,
+    far_1_landing,
+)
+from .failed_approach_criterion import far_2_failed_approach
+from .takeoff_criterion import far_3_takeoff
+from .climb_criterion import far_4_climb
+from .cruise_criterion import far_5_cruise_speed
+from .range import range_criterion
+
+from .get_all_criteria import get_all_far_criteria
+from .helper_functions import (
+    drag_coeff_skin,
+    get_climb_rate,
+    get_climb_rate_failed_approach,
+    lift_drag_min_drag,
+)
+
+
+from .useful_load import usefull_load_criterion
 
 __all__ = [
-    "climb_criterion",
-    "cruise_criterion",
-    "failed_approach_criterion",
-    "get_all_criteria",
-    "helper_functions",
-    "landing_criterion",
-    "range",
-    "takeoff_criterion",
-    "useful_load",
+    # FAR criteria
+    "get_all_far_criteria",
+    "far_1_landing",
+    "far_2_failed_approach",
+    "far_3_takeoff",
+    "far_4_climb",
+    "far_5_cruise_speed",
+    "range_criterion",
+    "usefull_load_criterion",
+    # FAR inverse criteria
+    "far_inverse_landing_criterion_cl_max",
+    "far_inverse_landing_criterion_cl_max2",
+    # FAR helper functions
+    "drag_coeff_skin",
+    "get_climb_rate",
+    "get_climb_rate_failed_approach",
+    "lift_drag_min_drag",
 ]

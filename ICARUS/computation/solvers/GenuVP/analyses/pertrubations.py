@@ -8,8 +8,8 @@ from tqdm.auto import tqdm
 from ICARUS import CPU_TO_USE
 from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import parallel_monitor
 from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
-from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
+from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import gnvp3_case
+from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import gnvp7_case
 from ICARUS.computation.solvers.GenuVP.post_process.forces import (
     forces_to_pertrubation_results,
 )
@@ -19,8 +19,8 @@ from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParamete
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct
 from ICARUS.database import Database
-from ICARUS.database.utils import disturbance_to_case
-from ICARUS.environment.definition import Environment
+from ICARUS.database import disturbance_to_case
+from ICARUS.environment import Environment
 from ICARUS.flight_dynamics.disturbances import Disturbance
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
@@ -96,9 +96,9 @@ def gnvp_disturbance_case(
     )
 
     if genu_version == 7:
-        run = run_gnvp7_case
+        run = gnvp7_case
     else:
-        run = run_gnvp3_case
+        run = gnvp3_case
 
     run(
         CASEDIR,

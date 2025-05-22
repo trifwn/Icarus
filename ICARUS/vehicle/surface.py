@@ -14,7 +14,6 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.core.serialization import deserialize_function
 from ICARUS.core.serialization import serialize_function
 from ICARUS.core.types import FloatArray
-from ICARUS.database import Database
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import ControlType
 from ICARUS.vehicle.control_surface import NoControl
@@ -36,7 +35,7 @@ class WingSurface:
         name: str,
         origin: FloatArray,
         orientation: FloatArray,
-        root_airfoil: str | Airfoil,
+        root_airfoil: Airfoil,
         spanwise_positions: FloatArray,
         chord_lengths: FloatArray,
         z_offsets: FloatArray,
@@ -48,7 +47,7 @@ class WingSurface:
         # Optional Parameters
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
         chord_discretization_function: Callable[[int], float] | None = None,
-        tip_airfoil: str | Airfoil | None = None,
+        tip_airfoil: Airfoil | None = None,
         is_lifting: bool = True,
         controls: list[ControlSurface] = [NoControl],
     ) -> None:
@@ -145,17 +144,13 @@ class WingSurface:
         self.twist_angles: FloatArray = twist_angles
 
         # Define the airfoil
-        if isinstance(root_airfoil, str):
-            DB = Database.get_instance()
-            root_airfoil = DB.get_airfoil(root_airfoil)
+        assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
         self._root_airfoil: Airfoil = root_airfoil
 
         if tip_airfoil is None:
             tip_airfoil = copy(root_airfoil)
 
-        if isinstance(tip_airfoil, str):
-            DB = Database.get_instance()
-            tip_airfoil = DB.get_airfoil(tip_airfoil)
+        assert isinstance(tip_airfoil, Airfoil), "Tip Airfoil must be an Airfoil"
         self._tip_airfoil: Airfoil = tip_airfoil
 
         assert isinstance(self._root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
@@ -230,8 +225,8 @@ class WingSurface:
         name: str,
         origin: FloatArray,
         orientation: FloatArray,
-        root_airfoil: str | Airfoil,
-        tip_airfoil: str | Airfoil,
+        root_airfoil: Airfoil,
+        tip_airfoil: Airfoil,
         span: float,
         span_discretization_function: Callable[[int], float],
         chord_discretization_function: Callable[[int], float],
@@ -279,32 +274,15 @@ class WingSurface:
         twist_angles: FloatArray = np.empty(N, dtype=float)
 
         # Define Airfoils
-        if isinstance(root_airfoil, str):
-            DB = Database.get_instance()
-            root_airfoil_obj: Airfoil = DB.get_airfoil(root_airfoil)
-        elif isinstance(root_airfoil, Airfoil):
-            root_airfoil_obj = root_airfoil
-        else:
-            print(root_airfoil)
-            print(type(root_airfoil))
-            raise ValueError("Root Airfoil must be a string or an Airfoil")
-
-        if isinstance(tip_airfoil, str):
-            DB = Database.get_instance()
-            tip_airfoil_obj: Airfoil = DB.get_airfoil(tip_airfoil)
-        elif isinstance(tip_airfoil, Airfoil):
-            tip_airfoil_obj = tip_airfoil
-        else:
-            print(tip_airfoil)
-            print(type(tip_airfoil))
-            raise ValueError("Tip Airfoil must be a string or an Airfoil")
+        assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
+        assert isinstance(tip_airfoil, Airfoil), "Tip Airfoil must be an Airfoil"
 
         # Needed for when we have airfoils that are flapped and therefore have a different chord length
         def real_chord_fun(
             eta: float,
         ) -> float:
             # TODO: Add logic to handle interpolation between root and tip airfoil
-            const = float(np.max(root_airfoil_obj._x_lower))
+            const = float(np.max(root_airfoil._x_lower))
             return const * chord_as_a_function_of_span_percentage(eta)
 
         if isinstance(symmetries, SymmetryAxes):
@@ -326,8 +304,8 @@ class WingSurface:
             name=name,
             origin=origin,
             orientation=orientation,
-            root_airfoil=root_airfoil_obj,
-            tip_airfoil=tip_airfoil_obj,
+            root_airfoil=root_airfoil,
+            tip_airfoil=tip_airfoil,
             spanwise_positions=spanwise_positions,
             chord_lengths=chord_lengths,
             z_offsets=z_offsets,
@@ -609,8 +587,10 @@ class WingSurface:
 
     @root_airfoil.setter
     def root_airfoil(self, value: str | Airfoil) -> None:
-        DB = Database.get_instance()
         if isinstance(value, str):
+            from ICARUS.database import Database
+
+            DB = Database.get_instance()
             value = DB.get_airfoil(value)
         self._root_airfoil = value
         self.define_wing_parameters()
@@ -621,8 +601,10 @@ class WingSurface:
 
     @tip_airfoil.setter
     def tip_airfoil(self, value: str | Airfoil) -> None:
-        DB = Database.get_instance()
         if isinstance(value, str):
+            from ICARUS.database import Database
+
+            DB = Database.get_instance()
             value = DB.get_airfoil(value)
         self._tip_airfoil = value
         self.define_wing_parameters()

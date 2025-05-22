@@ -10,8 +10,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_3
 from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
-from ICARUS.database.utils import angle_to_case
-from ICARUS.database.utils import case_to_angle
+from ICARUS.database import angle_to_case
+from ICARUS.database import case_to_angle
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics.state import State

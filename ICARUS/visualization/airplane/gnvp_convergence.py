@@ -3,8 +3,8 @@ import numpy as np
 from matplotlib.figure import Figure
 
 from ICARUS.database import Database
-from ICARUS.database.utils import angle_to_case
-from ICARUS.database.utils import disturbance_to_case
+from ICARUS.database import angle_to_case
+from ICARUS.database import disturbance_to_case
 from ICARUS.flight_dynamics.disturbances import Disturbance
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers

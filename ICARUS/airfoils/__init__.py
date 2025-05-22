@@ -38,8 +38,24 @@ Airfoil Polars Analysis
 """
 
 from .airfoil import Airfoil
-from .airfoil_polars import AirfoilPolars
+from .airfoil_polars import (
+    AirfoilPolars,
+    AirfoilData,
+    PolarNotAccurate,
+    ReynoldsNotIncluded,
+)
 from .naca4 import NACA4
 from .naca5 import NACA5
 
-__all__ = ["Airfoil", "AirfoilPolars", "NACA4", "NACA5"]
+__all__ = [
+    # Airfoil Modelling
+    "Airfoil",
+    "NACA4",
+    "NACA5",
+    # Result Classes
+    "AirfoilData",
+    "AirfoilPolars",
+    # Exceptions
+    "PolarNotAccurate",
+    "ReynoldsNotIncluded",
+]

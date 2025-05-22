@@ -10,7 +10,7 @@ from numpy import rad2deg
 
 from ICARUS import AVL_exe
 from ICARUS.database import Database
-from ICARUS.database.utils import disturbance_to_case
+from ICARUS.database import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 

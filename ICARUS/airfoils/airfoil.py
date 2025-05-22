@@ -69,7 +69,7 @@ from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
-    from ICARUS.airfoils.flapped_airfoil import FlappedAirfoil
+    from .flapped_airfoil import FlappedAirfoil
 
 
 class Airfoil(af.Airfoil):

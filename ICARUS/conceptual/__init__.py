@@ -36,7 +36,13 @@ The Criteria part contains classes and routines for defining mission and perform
 
 """
 
-from . import concept_airplane
 from . import criteria
 
-__all__ = ["concept_airplane", "criteria"]
+from .concept_airplane import ConceptAirplane
+from .concept_engine import ConceptEngine
+
+__all__ = [
+    "ConceptAirplane",
+    "ConceptEngine",
+    "criteria",
+]

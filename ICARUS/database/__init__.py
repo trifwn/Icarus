@@ -34,8 +34,34 @@ The package is divided in the following files:
 # DATABASES ###
 
 from .analysesDB import AnalysesDB
-from .database2D import Database_2D
+from .database2D import (
+    Database_2D,
+    PolarsNotFoundError,
+    AirfoilNotFoundError,
+)
+
 from .database3D import Database_3D
 from .db import Database
+from .utils import (
+    angle_to_case,
+    case_to_angle,
+    disturbance_to_case,
+    case_to_disturbance,
+)
 
-__all__ = ["AnalysesDB", "Database", "Database_2D", "Database_3D"]
+__all__ = [
+    "Database", 
+    "Database_2D", 
+    "Database_3D",
+    "AnalysesDB", 
+
+    # Utils
+    "angle_to_case",
+    "case_to_angle",
+    "disturbance_to_case",
+    "case_to_disturbance",
+
+    # Exceptions
+    "PolarsNotFoundError",
+    "AirfoilNotFoundError",
+]

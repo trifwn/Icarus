@@ -57,7 +57,7 @@ def make_polars_7(CASEDIR: str, HOMEDIR: str) -> DataFrame:
     return log_forces(CASEDIR, HOMEDIR, 7)
 
 
-def run_gnvp7_case(
+def gnvp7_case(
     CASEDIR: str,
     HOMEDIR: str,
     movements: list[list[Movement]],

@@ -1,7 +1,7 @@
 import numpy as np
 from pandas import Series
 
-from ICARUS.database.db import Database
+from ICARUS.database import Database
 
 
 def airplane_polars(plot: bool = False) -> None:

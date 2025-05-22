@@ -22,6 +22,6 @@ This package contains class and routines for environment modelling. The package 
 
 """
 
-from . import definition
+from .definition import Environment, EARTH_ISA
 
-__all__ = ["definition"]
+__all__ = ["Environment", "EARTH_ISA"]

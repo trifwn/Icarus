@@ -9,8 +9,8 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.core.types import FloatArray
-from ICARUS.database.db import Database
-from ICARUS.database.utils import disturbance_to_case
+from ICARUS.database import Database
+from ICARUS.database import disturbance_to_case
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 

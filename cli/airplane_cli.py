@@ -27,9 +27,9 @@ from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
 from ICARUS.core.struct import Struct
-from ICARUS.database.db import Database
-from ICARUS.environment.definition import EARTH_ISA
-from ICARUS.environment.definition import Environment
+from ICARUS.database import Database
+from ICARUS.environment import EARTH_ISA
+from ICARUS.environment import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 

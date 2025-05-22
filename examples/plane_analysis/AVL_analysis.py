@@ -9,8 +9,8 @@ from ICARUS.computation.solvers.AVL import avl_polars
 from ICARUS.computation.solvers.AVL import process_avl_dynamics_fd
 from ICARUS.computation.solvers.AVL import process_avl_dynamics_impl
 from ICARUS.computation.solvers.AVL import process_avl_polars
-from ICARUS.database.db import Database
-from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.database import Database
+from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
 

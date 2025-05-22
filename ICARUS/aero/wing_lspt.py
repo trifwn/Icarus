@@ -22,10 +22,10 @@ if TYPE_CHECKING:
     from ICARUS.vehicle.airplane import Airplane
     from ICARUS.vehicle.surface import WingSurface
 
-from ICARUS.aerodynamics.assemble_matrix import get_LHS
-from ICARUS.aerodynamics.assemble_matrix import get_RHS
-from ICARUS.aerodynamics.post_process.strip_calculations import get_potential_loads
-from ICARUS.aerodynamics.strip_data import StripData
+from ICARUS.aero.assemble_matrix import get_LHS
+from ICARUS.aero.assemble_matrix import get_RHS
+from ICARUS.aero.post_process.strip_calculations import get_potential_loads
+from ICARUS.aero.strip_data import StripData
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.visualization.figure_setup import create_subplots

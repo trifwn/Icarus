@@ -3,7 +3,7 @@ import os
 from subprocess import CalledProcessError
 from threading import Event
 from threading import Thread
-from typing import Any
+from typing import Any, Literal
 from typing import NoReturn
 
 from pandas import DataFrame
@@ -12,8 +12,8 @@ from tqdm import tqdm
 from ICARUS import CPU_TO_USE
 from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import parallel_monitor
 from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import run_gnvp3_case
-from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import run_gnvp7_case
+from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import gnvp3_case
+from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import gnvp7_case
 from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
@@ -22,8 +22,8 @@ from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database.utils import angle_to_case
-from ICARUS.environment.definition import Environment
+from ICARUS.database import angle_to_case
+from ICARUS.environment import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 from ICARUS.vehicle.surface import WingSurface
@@ -33,7 +33,72 @@ class StopRunningThreadError(Exception):
     pass
 
 
-def gnvp_angle_case(
+def gnvp_polars(
+    plane: Airplane,
+    state: State,
+    solver2D: str,
+    maxiter: int,
+    timestep: float,
+    angles: list[float] | FloatArray,
+    solver_options: dict[str, Any] | Struct,
+    parallel: bool = False,
+    gnvp_version: Literal[3, 7] = 3,
+) -> None:
+    """Run Polar Simulation in GNVP3 or GNVP7
+
+    Args:
+        plane (Airplane): Plane Object
+        state (State): State of the Airplane
+        solver2D (str): Name of 2D Solver to be used for the 2d polars
+        maxiter (int): Maxiteration for each case
+        timestep (float): Timestep for simulations
+        angles (list[float]): List of angles to run
+        solver_options (dict[str, Any]): Solver Options
+        parallel (bool, optional): Run in parallel. Defaults to False.
+        gnvp_version (int, optional): Version of GenuVP solver. Defaults to 3.
+
+    """
+    if parallel:
+        gnvp_polars_parallel(
+            plane,
+            state,
+            solver2D,
+            maxiter,
+            timestep,
+            angles,
+            gnvp_version,
+            solver_options,
+        )
+    else:
+        gnvp_polars_serial(
+            plane,
+            state,
+            solver2D,
+            maxiter,
+            timestep,
+            angles,
+            gnvp_version,
+            solver_options,
+        )
+
+
+def gnvp3_polars(*args: Any, **kwargs: Any) -> None:
+    gnvp_polars_serial(gnvp_version=3, *args, **kwargs)  # type: ignore
+
+
+def gnvp7_polars(*args: Any, **kwargs: Any) -> None:
+    gnvp_polars_serial(gnvp_version=7, *args, **kwargs)  # type: ignore
+
+
+def gnvp3_polars_parallel(*args: Any, **kwargs: Any) -> None:
+    gnvp_polars_parallel(gnvp_version=3, *args, **kwargs)  # type: ignore
+
+
+def gnvp7_polars_parallel(*args: Any, **kwargs: Any) -> None:
+    gnvp_polars_parallel(gnvp_version=7, *args, **kwargs)  # type: ignore
+
+
+def gnvp_aoa(
     DB: Database,
     plane: Airplane,
     state: State,
@@ -45,7 +110,7 @@ def gnvp_angle_case(
     environment: Environment,
     movements: list[list[Movement]],
     bodies_dicts: list[GenuSurface],
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """Run a single angle simulation in GNVP3
@@ -70,7 +135,7 @@ def gnvp_angle_case(
     PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
-        solver=f"GenuVP{genu_version}",
+        solver=f"GenuVP{gnvp_version}",
     )
     airfoils: list[str] = plane.airfoils
 
@@ -88,10 +153,10 @@ def gnvp_angle_case(
         environment,
         solver_options,
     )
-    if genu_version == 7:
-        run = run_gnvp7_case
+    if gnvp_version == 7:
+        run = gnvp7_case
     else:
-        run = run_gnvp3_case
+        run = gnvp3_case
 
     run(
         CASEDIR=CASEDIR,
@@ -104,23 +169,7 @@ def gnvp_angle_case(
     )
 
 
-def run_gnvp3_angles(*args: Any, **kwargs: Any) -> None:
-    run_gnvp_angles(gnvp_version=3, *args, **kwargs)  # type: ignore
-
-
-def run_gnvp7_angles(*args: Any, **kwargs: Any) -> None:
-    run_gnvp_angles(gnvp_version=7, *args, **kwargs)  # type: ignore
-
-
-def run_gnvp3_angles_parallel(*args: Any, **kwargs: Any) -> None:
-    run_gnvp_angles_parallel(genu_version=3, *args, **kwargs)  # type: ignore
-
-
-def run_gnvp7_angles_parallel(*args: Any, **kwargs: Any) -> None:
-    run_gnvp_angles_parallel(genu_version=7, *args, **kwargs)  # type: ignore
-
-
-def run_gnvp_angles(
+def gnvp_polars_serial(
     plane: Airplane,
     state: State,
     solver2D: str,
@@ -158,7 +207,7 @@ def run_gnvp_angles(
         plane.CG,
         plane.orientation,
     )
-    print("Running Angles in Sequential Mode")
+    print("Running Polars Serially")
     DB = Database.get_instance()
     PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
@@ -171,7 +220,7 @@ def run_gnvp_angles(
         CASEDIR: str = os.path.join(PLANEDIR, folder)
 
         job = Thread(
-            target=gnvp_angle_case,
+            target=gnvp_aoa,
             kwargs={
                 "DB": DB,
                 "plane": plane,
@@ -184,7 +233,7 @@ def run_gnvp_angles(
                 "environment": state.environment,
                 "movements": movements,
                 "bodies_dicts": bodies_dicts,
-                "genu_version": gnvp_version,
+                "gnvp_version": gnvp_version,
                 "solver_options": solver_options,
             },
         )
@@ -207,7 +256,7 @@ def run_gnvp_angles(
                 "lock": None,
                 "max_iter": maxiter,
                 "refresh_progress": 2,
-                "genu_version": gnvp_version,
+                "gnvp_version": gnvp_version,
             },
         )
 
@@ -222,14 +271,14 @@ def run_gnvp_angles(
     GenuSurface.surf_names = {}
 
 
-def run_gnvp_angles_parallel(
+def gnvp_polars_parallel(
     plane: Airplane,
     state: State,
     solver2D: str,
     maxiter: int,
     timestep: float,
     angles: list[float] | FloatArray,
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """Run all specified angle simulations in GNVP3 in parallel
@@ -264,10 +313,10 @@ def run_gnvp_angles_parallel(
     stop_event = Event()
     from multiprocessing import Pool
 
-    print("Running Angles in Parallel Mode")
+    print("Running Polars in Parallel")
 
     def run() -> None:
-        if genu_version == 3:
+        if gnvp_version == 3:
             num_processes = int(CPU_TO_USE)
         else:
             num_processes = int(CPU_TO_USE)
@@ -285,14 +334,14 @@ def run_gnvp_angles_parallel(
                     state.environment,
                     movements,
                     bodies_dict,
-                    genu_version,
+                    gnvp_version,
                     solver_options,
                 )
                 for angle in angles
             ]
 
             try:
-                _ = pool.starmap(gnvp_angle_case, args_list)
+                _ = pool.starmap(gnvp_aoa, args_list)
 
             except CalledProcessError as e:
                 print(f"Could not run GNVP got: {e}")
@@ -301,7 +350,7 @@ def run_gnvp_angles_parallel(
     PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
-        solver=f"GenuVP{genu_version}",
+        solver=f"GenuVP{gnvp_version}",
     )
     folders: list[str] = [angle_to_case(angle) for angle in angles]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, folder) for folder in folders]
@@ -316,7 +365,7 @@ def run_gnvp_angles_parallel(
             "variables": angles,
             "max_iter": maxiter,
             "refresh_progress": refresh_pogress,
-            "genu_version": genu_version,
+            "gnvp_version": gnvp_version,
             "stop_event": stop_event,
         },
     )
@@ -348,7 +397,7 @@ def process_gnvp_angles_run(
     Args:
         plane (Airplane): Plane Object
         state (State): State of the Airplane
-        genu_version: GNVP Version
+        gnvp_version: GNVP Version
 
     Returns:
         DataFrame: Forces Calculated

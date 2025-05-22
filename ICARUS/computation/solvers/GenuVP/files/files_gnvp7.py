@@ -6,7 +6,7 @@ from io import StringIO
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil_polars import AirfoilPolars
+from ICARUS.airfoils import AirfoilPolars
 from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
 from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
 from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
@@ -16,7 +16,7 @@ from ICARUS.core.formatting import sps
 from ICARUS.core.formatting import tabs
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database.database2D import PolarsNotFoundError
+from ICARUS.database import PolarsNotFoundError
 
 
 def input_file(maxiter: float, timestep: float) -> None:

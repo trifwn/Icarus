@@ -14,7 +14,7 @@ from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 
@@ -130,7 +130,7 @@ def main(GNVP_VERSION: int) -> None:
             )
             plane.save()
 
-            from ICARUS.computation.solvers.GenuVP.analyses.angles import (
+            from ICARUS.computation.solvers.GenuVP import (
                 process_gnvp_angles_run,
             )
 

@@ -7,8 +7,8 @@ from typing import Literal
 
 from pandas import DataFrame
 
-from ICARUS.airfoils.airfoil_polars import AirfoilData
-from ICARUS.airfoils.airfoil_polars import AirfoilPolars
+from ICARUS.airfoils import AirfoilData
+from ICARUS.airfoils import AirfoilPolars
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 

@@ -1,31 +1,5 @@
 """ICARUS: A Python package for the analysis, modelling and design of aircraft."""
 
-from . import aerodynamics
-from . import airfoils
-from . import computation
-from . import conceptual
-from . import core
-from . import database
-from . import environment
-from . import flight_dynamics
-from . import mission
-from . import vehicle
-from . import visualization
-
-__all__ = [
-    "aerodynamics",
-    "airfoils",
-    "computation",
-    "conceptual",
-    "core",
-    "database",
-    "environment",
-    "flight_dynamics",
-    "mission",
-    "vehicle",
-    "visualization",
-]
-
 __version__ = "0.3.0"
 
 import multiprocessing
@@ -103,3 +77,34 @@ elif platform_os == "Linux":
 
     if not os.access(AVL_exe, os.X_OK):
         os.chmod(AVL_exe, 0o755)
+
+
+from . import core
+from . import control
+
+from . import vehicle
+from . import environment
+from . import airfoils
+from . import flight_dynamics
+from . import database
+
+from . import aerodynamics
+from . import computation
+from . import conceptual
+from . import mission
+from . import visualization
+
+__all__ = [
+    "core",
+    "control",
+    "aerodynamics",
+    "airfoils",
+    "computation",
+    "conceptual",
+    "database",
+    "environment",
+    "flight_dynamics",
+    "mission",
+    "vehicle",
+    "visualization",
+]

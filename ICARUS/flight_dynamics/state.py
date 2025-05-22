@@ -15,7 +15,7 @@ from tabulate import tabulate
 
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.environment.definition import Environment
+from ICARUS.environment import Environment
 from ICARUS.flight_dynamics.stability.state_space import StateSpace
 from ICARUS.visualization import markers
 from ICARUS.visualization.polar_plot import polar_plot

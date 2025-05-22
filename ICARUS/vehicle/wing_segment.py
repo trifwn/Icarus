@@ -8,7 +8,6 @@ import numpy as np
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.database.db import Database
 from ICARUS.vehicle.control_surface import ControlSurface
 from ICARUS.vehicle.control_surface import NoControl
 from ICARUS.vehicle.surface import WingSurface
@@ -31,14 +30,14 @@ class WingSegment(WingSurface):
         span: float,
         tip_chord: float,
         root_chord: float,
-        root_airfoil: str | Airfoil,
+        root_airfoil: Airfoil,
         sweepback_angle: float = 0.0,
         sweep_offset: float = 0.0,
         twist_root: float = 0.0,
         twist_tip: float = 0.0,
         root_dihedral_angle: float = 0.0,
         tip_dihedral_angle: float = 0.0,
-        tip_airfoil: str | Airfoil | None = None,
+        tip_airfoil: Airfoil | None = None,
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
         # Geometry generation
         spanwise_chord_distribution: DistributionType = DistributionType.LINEAR,
@@ -96,21 +95,13 @@ class WingSegment(WingSurface):
         )
 
         # Set the airfoils of the wing segment
-        if isinstance(root_airfoil, str):
-            DB = Database.get_instance()
-            root_airfoil = DB.get_airfoil(root_airfoil)
-        self._root_airfoil = root_airfoil
+        assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
+        assert isinstance(tip_airfoil, Airfoil) or tip_airfoil is None, "Tip Airfoil must be an Airfoil or None"
 
+        self._root_airfoil = root_airfoil
         if tip_airfoil is None:
             tip_airfoil = root_airfoil
-
-        if isinstance(tip_airfoil, str):
-            DB = Database.get_instance()
-            tip_airfoil = DB.get_airfoil(tip_airfoil)
         self._tip_airfoil = tip_airfoil
-
-        assert isinstance(self._root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
-        assert isinstance(self._tip_airfoil, Airfoil), "Tip Airfoil must be an Airfoil"
 
         # Set the symmetries of the wing segment
         if isinstance(symmetries, SymmetryAxes):

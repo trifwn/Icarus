@@ -5,14 +5,14 @@ import numpy as np
 from jax import Array
 from scipy.integrate import solve_ivp
 
-from ICARUS.dynamical_systems.base_system import DynamicalSystem
+from ICARUS.dynamical_systems import DynamicalSystem
+from ICARUS.dynamical_systems import SecondOrderSystem
 from ICARUS.dynamical_systems.integrate import BackwardEulerIntegrator
 from ICARUS.dynamical_systems.integrate import ForwardEulerIntegrator
 from ICARUS.dynamical_systems.integrate import GaussLegendreIntegrator
 from ICARUS.dynamical_systems.integrate import NewmarkIntegrator
 from ICARUS.dynamical_systems.integrate import RK4Integrator
 from ICARUS.dynamical_systems.integrate import RK45Integrator
-from ICARUS.dynamical_systems.second_order_system import SecondOrderSystem
 
 
 def plot_results(x_data: dict[str, Array], t_data: dict[str, Array]) -> None:

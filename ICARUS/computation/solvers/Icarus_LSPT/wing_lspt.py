@@ -1,4 +1,4 @@
-from ICARUS.aerodynamics.lifting_surfaces import run_lstp_angles
+from ICARUS.aero.lifting_surfaces import run_lstp_angles
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )

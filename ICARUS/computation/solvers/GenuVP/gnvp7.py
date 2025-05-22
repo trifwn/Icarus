@@ -5,9 +5,9 @@ from ICARUS.computation.analyses.airplane_polar_analysis import (
 from ICARUS.computation.analyses.input import FloatInput
 from ICARUS.computation.analyses.input import IntInput
 from ICARUS.computation.analyses.rerun_analysis import BaseRerunAnalysis
-from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run_7
-from ICARUS.computation.solvers.GenuVP.analyses.angles import run_gnvp7_angles
-from ICARUS.computation.solvers.GenuVP.analyses.angles import run_gnvp7_angles_parallel
+from ICARUS.computation.solvers.GenuVP import process_gnvp_angles_run_7
+from ICARUS.computation.solvers.GenuVP import gnvp7_polars
+from ICARUS.computation.solvers.GenuVP import gnvp7_polars_parallel
 from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
     proccess_pertrubation_res_7,
 )
@@ -47,8 +47,8 @@ class GenuVP7_PolarAnalysis(BaseAirplanePolarAnalysis):
     def __init__(self) -> None:
         super().__init__(
             solver_name="GenuVP7",
-            execute_fun=run_gnvp7_angles,
-            parallel_execute_fun=run_gnvp7_angles_parallel,
+            execute_fun=gnvp7_polars,
+            parallel_execute_fun=gnvp7_polars_parallel,
             unhook=process_gnvp_angles_run_7,
             extra_options=[timestep_option, maxiter_option],
         )

@@ -9,7 +9,7 @@ from jax import Array
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
-    from ICARUS.aerodynamics.wing_lspt import LSPT_Plane
+    from ICARUS.aero.wing_lspt import LSPT_Plane
     from ICARUS.flight_dynamics.state import State
 
 
@@ -68,7 +68,7 @@ def get_potential_loads(
     Cm: float = 2 * My / (dens * (umag**2) * plane.S * plane.MAC)
 
     if verbose:
-        print(f"- Angle {plane.alpha * 180 /jnp.pi}")
+        print(f"- Angle {plane.alpha * 180 / jnp.pi}")
         print("\t--Using no penetration condition:")
         print(f"\t\tL:{L}\t|\tD (Trefftz Plane):{D}\tD2:{D2}\t|\tMy:{My}")
         print(f"\t\tCL:{CL}\t|\tCD_ind:{CD}\t|\tCm:{Cm}")
