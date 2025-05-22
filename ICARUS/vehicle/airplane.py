@@ -192,20 +192,22 @@ class Airplane(Optimizable):
         return list(self.surface_dict.values())
 
     @property
-    def wing_segments(self) -> list[WingSurface]:
+    def wing_segments(self) -> list[tuple[int, WingSurface]]:
         """Get all the wing segments of the plane
 
         Returns:
             list[WingSurface]: List of all the wing segments of the plane
 
         """
-        surfaces: list[WingSurface] = []
+        surfaces: list[tuple[int, WingSurface]] = []
+        i = 0
         for _, surface in self.surface_dict.items():
             if isinstance(surface, MergedWing):
-                for s in surface.wing_segments:
-                    surfaces.append(s)
+                for s in surface.get_separate_segments():
+                    surfaces.append((i, s))
             else:
-                surfaces.append(surface)
+                surfaces.append((i, surface))
+            i += 1
         return surfaces
 
     def get_position(self, name: str, axis: str) -> float | FloatArray:
@@ -546,7 +548,10 @@ class Airplane(Optimizable):
 
     def get_surface(self, name: str) -> WingSurface:
         for surface in self.surfaces:
-            if surface.name == name:
+            if surface.name == name.replace(" ", "_"):
+                return surface
+        for _, surface in self.wing_segments:
+            if surface.name == name.replace(" ", "_"):
                 return surface
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 

@@ -16,7 +16,6 @@ from ICARUS.database.database2D import PolarsNotFoundError
 from ICARUS.environment.definition import Environment
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import DiscretizationType
 from ICARUS.vehicle.wing_segment import WingSegment
@@ -139,16 +138,10 @@ def avl_geo(
 
     surfaces: list[WingSurface] = []
     surfaces_ids = []
-    i = 0
-    for surface in plane.wing_segments:
-        i += 1
-        if isinstance(surface, MergedWing):
-            for sub_surface in surface.wing_segments:
-                surfaces.append(sub_surface)
-                surfaces_ids.append(i)
-        else:
-            surfaces.append(surface)
-            surfaces_ids.append(i)
+    for i, surface in plane.wing_segments:
+        surfaces.append(surface)
+        surfaces_ids.append(i)
+
     for i, surf in enumerate(surfaces):
         f_io.write(f"#SURFACE {i} name {surf.name}\n")
 

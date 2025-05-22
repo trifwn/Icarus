@@ -35,7 +35,6 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
 
         # Build the filename (make sure directory and file are defined)
         filename: str = os.path.join(directory, file)
-        print(f"Reading AVL strip data from {filename}")
         with open(filename, encoding="UTF-8") as f:
             data: list[str] = f.readlines()
 
@@ -64,12 +63,21 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
                     inside_table = False
 
                 # Use regex to capture the surface name.
+                # Match the Index and the name of the surface (with spaces and underscored basically until EOL).
                 # Example lines:
-                #   "Surface # 1     wing                 | surface name stri"
-                #   "Surface # 3     elevator             | surface name "
-                m = re.search(r"Surface\s+#\s+\d+\s+(\S+)", line)
+                #   Surface # INDEX     Surface Name With Spaces
+
+                m = re.match(r"Surface #\s*\d+\s+(\S.*$)", line)
+                # include also underscores in the name
+                # m = re.match(r"Surface #\s+\d+\s+([A-Za-z0-9_ ]+)", line)
                 if m:
                     base_name = m.group(1)
+                    # Remove everyting after "| surface"
+                    base_name = base_name.split("|")[0].strip()
+                    # Remove trailing and leading spaces.
+                    base_name = base_name.strip()
+                    base_name = base_name.replace(" ", "_")
+
                     surface_counts[base_name] += 1
                     # If the same surface name appears more than once, append a counter.
                     if surface_counts[base_name] > 1:
@@ -77,6 +85,8 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
                     else:
                         current_surface = base_name
                 else:
+                    # Warning: No match found for surface name.
+                    print(f"Warning: No match found for surface name in line: {line}")
                     current_surface = "unknown"
                 continue
 
@@ -109,7 +119,6 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
                 surfaces[current_surface] = df
             else:
                 surfaces[current_surface] = pd.concat([surfaces[current_surface], df])
-
     for key, df in surfaces.items():
         # Sort by j and reset the index.
         surfaces[key] = df.sort_values(by="j").reset_index(drop=True)

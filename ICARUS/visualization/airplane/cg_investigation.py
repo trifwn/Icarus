@@ -231,7 +231,6 @@ def cg_investigation(
     airplane_names: str | list[str],
     solvers: list[str] = ["All"],
     size: tuple[int, int] = (10, 10),
-    title: str = "Aero Coefficients",
     engine: Engine | None = None,
 ) -> None:
     if isinstance(airplane_names, str):
@@ -267,6 +266,7 @@ def cg_investigation(
     # Update function for slider
     def update(new_cg: float) -> None:
         for airplane in airplane_names:
+            print(f"New CG: {new_cg} for {airplane}")
             cm_line = cm_lines[airplane]
             cl_line = cl_lines[airplane]
             cd_line = cd_lines[airplane]

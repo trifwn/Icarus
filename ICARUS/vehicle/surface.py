@@ -68,7 +68,7 @@ class WingSurface:
         if not (len(spanwise_positions) == len(chord_lengths) == len(z_offsets) == len(x_offsets) == len(twist_angles)):
             raise ValueError("The number of points must be the same for all parameters")
 
-        self.name: str = name
+        self._name: str = name
         self.is_lifting: bool = is_lifting
         # Define Coordinate System
         orientation = np.array(orientation, dtype=float)
@@ -215,6 +215,14 @@ class WingSurface:
         ####### Calculate Wing Parameters #######
         self.define_wing_parameters()
         ####### Calculate Wing Parameters ########
+
+    @property
+    def name(self) -> str:
+        return self._name.replace(" ", "_")
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name = value
 
     @classmethod
     def from_span_percentage_functions(

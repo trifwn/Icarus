@@ -17,7 +17,7 @@ def lateral_stability_finite_differences(
     pert: DataFrame = state.pertrubation_results.sort_values(
         by=["Epsilon"],
     ).reset_index(drop=True)
-    eps: dict[str, float] = state.epsilons
+    # eps: dict[str, float] = state.epsilons
 
     Y: dict[str, float] = {}
     L: dict[str, float] = {}

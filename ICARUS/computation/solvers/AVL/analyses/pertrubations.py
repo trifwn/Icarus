@@ -4,7 +4,6 @@ from typing import Literal
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.AVL import avl_polars
 from ICARUS.computation.solvers.AVL import finite_difs_post
 from ICARUS.computation.solvers.AVL import implicit_dynamics_post
 from ICARUS.computation.solvers.AVL.files.dynamics import finite_difs
@@ -35,6 +34,8 @@ def avl_dynamics_fd(
         aoa_max = 10
         num_aoa = (aoa_max - aoa_min) * 2 + 1
         angles = np.linspace(aoa_min, aoa_max, num_aoa)
+
+        from ICARUS.computation.solvers.AVL import avl_polars
 
         avl_polars(
             plane=plane,

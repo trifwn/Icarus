@@ -176,6 +176,16 @@ class MergedWing(WingSurface):
         self.define_wing_parameters()
         ####### Calculate Wing Parameters ########
 
+    def get_separate_segments(self) -> list[WingSurface]:
+        """Returns the separate segments of the wing"""
+        segments: list[WingSurface] = []
+        for segment in self.wing_segments:
+            if isinstance(segment, MergedWing):
+                segments.extend(segment.get_separate_segments())
+            else:
+                segments.append(segment)
+        return segments
+
     def generate_airfoils(self) -> None:
         # Define the airfoils
         airfoils: list[Airfoil] = []

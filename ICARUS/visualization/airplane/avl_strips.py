@@ -13,6 +13,7 @@ from pandas import DataFrame
 from ICARUS.computation.solvers.AVL import get_strip_data
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle.merged_wing import MergedWing
 from ICARUS.vehicle.surface import WingSurface
 
 
@@ -20,7 +21,7 @@ def avl_strips_3d(
     plane: Airplane,
     state: State,
     case: str,
-    surface_names: str | list[str] | list[WingSurface],
+    surface_names: str | list[str] | list[WingSurface] | WingSurface,
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -38,10 +39,29 @@ def avl_strips_3d(
     strip_data = get_strip_data(plane, state, case)
 
     if isinstance(surface_names, str):
-        _surface_names = [surface_names]
+        surfaces: list[WingSurface] = [plane.get_surface(surface_names)]
+    elif isinstance(surface_names, WingSurface):
+        surfaces = [surface_names]
     elif isinstance(surface_names, list):
-        if all(isinstance(item, WingSurface) for item in surface_names):
-            _surface_names = [surf.name for surf in surface_names]
+        if all(isinstance(item, str) for item in surface_names):
+            surfaces = [plane.get_surface(surf_name) for surf_name in surface_names]
+        elif all(isinstance(item, WingSurface) for item in surface_names):
+            surfaces = surface_names
+        else:
+            raise ValueError("surface_name must be a string or a WingSurface object")
+    else:
+        raise ValueError("surface_name must be a string or a WingSurface object")
+
+    _surface_names: list[str] = []
+    for surface in surfaces:
+        if isinstance(surface, MergedWing):
+            # Get the separate segments of the merged wing
+            _surface_names.extend([s.name for s in surface.get_separate_segments()])
+            _surface_names.append(surface.name)
+        elif isinstance(surface, WingSurface):
+            _surface_names.append(surface.name)
+        else:
+            raise ValueError("surface_name must be a string or a WingSurface object")
 
     # Get the body data where surface_name is in surface_names
     strip_data = strip_data[strip_data.index.isin(_surface_names)]
@@ -64,16 +84,16 @@ def avl_strips_3d(
     cmap: Colormap = cm.get_cmap("viridis", 12)
 
     for i, surf_name in enumerate(_surface_names):
+        surf_name = surf_name.strip().replace(" ", "_")
         surf = plane.get_surface(surf_name)
-        print(f"Plotting Body {i + 1}, Name: {surf.name}")
+
+        if surf_name not in strip_data.index:
+            continue
 
         min_j_value: int = int(strip_data[strip_data.index == surf_name]["j"].min())
         max_j_value: int = int(strip_data[strip_data.index == surf_name]["j"].max())
-        symmetric_strips = [strip.return_symmetric() for strip in surf.strips]
-        if surf.is_symmetric_y:
-            all_strips = [*surf.strips, *symmetric_strips]
-        else:
-            all_strips = surf.strips
+
+        all_strips = surf.all_strips
         for j, strip in enumerate(all_strips):
             surface_idx = j + min_j_value
             if surface_idx > max_j_value:
@@ -100,12 +120,22 @@ def avl_strips_2d(
     Function to plot the 2D strips of a given airplane.
     """
     if isinstance(surface_name, str):
-        _surface_name = surface_name
+        surface = plane.get_surface(surface_name)
     elif isinstance(surface_name, WingSurface):
-        _surface_name = surface_name.name
+        surface = surface_name
+    else:
+        raise ValueError("surface_name must be a string or a WingSurface object")
 
+    if isinstance(surface, MergedWing):
+        surface_names = [s.name for s in surface.get_separate_segments()]
+        surface_names.append(surface.name)
+    else:
+        surface_names = [surface.name]
     strip_data = get_strip_data(plane, state, case)
-    surf_data = strip_data[strip_data.index == _surface_name]
+
+    # Get the Data where strip_data.index in surface_names
+    surf_data = strip_data[strip_data.index.isin(surface_names)]
+
     # Sort the DataFrame by the Yle
     surf_data = surf_data.sort_values("Yle")
 
@@ -113,7 +143,6 @@ def avl_strips_2d(
     ax: Axes = fig.add_subplot()
     ax.set_title(f"{plane.name} {surface_name} {category} Data")
     ax.set_xlabel("Spanwise")
-    # ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)
 
     x = surf_data["Yle"]
