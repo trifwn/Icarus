@@ -776,6 +776,7 @@ class Airplane(Optimizable):
     def save(self) -> None:
         """Save the plane object to a json file"""
         from ICARUS.database import Database
+
         DB = Database.get_instance()
         DB3D = DB.DB3D
 

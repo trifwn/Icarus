@@ -17,8 +17,9 @@ As of now the package is empty! Work in progress!
 
 """
 
-from .variable import ControllerVariable, ControlVariableType
 from .controller import Controlller
+from .variable import ControllerVariable
+from .variable import ControlVariableType
 
 __all__ = [
     "ControllerVariable",

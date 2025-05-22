@@ -130,9 +130,7 @@ def main(GNVP_VERSION: int) -> None:
             )
             plane.save()
 
-            from ICARUS.computation.solvers.GenuVP import (
-                process_gnvp_angles_run,
-            )
+            from ICARUS.computation.solvers.GenuVP import process_gnvp_angles_run
 
             process_gnvp_angles_run(plane, state, GNVP_VERSION)
 

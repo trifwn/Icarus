@@ -38,12 +38,10 @@ Airfoil Polars Analysis
 """
 
 from .airfoil import Airfoil
-from .airfoil_polars import (
-    AirfoilPolars,
-    AirfoilData,
-    PolarNotAccurate,
-    ReynoldsNotIncluded,
-)
+from .airfoil_polars import AirfoilData
+from .airfoil_polars import AirfoilPolars
+from .airfoil_polars import PolarNotAccurate
+from .airfoil_polars import ReynoldsNotIncluded
 from .naca4 import NACA4
 from .naca5 import NACA5
 

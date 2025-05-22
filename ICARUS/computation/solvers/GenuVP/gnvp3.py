@@ -5,9 +5,9 @@ from ICARUS.computation.analyses.airplane_polar_analysis import (
 from ICARUS.computation.analyses.input import FloatInput
 from ICARUS.computation.analyses.input import IntInput
 from ICARUS.computation.analyses.rerun_analysis import BaseRerunAnalysis
-from ICARUS.computation.solvers.GenuVP import process_gnvp_angles_run_3
 from ICARUS.computation.solvers.GenuVP import gnvp3_polars
 from ICARUS.computation.solvers.GenuVP import gnvp3_polars_parallel
+from ICARUS.computation.solvers.GenuVP import process_gnvp_angles_run_3
 from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
     proccess_pertrubation_res_3,
 )

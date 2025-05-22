@@ -3,7 +3,8 @@ import os
 from subprocess import CalledProcessError
 from threading import Event
 from threading import Thread
-from typing import Any, Literal
+from typing import Any
+from typing import Literal
 from typing import NoReturn
 
 from pandas import DataFrame

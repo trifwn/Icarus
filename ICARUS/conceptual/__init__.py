@@ -37,7 +37,6 @@ The Criteria part contains classes and routines for defining mission and perform
 """
 
 from . import criteria
-
 from .concept_airplane import ConceptAirplane
 from .concept_engine import ConceptEngine
 

@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 
 from ICARUS.core.types import FloatArray
+
 from .variable import ControllerVariable
 
 

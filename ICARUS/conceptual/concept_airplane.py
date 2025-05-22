@@ -3,10 +3,11 @@ from typing import Callable
 
 import numpy as np
 
-from .criteria.FAR.get_all_criteria import get_all_far_criteria
-from .criteria.FAR import drag_coeff_skin
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import si_to_imperial
+
+from .criteria.FAR import drag_coeff_skin
+from .criteria.FAR.get_all_criteria import get_all_far_criteria
 
 
 class ConceptAirplane:

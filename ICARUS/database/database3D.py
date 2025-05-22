@@ -353,8 +353,12 @@ class Database_3D:
         if gnvp_version == 7:
             return
         for case in cases:
-            from ICARUS.computation.solvers.GenuVP.post_process.convergence import get_error_convergence
-            from ICARUS.computation.solvers.GenuVP.post_process.convergence import get_loads_convergence
+            from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
+                get_error_convergence,
+            )
+            from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
+                get_loads_convergence,
+            )
 
             # Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load

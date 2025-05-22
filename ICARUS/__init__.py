@@ -79,19 +79,17 @@ elif platform_os == "Linux":
         os.chmod(AVL_exe, 0o755)
 
 
-from . import core
-from . import control
-
-from . import vehicle
-from . import environment
-from . import airfoils
-from . import flight_dynamics
-from . import database
-
 from . import aerodynamics
+from . import airfoils
 from . import computation
 from . import conceptual
+from . import control
+from . import core
+from . import database
+from . import environment
+from . import flight_dynamics
 from . import mission
+from . import vehicle
 from . import visualization
 
 __all__ = [

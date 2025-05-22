@@ -8,8 +8,8 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.airfoils import AirfoilPolars
-from ICARUS.database import Database
 from ICARUS.database import AirfoilNotFoundError
+from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
