@@ -11,8 +11,8 @@ from pandas import Series
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_case
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 
 
 def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:

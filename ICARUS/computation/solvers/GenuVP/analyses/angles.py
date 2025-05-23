@@ -25,9 +25,9 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import angle_to_case
 from ICARUS.environment import Environment
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.surface import WingSurface
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import WingSurface
 
 
 class StopRunningThreadError(Exception):

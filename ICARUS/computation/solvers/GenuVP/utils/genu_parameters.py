@@ -8,7 +8,7 @@ from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import Environment
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle import Airplane
 
 
 class GenuParameters:

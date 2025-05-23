@@ -7,10 +7,10 @@ import numpy as np
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.wing import Wing
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import Wing
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def e190_cruise(name: str) -> Airplane:

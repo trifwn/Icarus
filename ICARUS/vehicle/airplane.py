@@ -12,16 +12,16 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
-from ICARUS.optimization.optimizable import Optimizable
-from ICARUS.vehicle.wing import Wing
-from ICARUS.vehicle.point_mass import PointMass
+from ICARUS.optimization import Optimizable
+from . import Wing
+from . import PointMass
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.core.types import FloatOrListArray
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.surface import WingSurface
-    from ICARUS.vehicle.surface_connections import SurfaceConnection
+    from ICARUS.flight_dynamics import State
+    from . import WingSurface
+    from .surface_connections import SurfaceConnection
 
 jsonpickle_pd.register_handlers()
 

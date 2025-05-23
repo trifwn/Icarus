@@ -4,8 +4,8 @@ from typing import Any
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 
 
 class Input:

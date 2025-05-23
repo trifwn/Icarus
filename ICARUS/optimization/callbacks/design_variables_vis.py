@@ -5,9 +5,9 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle import Airplane
 
+from . import OptimizationCallback
 
 class DesignVariableVisualizer(OptimizationCallback):
     """Class to visualize the design variables change during optimization."""

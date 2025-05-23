@@ -16,7 +16,7 @@ from tabulate import tabulate
 from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import Environment
-from ICARUS.flight_dynamics.stability.state_space import StateSpace
+from ICARUS.flight_dynamics import StateSpace
 from ICARUS.visualization import markers
 from ICARUS.visualization.polar_plot import polar_plot
 from ICARUS.visualization.pre_existing_figure import pre_existing_figure
@@ -31,7 +31,7 @@ from .trim import TrimOutsidePolars
 from .trim import trim_state
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.vehicle import Airplane
 
 
 class ControlState:

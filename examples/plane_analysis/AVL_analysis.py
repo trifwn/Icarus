@@ -7,11 +7,11 @@ from ICARUS.computation.solvers.AVL import avl_dynamics_fd
 from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
 from ICARUS.computation.solvers.AVL import avl_polars
 from ICARUS.computation.solvers.AVL import process_avl_dynamics_fd
-from ICARUS.computation.solvers.AVL import process_avl_dynamics_impl
+from ICARUS.computation.solvers.AVL import process_avl_dynamics_implicit
 from ICARUS.computation.solvers.AVL import process_avl_polars
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
-from ICARUS.flight_dynamics.state import State
+from ICARUS.flight_dynamics import State
 from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
@@ -40,7 +40,7 @@ plot_airplane_polars(
 )
 
 avl_dynamics_implicit(plane=plane, state=state, solver2D=solver2D)
-impl_long, impl_late = process_avl_dynamics_impl(plane, state)
+impl_long, impl_late = process_avl_dynamics_implicit(plane, state)
 
 # aoa_trim, u_trim = avldyn.trim_conditions(PLANEDIR, plane)
 unstick = State(

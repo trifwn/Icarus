@@ -8,8 +8,9 @@ from matplotlib.collections import Collection
 from matplotlib.figure import Figure
 
 from ICARUS.core.types import ComplexArray
-from ICARUS.flight_dynamics.state import State
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from ICARUS.flight_dynamics import State
+
+from . import OptimizationCallback
 
 
 class EigenvalueOptimizationVisualizer(OptimizationCallback):

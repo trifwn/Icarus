@@ -5,10 +5,10 @@ from typing import Callable
 from ICARUS.core.types import FloatArray
 from ICARUS.optimization import MAX_FLOAT
 from ICARUS.optimization import MAX_INT
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
-from ICARUS.optimization.optimizers.general_optimizer import General_SOO_Optimizer
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.optimization.callbacks import OptimizationCallback
+from ICARUS.vehicle import Airplane
 
+from .. import General_SOO_Optimizer
 
 class Airplane_Optimizer(General_SOO_Optimizer):
     def __init__(

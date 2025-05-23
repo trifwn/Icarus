@@ -5,7 +5,7 @@ from __future__ import annotations
 from .analyses.pertrubations import avl_dynamics_fd
 from .analyses.pertrubations import avl_dynamics_implicit
 from .analyses.pertrubations import process_avl_dynamics_fd
-from .analyses.pertrubations import process_avl_dynamics_impl
+from .analyses.pertrubations import process_avl_dynamics_implicit
 from .analyses.polars import avl_polars
 from .analyses.polars import process_avl_polars
 from .avl import AVL
@@ -30,7 +30,7 @@ __all__ = [
     "avl_dynamics_implicit",
     "avl_dynamics_fd",
     "process_avl_dynamics_fd",
-    "process_avl_dynamics_impl",
+    "process_avl_dynamics_implicit",
     "finite_difs_post",
     "implicit_dynamics_post",
     "collect_avl_polar_forces",

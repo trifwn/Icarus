@@ -4,14 +4,13 @@ from typing import Callable
 from scipy.optimize import OptimizeResult
 
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.state import State
+from ICARUS.flight_dynamics import State
 from ICARUS.optimization import MAX_FLOAT
 from ICARUS.optimization import MAX_INT
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
-from ICARUS.optimization.optimizers.airplane.airplane_optimizer import (
-    Airplane_Optimizer,
-)
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.optimization.callbacks import OptimizationCallback
+from ICARUS.vehicle import Airplane
+
+from . import Airplane_Optimizer
 
 
 class Airplane_Dynamics_Optimizer(Airplane_Optimizer):

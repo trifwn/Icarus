@@ -6,7 +6,7 @@ from ICARUS.computation.solvers.AVL import avl_dynamics_fd
 from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
 from ICARUS.computation.solvers.AVL import avl_polars
 from ICARUS.computation.solvers.AVL import process_avl_dynamics_fd
-from ICARUS.computation.solvers.AVL import process_avl_dynamics_impl
+from ICARUS.computation.solvers.AVL import process_avl_dynamics_implicit
 from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.solver_parameters import BoolParameter
 
@@ -28,7 +28,7 @@ class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
 #     def __init__(
 #         self,
 #     ) -> None:
-#         super().__init__("AVL",avl_angle_run,unhook = process_avl_angles_run)
+#         super().__init__("AVL",avl_polars,unhook = process_avl_polars)
 
 
 class AVL_DynamicAnalysisFD(BaseDynamicAnalysis):
@@ -41,7 +41,7 @@ class AVL_DynamicAnalysisImplicit(BaseDynamicAnalysis):
         super().__init__(
             "AVL",
             avl_dynamics_implicit,
-            unhook=process_avl_dynamics_impl,
+            unhook=process_avl_dynamics_implicit,
         )
 
 

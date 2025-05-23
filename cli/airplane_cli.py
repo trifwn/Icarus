@@ -30,8 +30,8 @@ from ICARUS.core.struct import Struct
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.environment import Environment
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 
 from .cli_home import cli_home
 

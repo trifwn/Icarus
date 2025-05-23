@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from . import OptimizationCallback
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.vehicle import Airplane
 
 
-class PlaneSurfaceVisCallback(OptimizationCallback):
+class PlaneSurfaceVisualizer(OptimizationCallback):
     """Class to visualize the design variables change during optimization."""
 
     def __init__(

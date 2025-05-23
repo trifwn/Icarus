@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.database import Database
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle import Airplane
 from ICARUS.visualization import markers
 
 

@@ -10,11 +10,10 @@ from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 from numpy import ndarray
 
-from ICARUS import INSTALL_DIR
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.propulsion.engine import Engine
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle import Airplane
 
 
 def setup_plot(
@@ -336,24 +335,3 @@ def cg_investigation(
     button.on_clicked(reset)
     fig.tight_layout()
     plt.show()
-
-
-if __name__ == "__main__":
-    # isss =  np.linspace(-2,2,20)
-    planenames = [
-        "bmark",
-    ]
-
-    engine_dir = f"{INSTALL_DIR}/Data/Engine/Motor_1/"
-
-    engine = Engine()
-    engine.load_data_from_df(engine_dir)
-
-    cg_investigation(
-        planenames,
-        solvers=[
-            "AVL",
-        ],
-        size=(10, 7),
-        engine=engine,
-    )

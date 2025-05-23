@@ -3,8 +3,8 @@ from typing import Any
 import numpy as np
 
 from ICARUS.core.types import FloatArray
-from ICARUS.flight_dynamics.disturbances import Disturbance
-from ICARUS.vehicle.surface import WingSurface
+from ICARUS.flight_dynamics import Disturbance
+from ICARUS.vehicle import WingSurface
 
 
 class Movement:

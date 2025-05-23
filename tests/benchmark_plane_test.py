@@ -1,11 +1,12 @@
 import numpy as np
 
+from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import EARTH_ISA
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def get_bmark_plane(name: str) -> tuple[Airplane, State]:
@@ -21,7 +22,7 @@ def get_bmark_plane(name: str) -> tuple[Airplane, State]:
 
     Simplewing = WingSegment(
         name=name,
-        root_airfoil="NACA4415",
+        root_airfoil=NACA4(M=4, P=4, XX=15),  # "NACA4415",
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,

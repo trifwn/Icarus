@@ -5,8 +5,8 @@ from collections import defaultdict
 import pandas as pd
 
 from ICARUS.database import Database
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 
 
 # Helper function to try converting a string to float.

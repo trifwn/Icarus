@@ -13,8 +13,8 @@ from ICARUS.database import Database
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def run_lstp_angles(

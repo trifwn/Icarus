@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
-from ICARUS.vehicle.airplane import Airplane
+from . import OptimizationCallback
+from ICARUS.vehicle import Airplane
 
 
-class PlaneGeometryVisualization(OptimizationCallback):
+class PlaneGeometryVisualizer(OptimizationCallback):
     """Class to visualize the design variables change during optimization."""
 
     def __init__(

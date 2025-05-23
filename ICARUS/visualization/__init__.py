@@ -24,16 +24,20 @@ This module contains classes and routines for visualization. The module is divid
     ICARUS.visualization.airplane - Airplane visualization
 
 """
-
-import distinctipy
-from matplotlib.markers import MarkerStyle
-
-markers_str: list[str | int] = list(MarkerStyle.markers.keys())
-markers = [MarkerStyle(marker) for marker in markers_str]
-
-colors_ = distinctipy.get_colors(36)
-
+from .utils import colors_, markers_str, markers
 from . import airfoil
 from . import airplane
+from . import gnvp
+from . import f2w
+from . import avl
 
-__all__ = ["airfoil", "airplane"]
+__all__ = [
+    "airfoil",
+    "airplane",
+    "gnvp",
+    "f2w",
+    "avl",
+    "markers_str",
+    "markers",
+    "colors_",
+]

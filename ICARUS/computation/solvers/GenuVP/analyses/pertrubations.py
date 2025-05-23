@@ -21,10 +21,10 @@ from ICARUS.core.struct import Struct
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_case
 from ICARUS.environment import Environment
-from ICARUS.flight_dynamics.disturbances import Disturbance
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.surface import WingSurface
+from ICARUS.flight_dynamics import Disturbance
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import WingSurface
 
 
 def gnvp_disturbance_case(

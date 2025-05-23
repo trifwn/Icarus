@@ -5,10 +5,9 @@ from typing import Any
 
 from pandas import DataFrame
 
-from ICARUS.flight_dynamics.stability.state_space import LongitudalStateSpace
-
+from . import LongitudalStateSpace
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
+    from ICARUS.flight_dynamics import State
 
 
 def longitudal_stability_finite_differences(

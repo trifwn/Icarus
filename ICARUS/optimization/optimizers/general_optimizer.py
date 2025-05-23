@@ -12,10 +12,11 @@ from scipy.optimize import OptimizeResult
 from scipy.optimize import minimize
 
 from ICARUS.core.types import FloatArray
-from ICARUS.optimization import MAX_FLOAT
-from ICARUS.optimization import MAX_INT
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
-from ICARUS.optimization.optimizable import Optimizable
+
+from .. import MAX_FLOAT
+from .. import MAX_INT
+from ..callbacks.optimization_callback import OptimizationCallback
+from ..optimizable import Optimizable
 
 
 class General_SOO_Optimizer:

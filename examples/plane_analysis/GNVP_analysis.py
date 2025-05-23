@@ -15,8 +15,8 @@ from ICARUS.core.struct import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 
 # DB CONNECTION
 database_folder = os.path.join("/mnt/e/ICARUS", "Data")
@@ -134,9 +134,9 @@ def main(GNVP_VERSION: int) -> None:
 
             process_gnvp_angles_run(plane, state, GNVP_VERSION)
 
-            # from ICARUS.computation.solvers.AVL import avl_angle_run
+            # from ICARUS.computation.solvers.AVL import avl_polars
 
-            # avl_angle_run(plane, state, "XFLR", angles)
+            # avl_polars(plane, state, "XFLR", angles)
 
             # from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
 

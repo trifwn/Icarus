@@ -8,17 +8,17 @@ import numpy as np
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.control_surface import ControlSurface
-from ICARUS.vehicle.control_surface import NoControl
-from ICARUS.vehicle.surface import WingSurface
-from ICARUS.vehicle.utils import DiscretizationType
-from ICARUS.vehicle.utils import DistributionType
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.utils import cosine_spacing_function
-from ICARUS.vehicle.utils import cspacer
-from ICARUS.vehicle.utils import equal_spacing_function
-from ICARUS.vehicle.utils import linear_distribution_function_factory
-from ICARUS.vehicle.utils import sine_spacing_function
+from . import ControlSurface
+from . import NoControl
+from . import WingSurface
+from .utils import DiscretizationType
+from .utils import DistributionType
+from .utils import SymmetryAxes
+from .utils import cosine_spacing_function
+from .utils import cspacer
+from .utils import equal_spacing_function
+from .utils import linear_distribution_function_factory
+from .utils import sine_spacing_function
 
 
 class WingSegment(WingSurface):

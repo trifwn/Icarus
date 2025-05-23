@@ -8,11 +8,11 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.text import Text
 
-from ICARUS.flight_dynamics.state import State
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from ICARUS.flight_dynamics import State
+from . import OptimizationCallback
 
 
-class AirplanePolarOptimizationVisualizer(OptimizationCallback):
+class PlanePolarOptimizationVisualizer(OptimizationCallback):
     def __init__(
         self,
         initial_state: State,

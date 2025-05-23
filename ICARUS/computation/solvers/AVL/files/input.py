@@ -14,11 +14,11 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 from ICARUS.environment import Environment
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.surface import WingSurface
-from ICARUS.vehicle.utils import DiscretizationType
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import WingSurface
+from ICARUS.vehicle import DiscretizationType
+from ICARUS.vehicle import WingSegment
 
 
 def make_input_files(

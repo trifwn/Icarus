@@ -14,8 +14,8 @@ from ICARUS.database import angle_to_case
 from ICARUS.database import case_to_angle
 
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def plot_gnvp3_wake(

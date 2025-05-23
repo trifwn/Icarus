@@ -5,10 +5,10 @@ import numpy as np
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.utils import DiscretizationType
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import DiscretizationType
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:

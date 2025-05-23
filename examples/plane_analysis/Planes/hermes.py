@@ -2,11 +2,12 @@
 
 import numpy as np
 
+from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.point_mass import PointMass
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import PointMass
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def hermes(name: str) -> Airplane:
@@ -33,7 +34,7 @@ def hermes(name: str) -> Airplane:
 
     main_wing = WingSegment(
         name="wing",
-        root_airfoil="NACA4415",
+        root_airfoil= NACA4(M = 4, P = 4, XX = 15), #"NACA4415",
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,
@@ -57,7 +58,7 @@ def hermes(name: str) -> Airplane:
 
     elevator = WingSegment(
         name="elevator",
-        root_airfoil="NACA0008",
+        root_airfoil= NACA4(M = 0, P = 0, XX = 8),#"NACA0008",
         origin=origin + elevator_pos,
         orientation=elevator_orientantion,
         symmetries=SymmetryAxes.Y,
@@ -82,7 +83,7 @@ def hermes(name: str) -> Airplane:
 
     rudder = WingSegment(
         name="rudder",
-        root_airfoil="NACA0008",
+        root_airfoil= NACA4(M = 0, P = 0, XX = 8),#"NACA0008",
         origin=origin + rudder_position,
         orientation=rudder_orientation,
         symmetries=SymmetryAxes.NONE,

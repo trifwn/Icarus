@@ -1,9 +1,10 @@
 import numpy as np
 
+from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def hermes_main_wing(name: str) -> Airplane:
@@ -29,7 +30,7 @@ def hermes_main_wing(name: str) -> Airplane:
 
     main_wing = WingSegment(
         name="wing",
-        root_airfoil="NACA4415",
+        root_airfoil=NACA4(M=4, P=4, XX=15),  # "NACA4415",
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,

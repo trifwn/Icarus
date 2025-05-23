@@ -18,16 +18,16 @@ from mpl_toolkits.mplot3d import Axes3D
 from pandas import DataFrame
 
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.airplane import Airplane
-    from ICARUS.vehicle.surface import WingSurface
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
+    from ICARUS.vehicle import WingSurface
 
 from ICARUS.aero.assemble_matrix import get_LHS
 from ICARUS.aero.assemble_matrix import get_RHS
 from ICARUS.aero.post_process.strip_calculations import get_potential_loads
 from ICARUS.aero.strip_data import StripData
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.wing import Wing
+from ICARUS.vehicle import Wing
 from ICARUS.visualization.figure_setup import create_subplots
 from ICARUS.visualization.figure_setup import flatten_axes
 

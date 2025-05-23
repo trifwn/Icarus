@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from ICARUS.database import Database
 
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def get_max_iterations_3(plane: Airplane, state: State, case: str) -> int:

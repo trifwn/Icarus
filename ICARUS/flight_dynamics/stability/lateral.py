@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 from pandas import DataFrame
 
-from ICARUS.flight_dynamics.stability.state_space import LateralStateSpace
+from ICARUS.flight_dynamics import LateralStateSpace
 
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
+    from ICARUS.flight_dynamics import State
 
 
 def lateral_stability_finite_differences(

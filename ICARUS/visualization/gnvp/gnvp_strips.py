@@ -16,11 +16,11 @@ from pandas import DataFrame
 from ICARUS.computation.solvers.GenuVP.post_process.strips import get_strip_data
 
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
-def gnvp_strips_3d(
+def plot_gnvp_strip_data_3D(
     plane: Airplane,
     state: State,
     case: str,
@@ -72,7 +72,7 @@ def gnvp_strips_3d(
     return all_strip_data
 
 
-def gnvp_strips_2d(
+def plot_gnvp_strip_data_2D(
     plane: Airplane,
     state: State,
     case: str,

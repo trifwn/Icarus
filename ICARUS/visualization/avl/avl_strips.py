@@ -11,13 +11,13 @@ from numpy import ndarray
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.AVL import get_strip_data
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.wing import Wing
-from ICARUS.vehicle.surface import WingSurface
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import Wing
+from ICARUS.vehicle import WingSurface
 
 
-def avl_strips_3d(
+def plot_avl_strip_data_3D(
     plane: Airplane,
     state: State,
     case: str,
@@ -109,7 +109,7 @@ def avl_strips_3d(
     return strip_data
 
 
-def avl_strips_2d(
+def plot_avl_strip_data_2D(
     plane: Airplane,
     state: State,
     case: str,

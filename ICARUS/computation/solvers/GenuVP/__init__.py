@@ -10,4 +10,3 @@ from ICARUS.computation.solvers.GenuVP.analyses.angles import gnvp_polars_serial
 from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run
 from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run_3
 from ICARUS.computation.solvers.GenuVP.analyses.angles import process_gnvp_angles_run_7
-

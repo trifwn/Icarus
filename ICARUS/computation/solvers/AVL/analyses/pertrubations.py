@@ -9,8 +9,8 @@ from ICARUS.computation.solvers.AVL import implicit_dynamics_post
 from ICARUS.computation.solvers.AVL.files.dynamics import finite_difs
 from ICARUS.computation.solvers.AVL.files.dynamics import implicit_eigs
 from ICARUS.database import Database
-from ICARUS.flight_dynamics.state import State
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 
 
 def avl_dynamics_implicit(
@@ -82,7 +82,7 @@ def process_avl_dynamics_fd(plane: Airplane, state: State) -> DataFrame:
     return forces
 
 
-def process_avl_dynamics_impl(
+def process_avl_dynamics_implicit(
     plane: Airplane,
     state: State,
 ) -> tuple[list[complex], list[complex]]:

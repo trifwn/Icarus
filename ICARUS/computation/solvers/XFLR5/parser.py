@@ -7,12 +7,12 @@ from xmltodict import parse
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.wing import Wing
-from ICARUS.vehicle.point_mass import PointMass
-from ICARUS.vehicle.surface import WingSurface
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import Wing
+from ICARUS.vehicle import PointMass
+from ICARUS.vehicle import WingSurface
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def parse_xfl_project(filename: str) -> Airplane:

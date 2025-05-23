@@ -46,36 +46,21 @@ There are also routines for the visualization of the results of the GNVP results
 
 """
 
-from . import airplane_polars
-from . import gnvp_convergence
-from . import gnvp_sensitivity
-from . import gnvp_strips
-from . import gnvp_wake
 
-__all__ = [
-    "airplane_polars",
-    "gnvp_convergence",
-    "gnvp_sensitivity",
-    "gnvp_strips",
-    "gnvp_wake",
-]
 
 # Get all the visualization functions
 from typing import Any
 from typing import Callable
 
 from .airplane_polars import plot_airplane_polars
-from .gnvp_convergence import plot_case_transient
-from .gnvp_sensitivity import plot_sensitivity
-from .gnvp_strips import gnvp_strips_2d
-from .gnvp_strips import gnvp_strips_3d
-from .gnvp_wake import plot_gnvp_wake
+from .cg_investigation import cg_investigation
+
+__all__ = [
+    "plot_airplane_polars",
+    "cg_investigation",
+]
 
 __functions__: list[Callable[..., Any]] = [
     plot_airplane_polars,
-    plot_case_transient,
-    plot_sensitivity,
-    gnvp_strips_2d,
-    gnvp_strips_3d,
-    plot_gnvp_wake,
+    cg_investigation
 ]

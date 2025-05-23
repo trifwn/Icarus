@@ -7,7 +7,7 @@ from cli.options import get_option
 from cli.options import input_options
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers.solver import Solver
-from ICARUS.vehicle.airplane import Airplane
+from ICARUS.vehicle import Airplane
 
 
 def set_analysis(solver: Solver) -> None:

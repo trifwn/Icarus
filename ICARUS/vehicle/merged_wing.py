@@ -10,11 +10,12 @@ import numpy as np
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.surface import WingSurface
-from ICARUS.vehicle.utils import SymmetryAxes
+
+from . import WingSurface
+from . import SymmetryAxes
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.strip import Strip
+    from . import Strip
 
 
 class Wing(WingSurface):

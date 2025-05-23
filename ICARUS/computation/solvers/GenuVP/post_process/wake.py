@@ -9,8 +9,8 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 
 if TYPE_CHECKING:
-    from ICARUS.flight_dynamics.state import State
-    from ICARUS.vehicle.airplane import Airplane
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
     from ICARUS.core.types import FloatArray
 
 from .max_iter import get_max_iterations_3

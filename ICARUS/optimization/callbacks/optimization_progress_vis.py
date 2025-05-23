@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from scipy.optimize import OptimizeResult
 
-from ICARUS.optimization.callbacks.optimization_callback import OptimizationCallback
+from . import OptimizationCallback
 
 
 class OptimizationProgress(OptimizationCallback):

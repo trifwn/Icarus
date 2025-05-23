@@ -2,10 +2,10 @@ import numpy as np
 
 from ICARUS.core.types import DataDict
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.point_mass import PointMass
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.wing_segment import WingSegment
+from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import PointMass
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
 
 
 def wing_var_chord_offset(

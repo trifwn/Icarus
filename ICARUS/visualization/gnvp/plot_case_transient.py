@@ -5,7 +5,7 @@ from matplotlib.figure import Figure
 from ICARUS.database import Database
 from ICARUS.database import angle_to_case
 from ICARUS.database import disturbance_to_case
-from ICARUS.flight_dynamics.disturbances import Disturbance
+from ICARUS.flight_dynamics import Disturbance
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
 

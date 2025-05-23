@@ -14,17 +14,17 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.core.serialization import deserialize_function
 from ICARUS.core.serialization import serialize_function
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.control_surface import ControlSurface
-from ICARUS.vehicle.control_surface import ControlType
-from ICARUS.vehicle.control_surface import NoControl
-from ICARUS.vehicle.utils import DiscretizationType
-from ICARUS.vehicle.utils import SymmetryAxes
-from ICARUS.vehicle.utils import equal_spacing_function_factory
 
+from . import ControlSurface
+from . import ControlType
+from . import NoControl
+from .utils import DiscretizationType
+from .utils import SymmetryAxes
+from .utils import equal_spacing_function_factory
 from .strip import Strip
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.wing import Wing
+    from . import Wing
 
 
 class WingSurface:
@@ -698,7 +698,7 @@ class WingSurface:
                 controls=[copy(control) for control in self.controls],
             )
 
-            from ICARUS.vehicle.wing import Wing
+            from ICARUS.vehicle import Wing
 
             split_wing = Wing(
                 name=self.name,
