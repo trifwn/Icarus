@@ -19,24 +19,25 @@ if TYPE_CHECKING:
 
 def gnvp_sensitivities(
     *args: Any,
-    genu_version,
+    gnvp_version,
     parallel,
     **kwars: Any,
 ) -> None:
     """Wrapper function for sensitivities_serial and sensitivities_parallel.
 
     Args:
-        genu_version (int, optional): Genu Version. Defaults to 3.
+        gnvp_version (int, optional): Genu Version. Defaults to 3.
+        parallel (bool, optional): Run in parallel. Defaults to False.
         *args (Any): Arguments for the function.
         **kwars (Any): Keyword arguments for the function.
 
     """
-    if genu_version == 3:
+    if gnvp_version == 3:
         if parallel:
             sensitivities_parallel(*args, **kwars)
         else:
             sensitivities_serial(*args, **kwars)  # type: ignore
-    elif genu_version == 7:
+    elif gnvp_version == 7:
         if parallel:
             sensitivities_parallel(*args, **kwars)  # type: ignore
         else:
@@ -46,19 +47,19 @@ def gnvp_sensitivities(
 
 
 def gnvp3_sensitivities_serial(*args: Any, **kwars: Any) -> None:
-    sensitivities_serial(genu_version=3, *args, **kwars)  # type: ignore
+    sensitivities_serial(gnvp_version=3, *args, **kwars)  # type: ignore
 
 
 def gnvp7_sensitivities_serial(*args: Any, **kwars: Any) -> None:
-    sensitivities_serial(genu_version=7, *args, **kwars)  # type: ignore
+    sensitivities_serial(gnvp_version=7, *args, **kwars)  # type: ignore
 
 
 def gnvp3_sensitivities_parallel(*args: Any, **kwars: Any) -> None:
-    sensitivities_parallel(genu_version=3, *args, **kwars)  # type: ignore
+    sensitivities_parallel(gnvp_version=3, *args, **kwars)  # type: ignore
 
 
 def gnvp7_sensitivities_parallel(*args: Any, **kwars: Any) -> None:
-    sensitivities_parallel(genu_version=7, *args, **kwars)  # type: ignore
+    sensitivities_parallel(gnvp_version=7, *args, **kwars)  # type: ignore
 
 
 def sensitivities_serial(
@@ -69,7 +70,7 @@ def sensitivities_serial(
     maxiter: int,
     timestep: float,
     angle: float,
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """For each pertrubation in the sensitivity attribute of the dynamic airplane
@@ -112,7 +113,7 @@ def sensitivities_serial(
             bodies_dicts,
             dst,
             "Sensitivity",
-            genu_version,
+            gnvp_version,
             solver_options,
         )
         print(msg)
@@ -126,7 +127,7 @@ def sensitivities_parallel(
     maxiter: int,
     timestep: float,
     angle: float,
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """For each pertrubation in the sensitivity attribute of the dynamic airplane
@@ -158,7 +159,7 @@ def sensitivities_parallel(
 
     from multiprocessing import Pool
 
-    if genu_version == 3:
+    if gnvp_version == 3:
         num_processes = CPU_TO_USE
     else:
         num_processes = int(CPU_TO_USE / 3)
@@ -178,7 +179,7 @@ def sensitivities_parallel(
                 bodies_dicts,
                 dst,
                 f"Sensitivity_{dst.var}",
-                genu_version,
+                gnvp_version,
                 solver_options,
             )
             for dst in disturbances

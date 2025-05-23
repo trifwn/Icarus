@@ -46,13 +46,15 @@ def gnvp_disturbance_case(
     bodies_dicts: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> str:
     """Run a single disturbance simulation in GNVP3
 
     Args:
+        DB (Database): Database Object
         plane (Airplane): Plane Object
+        state (State): Plane State Object 
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
@@ -63,6 +65,7 @@ def gnvp_disturbance_case(
         bodies_dicts (list[GenuSurface]): List of bodies in GenuSurface format
         dst (Disturbance): Disturbance to be run
         analysis (str): Analysis Name
+        gnvp_version (int): GenuVP version
         solver_options (dict[str, Any] | Struct): Solver Options
 
     Returns:
@@ -74,7 +77,7 @@ def gnvp_disturbance_case(
     PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
-        solver=f"GenuVP{genu_version}",
+        solver=f"GenuVP{gnvp_version}",
     )
     airfoils: list[str] = plane.airfoils
 
@@ -100,7 +103,7 @@ def gnvp_disturbance_case(
         solver_options,
     )
 
-    if genu_version == 7:
+    if gnvp_version == 7:
         run = gnvp7_case
     else:
         run = gnvp3_case
@@ -119,19 +122,19 @@ def gnvp_disturbance_case(
 
 
 def gnvp3_dynamics_serial(*args: Any, **kwars: Any) -> None:
-    gnvp_dynamics_serial(genu_version=3, *args, **kwars)  # type: ignore
+    gnvp_dynamics_serial(gnvp_version=3, *args, **kwars)  # type: ignore
 
 
 def gnvp7_dynamics_serial(*args: Any, **kwars: Any) -> None:
-    gnvp_dynamics_serial(genu_version=7, *args, **kwars)  # type: ignore
+    gnvp_dynamics_serial(gnvp_version=7, *args, **kwars)  # type: ignore
 
 
 def gnvp3_dynamics_parallel(*args: Any, **kwars: Any) -> None:
-    gnvp_dynamics_parallel(genu_version=3, *args, **kwars)  # type: ignore
+    gnvp_dynamics_parallel(gnvp_version=3, *args, **kwars)  # type: ignore
 
 
 def gnvp7_dynamics_parallel(*args: Any, **kwars: Any) -> None:
-    gnvp_dynamics_parallel(genu_version=7, *args, **kwars)  # type: ignore
+    gnvp_dynamics_parallel(gnvp_version=7, *args, **kwars)  # type: ignore
 
 
 def gnvp_dynamics_serial(
@@ -140,7 +143,7 @@ def gnvp_dynamics_serial(
     solver2D: str,
     maxiter: int,
     timestep: float,
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """For each pertrubation in the plane object, run a simulation in GNVP3.
@@ -184,7 +187,7 @@ def gnvp_dynamics_serial(
                 "bodies_dicts": bodies_dicts,
                 "dst": dst,
                 "analysis": "Dynamics",
-                "genu_version": genu_version,
+                "gnvp_version": gnvp_version,
                 "solver_options": solver_options,
             },
         )
@@ -201,7 +204,7 @@ def gnvp_dynamics_serial(
         PLANEDIR: str = DB.get_vehicle_case_directory(
             airplane=plane,
             state=state,
-            solver=f"GenuVP{genu_version}",
+            solver=f"GenuVP{gnvp_version}",
         )
         CASEDIR: str = os.path.join(PLANEDIR, "Dynamics", folder)
         job_monitor = Thread(
@@ -213,7 +216,7 @@ def gnvp_dynamics_serial(
                 "lock": None,
                 "max_iter": maxiter,
                 "refresh_progress": 2,
-                "genu_version": genu_version,
+                "gnvp_version": gnvp_version,
             },
         )
 
@@ -232,7 +235,7 @@ def gnvp_dynamics_parallel(
     solver2D: str,
     maxiter: int,
     timestep: float,
-    genu_version: int,
+    gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
 ) -> None:
     """For each pertrubation in the plane object, run a simulation in GNVP3.
@@ -263,7 +266,7 @@ def gnvp_dynamics_parallel(
     from multiprocessing import Pool
 
     def run() -> None:
-        if genu_version == 3:
+        if gnvp_version == 3:
             num_processes = CPU_TO_USE
         else:
             num_processes = int(CPU_TO_USE)
@@ -283,7 +286,7 @@ def gnvp_dynamics_parallel(
                     bodies_dicts,
                     dst,
                     "Dynamics",
-                    genu_version,
+                    gnvp_version,
                     solver_options,
                 )
                 for dst in disturbances
@@ -295,7 +298,7 @@ def gnvp_dynamics_parallel(
     GENUDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
-        solver=f"GenuVP{genu_version}",
+        solver=f"GenuVP{gnvp_version}",
     )
     CASEDIRS: list[str] = [os.path.join(GENUDIR, "Dynamics", folder) for folder in folders]
 
@@ -310,7 +313,7 @@ def gnvp_dynamics_parallel(
             ],
             "max_iter": maxiter,
             "refresh_progress": refresh_progress,
-            "genu_version": genu_version,
+            "gnvp_version": gnvp_version,
         },
     )
 
@@ -342,7 +345,7 @@ def process_gnvp_dynamics(
     Args:
         plane (Airplane): Airplane Object
         state (State): Plane State to load results to
-        genu_version (int): GenuVP version
+        gnvp_version (int): GenuVP version
 
     Returns:
         DataFrame: DataFrame with the forces for each pertrubation simulation

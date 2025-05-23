@@ -21,14 +21,14 @@ def serial_monitor(
     lock: Lock | None,
     max_iter: int,
     refresh_progress: float,
-    genu_version: int,
+    gnvp_version: int,
     stop_event: Event = Event(),
 ) -> None:
     sleep(1 + (position + 1) / 10)
 
     while not stop_event.is_set():
         sleep(refresh_progress)
-        time, error = latest_time(CASEDIR, genu_version)
+        time, error = latest_time(CASEDIR, gnvp_version)
 
         if error:
             progress_bars[position].write("Analysis encountered Error")
@@ -53,7 +53,7 @@ def parallel_monitor(
     CASEDIRS: list[str],
     variables: list[str] | list[float] | FloatArray,
     max_iter: int,
-    genu_version: int,
+    gnvp_version: int,
     refresh_progress: float = 0.2,
     stop_event: Event = Event(),
 ) -> None:
@@ -84,7 +84,7 @@ def parallel_monitor(
                 lock=progress_bar_lock,
                 max_iter=max_iter,
                 refresh_progress=refresh_progress,
-                genu_version=genu_version,
+                gnvp_version=gnvp_version,
                 stop_event=stop_event,
             )
 

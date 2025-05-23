@@ -49,7 +49,7 @@ def process_avl_polars(
     Args:
         plane (Airplane): Plane Object
         state (State): State of the Airplane
-        genu_version: GNVP Version
+        gnvp_version: GNVP Version
 
     Returns:
         DataFrame: Forces Calculated

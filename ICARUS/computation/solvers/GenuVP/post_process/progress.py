@@ -6,19 +6,19 @@ from ICARUS.core.utils import tail
 
 def latest_time(
     CASEDIR: str,
-    genu_version: int,
+    gnvp_version: int,
 ) -> tuple[int | None, bool]:
     """Get the latest iteration of GNVP3
 
     Args:
         CASEDIR (str): Directory where it is run
-        genu_version (int): Version of GNVP
+        gnvp_version (int): Version of GNVP
 
     Returns:
         Tuple[Optional[int], Optional[float], bool]: Tuple containing IBLM iteration, the angle where the simulation is, and an error flag.
 
     """
-    filename: str = os.path.join(CASEDIR, f"gnvp{genu_version}.out")
+    filename: str = os.path.join(CASEDIR, f"gnvp{gnvp_version}.out")
     try:
         with open(filename, "rb") as f:
             data_b: list[bytes] = tail(f, 300)

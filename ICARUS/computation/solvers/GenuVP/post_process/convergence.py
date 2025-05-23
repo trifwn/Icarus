@@ -5,14 +5,14 @@ import pandas as pd
 from pandas import DataFrame
 
 
-def get_loads_convergence(file: str, genu_version: int) -> DataFrame:
-    if genu_version == 3:
+def get_loads_convergence(file: str, gnvp_version: int) -> DataFrame:
+    if gnvp_version == 3:
         return get_loads_convergence_3(file)
-    if genu_version == 7:
+    if gnvp_version == 7:
         logging.info("Load Convergence for GenuVP7 not implemented")
         df = DataFrame()
         return df
-    raise ValueError(f"GenuVP version {genu_version} not recognized")
+    raise ValueError(f"GenuVP version {gnvp_version} not recognized")
 
 
 def get_error_convergence(file: str, df: DataFrame, gnvp_version: int) -> DataFrame:

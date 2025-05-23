@@ -46,7 +46,7 @@ def plot_airplane_polars(
         tuple[ndarray, Figure]: Array of Axes and Figure
 
     """
-    if isinstance(airplanes, str) or isinstance(airplanes, Airplane):
+    if not isinstance(airplanes, list):
         airplanes = [airplanes]
     assert isinstance(airplanes, list), "Airplanes must be a list of strings or Airplane objects"
 

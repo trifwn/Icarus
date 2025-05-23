@@ -54,7 +54,7 @@ elif PLATFORM == "Linux":
         pass
     GenuVP3_exe = os.path.join(INSTALL_DIR, "bin", "gnvp3")
     GenuVP7_exe = os.path.join(INSTALL_DIR, "bin", "gnvp7")
-    # F2W_exe = os.path.join(APPHOME, "bin", "f2w")
+    F2W_exe = os.path.join(INSTALL_DIR, "bin", "f2w")
     Foil_Section_exe = os.path.join(INSTALL_DIR, "bin", "foil_section")
     AVL_exe = os.path.join(INSTALL_DIR, "bin", "avl")
 

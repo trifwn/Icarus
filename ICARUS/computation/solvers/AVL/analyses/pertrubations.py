@@ -58,7 +58,6 @@ def process_avl_dynamics_fd(plane: Airplane, state: State) -> DataFrame:
     Args:
         plane (Airplane): Airplane Object
         state (State): Plane State to load results to
-        genu_version (int): GenuVP version
 
     Returns:
         DataFrame: DataFrame with the forces for each pertrubation simulation
