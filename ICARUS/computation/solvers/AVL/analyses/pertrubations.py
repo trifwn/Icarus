@@ -4,8 +4,6 @@ from typing import Literal
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.AVL import finite_difs_post
-from ICARUS.computation.solvers.AVL import implicit_dynamics_post
 from ICARUS.computation.solvers.AVL.files.dynamics import finite_difs
 from ICARUS.computation.solvers.AVL.files.dynamics import implicit_eigs
 from ICARUS.database import Database
@@ -63,6 +61,7 @@ def process_avl_dynamics_fd(plane: Airplane, state: State) -> DataFrame:
         DataFrame: DataFrame with the forces for each pertrubation simulation
 
     """
+    from ICARUS.computation.solvers.AVL import finite_difs_post
     forces: DataFrame = finite_difs_post(plane, state)
 
     state.set_pertrubation_results(forces, "AVL")
@@ -85,5 +84,6 @@ def process_avl_dynamics_implicit(
     plane: Airplane,
     state: State,
 ) -> tuple[list[complex], list[complex]]:
+    from ICARUS.computation.solvers.AVL import implicit_dynamics_post
     impl_long, impl_late = implicit_dynamics_post(plane, state)
     return impl_long, impl_late

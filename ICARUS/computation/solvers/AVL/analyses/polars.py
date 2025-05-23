@@ -6,10 +6,10 @@ from typing import Literal
 from pandas import DataFrame
 
 from ICARUS.computation.solvers.AVL import collect_avl_polar_forces
-from ICARUS.computation.solvers.AVL.files.input import make_input_files
-from ICARUS.computation.solvers.AVL.files.polars import case_def
-from ICARUS.computation.solvers.AVL.files.polars import case_run
-from ICARUS.computation.solvers.AVL.files.polars import case_setup
+from ..files.input import make_input_files
+from ..files.polars import case_def
+from ..files.polars import case_run
+from ..files.polars import case_setup
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics import State

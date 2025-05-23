@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from typing import Any
 
 import distinctipy
@@ -15,8 +14,7 @@ from pandas import Series
 from ICARUS.database import Database
 from ICARUS.visualization import markers
 
-if TYPE_CHECKING:
-    from ICARUS.vehicle import Airplane
+from ICARUS.vehicle import Airplane
 
 
 def plot_airplane_polars(
