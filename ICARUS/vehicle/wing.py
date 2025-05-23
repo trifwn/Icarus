@@ -178,9 +178,9 @@ class Wing(WingSurface):
         self.define_wing_parameters()
         ####### Calculate Wing Parameters ########
 
-    def get_separate_segments(self) -> Sequence[WingSurface]:
+    def get_separate_segments(self) -> list[WingSurface]:
         """Returns the separate segments of the wing"""
-        segments: Sequence[WingSurface] = []
+        segments: list[WingSurface] = []
         for segment in self.wing_segments:
             if isinstance(segment, Wing):
                 segments.extend(segment.get_separate_segments())

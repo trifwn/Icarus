@@ -85,6 +85,7 @@ class WingSurface:
                 [0, 1, 0],
                 [-np.sin(self.pitch), 0, np.cos(self.pitch)],
             ],
+            dtype=float,
         )
         R_YAW: FloatArray = np.array(
             [
@@ -92,6 +93,7 @@ class WingSurface:
                 [np.sin(self.yaw), np.cos(self.yaw), 0],
                 [0, 0, 1],
             ],
+            dtype=float,
         )
         R_ROLL: FloatArray = np.array(
             [
@@ -99,6 +101,7 @@ class WingSurface:
                 [0, np.cos(self.roll), -np.sin(self.roll)],
                 [0, np.sin(self.roll), np.cos(self.roll)],
             ],
+            dtype=float,
         )
         self.R_MAT: FloatArray = R_YAW.dot(R_PITCH).dot(R_ROLL)
 

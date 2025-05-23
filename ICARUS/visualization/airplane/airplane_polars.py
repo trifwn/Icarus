@@ -12,9 +12,8 @@ from pandas import DataFrame
 from pandas import Series
 
 from ICARUS.database import Database
-from ICARUS.visualization import markers
-
 from ICARUS.vehicle import Airplane
+from ICARUS.visualization import markers
 
 
 def plot_airplane_polars(

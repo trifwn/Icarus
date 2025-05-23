@@ -91,9 +91,15 @@ def avl_mass(
 
     for mass in plane.point_masses:
         pos = mass.position
-        Ixx, Iyy, Izz, Ixy, Ixz, Iyz = mass.inertia
+        Ixx = mass.inertia.I_xx
+        Iyy = mass.inertia.I_yy
+        Izz = mass.inertia.I_zz
+        Ixy = mass.inertia.I_xy
+        Ixz = mass.inertia.I_xz
+        Iyz = mass.inertia.I_yz
+
         f_io.write(
-            f"   {mass.mass:.4e}  {pos[0]:.4e}  {pos[1]:.4e}  {pos[2]:.4e}  {Ixx:.4e}  {Iyy:.4e}  {Izz:.4e}  {Ixz:.4e}  {Ixz:.4e}  {Iyz:.4e} ! {mass.name}     \n",
+            f"   {mass.mass:.4e}  {pos[0]:.4e}  {pos[1]:.4e}  {pos[2]:.4e}  {Ixx:.4e}  {Iyy:.4e}  {Izz:.4e}  {Ixy:.4e}  {Ixz:.4e}  {Iyz:.4e} ! {mass.name}     \n",
         )
 
     content = f_io.getvalue().expandtabs(4)

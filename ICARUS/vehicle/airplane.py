@@ -230,11 +230,11 @@ class Airplane(Optimizable):
         for mass in self.point_masses:
             if mass.name == name:
                 if axis == "x":
-                    return float(mass.position_x)
+                    return float(mass.x)
                 if axis == "y":
-                    return float(mass.position_y)
+                    return float(mass.y)
                 if axis == "z":
-                    return float(mass.position_z)
+                    return float(mass.z)
                 if axis == "xyz":
                     return mass.position
                 raise PlaneDoesntContainAttr(
@@ -273,17 +273,17 @@ class Airplane(Optimizable):
                 if axis == "x":
                     if not isinstance(value, float):
                         raise ValueError("Value must be a float")
-                    mass.position_x = value
+                    mass.x = value
 
                 elif axis == "y":
                     if not isinstance(value, float):
                         raise ValueError("Value must be a float")
-                    mass.position_y = value
+                    mass.y = value
 
                 elif axis == "z":
                     if not isinstance(value, float):
                         raise ValueError("Value must be a float")
-                    mass.position_z = value
+                    mass.z = value
 
                 elif axis == "xyz":
                     if not isinstance(value, ndarray):
@@ -364,7 +364,7 @@ class Airplane(Optimizable):
         """
         for mass in self.point_masses:
             if mass.name == name:
-                return mass.inertia
+                return np.array(mass.inertia.to_list, dtype=float)
 
         for surf in self.surfaces:
             if surf.name == name:
@@ -590,9 +590,9 @@ class Airplane(Optimizable):
         self.M = 0.0
         for p_mass in self.masses:
             self.M += p_mass.mass
-            x_cm += p_mass.mass * p_mass.position_x
-            y_cm += p_mass.mass * p_mass.position_y
-            z_cm += p_mass.mass * p_mass.position_z
+            x_cm += p_mass.mass * p_mass.x
+            y_cm += p_mass.mass * p_mass.y
+            z_cm += p_mass.mass * p_mass.z
         return np.array((x_cm, y_cm, z_cm), dtype=float) / self.M
 
     def find_inertia(self, point: FloatArray) -> FloatArray:

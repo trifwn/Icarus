@@ -62,6 +62,7 @@ def process_avl_dynamics_fd(plane: Airplane, state: State) -> DataFrame:
 
     """
     from ICARUS.computation.solvers.AVL import finite_difs_post
+
     forces: DataFrame = finite_difs_post(plane, state)
 
     state.set_pertrubation_results(forces, "AVL")
@@ -85,5 +86,6 @@ def process_avl_dynamics_implicit(
     state: State,
 ) -> tuple[list[complex], list[complex]]:
     from ICARUS.computation.solvers.AVL import implicit_dynamics_post
+
     impl_long, impl_late = implicit_dynamics_post(plane, state)
     return impl_long, impl_late

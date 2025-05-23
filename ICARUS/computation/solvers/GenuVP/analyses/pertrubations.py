@@ -54,7 +54,7 @@ def gnvp_disturbance_case(
     Args:
         DB (Database): Database Object
         plane (Airplane): Plane Object
-        state (State): Plane State Object 
+        state (State): Plane State Object
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
