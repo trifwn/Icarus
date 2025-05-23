@@ -27,7 +27,7 @@ from ICARUS.aero.assemble_matrix import get_RHS
 from ICARUS.aero.post_process.strip_calculations import get_potential_loads
 from ICARUS.aero.strip_data import StripData
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.wing import Wing
 from ICARUS.visualization.figure_setup import create_subplots
 from ICARUS.visualization.figure_setup import flatten_axes
 
@@ -57,7 +57,7 @@ class LSPT_Plane:
         num_strips: int = 0
         # Get the wing segments
         for surface in plane.surfaces:
-            if isinstance(surface, MergedWing):
+            if isinstance(surface, Wing):
                 for sub_surf in surface.wing_segments:
                     self.surfaces.append(sub_surf)
                     # Get the surface information

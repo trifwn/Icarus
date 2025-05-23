@@ -8,7 +8,7 @@ from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.wing import Wing
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -121,6 +121,6 @@ def e190_takeoff_generator(
     )
     # rudder.plotWing()
 
-    main_wing = MergedWing(name="main_wing", wing_segments=[wing_1, wing_2, wing_3])
+    main_wing = Wing(name="main_wing", wing_segments=[wing_1, wing_2, wing_3])
     airplane: Airplane = Airplane(name, main_wing=main_wing)
     return airplane

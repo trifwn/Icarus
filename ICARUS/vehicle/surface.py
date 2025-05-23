@@ -24,7 +24,7 @@ from ICARUS.vehicle.utils import equal_spacing_function_factory
 from .strip import Strip
 
 if TYPE_CHECKING:
-    from ICARUS.vehicle.merged_wing import MergedWing
+    from ICARUS.vehicle.wing import Wing
 
 
 class WingSurface:
@@ -652,7 +652,7 @@ class WingSurface:
             self.M = M
         self.define_wing_parameters()
 
-    def split_xz_symmetric_wing(self) -> MergedWing:
+    def split_xz_symmetric_wing(self) -> Wing:
         """Split Symmetric Wing into two Wings"""
         if self.is_symmetric_y:
             left = WingSurface(
@@ -698,9 +698,9 @@ class WingSurface:
                 controls=[copy(control) for control in self.controls],
             )
 
-            from ICARUS.vehicle.merged_wing import MergedWing
+            from ICARUS.vehicle.wing import Wing
 
-            split_wing = MergedWing(
+            split_wing = Wing(
                 name=self.name,
                 wing_segments=[left, right],
             )

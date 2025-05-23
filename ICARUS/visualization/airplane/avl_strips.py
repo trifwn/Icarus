@@ -13,7 +13,7 @@ from pandas import DataFrame
 from ICARUS.computation.solvers.AVL import get_strip_data
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.wing import Wing
 from ICARUS.vehicle.surface import WingSurface
 
 
@@ -54,7 +54,7 @@ def avl_strips_3d(
 
     _surface_names: list[str] = []
     for surface in surfaces:
-        if isinstance(surface, MergedWing):
+        if isinstance(surface, Wing):
             # Get the separate segments of the merged wing
             _surface_names.extend([s.name for s in surface.get_separate_segments()])
             _surface_names.append(surface.name)
@@ -126,7 +126,7 @@ def avl_strips_2d(
     else:
         raise ValueError("surface_name must be a string or a WingSurface object")
 
-    if isinstance(surface, MergedWing):
+    if isinstance(surface, Wing):
         surface_names = [s.name for s in surface.get_separate_segments()]
         surface_names.append(surface.name)
     else:

@@ -8,7 +8,7 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.wing import Wing
 from ICARUS.vehicle.point_mass import PointMass
 from ICARUS.vehicle.surface import WingSurface
 from ICARUS.vehicle.utils import SymmetryAxes
@@ -222,7 +222,7 @@ def parse_xfl_project(filename: str) -> Airplane:
             N_prev = N
             M_prev = M
 
-        lifting_surfaces[f"{name}"] = MergedWing(
+        lifting_surfaces[f"{name}"] = Wing(
             name=name,
             wing_segments=wing_segments,
         )

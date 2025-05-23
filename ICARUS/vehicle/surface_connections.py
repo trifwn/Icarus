@@ -16,7 +16,7 @@ Note:
 """
 
 
-class Surface_Connection:
+class SurfaceConnection:
     """Class to define the connection between two wing segments."""
 
     def __init__(self) -> None:

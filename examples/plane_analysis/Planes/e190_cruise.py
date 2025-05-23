@@ -8,7 +8,7 @@ from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle.airplane import Airplane
-from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.wing import Wing
 from ICARUS.vehicle.utils import SymmetryAxes
 from ICARUS.vehicle.wing_segment import WingSegment
 
@@ -113,7 +113,7 @@ def e190_cruise(name: str) -> Airplane:
         mass=1.0,
     )
 
-    main_wing = MergedWing(
+    main_wing = Wing(
         "Main Wing",
         [wing_1, wing_2, wing_3],
     )

@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
 from ICARUS.optimization.optimizable import Optimizable
-from ICARUS.vehicle.merged_wing import MergedWing
+from ICARUS.vehicle.wing import Wing
 from ICARUS.vehicle.point_mass import PointMass
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from ICARUS.core.types import FloatOrListArray
     from ICARUS.flight_dynamics.state import State
     from ICARUS.vehicle.surface import WingSurface
-    from ICARUS.vehicle.surface_connections import Surface_Connection
+    from ICARUS.vehicle.surface_connections import SurfaceConnection
 
 jsonpickle_pd.register_handlers()
 
@@ -85,7 +85,7 @@ class Airplane(Optimizable):
         self.states: list[State] = []
 
         # Define Connection Dictionary
-        self.connections: dict[str, Surface_Connection] = {}
+        self.connections: dict[str, SurfaceConnection] = {}
         # self.register_connections()
 
         # Get the control vector:
@@ -202,7 +202,7 @@ class Airplane(Optimizable):
         surfaces: list[tuple[int, WingSurface]] = []
         i = 0
         for _, surface in self.surface_dict.items():
-            if isinstance(surface, MergedWing):
+            if isinstance(surface, Wing):
                 for s in surface.get_separate_segments():
                     surfaces.append((i, s))
             else:
@@ -532,8 +532,8 @@ class Airplane(Optimizable):
                 if surface is not other_surface:
                     if np.allclose(surface.tip, other_surface.root):
                         if surface.name not in self.connections.keys():
-                            self.connections[surface.name] = Surface_Connection()
-                            self.connections[other_surface.name] = Surface_Connection()
+                            self.connections[surface.name] = SurfaceConnection()
+                            self.connections[other_surface.name] = SurfaceConnection()
 
         # Detect if surfaces are connected chordwise
         # To do this, we check if the trailing edge of one surface is the same as the leading edge of another surface
@@ -543,8 +543,8 @@ class Airplane(Optimizable):
                 if surface is not other_surface:
                     if np.allclose(surface.trailing_edge, other_surface.leading_edge):
                         if surface.name not in self.connections.keys():
-                            self.connections[surface.name] = Surface_Connection()
-                            self.connections[other_surface.name] = Surface_Connection()
+                            self.connections[surface.name] = SurfaceConnection()
+                            self.connections[other_surface.name] = SurfaceConnection()
 
     def get_surface(self, name: str) -> WingSurface:
         for surface in self.surfaces:

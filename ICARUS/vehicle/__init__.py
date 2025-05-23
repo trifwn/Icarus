@@ -63,20 +63,27 @@ Surface Connections
 
 """
 
-__all__ = [
-    "merged_wing",
-    "airplane",
-    "strip",
-    "surface",
-    "surface_connections",
-    "control_surface",
-    "wing_segment",
-]
+from .airplane import Airplane
+from .control_surface import ControlSurface, ControlType, Aileron, Flap, Rudder, Elevator, NoControl
+from .wing import Wing
+from .strip import Strip
+from .wing_segment import WingSegment
+from .surface import WingSurface
+from .surface_connections import SurfaceConnection
 
-from . import airplane
-from . import control_surface
-from . import merged_wing
-from . import strip
-from . import surface
-from . import surface_connections
-from . import wing_segment
+
+__all__ = [
+    "Airplane",
+    "ControlSurface",
+    "ControlType",
+    "Aileron",
+    "Flap",
+    "Rudder",
+    "Elevator",
+    "NoControl",
+    "Wing",
+    "Strip",
+    "WingSegment",
+    "WingSurface",
+    "SurfaceConnection",
+]
