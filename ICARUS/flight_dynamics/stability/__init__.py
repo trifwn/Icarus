@@ -24,13 +24,15 @@ This package contains classes and routines for flight dynamics stability computa
     ICARUS.flight_dynamics.stability.longitudal
     ICARUS.flight_dynamics.stability.lateral
     ICARUS.flight_dynamics.stability.stability_derivatives
-
+    isort:skip_file
 """
 
+from .state_space import LateralStateSpace
+from .state_space import LongitudalStateSpace
+from .state_space import StateSpace
+from .stability_derivatives import StabilityDerivativesDS
 from .lateral import lateral_stability_finite_differences
 from .longitudal import longitudal_stability_finite_differences
-from .state_space import LateralStateSpace, LongitudalStateSpace, StateSpace
-from .stability_derivatives import StabilityDerivativesDS
 
 __all__ = [
     "lateral_stability_finite_differences",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 import jax
 import jax.numpy as jnp
@@ -28,8 +29,8 @@ from ICARUS.aero.post_process.strip_calculations import get_potential_loads
 from ICARUS.aero.strip_data import StripData
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle import Wing
-from ICARUS.visualization.figure_setup import create_subplots
-from ICARUS.visualization.figure_setup import flatten_axes
+from ICARUS.visualization import create_subplots
+from ICARUS.visualization import flatten_axes
 
 coolwarm = colormaps.get_cmap("coolwarm")
 viridis = colormaps.get_cmap("viridis")
@@ -48,7 +49,7 @@ class LSPT_Plane:
         plane: Airplane,
     ) -> None:
         # Store the wing segments
-        self.surfaces: list[WingSurface] = []
+        self.surfaces: Sequence[WingSurface] = []
         self.surface_dict: dict[str, Any] = {}
 
         surf_id = 0

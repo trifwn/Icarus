@@ -21,12 +21,12 @@ from inquirer import prompt
 
 from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
-from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
-from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
+from ICARUS.computation.solvers import Solver
+from ICARUS.computation.solvers.GenuVP import GenuVP3
+from ICARUS.computation.solvers.GenuVP import GenuVP7
 from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
-from ICARUS.computation.solvers.solver import Solver
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.environment import Environment

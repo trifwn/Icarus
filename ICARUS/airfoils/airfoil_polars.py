@@ -51,7 +51,7 @@ from pandas import Index
 from pandas import Series
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
 

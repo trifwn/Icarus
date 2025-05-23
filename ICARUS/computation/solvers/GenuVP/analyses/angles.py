@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 from subprocess import CalledProcessError
 from threading import Event
 from threading import Thread
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 from typing import NoReturn
@@ -11,23 +14,26 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import parallel_monitor
-from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import gnvp3_case
-from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import gnvp7_case
-from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
-from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import angle_to_case
-from ICARUS.environment import Environment
-from ICARUS.flight_dynamics import State
-from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import WingSurface
+
+from ..files import gnvp3_case
+from ..files import gnvp7_case
+from ..post_process import log_forces
+from ..utils import GenuParameters
+from ..utils import GenuSurface
+from ..utils import GNVP_Movement
+from ..utils import define_movements
+from .monitor_progress import parallel_monitor
+from .monitor_progress import serial_monitor
+
+if TYPE_CHECKING:
+    from ICARUS.environment import Environment
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
+    from ICARUS.vehicle import WingSurface
 
 
 class StopRunningThreadError(Exception):
@@ -99,7 +105,7 @@ def gnvp7_polars_parallel(*args: Any, **kwargs: Any) -> None:
     gnvp_polars_parallel(gnvp_version=7, *args, **kwargs)  # type: ignore
 
 
-def gnvp_aoa(
+def gnvp_aoa_case(
     DB: Database,
     plane: Airplane,
     state: State,
@@ -109,7 +115,7 @@ def gnvp_aoa(
     u_freestream: float,
     angle: float,
     environment: Environment,
-    movements: list[list[Movement]],
+    movements: list[list[GNVP_Movement]],
     bodies_dicts: list[GenuSurface],
     gnvp_version: int,
     solver_options: dict[str, Any] | Struct,
@@ -203,7 +209,7 @@ def gnvp_polars_serial(
         gen_surf: GenuSurface = GenuSurface(surface, i)
         bodies_dicts.append(gen_surf)
 
-    movements: list[list[Movement]] = define_movements(
+    movements: list[list[GNVP_Movement]] = define_movements(
         surfaces,
         plane.CG,
         plane.orientation,
@@ -221,7 +227,7 @@ def gnvp_polars_serial(
         CASEDIR: str = os.path.join(PLANEDIR, folder)
 
         job = Thread(
-            target=gnvp_aoa,
+            target=gnvp_aoa_case,
             kwargs={
                 "DB": DB,
                 "plane": plane,
@@ -305,7 +311,7 @@ def gnvp_polars_parallel(
         genu_surf = GenuSurface(surface, i)
         bodies_dict.append(genu_surf)
 
-    movements: list[list[Movement]] = define_movements(
+    movements: list[list[GNVP_Movement]] = define_movements(
         surfaces,
         plane.CG,
         plane.orientation,
@@ -342,7 +348,7 @@ def gnvp_polars_parallel(
             ]
 
             try:
-                _ = pool.starmap(gnvp_aoa, args_list)
+                _ = pool.starmap(gnvp_aoa_case, args_list)
 
             except CalledProcessError as e:
                 print(f"Could not run GNVP got: {e}")
@@ -379,15 +385,15 @@ def gnvp_polars_parallel(
     job_monitor.join()
 
 
-def process_gnvp_angles_run_3(plane: Airplane, state: State) -> DataFrame:
-    return process_gnvp_angles_run(plane, state, 3)
+def process_gnvp_polars_3(plane: Airplane, state: State) -> DataFrame:
+    return process_gnvp_polars(plane, state, 3)
 
 
-def process_gnvp_angles_run_7(plane: Airplane, state: State) -> DataFrame:
-    return process_gnvp_angles_run(plane, state, 7)
+def process_gnvp_polars_7(plane: Airplane, state: State) -> DataFrame:
+    return process_gnvp_polars(plane, state, 7)
 
 
-def process_gnvp_angles_run(
+def process_gnvp_polars(
     plane: Airplane,
     state: State,
     gnvp_version: int,

@@ -10,7 +10,7 @@ from jaxtyping import Float
 from matplotlib import pyplot as plt
 from pandas import DataFrame
 
-from ICARUS.core.polynomial_interpolator import Polynomial2DInterpolator
+from ICARUS.core.interpolation import Polynomial2DInterpolator
 
 # from scipy.interpolate import RBFInterpolator
 

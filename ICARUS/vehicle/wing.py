@@ -5,14 +5,15 @@ Merged Wing Class
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 
+from . import SymmetryAxes
 from . import WingSurface
-from .utils import SymmetryAxes
 
 if TYPE_CHECKING:
     from . import Strip
@@ -24,7 +25,7 @@ class Wing(WingSurface):
     def __init__(
         self,
         name: str,
-        wing_segments: list[WingSurface],
+        wing_segments: Sequence[WingSurface],
     ) -> None:
         """Initializes the Wing Object
 
@@ -35,7 +36,7 @@ class Wing(WingSurface):
         """
         self.name: str = name
         # Create a grid of points to store all Wing Segments
-        self.wing_segments: list[WingSurface] = wing_segments
+        self.wing_segments: Sequence[WingSurface] = wing_segments
         self.is_lifting = any([segment.is_lifting for segment in wing_segments])
 
         # Define the Coordinate System of the Merged Wing
@@ -177,9 +178,9 @@ class Wing(WingSurface):
         self.define_wing_parameters()
         ####### Calculate Wing Parameters ########
 
-    def get_separate_segments(self) -> list[WingSurface]:
+    def get_separate_segments(self) -> Sequence[WingSurface]:
         """Returns the separate segments of the wing"""
-        segments: list[WingSurface] = []
+        segments: Sequence[WingSurface] = []
         for segment in self.wing_segments:
             if isinstance(segment, Wing):
                 segments.extend(segment.get_separate_segments())

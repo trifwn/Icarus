@@ -46,8 +46,6 @@ There are also routines for the visualization of the results of the GNVP results
 
 """
 
-
-
 # Get all the visualization functions
 from typing import Any
 from typing import Callable
@@ -60,7 +58,4 @@ __all__ = [
     "cg_investigation",
 ]
 
-__functions__: list[Callable[..., Any]] = [
-    plot_airplane_polars,
-    cg_investigation
-]
+__functions__: list[Callable[..., Any]] = [plot_airplane_polars, cg_investigation]

@@ -17,7 +17,7 @@ def get_loads_convergence(file: str, genu_version: int) -> DataFrame:
 
 def get_error_convergence(file: str, df: DataFrame, gnvp_version: int) -> DataFrame:
     if gnvp_version == 3:
-        return add_error_convergence_3(file, df)
+        return get_error_convergence_3(file, df)
     if gnvp_version == 7:
         logging.info("Error Convergence for GenuVP7 not implemented")
         df = DataFrame()
@@ -36,7 +36,7 @@ def get_loads_convergence_3(file: str) -> DataFrame:
         return df
 
 
-def add_error_convergence_3(file: str, df: DataFrame) -> DataFrame:
+def get_error_convergence_3(file: str, df: DataFrame) -> DataFrame:
     try:
         with open(file, encoding="UTF-8") as f:
             lines: list[str] = f.readlines()

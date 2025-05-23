@@ -11,7 +11,7 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -353,10 +353,10 @@ class Database_3D:
         if gnvp_version == 7:
             return
         for case in cases:
-            from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
+            from ICARUS.computation.solvers.GenuVP.post_process import (
                 get_error_convergence,
             )
-            from ICARUS.computation.solvers.GenuVP.post_process.convergence import (
+            from ICARUS.computation.solvers.GenuVP.post_process import (
                 get_loads_convergence,
             )
 

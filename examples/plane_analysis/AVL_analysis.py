@@ -12,7 +12,7 @@ from ICARUS.computation.solvers.AVL import process_avl_polars
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
-from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
+from ICARUS.visualization.airplane import plot_airplane_polars
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
 database_folder = "E:\\Icarus\\Data"

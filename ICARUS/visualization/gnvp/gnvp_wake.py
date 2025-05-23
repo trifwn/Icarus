@@ -8,8 +8,6 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_3
-from ICARUS.computation.solvers.GenuVP.post_process.wake import get_wake_data_7
 from ICARUS.database import angle_to_case
 from ICARUS.database import case_to_angle
 
@@ -63,8 +61,12 @@ def plot_gnvp_wake(
         raise ValueError(f"Case must be a string or a float, got {type(case)}")
 
     if gnvp_version == 3:
+        from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_3
+
         get_wake_data = get_wake_data_3
     elif gnvp_version == 7:
+        from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_7
+
         get_wake_data = get_wake_data_7
     else:
         raise ValueError(f"GNVP Version error! Got Version {gnvp_version} ")

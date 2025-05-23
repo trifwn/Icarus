@@ -18,10 +18,10 @@ from ICARUS.core.types import FloatArray
 from . import ControlSurface
 from . import ControlType
 from . import NoControl
+from .strip import Strip
 from .utils import DiscretizationType
 from .utils import SymmetryAxes
 from .utils import equal_spacing_function_factory
-from .strip import Strip
 
 if TYPE_CHECKING:
     from . import Wing

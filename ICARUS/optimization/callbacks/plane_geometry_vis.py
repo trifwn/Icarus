@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from . import OptimizationCallback
 from ICARUS.vehicle import Airplane
+
+from . import OptimizationCallback
 
 
 class PlaneGeometryVisualizer(OptimizationCallback):

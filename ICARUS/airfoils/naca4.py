@@ -12,6 +12,53 @@ class NACA4(Airfoil):
     NACA 4 digit airfoil class
     """
 
+    @classmethod
+    def from_name(cls, name: str) -> "NACA4":
+        """
+        Create a NACA 4 digit airfoil from a name
+
+        Args:
+            name (str): Name of the airfoil. Example: "NACA2412"
+
+        Returns:
+            NACA4: NACA 4 digit airfoil object
+        """
+        if not isinstance(name, str):
+            raise TypeError("Name must be a string")
+
+        # Keep only the digits
+        name = "".join(filter(str.isdigit, name))
+        if len(name) != 4:
+            raise ValueError("Name must be 4 digits")
+        if not name.isdigit():
+            raise ValueError("Name must be 4 digits")
+        M = int(name[0])
+        P = int(name[1])
+        XX = int(name[2:4])
+        if M < 0 or M > 9:
+            raise ValueError("M must be between 0 and 9")
+        if P < 0 or P > 9:
+            raise ValueError("P must be between 0 and 9")
+        if XX < 0 or XX > 99:
+            raise ValueError("XX must be between 0 and 99")
+        return cls(M, P, XX)
+
+    @classmethod
+    def from_digits(cls, digits: str) -> "NACA4":
+        """
+        Create a NACA 4 digit airfoil from a list of digits
+
+        Args:
+            digits ( str): List of digits. Example: "2412"
+
+        Returns:
+            NACA4: NACA 4 digit airfoil object
+        """
+        M = int(digits[0])
+        P = int(digits[1])
+        XX = int(digits[2:4])
+        return cls(M, P, XX)
+
     def __init__(self, M: int, P: int, XX: int, n_points: int = 200) -> None:
         """
         Initialize the NACA 4 digit airfoil

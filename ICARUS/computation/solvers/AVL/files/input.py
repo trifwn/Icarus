@@ -16,9 +16,9 @@ from ICARUS.database import PolarsNotFoundError
 from ICARUS.environment import Environment
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import WingSurface
 from ICARUS.vehicle import DiscretizationType
 from ICARUS.vehicle import WingSegment
+from ICARUS.vehicle import WingSurface
 
 
 def make_input_files(

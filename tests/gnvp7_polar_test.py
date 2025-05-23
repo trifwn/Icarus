@@ -2,8 +2,8 @@ import time
 
 import numpy as np
 
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.core.struct import Struct
+from ICARUS.computation.solvers import Solver
+from ICARUS.core.base_types import Struct
 
 
 def gnvp7_run(run_parallel: bool = True) -> None:
@@ -15,7 +15,7 @@ def gnvp7_run(run_parallel: bool = True) -> None:
     airplane, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
+    from ICARUS.computation.solvers.GenuVP import GenuVP7
 
     gnvp7: Solver = GenuVP7()
 

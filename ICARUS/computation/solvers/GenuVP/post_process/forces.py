@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
@@ -11,8 +12,10 @@ from pandas import Series
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_case
-from ICARUS.flight_dynamics import State
-from ICARUS.vehicle import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
@@ -42,9 +45,9 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
                 a = [name, *dat]
             pols.append(a)
     if gnvp_version == 7:
-        cols = cols_7
+        cols = load_columns_7
     elif gnvp_version == 3:
-        cols = cols_3
+        cols = load_columns_3
     else:
         raise ValueError(f"GenuVP version {gnvp_version} does not exist")
 
@@ -92,9 +95,9 @@ def forces_to_pertrubation_results(
 
     # Parse the File
     if gnvp_version == 7:
-        cols = cols_7
+        cols = load_columns_7
     elif gnvp_version == 3:
-        cols = cols_3
+        cols = load_columns_3
     else:
         raise ValueError(f"GenuVP version {gnvp_version} does not exist")
 
@@ -177,7 +180,7 @@ def set_default_name_to_use(forces: DataFrame, gnvp_version: int, default_name_t
     return forces
 
 
-cols_3: list[str] = [
+load_columns_3: list[str] = [
     "AoA",
     "TIME",
     "PSI",
@@ -201,7 +204,7 @@ cols_3: list[str] = [
     "GenuVP3 ONERA Mz",
 ]
 
-cols_7: list[str] = [
+load_columns_7: list[str] = [
     "AoA",
     "TIME",
     "PSI",
@@ -224,27 +227,3 @@ cols_7: list[str] = [
     "GenuVP7 ONERA My",
     "GenuVP7 ONERA Mz",
 ]
-
-# cols_old: list[str] = [
-#     "AoA",
-#     "TTIME",
-#     "PSIB",
-#     "TFORC(1)",
-#     "TFORC(2)",
-#     "TFORC(3)",
-#     "TAMOM(1)",
-#     "TAMOM(2)",
-#     "TAMOM(3)",
-#     "TFORC2D(1)",
-#     "TFORC2D(2)",
-#     "TFORC2D(3)",
-#     "TAMOM2D(1)",
-#     "TAMOM2D(2)",
-#     "TAMOM2D(3)",
-#     "TFORCDS2D(1)",
-#     "TFORCDS2D(2)",
-#     "TFORCDS2D(3)",
-#     "TAMOMDS2D(1)",
-#     "TAMOMDS2D(2)",
-#     "TAMOMDS2D(3)",
-# ]

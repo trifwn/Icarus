@@ -1,14 +1,20 @@
 """Class to define the parameters for the GenuVP solvers."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
 
-from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
-from ICARUS.environment import Environment
-from ICARUS.vehicle import Airplane
+
+from . import GenuSurface
+
+if TYPE_CHECKING:
+    from ICARUS.environment import Environment
+    from ICARUS.vehicle import Airplane
 
 
 class GenuParameters:

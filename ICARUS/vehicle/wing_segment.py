@@ -8,6 +8,7 @@ import numpy as np
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
+
 from . import ControlSurface
 from . import NoControl
 from . import WingSurface

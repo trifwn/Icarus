@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
@@ -12,14 +13,16 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
-from ICARUS.optimization import Optimizable
-from . import Wing
+from ICARUS.core.base_types import Optimizable
+
 from . import PointMass
+from . import Wing
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.core.types import FloatOrListArray
     from ICARUS.flight_dynamics import State
+
     from . import WingSurface
     from .surface_connections import SurfaceConnection
 
@@ -31,7 +34,7 @@ class Airplane(Optimizable):
         self,
         name: str,
         main_wing: WingSurface,
-        other_surfaces: list[WingSurface] | None = None,
+        other_surfaces: Sequence[WingSurface] | None = None,
         orientation: FloatOrListArray | None = None,
         point_masses: list[PointMass] | None = None,
         cg_overwrite: FloatArray | None = None,
@@ -42,7 +45,7 @@ class Airplane(Optimizable):
         Args:
             name (str): Name of the plane
             main_wing (WingSurface): Main wing of the plane
-            other_surfaces (list[WingSurface]): Other surfaces of the plane
+            other_surfaces (Sequence[WingSurface]): Other surfaces of the plane
             orientation (FloatOrListArray | None, optional): Orientation of the plane. Defaults to None.
             point_masses (list[PointMass] | None, optional): Point masses of the plane. Defaults to None.
             cg_overwrite (FloatArray | None, optional): Center of gravity of the plane. Defaults to None.
@@ -196,7 +199,7 @@ class Airplane(Optimizable):
         """Get all the wing segments of the plane
 
         Returns:
-            list[WingSurface]: List of all the wing segments of the plane
+            list[tuple[int ,WingSurface]]: List of (index, WingSurface) tuples
 
         """
         surfaces: list[tuple[int, WingSurface]] = []

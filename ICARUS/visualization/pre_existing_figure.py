@@ -5,7 +5,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.figure import SubFigure
 
-from ICARUS.visualization.figure_setup import flatten_axes
+from .figure_setup import flatten_axes
 
 
 def pre_existing_figure(

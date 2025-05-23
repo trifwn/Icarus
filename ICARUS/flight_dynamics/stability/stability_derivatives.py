@@ -1,4 +1,5 @@
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
+
 from . import LateralStateSpace
 from . import LongitudalStateSpace
 

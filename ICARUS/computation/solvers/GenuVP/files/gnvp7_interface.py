@@ -4,11 +4,11 @@ import subprocess
 from pandas import DataFrame
 
 from ICARUS import GenuVP7_exe
-from ICARUS.computation.solvers.GenuVP.post_process.forces import log_forces
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
 
+from ..post_process import log_forces
+from ..utils import GenuParameters
+from ..utils import GenuSurface
+from ..utils import GNVP_Movement
 from .files_gnvp7 import make_input_files
 
 
@@ -60,7 +60,7 @@ def make_polars_7(CASEDIR: str, HOMEDIR: str) -> DataFrame:
 def gnvp7_case(
     CASEDIR: str,
     HOMEDIR: str,
-    movements: list[list[Movement]],
+    movements: list[list[GNVP_Movement]],
     genu_bodies: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],

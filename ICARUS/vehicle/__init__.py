@@ -61,18 +61,26 @@ Surface Connections
 
     ICARUS.vehicle.surface_connections - Surface Connections class definition
 
+    isort:skip_file
 """
 
-from .airplane import Airplane
-from .control_surface import ControlSurface, ControlType, Aileron, Flap, Rudder, Elevator, NoControl
+from .utils import DiscretizationType
+from .utils import DistributionType
+from .utils import SymmetryAxes
+from .control_surface import Aileron
+from .control_surface import ControlSurface
+from .control_surface import ControlType
+from .control_surface import Elevator
+from .control_surface import Flap
+from .control_surface import NoControl
+from .control_surface import Rudder
 from .point_mass import PointMass
-from .wing import Wing
 from .strip import Strip
-from .wing_segment import WingSegment
 from .surface import WingSurface
 from .surface_connections import SurfaceConnection
-from .utils import DiscretizationType, DistributionType, SymmetryAxes
-
+from .wing_segment import WingSegment
+from .wing import Wing
+from .airplane import Airplane
 
 __all__ = [
     "Airplane",

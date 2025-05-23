@@ -1,9 +1,9 @@
 from typing import Any
 from typing import Callable
 
-from ICARUS.computation.analyses.analysis import Analysis
-from ICARUS.computation.analyses.input import Input
-from ICARUS.computation.analyses.input import StrInput
+from . import Analysis
+from . import Input
+from . import StrInput
 
 casedir: StrInput = StrInput("CASEDIR", "Case Directory")
 

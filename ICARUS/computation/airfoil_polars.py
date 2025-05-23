@@ -3,8 +3,8 @@ from typing import Literal
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
+from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.computation.solvers.solver import Solver
 from ICARUS.core.types import FloatArray
 
 

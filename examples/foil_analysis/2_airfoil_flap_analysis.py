@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
@@ -8,9 +11,11 @@ from ICARUS.flight_dynamics import State
 from ICARUS.optimization import MAX_FLOAT
 from ICARUS.optimization import MAX_INT
 from ICARUS.optimization.callbacks import OptimizationCallback
-from ICARUS.vehicle import Airplane
 
 from . import Airplane_Optimizer
+
+if TYPE_CHECKING:
+    from ICARUS.vehicle import Airplane
 
 
 class Airplane_Dynamics_Optimizer(Airplane_Optimizer):

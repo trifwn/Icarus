@@ -4,8 +4,8 @@ from inquirer import List
 from inquirer import Text
 from inquirer import prompt
 
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.core.struct import Struct
+from ICARUS.computation.solvers import Solver
+from ICARUS.core.base_types import Struct
 
 
 def set_solver_parameters(solver: Solver) -> None:

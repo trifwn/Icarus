@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.core.struct import Struct
+from ICARUS.computation.solvers import Solver
+from ICARUS.core.base_types import Struct
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 

@@ -23,13 +23,22 @@ This module contains classes and routines for visualization. The module is divid
     ICARUS.visualization.airfoil - Airfoil visualization
     ICARUS.visualization.airplane - Airplane visualization
 
+    isort:skip_file
 """
-from .utils import colors_, markers_str, markers
+
+from .figure_setup import create_single_subplot
+from .figure_setup import create_subplots
+from .figure_setup import flatten_axes
+from .polar_plot import polar_plot
+from .pre_existing_figure import pre_existing_figure
+from .utils import colors_
+from .utils import markers
+from .utils import markers_str
 from . import airfoil
 from . import airplane
-from . import gnvp
-from . import f2w
 from . import avl
+from . import f2w
+from . import gnvp
 
 __all__ = [
     "airfoil",
@@ -40,4 +49,9 @@ __all__ = [
     "markers_str",
     "markers",
     "colors_",
+    "flatten_axes",
+    "create_subplots",
+    "create_single_subplot",
+    "pre_existing_figure",
+    "polar_plot",
 ]

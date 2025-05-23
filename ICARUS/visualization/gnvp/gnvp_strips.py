@@ -13,8 +13,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.GenuVP.post_process.strips import get_strip_data
-
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
@@ -40,7 +38,10 @@ def plot_gnvp_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
+    from ICARUS.computation.solvers.GenuVP.post_process import get_strip_data
+
     all_strip_data, body_data = get_strip_data(plane, state, case, NBs, gnvp_version)
+
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
     ax.set_title(f"{plane.name} {category} Data")
@@ -101,6 +102,8 @@ def plot_gnvp_strip_data_2D(
 
     if type(NB) is not int:
         return 0
+
+    from ICARUS.computation.solvers.GenuVP.post_process import get_strip_data
 
     strip_data, data = get_strip_data(plane, state, case, [NB], gnvp_version)
 

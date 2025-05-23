@@ -1,5 +1,5 @@
 """============================================
-ICARUS Input Output package
+ICARUS Solvers package
 ============================================
 
 .. toctree: generated/
@@ -11,7 +11,18 @@ ICARUS Input Output package
     ICARUS.Solvers.GenuVP
     ICARUS.Solvers.XFLR5
 
+    isort:skip_file
 """
+
+from .solver_parameters import (
+    Parameter,
+    BoolParameter,
+    FloatParameter,
+    IntParameter,
+    IntOrNoneParameter,
+    StrParameter,
+)
+from .solver import Solver
 
 from . import XFLR5
 from . import Foil2Wake
@@ -20,7 +31,24 @@ from . import Icarus_LSPT
 from . import OpenFoam
 from . import Xfoil
 
-__all__ = ["XFLR5", "Foil2Wake", "GenuVP", "Icarus_LSPT", "OpenFoam", "Xfoil"]
+__all__ = [
+    # Solver Class
+    "Solver",
+    # Solver Parameters
+    "Parameter",
+    "BoolParameter",
+    "FloatParameter",
+    "IntParameter",
+    "IntOrNoneParameter",
+    "StrParameter",
+    # Solver Modules
+    "XFLR5",
+    "Foil2Wake",
+    "GenuVP",
+    "Icarus_LSPT",
+    "OpenFoam",
+    "Xfoil",
+]
 
 import os
 

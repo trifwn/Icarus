@@ -13,17 +13,17 @@ from pandas import DataFrame
 from pandas import Series
 from tabulate import tabulate
 
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import Environment
-from ICARUS.flight_dynamics import StateSpace
 from ICARUS.visualization import markers
-from ICARUS.visualization.polar_plot import polar_plot
-from ICARUS.visualization.pre_existing_figure import pre_existing_figure
+from ICARUS.visualization import polar_plot
+from ICARUS.visualization import pre_existing_figure
 
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
+from .stability import StateSpace
 from .stability.lateral import lateral_stability_finite_differences
 from .stability.longitudal import longitudal_stability_finite_differences
 from .trim import TrimNotPossible

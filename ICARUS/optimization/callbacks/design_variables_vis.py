@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -5,9 +8,11 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 
-from ICARUS.vehicle import Airplane
-
 from . import OptimizationCallback
+
+if TYPE_CHECKING:
+    from ICARUS.vehicle import Airplane
+
 
 class DesignVariableVisualizer(OptimizationCallback):
     """Class to visualize the design variables change during optimization."""

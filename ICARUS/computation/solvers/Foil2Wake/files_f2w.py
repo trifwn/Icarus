@@ -2,7 +2,7 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS import platform_os
+from ICARUS import PLATFORM
 
 
 def io_file(airfile: str, name: str) -> None:
@@ -30,7 +30,7 @@ def io_file(airfile: str, name: str) -> None:
         f.write("BDLAYER.OUT\n")
         f.write(f"SOL{name}.INI\n")
         f.write(f"SOL{name}.TMP\n")
-        if platform_os == "Windows":
+        if PLATFORM == "Windows":
             f.write(f"TMP_{name}\\ \n")
         else:
             f.write(f"TMP_{name}/\n")
@@ -66,9 +66,9 @@ def design_file(
                 f.write(str(ang)[::-1].zfill(7)[::-1])
             else:
                 f.write("m" + str(ang)[::-1].strip("-").zfill(6)[::-1])
-            from ICARUS import platform_os
+            from ICARUS import PLATFORM
 
-            if platform_os == "Windows":
+            if PLATFORM == "Windows":
                 f.write("\\ \n")
             else:
                 f.write("/\n")

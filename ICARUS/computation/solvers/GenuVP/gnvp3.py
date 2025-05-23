@@ -1,28 +1,23 @@
+from ICARUS.computation.analyses import FloatInput
+from ICARUS.computation.analyses import IntInput
 from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.computation.analyses.input import FloatInput
-from ICARUS.computation.analyses.input import IntInput
 from ICARUS.computation.analyses.rerun_analysis import BaseRerunAnalysis
-from ICARUS.computation.solvers.GenuVP import gnvp3_polars
-from ICARUS.computation.solvers.GenuVP import gnvp3_polars_parallel
-from ICARUS.computation.solvers.GenuVP import process_gnvp_angles_run_3
-from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
-    proccess_pertrubation_res_3,
-)
-from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
-    run_gnvp3_pertrubation_parallel,
-)
-from ICARUS.computation.solvers.GenuVP.analyses.pertrubations import (
-    run_gnvp3_pertrubation_serial,
-)
-from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import gnvp3_execute
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.solver_parameters import BoolParameter
-from ICARUS.computation.solvers.solver_parameters import FloatParameter
-from ICARUS.computation.solvers.solver_parameters import IntParameter
-from ICARUS.computation.solvers.solver_parameters import Parameter
+from ICARUS.computation.solvers import BoolParameter
+from ICARUS.computation.solvers import FloatParameter
+from ICARUS.computation.solvers import IntParameter
+from ICARUS.computation.solvers import Parameter
+from ICARUS.computation.solvers import Solver
+
+from . import gnvp3_dynamics_parallel
+from . import gnvp3_dynamics_serial
+from . import gnvp3_polars
+from . import gnvp3_polars_parallel
+from . import process_gnvp3_dynamics
+from . import process_gnvp_polars_3
+from .files.gnvp3_interface import gnvp3_execute
 
 timestep_option = FloatInput(
     "timestep",
@@ -49,7 +44,7 @@ class GenuVP3_PolarAnalysis(BaseAirplanePolarAnalysis):
             solver_name="GenuVP3",
             execute_fun=gnvp3_polars,
             parallel_execute_fun=gnvp3_polars_parallel,
-            unhook=process_gnvp_angles_run_3,
+            unhook=process_gnvp_polars_3,
             extra_options=[timestep_option, maxiter_option],
         )
 
@@ -58,14 +53,14 @@ class GenuVP3_DynamicAnalysis(BaseDynamicAnalysis):
     def __init__(self) -> None:
         super().__init__(
             solver_name="GenuVP3",
-            execute_fun=run_gnvp3_pertrubation_serial,
-            parallel_execute_fun=run_gnvp3_pertrubation_parallel,
-            unhook=proccess_pertrubation_res_3,
+            execute_fun=gnvp3_dynamics_serial,
+            parallel_execute_fun=gnvp3_dynamics_parallel,
+            unhook=process_gnvp3_dynamics,
             extra_options=[timestep_option, maxiter_option],
         )
 
 
-solver_parameters: list[Parameter] = [
+gnvp3_solver_parameters: list[Parameter] = [
     BoolParameter(
         "Split_Symmetric_Bodies",
         False,
@@ -228,7 +223,7 @@ class GenuVP3(Solver):
             "3D VPM",
             2,
             [GenuVP3_PolarAnalysis(), GenuVP3_DynamicAnalysis(), GenuVP3_RerunCase()],
-            solver_parameters=solver_parameters,
+            solver_parameters=gnvp3_solver_parameters,
         )
 
 

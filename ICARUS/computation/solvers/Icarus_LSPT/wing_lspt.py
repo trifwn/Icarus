@@ -2,10 +2,10 @@ from ICARUS.aero.lifting_surfaces import run_lstp_angles
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.solver_parameters import IntOrNoneParameter
-from ICARUS.computation.solvers.solver_parameters import Parameter
-from ICARUS.computation.solvers.solver_parameters import StrParameter
+from ICARUS.computation.solvers import IntOrNoneParameter
+from ICARUS.computation.solvers import Parameter
+from ICARUS.computation.solvers import Solver
+from ICARUS.computation.solvers import StrParameter
 
 
 class LSPT_PolarAnalysis(BaseAirplanePolarAnalysis):

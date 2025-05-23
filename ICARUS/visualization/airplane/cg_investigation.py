@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 
 import jax.numpy as jnp
@@ -12,8 +15,10 @@ from numpy import ndarray
 
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.propulsion.engine import Engine
-from ICARUS.vehicle import Airplane
+
+if TYPE_CHECKING:
+    from ICARUS.propulsion.engine import Engine
+    from ICARUS.vehicle import Airplane
 
 
 def setup_plot(

@@ -6,6 +6,7 @@ from typing import Any
 from pandas import DataFrame
 
 from . import LongitudalStateSpace
+
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
 

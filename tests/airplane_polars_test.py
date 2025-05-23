@@ -17,7 +17,7 @@ def airplane_polars(plot: bool = False) -> None:
     planenames: list[str] = ["bmark"]
     DB = Database.get_instance()
     if plot:
-        from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
+        from ICARUS.visualization.airplane import plot_airplane_polars
 
         plot_airplane_polars(
             airplanes=planenames,

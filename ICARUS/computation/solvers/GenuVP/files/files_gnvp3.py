@@ -7,16 +7,17 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS.airfoils import AirfoilPolars
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.core.formatting import ff2
-from ICARUS.core.formatting import ff3
-from ICARUS.core.formatting import ff4
-from ICARUS.core.formatting import ff5
 from ICARUS.core.types import FloatArray
+from ICARUS.core.utils import ff2
+from ICARUS.core.utils import ff3
+from ICARUS.core.utils import ff4
+from ICARUS.core.utils import ff5
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
+
+from ..utils.genu_movement import GNVP_Movement
+from ..utils.genu_parameters import GenuParameters
+from ..utils.genu_surface import GenuSurface
 
 
 def line(
@@ -92,7 +93,7 @@ def input_file() -> None:
         f.write("1.\n")
 
 
-def dfile(params: GenuParameters) -> None:
+def case_file(params: GenuParameters) -> None:
     """Create Dfile for GNVP3
 
     Args:
@@ -355,8 +356,8 @@ def dfile(params: GenuParameters) -> None:
         f.write("\n")
 
 
-def geofile(
-    movements: list[list[Movement]],
+def geo_file(
+    movements: list[list[GNVP_Movement]],
     bodies_dicts: list[GenuSurface],
 ) -> None:
     """Create Geo file for GNVP3
@@ -428,7 +429,7 @@ def geo_body_header(data: list[str], body: GenuSurface, NB: int) -> None:
     data.append("               <blank>\n")
 
 
-def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
+def geo_body_movements(data: list[str], mov: GNVP_Movement, i: int, NB: int) -> None:
     """Add Movement Data to Geo File.
 
     Args:
@@ -469,7 +470,7 @@ def geo_body_movements(data: list[str], mov: Movement, i: int, NB: int) -> None:
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
+def cld_files(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
     """Create Polars CL-CD-Cm files for each airfoil
 
     Args:
@@ -538,7 +539,7 @@ def cldFiles(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> 
             file.write(contents)
 
 
-def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
+def bld_files(bodies: list[GenuSurface], params: GenuParameters) -> None:
     """Create BLD files for each body
 
     Args:
@@ -719,7 +720,7 @@ def bldFiles(bodies: list[GenuSurface], params: GenuParameters) -> None:
             f.write("C")
 
 
-def hybrid_wake() -> None:
+def hybrid_wake_file() -> None:
     """Creates the hybrid wake file for GNVP3"""
     fname: str = "hyb.inf"
     with open(fname, "w", encoding="utf-8") as f:
@@ -733,7 +734,7 @@ def hybrid_wake() -> None:
 def make_input_files(
     ANGLEDIR: str,
     HOMEDIR: str,
-    movements: list[list[Movement]],
+    movements: list[list[GNVP_Movement]],
     bodies: list[GenuSurface],
     params: GenuParameters,
     solver: str,
@@ -742,15 +743,15 @@ def make_input_files(
     # Input File
     input_file()
     # Hybrid Wake input file
-    hybrid_wake()
+    hybrid_wake_file()
     # DFILE
-    dfile(params)
+    case_file(params)
     # HERMES.GEO
-    geofile(movements, bodies)
+    geo_file(movements, bodies)
     # BLD FILES
-    bldFiles(bodies, params)
+    bld_files(bodies, params)
     # CLD FILES
-    cldFiles(bodies, params, solver)
+    cld_files(bodies, params, solver)
     # Check if gnvp.out exists and remove it
     if os.path.exists("gnvp.out"):
         os.remove("gnvp.out")

@@ -18,7 +18,7 @@ from ICARUS.airfoils import AirfoilData
 from ICARUS.airfoils import AirfoilPolars
 from ICARUS.airfoils import PolarNotAccurate
 from ICARUS.airfoils import ReynoldsNotIncluded
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray

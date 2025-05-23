@@ -1,4 +1,4 @@
-from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers import Solver
 from ICARUS.mission.mission import Mission
 from ICARUS.vehicle import Airplane
 

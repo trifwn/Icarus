@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from pandas import DataFrame
 
-from ICARUS.flight_dynamics import LateralStateSpace
+from . import LateralStateSpace
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State

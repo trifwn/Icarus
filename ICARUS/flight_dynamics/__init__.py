@@ -42,21 +42,24 @@ Difference methods in the following package:
     :toctree: generated/
 
     ICARUS.flight_dynamics.stability
+
+    isort:skip_file
 """
 
-from .stability import (
-    lateral_stability_finite_differences,
-    longitudal_stability_finite_differences,
-    LateralStateSpace,
-    LongitudalStateSpace,
-    StateSpace,
-    StabilityDerivativesDS,
-)
-
-from .perturbations import longitudal_pertrubations, lateral_pertrubations
 from .disturbances import Disturbance
-from .trim import trim_state, Trim, TrimNotPossible, TrimOutsidePolars
+from .perturbations import lateral_pertrubations
+from .perturbations import longitudal_pertrubations
+from .stability import LateralStateSpace
+from .stability import LongitudalStateSpace
+from .stability import StabilityDerivativesDS
+from .stability import StateSpace
+from .stability import lateral_stability_finite_differences
+from .stability import longitudal_stability_finite_differences
 from .state import State
+from .trim import Trim
+from .trim import TrimNotPossible
+from .trim import TrimOutsidePolars
+from .trim import trim_state
 
 __all__ = [
     "lateral_stability_finite_differences",

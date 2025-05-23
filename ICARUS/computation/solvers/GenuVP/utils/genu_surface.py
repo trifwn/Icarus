@@ -2,8 +2,14 @@
 A class to define lifting surfaces for the GenuVP solvers.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle import WingSurface
+
+if TYPE_CHECKING:
+    from ICARUS.vehicle import WingSurface
 
 
 class GenuSurface:

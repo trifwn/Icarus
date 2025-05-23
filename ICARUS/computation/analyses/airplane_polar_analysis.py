@@ -1,12 +1,12 @@
 from typing import Any
 from typing import Callable
 
-from ICARUS.computation.analyses.analysis import Analysis
-from ICARUS.computation.analyses.input import AirplaneInput
-from ICARUS.computation.analyses.input import Input
-from ICARUS.computation.analyses.input import ListFloatInput
-from ICARUS.computation.analyses.input import StateInput
-from ICARUS.computation.analyses.input import StrInput
+from . import AirplaneInput
+from . import Analysis
+from . import Input
+from . import ListFloatInput
+from . import StateInput
+from . import StrInput
 
 airplane_option = AirplaneInput()
 state_opion = StateInput()

@@ -1,6 +1,6 @@
 import os
 
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 
 
 class AnalysesDB:

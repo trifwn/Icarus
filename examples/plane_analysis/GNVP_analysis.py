@@ -9,9 +9,9 @@ import time
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
@@ -62,11 +62,11 @@ def main(GNVP_VERSION: int) -> None:
     DYNAMIC_ANALYSIS: dict[str, float] = {name: False}
 
     if GNVP_VERSION == 7:
-        from ICARUS.computation.solvers.GenuVP.gnvp7 import GenuVP7
+        from ICARUS.computation.solvers.GenuVP import GenuVP7
 
         gnvp: Solver = GenuVP7()
     elif GNVP_VERSION == 3:
-        from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
+        from ICARUS.computation.solvers.GenuVP import GenuVP3
 
         gnvp = GenuVP3()
     else:
@@ -130,15 +130,15 @@ def main(GNVP_VERSION: int) -> None:
             )
             plane.save()
 
-            from ICARUS.computation.solvers.GenuVP import process_gnvp_angles_run
+            from ICARUS.computation.solvers.GenuVP import process_gnvp_polars
 
-            process_gnvp_angles_run(plane, state, GNVP_VERSION)
+            process_gnvp_polars(plane, state, GNVP_VERSION)
 
             # from ICARUS.computation.solvers.AVL import avl_polars
 
             # avl_polars(plane, state, "XFLR", angles)
 
-            # from ICARUS.visualization.airplane.airplane_polars import plot_airplane_polars
+            # from ICARUS.visualization.airplane import plot_airplane_polars
 
             # solvers = [
             #     "GenuVP3 Potential" if GNVP_VERSION == 3 else "GenuVP7 Potential",

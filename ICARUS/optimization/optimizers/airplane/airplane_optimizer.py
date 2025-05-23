@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
@@ -6,9 +9,12 @@ from ICARUS.core.types import FloatArray
 from ICARUS.optimization import MAX_FLOAT
 from ICARUS.optimization import MAX_INT
 from ICARUS.optimization.callbacks import OptimizationCallback
-from ICARUS.vehicle import Airplane
 
 from .. import General_SOO_Optimizer
+
+if TYPE_CHECKING:
+    from ICARUS.vehicle import Airplane
+
 
 class Airplane_Optimizer(General_SOO_Optimizer):
     def __init__(

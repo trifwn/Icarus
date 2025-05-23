@@ -2,13 +2,13 @@ from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAna
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
+from ICARUS.computation.solvers import BoolParameter
+from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.AVL import avl_dynamics_fd
 from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
 from ICARUS.computation.solvers.AVL import avl_polars
 from ICARUS.computation.solvers.AVL import process_avl_dynamics_fd
 from ICARUS.computation.solvers.AVL import process_avl_dynamics_implicit
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.solver_parameters import BoolParameter
 
 use_avl_control_option = BoolParameter(
     name="use_avl_control",

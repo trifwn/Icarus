@@ -1,7 +1,7 @@
 import os
 import re
 
-from ICARUS.core.file_tail import tail
+from ICARUS.core.utils import tail
 
 
 def latest_time(REYNDIR: str, name: str) -> tuple[int | None, float | None, bool, bool]:

@@ -1,11 +1,11 @@
 from typing import Any
 from typing import Callable
 
-from ICARUS.computation.analyses.analysis import Analysis
-from ICARUS.computation.analyses.input import AirfoilInput
-from ICARUS.computation.analyses.input import FloatInput
-from ICARUS.computation.analyses.input import Input
-from ICARUS.computation.analyses.input import ListFloatInput
+from . import AirfoilInput
+from . import Analysis
+from . import FloatInput
+from . import Input
+from . import ListFloatInput
 
 airfoil_option = AirfoilInput()
 mach_option = FloatInput(name="mach", description="Mach number")

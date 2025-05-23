@@ -7,16 +7,17 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS.airfoils import AirfoilPolars
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.core.formatting import ff2
-from ICARUS.core.formatting import ff4
-from ICARUS.core.formatting import sps
-from ICARUS.core.formatting import tabs
 from ICARUS.core.types import FloatArray
+from ICARUS.core.utils import ff2
+from ICARUS.core.utils import ff4
+from ICARUS.core.utils import sps
+from ICARUS.core.utils import tabs
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
+
+from ..utils import GenuParameters
+from ..utils import GenuSurface
+from ..utils import GNVP_Movement
 
 
 def input_file(maxiter: float, timestep: float) -> None:
@@ -29,7 +30,7 @@ def input_file(maxiter: float, timestep: float) -> None:
         f.write("1               !INIT_gn\n")
 
 
-def dfile(params: GenuParameters) -> None:
+def case_file(params: GenuParameters) -> None:
     """Create dfile for gnvp7
 
     Args:
@@ -284,8 +285,8 @@ def dfile(params: GenuParameters) -> None:
         f.write(contents)
 
 
-def geofile(
-    movements: list[list[Movement]],
+def geo_file(
+    movements: list[list[GNVP_Movement]],
     bodies: list[GenuSurface],
     params: GenuParameters,
 ) -> None:
@@ -479,7 +480,7 @@ def wake_files(
 
 
 def body_movements(
-    movements: list[Movement],
+    movements: list[GNVP_Movement],
     NB: int,
     fname: str,
 ) -> None:
@@ -696,7 +697,7 @@ def angles_inp(polars) -> None:
 def make_input_files(
     ANGLEDIR: str,
     HOMEDIR: str,
-    movements: list[list[Movement]],
+    movements: list[list[GNVP_Movement]],
     genu_bodies: list[GenuSurface],
     params: GenuParameters,
     airfoils: list[str],
@@ -709,9 +710,9 @@ def make_input_files(
     # PM File
     pm_file()
     # DFILE
-    dfile(params)
+    case_file(params)
     # GEO
-    geofile(movements, genu_bodies, params)
+    geo_file(movements, genu_bodies, params)
     # TOPOLOGY Files
     topology_files(genu_bodies)
     # BODY CONNECTIONS

@@ -12,6 +12,23 @@ class NACA5(Airfoil):
     NACA 5 digit airfoil class
     """
 
+    @classmethod
+    def from_digits(cls, digits: str) -> "NACA5":
+        """
+        Create a NACA 5 digit airfoil from a list of digits
+
+        Args:
+            digits (str): List of digits. Example: "24112"
+
+        Returns:
+            NACA5: NACA 5 digit airfoil object
+        """
+        L = int(digits[0])
+        P = int(digits[1])
+        Q = int(digits[2])
+        XX = int(digits[3:5])
+        return cls(L, P, Q, XX)
+
     def __init__(self, L: int, P: int, Q: int, XX: int, n_points: int = 200) -> None:
         """
         Initialize the NACA 4 digit airfoil

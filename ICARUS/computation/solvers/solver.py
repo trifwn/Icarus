@@ -3,9 +3,9 @@ from typing import Any
 from pandas import DataFrame
 from tabulate import tabulate
 
-from ICARUS.computation.analyses.analysis import Analysis
-from ICARUS.computation.solvers.solver_parameters import Parameter
-from ICARUS.core.struct import Struct
+from ICARUS.computation.analyses import Analysis
+from ICARUS.computation.solvers import Parameter
+from ICARUS.core.base_types import Struct
 
 
 class Solver:

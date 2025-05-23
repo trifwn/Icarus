@@ -1,4 +1,8 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -10,18 +14,19 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import ndarray
 from pandas import DataFrame
 
-from ICARUS.computation.solvers.AVL import get_strip_data
-from ICARUS.flight_dynamics import State
-from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import Wing
 from ICARUS.vehicle import WingSurface
+
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def plot_avl_strip_data_3D(
     plane: Airplane,
     state: State,
     case: str,
-    surface_names: str | list[str] | list[WingSurface] | WingSurface,
+    surface_names: str | list[str] | Sequence[WingSurface] | WingSurface,
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -36,10 +41,12 @@ def plot_avl_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
+    from ICARUS.computation.solvers.AVL import get_strip_data
+
     strip_data = get_strip_data(plane, state, case)
 
     if isinstance(surface_names, str):
-        surfaces: list[WingSurface] = [plane.get_surface(surface_names)]
+        surfaces: Sequence[WingSurface] = [plane.get_surface(surface_names)]
     elif isinstance(surface_names, WingSurface):
         surfaces = [surface_names]
     elif isinstance(surface_names, list):
@@ -119,6 +126,8 @@ def plot_avl_strip_data_2D(
     """
     Function to plot the 2D strips of a given airplane.
     """
+    from ICARUS.computation.solvers.AVL import get_strip_data
+
     if isinstance(surface_name, str):
         surface = plane.get_surface(surface_name)
     elif isinstance(surface_name, WingSurface):

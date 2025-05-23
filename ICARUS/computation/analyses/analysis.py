@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import logging
 from io import StringIO
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
@@ -12,9 +13,10 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 from pandas import DataFrame
 from tabulate import tabulate
 
-from ICARUS.computation.solvers.solver_parameters import Parameter
+if TYPE_CHECKING:
+    from ICARUS.computation.solvers import Parameter
 
-from .input import Input
+from . import Input
 
 jsonpickle_pd.register_handlers()
 jsonpickle_numpy.register_handlers()

@@ -8,7 +8,7 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
-from ICARUS.core.struct import Struct
+from .base_types import Struct
 
 Numeric = Union[int, float, np.number[Any]]
 DataDict = Union[dict[str, Any], Struct]

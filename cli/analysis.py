@@ -6,7 +6,7 @@ from inquirer import prompt
 from cli.options import get_option
 from cli.options import input_options
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation.solvers.solver import Solver
+from ICARUS.computation.solvers import Solver
 from ICARUS.vehicle import Airplane
 
 

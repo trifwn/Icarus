@@ -1,30 +1,35 @@
+from __future__ import annotations
+
 import os
 from threading import Thread
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import parallel_monitor
-from ICARUS.computation.solvers.GenuVP.analyses.monitor_progress import serial_monitor
-from ICARUS.computation.solvers.GenuVP.files.gnvp3_interface import gnvp3_case
-from ICARUS.computation.solvers.GenuVP.files.gnvp7_interface import gnvp7_case
-from ICARUS.computation.solvers.GenuVP.post_process.forces import (
-    forces_to_pertrubation_results,
-)
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import Movement
-from ICARUS.computation.solvers.GenuVP.utils.genu_movement import define_movements
-from ICARUS.computation.solvers.GenuVP.utils.genu_parameters import GenuParameters
-from ICARUS.computation.solvers.GenuVP.utils.genu_surface import GenuSurface
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_case
-from ICARUS.environment import Environment
-from ICARUS.flight_dynamics import Disturbance
-from ICARUS.flight_dynamics import State
-from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import WingSurface
+
+from ..files import gnvp3_case
+from ..files import gnvp7_case
+from ..post_process import forces_to_pertrubation_results
+from ..utils import GenuParameters
+from ..utils import GenuSurface
+from ..utils import GNVP_Movement
+from ..utils import define_movements
+from .monitor_progress import parallel_monitor
+from .monitor_progress import serial_monitor
+
+if TYPE_CHECKING:
+    from ICARUS.environment import Environment
+    from ICARUS.flight_dynamics import Disturbance
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
+    from ICARUS.vehicle import WingSurface
 
 
 def gnvp_disturbance_case(
@@ -37,7 +42,7 @@ def gnvp_disturbance_case(
     u_freestream: float,
     angle: float,
     environment: Environment,
-    surfaces: list[WingSurface],
+    surfaces: Sequence[WingSurface],
     bodies_dicts: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
@@ -73,7 +78,7 @@ def gnvp_disturbance_case(
     )
     airfoils: list[str] = plane.airfoils
 
-    movements: list[list[Movement]] = define_movements(
+    movements: list[list[GNVP_Movement]] = define_movements(
         surfaces,
         plane.CG,
         plane.orientation,
@@ -113,23 +118,23 @@ def gnvp_disturbance_case(
     return f"Case {dst.var} : {dst.amplitude} Done"
 
 
-def run_gnvp3_pertrubation_serial(*args: Any, **kwars: Any) -> None:
-    run_pertrubation_serial(genu_version=3, *args, **kwars)  # type: ignore
+def gnvp3_dynamics_serial(*args: Any, **kwars: Any) -> None:
+    gnvp_dynamics_serial(genu_version=3, *args, **kwars)  # type: ignore
 
 
-def run_gnvp7_pertrubation_serial(*args: Any, **kwars: Any) -> None:
-    run_pertrubation_serial(genu_version=7, *args, **kwars)  # type: ignore
+def gnvp7_dynamics_serial(*args: Any, **kwars: Any) -> None:
+    gnvp_dynamics_serial(genu_version=7, *args, **kwars)  # type: ignore
 
 
-def run_gnvp3_pertrubation_parallel(*args: Any, **kwars: Any) -> None:
-    run_pertrubation_parallel(genu_version=3, *args, **kwars)  # type: ignore
+def gnvp3_dynamics_parallel(*args: Any, **kwars: Any) -> None:
+    gnvp_dynamics_parallel(genu_version=3, *args, **kwars)  # type: ignore
 
 
-def run_gnvp7_pertrubation_parallel(*args: Any, **kwars: Any) -> None:
-    run_pertrubation_parallel(genu_version=7, *args, **kwars)  # type: ignore
+def gnvp7_dynamics_parallel(*args: Any, **kwars: Any) -> None:
+    gnvp_dynamics_parallel(genu_version=7, *args, **kwars)  # type: ignore
 
 
-def run_pertrubation_serial(
+def gnvp_dynamics_serial(
     plane: Airplane,
     state: State,
     solver2D: str,
@@ -221,7 +226,7 @@ def run_pertrubation_serial(
         job_monitor.join()
 
 
-def run_pertrubation_parallel(
+def gnvp_dynamics_parallel(
     plane: Airplane,
     state: State,
     solver2D: str,
@@ -318,157 +323,15 @@ def run_pertrubation_parallel(
     job_monitor.join()
 
 
-def run_gnvp3_sensitivity_serial(*args: Any, **kwars: Any) -> None:
-    sensitivity_serial(genu_version=3, *args, **kwars)  # type: ignore
+def process_gnvp3_dynamics(plane: Airplane, state: State) -> DataFrame:
+    return process_gnvp_dynamics(plane, state, 3)
 
 
-def run_gnvp7_sensitivity_serial(*args: Any, **kwars: Any) -> None:
-    sensitivity_serial(genu_version=7, *args, **kwars)  # type: ignore
+def process_gnvp7_dynamics(plane: Airplane, state: State) -> DataFrame:
+    return process_gnvp_dynamics(plane, state, 7)
 
 
-def run_gnvp3_sensitivity_parallel(*args: Any, **kwars: Any) -> None:
-    sensitivity_parallel(genu_version=3, *args, **kwars)  # type: ignore
-
-
-def run_gnvp7_sensitivity_parallel(*args: Any, **kwars: Any) -> None:
-    sensitivity_parallel(genu_version=7, *args, **kwars)  # type: ignore
-
-
-def sensitivity_serial(
-    plane: Airplane,
-    state: State,
-    var: str,
-    solver2D: str,
-    maxiter: int,
-    timestep: float,
-    angle: float,
-    genu_version: int,
-    solver_options: dict[str, Any] | Struct,
-) -> None:
-    """For each pertrubation in the sensitivity attribute of the dynamic airplane
-    object, run a simulation in GNVP3. Can be used mainly for a sensitivity
-    analysis. This analysis is serial.
-
-    Args:
-        plane (Dynamic_Airplane): Dynamic Airplane Object
-        var (str): Variable to be perturbed
-        solver2D (str): 2D Solver to be used for foil data
-        maxiter (int): Max Iterations
-        timestep (float): Timestep for the simulation
-        angle_of_attack (float): Angle of attack in degrees
-        solver_options (dict[str, Any] | Struct): Solver Options
-
-    """
-    DB = Database.get_instance()
-    bodies_dicts: list[GenuSurface] = []
-    if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
-    else:
-        surfaces = plane.surfaces
-
-    for i, surface in enumerate(surfaces):
-        genu_surf = GenuSurface(surface, i)
-        bodies_dicts.append(genu_surf)
-
-    for dst in state.sensitivities[var]:
-        msg: str = gnvp_disturbance_case(
-            DB,
-            plane,
-            state,
-            solver2D,
-            maxiter,
-            timestep,
-            state.u_freestream,
-            angle,
-            state.environment,
-            surfaces,
-            bodies_dicts,
-            dst,
-            "Sensitivity",
-            genu_version,
-            solver_options,
-        )
-        print(msg)
-
-
-def sensitivity_parallel(
-    plane: Airplane,
-    state: State,
-    var: str,
-    solver2D: str,
-    maxiter: int,
-    timestep: float,
-    angle: float,
-    genu_version: int,
-    solver_options: dict[str, Any] | Struct,
-) -> None:
-    """For each pertrubation in the sensitivity attribute of the dynamic airplane
-    object, run a simulation in GNVP3. Can be used mainly for a sensitivity
-    analysis. This analysis is parallel.
-
-    Args:
-        plane (Dynamic_Airplane): Dynamic Airplane Object
-        var (str): Variable to be perturbed
-        solver2D (str): 2D Solver to be used for foil data
-        maxiter (int): Max Iterations
-        timestep (float): Timestep for the simulation
-        angle_of_attack (float): Angle of attack in degrees
-        solver_options (dict[str, Any] | Struct): Solver Options
-
-    """
-    DB = Database.get_instance()
-    bodies_dicts: list[GenuSurface] = []
-    if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
-    else:
-        surfaces = plane.surfaces
-
-    for i, surface in enumerate(surfaces):
-        genu_surf = GenuSurface(surface, i)
-        bodies_dicts.append(genu_surf)
-
-    disturbances: list[Disturbance] = state.sensitivities[var]
-
-    from multiprocessing import Pool
-
-    if genu_version == 3:
-        num_processes = CPU_TO_USE
-    else:
-        num_processes = int(CPU_TO_USE / 3)
-    with Pool(num_processes) as pool:
-        args_list = [
-            (
-                DB,
-                plane,
-                state,
-                solver2D,
-                maxiter,
-                timestep,
-                state.u_freestream,
-                angle,
-                state.environment,
-                surfaces,
-                bodies_dicts,
-                dst,
-                f"Sensitivity_{dst.var}",
-                genu_version,
-                solver_options,
-            )
-            for dst in disturbances
-        ]
-
-        _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
-
-
-def proccess_pertrubation_res_3(plane: Airplane, state: State) -> DataFrame:
-    return proccess_pertrubation_res(plane, state, 3)
-
-
-def proccess_pertrubation_res_7(plane: Airplane, state: State) -> DataFrame:
-    return proccess_pertrubation_res(plane, state, 7)
-
-
-def proccess_pertrubation_res(
+def process_gnvp_dynamics(
     plane: Airplane,
     state: State,
     gnvp_version: int,

@@ -65,7 +65,7 @@ import numpy as np
 import requests
 from matplotlib.axes import Axes
 
-from ICARUS.core.struct import Struct
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:

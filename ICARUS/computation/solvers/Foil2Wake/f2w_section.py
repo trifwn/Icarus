@@ -2,6 +2,10 @@ from ICARUS.computation.analyses.airfoil_polar_analysis import (
     BaseAirfoil_MultiReyn_PolarAnalysis,
 )
 from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
+from ICARUS.computation.solvers import FloatParameter
+from ICARUS.computation.solvers import IntParameter
+from ICARUS.computation.solvers import Parameter
+from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.Foil2Wake.analyses.angles import process_f2w_run
 from ICARUS.computation.solvers.Foil2Wake.analyses.angles import (
     run_multiple_reynolds_parallel,
@@ -10,10 +14,6 @@ from ICARUS.computation.solvers.Foil2Wake.analyses.angles import (
     run_multiple_reynolds_sequentially,
 )
 from ICARUS.computation.solvers.Foil2Wake.analyses.angles import run_single_reynolds
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.computation.solvers.solver_parameters import FloatParameter
-from ICARUS.computation.solvers.solver_parameters import IntParameter
-from ICARUS.computation.solvers.solver_parameters import Parameter
 
 
 class Foil2Wake_PolarAnalysis(BaseAirfoilPolarAnalysis):

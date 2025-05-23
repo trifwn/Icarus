@@ -25,12 +25,13 @@ This package contains an abstraction layer for solvers and analyses. The package
     ICARUS.Computation.Solvers.solver - Solver class definition
     ICARUS.Computation.options - Option class definition
 
-
+isort:skip_file
 """
 
 from . import analyses
 from . import results
 from . import solvers
 from . import workflow
+from .airfoil_polars import compute_polars
 
-__all__ = ["analyses", "results", "solvers", "workflow"]
+__all__ = ["analyses", "results", "solvers", "workflow", "compute_polars"]

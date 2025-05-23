@@ -9,6 +9,7 @@ from matplotlib.lines import Line2D
 from matplotlib.text import Text
 
 from ICARUS.flight_dynamics import State
+
 from . import OptimizationCallback
 
 

@@ -4,8 +4,8 @@ import time
 
 import numpy as np
 
-from ICARUS.computation.solvers.solver import Solver
-from ICARUS.core.struct import Struct
+from ICARUS.computation.solvers import Solver
+from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
 
@@ -17,7 +17,7 @@ def gnvp3_run(run_parallel: bool = True) -> None:
 
     bmark, state = get_bmark_plane("bmark")
     # Get Solver
-    from ICARUS.computation.solvers.GenuVP.gnvp3 import GenuVP3
+    from ICARUS.computation.solvers.GenuVP import GenuVP3
 
     gnvp3: Solver = GenuVP3()
 

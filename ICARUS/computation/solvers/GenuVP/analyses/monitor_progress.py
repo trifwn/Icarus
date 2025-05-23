@@ -9,8 +9,9 @@ from typing import NoReturn
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.computation.solvers.GenuVP.post_process.progress import latest_time
 from ICARUS.core.types import FloatArray
+
+from ..post_process import latest_time
 
 
 def serial_monitor(

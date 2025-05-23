@@ -8,8 +8,8 @@ from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import Wing
 from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import Wing
 from ICARUS.vehicle import WingSegment
 
 
