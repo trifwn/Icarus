@@ -23,14 +23,16 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import Airplane
     from ICARUS.vehicle import WingSurface
 
-from ICARUS.aero.assemble_matrix import get_LHS
-from ICARUS.aero.assemble_matrix import get_RHS
-from ICARUS.aero.post_process.strip_calculations import get_potential_loads
-from ICARUS.aero.strip_data import StripData
+from vlm import get_LHS
+from vlm import get_RHS
+
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle import Wing
 from ICARUS.visualization import create_subplots
 from ICARUS.visualization import flatten_axes
+
+from . import StripData
+from .post_process import get_potential_loads
 
 coolwarm = colormaps.get_cmap("coolwarm")
 viridis = colormaps.get_cmap("viridis")

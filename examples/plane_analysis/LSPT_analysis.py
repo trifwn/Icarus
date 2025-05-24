@@ -12,7 +12,7 @@ import numpy as np
 from Planes.hermes import hermes
 
 from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
+from ICARUS.computation.solvers.Icarus_LSPT import LSPT
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database

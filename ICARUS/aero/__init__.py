@@ -26,12 +26,20 @@ Lifting Surfaces Potential Theory
 
     ICARUS.aero.potential.lifting_surfaces - Interface for solver class
     ICARUS.aero.potential.vorticity - Functions to solve the Biotsavart equation for different elements
-    ICARUS.aero.potential.wing_lspt - A class modeling a wing for solving the lifting surfaces using panels and a potential theory formulation
+    ICARUS.aero.plane_lspt - A class modeling a wing for solving the lifting surfaces using panels and a potential theory formulation
 
 """
 
-from . import biot_savart
-from . import lifting_surfaces
-from . import wing_lspt
+from . import post_process
+from . import vlm
+from . import vpm
+from .plane_lspt import LSPT_Plane
+from .strip_data import StripData
 
-__all__ = ["biot_savart", "lifting_surfaces", "wing_lspt"]
+__all__ = [
+    "LSPT_Plane",
+    "StripData",
+    "vlm",
+    "vpm",
+    "post_process",
+]

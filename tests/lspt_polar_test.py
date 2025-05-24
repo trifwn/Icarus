@@ -16,7 +16,7 @@ def lspt_run() -> None:
     airplane, state = get_bmark_plane("bmark")
 
     # Get Solver
-    from ICARUS.computation.solvers.Icarus_LSPT.wing_lspt import LSPT
+    from ICARUS.computation.solvers.Icarus_LSPT import LSPT
 
     lspt: Solver = LSPT()
 

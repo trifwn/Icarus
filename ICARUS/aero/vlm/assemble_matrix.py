@@ -9,10 +9,10 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from ICARUS.aero.biot_savart import voring
+from .biot_savart import voring
 
 if TYPE_CHECKING:
-    from ICARUS.aero.wing_lspt import LSPT_Plane
+    from ICARUS.aero import LSPT_Plane
 
 
 def get_panel_contribution(

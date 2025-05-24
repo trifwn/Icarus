@@ -9,7 +9,7 @@ from jax import Array
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
-    from ICARUS.aero.wing_lspt import LSPT_Plane
+    from ICARUS.aero import LSPT_Plane
     from ICARUS.flight_dynamics import State
 
 
