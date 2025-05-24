@@ -67,25 +67,25 @@ def gnvp_polars(
     """
     if parallel:
         gnvp_polars_parallel(
-            plane,
-            state,
-            solver2D,
-            maxiter,
-            timestep,
-            angles,
-            gnvp_version,
-            solver_options,
+            plane=plane,
+            state=state,
+            solver2D=solver2D,
+            maxiter=maxiter,
+            timestep=timestep,
+            angles=angles,
+            gnvp_version=gnvp_version,
+            solver_options=solver_options,
         )
     else:
         gnvp_polars_serial(
-            plane,
-            state,
-            solver2D,
-            maxiter,
-            timestep,
-            angles,
-            gnvp_version,
-            solver_options,
+            plane=plane,
+            state=state,
+            solver2D=solver2D,
+            maxiter=maxiter,
+            timestep=timestep,
+            angles=angles,
+            gnvp_version=gnvp_version,
+            solver_options=solver_options,
         )
 
 

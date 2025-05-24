@@ -1,3 +1,4 @@
+from typing import Any
 from ICARUS.computation.analyses import FloatInput
 from ICARUS.computation.analyses import IntInput
 from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
@@ -60,7 +61,7 @@ class GenuVP7_DynamicAnalysis(BaseDynamicAnalysis):
         )
 
 
-gnvp7_solver_parameters: list[Parameter] = [
+gnvp7_solver_parameter_list: list[Parameter] = [
     BoolParameter(
         "Split_Symmetric_Bodies",
         False,
@@ -215,6 +216,10 @@ gnvp7_solver_parameters: list[Parameter] = [
     FloatParameter("Elasticity_Solver", 0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)"),
 ]
 
+gnvp7_solver_parameters: dict[str, Any] =  {}
+for param in gnvp7_solver_parameter_list:
+    gnvp7_solver_parameters[param.name] = param.value
+
 
 class GenuVP7(Solver):
     def __init__(self) -> None:
@@ -223,7 +228,7 @@ class GenuVP7(Solver):
             "3D VPM",
             2,
             [GenuVP7_PolarAnalysis(), GenuVP7_DynamicAnalysis(), GenuVP7_RerunCase()],
-            solver_parameters=gnvp7_solver_parameters,
+            solver_parameters=gnvp7_solver_parameter_list,
         )
 
 
