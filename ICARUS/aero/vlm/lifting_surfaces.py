@@ -75,9 +75,10 @@ def save_results(
     forces_df.to_csv(filename, index=False, float_format="%.10f")
 
     plane.save()
+    print(forces_df )
     state.add_polar(
         polar=forces_df,
-        polar_prefix="LSPT",
+        polar_prefix="LSPT Potential",
         is_dimensional=True,
     )
 

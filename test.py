@@ -30,8 +30,9 @@ class BaseAirplaneTests(unittest.TestCase):
 
     #     gnvp7_geometry(plot=True)
 
-    # def test7_lspt_run(self) -> None:
-    #     lspt_run()
+    def test7_lspt_run(self) -> None:
+        from tests.lspt_polar_test import lspt_run
+        lspt_run()
 
     def test8_avl_run(self) -> None:
         from tests.avl_run_test import avl_run
