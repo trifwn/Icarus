@@ -7,8 +7,8 @@ from .biot_savart import hshoeSL2
 from .biot_savart import symm_wing_panels
 from .biot_savart import voring
 from .biot_savart import vortexL
-from .lifting_surfaces import run_lstp_angles
-from .lifting_surfaces import save_results
+from .polars import lspt_polars
+from .polars import save_results
 
 # from .wake_model import
 
@@ -22,6 +22,6 @@ __all__ = [
     "hshoeSL2",
     "symm_wing_panels",
     "ground_effect",
-    "run_lstp_angles",
+    "lspt_polars",
     "save_results",
 ]
