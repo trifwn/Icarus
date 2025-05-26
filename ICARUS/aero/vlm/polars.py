@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import Airplane
 
 
-def run_lstp_angles(
+def lspt_polars(
     plane: Airplane,
     state: State,
     solver2D: str,
@@ -77,7 +77,7 @@ def save_results(
     plane.save()
     state.add_polar(
         polar=forces_df,
-        polar_prefix="LSPT",
+        polar_prefix="LSPT Potential",
         is_dimensional=True,
     )
 
