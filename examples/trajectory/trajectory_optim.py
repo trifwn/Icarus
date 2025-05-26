@@ -44,7 +44,7 @@ engine.load_data_from_df(engine_dir)
 
 
 plane: Airplane = DB.get_vehicle("final")
-# plane.visualize(annotate=True)
+# plane.plot(annotate=True)
 mission_plane = MissionVehicle(plane, engine, solver="AVL")
 
 operating_floor = 12.5
