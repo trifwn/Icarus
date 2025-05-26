@@ -1295,35 +1295,6 @@ class WingSurface:
         if self.control_vector != old_control_vector:
             self.define_wing_parameters()
 
-    # def plot_surface(
-    #     self,
-    #     thin: bool = False,
-    #     prev_fig: Figure | None = None,
-    #     prev_ax: Axes3D | None = None,
-    #     prev_movement: FloatArray | None = None,
-    # ) -> None:
-    #     """
-    #     Plots the wing
-    #     """
-
-    #     fig: Figure = plt.figure()
-    #     ax: Axes3D = fig.add_subplot(111, projection="3d")  # type: ignore
-    #     ax.set_title("Wing")
-    #     ax.set_xlabel("X")
-    #     ax.set_ylabel("Y")
-    #     ax.set_zlabel("Z")
-    #     ax.axis("equal")
-    #     ax.view_init(30, 150)
-
-    #     # Plot the wing grid
-    #     for grid, c in zip([self.grid_lower, self.grid_upper], ["b", "r"]):
-    #         X = grid[:, 0]
-    #         Y = grid[:, 1]
-    #         Z = grid[:, 2]
-
-    #         ax.plot_trisurf(X, Y, Z, color=c)
-    #     fig.show()
-
     def __setstate__(self, state: dict[str, Any]) -> None:
         func_dict = state.get("chord_discretization_function")
         chord_discretization_function = deserialize_function(func_dict)

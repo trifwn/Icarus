@@ -15,7 +15,7 @@ from numpy import ndarray
 
 from ICARUS.core.base_types import Optimizable
 
-from . import PointMass
+from . import Mass
 from . import Wing
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ class Airplane(Optimizable):
         main_wing: WingSurface,
         other_surfaces: Sequence[WingSurface] | None = None,
         orientation: FloatOrListArray | None = None,
-        point_masses: list[PointMass] | None = None,
+        point_masses: list[Mass] | None = None,
         cg_overwrite: FloatArray | None = None,
         inertia_overwrite: FloatArray | None = None,
     ) -> None:
@@ -47,7 +47,7 @@ class Airplane(Optimizable):
             main_wing (WingSurface): Main wing of the plane
             other_surfaces (Sequence[WingSurface]): Other surfaces of the plane
             orientation (FloatOrListArray | None, optional): Orientation of the plane. Defaults to None.
-            point_masses (list[PointMass] | None, optional): Point masses of the plane. Defaults to None.
+            point_masses (list[Mass] | None, optional): Point masses of the plane. Defaults to None.
             cg_overwrite (FloatArray | None, optional): Center of gravity of the plane. Defaults to None.
             inertia_overwrite (FloatArray | None, optional): Inertia of the plane. Defaults to None.
         """
@@ -71,7 +71,7 @@ class Airplane(Optimizable):
                 self.surface_dict[surface.name] = surface
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.point_masses: list[PointMass] = []
+        self.point_masses: list[Mass] = []
         self.moments: list[FloatArray] = []
 
         self.M: float = 0
@@ -493,10 +493,10 @@ class Airplane(Optimizable):
         self.overwrite_inertia = True
 
     @property
-    def masses(self) -> list[PointMass]:
+    def masses(self) -> list[Mass]:
         ret = []
         for surface in self.surfaces:
-            mass = PointMass(
+            mass = Mass(
                 name=surface.name,
                 position=surface.CG,
                 mass=surface.mass,
@@ -560,7 +560,7 @@ class Airplane(Optimizable):
 
     def add_point_masses(
         self,
-        masses: list[PointMass] | PointMass,
+        masses: list[Mass] | Mass,
     ) -> None:
         """Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
 
@@ -568,7 +568,7 @@ class Airplane(Optimizable):
             masses (tuple[float, NDArray[Shape[&#39;3,&#39;], Float]]): (mass, position) eg (3, np.array([0,0,0])
 
         """
-        if isinstance(masses, PointMass):
+        if isinstance(masses, Mass):
             masses = [masses]
 
         for mass in masses:

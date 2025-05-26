@@ -74,7 +74,7 @@ from .control_surface import Elevator
 from .control_surface import Flap
 from .control_surface import NoControl
 from .control_surface import Rudder
-from .point_mass import PointMass
+from .point_mass import Mass
 from .strip import Strip
 from .surface import WingSurface
 from .surface_connections import SurfaceConnection
@@ -91,7 +91,7 @@ __all__ = [
     "Rudder",
     "Elevator",
     "NoControl",
-    "PointMass",
+    "Mass",
     "Wing",
     "Strip",
     "WingSegment",

@@ -8,7 +8,7 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import PointMass
+from ICARUS.vehicle import Mass
 from ICARUS.vehicle import SymmetryAxes
 from ICARUS.vehicle import Wing
 from ICARUS.vehicle import WingSegment
@@ -42,7 +42,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     # units = dict["Units"]
     plane = diction["Plane"]
 
-    point_masses: list[PointMass] = []
+    point_masses: list[Mass] = []
     if plane["Inertia"] is not None:
         if not isinstance(plane["Inertia"]["Point_Mass"], list):
             plane["Inertia"]["Point_Mass"] = [plane["Inertia"]["Point_Mass"]]
@@ -52,7 +52,7 @@ def parse_xfl_project(filename: str) -> Airplane:
                 pmass["coordinates"].replace(",", "").split(),
                 dtype=float,
             )
-            p_mass = PointMass(
+            p_mass = Mass(
                 name="",
                 mass=m,
                 position=coor,
