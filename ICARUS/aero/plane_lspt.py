@@ -17,11 +17,11 @@ if TYPE_CHECKING:
     from pandas import DataFrame
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
-    from ICARUS.vehicle import WingSurface
 
 from ICARUS.core.types import FloatArray
 
 from . import StripLoads
+from .lspt_surface import LSPTSurface
 
 coolwarm = colormaps.get_cmap("coolwarm")
 viridis = colormaps.get_cmap("viridis")
@@ -40,304 +40,127 @@ class LSPT_Plane:
         plane: Airplane,
     ) -> None:
         # Store the wing segments
-        self.surfaces: Sequence[WingSurface] = []
+        self.surfaces: Sequence[LSPTSurface] = []
         self.surface_dict: dict[str, Any] = {}
 
-        NM_panels: int = 0
-        NM_grid: int = 0
-        num_strips: int = 0
         # Get the wing segments
-        for i, wing in enumerate(plane.wings):
-            for segment in wing.wing_segments:
-                self.surfaces.append(segment)
-                # Get the surface information
-                self.surface_dict[segment.name] = {
-                    "N": segment.N,
-                    "M": segment.M,
-                    "grid": segment.grid,
-                    "id": i,
-                    "symmetric_y": True if segment.is_symmetric_y else False,
-                    "panel_idxs": jnp.arange(
-                        NM_panels,
-                        NM_panels + (segment.N - 1) * (segment.M - 1),
-                    ),
-                }
-                NM_panels += (segment.N - 1) * (segment.M - 1)
-                NM_grid += segment.N * segment.M
-                num_strips += segment.N - 1
+        panel_index = 0
+        grid_index = 0
+        for i, surf in enumerate(plane.wings):
+            for segment in surf.wing_segments:
+                lspt_surface = LSPTSurface(
+                    surface=segment,
+                    panel_index=panel_index,
+                    grid_index= grid_index,
+                    wing_id=i,
+                )
+                self.surfaces.append(lspt_surface)
 
-        self.num_strips = num_strips
-        self.lifting_surfaces = [surface for surface in self.surfaces if surface.is_lifting]
+                panel_index += lspt_surface.num_panels
+                grid_index += lspt_surface.num_grid_points
 
         # Plane properties
         self.S: float = plane.S
         self.CG: FloatArray = plane.CG
         self.MAC: float = plane.mean_aerodynamic_chord
 
-        self._alpha: float = 0
-        self._beta: float = 0
+        num_panels = self.num_panels
+        num_grid_points = self.num_grid_points
 
-        # We need to create the grid
-        self.NM = NM_panels
-        self.NM_grid = NM_grid
-        self.A = jnp.zeros((NM_panels, NM_panels))
-        self.A_star = jnp.zeros((NM_panels, NM_panels))
-        self.grid = jnp.zeros((NM_grid, 3))
-        self.panels = jnp.zeros(
-            (NM_panels, 4, 3),
-        )  # Panels are defined by 4 points in 3D space
-        self.gammas = jnp.zeros(NM_panels)
-        self.control_points = jnp.zeros(
-            (NM_panels, 3),
-        )  # Control points are the center of the panels
-        self.control_nj = jnp.zeros(
-            (NM_panels, 3),
-        )  # Normal vector at the control points
+        # Flattened Grid
+        self.grid = jnp.zeros((num_grid_points, 3))
+        # Panels are defined by 4 points in 3D space
+        self.panels = jnp.zeros((num_panels, 4, 3))
+        # Each panel has a circulation gamma
+        self.gammas = jnp.zeros(num_panels)
 
-        NM_panels = 0
-        NM_grid = 0
-        strips = []
+        # Control points are the Quarter Chord of the panels
+        self.control_points = jnp.zeros((num_panels, 3))
+        # Normal vector at the control points
+        self.control_nj = jnp.zeros((num_panels, 3))
+
+        # Influence matrices
+        self.A = jnp.zeros((num_panels, num_panels))
+        self.A_star = jnp.zeros((num_panels, num_panels))
+
         self.strip_data: list[StripLoads] = []
-        for wing in self.surfaces:
-            self.panels = self.panels.at[
-                NM_panels : NM_panels + (wing.N - 1) * (wing.M - 1),
-                :,
-                :,
-            ].set(
-                wing.panels,
-            )
-            self.control_points = self.control_points.at[
-                NM_panels : NM_panels + (wing.N - 1) * (wing.M - 1),
-                :,
-            ].set(wing.control_points)
-            self.control_nj = self.control_nj.at[
-                NM_panels : NM_panels + (wing.N - 1) * (wing.M - 1),
-                :,
-            ].set(
-                wing.control_nj,
-            )
-            self.grid = self.grid.at[NM_grid : NM_grid + wing.N * wing.M, :].set(
-                wing.grid,
-            )
-            # Get the wake shedding indices
-            self.surface_dict[wing.name]["wake_shedding_panel_indices"] = NM_panels + jnp.arange(
-                (wing.M - 2),
-                (wing.N - 1) * (wing.M - 1),
-                wing.M - 1,
-            )
-            self.surface_dict[wing.name]["wake_shedding_grid_indices"] = NM_grid + jnp.arange(
-                (wing.M - 1),
-                wing.N * wing.M,
-                wing.M,
-            )
+        for surf in self.surfaces:
+            # Set Panels
+            self.panels = self.panels.at[surf.panel_indices, :, :].set(surf.panels)
 
-            chords = wing._chord_dist
-            span_dist = wing._span_dist
+            # Set Control Points and Normal Vectors
+            self.control_points = self.control_points.at[surf.panel_indices, :].set(surf.control_points)
+            self.control_nj = self.control_nj.at[surf.panel_indices, :].set(surf.control_nj)
+
+            # Set Grid Points
+            self.grid = self.grid.at[surf.grid_indices, :].set(surf.grid)
+
+        self.strip_data: list[StripLoads] = []
+        for surf in self.surfaces:
+            spans = surf.span_positions
+            chords = surf.chords
             # Get all the strips by their panel indices
-            for i in range(wing.N - 1):
-                strip_idxs = jnp.arange(i * (wing.M - 1), (i + 1) * (wing.M - 1)) + NM_panels
+            start_idx = surf.panel_indices[0]
+            for i in range(surf.N - 1):
+                strip_idxs = jnp.arange(i * (surf.M - 1), (i + 1) * (surf.M - 1)) + start_idx
 
-                strips.append(strip_idxs)
                 self.strip_data.append(
                     StripLoads(
                         panel_idxs=strip_idxs,
                         panels=self.panels[strip_idxs, :, :],
                         chord=(chords[i] + chords[i + 1]) / 2,
-                        width=span_dist[i + 1] - span_dist[i],
+                        width=spans[i + 1] - spans[i],
                     ),
                 )
 
-            NM_panels += (wing.N - 1) * (wing.M - 1)
-            NM_grid += wing.N * wing.M
-        self.strips = strips
-
         # Get the wake shedding indices
         self.wake_shedding_panel_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["wake_shedding_panel_indices"] for surface in self.surfaces],
-        )
-        self.wake_shedding_grid_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["wake_shedding_grid_indices"] for surface in self.surfaces],
-        )
-
-        # Add the near wake panels
-        self.create_near_wake_panels()
-        self.create_flat_wake_panels()
-
-        self.near_wake_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["near_wake_panel_indices"] for surface in self.surfaces],
-        )
-        self.flat_wake_panel_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["flat_wake_panel_indices"] for surface in self.surfaces],
-        )
-        self.PANEL_NUM: int = NM_panels + len(self.near_wake_indices)
-
-    def create_near_wake_panels(self) -> None:
-        """For each surface that is shedding wake, we will add a panel in the near wake
-        to account for the wake influence on the wing.
-        """
-        for surface in self.surfaces:
-            # Get wake shedding indices
-            wake_shedding_indices: Array = self.surface_dict[surface.name]["wake_shedding_panel_indices"]
-            # Getting the panel indices that are shedding wake gives us the orientation of the wake
-            # For each panel that is shedding wake, we will add a panel in the near wake
-            near_wake_panel_indices = jnp.zeros_like(wake_shedding_indices)
-            for i, panel_idx in enumerate(wake_shedding_indices):
-                # Get the panel that is shedding wake and its control point, normal vector, and length
-                panel = self.panels[panel_idx]
-                nj = self.control_nj[panel_idx]
-                # From nj get the near wake direction.
-                # The near wake direction is the direction normal to the trailing edge of the panel
-                te = panel[3] - panel[2]
-                near_wake_dir = jnp.cross(nj, te)
-                # Normalize the near wake direction
-                near_wake_dir = near_wake_dir / jnp.linalg.norm(near_wake_dir)
-
-                # Get the panel length that is the average of the two chords
-                panel_length = jnp.linalg.norm(
-                    (panel[1] + panel[0]) / 2 - (panel[2] + panel[3]) / 2,
-                )
-
-                # Assuming this is the TE panel, we will add a panel in the near wake
-                near_wake_panel = jnp.zeros_like(panel)
-                near_wake_panel = near_wake_panel.at[0].set(panel[3])
-                near_wake_panel = near_wake_panel.at[1].set(panel[2])
-                near_wake_panel = near_wake_panel.at[2].set(
-                    panel[2] - panel_length * near_wake_dir,
-                )
-                near_wake_panel = near_wake_panel.at[3].set(
-                    panel[3] - panel_length * near_wake_dir,
-                )
-
-                near_wake_panel_nj = jnp.cross(
-                    near_wake_panel[1] - near_wake_panel[0],
-                    near_wake_panel[2] - near_wake_panel[0],
-                )
-
-                # Append the near wake panel to the panels array
-                self.panels = jnp.concatenate(
-                    [self.panels, jnp.expand_dims(near_wake_panel, axis=0)],
-                    axis=0,
-                )
-                # Append the control point to the control points array
-                self.control_points = jnp.concatenate(
-                    [
-                        self.control_points,
-                        jnp.expand_dims(near_wake_panel.mean(axis=0), axis=0),
-                    ],
-                    axis=0,
-                )
-                # Append the normal vector to the control nj array
-                self.control_nj = jnp.concatenate(
-                    [
-                        self.control_nj,
-                        jnp.expand_dims(
-                            near_wake_panel_nj / jnp.linalg.norm(near_wake_panel_nj),
-                            axis=0,
-                        ),
-                    ],
-                    axis=0,
-                )
-                # Append the near wake panel index to the near wake panel indices
-                near_wake_panel_indices = near_wake_panel_indices.at[i].set(
-                    len(self.panels) - 1,
-                )
-
-            self.surface_dict[surface.name]["near_wake_panel_indices"] = near_wake_panel_indices
-
-    def create_flat_wake_panels(
-        self,
-        num_of_wake_panels: int = 10,
-        wake_x_inflation: float = 1.1,
-        farfield_distance: float = 5,
-    ):
-        """For each surface that is shedding wake, we will add a panels after the near wake
-        that are flat and parallel to the freestream direction.
-
-        Args:
-            num_of_wake_panels (int, optional): Number of Wake panels. Defaults to 10.
-            wake_x_inflation (float, optional): Wake inflation. Defaults to 1.1.
-            farfield_distance (int, optional): Distance of farfield. Defaults to 30.
-
-        """
-        # Get the Freestream direction
-        alpha = self.alpha
-        beta = self.beta
-        freestream_direction = jnp.array(
-            [
-                -jnp.cos(alpha) * jnp.cos(beta),
-                0,
-                jnp.sin(alpha) * jnp.cos(beta),
-            ],
+            [surface.wake_shedding_panel_indices for surface in self.surfaces],
         )
 
         for surface in self.surfaces:
-            num = 0
-            MAC = surface.mean_aerodynamic_chord
+            # Add the near wake panels
+            surface.add_near_wake_panels()
 
-            # Get the near wake panels
-            near_wake_indices = self.surface_dict[surface.name]["near_wake_panel_indices"]
-            near_wake_panels = self.panels[near_wake_indices]
+            # Add the flat wake panels
+            surface.add_flat_wake_panels()
 
-            self.surface_dict[surface.name]["flat_wake_panel_indices"] = jnp.zeros(
-                len(near_wake_indices) * num_of_wake_panels,
-                dtype=jnp.int32,
-            )
+        self.num_near_wake_panels: int = len(self.near_wake_indices)
 
-            for near_wake_panel in near_wake_panels:
-                flat_wake_idxs = jnp.zeros(num_of_wake_panels)
-                for i in range(num_of_wake_panels):
-                    panel_length = farfield_distance * MAC / (wake_x_inflation**i)
-                    # The panel length must satisfy the farfield distance given the wake_x_inflation
+    @property 
+    def near_wake_indices(self) -> Int[Array, ...]:
+        """Indices of the near wake panels across all surfaces."""
 
-                    pan_length = wake_x_inflation**i * panel_length
-                    # Create the flat wake panel
-                    flat_wake_panel = jnp.zeros_like(near_wake_panel)
-                    flat_wake_panel = flat_wake_panel.at[0].set(near_wake_panel[3])
-                    flat_wake_panel = flat_wake_panel.at[1].set(near_wake_panel[2])
-                    flat_wake_panel = flat_wake_panel.at[2].set(
-                        near_wake_panel[2] - pan_length * freestream_direction,
-                    )
-                    flat_wake_panel = flat_wake_panel.at[3].set(
-                        near_wake_panel[3] - pan_length * freestream_direction,
-                    )
+        return jnp.concatenate(
+            [surface.near_wake_panel_indices for surface in self.surfaces],
+        )
+    
+    @property
+    def flat_wake_panel_indices(self) -> Int[Array, ...]:
+        """Indices of the flat wake panels across all surfaces."""
+        return jnp.concatenate(
+            [surface.flat_wake_panel_indices for surface in self.surfaces],
+        )
 
-                    # Get the normal vector of the flat wake panel
-                    flat_wake_panel_nj = jnp.cross(
-                        flat_wake_panel[1] - flat_wake_panel[0],
-                        flat_wake_panel[2] - flat_wake_panel[0],
-                    )
+    @property
+    def num_panels(self) -> int:
+        """Total number of panels in the LSPT plane."""
+        return sum(surface.num_panels for surface in self.surfaces)
 
-                    # Append the flat wake panel to the panels array
-                    self.panels = jnp.concatenate(
-                        [self.panels, jnp.expand_dims(flat_wake_panel, axis=0)],
-                        axis=0,
-                    )
-                    # Append the control point to the control points array
-                    self.control_points = jnp.concatenate(
-                        [
-                            self.control_points,
-                            jnp.expand_dims(flat_wake_panel.mean(axis=0), axis=0),
-                        ],
-                        axis=0,
-                    )
-                    # Append the normal vector to the control nj array
-                    self.control_nj = jnp.concatenate(
-                        [
-                            self.control_nj,
-                            jnp.expand_dims(flat_wake_panel_nj, axis=0),
-                        ],
-                        axis=0,
-                    )
+    @property
+    def num_grid_points(self) -> int:
+        """Total number of grid points in the LSPT plane."""
+        return sum(surface.num_grid_points for surface in self.surfaces)
 
-                    # Append the flat wake panel index to the flat wake panel indices
-                    flat_wake_idxs = flat_wake_idxs.at[i].set(len(self.panels) - 1)
+    @property
+    def num_strips(self) -> int:
+        """Total number of strips in the LSPT plane."""
+        return sum(surface.num_strips for surface in self.surfaces)
 
-                    # Note the wake panel indices
-                    self.surface_dict[surface.name]["flat_wake_panel_indices"] = (
-                        self.surface_dict[surface.name]["flat_wake_panel_indices"].at[num].set(flat_wake_idxs[i])
-                    )
-                    num += 1
-                    near_wake_panel = flat_wake_panel
+    @property
+    def lifting_surfaces(self) -> list[LSPTSurface]:
+        """List of lifting surfaces in the LSPT plane."""
+        return [surface for surface in self.surfaces if surface.is_lifting]
 
     def factorize_system(self) -> tuple[Array, Array, Array]:
         """Factorize the VLM system matrices using LU decomposition.
@@ -393,8 +216,10 @@ class LSPT_Plane:
         Mys_2D = jnp.zeros(len(angles))
 
         for i, aoa in enumerate(angles):
+
             self.alpha = aoa * jnp.pi / 180
             self.beta = 0
+            # self.move_wake_panels(alpha = self.alpha, beta=self.beta)
 
             # Calculate freestream velocity components
             Uinf = umag * jnp.cos(self.alpha) * jnp.cos(self.beta)
@@ -492,7 +317,7 @@ class LSPT_Plane:
             raise ValueError("Axes must be part of a figure")
 
         # Add the grid panel wireframes
-        for i in np.arange(0, self.NM):
+        for i in np.arange(0, self.num_panels):
             p1, p3, p4, p2 = self.panels[i, :, :]
             xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
             ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
@@ -507,7 +332,9 @@ class LSPT_Plane:
                 xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
                 ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
                 zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-                ax_.plot_wireframe(xs, ys, zs, color="g", linewidth=1.5, label="Near Wake Panels")
+                ax_.plot_wireframe(xs, ys, zs, color="g", linewidth=1.5)
+            
+            ax_.scatter([], [], [], color="g", label="Near Wake Panels")
 
             # Add the flat wake panels in orange
             flat_wake_indices = self.flat_wake_panel_indices
@@ -516,7 +343,9 @@ class LSPT_Plane:
                 xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
                 ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
                 zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-                ax_.plot_wireframe(xs, ys, zs, color="orange", linewidth=1.5, label="Wake Panels")
+                ax_.plot_wireframe(xs, ys, zs, color="orange", linewidth=1.5)
+
+            ax_.scatter([], [], [], color="orange", label="Flat Wake Panels")
 
         # Add the wake shedding points in blue
         wake_shedding_indices = self.wake_shedding_panel_indices
@@ -529,7 +358,7 @@ class LSPT_Plane:
         )
 
         # scatter the control points and grid points that are not part of the wake
-        surf_control_points = self.control_points[: self.NM, :]
+        surf_control_points = self.control_points[: self.num_panels, :]
         ax_.scatter(
             *surf_control_points.T,
             color="r",
@@ -537,7 +366,7 @@ class LSPT_Plane:
             marker="o",
             s=20,
         )
-        surf_grid_points = self.grid[: self.NM_grid, :]
+        surf_grid_points = self.grid[: self.num_grid_points, :]
         ax_.scatter(
             *surf_grid_points.T,
             color="k",

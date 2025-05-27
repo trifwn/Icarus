@@ -55,17 +55,34 @@ def compute_row(
 def get_LHS(
     plane: LSPT_Plane,
 ) -> tuple[Float[Array, ...], Float[Array, ...]]:
+    PANEL_NUM = plane.num_panels + plane.num_near_wake_panels
     a_rows, b_rows = vmap(
         lambda i: compute_row(
             i,
-            plane.PANEL_NUM,
+            PANEL_NUM,
             plane.panels,
             plane.control_points,
             plane.control_nj,
         ),
-    )(jnp.arange(plane.PANEL_NUM))
-    a_np = jnp.reshape(a_rows, (plane.PANEL_NUM, plane.PANEL_NUM))
-    b_np = jnp.reshape(b_rows, (plane.PANEL_NUM, plane.PANEL_NUM))
+    )(
+        jnp.arange(
+            PANEL_NUM,
+        )
+    )
+    a_np = jnp.reshape(
+        a_rows,
+        (
+            PANEL_NUM,
+            PANEL_NUM,
+        ),
+    )
+    b_np = jnp.reshape(
+        b_rows,
+        (
+            PANEL_NUM,
+            PANEL_NUM,
+        ),
+    )
 
     # Get the near wake panels row indices
     near_wake_panel_idxs = plane.near_wake_indices
@@ -85,7 +102,7 @@ def get_RHS(plane: LSPT_Plane, Q: Array) -> Float[Array, ...]:
     def compute_rhs(i: Int[Array, ...]) -> Float[Array, ...]:
         return -jnp.dot(Q, plane.control_nj[i])
 
-    RHS = vmap(compute_rhs)(jnp.arange(plane.PANEL_NUM))
+    RHS = vmap(compute_rhs)(jnp.arange(plane.num_near_wake_panels + plane.num_panels))
 
     # Zero the near wake panels
     near_wake_panel_idxs = plane.near_wake_indices
