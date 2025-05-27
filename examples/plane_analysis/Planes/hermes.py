@@ -103,7 +103,7 @@ def hermes(name: str) -> Airplane:
         Mass(mass=0.900, position=np.array([0.130, 0.0, 0.0], dtype=float), name="payload"),  # Payload
         # Mass(mass= 1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="battery"),  # Battery
     ]
-    airplane: Airplane = Airplane(name, main_wing=main_wing, other_surfaces=[elevator, rudder])
+    airplane: Airplane = Airplane(name, main_wing=main_wing, other_wings=[elevator, rudder])
     airplane.add_point_masses(point_masses)
 
     return airplane

@@ -53,7 +53,7 @@ def gnvp_geometry(gnvp_version: int, plot: bool = False) -> None:
 
     # Get the grid data from the airplane
     lgrid_plane: list[FloatArray] = []
-    for surface in airplane.surfaces:
+    for surface in airplane.wings:
         surf_grid = surface.get_grid()
         if isinstance(surf_grid, list):
             for grid in surf_grid:

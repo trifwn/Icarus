@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Iterator
-from typing import List
-from typing import Optional
 
 if TYPE_CHECKING:
     from jax import Array
@@ -216,7 +214,11 @@ class AerodynamicLoads:
                 strip.calc_mean_values()
 
     def calculate_potential_loads(
-        self, plane: LSPT_Plane, state: State, gammas: Array, w_induced: Array,
+        self,
+        plane: LSPT_Plane,
+        state: State,
+        gammas: Array,
+        w_induced: Array,
     ) -> tuple[float, float, float]:
         """Calculate potential loads using VLM results.
 
@@ -364,7 +366,10 @@ class AerodynamicLoads:
 
             # Step 4: Calculate potential loads
             total_lift_potential, total_drag_potential, total_moment_potential = self.calculate_potential_loads(
-                plane, state, gammas, w_induced,
+                plane,
+                state,
+                gammas,
+                w_induced,
             )
 
             # Step 5: Calculate viscous loads

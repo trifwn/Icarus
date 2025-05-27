@@ -32,6 +32,7 @@ class BaseAirplaneTests(unittest.TestCase):
 
     def test7_lspt_run(self) -> None:
         from tests.lspt_polar_test import lspt_run
+
         lspt_run()
 
     def test8_avl_run(self) -> None:

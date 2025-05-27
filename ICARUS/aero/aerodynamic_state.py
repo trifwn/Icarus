@@ -75,17 +75,17 @@ class AerodynamicState:
     @property
     def alpha_rad(self) -> float:
         """Return angle of attack in radians."""
-        return np.deg2rad(self.alpha)
+        return float(np.deg2rad(self.alpha))
 
     @property
     def beta_rad(self) -> float:
         """Return sideslip angle in radians."""
-        return np.deg2rad(self.beta)
+        return float(np.deg2rad(self.beta))
 
     @property
     def angular_rates(self) -> FloatArray:
         """Return angular rates as a numpy array [P, Q, R] in rad/s."""
-        return np.array([self.rate_P, self.rate_Q, self.rate_R])
+        return np.array([self.rate_P, self.rate_Q, self.rate_R], dtype=float)
 
     @property
     def velocity_components(self) -> FloatArray:
@@ -98,7 +98,7 @@ class AerodynamicState:
         u = self.airspeed * np.cos(self.alpha_rad) * np.cos(self.beta_rad)
         v = self.airspeed * np.cos(self.alpha_rad) * np.sin(self.beta_rad)
         w = self.airspeed * np.sin(self.alpha_rad) * np.cos(self.beta_rad)
-        return np.array([u, v, w])
+        return np.array([u, v, w], dtype=float)
 
     @property
     def dynamic_pressure(self) -> float:

@@ -25,7 +25,7 @@ from ..post_process import log_forces
 from ..utils import GenuParameters
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
-from ..utils import define_movements
+from ..utils import define_global_movements
 from .monitor_progress import parallel_monitor
 from .monitor_progress import serial_monitor
 
@@ -201,19 +201,20 @@ def gnvp_polars_serial(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         gen_surf: GenuSurface = GenuSurface(surface, i)
         bodies_dicts.append(gen_surf)
 
-    movements: list[list[GNVP_Movement]] = define_movements(
-        surfaces,
+    global_movements: list[GNVP_Movement] = define_global_movements(
         plane.CG,
         plane.orientation,
     )
+    movements: list[list[GNVP_Movement]] = [global_movements for _ in bodies_dicts]
+
     print("Running Polars Serially")
     DB = Database.get_instance()
     PLANEDIR: str = DB.get_vehicle_case_directory(
@@ -304,18 +305,19 @@ def gnvp_polars_parallel(
 
     bodies_dict: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
-    for i, surface in enumerate(surfaces):
+        surfaces = plane.wing_segments
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dict.append(genu_surf)
 
-    movements: list[list[GNVP_Movement]] = define_movements(
-        surfaces,
+    global_movements: list[GNVP_Movement] = define_global_movements(
         plane.CG,
         plane.orientation,
     )
+
+    movements: list[list[GNVP_Movement]] = [global_movements for _ in bodies_dict]
 
     stop_event = Event()
     from multiprocessing import Pool

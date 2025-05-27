@@ -12,10 +12,12 @@ This script tests the complete workflow:
 import sys
 
 import ICARUS
+from ICARUS.vehicle.airplane import Airplane
 
 sys.path.append(ICARUS.INSTALL_DIR)
 
 import numpy as np
+from pandas import DataFrame
 
 from ICARUS.aero import AerodynamicLoads
 from ICARUS.aero import LSPT_Plane
@@ -23,7 +25,7 @@ from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
 
 
-def get_test_airplane_and_state():
+def get_test_airplane_and_state() -> tuple[Airplane | None, State | None]:
     """Get a test airplane and flight state."""
     try:
         # Use the hermes airplane creation function
@@ -42,7 +44,7 @@ def get_test_airplane_and_state():
 
         print(f"Created test airplane: {airplane.name}")
         print(f"  - Reference area: {airplane.S:.3f} m²")
-        print(f"  - Number of surfaces: {len(airplane.surfaces)}")
+        print(f"  - Number of surfaces: {len(airplane.wings)}")
         print(f"  - Total mass: {airplane.M:.3f} kg")
         return airplane, state
 
@@ -51,12 +53,12 @@ def get_test_airplane_and_state():
         return None, None
 
 
-def test_lspt_plane_creation():
+def test_lspt_plane_creation() -> tuple[LSPT_Plane, State]:
     """Test creating LSPT_Plane from airplane."""
     print("Testing LSPT_Plane creation...")
 
     airplane, state = get_test_airplane_and_state()
-    if airplane is None or state is None:
+    if not isinstance(airplane, LSPT_Plane) or not isinstance(state, State):
         raise ValueError("Failed to load airplane and state from database")
 
     # Create LSPT_Plane
@@ -69,7 +71,7 @@ def test_lspt_plane_creation():
     return lspt_plane, state
 
 
-def test_aerodynamic_loads_creation():
+def test_aerodynamic_loads_creation() -> tuple[LSPT_Plane, AerodynamicLoads, State]:
     """Test creating AerodynamicLoads from LSPT_Plane."""
     print("\nTesting AerodynamicLoads creation...")
 
@@ -87,7 +89,7 @@ def test_aerodynamic_loads_creation():
     return lspt_plane, aero_loads, state
 
 
-def test_vlm_factorization():
+def test_vlm_factorization() -> tuple[LSPT_Plane, AerodynamicLoads, State]:
     """Test VLM matrix factorization."""
     print("\nTesting VLM matrix factorization...")
 
@@ -109,7 +111,7 @@ def test_vlm_factorization():
     return lspt_plane, aero_loads, state
 
 
-def test_single_angle_analysis():
+def test_single_angle_analysis() -> tuple[LSPT_Plane, AerodynamicLoads, State, DataFrame]:
     """Test VLM analysis for a single angle."""
     print("\nTesting single angle VLM analysis...")
 
@@ -140,7 +142,7 @@ def test_single_angle_analysis():
     return lspt_plane, aero_loads, state, results_df
 
 
-def test_multi_angle_analysis():
+def test_multi_angle_analysis() -> DataFrame:
     """Test VLM analysis for multiple angles."""
     print("\nTesting multi-angle VLM analysis...")
 
@@ -173,7 +175,7 @@ def test_multi_angle_analysis():
     return results_df
 
 
-def test_aseq_method():
+def test_aseq_method() -> DataFrame:
     """Test the aseq method directly on LSPT_Plane."""
     print("\nTesting LSPT_Plane.aseq method...")
 
@@ -197,7 +199,7 @@ def test_aseq_method():
     return results_df
 
 
-def test_component_separation():
+def test_component_separation() -> None:
     """Test separation of potential vs viscous loads."""
     print("\nTesting potential vs viscous load separation...")
 
@@ -225,7 +227,7 @@ def test_component_separation():
     print("  ✓ Component addition verified")
 
 
-def main():
+def main() -> None:
     """Run all tests."""
     print("=" * 80)
     print("VLM Integration Test Suite")

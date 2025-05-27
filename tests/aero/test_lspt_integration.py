@@ -15,7 +15,7 @@ from ICARUS.aero import StripLoads
 from ICARUS.airfoils import Airfoil
 
 
-def test_lspt_integration():
+def test_lspt_integration() -> bool:
     """Test that existing LSPT code can work with enhanced StripData."""
     print("=== Testing LSPT Integration ===")
 
@@ -99,7 +99,7 @@ def test_lspt_integration():
     return True
 
 
-def test_backward_compatibility():
+def test_backward_compatibility() -> bool:
     """Test that existing code patterns still work."""
     print("\n=== Testing Backward Compatibility ===")
 
@@ -135,7 +135,7 @@ def test_backward_compatibility():
     return True
 
 
-def main():
+def main() -> int:
     """Main test function."""
     print("Testing LSPT integration and backward compatibility...")
     print()

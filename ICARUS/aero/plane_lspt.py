@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import WingSurface
 
 from ICARUS.core.types import FloatArray
-from ICARUS.vehicle import Wing
 
 from . import StripLoads
 
@@ -44,49 +43,28 @@ class LSPT_Plane:
         self.surfaces: Sequence[WingSurface] = []
         self.surface_dict: dict[str, Any] = {}
 
-        surf_id = 0
         NM_panels: int = 0
         NM_grid: int = 0
         num_strips: int = 0
         # Get the wing segments
-        for surface in plane.surfaces:
-            if isinstance(surface, Wing):
-                for sub_surf in surface.wing_segments:
-                    self.surfaces.append(sub_surf)
-                    # Get the surface information
-                    self.surface_dict[sub_surf.name] = {
-                        "N": sub_surf.N,
-                        "M": sub_surf.M,
-                        "grid": sub_surf.grid,
-                        "id": surf_id,
-                        "symmetric_y": True if sub_surf.is_symmetric_y else False,
-                        "panel_idxs": jnp.arange(
-                            NM_panels,
-                            NM_panels + (sub_surf.N - 1) * (sub_surf.M - 1),
-                        ),
-                    }
-                    NM_panels += (sub_surf.N - 1) * (sub_surf.M - 1)
-                    NM_grid += sub_surf.N * sub_surf.M
-                    num_strips += sub_surf.N - 1
-
-            else:
-                self.surfaces.append(surface)
+        for i, wing in enumerate(plane.wings):
+            for segment in wing.wing_segments:
+                self.surfaces.append(segment)
                 # Get the surface information
-                self.surface_dict[surface.name] = {
-                    "N": surface.N,
-                    "M": surface.M,
-                    "grid": surface.grid,
-                    "id": surf_id,
-                    "symmetric_y": True if surface.is_symmetric_y else False,
+                self.surface_dict[segment.name] = {
+                    "N": segment.N,
+                    "M": segment.M,
+                    "grid": segment.grid,
+                    "id": i,
+                    "symmetric_y": True if segment.is_symmetric_y else False,
                     "panel_idxs": jnp.arange(
                         NM_panels,
-                        NM_panels + (surface.N - 1) * (surface.M - 1),
+                        NM_panels + (segment.N - 1) * (segment.M - 1),
                     ),
                 }
-                NM_panels += (surface.N - 1) * (surface.M - 1)
-                NM_grid += surface.N * surface.M
-                num_strips += surface.N - 1
-            surf_id += 1
+                NM_panels += (segment.N - 1) * (segment.M - 1)
+                NM_grid += segment.N * segment.M
+                num_strips += segment.N - 1
 
         self.num_strips = num_strips
         self.lifting_surfaces = [surface for surface in self.surfaces if surface.is_lifting]
@@ -120,44 +98,44 @@ class LSPT_Plane:
         NM_grid = 0
         strips = []
         self.strip_data: list[StripLoads] = []
-        for surface in self.surfaces:
+        for wing in self.surfaces:
             self.panels = self.panels.at[
-                NM_panels : NM_panels + (surface.N - 1) * (surface.M - 1),
+                NM_panels : NM_panels + (wing.N - 1) * (wing.M - 1),
                 :,
                 :,
             ].set(
-                surface.panels,
+                wing.panels,
             )
             self.control_points = self.control_points.at[
-                NM_panels : NM_panels + (surface.N - 1) * (surface.M - 1),
+                NM_panels : NM_panels + (wing.N - 1) * (wing.M - 1),
                 :,
-            ].set(surface.control_points)
+            ].set(wing.control_points)
             self.control_nj = self.control_nj.at[
-                NM_panels : NM_panels + (surface.N - 1) * (surface.M - 1),
+                NM_panels : NM_panels + (wing.N - 1) * (wing.M - 1),
                 :,
             ].set(
-                surface.control_nj,
+                wing.control_nj,
             )
-            self.grid = self.grid.at[NM_grid : NM_grid + surface.N * surface.M, :].set(
-                surface.grid,
+            self.grid = self.grid.at[NM_grid : NM_grid + wing.N * wing.M, :].set(
+                wing.grid,
             )
             # Get the wake shedding indices
-            self.surface_dict[surface.name]["wake_shedding_panel_indices"] = NM_panels + jnp.arange(
-                (surface.M - 2),
-                (surface.N - 1) * (surface.M - 1),
-                surface.M - 1,
+            self.surface_dict[wing.name]["wake_shedding_panel_indices"] = NM_panels + jnp.arange(
+                (wing.M - 2),
+                (wing.N - 1) * (wing.M - 1),
+                wing.M - 1,
             )
-            self.surface_dict[surface.name]["wake_shedding_grid_indices"] = NM_grid + jnp.arange(
-                (surface.M - 1),
-                surface.N * surface.M,
-                surface.M,
+            self.surface_dict[wing.name]["wake_shedding_grid_indices"] = NM_grid + jnp.arange(
+                (wing.M - 1),
+                wing.N * wing.M,
+                wing.M,
             )
 
-            chords = surface._chord_dist
-            span_dist = surface._span_dist
+            chords = wing._chord_dist
+            span_dist = wing._span_dist
             # Get all the strips by their panel indices
-            for i in range(surface.N - 1):
-                strip_idxs = jnp.arange(i * (surface.M - 1), (i + 1) * (surface.M - 1)) + NM_panels
+            for i in range(wing.N - 1):
+                strip_idxs = jnp.arange(i * (wing.M - 1), (i + 1) * (wing.M - 1)) + NM_panels
 
                 strips.append(strip_idxs)
                 self.strip_data.append(
@@ -169,8 +147,8 @@ class LSPT_Plane:
                     ),
                 )
 
-            NM_panels += (surface.N - 1) * (surface.M - 1)
-            NM_grid += surface.N * surface.M
+            NM_panels += (wing.N - 1) * (wing.M - 1)
+            NM_grid += wing.N * wing.M
         self.strips = strips
 
         # Get the wake shedding indices
@@ -500,8 +478,8 @@ class LSPT_Plane:
 
     def plot_panels(
         self,
-        ax: Axes3D | None,
-        plot_near_wake: bool = False,
+        ax: Axes3D | None = None,
+        plot_wake: bool = False,
     ) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
@@ -521,23 +499,24 @@ class LSPT_Plane:
             zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
             ax_.plot_wireframe(xs, ys, zs, linewidth=1.5)
 
-        # Add the near wake panels in green
-        near_wake_indices = self.near_wake_indices
-        for i in near_wake_indices:
-            p1, p3, p4, p2 = self.panels[i, :, :]
-            xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
-            ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
-            zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-            ax_.plot_wireframe(xs, ys, zs, color="g", linewidth=1.5)
+        if plot_wake:
+            # Add the near wake panels in green
+            near_wake_indices = self.near_wake_indices
+            for i in near_wake_indices:
+                p1, p3, p4, p2 = self.panels[i, :, :]
+                xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
+                ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
+                zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
+                ax_.plot_wireframe(xs, ys, zs, color="g", linewidth=1.5, label="Near Wake Panels")
 
-        # Add the flat wake panels in orange
-        flat_wake_indices = self.flat_wake_panel_indices
-        for i in flat_wake_indices:
-            p1, p3, p4, p2 = self.panels[i, :, :]
-            xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
-            ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
-            zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-            ax_.plot_wireframe(xs, ys, zs, color="orange", linewidth=1.5)
+            # Add the flat wake panels in orange
+            flat_wake_indices = self.flat_wake_panel_indices
+            for i in flat_wake_indices:
+                p1, p3, p4, p2 = self.panels[i, :, :]
+                xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
+                ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
+                zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
+                ax_.plot_wireframe(xs, ys, zs, color="orange", linewidth=1.5, label="Wake Panels")
 
         # Add the wake shedding points in blue
         wake_shedding_indices = self.wake_shedding_panel_indices
@@ -574,25 +553,5 @@ class LSPT_Plane:
         ax_.axis("equal")
         ax_.view_init(30, 150)
 
-        if plot_near_wake:
-            # Add the near wake control points in green
-            near_wake_indices = self.near_wake_indices
-            ax_.scatter(
-                *self.control_points[near_wake_indices, :].T,
-                color="g",
-                label="Near Wake Panels",
-                marker="x",
-                s=50,
-            )
-
-            # Add the flat wake control points in orange
-            flat_wake_indices = self.flat_wake_panel_indices
-            ax_.scatter(
-                *self.control_points[flat_wake_indices, :].T,
-                color="orange",
-                label="Flat Wake Panels",
-                marker="x",
-                s=50,
-            )
         ax_.legend()
         fig.show()

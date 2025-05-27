@@ -15,7 +15,7 @@ from ICARUS.aero import StripLoads
 from ICARUS.airfoils import Airfoil
 
 
-def test_strip_data_with_airfoil():
+def test_strip_data_with_airfoil() -> StripLoads:
     """Test StripData class with airfoil functionality."""
     print("=== Testing StripData with Airfoil ===")
 
@@ -61,7 +61,7 @@ def test_strip_data_with_airfoil():
     return strip
 
 
-def test_aerodynamic_loads():
+def test_aerodynamic_loads() -> AerodynamicLoads:
     """Test AerodynamicLoads class functionality."""
     print("=== Testing AerodynamicLoads ===")
 
@@ -153,7 +153,7 @@ def test_aerodynamic_loads():
     return aero_loads
 
 
-def test_integration():
+def test_integration() -> None:
     """Test integration between StripData and AerodynamicLoads."""
     print("=== Testing Integration ===")
 
@@ -168,7 +168,11 @@ def test_integration():
         panel_idxs = jnp.array([0, 1, 2])
 
         strip = StripLoads(
-            panels=panels, panel_idxs=panel_idxs, chord=1.0 + i * 0.1, width=0.5 + i * 0.05, airfoil=airfoil,
+            panels=panels,
+            panel_idxs=panel_idxs,
+            chord=1.0 + i * 0.1,
+            width=0.5 + i * 0.05,
+            airfoil=airfoil,
         )
 
         # Set realistic circulation values
@@ -204,7 +208,7 @@ def test_integration():
     print("✓ Integration tests passed!\n")
 
 
-def main():
+def main() -> int:
     """Main test function."""
     print("Starting comprehensive tests for StripData and AerodynamicLoads classes...")
     print()

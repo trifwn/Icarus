@@ -144,5 +144,3 @@
 #     sm = plt.cm.ScalarMappable(cmap=coolwarm, norm=norm)
 #     sm.set_array([])
 #     fig.colorbar(sm, ax=ax_now, label="D_pan")
-
-

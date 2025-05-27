@@ -4,7 +4,6 @@ import os
 from threading import Thread
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 from pandas import DataFrame
 from tqdm.auto import tqdm
@@ -20,7 +19,7 @@ from ..post_process import forces_to_pertrubation_results
 from ..utils import GenuParameters
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
-from ..utils import define_movements
+from ..utils import define_global_movements
 from .monitor_progress import parallel_monitor
 from .monitor_progress import serial_monitor
 
@@ -42,7 +41,6 @@ def gnvp_disturbance_case(
     u_freestream: float,
     angle: float,
     environment: Environment,
-    surfaces: Sequence[WingSurface],
     bodies_dicts: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
@@ -81,12 +79,13 @@ def gnvp_disturbance_case(
     )
     airfoils: list[str] = plane.airfoils
 
-    movements: list[list[GNVP_Movement]] = define_movements(
-        surfaces,
+    global_movements: list[GNVP_Movement] = define_global_movements(
         plane.CG,
         plane.orientation,
         [dst],
     )
+
+    movements: list[list[GNVP_Movement]] = [global_movements for _ in bodies_dicts]
 
     folder: str = disturbance_to_case(dst)
     CASEDIR: str = os.path.join(PLANEDIR, analysis, folder)
@@ -161,11 +160,11 @@ def gnvp_dynamics_serial(
     DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
@@ -253,11 +252,11 @@ def gnvp_dynamics_parallel(
     DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
@@ -282,7 +281,6 @@ def gnvp_dynamics_parallel(
                     state.trim["U"],
                     state.trim["AoA"],
                     state.environment,
-                    surfaces,
                     bodies_dicts,
                     dst,
                     "Dynamics",

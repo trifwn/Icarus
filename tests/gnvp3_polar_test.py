@@ -32,8 +32,7 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     AoAmin = -5
     AoAmax = 5
     NoAoA = (AoAmax - AoAmin) + 1
-    angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
-    angles: list[float] = [ang for ang in angles_all]
+    angles: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA, dtype=float)
     maxiter = 30
     timestep = 0.004
 

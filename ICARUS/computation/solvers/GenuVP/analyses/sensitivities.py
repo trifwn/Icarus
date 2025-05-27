@@ -19,47 +19,47 @@ if TYPE_CHECKING:
 
 def gnvp_sensitivities(
     *args: Any,
-    gnvp_version,
-    parallel,
+    gnvp_version: int,
+    parallel: bool,
     **kwars: Any,
 ) -> None:
     """Wrapper function for sensitivities_serial and sensitivities_parallel.
 
     Args:
-        gnvp_version (int, optional): Genu Version. Defaults to 3.
-        parallel (bool, optional): Run in parallel. Defaults to False.
+        gnvp_version (int, optional): Genu Version.
+        parallel (bool, optional): Run in parallel.
         *args (Any): Arguments for the function.
         **kwars (Any): Keyword arguments for the function.
 
     """
     if gnvp_version == 3:
         if parallel:
-            sensitivities_parallel(*args, **kwars)
+            sensitivities_parallel(gnvp_version=3, *args, **kwars)
         else:
-            sensitivities_serial(*args, **kwars)  # type: ignore
+            sensitivities_serial(gnvp_version=3, *args, **kwars)
     elif gnvp_version == 7:
         if parallel:
-            sensitivities_parallel(*args, **kwars)  # type: ignore
+            sensitivities_parallel(gnvp_version=7, *args, **kwars)
         else:
-            sensitivities_serial(*args, **kwars)
+            sensitivities_serial(gnvp_version=7, *args, **kwars)
     else:
         raise ValueError("Genu version must be either 3 or 7.")
 
 
 def gnvp3_sensitivities_serial(*args: Any, **kwars: Any) -> None:
-    sensitivities_serial(gnvp_version=3, *args, **kwars)  # type: ignore
+    sensitivities_serial(gnvp_version=3, *args, **kwars)
 
 
 def gnvp7_sensitivities_serial(*args: Any, **kwars: Any) -> None:
-    sensitivities_serial(gnvp_version=7, *args, **kwars)  # type: ignore
+    sensitivities_serial(gnvp_version=7, *args, **kwars)
 
 
 def gnvp3_sensitivities_parallel(*args: Any, **kwars: Any) -> None:
-    sensitivities_parallel(gnvp_version=3, *args, **kwars)  # type: ignore
+    sensitivities_parallel(gnvp_version=3, *args, **kwars)
 
 
 def gnvp7_sensitivities_parallel(*args: Any, **kwars: Any) -> None:
-    sensitivities_parallel(gnvp_version=7, *args, **kwars)  # type: ignore
+    sensitivities_parallel(gnvp_version=7, *args, **kwars)
 
 
 def sensitivities_serial(
@@ -90,11 +90,11 @@ def sensitivities_serial(
     DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
@@ -109,7 +109,6 @@ def sensitivities_serial(
             state.u_freestream,
             angle,
             state.environment,
-            surfaces,
             bodies_dicts,
             dst,
             "Sensitivity",
@@ -147,11 +146,11 @@ def sensitivities_parallel(
     DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_options["Split_Symmetric_Bodies"]:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 

@@ -68,7 +68,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     else:
         wings_xflr = [plane["wing"]]
 
-    lifting_surfaces: dict[str, WingSurface] = {}
+    lifting_surfaces: dict[str, WingSurface | Wing] = {}
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
     for wing in wings_xflr:
         wing_position: FloatArray = np.array(
@@ -229,7 +229,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     airplane: Airplane = Airplane(
         name=plane_name,
         main_wing=lifting_surfaces["wing"],
-        other_surfaces=[lifting_surface for name, lifting_surface in lifting_surfaces.items() if name != "wing"],
+        other_wings=[lifting_surface for name, lifting_surface in lifting_surfaces.items() if name != "wing"],
     )
     airplane.add_point_masses(point_masses)
     return airplane

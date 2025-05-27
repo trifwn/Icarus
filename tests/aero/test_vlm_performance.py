@@ -20,7 +20,7 @@ from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
 
 
-def performance_test():
+def performance_test() -> None:
     """Test VLM performance with JAX acceleration."""
     print("VLM Performance Test with JAX Acceleration")
     print("=" * 60)
