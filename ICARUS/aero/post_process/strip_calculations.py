@@ -13,66 +13,66 @@ if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
 
 
-def get_potential_loads(
-    plane: LSPT_Plane,
-    state: State,
-    ws: Array,
-    gammas: Array,
-    verbose: bool = True,
-) -> tuple[float, float, float, float, float, float, float, float, float, FloatArray, FloatArray]:
-    dens: float = state.environment.air_density
-    umag = state.u_freestream
+# def get_potential_loads(
+#     plane: LSPT_Plane,
+#     state: State,
+#     ws: Array,
+#     gammas: Array,
+#     verbose: bool = True,
+# ) -> tuple[float, float, float, float, float, float, float, float, float, FloatArray, FloatArray]:
+#     dens: float = state.environment.air_density
+#     umag = state.u_freestream
 
-    L_pan = np.zeros(plane.num_panels)
-    D_pan = np.zeros(plane.num_panels)
-    D_trefftz = 0.0
+#     L_pan = np.zeros(plane.num_panels)
+#     D_pan = np.zeros(plane.num_panels)
+#     D_trefftz = 0.0
 
-    for strip in plane.strip_data:
-        g_strips = gammas[strip.panel_idxs]
-        w = ws[strip.panel_idxs]
+#     for strip in plane.strip_data:
+#         g_strips = gammas[strip.panel_idxs]
+#         w = ws[strip.panel_idxs]
 
-        for j in jnp.arange(0, strip.num_panels - 1):
-            if j == 0:
-                g = g_strips[j]
-            else:
-                g = g_strips[j] - g_strips[j - 1]
-            L_pan[strip.panel_idxs[j]] = dens * umag * strip.width * g
-            D_pan[strip.panel_idxs[j]] = -dens * strip.width * g * w[j]
+#         for j in jnp.arange(0, strip.num_panels - 1):
+#             if j == 0:
+#                 g = g_strips[j]
+#             else:
+#                 g = g_strips[j] - g_strips[j - 1]
+#             L_pan[strip.panel_idxs[j]] = dens * umag * strip.width * g
+#             D_pan[strip.panel_idxs[j]] = -dens * strip.width * g * w[j]
 
-            if j == strip.num_panels - 1:
-                D_trefftz += -dens / 2 * strip.width * gammas[strip.panel_idxs[j]] * w[j]
+#             if j == strip.num_panels - 1:
+#                 D_trefftz += -dens / 2 * strip.width * gammas[strip.panel_idxs[j]] * w[j]
 
-    # Calculate the torque. The torque is calculated w.r.t. the CG
-    # and is the sum of the torques of each panel times the distance
-    # from the CG to the control point of each panel
-    M = jnp.array([0, 0, 0], dtype=float)
-    for i in jnp.arange(0, plane.num_panels):
-        M += L_pan[i] * jnp.cross(
-            plane.panel_cps[i, :] - plane.CG,
-            plane.panel_normals[i, :],
-        )
-        M += D_pan[i] * jnp.cross(
-            plane.panel_cps[i, :] - plane.CG,
-            plane.panel_normals[i, :],
-        )
-    Mx, My, Mz = M
+#     # Calculate the torque. The torque is calculated w.r.t. the CG
+#     # and is the sum of the torques of each panel times the distance
+#     # from the CG to the control point of each panel
+#     M = jnp.array([0, 0, 0], dtype=float)
+#     for i in jnp.arange(0, plane.num_panels):
+#         M += L_pan[i] * jnp.cross(
+#             plane.panel_cps[i, :] - plane.CG,
+#             plane.panel_normals[i, :],
+#         )
+#         M += D_pan[i] * jnp.cross(
+#             plane.panel_cps[i, :] - plane.CG,
+#             plane.panel_normals[i, :],
+#         )
+#     Mx, My, Mz = M
 
-    D_pan = D_pan
-    L_pan = L_pan
-    L: float = float(jnp.sum(L_pan))
-    D: float = D_trefftz
-    D2: float = float(jnp.sum(D_pan))
-    CL: float = 2 * L / (dens * (umag**2) * plane.S)
-    CD: float = 2 * D / (dens * (umag**2) * plane.S)
-    Cm: float = 2 * My / (dens * (umag**2) * plane.S * plane.MAC)
+#     D_pan = D_pan
+#     L_pan = L_pan
+#     L: float = float(jnp.sum(L_pan))
+#     D: float = D_trefftz
+#     D2: float = float(jnp.sum(D_pan))
+#     CL: float = 2 * L / (dens * (umag**2) * plane.S)
+#     CD: float = 2 * D / (dens * (umag**2) * plane.S)
+#     Cm: float = 2 * My / (dens * (umag**2) * plane.S * plane.MAC)
 
-    if verbose:
-        # print(f"- Angle {plane.alpha * 180 / jnp.pi}")
-        print("\t--Using no penetration condition:")
-        print(f"\t\tL:{L}\t|\tD (Trefftz Plane):{D}\tD2:{D2}\t|\tMy:{My}")
-        print(f"\t\tCL:{CL}\t|\tCD_ind:{CD}\t|\tCm:{Cm}")
+#     if verbose:
+#         # print(f"- Angle {plane.alpha * 180 / jnp.pi}")
+#         print("\t--Using no penetration condition:")
+#         print(f"\t\tL:{L}\t|\tD (Trefftz Plane):{D}\tD2:{D2}\t|\tMy:{My}")
+#         print(f"\t\tCL:{CL}\t|\tCD_ind:{CD}\t|\tCm:{Cm}")
 
-    return L, D, D2, Mx, My, Mz, CL, CD, Cm, L_pan, D_pan
+#     return L, D, D2, Mx, My, Mz, CL, CD, Cm, L_pan, D_pan
 
 
 # def get_pseudo_viscous_loads(

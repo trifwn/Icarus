@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Iterator
 import jax.numpy as jnp
+import pandas as pd
 
 from ICARUS.aero.aerodynamic_state import AerodynamicState
 
@@ -10,7 +11,6 @@ from ICARUS.aero.aerodynamic_state import AerodynamicState
 if TYPE_CHECKING:
     from jax import Array
     from ICARUS.aero import LSPT_Plane
-    from ICARUS.flight_dynamics import State
 
 from . import StripLoads
 
@@ -59,18 +59,19 @@ class AerodynamicLoads:
         """Iterate over the strips."""
         return iter(self.strips)
 
-    def calc_total_lift(self) -> float:
+    def calc_total_lift(self, calculation="potential") -> float:
         """Calculate total lift across all strips.
-
+        Args:
+            calculation: Type of lift calculation ('potential' or 'viscous')
         Returns:
             Total lift force
         """
         total_lift = 0.0
         for strip in self.strips:
-            total_lift += strip.get_total_lift()
+            total_lift += strip.get_total_lift(calculation=calculation)
         return total_lift
 
-    def calc_total_drag(self) -> float:
+    def calc_total_drag(self, calculation="potential") -> float:
         """Calculate total drag across all strips.
 
         Returns:
@@ -78,10 +79,10 @@ class AerodynamicLoads:
         """
         total_drag = 0.0
         for strip in self.strips:
-            total_drag += strip.get_total_drag()
+            total_drag += strip.get_total_drag(calculation=calculation)
         return total_drag
 
-    def calc_total_moments(self) -> tuple[float, float, float]:
+    def calc_total_moments(self, calculation="potential") -> tuple[float, float, float]:
         """Calculate total moments across all strips.
 
         Returns:
@@ -92,7 +93,7 @@ class AerodynamicLoads:
         total_mz = 0.0
 
         for strip in self.strips:
-            mx, my, mz = strip.get_total_moments()
+            mx, my, mz = strip.get_total_moments(calculation=calculation)
             total_mx += mx
             total_my += my
             total_mz += mz
@@ -213,7 +214,6 @@ class AerodynamicLoads:
             total_moment_y += my
             total_moment_z += mz
 
-
         # Apply symmetry factor for symmetric wings (factor of 2)
         # This matches the behavior in LSPT_Plane.aseq method
         total_lift *= 2
@@ -251,6 +251,33 @@ class AerodynamicLoads:
             total_viscous_moment += strip.My_2D
 
         return total_viscous_lift, total_viscous_drag, total_viscous_moment
+
+    def to_dataframe(
+        self,
+        aerodynamic_state: AerodynamicState,
+        plane: LSPT_Plane,
+    ) -> pd.Series:
+        """Convert aerodynamic loads to a dictionary format for easy access."""
+        L_pot = self.calc_total_lift("potential")
+        D_pot = self.calc_total_drag("potential")
+        L_viscous = 0  # self.calc_total_lift("viscous")
+        D_viscous = 0  # self.calc_total_drag("viscous")
+
+        # Create a pandas Series to hold the aerodynamic loads
+        loads = {
+            "AoA": aerodynamic_state.alpha,
+            "Lift_Potential": L_pot,
+            "Drag_Potential": D_pot,
+            "Lift_Viscous": L_viscous,
+            "Drag_Viscous": D_viscous,
+            "CL": L_pot / (aerodynamic_state.dynamic_pressure * plane.S),
+            "CD": D_pot / (aerodynamic_state.dynamic_pressure * plane.S),
+            "CL_2D": L_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
+            "CD_2D": D_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
+        }
+        return pd.Series(
+            data=loads, name=f"AerodynamicLoads_{aerodynamic_state.alpha:.2f}deg", index=list(loads.keys())
+        )
 
     def __repr__(self) -> str:
         """Detailed string representation."""

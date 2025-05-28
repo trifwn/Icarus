@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import jax
 import jax.numpy as jnp
-from pandas import DataFrame
+import pandas as pd
 
 from ICARUS.aero import AerodynamicLoads
 from ICARUS.aero.aerodynamic_state import AerodynamicState
@@ -18,7 +18,7 @@ from . import get_LHS
 from . import get_RHS
 
 
-def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Array | FloatArray) -> DataFrame:
+def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Array | FloatArray) -> pd.DataFrame:
     """Run complete VLM analysis workflow integrating all components.
 
     This method implements the complete workflow:
@@ -40,19 +40,6 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
     A, A_star = get_LHS(plane)
     A_LU, A_piv = jax.scipy.linalg.lu_factor(A)
 
-    # Initialize result arrays
-    results = {
-        "AoA": [],
-        "Lift_Potential": [],
-        "Drag_Potential": [],
-        "Lift_Viscous": [],
-        "Drag_Viscous": [],
-        "CL": [],
-        "CD": [],
-        "CL_2D": [],
-        "CD_2D": [],
-    }
-
     # load_data: list[AerodynamicLoads] = []
 
     aerodynamic_state = AerodynamicState(
@@ -68,11 +55,11 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
         rate_R=0.0,
     )
 
+    results = pd.DataFrame()
     for angle in angles:
         # Step 0: Update aerodynamic state
         aerodynamic_state.alpha = angle
         Q = aerodynamic_state.velocity_vector_jax
-        dynamic_pressure = aerodynamic_state.dynamic_pressure
 
         # Step 1: Update plane with current aerodynamic state
         # This basically sets the angle of the wake and the angle of attack
@@ -116,22 +103,14 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
             aerodynamic_state,
         )
 
-        # Calculate coefficients
-        CL = total_lift_potential / (dynamic_pressure * plane.S)
-        CD = total_drag_potential / (dynamic_pressure * plane.S)
-
-        CL_2D = total_lift_viscous / (dynamic_pressure * plane.S)
-        CD_2D = total_drag_viscous / (dynamic_pressure * plane.S)
+        print(f"\tTotal Lift (Viscous): {total_lift_viscous:.2f} N")
+        print(f"\tTotal Drag (Viscous): {total_drag_viscous:.2f} N")
+        print(f"\tTotal Moment (Viscous): {total_moment_viscous:.2f} Nm")
 
         # Store results
-        results["AoA"].append(float(angle))
-        results["Lift_Potential"].append(float(total_lift_potential))
-        results["Drag_Potential"].append(float(total_drag_potential))
-        results["Lift_Viscous"].append(float(total_lift_viscous))
-        results["Drag_Viscous"].append(float(total_drag_viscous))
-        results["CL"].append(float(CL))
-        results["CD"].append(float(CD))
-        results["CL_2D"].append(float(CL_2D))
-        results["CD_2D"].append(float(CD_2D))
+        aoa_data = loads.to_dataframe(aerodynamic_state=aerodynamic_state, plane=plane)
 
-    return DataFrame(results)
+        # Add series to results DataFrame
+        results = pd.concat([results, aoa_data.to_frame().T])
+
+    return results.sort_values(by = "AoA")

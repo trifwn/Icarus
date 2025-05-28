@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from typing import Optional
 
 import jax.numpy as jnp
+from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -23,12 +24,20 @@ class StripLoads:
         self.width = width
         self.panels = panels
         self.panel_idxs = panel_idxs
+
+        assert len(panels) == len(panel_idxs), "Panels and panel_idxs must have the same length."
         self.num_panels = len(panel_idxs)
+
         self.airfoil = airfoil
 
-        # Initialize the data arrays
-        self.mean_panel_length = jnp.zeros(self.num_panels)
-        self.mean_panel_width = jnp.zeros(self.num_panels)
+        # Get mean panel dimensions
+        (
+            self.mean_panel_length,
+            self.mean_panel_width,
+            self.mean_panel_height,
+        ) = self.calculate_panel_dimensions()
+
+        # Placeholders for aerodynamic properties
         self.gammas = jnp.zeros(self.num_panels)
         self.w_induced = jnp.zeros(self.num_panels)
 
@@ -42,6 +51,21 @@ class StripLoads:
         self.L_2D = 0.0
         self.D_2D = 0.0
         self.My_2D = 0.0
+
+    def calculate_panel_dimensions(self) -> tuple[Float, Float, Float]:
+        """Calculate mean panel lengths and widths."""
+
+        def panel_dimensions(panel: Float[Array, "2"]) -> tuple[Float, Float, Float]:
+            """Calculate the length and width of a panel."""
+            dx = ((panel[3, 0] - panel[0, 0]) + (panel[2, 0] - panel[1, 0])) / 2.0
+
+            dy = ((panel[3, 1] - panel[2, 1]) + (panel[0, 1] - panel[1, 1])) / 2.0
+
+            dz = ((panel[3, 2] - panel[0, 2]) + (panel[2, 2] - panel[1, 2])) / 2.0
+            return dx, dy, dz
+
+        # Calculate mean panel lengths and widths
+        return vmap(panel_dimensions)(self.panels)
 
     @property
     def mean_gamma(self) -> Float:
@@ -65,24 +89,22 @@ class StripLoads:
             umag: Freestream velocity magnitude (m/s)
         """
 
-        gammas = self.gammas.copy() 
+        gammas = self.gammas.copy()
         gammas = gammas.at[1:].set(
             self.gammas[1:] - self.gammas[:-1]  # Calculate gamma differences
-        ) 
+        )
 
         if jnp.any(jnp.isnan(gammas)):
             raise ValueError("NaN values found in gammas. Check gamma calculations.")
 
         # Calculate mean panel lengths and widths
-        print("Calculating mean panel lengths and widths...")
-        
-        self.panel_L = density * umag *  gammas * self.mean_panel_width
-        self.panel_D = density * self.w_induced * gammas *  self.mean_panel_width
+        self.panel_L = density * umag * gammas * self.mean_panel_width
+        self.panel_D = -density * self.w_induced * gammas * self.mean_panel_width
 
         if jnp.any(jnp.isnan(self.panel_L)):
             raise ValueError("NaN values found in panel_L. Check gamma calculations.")
 
-    def get_total_lift(self, calculation = "potential") -> float:
+    def get_total_lift(self, calculation="potential") -> float:
         """Get total lift for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_L))
@@ -92,7 +114,7 @@ class StripLoads:
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 
-    def get_total_drag(self, calculation = "potential") -> float:
+    def get_total_drag(self, calculation="potential") -> float:
         """Get total drag for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_D))
@@ -101,8 +123,8 @@ class StripLoads:
             raise NotImplementedError("Viscous drag calculation not implemented.")
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
-        
-    def get_total_moments(self, calculation = "potential") -> tuple[float, float, float]:
+
+    def get_total_moments(self, calculation="potential") -> tuple[float, float, float]:
         """Get total moments for this strip.
 
         Args:
