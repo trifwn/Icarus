@@ -7,6 +7,7 @@ from typing import Any
 
 import pandas as pd
 from numpy import ndarray
+import numpy as np
 
 from ICARUS.aero import LSPT_Plane
 from ICARUS.database import Database
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
 
+from .run_vlm import run_vlm_analysis
 
 def lspt_polars(
     plane: Airplane,
@@ -46,15 +48,15 @@ def lspt_polars(
     )
 
     # Run the solver
-    import numpy as np
 
     if not isinstance(angles, ndarray):
         angles = np.array(angles)
 
-    df: pd.DataFrame = wing.aseq(
-        angles=angles,
+    df: pd.DataFrame = run_vlm_analysis(
+        plane=wing,
         state=state,
-    )
+        angles=angles,
+    ) 
 
     # Save the results
     save_results(plane, state, df)

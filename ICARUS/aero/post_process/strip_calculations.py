@@ -23,12 +23,11 @@ def get_potential_loads(
     dens: float = state.environment.air_density
     umag = state.u_freestream
 
-    L_pan = np.zeros(plane.NM)
-    D_pan = np.zeros(plane.NM)
+    L_pan = np.zeros(plane.num_panels)
+    D_pan = np.zeros(plane.num_panels)
     D_trefftz = 0.0
 
     for strip in plane.strip_data:
-        strip.calc_mean_values()
         g_strips = gammas[strip.panel_idxs]
         w = ws[strip.panel_idxs]
 
@@ -47,7 +46,7 @@ def get_potential_loads(
     # and is the sum of the torques of each panel times the distance
     # from the CG to the control point of each panel
     M = jnp.array([0, 0, 0], dtype=float)
-    for i in jnp.arange(0, plane.NM):
+    for i in jnp.arange(0, plane.num_panels):
         M += L_pan[i] * jnp.cross(
             plane.panel_cps[i, :] - plane.CG,
             plane.panel_normals[i, :],
@@ -68,7 +67,7 @@ def get_potential_loads(
     Cm: float = 2 * My / (dens * (umag**2) * plane.S * plane.MAC)
 
     if verbose:
-        print(f"- Angle {plane.alpha * 180 / jnp.pi}")
+        # print(f"- Angle {plane.alpha * 180 / jnp.pi}")
         print("\t--Using no penetration condition:")
         print(f"\t\tL:{L}\t|\tD (Trefftz Plane):{D}\tD2:{D2}\t|\tMy:{My}")
         print(f"\t\tCL:{CL}\t|\tCD_ind:{CD}\t|\tCm:{Cm}")

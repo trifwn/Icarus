@@ -33,8 +33,8 @@ Lifting Surfaces Potential Theory
 
 from .strip_loads import StripLoads
 from .aerodynamic_loads import AerodynamicLoads
-from .lspt_plane import LSPT_Plane
 from .aerodynamic_state import AerodynamicState
+from .lspt_plane import LSPT_Plane
 from . import post_process
 from . import vlm
 from . import vpm

@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from jax import jit, vmap
+from jax import vmap
 
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
@@ -273,7 +273,7 @@ class LSPTSurface:
                 "Global panel indices not set. Call add_near_wake_panels() and add_flat_wake_panels() first."
             )
         return self._global_panel_indices
-    
+
     @global_panel_indices.setter
     def global_panel_indices(self, indices: jnp.ndarray) -> None:
         """
@@ -285,11 +285,9 @@ class LSPTSurface:
     @property
     def global_near_wake_panel_indices(self) -> jnp.ndarray:
         if not hasattr(self, "_global_near_wake_panel_indices"):
-            raise ValueError(
-                "Global near wake panel indices not set. Call add_near_wake_panels() first."
-            )
+            raise ValueError("Global near wake panel indices not set. Call add_near_wake_panels() first.")
         return self._global_near_wake_panel_indices
-    
+
     @global_near_wake_panel_indices.setter
     def global_near_wake_panel_indices(self, indices: jnp.ndarray) -> None:
         """
@@ -301,11 +299,9 @@ class LSPTSurface:
     @property
     def global_flat_wake_panel_indices(self) -> jnp.ndarray:
         if not hasattr(self, "_global_flat_wake_panel_indices"):
-            raise ValueError(
-                "Global flat wake panel indices not set. Call add_flat_wake_panels() first."
-            )
+            raise ValueError("Global flat wake panel indices not set. Call add_flat_wake_panels() first.")
         return self._global_flat_wake_panel_indices
-    
+
     @global_flat_wake_panel_indices.setter
     def global_flat_wake_panel_indices(self, indices: jnp.ndarray) -> None:
         """

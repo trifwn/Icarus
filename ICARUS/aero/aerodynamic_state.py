@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from jax import Array
+import jax.numpy as jnp
 import numpy as np
 
 from ICARUS.core.types import FloatArray
@@ -39,7 +41,7 @@ class AerodynamicState:
     def __init__(
         self,
         airspeed: float = 100.0,
-        alpha: float = 2.0,
+        alpha: float = 0.0,
         altitude: float | None = None,
         beta: float = 0.0,
         density: float = 1.225,
@@ -62,15 +64,105 @@ class AerodynamicState:
             rate_Q: Pitch rate in rad/s (default: 0.0)
             rate_R: Yaw rate in rad/s (default: 0.0)
         """
-        self.airspeed = airspeed
-        self.alpha = alpha
-        self.altitude = altitude
-        self.beta = beta
-        self.density = density
-        self.mach = mach
-        self.rate_P = rate_P
-        self.rate_Q = rate_Q
-        self.rate_R = rate_R
+        self._airspeed = airspeed
+        self._alpha = alpha
+        self._altitude = altitude
+        self._beta = beta
+        self._density = density
+        self._mach = mach
+        self._rate_P = rate_P
+        self._rate_Q = rate_Q
+        self._rate_R = rate_R
+
+    @property
+    def airspeed(self) -> float:
+        """Airspeed in m/s."""
+        return self._airspeed
+
+    @airspeed.setter
+    def airspeed(self, value: float) -> None:
+        """Set airspeed in m/s."""
+        self._airspeed = value
+
+    @property
+    def alpha(self) -> float:
+        """Angle of attack in degrees."""
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        """Set angle of attack in degrees."""
+        self._alpha = value
+
+    @property
+    def altitude(self) -> float | None:
+        """Altitude in meters (None if not specified)."""
+        return self._altitude
+
+    @altitude.setter
+    def altitude(self, value: float | None) -> None:
+        """Set altitude in meters."""
+        self._altitude = value
+
+    @property
+    def beta(self) -> float:
+        """Sideslip angle in degrees."""
+        return self._beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        """Set sideslip angle in degrees."""
+        self._beta = value
+
+    @property
+    def density(self) -> float:
+        """Air density in kg/m³."""
+        return self._density
+
+    @density.setter
+    def density(self, value: float) -> None:
+        """Set air density in kg/m³."""
+        self._density = value
+
+    @property
+    def mach(self) -> float | None:
+        """Mach number (None if not specified)."""
+        return self._mach
+
+    @mach.setter
+    def mach(self, value: float | None) -> None:
+        """Set Mach number."""
+        self._mach = value
+
+    @property
+    def rate_P(self) -> float:
+        """Roll rate in rad/s."""
+        return self._rate_P
+
+    @rate_P.setter
+    def rate_P(self, value: float) -> None:
+        """Set roll rate in rad/s."""
+        self._rate_P = value
+
+    @property
+    def rate_Q(self) -> float:
+        """Pitch rate in rad/s."""
+        return self._rate_Q
+
+    @rate_Q.setter
+    def rate_Q(self, value: float) -> None:
+        """Set pitch rate in rad/s."""
+        self._rate_Q = value
+
+    @property
+    def rate_R(self) -> float:
+        """Yaw rate in rad/s."""
+        return self._rate_R
+
+    @rate_R.setter
+    def rate_R(self, value: float) -> None:
+        """Set yaw rate in rad/s."""
+        self._rate_R = value
 
     @property
     def alpha_rad(self) -> float:
@@ -88,7 +180,7 @@ class AerodynamicState:
         return np.array([self.rate_P, self.rate_Q, self.rate_R], dtype=float)
 
     @property
-    def velocity_components(self) -> FloatArray:
+    def velocity_components(self) -> tuple[float, float, float]:
         """
         Calculate velocity components in body frame.
 
@@ -98,7 +190,29 @@ class AerodynamicState:
         u = self.airspeed * np.cos(self.alpha_rad) * np.cos(self.beta_rad)
         v = self.airspeed * np.cos(self.alpha_rad) * np.sin(self.beta_rad)
         w = self.airspeed * np.sin(self.alpha_rad) * np.cos(self.beta_rad)
+        return u, v, w
+
+    @property
+    def velocity_vector(self) -> FloatArray:
+        """
+        Calculate the velocity vector in body frame.
+
+        Returns:
+            FloatArray: Velocity vector [u, v, w] in m/s
+        """
+        u, v, w = self.velocity_components
         return np.array([u, v, w], dtype=float)
+
+    @property
+    def velocity_vector_jax(self) -> Array:
+        """
+        Calculate the velocity vector in body frame using JAX.
+
+        Returns:
+            FloatArray: Velocity vector [u, v, w] in m/s
+        """
+        u, v, w = self.velocity_components
+        return jnp.array([u, v, w])
 
     @property
     def dynamic_pressure(self) -> float:
@@ -206,30 +320,3 @@ class AerodynamicState:
             f"rate_Q={self.rate_Q}, "
             f"rate_R={self.rate_R})"
         )
-
-    # def __eq__(self, other: object) -> bool:
-    #     """Check equality with another AerodynamicState instance."""
-    #     if not isinstance(other, AerodynamicState):
-    #         return NotImplemented
-
-    #     return (
-    #         np.isclose(self.airspeed, other.airspeed)
-    #         and np.isclose(self.alpha, other.alpha)
-    #         and (
-    #             (self.altitude is None and other.altitude is None)
-    #             or (
-    #                 self.altitude is not None
-    #                 and other.altitude is not None
-    #                 and np.isclose(self.altitude, other.altitude)
-    #             )
-    #         )
-    #         and np.isclose(self.beta, other.beta)
-    #         and np.isclose(self.density, other.density)
-    #         and (
-    #             (self.mach is None and other.mach is None)
-    #             or (self.mach is not None and other.mach is not None and np.isclose(self.mach, other.mach))
-    #         )
-    #         and np.isclose(self.rate_P, other.rate_P)
-    #         and np.isclose(self.rate_Q, other.rate_Q)
-    #         and np.isclose(self.rate_R, other.rate_R)
-    #     )
