@@ -49,12 +49,12 @@ def get_potential_loads(
     M = jnp.array([0, 0, 0], dtype=float)
     for i in jnp.arange(0, plane.NM):
         M += L_pan[i] * jnp.cross(
-            plane.control_points[i, :] - plane.CG,
-            plane.control_nj[i, :],
+            plane.panel_cps[i, :] - plane.CG,
+            plane.panel_normals[i, :],
         )
         M += D_pan[i] * jnp.cross(
-            plane.control_points[i, :] - plane.CG,
-            plane.control_nj[i, :],
+            plane.panel_cps[i, :] - plane.CG,
+            plane.panel_normals[i, :],
         )
     Mx, My, Mz = M
 

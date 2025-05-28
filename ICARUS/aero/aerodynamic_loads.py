@@ -238,8 +238,8 @@ class AerodynamicLoads:
         umag = state.u_freestream
 
         # Initialize panel loads
-        L_pan = np.zeros(plane.NM)
-        D_pan = np.zeros(plane.NM)
+        L_pan = np.zeros(plane.num_panels)
+        D_pan = np.zeros(plane.num_panels)
 
         total_lift = 0.0
         total_drag = 0.0

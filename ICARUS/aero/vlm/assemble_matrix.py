@@ -61,8 +61,8 @@ def get_LHS(
             i,
             PANEL_NUM,
             plane.panels,
-            plane.control_points,
-            plane.control_nj,
+            plane.panel_cps,
+            plane.panel_normals,
         ),
     )(
         jnp.arange(
@@ -100,7 +100,7 @@ def get_LHS(
 
 def get_RHS(plane: LSPT_Plane, Q: Array) -> Float[Array, ...]:
     def compute_rhs(i: Int[Array, ...]) -> Float[Array, ...]:
-        return -jnp.dot(Q, plane.control_nj[i])
+        return -jnp.dot(Q, plane.panel_normals[i])
 
     RHS = vmap(compute_rhs)(jnp.arange(plane.num_near_wake_panels + plane.num_panels))
 
