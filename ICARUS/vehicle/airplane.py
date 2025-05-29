@@ -169,6 +169,16 @@ class Airplane(Optimizable):
         return self.main_wing.mean_aerodynamic_chord
 
     @property
+    def MAC(self) -> float:
+        """Get the mean aerodynamic chord of the plane
+
+        Returns:
+            float: Mean aerodynamic chord of the plane
+
+        """
+        return self.main_wing.mean_aerodynamic_chord
+
+    @property
     def aspect_ratio(self) -> float:
         """Get the aspect ratio of the plane
 

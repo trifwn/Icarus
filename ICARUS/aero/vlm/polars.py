@@ -11,13 +11,15 @@ import numpy as np
 
 from ICARUS.aero import LSPT_Plane
 from ICARUS.database import Database
+from ICARUS.aero.aerodynamic_results import AerodynamicResults
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
 
-from .run_vlm import run_vlm_analysis
+from .run_vlm import run_vlm_polar_analysis
+
 
 def lspt_polars(
     plane: Airplane,
@@ -52,11 +54,14 @@ def lspt_polars(
     if not isinstance(angles, ndarray):
         angles = np.array(angles)
 
-    df: pd.DataFrame = run_vlm_analysis(
+    results: AerodynamicResults = run_vlm_polar_analysis(
         plane=wing,
         state=state,
         angles=angles,
-    ) 
+    )
+
+    # Convert the results to a DataFrame
+    df = results.to_polars_dataframe()
 
     # Save the results
     save_results(plane, state, df)

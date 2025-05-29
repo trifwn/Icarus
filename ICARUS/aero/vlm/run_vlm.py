@@ -3,22 +3,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import jax
 import jax.numpy as jnp
-import pandas as pd
 
 from ICARUS.aero import AerodynamicLoads
-from ICARUS.aero.aerodynamic_state import AerodynamicState
+from ICARUS.aero import AerodynamicResults
+from ICARUS.aero import AerodynamicState
 
 if TYPE_CHECKING:
     from jax import Array
-    from ICARUS.aero import LSPT_Plane
     from ICARUS.flight_dynamics import State
     from ICARUS.core.types import FloatArray
 
 from . import get_LHS
 from . import get_RHS
 
+from ICARUS.aero import LSPT_Plane
+from ICARUS.vehicle.airplane import Airplane
 
-def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Array | FloatArray) -> pd.DataFrame:
+
+def run_vlm_polar_analysis(
+    plane: LSPT_Plane | Airplane, state: State, angles: list[float] | Array | FloatArray
+) -> AerodynamicResults:
     """Run complete VLM analysis workflow integrating all components.
 
     This method implements the complete workflow:
@@ -36,8 +40,15 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
         DataFrame containing analysis results
     """
 
+    if isinstance(plane, Airplane):
+        lspt_plane = LSPT_Plane(plane=plane)
+    elif isinstance(plane, LSPT_Plane):
+        lspt_plane = plane
+    else:
+        raise TypeError("plane must be an instance of LSPT_Plane or Airplane")
+
     # Step 1: Factorize VLM system matrices
-    A, A_star = get_LHS(plane)
+    A, A_star = get_LHS(lspt_plane)
     A_LU, A_piv = jax.scipy.linalg.lu_factor(A)
 
     # load_data: list[AerodynamicLoads] = []
@@ -55,8 +66,9 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
         rate_R=0.0,
     )
 
-    results = pd.DataFrame()
+    aero_results = AerodynamicResults(plane=lspt_plane)
     for angle in angles:
+        aerodynamic_state = aerodynamic_state.copy()
         # Step 0: Update aerodynamic state
         aerodynamic_state.alpha = angle
         Q = aerodynamic_state.velocity_vector_jax
@@ -66,7 +78,7 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
         # plane.update_aerodynamic_state(aerodynamic_state)
 
         # Step 2: Calculate RHS
-        RHS = get_RHS(plane, Q)
+        RHS = get_RHS(lspt_plane, Q)
 
         if jnp.any(jnp.isnan(RHS)):
             raise ValueError("NaN values found in RHS. Check aerodynamic state or plane geometry.")
@@ -85,32 +97,19 @@ def run_vlm_analysis(plane: LSPT_Plane, state: State, angles: list[float] | Arra
             raise ValueError("NaN values found in gammas. Check factorization or RHS calculation.")
 
         # Step 4: Create AerodynamicLoads
-        loads = AerodynamicLoads(plane=plane)
+        loads = AerodynamicLoads(plane=lspt_plane)
 
         # Step 5: Distribute gamma calculations to strips
         loads.distribute_gamma_calculations(gammas, w_induced)
-        print(f"Angle of Attack: {angle} degrees")
 
         # Step 6: Calculate potential loads
-        total_lift_potential, total_drag_potential, total_moment_potential = loads.calculate_potential_loads(
+        _ = loads.calculate_potential_loads(
             aerodynamic_state,
         )
-        print(f"\tTotal Lift (Potential): {total_lift_potential:.2f} N")
-        print(f"\tTotal Drag (Potential): {total_drag_potential:.2f} N")
-        print(f"\tTotal Moment (Potential): {total_moment_potential:.2f} Nm")
         # Step 7: Calculate viscous loads
-        total_lift_viscous, total_drag_viscous, total_moment_viscous = loads.calculate_viscous_loads(
+        _ = loads.calculate_viscous_loads(
             aerodynamic_state,
         )
 
-        print(f"\tTotal Lift (Viscous): {total_lift_viscous:.2f} N")
-        print(f"\tTotal Drag (Viscous): {total_drag_viscous:.2f} N")
-        print(f"\tTotal Moment (Viscous): {total_moment_viscous:.2f} Nm")
-
-        # Store results
-        aoa_data = loads.to_dataframe(aerodynamic_state=aerodynamic_state, plane=plane)
-
-        # Add series to results DataFrame
-        results = pd.concat([results, aoa_data.to_frame().T])
-
-    return results.sort_values(by = "AoA")
+        aero_results.add_result(state=aerodynamic_state, loads=loads)
+    return aero_results

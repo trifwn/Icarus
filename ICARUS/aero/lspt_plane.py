@@ -29,12 +29,14 @@ class LSPT_Plane:
         plane: Airplane,
     ) -> None:
         # Store the wing segments
+        self.name = plane.name
         self.surfaces: Sequence[LSPTSurface] = []
 
         # Plane properties
         self.S: float = plane.S
         self.CG: FloatArray = plane.CG
         self.MAC: float = plane.mean_aerodynamic_chord
+        self.span: float = plane.span
 
         # Get the wing segments
         panel_index = 0
@@ -86,8 +88,13 @@ class LSPT_Plane:
         for surf in self.surfaces:
             # Indices for the current surface
             surf_panel_indices = surf_panel_index + jnp.arange(surf.num_panels)
-            near_wake_indices = surf_panel_indices[-1] + jnp.arange(surf.num_near_wake_panels)
-            flat_wake_indices = near_wake_indices[-1] + jnp.arange(surf.num_flat_wake_panels)
+            near_wake_indices = surf_panel_indices[-1] + jnp.arange(surf.num_near_wake_panels) + 1
+            flat_wake_indices = near_wake_indices[-1] + jnp.arange(surf.num_flat_wake_panels) + 1
+
+            # print(f"Surface {surf.name}:")
+            # print(f"\tPanel Indices from {surf_panel_indices[0] } to {surf_panel_indices[-1]}")
+            # print(f"\tNear Wake Indices from {near_wake_indices[0]} to {near_wake_indices[-1]}")
+            # print(f"\tFlat Wake Indices from {flat_wake_indices[0]} to {flat_wake_indices[-1]}")
             wake_shedding_panel_indices = surf_panel_index + surf.wake_shedding_panel_indices
 
             # Bookkeeping the indices for near wake and flat wake panels

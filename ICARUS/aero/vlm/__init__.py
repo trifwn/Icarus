@@ -8,7 +8,7 @@ from .biot_savart import voring
 from .biot_savart import vortexL
 from .polars import lspt_polars
 from .polars import save_results
-from .run_vlm import run_vlm_analysis
+from .run_vlm import run_vlm_polar_analysis
 
 # from .wake_model import
 
@@ -23,5 +23,5 @@ __all__ = [
     "lspt_polars",
     "save_results",
     "get_LHS",
-    "run_vlm_analysis",
+    "run_vlm_polar_analysis",
 ]

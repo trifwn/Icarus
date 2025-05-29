@@ -1,11 +1,21 @@
 from typing import TYPE_CHECKING
 from typing import Optional
 
+from matplotlib.axes import Axes
+from matplotlib.cm import ScalarMappable
+from matplotlib.colorbar import Colorbar
+from matplotlib.patches import Polygon
+import numpy as np
 import jax.numpy as jnp
 from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
 
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
@@ -164,3 +174,150 @@ class StripLoads:
     def __repr__(self) -> str:
         """String representation of the StripLoads object."""
         return self.__str__()
+
+    #### Plotting methods (if needed) can be added here ####
+    def plot_surface(
+        self,
+        ax: Axes3D | None = None,
+        data: Optional[Float[Array, "..."]] = None,
+        scalar_map: ScalarMappable | tuple[float, float] | None = None,
+        colorbar: Colorbar | None = None,
+    ) -> None:
+        if ax is None:
+            fig: Figure | None = plt.figure()
+            ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            show_plot = True
+        else:
+            ax_ = ax
+            fig = ax_.get_figure()
+            show_plot = False
+
+        if fig is None:
+            raise ValueError("Axes must be part of a figure")
+
+        # Add the grid panel wireframes
+        for i in np.arange(0, self.panels.shape[0]):
+            p1, p3, p4, p2 = self.panels[i, :, :]
+            xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
+            ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
+            zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
+            # ax_.plot_wireframe(xs, ys, zs, linewidth=1.5)
+
+            ax_.plot_surface(xs, ys, zs, color="lightgray", alpha=0.5, edgecolor="k", linewidth=0.5)
+
+        # If data is provided, plot it as a surface
+        if data is not None:
+            if scalar_map is None:
+                norm = Normalize(vmin=np.min(data), vmax=np.max(data))
+                scalar_map = ScalarMappable(norm=norm, cmap="viridis")
+            elif isinstance(scalar_map, tuple):
+                norm = Normalize(vmin=scalar_map[0], vmax=scalar_map[1])
+                scalar_map = ScalarMappable(norm=norm, cmap="viridis")
+            elif not isinstance(scalar_map, ScalarMappable):
+                raise TypeError("scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).")
+
+            if data.shape[0] != self.panels.shape[0]:
+                raise ValueError("Data must have the same length as the number of panels.")
+
+            # Plot each panel with the corresponding data value
+            for i in np.arange(0, self.panels.shape[0]):
+                p1, p3, p4, p2 = self.panels[i, :, :]
+                xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
+                ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
+                zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
+
+                val = np.array(data[i])
+                ax_.plot_surface(xs, ys, zs, color=scalar_map.to_rgba(val), alpha=0.5, edgecolor="k", linewidth=0.5)
+
+            if colorbar is None:
+                colorbar = fig.colorbar(
+                    scalar_map,
+                    ax=ax_,
+                    orientation="vertical",
+                )
+
+        if show_plot:
+            ax_.set_title("Grid")
+            ax_.set_xlabel("x")
+            ax_.set_ylabel("y")
+            ax_.set_zlabel("z")
+            ax_.axis("equal")
+            ax_.view_init(30, 150)
+
+            ax_.legend()
+            fig.show()
+
+    def plot_xy(
+        self,
+        ax: Axes | None = None,
+        data: Optional[Float[Array, "..."]] = None,
+        scalar_map: ScalarMappable | tuple[float, float] | None = None,
+        colorbar: Colorbar | None = None,
+    ) -> None:
+        if ax is None:
+            fig: Figure | None = plt.figure()
+            ax_ = fig.add_subplot()  # type: ignore
+            show_plot = True
+        else:
+            ax_ = ax
+            fig = ax_.get_figure()
+            show_plot = False
+
+        if fig is None:
+            raise ValueError("Axes must be part of a figure")
+
+        if data is not None:
+            if scalar_map is None:
+                norm = Normalize(vmin=np.min(data), vmax=np.max(data))
+                scalar_map = ScalarMappable(norm=norm, cmap="viridis")
+            elif isinstance(scalar_map, tuple):
+                norm = Normalize(vmin=scalar_map[0], vmax=scalar_map[1])
+                scalar_map = ScalarMappable(norm=norm, cmap="viridis")
+            elif not isinstance(scalar_map, ScalarMappable):
+                raise TypeError("scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).")
+
+            if data.shape[0] != self.panels.shape[0]:
+                raise ValueError("Data must have the same length as the number of panels.")
+
+            # Plot each panel with the corresponding data value
+            for i in np.arange(0, self.panels.shape[0]):
+                verts = self.panels[i, :, :2]
+                verts = np.array(verts)
+
+                val = np.array(data[i])
+                # Polygon()
+                poly = Polygon(
+                    verts,
+                    closed=True,
+                    edgecolor="k",
+                    linewidth=0.5,
+                    facecolor=scalar_map.to_rgba(val, alpha=0.5),
+                )
+                ax_.add_patch(poly)
+
+            if colorbar is None:
+                colorbar = fig.colorbar(
+                    scalar_map,
+                    ax=ax_,
+                    orientation="vertical",
+                )
+        else:
+            # Plot the flattened surface [x, y, _] # coordinates (skip z for 2D)
+            for i in np.arange(0, self.panels.shape[0]):
+                verts = self.panels[i, :, :2]
+                verts = np.array(verts)
+                poly = Polygon(
+                    verts,
+                    closed=True,
+                    edgecolor="k",
+                    linewidth=0.5,
+                )
+                ax_.add_patch(poly)
+
+        if show_plot:
+            ax_.set_title("Flat Surface")
+            ax_.set_xlabel("x")
+            ax_.set_ylabel("y")
+            ax_.axis("equal")
+
+            fig.show()

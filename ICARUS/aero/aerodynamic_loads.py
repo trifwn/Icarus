@@ -4,14 +4,19 @@ from typing import TYPE_CHECKING
 from typing import Iterator
 import jax.numpy as jnp
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.aero.aerodynamic_state import AerodynamicState
+from ICARUS.vehicle.airplane import Airplane
 
 
 if TYPE_CHECKING:
     from jax import Array
     from ICARUS.aero import LSPT_Plane
 
+from . import AerodynamicState
 from . import StripLoads
 
 
@@ -32,9 +37,12 @@ class AerodynamicLoads:
         for surf in plane.surfaces:
             spans = surf.span_positions
             chords = surf.chords
-            # Get all the strips by their panel indices
-            for i in range(surf.N - 1):
-                strip_idxs = surf_panel_index + jnp.arange(i * (surf.M - 1), (i + 1) * (surf.M - 1))
+
+            N = surf.N - 1  # Number of strips along span
+            M = surf.M - 1  # Number of panels along chord
+
+            for i in range(N):
+                strip_idxs = surf_panel_index + (i * M) + jnp.arange(M)
 
                 self.strips.append(
                     StripLoads(
@@ -44,8 +52,7 @@ class AerodynamicLoads:
                         width=spans[i + 1] - spans[i],
                     ),
                 )
-
-            surf_panel_index += surf.num_panels + surf.num_near_wake_panels + surf.num_flat_wake_panels
+            surf_panel_index += surf.num_all_panels
 
     def __len__(self) -> int:
         """Return the number of strips in the collection."""
@@ -128,45 +135,6 @@ class AerodynamicLoads:
 
         return total_l_2d, total_d_2d, total_my_2d
 
-    def calc_aerodynamic_loads_all(
-        self,
-        density: float,
-        umag: float,
-    ) -> None:
-        """Calculate aerodynamic loads for all strips in the collection.
-
-        Args:
-            density: Air density (kg/m^3)
-            umag: Freestream velocity magnitude (m/s)
-        """
-        for strip in self.strips:
-            strip.calc_aerodynamic_loads(density=density, umag=umag)
-
-    def get_summary(self) -> dict:
-        """Get a summary of the aerodynamic loads.
-
-        Returns:
-            Dictionary containing summary statistics
-        """
-        if not self.strips:
-            return {
-                "num_strips": 0,
-                "total_lift": 0.0,
-                "total_drag": 0.0,
-                "total_moments": (0.0, 0.0, 0.0),
-                "total_trefftz_drag": 0.0,
-                "total_2d_loads": (0.0, 0.0, 0.0),
-            }
-
-        return {
-            "num_strips": len(self.strips),
-            "total_lift": self.calc_total_lift(),
-            "total_drag": self.calc_total_drag(),
-            "total_moments": self.calc_total_moments(),
-            "total_trefftz_drag": self.calc_trefftz_drag(),
-            "total_2d_loads": self.calc_2d_loads(),
-        }
-
     def distribute_gamma_calculations(self, gammas: Array, w_induced: Array) -> None:
         """Distribute gamma and w_induced calculations to individual strips.
 
@@ -178,6 +146,16 @@ class AerodynamicLoads:
             strip_idxs = strip.panel_idxs
             strip.gammas = gammas[strip_idxs]
             strip.w_induced = w_induced[strip_idxs]
+
+    @property
+    def gammas(self) -> Array:
+        """Get all gamma values from all strips."""
+        return jnp.concatenate([strip.gammas for strip in self.strips])
+
+    @property
+    def w_induced(self) -> Array:
+        """Get all induced velocities from all strips."""
+        return jnp.concatenate([strip.w_induced for strip in self.strips])
 
     def calculate_potential_loads(
         self,
@@ -224,7 +202,7 @@ class AerodynamicLoads:
 
     def calculate_viscous_loads(
         self,
-        state: AerodynamicState,
+        aerodynamic_state: AerodynamicState,
     ) -> tuple[float, float, float]:
         """Calculate viscous loads for all strips.
 
@@ -255,7 +233,7 @@ class AerodynamicLoads:
     def to_dataframe(
         self,
         aerodynamic_state: AerodynamicState,
-        plane: LSPT_Plane,
+        # plane: LSPT_Plane,
     ) -> pd.Series:
         """Convert aerodynamic loads to a dictionary format for easy access."""
         L_pot = self.calc_total_lift("potential")
@@ -270,15 +248,144 @@ class AerodynamicLoads:
             "Drag_Potential": D_pot,
             "Lift_Viscous": L_viscous,
             "Drag_Viscous": D_viscous,
-            "CL": L_pot / (aerodynamic_state.dynamic_pressure * plane.S),
-            "CD": D_pot / (aerodynamic_state.dynamic_pressure * plane.S),
-            "CL_2D": L_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
-            "CD_2D": D_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
+            # "CL": L_pot / (aerodynamic_state.dynamic_pressure * plane.S),
+            # "CD": D_pot / (aerodynamic_state.dynamic_pressure * plane.S),
+            # "CL_2D": L_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
+            # "CD_2D": D_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
         }
         return pd.Series(
             data=loads, name=f"AerodynamicLoads_{aerodynamic_state.alpha:.2f}deg", index=list(loads.keys())
         )
 
+    def get_summary(self) -> dict:
+        """Get a summary of the aerodynamic loads.
+
+        Returns:
+            Dictionary containing summary statistics
+        """
+        if not self.strips:
+            return {
+                "num_strips": 0,
+                "total_lift": 0.0,
+                "total_drag": 0.0,
+                "total_moments": (0.0, 0.0, 0.0),
+                "total_trefftz_drag": 0.0,
+                "total_2d_loads": (0.0, 0.0, 0.0),
+            }
+
+        return {
+            "num_strips": len(self.strips),
+            "total_lift": self.calc_total_lift(),
+            "total_drag": self.calc_total_drag(),
+            "total_moments": self.calc_total_moments(),
+            "total_trefftz_drag": self.calc_trefftz_drag(),
+            "total_2d_loads": self.calc_2d_loads(),
+        }
+
     def __repr__(self) -> str:
         """Detailed string representation."""
         return f"AerodynamicLoads(strips={len(self.strips)})"
+
+    #### Plotting methods ####
+    def plot_surfaces(
+        self,
+    ):
+        gammas = self.gammas
+        norm = Normalize(vmin=float(gammas.min()), vmax=float(gammas.max()))
+        scalar_mappable = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")
+
+        # Create 3D plot of the induced velocities
+        fig = plt.figure(figsize=(10, 6))
+        ax: Axes3D = fig.add_subplot(111, projection="3d")  # type: ignore
+
+        cbar = plt.colorbar(scalar_mappable, ax=ax)
+        cbar.set_label("Gamma Magnitude")
+
+        # Add colorbar
+        for strip in self.strips:
+            strip.plot_surface(ax=ax, data=strip.gammas, scalar_map=scalar_mappable, colorbar=cbar)
+
+    def plot_xy(
+        self,
+    ):
+        gammas = self.gammas
+        norm = Normalize(vmin=float(gammas.min()), vmax=float(gammas.max()))
+        scalar_mappable = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")
+
+        # Create 2D plot of the induced velocities
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        cbar = plt.colorbar(scalar_mappable, ax=ax)
+        cbar.set_label("Gamma Magnitude")
+
+        # Add colorbar
+        for strip in self.strips:
+            strip.plot_xy(ax=ax, data=strip.gammas, scalar_map=scalar_mappable, colorbar=cbar)
+
+    # def plot_strips(
+    #     self,
+    # ):
+    #     """Plot the strips in 3D."""
+    #     fig = plt.figure(figsize=(10, 6))
+    #     ax: Axes3D = fig.add_subplot(111, projection="3d")
+
+    # def plot_gamma_distribution(self) -> None:
+    #     if self.gammas_mat is None:
+    #         self.get_gamma_distribution()
+
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(111)
+    #     ax.matshow(self.gammas_mat)
+    #     ax.set_title("Gamma Distribution")
+    #     ax.set_xlabel("Chordwise Panels")
+    #     ax.set_ylabel("Spanwise Panels")
+    #     # Add the colorbar
+    #     fig.colorbar(ax.matshow(self.gammas_mat))
+    #     fig.show()
+
+    # def plot_lift_drag_strips(
+    #     self,
+    # ) -> None:
+    #     if self.L_pan is None:
+    #         self.get_aerodynamic_loads(umag=20)
+
+    #     fig = plt.figure()
+    #     ax: ndarray[Any, Any] | Axes | SubplotBase = fig.subplots(1, 2)
+
+    #     if not isinstance(ax, np.ndarray):
+    #         ax = np.array([ax])
+
+    #     ax[0].bar(self.span_dist[1:], np.mean(self.L_pan, axis=1))
+    #     ax[0].set_title("Lift Distribution")
+    #     ax[0].set_xlabel("Span")
+    #     ax[0].set_ylabel("Lift")
+
+    #     ax[1].bar(self.span_dist[1:], np.mean(self.D_pan, axis=1))
+    #     ax[1].set_title("Drag Distribution")
+    #     ax[1].set_xlabel("Span")
+    #     ax[1].set_ylabel("Drag")
+    #     fig.show()
+
+    # def plot_lift_drag_panels(self, umag: float) -> None:
+    #     if self.L_pan is None:
+    #         self.get_aerodynamic_loads(umag=umag)
+
+    #     fig: Figure = plt.figure()
+    #     ax: ndarray[Any, Any] | Axes | SubplotBase = fig.subplots(1, 2)
+
+    #     if not isinstance(ax, np.ndarray):
+    #         raise ValueError("Expected a ndarray of Axes")
+
+    #     ax[0].matshow(self.L_pan)
+    #     ax[0].set_title("Lift Distribution")
+    #     ax[0].set_ylabel("Span")
+    #     ax[0].set_xlabel("Chord")
+
+    #     ax[1].matshow(self.D_pan)
+    #     ax[1].set_title("Drag Distribution")
+    #     ax[1].set_ylabel("Span")
+    #     ax[1].set_xlabel("Chord")
+
+    #     fig.colorbar(ax[0].matshow(self.L_pan))
+    #     fig.colorbar(ax[1].matshow(self.D_pan))
+    #     fig.show()
