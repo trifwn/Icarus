@@ -1,21 +1,23 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from jaxtyping import Array
 from functools import partial
+from typing import TYPE_CHECKING
 
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
-
 from jax import vmap
-
+from jaxtyping import Array
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 if TYPE_CHECKING:
+    from ICARUS.airfoils import Airfoil
     from ICARUS.vehicle import WingSurface
+
+from . import panel_cp
+from . import panel_cp_normal
 
 
 class LSPTSurface:
@@ -44,14 +46,20 @@ class LSPTSurface:
 
         self.span_positions = jnp.asarray(surface._span_dist)
         self.chords = jnp.asarray(surface._chord_dist)
-        self.mean_aerodynamic_chord = surface.mean_aerodynamic_chord
+        self.strip_total_pitches = jnp.asarray(surface.strip_pitches)
+        self.mean_aerodynamic_chord: float = surface.mean_aerodynamic_chord
 
         self.num_grid_points = surface.num_grid_points
         self.num_strips = surface.N - 1
 
+        # Airfoils
+        self.airfoils: list[Airfoil] = surface.airfoils
+
         # Wake Parameters - vectorized computation
         self.wake_shedding_panel_indices = jnp.arange(
-            (surface.M - 2), (surface.N - 1) * (surface.M - 1), (surface.M - 1)
+            (surface.M - 2),
+            (surface.N - 1) * (surface.M - 1),
+            (surface.M - 1),
         )
 
         self.grid = jnp.asarray(surface.grid)
@@ -115,8 +123,10 @@ class LSPTSurface:
 
         # Vectorized computation of all near wake panels
         compute_wake_vmap = vmap(compute_near_wake_panel, in_axes=(0, 0))
-        near_wake_panels, near_wake_control_points, near_wake_nj = compute_wake_vmap(wake_panels, wake_nj)
+        near_wake_panels = compute_wake_vmap(wake_panels, wake_nj)
 
+        near_wake_control_points = vmap(panel_cp)(near_wake_panels)
+        near_wake_nj = vmap(panel_cp_normal)(near_wake_panels)
         # self.panels = jnp.concatenate([self.panels, near_wake_panels], axis=0)
         self.near_wake_panels = near_wake_panels
         self.near_wake_panel_cps = near_wake_control_points
@@ -153,7 +163,7 @@ class LSPTSurface:
                 -jnp.cos(alpha) * jnp.cos(beta),
                 0.0,
                 jnp.sin(alpha) * jnp.cos(beta),
-            ]
+            ],
         )
         MAC = self.mean_aerodynamic_chord
 
@@ -270,7 +280,7 @@ class LSPTSurface:
     def global_panel_indices(self) -> jnp.ndarray:
         if not hasattr(self, "_global_panel_indices"):
             raise ValueError(
-                "Global panel indices not set. Call add_near_wake_panels() and add_flat_wake_panels() first."
+                "Global panel indices not set. Call add_near_wake_panels() and add_flat_wake_panels() first.",
             )
         return self._global_panel_indices
 
@@ -337,7 +347,7 @@ def compute_flat_wake_panels_for_strip(
                 prev_panel[2],
                 prev_panel[2] - length * freestream_direction,
                 prev_panel[3] - length * freestream_direction,
-            ]
+            ],
         )
         return flat_panel
 
@@ -349,21 +359,13 @@ def compute_flat_wake_panels_for_strip(
     _, flat_panels = jax.lax.scan(scan_fn, near_wake_panel, panel_lengths)
 
     # Vectorized computation of normals and control points
-    def compute_panel_properties(panel):
-        nj = jnp.cross(
-            panel[1] - panel[0],
-            panel[2] - panel[0],
-        )
-        control_point = panel.mean(axis=0)
-        return control_point, nj
-
-    control_points, normals = vmap(compute_panel_properties)(flat_panels)
-
+    control_points = vmap(panel_cp)(flat_panels)
+    normals = vmap(panel_cp_normal)(flat_panels)
     return flat_panels, control_points, normals
 
 
 @jax.jit
-def compute_near_wake_panel(panel: Array, nj: Array) -> tuple[Array, Array, Array]:
+def compute_near_wake_panel(panel: Array, nj: Array) -> Array:
     """
     Compute a single near wake panel given the shedding panel and its normal.
     JIT-compiled for performance.
@@ -385,17 +387,6 @@ def compute_near_wake_panel(panel: Array, nj: Array) -> tuple[Array, Array, Arra
             panel[2],
             panel[2] - panel_length * near_wake_dir,
             panel[3] - panel_length * near_wake_dir,
-        ]
+        ],
     )
-
-    # Compute normal vector
-    near_wake_panel_nj = jnp.cross(
-        near_wake_panel[1] - near_wake_panel[0],
-        near_wake_panel[2] - near_wake_panel[0],
-    )
-    near_wake_panel_nj = near_wake_panel_nj / jnp.linalg.norm(near_wake_panel_nj)
-
-    # Control point
-    control_point = near_wake_panel.mean(axis=0)
-
-    return near_wake_panel, control_point, near_wake_panel_nj
+    return near_wake_panel

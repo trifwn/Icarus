@@ -1,8 +1,11 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from Planes.hermes import hermes
 
+from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers.AVL import avl_dynamics_fd
 from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
 from ICARUS.computation.solvers.AVL import avl_polars
@@ -15,9 +18,9 @@ from ICARUS.flight_dynamics import State
 from ICARUS.visualization.airplane import plot_airplane_polars
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
-database_folder = "E:\\Icarus\\Data"
-# Load the database
+database_folder = os.path.join(INSTALL_DIR, "Data")
 DB = Database(database_folder)
+
 plane = hermes("hermes")
 
 env = EARTH_ISA

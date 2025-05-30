@@ -128,7 +128,7 @@ class WingSurface(RigidBody):
         assert isinstance(tip_airfoil, Airfoil), "Tip Airfoil must be an Airfoil"
         self._tip_airfoil: Airfoil = tip_airfoil
 
-        self.airfoils: list[Airfoil] = [root_airfoil, tip_airfoil]
+        self.airfoils: list[Airfoil] = []
 
         # Store Span
         span: float = np.abs(spanwise_positions[-1] - spanwise_positions[0])
@@ -338,6 +338,10 @@ class WingSurface(RigidBody):
     def volume(self) -> float:
         """Return the volume of the wing."""
         return self.structural_volume
+
+    @property
+    def strip_pitches(self) -> FloatArray:
+        return self.twist_angles + self.pitch
 
     def _on_orientation_changed(self, old_orientation: FloatArray, new_orientation: FloatArray) -> None:
         """Rotate the Wing by a given rotation matrix."""

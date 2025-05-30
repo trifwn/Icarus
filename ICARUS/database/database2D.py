@@ -698,26 +698,21 @@ class Database_2D:
             tuple[float, float, float]: CL, CD, Cm
 
         """
-        if airfoil_name not in self.polars.keys():
-            if f"NACA{airfoil_name}" in self.polars.keys():
-                airfoil_name = f"NACA{airfoil_name}"
-            else:
-                raise ValueError(f"Airfoil {airfoil_name} not in database!")
 
-        airfoil_data: AirfoilData = self.polars[airfoil_name]
-        polars: AirfoilPolars = airfoil_data.get_polars(solver=solver)
+        polars: AirfoilPolars = self.get_polars(airfoil_name, solver=solver)
         reynolds_stored: list[float] = polars.reynolds_nums
         max_reynolds_stored: float = max(reynolds_stored)
         min_reynolds_stored: float = min(reynolds_stored)
 
         if reynolds > max_reynolds_stored:
+            print(polars.reynolds_nums)
             raise ValueError(
-                f"Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}",
+                f"Airfoil: {airfoil_name} Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}.",
             )
 
         if reynolds < min_reynolds_stored:
             raise ValueError(
-                f"Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
+                f"Airfoil: {airfoil_name} Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
             )
 
         reynolds_stored.sort()

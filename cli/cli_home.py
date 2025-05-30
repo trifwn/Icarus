@@ -60,12 +60,16 @@ def cli_home() -> None:
     print(f.renderText("ICARUS Aerodynamics"))
 
     # run airfoil analysis
+    import os
+
     from cli.airfoil_cli import airfoil_cli
     from cli.airplane_cli import airplane_cli
     from cli.visualization_cli import visualization_cli
+    from ICARUS import INSTALL_DIR
     from ICARUS.database import Database
 
-    DB = Database("./Data")
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
 
     if args.airfoil:
         airfoil_cli(DB, return_home=True)

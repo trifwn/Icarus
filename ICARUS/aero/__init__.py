@@ -31,6 +31,7 @@ Lifting Surfaces Potential Theory
     isort:skip_file
 """
 
+from .utils import panel_cp, panel_cp_normal
 from .strip_loads import StripLoads
 from .lspt_plane import LSPT_Plane
 from .aerodynamic_state import AerodynamicState
@@ -42,6 +43,8 @@ from . import vlm
 from . import vpm
 
 __all__ = [
+    "panel_cp",
+    "panel_cp_normal",
     "AerodynamicState",
     "AerodynamicLoads",
     "AerodynamicResults",

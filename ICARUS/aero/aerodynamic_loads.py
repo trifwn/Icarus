@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Iterator
+
 import jax.numpy as jnp
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.colors import Normalize
-import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-
-from ICARUS.vehicle.airplane import Airplane
-
 
 if TYPE_CHECKING:
     from jax import Array
@@ -31,12 +28,16 @@ class AerodynamicLoads:
         Args:
             plane: LSPT_Plane object containing strip data
         """
+        self.reference_point = jnp.array(plane.CG)
+
         self.strips: list[StripLoads] = []
 
         surf_panel_index = 0
         for surf in plane.surfaces:
             spans = surf.span_positions
+            airfoil_pitches = surf.strip_total_pitches
             chords = surf.chords
+            airfoils = surf.airfoils
 
             N = surf.N - 1  # Number of strips along span
             M = surf.M - 1  # Number of panels along chord
@@ -46,10 +47,12 @@ class AerodynamicLoads:
 
                 self.strips.append(
                     StripLoads(
-                        panel_idxs=strip_idxs,
                         panels=plane.panels[strip_idxs, :, :],
+                        panel_idxs=strip_idxs,
                         chord=(chords[i] + chords[i + 1]) / 2,
                         width=spans[i + 1] - spans[i],
+                        airfoil_pitch=airfoil_pitches[i],
+                        airfoil=airfoils[i],
                     ),
                 )
             surf_panel_index += surf.num_all_panels
@@ -65,6 +68,14 @@ class AerodynamicLoads:
     def __iter__(self) -> Iterator[StripLoads]:
         """Iterate over the strips."""
         return iter(self.strips)
+
+    def calc_strip_reynolds(self, state: AerodynamicState) -> None:
+        """Calculate Reynolds number for each strip based on flight state.
+
+        Args:
+            state: AerodynamicState containing environment data
+        """
+        pass
 
     def calc_total_lift(self, calculation="potential") -> float:
         """Calculate total lift across all strips.
@@ -100,10 +111,10 @@ class AerodynamicLoads:
         total_mz = 0.0
 
         for strip in self.strips:
-            mx, my, mz = strip.get_total_moments(calculation=calculation)
-            total_mx += mx
-            total_my += my
-            total_mz += mz
+            mx, my, mz = strip.get_total_moments(reference_point=self.reference_point, calculation=calculation)
+            total_mx += float(mx)
+            total_my += float(my)
+            total_mz += float(mz)
 
         return total_mx, total_my, total_mz
 
@@ -159,7 +170,7 @@ class AerodynamicLoads:
 
     def calculate_potential_loads(
         self,
-        state: AerodynamicState,
+        aerodynamic_state: AerodynamicState,
     ) -> tuple[float, float, float]:
         """Calculate potential loads using VLM results.
 
@@ -169,8 +180,8 @@ class AerodynamicLoads:
         Returns:
             Tuple of (total_lift, total_drag, total_moment_y)
         """
-        dens = state.density
-        umag = state.airspeed
+        density = aerodynamic_state.density
+        airspeed = aerodynamic_state.airspeed
 
         # Initialize loads
         total_lift = 0.0
@@ -182,22 +193,23 @@ class AerodynamicLoads:
 
         # Calculate loads for each strip
         for strip in self.strips:
-            strip.calc_aerodynamic_loads(density=dens, umag=umag)
+            strip.calc_potential_loads(density=density, airspeed=airspeed)
 
-            total_lift += strip.get_total_lift()
-            total_drag += strip.get_total_drag()
+            total_lift += strip.get_total_lift(calculation="potential")
+            total_drag += strip.get_total_drag(calculation="potential")
 
-            mx, my, mz = strip.get_total_moments()
-            total_moment_x += mx
-            total_moment_y += my
-            total_moment_z += mz
+            mx, my, mz = strip.get_total_moments(
+                reference_point=self.reference_point,
+                calculation="potential",
+            )
+            total_moment_x += float(mx)
+            total_moment_y += float(my)
+            total_moment_z += float(mz)
 
         # Apply symmetry factor for symmetric wings (factor of 2)
-        # This matches the behavior in LSPT_Plane.aseq method
         total_lift *= 2
         total_drag *= 2
         total_moment_y *= 2
-
         return total_lift, total_drag, total_moment_y
 
     def calculate_viscous_loads(
@@ -212,23 +224,55 @@ class AerodynamicLoads:
         Returns:
             Tuple of (total_viscous_lift, total_viscous_drag, total_viscous_moment)
         """
+        density = aerodynamic_state.density
+        viscosity = aerodynamic_state.viscosity
+        airspeed = aerodynamic_state.airspeed
+
+        # Initialize loads
         total_viscous_lift = 0.0
         total_viscous_drag = 0.0
-        total_viscous_moment = 0.0
+
+        total_viscous_moment_x = 0.0
+        total_viscous_moment_y = 0.0
+        total_viscous_moment_z = 0.0
 
         for strip in self.strips:
+            # Get the effective flow conditions
+            strip.set_effective_flow_conditions(
+                density=density,
+                viscosity=viscosity,
+                velocity=airspeed,
+            )
             # Calculate 2D aerodynamic loads for the strip
             # Use airfoil data to calculate viscous loads
-            # This would typically involve interpolating airfoil polars
-            # For now, we'll calculate based on existing strip data
-            # strip.calc_viscous_loads(dynamic_pressure)
+            strip.interpolate_viscous_coefficients(
+                density=density,
+                viscosity=viscosity,
+                airspeed=airspeed,
+            )
+            strip.calc_viscous_loads(
+                density=density,
+                airspeed=strip.effective_velocity,
+            )
+
+            total_viscous_lift += strip.get_total_lift(calculation="viscous")
+            total_viscous_drag += strip.get_total_drag(calculation="viscous")
+
+            mx, my, mz = strip.get_total_moments(
+                reference_point=self.reference_point,
+                calculation="viscous",
+            )
 
             # Add viscous components (2D loads)
-            total_viscous_lift += strip.L_2D
-            total_viscous_drag += strip.D_2D
-            total_viscous_moment += strip.My_2D
+            total_viscous_moment_x += float(mx)
+            total_viscous_moment_y += float(my)
+            total_viscous_moment_z += float(mz)
 
-        return total_viscous_lift, total_viscous_drag, total_viscous_moment
+        # Apply symmetry factor for symmetric wings (factor of 2)
+        total_viscous_lift *= 2
+        total_viscous_drag *= 2
+        total_viscous_moment_y *= 2
+        return total_viscous_lift, total_viscous_drag, total_viscous_moment_y
 
     def to_dataframe(
         self,
@@ -254,7 +298,9 @@ class AerodynamicLoads:
             # "CD_2D": D_viscous / (aerodynamic_state.dynamic_pressure * plane.S),
         }
         return pd.Series(
-            data=loads, name=f"AerodynamicLoads_{aerodynamic_state.alpha:.2f}deg", index=list(loads.keys())
+            data=loads,
+            name=f"AerodynamicLoads_{aerodynamic_state.alpha:.2f}deg",
+            index=list(loads.keys()),
         )
 
     def get_summary(self) -> dict:

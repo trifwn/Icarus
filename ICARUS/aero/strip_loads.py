@@ -1,21 +1,25 @@
-from typing import TYPE_CHECKING
-from typing import Optional
+from __future__ import annotations
 
-from matplotlib.axes import Axes
-from matplotlib.cm import ScalarMappable
-from matplotlib.colorbar import Colorbar
-from matplotlib.patches import Polygon
-import numpy as np
+from typing import TYPE_CHECKING
+
 import jax.numpy as jnp
+import matplotlib.pyplot as plt
+import numpy as np
 from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
-
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.cm import ScalarMappable
+from matplotlib.colorbar import Colorbar
 from matplotlib.colors import Normalize
 from matplotlib.figure import Figure
+from matplotlib.patches import Polygon
 from mpl_toolkits.mplot3d import Axes3D
+
+from ICARUS.aero.utils import panel_cp
+from ICARUS.aero.utils import panel_cp_normal
+from ICARUS.aero.utils import panel_dimensions
 
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
@@ -24,58 +28,70 @@ if TYPE_CHECKING:
 class StripLoads:
     def __init__(
         self,
-        panels: Float[Array, "..."],
-        panel_idxs: Int[Array, "..."],
+        panels: Float[Array, ...],
+        panel_idxs: Int[Array, ...],
         chord: Float,
         width: Float,
-        airfoil: Optional["Airfoil"] = None,
+        airfoil_pitch: Float = 0.0,
+        airfoil: Airfoil | None = None,
     ):
         self.chord = chord
         self.width = width
-        self.panels = panels
-        self.panel_idxs = panel_idxs
+        self.surface_area_proj = self.chord * self.width
+        self.airfoil_pitch = airfoil_pitch
+        self.airfoil = airfoil
 
         assert len(panels) == len(panel_idxs), "Panels and panel_idxs must have the same length."
+        self.panels = panels
+        self.panel_idxs = panel_idxs
         self.num_panels = len(panel_idxs)
 
-        self.airfoil = airfoil
+        # Find the Bounding Box of the panels
+        x_min = jnp.min(panels[:, :, 0])  # x_min
+        x_max = jnp.max(panels[:, :, 0])  # x_max
+        y_min = jnp.min(panels[:, :, 1])  # y_min
+        y_max = jnp.max(panels[:, :, 1])  # y_max
+        z_min = jnp.min(panels[:, :, 2])  # z_min
+        z_max = jnp.max(panels[:, :, 2])  # z_max
+
+        # Find the Quarter Chord Reference Point and set the
+        # reference point to the quarter chord position
+        self.x_ref = (x_min + x_max) / 2.0 + self.chord / 4.0
+        self.y_ref = (y_min + y_max) / 2.0
+        self.z_ref = (z_min + z_max) / 2.0
 
         # Get mean panel dimensions
         (
             self.mean_panel_length,
             self.mean_panel_width,
             self.mean_panel_height,
-        ) = self.calculate_panel_dimensions()
+        ) = vmap(panel_dimensions)(self.panels)
 
         # Placeholders for aerodynamic properties
-        self.gammas = jnp.zeros(self.num_panels)
-        self.w_induced = jnp.zeros(self.num_panels)
+        self.gammas = jnp.zeros(self.num_panels) * jnp.nan
+        self.w_induced = jnp.zeros(self.num_panels) * jnp.nan
 
-        # Initialize the data arrays
-        self.panel_L = jnp.zeros(self.num_panels)
-        self.panel_D = jnp.zeros(self.num_panels)
-        self.D_trefftz = 0.0
-        self.Mx = 0.0
-        self.My = 0.0
-        self.Mz = 0.0  # 2D interpolated polars
-        self.L_2D = 0.0
-        self.D_2D = 0.0
-        self.My_2D = 0.0
+        # Placeholders for panel loads
+        self.panel_L = jnp.zeros(self.num_panels) * jnp.nan
+        self.panel_D = jnp.zeros(self.num_panels) * jnp.nan
 
-    def calculate_panel_dimensions(self) -> tuple[Float, Float, Float]:
-        """Calculate mean panel lengths and widths."""
+        # Placeholders for aerodynamic loads
+        self.L = jnp.nan
+        self.D = jnp.nan
+        self.D_trefftz = jnp.nan
+        self.Mx = jnp.nan
+        self.My = jnp.nan
+        self.Mz = jnp.nan
 
-        def panel_dimensions(panel: Float[Array, "2"]) -> tuple[Float, Float, Float]:
-            """Calculate the length and width of a panel."""
-            dx = ((panel[3, 0] - panel[0, 0]) + (panel[2, 0] - panel[1, 0])) / 2.0
+        # Placeholder for 2D aerodynamic loads
+        self.L_2D = jnp.nan
+        self.D_2D = jnp.nan
+        self.My_2D = jnp.nan
 
-            dy = ((panel[3, 1] - panel[2, 1]) + (panel[0, 1] - panel[1, 1])) / 2.0
-
-            dz = ((panel[3, 2] - panel[0, 2]) + (panel[2, 2] - panel[1, 2])) / 2.0
-            return dx, dy, dz
-
-        # Calculate mean panel lengths and widths
-        return vmap(panel_dimensions)(self.panels)
+        # Viscous Coefficients
+        self.CL_2D = jnp.nan
+        self.CD_2D = jnp.nan
+        self.Cm_2D = jnp.nan
 
     @property
     def mean_gamma(self) -> Float:
@@ -87,10 +103,80 @@ class StripLoads:
         """Mean induced velocity across all panels."""
         return jnp.mean(self.w_induced)
 
-    def calc_aerodynamic_loads(
+    def set_effective_flow_conditions(
+        self,
+        density: Float,
+        viscosity: Float,
+        velocity: Float,
+    ) -> None:
+        """Calculate effective flow conditions accounting for induced effects.
+
+        This method computes the effective Reynolds number, velocity, and angle of attack
+        for the strip considering the induced downwash from the VLM solution.
+
+        Args:
+            density: Air density (kg/m³)
+            viscosity: Dynamic viscosity (Pa·s)
+            velocity: Freestream velocity magnitude (m/s)
+        """
+        w_induced = self.mean_w_induced
+        # Get the effective angle of attack
+        effective_aoa = jnp.arctan(w_induced / velocity) * 180 / jnp.pi + self.airfoil_pitch
+
+        # Get the reynolds number of each strip
+        effective_velocity = jnp.sqrt(w_induced**2 + velocity**2)
+        effective_reynolds = density * effective_velocity * self.chord / viscosity
+        effective_dynamic_pressure = 0.5 * density * effective_velocity**2
+
+        self.effective_aoa = effective_aoa
+        self.effective_reynolds = effective_reynolds
+        self.effective_velocity = effective_velocity
+        self.effective_dynamic_pressure = effective_dynamic_pressure
+
+    def interpolate_viscous_coefficients(
+        self,
+        density: Float,
+        viscosity: Float,
+        airspeed: Float,
+        solver: str = "Xfoil",
+    ) -> None:
+        """Calculate viscous loads for this strip.
+
+        This method is a placeholder and should be implemented based on the specific
+        viscous flow model used (e.g., boundary layer theory, CFD).
+
+        Args:
+            density: Air density (kg/m³)
+            viscosity: Dynamic viscosity (Pa·s)
+            airspeed: Freestream velocity magnitude (m/s)
+            solver: Solver to use for interpolation (default: "Xfoil")
+        """
+        if self.airfoil is None:
+            return
+
+        try:
+            from ICARUS.database import Database
+
+            DB = Database.get_instance()
+        except Exception as e:
+            raise RuntimeError("Database instance could not be retrieved. Ensure the database is initialized.") from e
+
+        CL, CD, Cm = DB.foils_db.interpolate_polars(
+            reynolds=self.effective_reynolds,
+            airfoil_name=self.airfoil.name,
+            aoa=self.effective_aoa,
+            solver=solver,
+        )
+
+        # Save the coefficients
+        self.CL_2D = CL
+        self.CD_2D = CD
+        self.Cm_2D = Cm
+
+    def calc_potential_loads(
         self,
         density: float,
-        umag: float,
+        airspeed: float,
     ) -> None:
         """Calculate aerodynamic loads for this strip.
 
@@ -101,26 +187,106 @@ class StripLoads:
 
         gammas = self.gammas.copy()
         gammas = gammas.at[1:].set(
-            self.gammas[1:] - self.gammas[:-1]  # Calculate gamma differences
+            self.gammas[1:] - self.gammas[:-1],  # Calculate gamma differences
         )
+        w_in = self.w_induced.copy()
 
         if jnp.any(jnp.isnan(gammas)):
             raise ValueError("NaN values found in gammas. Check gamma calculations.")
 
         # Calculate mean panel lengths and widths
-        self.panel_L = density * umag * gammas * self.mean_panel_width
-        self.panel_D = -density * self.w_induced * gammas * self.mean_panel_width
+        self.panel_L = density * airspeed * gammas * self.mean_panel_width
+        self.panel_D = -density * w_in * gammas * self.mean_panel_width
+
+        self.D_trefftz = -density / 2 * self.width * gammas[-1] * w_in[-1]
 
         if jnp.any(jnp.isnan(self.panel_L)):
             raise ValueError("NaN values found in panel_L. Check gamma calculations.")
+
+    def calc_potential_moments(
+        self,
+        reference_point: Float[Array, 3],
+    ) -> tuple[Array, Array, Array]:
+        """Calculate moments for this strip.
+
+        Args:
+            reference_point: Reference point for moment calculation
+
+        Returns:
+            Tuple of (Mx, My, Mz) total moments
+        """
+        # Calculate the moment contributions from each panel
+        panel_cps = vmap(panel_cp)(self.panels)
+        panel_normals = vmap(panel_cp_normal)(self.panels)
+        lever_arms = panel_cps - reference_point
+
+        panel_lift = self.panel_L
+        panel_drag = self.panel_D
+
+        M_lift = jnp.sum(panel_lift[:, None] * jnp.cross(lever_arms, panel_normals), axis=0)
+        M_drag = jnp.sum(panel_drag[:, None] * jnp.cross(lever_arms, panel_normals), axis=0)
+
+        M = M_lift + M_drag
+        Mx = M[0]
+        My = M[1]
+        Mz = M[2]
+
+        return Mx, My, Mz
+
+    def calc_viscous_loads(
+        self,
+        density: Float,
+        airspeed: Float,
+    ) -> None:
+        """Calculate viscous loads for this strip.
+
+        This method is a placeholder and should be implemented based on the specific
+        viscous flow model used (e.g., boundary layer theory, CFD).
+        """
+        CL = self.CL_2D
+        CD = self.CD_2D
+        if jnp.isnan(CL) or jnp.isnan(CD):
+            raise ValueError("Viscous coefficients are not set. Call interpolate_viscous_coefficients first.")
+
+        surface: Float = self.surface_area_proj
+        dynamic_pressure = 0.5 * density * airspeed**2
+        self.L_2D = CL * dynamic_pressure * surface
+        self.D_2D = CD * dynamic_pressure * surface
+
+    def calc_viscous_moment(
+        self,
+        reference_point: Float[Array, 3],
+    ) -> tuple[Array, Array, Array]:
+        CL = self.CL_2D
+        CD = self.CD_2D
+        Cm = self.Cm_2D
+        if jnp.isnan(CL) or jnp.isnan(CD) or jnp.isnan(Cm):
+            raise ValueError("Viscous coefficients are not set. Call interpolate_viscous_coefficients first.")
+
+        surface: Float = self.surface_area_proj
+        dynamic_pressure = self.effective_dynamic_pressure
+
+        L_2D = CL * dynamic_pressure * surface
+        D_2D = CD * dynamic_pressure * surface
+        My_2D_at_quarter_chord = Cm * dynamic_pressure * surface * self.chord
+
+        # Calculate the moment contributions from the 2D lift and drag
+        Mx_2D = L_2D * (reference_point[1] - self.z_ref) - D_2D * (reference_point[1] - self.z_ref)
+
+        My_2D = My_2D_at_quarter_chord + (
+            L_2D * (reference_point[0] - self.x_ref) - D_2D * (reference_point[0] - self.x_ref)
+        )
+
+        Mz_2D = L_2D * (reference_point[0] - self.x_ref) + D_2D * (reference_point[0] - self.x_ref)
+
+        return Mx_2D, My_2D, Mz_2D
 
     def get_total_lift(self, calculation="potential") -> float:
         """Get total lift for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_L))
         elif calculation == "viscous":
-            # return float(jnp.sum(self.panel_L * self.mean_w_induced))
-            raise NotImplementedError("Viscous lift calculation not implemented.")
+            return float(self.L_2D)
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 
@@ -129,39 +295,30 @@ class StripLoads:
         if calculation == "potential":
             return float(jnp.sum(self.panel_D))
         elif calculation == "viscous":
-            # return float(jnp.sum(self.panel_D * self.mean_w_induced))
-            raise NotImplementedError("Viscous drag calculation not implemented.")
+            return float(self.D_2D)
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 
-    def get_total_moments(self, calculation="potential") -> tuple[float, float, float]:
+    def get_total_moments(
+        self,
+        reference_point: Float[Array, 3],
+        calculation="potential",
+    ) -> tuple[Array, Array, Array]:
         """Get total moments for this strip.
 
         Args:
+            reference_point: Reference point for moment calculation
             calculation: Type of moment calculation ('potential' or 'viscous')
 
         Returns:
             Tuple of (Mx, My, Mz) total moments
         """
         if calculation == "potential":
-            return float(self.Mx), float(self.My), float(self.Mz)
+            return self.calc_potential_moments(reference_point)
         elif calculation == "viscous":
-            # return float(jnp.sum(self.panel_D * self.mean_w_induced))
-            raise NotImplementedError("Viscous moment calculation not implemented.")
+            return self.calc_viscous_moment(reference_point)
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
-
-    def update_2d_polars(self, L_2D: float, D_2D: float, My_2D: float) -> None:
-        """Update 2D interpolated polar values.
-
-        Args:
-            L_2D: 2D lift coefficient
-            D_2D: 2D drag coefficient
-            My_2D: 2D moment coefficient
-        """
-        self.L_2D = L_2D
-        self.D_2D = D_2D
-        self.My_2D = My_2D
 
     def __str__(self) -> str:
         """String representation of the StripLoads object."""
@@ -179,7 +336,7 @@ class StripLoads:
     def plot_surface(
         self,
         ax: Axes3D | None = None,
-        data: Optional[Float[Array, "..."]] = None,
+        data: Float[Array, ...] | None = None,
         scalar_map: ScalarMappable | tuple[float, float] | None = None,
         colorbar: Colorbar | None = None,
     ) -> None:
@@ -250,7 +407,7 @@ class StripLoads:
     def plot_xy(
         self,
         ax: Axes | None = None,
-        data: Optional[Float[Array, "..."]] = None,
+        data: Float[Array, ...] | None = None,
         scalar_map: ScalarMappable | tuple[float, float] | None = None,
         colorbar: Colorbar | None = None,
     ) -> None:

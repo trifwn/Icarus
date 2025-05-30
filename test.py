@@ -47,8 +47,12 @@ class BaseAirplaneTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    import os
+
+    from ICARUS import INSTALL_DIR
     from ICARUS.database import Database
 
-    DB = Database("./Data")
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
     unittest.TestLoader.sortTestMethodsUsing = None  # type: ignore
     unittest.main()

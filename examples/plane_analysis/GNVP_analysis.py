@@ -9,6 +9,7 @@ import time
 import numpy as np
 from pandas import DataFrame
 
+from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.base_types import Struct
@@ -18,8 +19,8 @@ from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
 
-# DB CONNECTION
-database_folder = os.path.join("/mnt/e/ICARUS", "Data")
+# CHANGE THIS TO YOUR DATABASE FOLDER
+database_folder = os.path.join(INSTALL_DIR, "Data")
 DB = Database(database_folder)
 read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
 

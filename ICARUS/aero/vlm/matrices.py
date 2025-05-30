@@ -36,7 +36,6 @@ def compute_row(
     control_points: Float[Array, ...],
     control_nj: Float[Array, ...],
 ) -> tuple[Float[Array, ...], Float[Array, ...]]:
-
     def compute_contributions(
         panel: Float[Array, 3],
     ) -> tuple[Float[Array, 3], Float[Array, 3]]:

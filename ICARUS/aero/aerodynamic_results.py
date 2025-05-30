@@ -7,19 +7,24 @@ from aerodynamic analysis including forces, moments, coefficients, and derivativ
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
-from matplotlib.axes import Axes
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Literal
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from ICARUS.core.types import FloatArray
-from .aerodynamic_state import AerodynamicState
+
 from .aerodynamic_loads import AerodynamicLoads
+from .aerodynamic_state import AerodynamicState
 
 if TYPE_CHECKING:
     from ICARUS.vehicle.airplane import Airplane
+
     from .lspt_plane import LSPT_Plane
 
 
@@ -257,11 +262,12 @@ class AerodynamicResults:
         return merged_data
 
     def plot_polar(
-        self, 
-        x_coeff: str = "CD", 
-        y_coeff: str = "CL", 
-        ax: Optional[Axes] = None, 
-        title: Optional[str] = None
+        self,
+        x_coeff: str = "CD",
+        y_coeff: str = "CL",
+        calculation: Literal["potential", "viscous"] = "potential",
+        ax: Axes | None = None,
+        title: str | None = None,
     ) -> None:
         """
         Plot aerodynamic polar (e.g., CL vs CD).
@@ -274,7 +280,7 @@ class AerodynamicResults:
         Returns:
             Figure object
         """
-        df = self.to_dataframe()
+        df = self.to_dataframe(calculation=calculation)
 
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
@@ -294,43 +300,6 @@ class AerodynamicResults:
 
         if title:
             ax.set_title(title)
-
-        if show_fig:
-            fig.tight_layout()
-            fig.show()
-
-    def plot_coefficient_vs_AoA(self, coefficients: list[str] = ["CL", "CD", "Cm"], ax: Optional[Axes] = None) -> None:
-        """
-        Plot coefficients vs angle of attack.
-
-        Args:
-            coefficients: list of coefficients to plot
-            ax: Optional axes to plot on
-
-        Returns:
-            Figure object
-        """
-        df = self.to_dataframe()
-
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(10, 6))
-            show_fig = True
-        else:
-            fig = ax.get_figure()
-            show_fig = False
-
-        if not isinstance(fig, Figure):
-            raise TypeError("Expected a matplotlib Figure object")
-
-        for coeff in coefficients:
-            if coeff in df.columns:
-                ax.plot(df["alpha_deg"], df[coeff], "o-", label=coeff, linewidth=2)
-
-        ax.set_xlabel("Angle of Attack (degrees)")
-        ax.set_ylabel("Coefficient")
-        ax.set_title("Aerodynamic Coefficients vs Angle of Attack")
-        ax.grid(True, alpha=0.3)
-        ax.legend()
 
         if show_fig:
             fig.tight_layout()

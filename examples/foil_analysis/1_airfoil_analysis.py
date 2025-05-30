@@ -19,10 +19,11 @@ def main() -> None:
 
     # SETUP DB CONNECTION
     # CHANGE THIS TO YOUR DATABASE FOLDER
-    database_folder = "E:\\Icarus\\Data"
+    from ICARUS import INSTALL_DIR
 
-    # Load the database
+    database_folder = os.path.join(INSTALL_DIR, "Data")
     DB = Database(database_folder)
+
     DB.load_all_data()
 
     # RUN SETUP

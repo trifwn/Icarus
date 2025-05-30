@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from jax import Array
 import jax.numpy as jnp
 import numpy as np
+from jax import Array
 
 from ICARUS.core.types import FloatArray
 
@@ -45,6 +45,7 @@ class AerodynamicState:
         altitude: float | None = None,
         beta: float = 0.0,
         density: float = 1.225,
+        viscosity: float = 1.7894e-5,
         mach: float | None = None,
         rate_P: float = 0.0,
         rate_Q: float = 0.0,
@@ -59,6 +60,7 @@ class AerodynamicState:
             altitude: Altitude in meters (default: None)
             beta: Sideslip angle in degrees (default: 0.0)
             density: Air density in kg/m³ (default: 1.225)
+            viscosity: Air viscosity in kg/(m·s) (default: 1.7894e-5)
             mach: Mach number (default: None)
             rate_P: Roll rate in rad/s (default: 0.0)
             rate_Q: Pitch rate in rad/s (default: 0.0)
@@ -69,6 +71,7 @@ class AerodynamicState:
         self._altitude = altitude
         self._beta = beta
         self._density = density
+        self._viscosity = viscosity
         self._mach = mach
         self._rate_P = rate_P
         self._rate_Q = rate_Q
@@ -123,6 +126,16 @@ class AerodynamicState:
     def density(self, value: float) -> None:
         """Set air density in kg/m³."""
         self._density = value
+
+    @property
+    def viscosity(self) -> float:
+        """Air viscosity in kg/(m·s)."""
+        return self._viscosity
+
+    @viscosity.setter
+    def viscosity(self, value: float) -> None:
+        """Set air viscosity in kg/(m·s)."""
+        self._viscosity = value
 
     @property
     def mach(self) -> float | None:

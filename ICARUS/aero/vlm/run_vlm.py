@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 import jax
 import jax.numpy as jnp
 
@@ -13,15 +14,17 @@ if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.core.types import FloatArray
 
-from . import get_LHS
-from . import get_RHS
-
 from ICARUS.aero import LSPT_Plane
 from ICARUS.vehicle.airplane import Airplane
 
+from . import get_LHS
+from . import get_RHS
+
 
 def run_vlm_polar_analysis(
-    plane: LSPT_Plane | Airplane, state: State, angles: list[float] | Array | FloatArray
+    plane: LSPT_Plane | Airplane,
+    state: State,
+    angles: list[float] | Array | FloatArray,
 ) -> AerodynamicResults:
     """Run complete VLM analysis workflow integrating all components.
 
@@ -57,6 +60,7 @@ def run_vlm_polar_analysis(
         airspeed=state.u_freestream,
         altitude=state.environment.altitude,
         density=state.environment.air_density,
+        viscosity=state.environment.air_dynamic_viscosity,
         mach=0.0,  # Assuming incompressible flow
         # Positional State
         alpha=0.0,

@@ -282,5 +282,10 @@ def airfoil_cli(DB: Database, return_home: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    DB = Database("./Data")
+    import os
+
+    from ICARUS import INSTALL_DIR
+
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
     airfoil_cli(DB)

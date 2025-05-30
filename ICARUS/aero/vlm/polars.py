@@ -5,13 +5,13 @@ import os
 from typing import TYPE_CHECKING
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from numpy import ndarray
-import numpy as np
 
 from ICARUS.aero import LSPT_Plane
-from ICARUS.database import Database
 from ICARUS.aero.aerodynamic_results import AerodynamicResults
+from ICARUS.database import Database
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
