@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 import numpy as np
 
@@ -10,7 +9,6 @@ from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import Disturbance
-    from ICARUS.vehicle import WingSurface
 
 
 class GNVP_Movement:
@@ -137,12 +135,11 @@ def disturbance2movement(disturbance: Disturbance) -> GNVP_Movement:
     return GNVP_Movement(disturbance.name, Rotation, Translation)
 
 
-def define_movements(
-    surfaces: Sequence[WingSurface],
+def define_global_movements(
     CG: FloatArray,
     orientation: FloatArray | list[float],
     disturbances: list[Disturbance] = [],
-) -> list[list[GNVP_Movement]]:
+) -> list[GNVP_Movement]:
     """Define Movements for the surfaces.
 
     Args:
@@ -155,35 +152,33 @@ def define_movements(
         list[list[Movement]]: A list of movements for each surface of the plane so that the center of gravity is at the origin.
 
     """
-    movement: list[list[GNVP_Movement]] = []
     all_axes = ("pitch", "roll", "yaw")
     all_ax_ids = (2, 1, 3)
-    for _ in surfaces:
-        sequence: list[GNVP_Movement] = []
-        for name, axis in zip(all_axes, all_ax_ids):
-            Rotation: dict[str, Any] = {
-                "type": 1,
-                "axis": axis,
-                "t1": -0.1,
-                "t2": 0.0,
-                "a1": orientation[axis - 1],
-                "a2": orientation[axis - 1],
-            }
-            Translation: dict[str, Any] = {
-                "type": 1,
-                "axis": axis,
-                "t1": -0.1,
-                "t2": 0.0,
-                "a1": -CG[axis - 1],
-                "a2": -CG[axis - 1],
-            }
 
-            obj = GNVP_Movement(name, Rotation, Translation)
-            sequence.append(obj)
+    sequence: list[GNVP_Movement] = []
+    for name, axis in zip(all_axes, all_ax_ids):
+        Rotation: dict[str, Any] = {
+            "type": 1,
+            "axis": axis,
+            "t1": -0.1,
+            "t2": 0.0,
+            "a1": orientation[axis - 1],
+            "a2": orientation[axis - 1],
+        }
+        Translation: dict[str, Any] = {
+            "type": 1,
+            "axis": axis,
+            "t1": -0.1,
+            "t2": 0.0,
+            "a1": -CG[axis - 1],
+            "a2": -CG[axis - 1],
+        }
 
-        for disturbance in disturbances:
-            if disturbance.type is not None:
-                sequence.append(disturbance2movement(disturbance))
+        obj = GNVP_Movement(name, Rotation, Translation)
+        sequence.append(obj)
 
-        movement.append(sequence)
-    return movement
+    for disturbance in disturbances:
+        if disturbance.type is not None:
+            sequence.append(disturbance2movement(disturbance))
+
+    return sequence

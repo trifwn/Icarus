@@ -5,16 +5,20 @@ import os
 from typing import TYPE_CHECKING
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from numpy import ndarray
 
 from ICARUS.aero import LSPT_Plane
+from ICARUS.aero.aerodynamic_results import AerodynamicResults
 from ICARUS.database import Database
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
+
+from .run_vlm import run_vlm_polar_analysis
 
 
 def lspt_polars(
@@ -46,15 +50,18 @@ def lspt_polars(
     )
 
     # Run the solver
-    import numpy as np
 
     if not isinstance(angles, ndarray):
         angles = np.array(angles)
 
-    df: pd.DataFrame = wing.aseq(
-        angles=angles,
+    results: AerodynamicResults = run_vlm_polar_analysis(
+        plane=wing,
         state=state,
+        angles=angles,
     )
+
+    # Convert the results to a DataFrame
+    df = results.to_polars_dataframe()
 
     # Save the results
     save_results(plane, state, df)

@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Callable
 from typing import TypeVar
 from typing import Union
 
@@ -20,3 +21,8 @@ AnyFloat = Union[float, int, np.number[Any], FloatArray, list[float]]
 
 # Generic Type Variables
 NumericVar = TypeVar("NumericVar", float, FloatArray)
+
+# Type definitions
+Vector3D = FloatArray  # Shape (3,)
+Matrix3x3 = FloatArray  # Shape (3, 3)
+DistributionFunc = Callable[[float, float, float], float]

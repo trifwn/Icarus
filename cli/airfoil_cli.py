@@ -22,7 +22,7 @@ from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
 from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
 from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.database import Database
 
 from .cli_home import cli_home
@@ -282,5 +282,10 @@ def airfoil_cli(DB: Database, return_home: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    DB = Database("./Data")
+    import os
+
+    from ICARUS import INSTALL_DIR
+
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
     airfoil_cli(DB)

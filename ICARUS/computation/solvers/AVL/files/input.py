@@ -84,9 +84,9 @@ def avl_mass(
     f_io.write("#  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz\n")
     f_io.write("#\n")
 
-    for surf in plane.surfaces:
+    for wing in plane.wings:
         f_io.write(
-            f"   {surf.mass:.4e}  {surf.CG[0]:.4e}  {surf.CG[1]:.4e}  {surf.CG[2]:.4e}  {surf.Ixx:.4e}  {surf.Iyy:.4e}  {surf.Izz:.4e}  {surf.Ixy:.4e}  {surf.Ixz:.4e}  {surf.Iyz:.4e} ! {surf.name}       \n",
+            f"   {wing.mass:.4e}  {wing.CG[0]:.4e}  {wing.CG[1]:.4e}  {wing.CG[2]:.4e}  {wing.Ixx:.4e}  {wing.Iyy:.4e}  {wing.Izz:.4e}  {wing.Ixy:.4e}  {wing.Ixz:.4e}  {wing.Iyz:.4e} ! {wing.name}       \n",
         )
 
     for mass in plane.point_masses:

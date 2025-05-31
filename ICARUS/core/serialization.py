@@ -28,4 +28,7 @@ def deserialize_function(func_dict: dict[str, Any] | None) -> Callable[[Any], An
             function = None
     else:
         function = None
+
+    if not callable(function):
+        raise TypeError("Deserialized object is not callable")
     return function

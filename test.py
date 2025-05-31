@@ -30,8 +30,10 @@ class BaseAirplaneTests(unittest.TestCase):
 
     #     gnvp7_geometry(plot=True)
 
-    # def test7_lspt_run(self) -> None:
-    #     lspt_run()
+    def test7_lspt_run(self) -> None:
+        from tests.lspt_polar_test import lspt_run
+
+        lspt_run()
 
     def test8_avl_run(self) -> None:
         from tests.avl_run_test import avl_run
@@ -45,8 +47,12 @@ class BaseAirplaneTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    import os
+
+    from ICARUS import INSTALL_DIR
     from ICARUS.database import Database
 
-    DB = Database("./Data")
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
     unittest.TestLoader.sortTestMethodsUsing = None  # type: ignore
     unittest.main()

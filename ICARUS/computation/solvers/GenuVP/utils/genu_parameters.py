@@ -7,7 +7,7 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 
 from . import GenuSurface

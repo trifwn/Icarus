@@ -5,7 +5,7 @@ from inquirer import Text
 from inquirer import prompt
 
 from ICARUS.computation.solvers import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 
 
 def set_solver_parameters(solver: Solver) -> None:

@@ -8,9 +8,8 @@ from pandas import Series
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.database import Database
-
-from .. import colors_
-from .. import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
 
 
 def plot_airfoil_polars(
@@ -72,9 +71,15 @@ def plot_airfoil_polars(
     if solvers_not_in_db:
         print(f"Solver(s) {solvers_not_in_db} not in database")
 
+    colors = get_distinct_colors(len(solvers))
+
     for i, solver in enumerate(solvers):
         polar_obj = airfoil_data.get_polars(solver)
         reynolds_list = polar_obj.reynolds_nums
+
+        num_reynolds = len(reynolds_list)
+        markers = get_distinct_markers(num_reynolds)
+
         for j, reynolds in enumerate(reynolds_list):
             try:
                 polar_df = polar_obj.get_reynolds_subtable(reynolds)
@@ -113,7 +118,7 @@ def plot_airfoil_polars(
 
                     x: Series[float] = polar_df[f"{key0}"]
                     y: Series[float] = polar_df[f"{key1}"]
-                    c = colors_[j]
+                    c = colors[j]
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reynolds:,} - {solver}"
                     try:

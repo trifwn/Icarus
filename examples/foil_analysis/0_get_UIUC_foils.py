@@ -3,9 +3,11 @@ import re
 
 import requests
 
+from ICARUS import INSTALL_DIR
 from ICARUS.database import Database
 
-DB = Database("./Data")
+database_folder = os.path.join(INSTALL_DIR, "Data")
+DB = Database(database_folder)
 DB2D = DB.DB2D
 
 # Target URL with airfoil links

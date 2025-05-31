@@ -5,7 +5,7 @@ import time
 import numpy as np
 
 from ICARUS.computation.solvers import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 
 
@@ -32,8 +32,7 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     AoAmin = -5
     AoAmax = 5
     NoAoA = (AoAmax - AoAmin) + 1
-    angles_all: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA)
-    angles: list[float] = [ang for ang in angles_all]
+    angles: FloatArray = np.linspace(AoAmin, AoAmax, NoAoA, dtype=float)
     maxiter = 30
     timestep = 0.004
 

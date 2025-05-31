@@ -56,4 +56,10 @@ def visualization_cli(DB: Database, return_home: bool = True) -> None:
 
 
 if __name__ == "__main__":
-    visualization_cli(DB=Database("./Data"))
+    import os
+
+    from ICARUS import INSTALL_DIR
+
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
+    visualization_cli(DB=DB)

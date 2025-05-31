@@ -70,7 +70,7 @@ class NACA4(Airfoil):
             n_points (int): Number of points to generate the airfoil. Default is 200.
         """
 
-        name = f"naca{M}{P}{XX}"
+        name = f"naca{M}{P}{XX:02d}"
 
         m = M / 100
         p = P / 10

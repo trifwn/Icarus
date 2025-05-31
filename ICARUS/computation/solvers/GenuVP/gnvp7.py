@@ -1,4 +1,5 @@
 from typing import Any
+
 from ICARUS.computation.analyses import FloatInput
 from ICARUS.computation.analyses import IntInput
 from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
@@ -216,7 +217,7 @@ gnvp7_solver_parameter_list: list[Parameter] = [
     FloatParameter("Elasticity_Solver", 0, "IYNELST (1=BEAMDYN,2-ALCYONE,3=GAST)"),
 ]
 
-gnvp7_solver_parameters: dict[str, Any] =  {}
+gnvp7_solver_parameters: dict[str, Any] = {}
 for param in gnvp7_solver_parameter_list:
     gnvp7_solver_parameters[param.name] = param.value
 

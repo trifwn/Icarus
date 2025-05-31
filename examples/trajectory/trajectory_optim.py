@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import optax
 import optimistix as optx
 from diffrax import DirectAdjoint  # Tsit5,; BacksolveAdjoint,
-from diffrax import DiscreteTerminatingEvent
 from diffrax import Dopri8
 from diffrax import ODETerm
 from diffrax import PIDController
 from diffrax import SaveAt
 from diffrax import diffeqsolve
+from diffrax._event import DiscreteTerminatingEvent
 from jax.debug import print as jprint
 from jaxtyping import Array
 from jaxtyping import Float
@@ -33,8 +33,8 @@ print("Jax has been configured to use the following devices: ", jax.devices())
 # Global flag to set a specific platform, must be used at startup.
 print(jax.numpy.ones(3).devices())
 
-
-DB = Database(os.path.join(INSTALL_DIR, "Data"))
+database_folder = os.path.join(INSTALL_DIR, "Data")
+DB = Database(database_folder)
 
 # #  Load Plane and Engine
 engine_dir = os.path.join(DB.HOMEDIR, "Engine", "Motor_1")

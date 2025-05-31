@@ -1,4 +1,4 @@
-from ICARUS.aero.vlm import run_lstp_angles
+from ICARUS.aero.vlm import lspt_polars
 from ICARUS.computation.analyses import BaseAirplanePolarAnalysis
 from ICARUS.computation.solvers import IntOrNoneParameter
 from ICARUS.computation.solvers import Parameter
@@ -10,7 +10,7 @@ class LSPT_PolarAnalysis(BaseAirplanePolarAnalysis):
     def __init__(self) -> None:
         super().__init__(
             solver_name="LSPT",
-            execute_fun=run_lstp_angles,
+            execute_fun=lspt_polars,
             unhook=None,
         )
 

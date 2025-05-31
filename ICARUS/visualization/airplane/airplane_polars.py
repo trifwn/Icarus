@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import distinctipy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -13,11 +12,13 @@ from pandas import Series
 
 from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
-from ICARUS.visualization import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
+from ICARUS.visualization.utils import validate_airplane_input
 
 
 def plot_airplane_polars(
-    airplanes: list[str] | list[Airplane] | str | Airplane,
+    airplanes: list[str | Airplane] | str | Airplane,
     prefixes: list[str] = ["All"],
     plots: list[list[str]] = [
         ["AoA", "CL"],
@@ -43,9 +44,7 @@ def plot_airplane_polars(
         tuple[ndarray, Figure]: Array of Axes and Figure
 
     """
-    if not isinstance(airplanes, list):
-        airplanes = [airplanes]
-    assert isinstance(airplanes, list), "Airplanes must be a list of strings or Airplane objects"
+    airplanes_objs: list[Airplane] = validate_airplane_input(airplanes)
 
     number_of_plots = len(plots)
     DB = Database.get_instance()
@@ -83,19 +82,15 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors_ = distinctipy.get_colors(len(airplanes) * len(prefixes))
-    for i, airplane in enumerate(airplanes):
-        if isinstance(airplane, Airplane):
-            airplane = airplane.name
+    colors = get_distinct_colors(len(airplanes_objs))
 
+    for i, airplane in enumerate(airplanes_objs):
         polar: DataFrame = DB.get_vehicle_polars(airplane)
+
+        markers = get_distinct_markers(len(prefixes))
         for j, prefix in enumerate(prefixes):
-            if len(airplanes) == 1:
-                c = colors_[j]
-                m = "o"
-            else:
-                c = colors_[i]
-                m = markers[j].get_marker()
+            c = colors[j]
+            m = markers[i].get_marker()
 
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
