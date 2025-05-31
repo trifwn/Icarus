@@ -16,6 +16,7 @@ from pandas import DataFrame
 
 from ICARUS.vehicle import Wing
 from ICARUS.vehicle import WingSurface
+from ICARUS.visualization.utils import validate_surface_input
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -26,7 +27,7 @@ def plot_avl_strip_data_3D(
     plane: Airplane,
     state: State,
     case: str,
-    surface_names: str | list[str] | Sequence[WingSurface] | WingSurface,
+    surfaces: Sequence[WingSurface | Wing | str] | str | WingSurface | Wing,
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -44,23 +45,10 @@ def plot_avl_strip_data_3D(
     from ICARUS.computation.solvers.AVL import get_strip_data
 
     strip_data = get_strip_data(plane, state, case)
-
-    if isinstance(surface_names, str):
-        surfaces: Sequence[WingSurface] = [plane.get_surface(surface_names)]
-    elif isinstance(surface_names, WingSurface):
-        surfaces = [surface_names]
-    elif isinstance(surface_names, list):
-        if all(isinstance(item, str) for item in surface_names):
-            surfaces = [plane.get_surface(surf_name) for surf_name in surface_names]
-        elif all(isinstance(item, WingSurface) for item in surface_names):
-            surfaces = surface_names
-        else:
-            raise ValueError("surface_name must be a string or a WingSurface object")
-    else:
-        raise ValueError("surface_name must be a string or a WingSurface object")
+    surface_objects = validate_surface_input(plane, surfaces)
 
     _surface_names: list[str] = []
-    for surface in surfaces:
+    for surface in surface_objects:
         if isinstance(surface, Wing):
             # Get the separate segments of the merged wing
             _surface_names.extend([s.name for s in surface.get_separate_segments()])

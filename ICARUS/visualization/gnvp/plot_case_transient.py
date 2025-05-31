@@ -6,8 +6,8 @@ from ICARUS.database import Database
 from ICARUS.database import angle_to_case
 from ICARUS.database import disturbance_to_case
 from ICARUS.flight_dynamics import Disturbance
-from ICARUS.visualization import colors_
-from ICARUS.visualization import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
 
 
 def plot_case_transient(
@@ -70,6 +70,8 @@ def plot_case_transient(
     DB = Database.get_instance()
     data = DB.vehicles_db.transient_data[plane]
     i = 0
+
+    colors = get_distinct_colors(len(cases))
     for i, case in enumerate(cases):
         if isinstance(case, Disturbance):
             name = disturbance_to_case(case)
@@ -90,8 +92,9 @@ def plot_case_transient(
                 print(k)
         runHist = data[key]
         i += 1
-        j = 0
-        for metric in metrics:
+
+        markers = get_distinct_markers(len(metrics))
+        for j, metric in enumerate(metrics):
             try:
                 it = runHist["TTIME"].astype(float)
                 it = it / it.iloc[0]
@@ -114,8 +117,7 @@ def plot_case_transient(
                     my = np.abs(my.iloc[1:].values - my.iloc[:-1].values)
                     mz = np.abs(mz.iloc[1:].values - mz.iloc[:-1].values)
 
-                j += 1
-                c = colors_[j]
+                c = colors[j]
                 m = markers[i].get_marker()
 
                 label: str = f"{plane} - {metric} - {name}"

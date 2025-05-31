@@ -16,9 +16,9 @@ from tabulate import tabulate
 from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import Environment
-from ICARUS.visualization import markers
 from ICARUS.visualization import polar_plot
 from ICARUS.visualization import pre_existing_figure
+from ICARUS.visualization.utils import get_distinct_markers
 
 from .disturbances import Disturbance as dst
 from .perturbations import lateral_pertrubations
@@ -499,6 +499,7 @@ class State:
         MAC: float = self.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
 
+        markers = get_distinct_markers(len(prefixes_to_plot))
         for j, prefix in enumerate(prefixes_to_plot):
             if dimensional:
                 polar[f"{prefix} CL"] = polar[f"{prefix} CL"] * dynamic_pressure * S

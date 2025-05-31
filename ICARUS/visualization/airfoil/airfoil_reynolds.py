@@ -11,8 +11,8 @@ from ICARUS.airfoils import AirfoilPolars
 from ICARUS.database import AirfoilNotFoundError
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
-from ICARUS.visualization import colors_
-from ICARUS.visualization import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
 
 
 def plot_airfoils_at_reynolds(
@@ -68,7 +68,10 @@ def plot_airfoils_at_reynolds(
         solvers = ["Xfoil", "Foil2Wake", "OpenFoam", "XFLR"]
 
     DB = Database.get_instance()
+
+    colors = get_distinct_colors(len(airfoil_names))
     for j, airfoil_name in enumerate(airfoil_names):
+        markers = get_distinct_markers(len(solvers))
         for i, solver in enumerate(solvers):
             try:
                 polar: AirfoilPolars = DB.get_airfoil_polars(
@@ -126,7 +129,7 @@ def plot_airfoils_at_reynolds(
 
                     x: Series[float] = polar_df[f"{key0}"]
                     y: Series[float] = polar_df[f"{key1}"]
-                    c = colors_[j]
+                    c = colors[j]
                     m = markers[i].get_marker()
                     label: str = f"{airfoil_name}: {reyn:,} - {solver}"
                     try:

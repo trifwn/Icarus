@@ -34,9 +34,8 @@ avl_polars(plane, state, solver2D, angles)
 pol_df = process_avl_polars(plane, state, angles)
 
 
-planenames = [plane.name]
 plot_airplane_polars(
-    planenames,
+    plane,
     prefixes=["AVL"],
     plots=[["AoA", "CL"], ["AoA", "CD"], ["AoA", "Cm"]],
     size=(6, 7),

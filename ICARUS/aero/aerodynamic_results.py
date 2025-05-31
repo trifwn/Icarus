@@ -215,7 +215,7 @@ class AerodynamicResults:
             return pd.DataFrame()
 
         # Extract state data
-        data = {}
+        data: dict[str, FloatArray | list[float]] = {}
         data["AoA"] = [state.alpha for state in self.states]
 
         # Extract forces and moments with LSPT naming convention
@@ -232,6 +232,11 @@ class AerodynamicResults:
         data["airspeed"] = [state.airspeed for state in self.states]
         data["density"] = [state.density for state in self.states]
         data["dynamic_pressure"] = [state.dynamic_pressure for state in self.states]
+
+        # Conver the keys to numpy arrays for consistency
+        for key in data:
+            if isinstance(data[key], list):
+                data[key] = np.array(data[key])
 
         # Calculate coefficients
         coefficients = self.calculate_coefficients(calculation)

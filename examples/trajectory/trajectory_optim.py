@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import optax
 import optimistix as optx
 from diffrax import DirectAdjoint  # Tsit5,; BacksolveAdjoint,
-from diffrax import DiscreteTerminatingEvent
 from diffrax import Dopri8
 from diffrax import ODETerm
 from diffrax import PIDController
 from diffrax import SaveAt
 from diffrax import diffeqsolve
+from diffrax._event import DiscreteTerminatingEvent
 from jax.debug import print as jprint
 from jaxtyping import Array
 from jaxtyping import Float

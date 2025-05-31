@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
-from ICARUS.visualization import colors_
-from ICARUS.visualization import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -116,6 +116,7 @@ def plot_sensitivity(
             linewidth=1,
         )
 
+    colors = get_distinct_colors(len(cases))
     for var in list(cases.keys()):
         if var in vars2s or vars2s == ["All"]:
             runHist = cases[var]
@@ -124,6 +125,7 @@ def plot_sensitivity(
         else:
             continue
 
+        markers = get_distinct_markers(len(solvers))
         for solver in solvers:
             try:
                 epsilon = runHist["Epsilon"].astype(float)
@@ -143,7 +145,7 @@ def plot_sensitivity(
                     mz = mz - mz_trim
 
                 j += 1
-                c = colors_[i]
+                c = colors[i]
                 m = markers[j]
                 # style = f"{c}{m}--"
 

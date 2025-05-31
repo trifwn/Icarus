@@ -25,7 +25,7 @@ from ICARUS.aero.utils import panel_cp_normal
 class TestUtilityFunctions:
     """Test suite for aerodynamic utility functions."""
 
-    def test_panel_cp_validation(self, test_plane: LSPT_Plane):
+    def test_panel_cp_validation(self, test_plane: LSPT_Plane) -> None:
         """
         Test panel_cp function against LSPT_Plane precomputed control points.
 
@@ -77,7 +77,7 @@ class TestUtilityFunctions:
 
         print("✓ panel_cp validation passed\n")
 
-    def test_panel_control_nj_validation(self, test_plane: LSPT_Plane):
+    def test_panel_control_nj_validation(self, test_plane: LSPT_Plane) -> None:
         """
         Test panel_control_nj function against LSPT_Plane precomputed normals.
 
@@ -139,7 +139,7 @@ class TestUtilityFunctions:
 
         print("✓ panel_control_nj validation passed\n")
 
-    def test_panel_area_validation(self, test_plane: LSPT_Plane):
+    def test_panel_area_validation(self, test_plane: LSPT_Plane) -> None:
         """
         Test panel_area function by comparing with manual calculation.
 
@@ -195,7 +195,7 @@ class TestUtilityFunctions:
 
         print("✓ panel_area validation passed\n")
 
-    def test_panel_center_validation(self, test_plane: LSPT_Plane):
+    def test_panel_center_validation(self, test_plane: LSPT_Plane) -> None:
         """
         Test panel_center function by comparing with manual calculation.
 
@@ -245,7 +245,7 @@ class TestUtilityFunctions:
 
         print("✓ panel_center validation passed\n")
 
-    def test_near_wake_panels_validation(self, test_plane: LSPT_Plane):
+    def test_near_wake_panels_validation(self, test_plane: LSPT_Plane) -> None:
         """
         Test utility functions on near wake panels.
 
@@ -286,7 +286,7 @@ class TestUtilityFunctions:
         print("✓ Near wake panels validation passed\n")
 
 
-def run_validation_with_airplane(airplane: Airplane):
+def run_validation_with_airplane(airplane: Airplane) -> None:
     """
     Run validation tests with a specific airplane configuration.
 
@@ -327,7 +327,7 @@ def run_validation_with_airplane(airplane: Airplane):
         raise
 
 
-def run_performance_comparison(airplane: Airplane, num_iterations: int = 1000):
+def run_performance_comparison(airplane: Airplane, num_iterations: int = 1000) -> None:
     """
     Compare performance between utility functions and manual calculations.
 
