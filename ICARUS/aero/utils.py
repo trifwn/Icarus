@@ -13,7 +13,6 @@ from jaxtyping import Array
 from jaxtyping import Float
 
 
-@jax.jit
 def panel_dimensions(panel: Float[Array, 2]) -> tuple[Float, Float, Float]:
     """Calculate the length and width of a panel."""
     dx = ((panel[3, 0] - panel[0, 0]) + (panel[2, 0] - panel[1, 0])) / 2.0
@@ -24,7 +23,6 @@ def panel_dimensions(panel: Float[Array, 2]) -> tuple[Float, Float, Float]:
     return dx, dy, dz
 
 
-@jax.jit
 def panel_cp(panel: Array) -> Array:
     """
     Calculate the control point of a panel using the quarter-chord rule.
@@ -55,7 +53,6 @@ def panel_cp(panel: Array) -> Array:
     return control_point
 
 
-@jax.jit
 def panel_cp_normal(panel: Array) -> Array:
     """
     Calculate the unit normal vector of a panel.
@@ -89,7 +86,6 @@ def panel_cp_normal(panel: Array) -> Array:
     return control_nj
 
 
-@jax.jit
 def panel_area(panel: Array) -> Array:
     """
     Calculate the area of a panel.
@@ -111,7 +107,6 @@ def panel_area(panel: Array) -> Array:
     return area
 
 
-@jax.jit
 def panel_center(panel: Array) -> Array:
     """
     Calculate the geometric center of a panel.
@@ -123,3 +118,9 @@ def panel_center(panel: Array) -> Array:
         Array: Geometric center coordinates [x, y, z] of shape (3,)
     """
     return jnp.mean(panel, axis=0)
+
+panel_cp_normal = jax.jit(panel_cp_normal)
+panel_area = jax.jit(panel_area)
+panel_center = jax.jit(panel_center)
+panel_cp = jax.jit(panel_cp)
+panel_dimensions = jax.jit(panel_dimensions)

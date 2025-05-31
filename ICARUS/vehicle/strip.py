@@ -100,20 +100,6 @@ class Strip:
         )
         return symm_strip
 
-    def set_airfoils(self, airfoil: Airfoil, airfoil2: Airfoil | None = None) -> None:
-        """Used to set or change the Airfoil.
-
-        Args:
-            airfoil (Airfoil): Airfoil for the starting section.
-            airfoil2 (Airfoil, optional): Airfoil for the ending section. Defaults to None. If None, the starting airfoil is used.
-
-        """
-        self.airfoil_start = airfoil
-        if airfoil2 is not None:
-            self.airfoil_end = airfoil2
-        else:
-            self.airfoil_end = airfoil
-
     def get_root_strip(self) -> FloatArray:
         """Returns the root strip of the wing.
 

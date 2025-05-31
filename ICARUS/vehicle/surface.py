@@ -693,8 +693,8 @@ class WingSurface(RigidBody):
 
     @property
     def all_strips(self) -> list[Strip]:
-        symmetric_strips = [strip.return_symmetric() for strip in self.strips]
         if self.is_symmetric_y:
+            symmetric_strips = [strip.return_symmetric() for strip in self.strips]
             return [*symmetric_strips[::-1], *self.strips]
         return self.strips
 
