@@ -14,7 +14,7 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import angle_to_case

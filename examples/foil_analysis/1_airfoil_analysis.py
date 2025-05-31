@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database

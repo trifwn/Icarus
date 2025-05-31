@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from ICARUS import CPU_TO_USE
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.database import Database
 
 from ..utils import GenuSurface

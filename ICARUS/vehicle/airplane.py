@@ -13,7 +13,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
-from ICARUS.core.base_types import Optimizable
+from ICARUS.core import Optimizable
 
 from . import Mass
 from . import Wing

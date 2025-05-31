@@ -12,7 +12,7 @@ from pandas import DataFrame
 from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA

@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 from ICARUS.computation.solvers import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 
 
 def avl_run() -> None:

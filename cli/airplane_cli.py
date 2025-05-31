@@ -26,7 +26,7 @@ from ICARUS.computation.solvers.GenuVP import GenuVP3
 from ICARUS.computation.solvers.GenuVP import GenuVP7
 from ICARUS.computation.solvers.Icarus_LSPT import LSPT
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.environment import Environment

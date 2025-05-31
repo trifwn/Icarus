@@ -13,12 +13,13 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
+from ICARUS import INSTALL_DIR
 from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils import AirfoilData
 from ICARUS.airfoils import AirfoilPolars
 from ICARUS.airfoils import PolarNotAccurate
 from ICARUS.airfoils import ReynoldsNotIncluded
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -580,8 +581,6 @@ class Database_2D:
             folder = Database_2D.angle_to_dir(float(angle))
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
-        from ICARUS import INSTALL_DIR
-
         return INSTALL_DIR, AFDIR, REYNDIR, ANGLEDIRS
 
     # STATIC METHODS
@@ -682,7 +681,7 @@ class Database_2D:
     def interpolate_polars(
         self,
         reynolds: float,
-        airfoil_name: str,
+        airfoil: Airfoil,
         aoa: float,
         solver: str,
     ) -> tuple[float, float, float]:
@@ -699,20 +698,24 @@ class Database_2D:
 
         """
 
-        polars: AirfoilPolars = self.get_polars(airfoil_name, solver=solver)
+        polars: AirfoilPolars = self.get_or_compute_polars(
+            airfoil=airfoil,
+            reynolds=reynolds,
+            solver_name=solver,
+            aoa=np.linspace(-10, 16, 53),
+        )
         reynolds_stored: list[float] = polars.reynolds_nums
         max_reynolds_stored: float = max(reynolds_stored)
         min_reynolds_stored: float = min(reynolds_stored)
 
         if reynolds > max_reynolds_stored:
-            print(polars.reynolds_nums)
             raise ValueError(
-                f"Airfoil: {airfoil_name} Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}.",
+                f"Airfoil: {airfoil.name} Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}.",
             )
 
         if reynolds < min_reynolds_stored:
             raise ValueError(
-                f"Airfoil: {airfoil_name} Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
+                f"Airfoil: {airfoil.name} Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
             )
 
         reynolds_stored.sort()
@@ -761,7 +764,7 @@ class Database_2D:
                 np.interp(reynolds, [lower_reynolds, upper_reynolds], [Cm_low, Cm_up]),
             )
         except KeyError as e:
-            print(airfoil_name)
+            print(airfoil.name)
             print(upper_reynolds)
             print(lower_reynolds)
             raise KeyError(f"Key {e} not found in database!")

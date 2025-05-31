@@ -11,7 +11,7 @@ import jsonpickle.ext.pandas as jsonpickle_pd
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State

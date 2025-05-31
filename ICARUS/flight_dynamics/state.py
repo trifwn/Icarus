@@ -13,7 +13,7 @@ from pandas import DataFrame
 from pandas import Series
 from tabulate import tabulate
 
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import Environment
 from ICARUS.visualization import markers

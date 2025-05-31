@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 from ICARUS.computation.analyses import Analysis
 from ICARUS.computation.solvers import Parameter
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 
 
 class Solver:

@@ -31,7 +31,7 @@ The ICARUS Core package contains routines and classes that are used throughtout 
     ICARUS.core.units
 """
 
-from . import base_types
+from .base_types import Struct, Optimizable
 from . import math
 from . import serialization
 from . import types
@@ -39,7 +39,8 @@ from . import units
 from . import utils
 
 __all__ = [
-    "base_types",
+    "Struct",
+    "Optimizable",
     "utils",
     "math",
     "serialization",

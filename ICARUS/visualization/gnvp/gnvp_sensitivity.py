@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
-    from ICARUS.core.base_types import Struct
+    from ICARUS.core import Struct
     from ICARUS.vehicle import Airplane
 
 

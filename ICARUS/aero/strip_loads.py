@@ -163,7 +163,7 @@ class StripLoads:
 
         CL, CD, Cm = DB.foils_db.interpolate_polars(
             reynolds=self.effective_reynolds,
-            airfoil_name=self.airfoil.name,
+            airfoil=self.airfoil,
             aoa=self.effective_aoa,
             solver=solver,
         )

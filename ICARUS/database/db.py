@@ -9,7 +9,7 @@ from pandas import DataFrame
 
 from ICARUS.airfoils import AirfoilData
 from ICARUS.airfoils import AirfoilPolars
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 
 from .analysesDB import AnalysesDB
