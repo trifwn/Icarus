@@ -29,13 +29,19 @@ class InertiaTensor:
         if self.I_xx < 0 or self.I_yy < 0 or self.I_zz < 0:
             raise ValueError("Diagonal inertia elements must be non-negative")
 
-        # Check triangle inequalities (necessary for physical validity)
-        if not (
-            self.I_xx + self.I_yy >= self.I_zz
-            and self.I_yy + self.I_zz >= self.I_xx
-            and self.I_zz + self.I_xx >= self.I_yy
-        ):
-            warnings.warn("Inertia tensor may not be physically realizable")
+        # I1, I2, I3 = self.compute_principal_inertias()
+        # print(f"Principal inertias: I1={I1}, I2={I2}, I3={I3}")
+        # # Check triangle inequalities (necessary for physical validity)
+        # if not (I1 + I2 >= I3 and I1 + I3 >= I2 and I2 + I3 >= I1):
+        #     warnings.warn("Inertia tensor may not be physically realizable")
+
+    def compute_principal_inertias(self) -> tuple[float, float, float]:
+        """Compute principal moments of inertia."""
+        eigvals = np.linalg.eigvals(self.matrix)
+        I_1 = eigvals[0]
+        I_2 = eigvals[1]
+        I_3 = eigvals[2]
+        return I_1, I_2, I_3
 
     @cached_property
     def to_list(self) -> list[float]:
