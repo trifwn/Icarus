@@ -27,7 +27,7 @@ Control/slprj*
 test*.ipynb
 
 # Data folder
-Data
+/Data
 
 # Playground
 *.fuse*

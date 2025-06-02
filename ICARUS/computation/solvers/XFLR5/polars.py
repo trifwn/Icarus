@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.airfoils import AirfoilData
+from ICARUS.data import AirfoilData
 from ICARUS.database import Database
 
 

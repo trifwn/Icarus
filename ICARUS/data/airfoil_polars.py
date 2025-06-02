@@ -8,7 +8,7 @@ Reynolds numbers and angles of attack.
 To initialize the Airfoil Polars Class, just pass a the
 Struct data from the DataBase to the constructor.
 
->>> from ICARUS.airfoils import AirfoilPolars
+>>> from ICARUS.data import AirfoilPolars
 >>> from ICARUS.database import Database
 >>> db_folder = "path/to/database"
 >>> DB = Database(db_folder)

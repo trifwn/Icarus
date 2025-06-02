@@ -7,7 +7,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.airfoils import AirfoilPolars
+from ICARUS.data import AirfoilPolars
 from ICARUS.database import AirfoilNotFoundError
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError

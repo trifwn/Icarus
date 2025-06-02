@@ -14,10 +14,10 @@ import pandas as pd
 from pandas import DataFrame
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.airfoils import AirfoilData
-from ICARUS.airfoils import AirfoilPolars
-from ICARUS.airfoils import PolarNotAccurate
-from ICARUS.airfoils import ReynoldsNotIncluded
+from ICARUS.data import AirfoilData
+from ICARUS.data import AirfoilPolars
+from ICARUS.data import PolarNotAccurate
+from ICARUS.data import ReynoldsNotIncluded
 from ICARUS.core.base_types import Struct
 
 if TYPE_CHECKING:
