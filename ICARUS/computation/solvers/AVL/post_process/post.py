@@ -28,6 +28,7 @@ def csplit(input_file: str, pattern: str) -> list[str]:
 
 
 def collect_avl_polar_forces(
+    directory: str,
     plane: Airplane,
     state: State,
     angles: FloatArray | list[float],
@@ -35,6 +36,7 @@ def collect_avl_polar_forces(
     """POST-PROCESSING OF POLAR RUNS - RETURNS AN ARRAY WITH THE FOLLOWING ORDER OF VECTORS: AOA,CL,CD,CM
 
     Args:
+        directory (str): Directory where the AVL results are stored
         plane (Airplane): Airplane object
         state (State): State object
         angles (FloatArray): Array of angles of attack
@@ -47,14 +49,9 @@ def collect_avl_polar_forces(
     CLs = []
     CDs = []
     Cms = []
-    DB = Database.get_instance()
-    RESULTS_DIR = DB.get_vehicle_case_directory(
-        airplane=plane,
-        state=state,
-        solver="AVL",
-    )
+
     for angle in angles:
-        result_file = os.path.join(RESULTS_DIR, f"{angle_to_case(angle)}.txt")
+        result_file = os.path.join(directory, f"{angle_to_case(angle)}.txt")
 
         with open(result_file, encoding="utf-8") as f:
             con = f.readlines()

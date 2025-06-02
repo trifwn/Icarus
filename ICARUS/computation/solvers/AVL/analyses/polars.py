@@ -25,16 +25,16 @@ def avl_polars(
     solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
     DB = Database.get_instance()
-    PLANEDIR = DB.get_vehicle_case_directory(
+    case_directory = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
         solver="AVL",
     )
-    os.makedirs(PLANEDIR, exist_ok=True)
-    case_def(plane, state, angles)
-    make_input_files(PLANEDIR, plane, state, solver2D, solver_options)
-    case_setup(plane, state)
-    case_run(plane, state, angles)
+
+    case_def(case_directory, plane, state, angles)
+    make_input_files(case_directory, plane, state, solver2D, solver_options)
+    case_setup(case_directory, plane, state)
+    case_run(case_directory, plane, angles)
     polar_df = process_avl_polars(plane, state, angles)
     state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
 
@@ -57,37 +57,46 @@ def process_avl_polars(
 
     """
     DB = Database.get_instance()
-    forces: DataFrame = collect_avl_polar_forces(
-        plane=plane,
-        state=state,
-        angles=angles,
-    )
-    CASEDIR = DB.get_vehicle_case_directory(
+
+    case_directory = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
         solver="AVL",
     )
-    filename = os.path.join(CASEDIR, "forces.avl")
+
+    forces: DataFrame = collect_avl_polar_forces(
+        directory=case_directory,
+        plane=plane,
+        state=state,
+        angles=angles,
+    )
+    filename = os.path.join(case_directory, "forces.avl")
     forces.to_csv(filename, index=False, float_format="%.10f")
 
     plane.save()
-    state.add_polar(
-        polar=forces,
-        polar_prefix="AVL",
-        is_dimensional=True,
-    )
-    state.save(CASEDIR)
 
-    logging.info("Adding Results to Database")
-    # Add Plane to Database
-    file_plane: str = os.path.join(CASEDIR, f"{plane.name}.json")
-    _ = DB.load_vehicle(name=plane.name, file=file_plane)
+    try:
+        state.add_polar(
+            polar=forces,
+            polar_prefix="AVL",
+            is_dimensional=True,
+        )
 
-    # Add Results to Database
-    DB.load_vehicle_solver_data(
-        vehicle=plane,
-        state=state,
-        folder=CASEDIR,
-        solver="AVL",
-    )
+    except Exception as e:
+        raise (e)
+
+    finally:
+        state.save(case_directory)
+        logging.info("Adding Results to Database")
+        # Add Plane to Database
+        file_plane: str = os.path.join(case_directory, f"{plane.name}.json")
+        _ = DB.load_vehicle(name=plane.name, file=file_plane)
+
+        # Add Results to Database
+        DB.load_vehicle_solver_data(
+            vehicle=plane,
+            state=state,
+            folder=case_directory,
+            solver="AVL",
+        )
     return forces

@@ -6,7 +6,6 @@ import numpy as np
 
 from ICARUS import AVL_exe
 from ICARUS.core.types import FloatArray
-from ICARUS.database import Database
 from ICARUS.database import angle_to_case
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
@@ -17,17 +16,12 @@ from ICARUS.vehicle import Airplane
 
 # DEFINING ALL AOA RUNS IN .RUN AVL FILE
 def case_def(
+    directory: str,
     plane: Airplane,
     state: State,
     angles: FloatArray | list[float],
 ) -> None:
     li = []
-    DB = Database.get_instance()
-    PLANEDIR = DB.get_vehicle_case_directory(
-        airplane=plane,
-        state=state,
-        solver="AVL",
-    )
     for i, angle in enumerate(angles):
         li.append("---------------------------------------------")
         li.append(f"Run case  {i + 1}:  -{angle}_deg- ")
@@ -43,21 +37,11 @@ def case_def(
             li.append(f"{name}         ->  {name}       =    {value:.5f}")
 
     ar = np.array(li)
-    np.savetxt(os.path.join(PLANEDIR, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
+    np.savetxt(os.path.join(directory, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
 
 
-def case_setup(plane: Airplane, state: State) -> None:
-    HOMEDIR = os.getcwd()
-    DB = Database.get_instance()
-    PLANEDIR = DB.get_vehicle_case_directory(
-        airplane=plane,
-        state=state,
-        solver="AVL",
-    )
-    os.chdir(PLANEDIR)
-
+def case_setup(directory: str, plane: Airplane, state: State) -> None:
     li = []
-
     li.append(f"load {plane.name}.avl")
     li.append(f"mass {plane.name}.mass")
     li.append(f"case {plane.name}.run")
@@ -71,30 +55,23 @@ def case_setup(plane: Airplane, state: State) -> None:
     li.append("quit")
     ar = np.array(li)
 
-    np.savetxt("mset_script", ar, delimiter=" ", fmt="%s")
+    file_in = os.path.join(directory, "mset_script")
+    file_out = os.path.join(directory, "mset_script.out")
 
-    with open("mset_script") as fin:
-        with open("mset_script.out", "w") as fout:
+    np.savetxt(file_in, ar, delimiter=" ", fmt="%s")
+    with open(file_in) as fin:
+        with open(file_out, "w") as fout:
             _ = subprocess.check_call(
                 [AVL_exe],
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
+                cwd=directory,
             )
-    os.chdir(HOMEDIR)
 
 
 # EXECUTION
-def case_run(plane: Airplane, state: State, angles: FloatArray | list[float]) -> None:
-    HOMEDIR = os.getcwd()
-    DB = Database.get_instance()
-    PLANEDIR = DB.get_vehicle_case_directory(
-        airplane=plane,
-        state=state,
-        solver="AVL",
-    )
-
-    os.chdir(PLANEDIR)
+def case_run(directory: str, plane: Airplane, angles: FloatArray | list[float]) -> None:
     li_2 = []
     li_2.append(f"load {plane.name}.avl")
     li_2.append(f"mass {plane.name}.mass")
@@ -119,16 +96,20 @@ def case_run(plane: Airplane, state: State, angles: FloatArray | list[float]) ->
     li_2.append("    ")
     li_2.append("quit")
     ar_2 = np.array(li_2)
-    np.savetxt("polar_script", ar_2, delimiter=" ", fmt="%s")
+
+    file_in = os.path.join(directory, "polar_script")
+    file_out = os.path.join(directory, "polar_script.out")
+
+    np.savetxt(file_in, ar_2, delimiter=" ", fmt="%s")
 
     # Do the same with subprocess
-    with open("polar_script") as fin:
-        with open("polar_script.out", "w") as fout:
+    with open(file_in) as fin:
+        with open(file_out, "w") as fout:
             res = subprocess.check_call(
                 [AVL_exe],
                 stdin=fin,
                 stdout=fout,
                 # stderr=fout,
+                cwd=directory,
             )
     logging.debug(f"AVL return code: {res}")
-    os.chdir(HOMEDIR)
