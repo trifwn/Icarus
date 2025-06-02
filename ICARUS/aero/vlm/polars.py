@@ -8,7 +8,6 @@ from typing import Any
 import pandas as pd
 from numpy import ndarray
 
-from ICARUS.aero import LSPT_Plane
 from ICARUS.database import Database
 
 if TYPE_CHECKING:
@@ -41,6 +40,8 @@ def lspt_polars(
 
     os.makedirs(LSPTDIR, exist_ok=True)
     # Generate the wing LLT solver
+    from ICARUS.aero import LSPT_Plane
+
     wing = LSPT_Plane(
         plane=plane,
     )
