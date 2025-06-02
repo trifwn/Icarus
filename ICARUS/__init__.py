@@ -27,6 +27,7 @@ from . import vehicle
 from . import environment
 from . import flight_dynamics
 from . import conceptual
+from . import data
 from . import database
 from . import visualization
 from . import aero
@@ -55,6 +56,7 @@ __all__ = [
     "computation",
     "conceptual",
     "database",
+    "data",
     "environment",
     "flight_dynamics",
     "mission",
