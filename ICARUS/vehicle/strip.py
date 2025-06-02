@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
-
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.utils import SymmetryAxes
 
+
+from jax.tree_util import register_pytree_node
 
 class Strip:
     """Class to define a strip of a wing or lifting surface.
@@ -20,15 +17,14 @@ class Strip:
 
     def __init__(
         self,
-        start_leading_edge: FloatArray | list[float],
-        start_chord: float,
-        start_twist: float,
-        start_airfoil: Airfoil,
-        end_leading_edge: FloatArray | list[float],
-        end_chord: float,
-        end_twist: float,
-        end_airfoil: Airfoil | None = None,
-        eta: float = 0.0,
+        x_c4: float,
+        y_c4: float,
+        z_c4: float,
+        pitch: float,
+        roll: float,
+        yaw: float,
+        chord: float,
+        airfoil: Airfoil,
     ) -> None:
         """Initialize the Strip class.
 
@@ -41,327 +37,145 @@ class Strip:
             end_airfoil (Airfoil, optional): Ending airfoil. Defaults to None. If None, the starting airfoil is used.
 
         """
-        self.x0: float = start_leading_edge[0]
-        self.y0: float = start_leading_edge[1]
-        self.z0: float = start_leading_edge[2]
+        self.x_c4: float = x_c4
+        self.y_c4: float = y_c4
+        self.z_c4: float = z_c4
 
-        self.x1: float = end_leading_edge[0]
-        self.y1: float = end_leading_edge[1]
-        self.z1: float = end_leading_edge[2]
+        self.pitch: float = pitch
+        self.roll: float = roll
+        self.yaw: float = yaw
 
-        self.airfoil_start: Airfoil = start_airfoil
-        if end_airfoil is None:
-            self.airfoil_end: Airfoil = start_airfoil
-        else:
-            self.airfoil_end = end_airfoil
+        self.chord: float = chord
+        self.airfoil: Airfoil = airfoil
 
-        # Morph the airfoils to the new shape
-        if self.airfoil_start is not self.airfoil_end:
-            self.mean_airfoil = Airfoil.morph_new_from_two_foils(
-                self.airfoil_start,
-                self.airfoil_end,
-                eta,
-                self.airfoil_start.n_points,
+        direction = np.array([self.pitch, self.roll, self.yaw])
+        direction /= np.linalg.norm(direction)
+        leading_edge = np.array([self.x_c4, self.y_c4, self.z_c4]) - 0.25 * self.chord * direction
+
+        self.leading_edge: tuple[float, float, float] = (
+            float(leading_edge[0]),
+            float(leading_edge[1]),
+            float(leading_edge[2]),
+        )
+
+        self.max_thickness: float = self.airfoil.max_thickness * self.chord
+
+    def translate(self, dx: float, dy: float, dz: float) -> Strip:
+        """Translate the strip by the given distances in x, y, and z directions."""
+        return Strip(
+            x_c4=self.x_c4 + dx,
+            y_c4=self.y_c4 + dy,
+            z_c4=self.z_c4 + dz,
+            pitch=self.pitch,
+            roll=self.roll,
+            yaw=self.yaw,
+            chord=self.chord,
+            airfoil=self.airfoil,
+        )
+
+    def rotate(self, d_pitch: float, d_roll: float, d_yaw: float) -> Strip:
+        """Rotate the strip by the given angles in pitch, roll, and yaw."""
+        return Strip(
+            x_c4=self.x_c4,
+            y_c4=self.y_c4,
+            z_c4=self.z_c4,
+            pitch=self.pitch + d_pitch,
+            roll=self.roll + d_roll,
+            yaw=self.yaw + d_yaw,
+            chord=self.chord,
+            airfoil=self.airfoil,
+        )
+
+    def rotate_around_point(self, point: tuple[float, float, float], rotation: tuple[float, float, float]) -> Strip:
+        """Rotate the strip around a specified point by given rotation angles."""
+        dx = self.x_c4 - point[0]
+        dy = self.y_c4 - point[1]
+        dz = self.z_c4 - point[2]
+
+        # Apply rotation around the specified point
+        new_x = point[0] + dx * np.cos(rotation[2]) - dy * np.sin(rotation[2])
+        new_y = point[1] + dx * np.sin(rotation[2]) + dy * np.cos(rotation[2])
+        new_z = self.z_c4
+
+        return Strip(
+            x_c4=new_x,
+            y_c4=new_y,
+            z_c4=new_z,
+            pitch=self.pitch + rotation[0],
+            roll=self.roll + rotation[1],
+            yaw=self.yaw + rotation[2],
+            chord=self.chord,
+            airfoil=self.airfoil,
+        )
+
+    def scale(self, factor: float) -> Strip:
+        """Scale the strip by a given factor."""
+        return Strip(
+            x_c4=self.x_c4,
+            y_c4=self.y_c4,
+            z_c4=self.z_c4,
+            pitch=self.pitch,
+            roll=self.roll,
+            yaw=self.yaw,
+            chord=self.chord * factor,
+            airfoil=self.airfoil,
+        )
+
+    def return_symmetric(self, axis: SymmetryAxes = SymmetryAxes.Y) -> Strip:
+        """Return a symmetric strip based on the specified symmetry axis."""
+        if axis == SymmetryAxes.Y:
+            return Strip(
+                x_c4=self.x_c4,
+                y_c4=-self.y_c4,
+                z_c4=self.z_c4,
+                pitch=self.pitch,
+                roll=self.roll,
+                yaw=self.yaw,
+                chord=self.chord,
+                airfoil=self.airfoil,
+            )
+        elif axis == SymmetryAxes.Z:
+            return Strip(
+                x_c4=self.x_c4,
+                y_c4=self.y_c4,
+                z_c4=-self.z_c4,
+                pitch=self.pitch,
+                roll=self.roll,
+                yaw=self.yaw,
+                chord=self.chord,
+                airfoil=self.airfoil,
+            )
+        elif axis == SymmetryAxes.X:
+            return Strip(
+                x_c4=-self.x_c4,
+                y_c4=self.y_c4,
+                z_c4=self.z_c4,
+                pitch=self.pitch,
+                roll=self.roll,
+                yaw=self.yaw,
+                chord=self.chord,
+                airfoil=self.airfoil,
             )
         else:
-            self.mean_airfoil = self.airfoil_start
+            raise ValueError(f"Invalid symmetry axis: {axis}")
 
-        self.chords: list[float] = [start_chord, end_chord]
-        self.mean_chord: float = (start_chord + end_chord) / 2
-        self.twists: list[float] = [start_twist, end_twist]
-        self.mean_twist = (start_twist + end_twist) / 2
-        self.max_thickness: float = self.mean_airfoil.max_thickness
+    def plot(self, *args, **kwargs) -> None:
+        """Plot the strip in 3D space."""
+        pass
 
-    def return_symmetric(
-        self,
-    ) -> Strip:
-        """Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
-        It also adds a small gap if the strip located along the x axis.
-
-        Returns:
-            tuple[list[float], list[float], Airfoil, float, float]: Symmetric Strip initializer
-
-        """
-        start_point: list[float] = [self.x1, -self.y1, self.z1]
-        if self.y0 == 0:
-            end_point: list[float] = [self.x0, 0.01 * self.y1, self.z0]
-        else:
-            end_point = [self.x0, -self.y0, self.z0]
-
-        symm_strip: Strip = Strip(
-            start_leading_edge=start_point,
-            start_chord=self.chords[1],
-            start_airfoil=self.airfoil_start,
-            start_twist=self.twists[0],
-            end_leading_edge=end_point,
-            end_chord=self.chords[0],
-            end_twist=self.twists[1],
-            end_airfoil=self.airfoil_end,
-        )
-        return symm_strip
-
-    def get_root_strip(self) -> FloatArray:
-        """Returns the root strip of the wing.
-
-        Returns:
-            FloatArray: Array of points defining the root.
-
-        """
-        strip: list[FloatArray] = [
-            self.x0 + self.chords[0] * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
-            self.y0 + np.repeat(0, self.airfoil_start.n_points),
-            self.z0 + self.chords[0] * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
-        ]
-        return np.array(strip)
-
-    def get_tip_strip(self) -> FloatArray:
-        """Returns the tip strip of the wing.
-
-        Returns:
-            FloatArray: Array of points defining the tip.
-
-        """
-        strip: list[FloatArray] = [
-            self.x1 + self.chords[1] * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
-            self.y1 + np.repeat(0, self.airfoil_start.n_points),
-            self.z1 + self.chords[1] * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
-        ]
-        return np.array(strip)
-
-    def get_interpolated_section(
-        self,
-        idx: int,
-        n_points_span: int = 10,
-    ) -> tuple[FloatArray, FloatArray, FloatArray]:
-        """Interpolate between start and end strips and return the section at the given index.
-
-        Args:
-            idx: index of interpolation
-            n_points: number of points to interpolate in the span direction
-        Returns:
-            tuple[FloatArray, FloatArray, FloatArray]: suction side, camber line and pressure side coordinates of the section at the given index
-
-        """
-        x: FloatArray = np.linspace(
-            start=self.x0,
-            stop=self.x1,
-            num=n_points_span,
-        )
-        y: FloatArray = np.linspace(
-            self.y0,
-            self.y1,
-            n_points_span,
-        )
-        z: FloatArray = np.linspace(
-            self.z0,
-            self.z1,
-            n_points_span,
-        )
-        c: FloatArray = np.linspace(
-            self.chords[0],
-            self.chords[1],
-            n_points_span,
-        )
-
-        # Relative position of the point wrt to the start and end of the strip
-        heta: float = (idx + 1) / (n_points_span + 1)
-        self.n_points = len(self.airfoil_start._x_upper)
-        airfoil: Airfoil = Airfoil.morph_new_from_two_foils(
-            self.airfoil_start,
-            self.airfoil_end,
-            heta,
-            self.airfoil_start.n_points,
-        )
-
-        camber_line: FloatArray = np.vstack(
-            [
-                x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, len(airfoil._x_lower)),
-                z[idx] + c[idx] * airfoil.camber_line(airfoil._x_lower),
-            ],
-            dtype=float,
-        )
-
-        suction_side: FloatArray = np.vstack(
-            [
-                x[idx] + c[idx] * airfoil._x_upper,
-                y[idx] + np.repeat(0, len(airfoil._x_upper)),
-                z[idx] + c[idx] * airfoil.y_upper(airfoil._x_upper),
-            ],
-            dtype=float,
-        )
-
-        pressure_side: FloatArray = np.vstack(
-            [
-                x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, len(airfoil._x_lower)),
-                z[idx] + c[idx] * airfoil.y_lower(airfoil._x_lower),
-            ],
-            dtype=float,
-        )
-
-        return suction_side, camber_line, pressure_side
-
-    def __str__(self) -> str:
-        return f"Strip: with airfoil {self.airfoil_start.name}"
-
-    def plot(
-        self,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
-        color: tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
-    ) -> None:
-        pltshow = False
-
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
-            ax.set_title("Strip")
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
-            ax.axis("scaled")
-            ax.view_init(30, 150)
-            pltshow = True
-
-        if movement is None:
-            movement = np.zeros(3)
-
-        to_plot = ["camber"]
-
-        xs: dict[str, list[float]] = {key: [] for key in to_plot}
-        ys: dict[str, list[float]] = {key: [] for key in to_plot}
-        zs: dict[str, list[float]] = {key: [] for key in to_plot}
-
-        N_span: int = 10
-        for i in range(N_span):
-            suction, camber, pressure = self.get_interpolated_section(i, N_span)
-
-            x_camber, y_camber, z_camber = (camber.T + movement).T
-            x_suction, y_suction, z_suction = (suction.T + movement).T
-            x_pressure, y_pressure, z_pressure = (pressure.T + movement).T
-
-            for key in to_plot:
-                if key == "camber":
-                    xs[key].append(x_camber)
-                    ys[key].append(y_camber)
-                    zs[key].append(z_camber)
-                elif key == "suction":
-                    xs[key].append(x_suction)
-                    ys[key].append(y_suction)
-                    zs[key].append(z_suction)
-                elif key == "pressure":
-                    xs[key].append(x_pressure)
-                    ys[key].append(y_pressure)
-                    zs[key].append(z_pressure)
-
-        for key in to_plot:
-            X: FloatArray = np.array(xs[key])
-            Y: FloatArray = np.array(ys[key])
-            Z: FloatArray = np.array(zs[key])
-
-            if color is not None:
-                my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
-                    Z.shape[0],
-                    Z.shape[1],
-                    4,
-                )
-                ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
-            else:
-                my_color = "red"
-                ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
-
-        if pltshow:
-            plt.show()
-
-    def plot_points(
-        self,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
-        color: tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
-    ) -> None:
-        pltshow = False
-
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
-            ax.set_title("Strip Points")
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
-            ax.axis("scaled")
-            ax.view_init(30, 150)
-            pltshow = True
-
-        if movement is None:
-            movement = np.zeros(3)
-
-        x_coords: list[float] = []
-        y_coords: list[float] = []
-        z_coords: list[float] = []
-
-        N: int = 10
-        for i in range(N):
-            suction, camber, pressure = self.get_interpolated_section(i, N)
-
-            x_camber, y_camber, z_camber = camber
-            x_suction, y_suction, z_suction = suction
-            x_pressure, y_pressure, z_pressure = pressure
-
-            x_coords.extend(x_suction + movement[0])
-            y_coords.extend(y_suction + movement[1])
-            z_coords.extend(z_suction + movement[2])
-
-            x_coords.extend(x_camber + movement[0])
-            y_coords.extend(y_camber + movement[1])
-            z_coords.extend(z_camber + movement[2])
-
-            x_coords.extend(x_pressure + movement[0])
-            y_coords.extend(y_pressure + movement[1])
-            z_coords.extend(z_pressure + movement[2])
-
-        X: FloatArray = np.array(x_coords)
-        Y: FloatArray = np.array(y_coords)
-        Z: FloatArray = np.array(z_coords)
-
-        if color is not None:
-            ax.scatter(X, Y, Z, c=color)
-        else:
-            ax.scatter(X, Y, Z)
-
-        if pltshow:
-            plt.show()
-
-    def __eq__(self, other: object) -> bool:
-        """Compares two strips. They are considered equal if the leading edge points, the chord and the airfoil are the same.
-
-        Args:
-            __value (Strip): Strip to compare
-
-        Returns:
-            bool: True if the strips are equal, False otherwise.
-
-        """
-        if not isinstance(other, Strip):
-            return NotImplemented
-        if (
-            self.x0 == other.x0
-            and self.y0 == other.y0
-            and self.z0 == other.z0
-            and self.x1 == other.x1
-            and self.y1 == other.y1
-            and self.z1 == other.z1
-            and self.chords == other.chords
-            and self.airfoil_start == other.airfoil_start
-            and self.airfoil_end == other.airfoil_end
-        ):
-            return True
-        return False
+register_pytree_node(
+    Strip,
+    lambda strip_data: ((
+        strip_data.x_c4, 
+        strip_data.y_c4, 
+        strip_data.z_c4,
+        strip_data.pitch, 
+        strip_data.roll, 
+        strip_data.yaw,
+        strip_data.chord, 
+        strip_data.airfoil
+    ), None),  # tell JAX how to unpack to an iterable
+    lambda _, strip_data: Strip(
+        *strip_data
+    )       # tell JAX how to pack back into a Point
+)

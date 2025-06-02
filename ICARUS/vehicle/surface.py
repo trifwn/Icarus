@@ -165,7 +165,7 @@ class WingSurface(RigidBody):
         self.area: float = 0.0
 
         # Initialize Volumes
-        self.structural_volume_distribution: FloatArray = np.empty(self.num_panels)
+        self.structural_volume_distribution: FloatArray = np.empty(self.num_panels, dtype=float)
         self.structural_volume: float = 0.0
 
         ####### Calculate Wing Parameters #######
@@ -416,16 +416,6 @@ class WingSurface(RigidBody):
         return self.calculate_geometric_center_inertia(self.structural_mass, self.sructural_mass_CG)
 
     @property
-    def tip(self) -> FloatArray:
-        """Return Tip of Wing. We basically returns the tip strip of the wing."""
-        return self.strips[-1].get_tip_strip()
-
-    @property
-    def root(self) -> FloatArray:
-        """Return Root of Wing. We basically returns the root strip of the wing."""
-        return self.strips[0].get_root_strip()
-
-    @property
     def leading_edge(self) -> FloatArray:
         """Return Leading Edge of Wing"""
         return self.grid_upper[0, :, :] + self._origin
@@ -633,7 +623,7 @@ class WingSurface(RigidBody):
     def define_strips(self) -> None:
         """Create Strips given the Grid and airfoil"""
         strips: list[Strip] = []
-        i_range = np.arange(0, self.N - 1)
+        i_range = np.arange(0, self.N)
 
         start_points = np.array(
             [
@@ -645,48 +635,18 @@ class WingSurface(RigidBody):
         )
         start_points = np.matmul(self.R_MAT, start_points) + self._origin[:, None]
 
-        end_points = np.array(
-            [
-                self._xoffset_dist[i_range + 1],
-                self._span_dist[i_range + 1],
-                self._zoffset_dist[i_range + 1],
-            ],
-            dtype=float,
-        )
-        end_points = np.matmul(self.R_MAT, end_points) + self._origin[:, None]
-
-        start_chords = np.array(self._chord_dist[i_range])
-        end_chords = np.array(self._chord_dist[i_range + 1])
-
-        strips = []
-        for j in range(self.N - 1):
-            strip_root_af = self.airfoils[j]
-            strip_tip_af = self.airfoils[j + 1]
-
-            # Based on the shape (area) of the strip, we can calculate the eta position of the strip
-            # We can then calculate the mean aerodynamic chord of the strip
-            strip_mean_aerodynamic_chord = (start_chords[j] + end_chords[j]) / 2
-            strip_half_span = (self._span_dist[j + 1] - self._span_dist[j]) / 2
-            eta = (
-                1
-                / 2
-                * strip_half_span
-                * (start_chords[j] + strip_mean_aerodynamic_chord)
-                / (strip_half_span * (start_chords[j] + end_chords[j]))
-            )
+        for j in range(self.N):
+            airfoil = self.airfoils[j]
 
             strip = Strip(
-                # Define left part of the strip
-                start_leading_edge=start_points[:, j],
-                start_airfoil=strip_root_af,
-                start_chord=start_chords[j],
-                start_twist=self.twist_angles[j],
-                # Define right part of the strip
-                end_leading_edge=end_points[:, j],
-                end_airfoil=strip_tip_af,
-                end_chord=end_chords[j],
-                end_twist=self.twist_angles[j + 1],
-                eta=eta,
+                x_c4=start_points[0, j],
+                y_c4=start_points[1, j],
+                z_c4=start_points[2, j],
+                pitch=self.twist_angles[j] + self.pitch,
+                roll=self.roll,
+                yaw=self.yaw,
+                chord=self._chord_dist[j],
+                airfoil=airfoil,
             )
             strips.append(strip)
         self.strips = strips
@@ -694,7 +654,7 @@ class WingSurface(RigidBody):
     @property
     def all_strips(self) -> list[Strip]:
         if self.is_symmetric_y:
-            symmetric_strips = [strip.return_symmetric() for strip in self.strips]
+            symmetric_strips = [strip.return_symmetric(axis=SymmetryAxes.Y) for strip in self.strips]
             return [*symmetric_strips[::-1], *self.strips]
         return self.strips
 

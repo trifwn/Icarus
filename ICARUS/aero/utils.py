@@ -119,6 +119,7 @@ def panel_center(panel: Array) -> Array:
     """
     return jnp.mean(panel, axis=0)
 
+
 panel_cp_normal = jax.jit(panel_cp_normal)
 panel_area = jax.jit(panel_area)
 panel_center = jax.jit(panel_center)

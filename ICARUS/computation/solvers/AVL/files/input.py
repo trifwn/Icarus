@@ -216,26 +216,14 @@ def avl_geo(
         f_io.write("\n")
 
         for j, strip in enumerate(surf.strips):
-            if j == 0:
-                x, y, z = strip.x0, strip.y0, strip.z0
-                chord = strip.chords[0]
-                twist = strip.twists[0]
-                N = 1
-                strip_airfoil = strip.airfoil_start
-            elif j == len(surf.strips) - 1:
-                x, y, z = strip.x1, strip.y1, strip.z1
-                chord = strip.chords[1]
-                twist = strip.twists[1]
-                N = 1
-                strip_airfoil = strip.airfoil_end
-            else:
-                x = (strip.x0 + strip.x1) / 2
-                y = (strip.y0 + strip.y1) / 2
-                z = (strip.z0 + strip.z1) / 2
-                chord = strip.mean_chord
-                twist = strip.mean_twist
-                N = 1
-                strip_airfoil = strip.airfoil_end
+            x, y, z = strip.leading_edge
+
+            chord = strip.chord
+            twist = strip.pitch
+            strip_airfoil = strip.airfoil
+
+            N = 1
+
             strip_r = np.array([x, y, z])
 
             f_io.write(
@@ -268,7 +256,7 @@ def avl_geo(
                         cname = control_surf.control_var
                         cgain = 1.0
                         if control_surf.constant_chord != 0.0:
-                            x_hinge = 1 - control_surf.constant_chord / strip.mean_chord
+                            x_hinge = 1 - control_surf.constant_chord / strip.chord
                         else:
                             x_hinge = control_surf.chord_function(strip_span / span)
                         # hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
@@ -284,7 +272,7 @@ def avl_geo(
             if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
-                reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
+                reynolds = strip.chord * u_inf / environment.air_kinematic_viscosity
                 # Get the airfoil polar
 
                 try:
