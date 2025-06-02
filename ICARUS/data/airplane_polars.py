@@ -1,56 +1,16 @@
-"""Contains the Airfoil Polars Class and related functions.
-The Airfoil Polars Class is used to store the aerodynamic
-coefficients of an airfoil at different Reynolds numbers
-and angles of attack. The class also contains methods to
-interpolate the aerodynamic coefficients at different
-Reynolds numbers and angles of attack.
-
-To initialize the Airfoil Polars Class, just pass a the
-Struct data from the DataBase to the constructor.
-
->>> from ICARUS.data import AirfoilPolars
->>> from ICARUS.database import Database
->>> db_folder = "path/to/database"
->>> DB = Database(db_folder)
->>> data = DB.get_airfoil_data("NACA0012")
->>> polars = AirfoilPolars(data)
-
-Then we can get a specific Reynolds Subtable by calling:
-
->>> reynolds = 1000000
->>> polars.get_reynolds_subtable(reynolds)
-
-We can also interpolate missing values in the table by calling:
-
->>> polars.fill_polar_table(df)
-
-For any series of data (aka a specific Reynolds) we can get additional
-information such as the zero lift angle, the zero lift coefficient of
-moment, and the slope of the Cl vs Alpha curve by calling:
-
->>> df = polars.get_reynolds_subtable(reynolds)
->>> cm_curve = df["Cm"]
->>> cl_curve = df["Cl"]
->>> polars.get_zero_lift(cl_curve)
->>> polars.get_zero_lift_cm(cm_curve, zero_lift_angle)
->>> polars.get_cl_slope(cl_curve)
-
-"""
-
 from __future__ import annotations
 
 import os
-
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas import DataFrame
 from pandas import Index
-from pandas import Series
 
-from ICARUS.airfoils import Airfoil
+# from ICARUS.vehicle import Airplane
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
@@ -60,7 +20,6 @@ from .utils import (
     get_linear_series,
 )
 
-# from ICARUS.airfoils import Airfoil
 class PolarNotAccurate(Exception):
     """Exception Raised when the Polar is not accurate"""
 
@@ -68,14 +27,7 @@ class PolarNotAccurate(Exception):
         super().__init__(message)
 
 
-class ReynoldsNotIncluded(Exception):
-    """Exception Raised when the Polar is not included"""
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-
-
-class AirfoilData:
+class AirplaneData:
     """Solver Data Class"""
 
     def __init__(
@@ -85,7 +37,7 @@ class AirfoilData:
     ) -> None:
         self.name = name
 
-        self.polars: dict[str, AirfoilPolars] = {}
+        self.polars: dict[str, AirplanePolars] = {}
         for solver, subdata in data.items():
             self.add_solver(solver, subdata)
 
@@ -96,7 +48,7 @@ class AirfoilData:
     def get_solver_reynolds(self, solver: str) -> list[float]:
         return self.polars[solver].reynolds_nums
 
-    def get_polars(self, solver: str | None = None) -> AirfoilPolars:
+    def get_polars(self, solver: str | None = None) -> AirplanePolars:
         if solver is None:
             return self.polars[list(self.polars.keys())[0]]
         return self.polars[solver]
@@ -105,14 +57,14 @@ class AirfoilData:
         return self.polars[solver].df
 
     def add_solver(self, solver: str, data: dict[str, DataFrame]) -> None:
-        self.polars[solver] = AirfoilPolars(self.name, data)
+        self.polars[solver] = AirplanePolars(self.name, data)
 
     def add_data(self, data: dict[str, dict[str, DataFrame]]) -> None:
         for solver, subdata in data.items():
             self.add_solver(solver, subdata)
 
 
-class AirfoilPolars:
+class AirplanePolars:
     """Airfoil Polars Class"""
 
     def __init__(
@@ -385,8 +337,8 @@ class AirfoilPolars:
 
         DB = Database.get_instance()
 
-        airfoil: Airfoil = DB.get_airfoil(self.name.upper())
-        airfoil.plot(ax=axs[1, 1], camber=True, max_thickness=True, scatter=False)
+        # airplane: Airplane = DB.get_vehicle(self.name.upper())
+        # airplane.plot(ax=axs[1, 1], camber=True, max_thickness=True, scatter=False)
 
         # Clear all axes legends
         for ax in axs.flatten():

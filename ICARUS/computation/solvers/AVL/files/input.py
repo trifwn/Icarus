@@ -9,8 +9,8 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS import AVL_exe
-from ICARUS.data import AirfoilPolars
 from ICARUS.core.types import FloatArray
+from ICARUS.data import AirfoilPolars
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 from ICARUS.environment import Environment

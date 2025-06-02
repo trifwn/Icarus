@@ -6,12 +6,12 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.data import AirfoilPolars
 from ICARUS.core.types import FloatArray
 from ICARUS.core.utils import ff2
 from ICARUS.core.utils import ff3
 from ICARUS.core.utils import ff4
 from ICARUS.core.utils import ff5
+from ICARUS.data import AirfoilPolars
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 
