@@ -159,11 +159,7 @@ class Database_3D:
     def read_plane_data(self, vehicle_folder: str) -> None:
         logging.info(f"Adding Vehicle at {vehicle_folder}")
         # Enter self.DB3D
-        DIRNOW = os.getcwd()
-        os.chdir(self.DB3D)
         vehicle_folder_path = os.path.join(self.DB3D, vehicle_folder)
-        os.chdir(vehicle_folder_path)
-
         # Load Vehicle object
         file_plane: str = os.path.join(
             self.DB3D,
@@ -181,16 +177,18 @@ class Database_3D:
         vehicle_name = plane_obj.name
 
         # Load Vehicle State
-
         state_folders = next(os.walk(os.path.join(self.DB3D, vehicle_folder)))[1]
+        print(f"Found {len(state_folders)} State Folders for {vehicle_name} at {vehicle_folder_path}")
         for state_folder in state_folders:
             solver_folders = next(os.walk(os.path.join(vehicle_folder_path, state_folder)))[1]
             for solver_folder in solver_folders:
                 solver_folder_path = os.path.join(vehicle_folder_path, state_folder, solver_folder)
+                print(f"Reading Solver {solver_folder} at {solver_folder_path}")
 
                 state_obj: State | None = self.load_plane_state(solver_folder_path)
                 if state_obj is None:
                     logging.debug(f"No State Object Found at {solver_folder_path}")
+                    print(f"No State Object Found at {solver_folder_path}")
                     continue
 
                 state_name = f"{state_obj.name}_{solver_folder}"
@@ -208,8 +206,6 @@ class Database_3D:
                     )
                 except ValueError:
                     print(f"Unknown Solver {solver_folder} for {vehicle_name}")
-                os.chdir(vehicle_folder_path)
-        os.chdir(DIRNOW)
 
     def load_vehicle(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.

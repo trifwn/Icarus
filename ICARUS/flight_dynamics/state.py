@@ -196,7 +196,7 @@ class State:
         # self.control_state.control_vector_dict
         airplane_val = self.airplane.control_vector
         self.control_state.update(airplane_val)
-        return self.control_state.control_vector_dict
+        return self.control_state.control_vector_dict.copy()
 
     @property
     def control_vector(self) -> FloatArray:
@@ -600,8 +600,6 @@ class State:
         fname: str = os.path.join(directory, f"{self.name}_state.json")
         with open(fname, "w", encoding="utf-8") as f:
             f.write(self.to_json())
-
-        # TODO ADD A FILE CONTAINING ENUMERATION OF CASES AND CONTROL VECTORS
 
     @property
     def a_long(self) -> Any:

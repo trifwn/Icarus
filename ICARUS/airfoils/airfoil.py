@@ -59,20 +59,27 @@ import re
 from typing import TYPE_CHECKING
 from typing import Any
 
-import airfoils as af
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
+from jaxtyping import Float
 from matplotlib.axes import Axes
 
-from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
+
+from ._interpolate import Interpolator
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
 
 
-class Airfoil(af.Airfoil):
+class NACADefintionError(Exception):
+    """Raised when the NACA identifier number is not valid"""
+
+    pass
+
+
+class Airfoil:
     """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
 
@@ -83,8 +90,8 @@ class Airfoil(af.Airfoil):
 
     def __init__(
         self,
-        upper: FloatArray,
-        lower: FloatArray,
+        upper: Float,
+        lower: Float,
         name: str,
     ) -> None:
         """Initialize the Airfoil class
@@ -94,28 +101,61 @@ class Airfoil(af.Airfoil):
             lower (FloatArray): Lower surface coordinates
             naca (str): NACA 4 digit identifier (e.g. 0012)
         """
-        lower, upper = self.close_airfoil(lower, upper)
-        super().__init__(upper, lower)
         name = name.replace(" ", "")
         self.name: str = name
         self.file_name: str = name
 
-        self.n_points: int = upper.shape[1]
+        lower, upper = self.close_airfoil(lower, upper)
+
+        self.upper = np.array(upper, dtype=float)
+        self.lower = np.array(lower, dtype=float)
+
+        # Unpack coordinates
+        self._x_upper = upper[0, :]
+        self._y_upper = upper[1, :]
+        self._x_lower = lower[0, :]
+        self._y_lower = lower[1, :]
+
+        self._y_upper_interp = Interpolator(
+            self._x_upper,
+            self._y_upper,
+            kind="linear",
+            bounds_error=False,
+            fill_value="extrapolate",  # type: ignore[call-arg]
+        )
+        self._y_lower_interp = Interpolator(
+            self._x_lower,
+            self._y_lower,
+            kind="linear",
+            bounds_error=False,
+            fill_value="extrapolate",  # type: ignore[call-arg]
+        )
+
+        self.min_x = np.min(self._x_upper)
+        self.max_x = np.max(self._x_upper)
+        self.norm_factor = 1
+
         # Repanel the airfoil
         # self.repanel(n_points=n_points, distribution="cosine")
-        self.selig = self.to_selig()
-
-        self.polars: dict[str, Any] | Struct = {}
-
-        # For Type Checking
-        self._x_upper: FloatArray = self._x_upper
-        self._y_upper: FloatArray = self._y_upper
-
-        self._x_lower: FloatArray = self._x_lower
-        self._y_lower: FloatArray = self._y_lower
+        self.n_points: int = upper.shape[1]
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
+
+        self.selig = self.to_selig()
         self.selig_original = self.selig
+
+    def y_upper(self, x):
+        # x-coordinate is between [0, 1]
+        # x must be set between [min(x_upper), max(x_upper)]
+        x = self.min_x + x * (self.max_x - self.min_x)
+        return self._y_upper_interp(x)
+
+    def y_lower(self, x):
+        # x-coordinate is between [0, 1]
+        # x must be set between [min(x_lower), max(x_lower)]
+
+        x = self.min_x + x * (self.max_x - self.min_x)
+        return self._y_lower_interp(x)
 
     def repanel_spl(self, n_points: int = 200, smoothing: float = 0.0) -> None:
         pts = self.selig_original
@@ -399,7 +439,7 @@ class Airfoil(af.Airfoil):
             return airfoil1
 
         ksi = np.linspace(0, np.pi, n_points // 2)
-        x = 0.5 * (1 - np.cos(ksi))
+        x = 0.5 * (1.0 - np.cos(ksi))
 
         y_upper_af1 = airfoil1.y_upper(x)
         y_lower_af1 = airfoil1.y_lower(x)
@@ -513,12 +553,12 @@ class Airfoil(af.Airfoil):
         if re_4digits.match(naca):
             from .naca4 import NACA4
 
-            m = int(naca[0])
-            p = int(naca[1])
-            xx = int(naca[2:4])
+            m = int(naca[0]) / 100
+            p = int(naca[1]) / 10
+            xx = int(naca[2:4]) / 100
             naca4 = NACA4(M=m, P=p, XX=xx, n_points=n_points)
             return naca4
-        raise af.NACADefintionError(
+        raise NACADefintionError(
             "Identifier not recognised as valid NACA 4 definition",
         )
 
@@ -798,7 +838,7 @@ class Airfoil(af.Airfoil):
             FloatArray: Camber line
 
         """
-        return np.array(super().camber_line(x), dtype=float)
+        return np.array((self.y_upper(x) + self.y_lower(x)) / 2, dtype=float)
 
     def to_selig(self) -> FloatArray:
         """Returns the airfoil in the selig format.
@@ -1031,14 +1071,14 @@ class Airfoil(af.Airfoil):
         _ax.axis("scaled")
         _ax.set_title(f"Airfoil {self.name}")
 
-    # def __repr__(self) -> str:
-    #     """Returns the string representation of the airfoil
+    def __repr__(self) -> str:
+        """Returns the string representation of the airfoil
 
-    #     Returns:
-    #         str: String representation of the airfoil
+        Returns:
+            str: String representation of the airfoil
 
-    #     """
-    #     return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        """
+        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
 
     def __str__(self) -> str:
         """Returns the string representation of the airfoil

@@ -11,9 +11,7 @@ exclude = ["Data*", "tests*"]
 
 [project]
 name = "ICARUS"
-authors = [
-    {name = "Tryfonas Themas", email = "tryfonthem@gmail.com"},
-]
+authors = [{ name = "Tryfonas Themas", email = "tryfonthem@gmail.com" }]
 
 description = "ICARUS AIRPLANE DESIGN"
 readme = "README.md"
@@ -36,12 +34,11 @@ dependencies = [
     "inquirer",
     "pyfiglet",
     "gitpython",
-    "airfoils @git+https://github.com/trifwn/airfoils.git",
     "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     'jax',
     'jaxlib',
     'jaxtyping',
-    'interpax', # Maybe Deprecate
+    'interpax',                                                      # Maybe Deprecate
     "diffrax",
     "optimistix",
     'jaxopt',
@@ -58,12 +55,10 @@ icarus-cli = "cli:cli_home"
 ICARUS = ["bin/*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "ICARUS.__version__"}
+version = { attr = "ICARUS.__version__" }
 
 [tool.mypy]
-plugins = [
-    "numpy.typing.mypy_plugin"
-]
+plugins = ["numpy.typing.mypy_plugin"]
 
 #pretty = true
 [tool.ruff.lint]

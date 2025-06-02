@@ -28,10 +28,10 @@ def make_input_files(
     solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
     solver_options: dict[str, Any] = {"use_avl_control": False},
 ) -> None:
-    control_vector = plane.control_vector
+    control_vector_dict = state.control_vector_dict
     avl_mass(directory, plane, state.environment)
     avl_geo(directory, plane, state, state.u_freestream, solver2D, solver_options)
-    plane.__control__(control_vector)
+    state.set_control(control_vector_dict)
 
 
 def avl_mass(
@@ -109,7 +109,7 @@ def avl_mass(
 
 
 def avl_geo(
-    PLANE_DIR: str,
+    directory: str,
     plane: Airplane,
     state: State,
     u_inf: float,
@@ -117,8 +117,8 @@ def avl_geo(
     solver_options: dict[str, float] = {},
 ) -> None:
     environment = state.environment
-    if os.path.isfile(f"{PLANE_DIR}/{plane.name}.avl"):
-        os.remove(f"{PLANE_DIR}/{plane.name}.avl")
+    if os.path.isfile(f"{directory}/{plane.name}.avl"):
+        os.remove(f"{directory}/{plane.name}.avl")
 
     f_io = StringIO()
 
@@ -153,7 +153,7 @@ def avl_geo(
 
     # Use control from AVL vs ICARUS
     if "use_avl_control" in solver_options:
-        plane.__control__({k: 0.0 for k in plane.control_vars})
+        state.set_control({k: 0.0 for k in state.control_vars})
         use_avl_control = True
     else:
         use_avl_control = False
@@ -267,7 +267,7 @@ def avl_geo(
 
             # Save Airfoil file
             strip_airfoil.repanel_spl(180, 1e-7)
-            strip_airfoil.save_selig(PLANE_DIR)
+            strip_airfoil.save_selig(directory)
 
             if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
@@ -310,7 +310,7 @@ def avl_geo(
             # f_io.write("\n")
 
     contents: str = f_io.getvalue().expandtabs(4)
-    fname = f"{PLANE_DIR}/{plane.name}.avl"
+    fname = f"{directory}/{plane.name}.avl"
     with open(fname, "w", encoding="utf-8") as file:
         file.write(contents)
 
