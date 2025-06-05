@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import numpy as np
+from jax.tree_util import register_pytree_node
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.vehicle.utils import SymmetryAxes
 
-
-from jax.tree_util import register_pytree_node
 
 class Strip:
     """Class to define a strip of a wing or lifting surface.
@@ -49,7 +48,11 @@ class Strip:
         self.airfoil: Airfoil = airfoil
 
         direction = np.array([self.pitch, self.roll, self.yaw])
-        direction /= np.linalg.norm(direction)
+        norm = np.linalg.norm(direction)
+
+        if norm !=0:
+            direction /= np.linalg.norm(direction)
+
         leading_edge = np.array([self.x_c4, self.y_c4, self.z_c4]) - 0.25 * self.chord * direction
 
         self.leading_edge: tuple[float, float, float] = (
@@ -90,7 +93,7 @@ class Strip:
         """Rotate the strip around a specified point by given rotation angles."""
         dx = self.x_c4 - point[0]
         dy = self.y_c4 - point[1]
-        dz = self.z_c4 - point[2]
+        # dz = self.z_c4 - point[2]
 
         # Apply rotation around the specified point
         new_x = point[0] + dx * np.cos(rotation[2]) - dy * np.sin(rotation[2])
@@ -163,19 +166,21 @@ class Strip:
         """Plot the strip in 3D space."""
         pass
 
+
 register_pytree_node(
     Strip,
-    lambda strip_data: ((
-        strip_data.x_c4, 
-        strip_data.y_c4, 
-        strip_data.z_c4,
-        strip_data.pitch, 
-        strip_data.roll, 
-        strip_data.yaw,
-        strip_data.chord, 
-        strip_data.airfoil
-    ), None),  # tell JAX how to unpack to an iterable
-    lambda _, strip_data: Strip(
-        *strip_data
-    )       # tell JAX how to pack back into a Point
+    lambda strip_data: (
+        (
+            strip_data.x_c4,
+            strip_data.y_c4,
+            strip_data.z_c4,
+            strip_data.pitch,
+            strip_data.roll,
+            strip_data.yaw,
+            strip_data.chord,
+            strip_data.airfoil,
+        ),
+        None,
+    ),  # tell JAX how to unpack to an iterable
+    lambda _, strip_data: Strip(*strip_data),  # tell JAX how to pack back into a Point
 )

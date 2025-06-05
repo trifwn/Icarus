@@ -62,8 +62,11 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
+import jax.numpy as jnp
 from jaxtyping import Float
+import jax
 from matplotlib.axes import Axes
+from jax.tree_util import register_pytree_node
 
 from ICARUS.core.types import FloatArray
 
@@ -79,6 +82,7 @@ class NACADefintionError(Exception):
     pass
 
 
+@jax.tree_util.register_pytree_with_keys_class
 class Airfoil:
     """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
@@ -92,7 +96,7 @@ class Airfoil:
         self,
         upper: Float,
         lower: Float,
-        name: str,
+        name: str | None = None,
     ) -> None:
         """Initialize the Airfoil class
 
@@ -101,14 +105,13 @@ class Airfoil:
             lower (FloatArray): Lower surface coordinates
             naca (str): NACA 4 digit identifier (e.g. 0012)
         """
-        name = name.replace(" ", "")
-        self.name: str = name
-        self.file_name: str = name
+        if name is not None:
+            name = name.replace(" ", "")
+            self._name: str = name
+        else:
+            self._name = "Airfoil"
 
         lower, upper = self.close_airfoil(lower, upper)
-
-        self.upper = np.array(upper, dtype=float)
-        self.lower = np.array(lower, dtype=float)
 
         # Unpack coordinates
         self._x_upper = upper[0, :]
@@ -119,17 +122,10 @@ class Airfoil:
         self._y_upper_interp = Interpolator(
             self._x_upper,
             self._y_upper,
-            kind="linear",
-            bounds_error=False,
-            fill_value="extrapolate",  # type: ignore[call-arg]
+            method="linear",
+            extrap=True,
         )
-        self._y_lower_interp = Interpolator(
-            self._x_lower,
-            self._y_lower,
-            kind="linear",
-            bounds_error=False,
-            fill_value="extrapolate",  # type: ignore[call-arg]
-        )
+        self._y_lower_interp = Interpolator(self._x_lower, self._y_lower, method="linear", extrap=True)
 
         self.min_x = np.min(self._x_upper)
         self.max_x = np.max(self._x_upper)
@@ -143,6 +139,11 @@ class Airfoil:
 
         self.selig = self.to_selig()
         self.selig_original = self.selig
+
+    @property
+    def name(self) -> str:
+        """Returns the name of the airfoil"""
+        return self._name
 
     def y_upper(self, x):
         # x-coordinate is between [0, 1]
@@ -255,9 +256,9 @@ class Airfoil:
 
     def close_airfoil(
         self,
-        lower: FloatArray,
-        upper: FloatArray,
-    ) -> tuple[FloatArray, FloatArray]:
+        lower: Float,
+        upper: Float,
+    ) -> tuple[Float, Float]:
         # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
         # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
         # Identify the upper surface trailing edge and leading edge
@@ -294,14 +295,14 @@ class Airfoil:
             pass
         elif leading_upper < leading_lower:
             if le_idx_lower == 0:
-                lower = np.hstack((upper[:, le_idx_upper].reshape(2, 1), lower))
+                lower = jnp.hstack((upper[:, le_idx_upper].reshape(2, 1), lower))
             elif le_idx_lower == -1:
-                lower = np.hstack((lower, upper[:, le_idx_upper].reshape(2, 1)))
+                lower = jnp.hstack((lower, upper[:, le_idx_upper].reshape(2, 1)))
         elif leading_upper > leading_lower:
             if le_idx_upper == 0:
-                upper = np.hstack((lower[:, le_idx_lower].reshape(2, 1), upper))
+                upper = jnp.hstack((lower[:, le_idx_lower].reshape(2, 1), upper))
             elif le_idx_upper == -1:
-                upper = np.hstack((upper, lower[:, le_idx_lower].reshape(2, 1)))
+                upper = jnp.hstack((upper, lower[:, le_idx_lower].reshape(2, 1)))
 
         # Fix the leading edge
         # Trailing upper is the rightmost point. We need to add it to the surface with the leftmost point
@@ -309,17 +310,17 @@ class Airfoil:
             pass
         elif trailing_upper > trailing_lower:
             if te_idx_lower == -1:
-                lower = np.hstack((lower, upper[:, te_idx_upper].reshape(2, 1)))
+                lower = jnp.hstack((lower, upper[:, te_idx_upper].reshape(2, 1)))
             elif te_idx_lower == 0:
-                lower = np.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
+                lower = jnp.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
         elif trailing_upper < trailing_lower:
             if te_idx_upper == -1:
-                upper = np.hstack((upper, lower[:, te_idx_lower].reshape(2, 1)))
+                upper = jnp.hstack((upper, lower[:, te_idx_lower].reshape(2, 1)))
             elif te_idx_upper == 0:
-                upper = np.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
+                upper = jnp.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
         return lower, upper
 
-    def thickness(self, x: FloatArray) -> FloatArray:
+    def thickness(self, x: Float) -> Float:
         """Returns the thickness of the airfoil at the given x coordinates
 
         Args:
@@ -329,12 +330,12 @@ class Airfoil:
             FloatArray: _description_
 
         """
-        thickness: FloatArray = self.y_upper(x) - self.y_lower(x)
+        thickness: Float = self.y_upper(x) - self.y_lower(x)
         # Remove Nan
         thickness = thickness[~np.isnan(thickness)]
 
         # Set 0 thickness for values after x_max
-        thickness[x > self.max_x] = 0
+        thickness = thickness.at[x > self.max_x].set(0.0)
         return thickness
 
     @property
@@ -346,7 +347,7 @@ class Airfoil:
 
         """
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
-        return float(np.max(thickness))
+        return np.max(thickness).astype(float)
 
     @property
     def max_thickness_location(self) -> float:
@@ -358,6 +359,13 @@ class Airfoil:
         """
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
         return float(np.argmax(thickness) / self.n_points)
+
+    @property
+    def file_name(self) -> str:
+        """Returns the file name of the airfoil"""
+        if self.name is not None:
+            return self.name
+        return "Airfoil.dat"
 
     @staticmethod
     def split_sides(x: FloatArray, y: FloatArray) -> tuple[FloatArray, FloatArray]:
@@ -840,7 +848,7 @@ class Airfoil:
         """
         return np.array((self.y_upper(x) + self.y_lower(x)) / 2, dtype=float)
 
-    def to_selig(self) -> FloatArray:
+    def to_selig(self) -> Float:
         """Returns the airfoil in the selig format.
         Meaning that the airfoil runs run from the trailing edge, round the leading edge,
         back to the trailing edge in either direction:
@@ -861,16 +869,16 @@ class Airfoil:
             y_lo = self._y_lower
 
         # Remove NaN values
-        idx_nan = np.isnan(x_up) | np.isnan(y_up)
+        idx_nan = jnp.isnan(x_up) | jnp.isnan(y_up)
         x_up = x_up[~idx_nan]
         y_up = y_up[~idx_nan]
 
-        idx_nan = np.isnan(x_lo) | np.isnan(y_lo)
+        idx_nan = jnp.isnan(x_lo) | jnp.isnan(y_lo)
         x_lo = x_lo[~idx_nan]
         y_lo = y_lo[~idx_nan]
 
-        upper = np.array([x_up, y_up], dtype=float)
-        lower = np.array([x_lo, y_lo], dtype=float)
+        upper = jnp.array([x_up, y_up], dtype=float)
+        lower = jnp.array([x_lo, y_lo], dtype=float)
 
         # Remove duplicates
 
@@ -882,9 +890,9 @@ class Airfoil:
         x_lo = lower[0]
         y_lo = lower[1]
 
-        x_points: FloatArray = np.hstack((x_up, x_lo)).T
-        y_points: FloatArray = np.hstack((y_up, y_lo)).T
-        return np.vstack((x_points, y_points))
+        x_points: Float = jnp.hstack((x_up, x_lo)).T
+        y_points: Float = jnp.hstack((y_up, y_lo)).T
+        return jnp.vstack((x_points, y_points))
 
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:
@@ -1078,7 +1086,7 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        return self.__str__()
 
     def __str__(self) -> str:
         """Returns the string representation of the airfoil
@@ -1087,6 +1095,8 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
+        if not hasattr(self, "name") or self.name is None:
+            return f"Airfoil with ({len(self._x_lower)} x {len(self._x_upper)}) points"
         return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
 
     def __setstate__(self, state: dict[str, Any]) -> None:
@@ -1121,3 +1131,20 @@ class Airfoil:
             "upper": np.vstack((self._x_upper, self._y_upper), dtype=float).tolist(),
             "lower": np.vstack((self._x_lower, self._y_lower), dtype=float).tolist(),
         }
+
+    def tree_flatten(self):
+        x_upper = jnp.array(self._x_upper, dtype=float)
+        y_upper = jnp.array(self._y_upper, dtype=float)
+        x_lower = jnp.array(self._x_lower, dtype=float)
+        y_lower = jnp.array(self._y_lower, dtype=float)
+        name = self.name
+
+        return ((x_lower, y_lower, x_upper, y_upper), (name))
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        return cls(
+            lower=jnp.array(children[:2], dtype=float),
+            upper=jnp.array(children[2:4], dtype=float),
+            name=aux_data[0] if aux_data else None,
+        )

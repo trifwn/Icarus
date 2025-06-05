@@ -32,18 +32,13 @@ def gnvp_sensitivities(
         **kwars (Any): Keyword arguments for the function.
 
     """
-    if gnvp_version == 3:
-        if parallel:
-            sensitivities_parallel(gnvp_version=3, *args, **kwars)
-        else:
-            sensitivities_serial(gnvp_version=3, *args, **kwars)
-    elif gnvp_version == 7:
-        if parallel:
-            sensitivities_parallel(gnvp_version=7, *args, **kwars)
-        else:
-            sensitivities_serial(gnvp_version=7, *args, **kwars)
-    else:
+    if gnvp_version not in [3, 7]:
         raise ValueError("Genu version must be either 3 or 7.")
+
+    if parallel:
+        sensitivities_parallel(gnvp_version=gnvp_version, *args, **kwars)
+    else:
+        sensitivities_serial(gnvp_version=gnvp_version, *args, **kwars)
 
 
 def gnvp3_sensitivities_serial(*args: Any, **kwars: Any) -> None:

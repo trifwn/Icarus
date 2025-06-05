@@ -4,8 +4,6 @@ Enhanced Mass class with improved design, performance, and functionality.
 
 from __future__ import annotations
 
-import warnings
-from dataclasses import dataclass
 from functools import cached_property
 from functools import lru_cache
 from typing import Any
@@ -29,6 +27,7 @@ class MassDistribution(Protocol):
     def __call__(self, x: float, y: float, z: float) -> float:
         """Return mass density at point (x, y, z)."""
         ...
+
 
 class Mass:
     """

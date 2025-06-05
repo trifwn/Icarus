@@ -45,7 +45,6 @@ def lspt_polars(
 
     os.makedirs(LSPTDIR, exist_ok=True)
     # Generate the wing LLT solver
-    from ICARUS.aero import LSPT_Plane
 
     wing = LSPT_Plane(
         plane=plane,

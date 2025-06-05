@@ -1,23 +1,28 @@
 import numpy as np
-from scipy.interpolate import interp1d
+from interpax import Interpolator1D
 
 from ICARUS.core.types import FloatArray
+from jaxtyping import Float
 
 
-class Interpolator(interp1d):
-    """
-    Interpolator class that allows for extrapolation
+class Interpolator(Interpolator1D):
+    def __init__(
+        self,
+        x: Float,
+        f: Float,
+        method: str = "cubic",
+        extrap: bool = False,
+    ) -> None:
+        """
+        Initialize the Interpolator class.
 
-    Note:
-        * This class is a wrapper around 'scipy.interpolate.interp1d'
-
-    Args:
-        :x: x-coordinates
-        :y: y-coordinates
-        :kind: Interpolation type
-        :bounds_error: (bool) If True, a ValueError is raised when interpolated values are requested outside of the domain of the input data
-        :fill_value: (str or float) If a string, it must be one of 'extrapolate', 'constant', 'nearest', 'zero', 'slinear', 'quadratic', or 'cubic'
-    """
+        Args:
+            x (FloatArray | list[float]): X coordinates of the points.
+            f (FloatArray | list[float]): Y coordinates of the points.
+            method (str, optional): Interpolation method. Defaults to "cubic".
+            extrap (bool, optional): Whether to allow extrapolation. Defaults to False.
+        """
+        super().__init__(x=x, f=f, method=method, extrap=extrap)
 
     def __getstate__(self):
         """
@@ -30,15 +35,10 @@ class Interpolator(interp1d):
             dict: A dictionary containing the picklable state of the object.
         """
         return {
-            "kind": self._kind,
-            "bounds_error": self.bounds_error,
-            "fill_value": self.fill_value,
-            # "assume_sorted": self.assume_sorted,
-            "copy": self.copy,
             "x": self.x.copy(),
-            "y": self.y.copy(),
-            # "args": self.args,
-            # "kwargs": self.kwargs,
+            "f": self.f.copy(),
+            "method": self.method,
+            "extrap": self.extrap,
         }
 
     def __setstate__(self, state):
@@ -48,26 +48,11 @@ class Interpolator(interp1d):
         Args:
             state (dict): The pickled state of the object.
         """
-        self.kind = state["kind"]
-        self.bounds_error = state["bounds_error"]
-        self.fill_value = state["fill_value"]
-        # self.assume_sorted = state["assume_sorted"]
-        self.copy = state["copy"]
-        self.xi = state["x"]
-        self.yi = state["y"]
-        # self.args = state["args"]
-        # self.kwargs = state["kwargs"]
-        # Recreate the spline object during initialization
         self.__init__(
-            self.xi,
-            self.yi,
-            kind=self.kind,
-            bounds_error=self.bounds_error,
-            fill_value=self.fill_value,
-            # assume_sorted=self.assume_sorted,
-            copy=self.copy,
-            # args=self.args,
-            # kwargs=self.kwargs,
+            x=state["x"],
+            f=state["f"],
+            method=state["method"],
+            extrap=state["extrap"],
         )
 
 
