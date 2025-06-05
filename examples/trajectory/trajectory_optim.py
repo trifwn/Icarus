@@ -19,7 +19,7 @@ from jaxtyping import Float
 
 from ICARUS import INSTALL_DIR
 from ICARUS.database import Database
-from ICARUS.interpolation.cubic_splines import CubicSpline_factory
+from ICARUS.interpolation.cubic_splines import cubic_spline_factory
 from ICARUS.mission.mission_vehicle import MissionVehicle
 from ICARUS.mission.trajectory.integrate import RK4systems
 from ICARUS.mission.trajectory.trajectory import MissionTrajectory
@@ -76,7 +76,7 @@ def fun(y: Float[Array, "{dim}"], *args: Any) -> Float[Array, "1"]:
     x0 = X0
     x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
-    spline_i = CubicSpline_factory(x, y)
+    spline_i = cubic_spline_factory(x, y)
 
     traj_spl = MissionTrajectory(
         "CubicSpline",
@@ -137,7 +137,7 @@ def compute_and_plot(y: Float[Array, "..."]) -> None:
     x = jnp.linspace(0, TRAJECTORY_MAX_DIST, y.shape[0] + 1)
     y = jnp.hstack([x0[1], y])
 
-    some_spl = CubicSpline_factory(x, y)
+    some_spl = cubic_spline_factory(x, y)
     trajectory_best = MissionTrajectory(
         "Optimized CubicSpline",
         some_spl,

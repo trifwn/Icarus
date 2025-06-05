@@ -1,7 +1,7 @@
 from typing import Any
 
-import numpy as np
 import jax
+import numpy as np
 from jax import numpy as jnp
 
 from ICARUS.airfoils import Airfoil

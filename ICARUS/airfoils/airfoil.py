@@ -59,18 +59,16 @@ import re
 from typing import TYPE_CHECKING
 from typing import Any
 
+import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
-import jax.numpy as jnp
 from jaxtyping import Float
-import jax
 from matplotlib.axes import Axes
-from jax.tree_util import register_pytree_node
 
 from ICARUS.core.types import FloatArray
-
-from ._interpolate import Interpolator
+from ICARUS.interpolation import Interpolator_1D
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -119,13 +117,13 @@ class Airfoil:
         self._x_lower = lower[0, :]
         self._y_lower = lower[1, :]
 
-        self._y_upper_interp = Interpolator(
+        self._y_upper_interp = Interpolator_1D(
             self._x_upper,
             self._y_upper,
             method="linear",
             extrap=True,
         )
-        self._y_lower_interp = Interpolator(self._x_lower, self._y_lower, method="linear", extrap=True)
+        self._y_lower_interp = Interpolator_1D(self._x_lower, self._y_lower, method="linear", extrap=True)
 
         self.min_x = np.min(self._x_upper)
         self.max_x = np.max(self._x_upper)
@@ -144,6 +142,13 @@ class Airfoil:
     def name(self) -> str:
         """Returns the name of the airfoil"""
         return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        """Sets the name of the airfoil"""
+        if not isinstance(value, str):
+            raise TypeError("Name must be a string")
+        self._name = value.replace(" ", "")
 
     def y_upper(self, x):
         # x-coordinate is between [0, 1]

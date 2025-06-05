@@ -1,11 +1,11 @@
 import numpy as np
 from interpax import Interpolator1D
-
-from ICARUS.core.types import FloatArray
 from jaxtyping import Float
 
+from ICARUS.core.types import FloatArray
 
-class Interpolator(Interpolator1D):
+
+class Interpolator_1D(Interpolator1D):
     def __init__(
         self,
         x: Float,
@@ -56,7 +56,7 @@ class Interpolator(Interpolator1D):
         )
 
 
-def interpolate(
+def interpolate_1D(
     xa: FloatArray | list[float],
     ya: FloatArray | list[float],
     queryPoints: FloatArray | list[float],

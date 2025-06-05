@@ -50,7 +50,7 @@ class Strip:
         direction = np.array([self.pitch, self.roll, self.yaw])
         norm = np.linalg.norm(direction)
 
-        if norm !=0:
+        if norm != 0:
             direction /= np.linalg.norm(direction)
 
         leading_edge = np.array([self.x_c4, self.y_c4, self.z_c4]) - 0.25 * self.chord * direction
