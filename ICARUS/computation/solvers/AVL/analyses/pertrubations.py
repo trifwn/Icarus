@@ -29,8 +29,8 @@ def avl_dynamics_fd(
     if state.trim == {}:
         print("Trimming the plane")
         aoa_min = -10
-        aoa_max = 10
-        num_aoa = (aoa_max - aoa_min) * 2 + 1
+        aoa_max = 15
+        num_aoa = (aoa_max - aoa_min) + 1
         angles = np.linspace(aoa_min, aoa_max, num_aoa)
 
         from ICARUS.computation.solvers.AVL import avl_polars

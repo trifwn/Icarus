@@ -676,7 +676,7 @@ class Airfoil:
         )
 
     @classmethod
-    def load_from_file(cls, filename: str) -> Airfoil:
+    def from_file(cls, filename: str) -> Airfoil:
         """Initialize the Airfoil class from a file.
 
         Args:
@@ -997,7 +997,7 @@ class Airfoil:
                         print(
                             f"Downloaded: {filename} from {download_url}. Creating Airfoil obj...",
                         )
-                        return cls.load_from_file(filename)
+                        return cls.from_file(filename)
                     raise FileNotFoundError(
                         f"Error downloading {filename}: {response.status_code}",
                     )

@@ -479,7 +479,7 @@ class Database_2D:
                     airfoil_folder.upper(),
                     airfoil_folder.lower(),
                 )
-                self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
+                self.airfoils[airfoil_folder] = Airfoil.from_file(filename)
                 logging.info(f"Loaded airfoil {airfoil_folder} from self.DB2D")
             except Exception as e:
                 print(
@@ -529,7 +529,7 @@ class Database_2D:
                     if name + ".dat" in flap_files:
                         # load the airfoil from the flap folder
                         filename = os.path.join(self.EXTERNAL_DB, name, name + ".dat")
-                        self.airfoils[airfoil_folder] = Airfoil.load_from_file(filename)
+                        self.airfoils[airfoil_folder] = Airfoil.from_file(filename)
                         logging.info(
                             f"Loaded airfoil {airfoil_folder} from EXTERNAL DB",
                         )

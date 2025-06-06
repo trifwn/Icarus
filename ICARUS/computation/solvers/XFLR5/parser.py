@@ -156,7 +156,7 @@ def parse_xfl_project(filename: str) -> Airplane:
                             foil_name,
                             foil_name + ".dat",
                         )
-                        airfoil: Airfoil = Airfoil.load_from_file(filename)
+                        airfoil: Airfoil = Airfoil.from_file(filename)
                         airfoil.name = f"{foil + 'fl'}"
                     else:
                         raise FileNotFoundError(

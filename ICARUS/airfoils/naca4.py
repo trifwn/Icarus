@@ -165,6 +165,19 @@ class NACA4(Airfoil):
                 results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * xi - xi**2)
         return results
 
+    def __getstate__(self) -> dict[str, Any]:
+        """Get the state of the object for pickling"""
+        state = dict()
+        state["m"] = self.m
+        state["p"] = self.p
+        state["xx"] = self.xx
+        state["n_points"] = len(self._x_lower) * 2
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Set the state of the object for unpickling"""
+        NACA4.__init__(self, M=state["m"], P=state["p"], XX=state["xx"], n_points=state["n_points"])
+
     def gen_NACA4_points(self, n_points):
         """
         Generate upper and lower points for a NACA 4 airfoil using JAX.
@@ -194,20 +207,6 @@ class NACA4(Airfoil):
         upper = jnp.stack([x_upper, y_upper])
         lower = jnp.stack([x_lower, y_lower])
         return upper, lower
-
-    def __getstate__(self) -> dict[str, Any]:
-        """Get the state of the object for pickling"""
-        state = {
-            "M": self.M,
-            "P": self.P,
-            "XX": self.XX,
-            "n_points": len(self._x_lower) * 2,  # n_points is double the number of lower points
-        }
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        """Set the state of the object for unpickling"""
-        NACA4.__init__(self, M=state["M"], P=state["P"], XX=state["XX"], n_points=state["n_points"])
 
     def tree_flatten(self):
         M = jnp.asarray(self.M, dtype=jnp.int64).astype("float")

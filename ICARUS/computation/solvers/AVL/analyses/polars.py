@@ -12,9 +12,9 @@ from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
 
 from ..files.input import make_input_files
-from ..files.polars import case_def
 from ..files.polars import case_run
 from ..files.polars import case_setup
+from ..files.polars import run_file
 
 
 def avl_polars(
@@ -31,7 +31,7 @@ def avl_polars(
         solver="AVL",
     )
 
-    case_def(case_directory, plane, state, angles)
+    run_file(case_directory, plane, state, angles)
     make_input_files(case_directory, plane, state, solver2D, solver_options)
     case_setup(case_directory, plane, state)
     case_run(case_directory, plane, angles)

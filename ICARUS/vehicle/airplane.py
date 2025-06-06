@@ -449,12 +449,11 @@ class Airplane(Optimizable):
                 name = name.replace("_mass", "")
                 return self.get_mass(name)
             # How to handle infinite recursion?
-            if "surfaces" in self.__dict__.keys():
-                for wing in self.wings:
-                    if name.startswith(f"{wing.name}_"):
-                        return wing.__getattribute__(
-                            name.replace(wing.name, ""),
-                        )
+            for wing in self.wings:
+                if name.startswith(f"{wing.name}_"):
+                    return wing.__getattribute__(
+                        name.replace(wing.name, ""),
+                    )
             raise AttributeError(f"Plane doesn't contain attribute {name}")
 
     def set_property(self, name: str, value: Any) -> None:
