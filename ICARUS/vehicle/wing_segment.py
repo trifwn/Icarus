@@ -141,7 +141,7 @@ class WingSegment(WingSurface):
 
         # Set the origin and orientation
         self._origin = origin
-        self._orientation = orientation
+        self._orientation_rad = orientation * np.pi / 180
 
         # Set the mass
         self._mass = mass
@@ -280,7 +280,7 @@ class WingSegment(WingSurface):
         instance = super().from_span_percentage_functions(
             name=self.name,
             origin=self._origin,
-            orientation=self._orientation,
+            orientation=self.orientation_degrees,
             symmetries=self.symmetries,
             root_airfoil=self.root_airfoil,
             tip_airfoil=self.tip_airfoil,
@@ -513,7 +513,7 @@ class WingSegment(WingSurface):
         return {
             "name": self.name,
             "origin": self.origin,
-            "orientation": self.orientation,
+            "orientation": self.orientation_degrees,
             "span": self.span,
             "tip_chord": self.tip_chord,
             "root_chord": self.root_chord,

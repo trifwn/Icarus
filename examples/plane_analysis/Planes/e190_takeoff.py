@@ -29,7 +29,11 @@ def e190_takeoff_generator(
         Airplane: hermes Airplane object
 
     """
-    DB = Database("./Data")
+    from ICARUS import INSTALL_DIR
+
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
+
     read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
     from ICARUS.airfoils import Airfoil
 

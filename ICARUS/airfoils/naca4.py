@@ -1,12 +1,16 @@
 from typing import Any
 
+import jax
 import numpy as np
 from jax import numpy as jnp
+from jaxtyping import Float
+from jaxtyping import Int
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 
 
+@jax.tree_util.register_pytree_node_class
 class NACA4(Airfoil):
     """
     NACA 4 digit airfoil class
@@ -22,19 +26,23 @@ class NACA4(Airfoil):
             xx (int): XX is the maximum thickness. In the example XX=0.12 so the maximum thickness is 0.12 or 12% of the chord
             n_points (int): Number of points to generate the airfoil. Default is 200.
         """
+        self.M: Int = jnp.array(M * 100).astype(int)
+        self.P: Int = jnp.array(P * 10).astype(int)
+        self.XX: Int = jnp.array(XX * 100).astype(int)
 
-        self.M: int = int(M * 100)
-        self.P: int = int(P * 10)
-        self.XX: int = int(XX * 100)
-
-        self.m: float = M
-        self.p: float = P
-        self.xx: float = XX
-
-        name = f"naca{self.M:01d}{self.P:01d}{self.XX:02d}"
+        self.m: Float = jnp.asarray(M, dtype=float)
+        self.p: Float = jnp.asarray(P, dtype=float)
+        self.xx: Float = jnp.asarray(XX, dtype=float)
 
         upper, lower = self.gen_NACA4_points(n_points // 2)
-        super().__init__(upper=upper, lower=lower, name=name)
+        super().__init__(upper=upper, lower=lower)
+
+    @property
+    def name(self) -> str:
+        """
+        Name of the airfoil in the format NACAXXXX
+        """
+        return f"NACA{self.M:01d}{self.P:01d}{self.XX:02d}"
 
     @classmethod
     def from_name(cls, name: str) -> "NACA4":
@@ -108,7 +116,7 @@ class NACA4(Airfoil):
         )
         return yc, dyc
 
-    def thickness_distribution(self, xsi):
+    def thickness_distribution(self, xsi: Float) -> Float:
         xx = self.xx
         # Thickness distribution formula
         a0 = 0.2969
@@ -170,7 +178,7 @@ class NACA4(Airfoil):
         """Set the state of the object for unpickling"""
         NACA4.__init__(self, M=state["m"], P=state["p"], XX=state["xx"], n_points=state["n_points"])
 
-    def gen_NACA4_points(self, n_points):
+    def gen_NACA4_points(self, n_points: int) -> tuple[Float, Float]:
         """
         Generate upper and lower points for a NACA 4 airfoil using JAX.
 
@@ -184,7 +192,6 @@ class NACA4(Airfoil):
             upper (2 x N array): x- and y-coordinates of the upper side
             lower (2 x N array): x- and y-coordinates of the lower side
         """
-
         beta = jnp.linspace(0, jnp.pi, n_points)
         xsi = 0.5 * (1 - jnp.cos(beta))  # cosine spacing
 
@@ -199,5 +206,20 @@ class NACA4(Airfoil):
 
         upper = jnp.stack([x_upper, y_upper])
         lower = jnp.stack([x_lower, y_lower])
-
         return upper, lower
+
+    def tree_flatten(self):
+        M = jnp.asarray(self.M, dtype=jnp.int64).astype("float")
+        P = jnp.asarray(self.P, dtype=jnp.int64).astype("float")
+        XX = jnp.asarray(self.XX, dtype=jnp.int64).astype("float")
+        num_points = jnp.asarray(self.n_points, dtype=jnp.int64)
+        return ((M, P, XX), (num_points,))
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        return cls(
+            M=children[0],
+            P=children[1],
+            XX=children[2],
+            n_points=aux_data[0],
+        )

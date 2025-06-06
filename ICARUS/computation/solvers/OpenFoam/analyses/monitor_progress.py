@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from time import sleep
-from typing import NoReturn
 
 from tqdm.auto import tqdm
 
@@ -11,7 +10,7 @@ from ICARUS.core.types import FloatArray
 
 
 def serial_monitor(
-    progress_bars: list[tqdm[NoReturn]],
+    progress_bars: list[tqdm],
     ANGLEDIR: str,
     position: int,
     lock: Lock | None,

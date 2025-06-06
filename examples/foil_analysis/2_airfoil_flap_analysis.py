@@ -1,16 +1,20 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers import Solver
 from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
-database_folder = "E:\\Icarus\\Data"
+database_folder = os.path.join(INSTALL_DIR, "Data")
+DB = Database(database_folder)
+
 
 # Load the database
-DB = Database(database_folder)
 airfoil = DB.get_airfoil("NACA0009")
 
 # PARAMETERS FOR ESTIMATION

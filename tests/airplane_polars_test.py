@@ -14,13 +14,12 @@ def airplane_polars(plot: bool = False) -> None:
         tuple[DataFrame, DataFrame]: Returns the desired and actual results.
 
     """
-    planenames: list[str] = ["bmark"]
     DB = Database.get_instance()
     if plot:
         from ICARUS.visualization.airplane import plot_airplane_polars
 
         plot_airplane_polars(
-            airplanes=planenames,
+            "bmark",
             prefixes=[
                 "GenuVP3 Potential",
                 "GenuVP3 2D",
@@ -36,9 +35,9 @@ def airplane_polars(plot: bool = False) -> None:
         )
 
     solvers = ["GNVP3 2D", "GNVP7 2D", "LSPT 2D"]
+    desired = DB.get_vehicle_polars("bmark", "AVL")
     for pol in solvers:
-        computed = DB.get_vehicle_polars(planenames[0], pol)
-        desired = DB.get_vehicle_polars(planenames[0], "AVL")
+        computed = DB.get_vehicle_polars("bmark", pol)
         try:
             AoA_d: Series[float] = desired["AoA"].astype(float)
             AoA: Series[float] = computed["AoA"].astype(float)

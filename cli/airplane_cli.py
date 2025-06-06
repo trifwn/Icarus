@@ -26,7 +26,7 @@ from ICARUS.computation.solvers.GenuVP import GenuVP3
 from ICARUS.computation.solvers.GenuVP import GenuVP7
 from ICARUS.computation.solvers.Icarus_LSPT import LSPT
 from ICARUS.computation.solvers.XFLR5.parser import parse_xfl_project
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.environment import Environment
@@ -498,4 +498,10 @@ def airplane_cli(DB: Database, return_home: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    airplane_cli(DB=Database("./Data"))
+    import os
+
+    from ICARUS import INSTALL_DIR
+
+    database_folder = os.path.join(INSTALL_DIR, "Data")
+    DB = Database(database_folder)
+    airplane_cli(DB=DB)

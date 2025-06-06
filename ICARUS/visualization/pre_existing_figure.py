@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Callable
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -13,7 +14,7 @@ def pre_existing_figure(
     default_title: str | None = None,
     figsize: tuple[float, float] = (10.0, 10.0),
     return_axs: bool = True,
-):
+) -> Callable:
     """
     Decorator to prepare or reuse a matplotlib Figure and Axes array for plotting.
 
@@ -29,7 +30,7 @@ def pre_existing_figure(
         If True, return the Axes and Figure objects.
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(
             self,

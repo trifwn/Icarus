@@ -4,9 +4,10 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ICARUS import INSTALL_DIR
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation.solvers import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 
@@ -15,7 +16,7 @@ def xfoil_run() -> None:
     """Main function to run multiple airfoil simulations"""
     # SETUP DB CONNECTION
     # CHANGE THIS TO YOUR DATABASE FOLDER
-    database_folder = ".\\Data"
+    database_folder = os.path.join(INSTALL_DIR, "Data")
 
     # Load the database
     DB = Database(database_folder)

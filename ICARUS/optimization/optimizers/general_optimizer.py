@@ -11,7 +11,7 @@ from scipy.optimize import NonlinearConstraint
 from scipy.optimize import OptimizeResult
 from scipy.optimize import minimize
 
-from ICARUS.core.base_types import Optimizable
+from ICARUS.core import Optimizable
 from ICARUS.core.types import FloatArray
 
 from .. import MAX_FLOAT

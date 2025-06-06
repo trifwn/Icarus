@@ -67,6 +67,14 @@ Surface Connections
 from .utils import DiscretizationType
 from .utils import DistributionType
 from .utils import SymmetryAxes
+
+from .base_classes import (
+    Mass,
+    InertiaTensor,
+    RigidBody,
+)
+
+
 from .control_surface import Aileron
 from .control_surface import ControlSurface
 from .control_surface import ControlType
@@ -74,13 +82,13 @@ from .control_surface import Elevator
 from .control_surface import Flap
 from .control_surface import NoControl
 from .control_surface import Rudder
-from .point_mass import PointMass
 from .strip import Strip
 from .surface import WingSurface
 from .surface_connections import SurfaceConnection
 from .wing_segment import WingSegment
 from .wing import Wing
 from .airplane import Airplane
+
 
 __all__ = [
     "Airplane",
@@ -91,7 +99,9 @@ __all__ = [
     "Rudder",
     "Elevator",
     "NoControl",
-    "PointMass",
+    "Mass",
+    "InertiaTensor",
+    "RigidBody",
     "Wing",
     "Strip",
     "WingSegment",
