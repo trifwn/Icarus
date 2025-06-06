@@ -87,7 +87,7 @@ def validate_surface_input(
     elif isinstance(surfaces, Wing):
         surface_objects = [surfaces]
     elif isinstance(surfaces, list):
-        surface_objects: list[WingSurface | Wing] = []
+        surface_objects = []
         for item in surfaces:
             if isinstance(item, str):
                 surface_objects.append(plane.get_surface(item))

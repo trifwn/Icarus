@@ -8,7 +8,6 @@ from threading import Thread
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
-from typing import NoReturn
 
 from pandas import DataFrame
 from tqdm import tqdm
@@ -222,7 +221,7 @@ def gnvp_polars_serial(
         state=state,
         solver=f"GenuVP{gnvp_version}",
     )
-    progress_bars: list[tqdm[NoReturn]] = []
+    progress_bars: list[tqdm] = []
     for i, angle in enumerate(angles):
         folder: str = angle_to_case(angle)
         CASEDIR: str = os.path.join(PLANEDIR, folder)

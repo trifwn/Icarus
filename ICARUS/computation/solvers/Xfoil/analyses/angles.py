@@ -25,7 +25,7 @@ def single_reynolds_run(
     xf.Re = Reyn
     xf.M = 0.0
 
-    pts = airfoil.selig
+    pts = airfoil.to_selig()
     xpts = pts[0]
     ypts = pts[1]
     xf_airf_obj = XFAirfoil(x=xpts, y=ypts)
@@ -66,7 +66,7 @@ def single_reynolds_run_seq(
     xf = XFoil()
     xf.Re = Reyn
 
-    xpts, ypts = airfoil.selig
+    xpts, ypts = airfoil.to_selig()
     airfoil_obj = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = airfoil_obj
 

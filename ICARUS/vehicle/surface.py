@@ -1132,7 +1132,7 @@ class WingSurface(RigidBody):
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         func_dict = state.get("chord_discretization_function")
-        chord_discretization_function = deserialize_function(func_dict)
+        chord_discretization_function = deserialize_function(func_dict) if func_dict else None
         WingSurface.__init__(
             self,
             name=state["name"],

@@ -14,7 +14,7 @@ def serialize_function(func: Callable[[Any], Any]) -> dict[str, Any] | None:
     return None
 
 
-def deserialize_function(func_dict: dict[str, Any] | None) -> Callable[[Any], Any] | None:
+def deserialize_function(func_dict: dict[str, Any]) -> Callable[[Any], Any] | None:
     if func_dict:
         func_type, func_info = list(func_dict.items())[0]
         if func_type == "py/method":
@@ -25,9 +25,9 @@ def deserialize_function(func_dict: dict[str, Any] | None) -> Callable[[Any], An
             module = __import__(module_name, fromlist=[func_name])
             function = getattr(module, func_name)
         else:
-            function = None
+            raise ValueError(f"Unknown function type: {func_type}")
     else:
-        function = None
+        raise ValueError("Function dictionary is None or empty")
 
     if not callable(function):
         raise TypeError("Deserialized object is not callable")

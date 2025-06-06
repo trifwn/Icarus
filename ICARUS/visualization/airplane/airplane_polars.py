@@ -89,8 +89,8 @@ def plot_airplane_polars(
 
         markers = get_distinct_markers(len(prefixes))
         for j, prefix in enumerate(prefixes):
-            c = colors[j]
-            m = markers[i].get_marker()
+            c = colors[i]
+            m = markers[j].get_marker()
 
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):

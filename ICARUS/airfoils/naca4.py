@@ -116,7 +116,7 @@ class NACA4(Airfoil):
         )
         return yc, dyc
 
-    def thickness_distribution(self, xsi):
+    def thickness_distribution(self, xsi: Float) -> Float:
         xx = self.xx
         # Thickness distribution formula
         a0 = 0.2969
@@ -178,7 +178,7 @@ class NACA4(Airfoil):
         """Set the state of the object for unpickling"""
         NACA4.__init__(self, M=state["m"], P=state["p"], XX=state["xx"], n_points=state["n_points"])
 
-    def gen_NACA4_points(self, n_points):
+    def gen_NACA4_points(self, n_points: int) -> tuple[Float, Float]:
         """
         Generate upper and lower points for a NACA 4 airfoil using JAX.
 

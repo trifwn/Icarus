@@ -84,10 +84,6 @@ class NACADefintionError(Exception):
 class Airfoil:
     """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
-
-    Args:
-        af : Airfoil class from the airfoils module
-
     """
 
     def __init__(
@@ -112,7 +108,6 @@ class Airfoil:
         lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
         lower, upper = self.order_points(lower, upper)  # order points according to LE/TE
         lower, upper = self.close_airfoil(lower, upper)  # close airfoil
-
         # Unpack coordinates
         self._x_upper = upper[0, :]
         self._y_upper = upper[1, :]
@@ -165,20 +160,20 @@ class Airfoil:
         """Returns the lower surface coordinates of the airfoil"""
         return jnp.array([self._x_lower, self._y_lower], dtype=float)
 
-    def y_upper(self, x: Float) -> Float:
+    def y_upper(self, ksi: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_upper), max(x_upper)]
-        x = self.min_x + x * (self.max_x - self.min_x)
+        x = self.min_x + ksi * (self.max_x - self.min_x)
         return self._y_upper_interp(x)
 
-    def y_lower(self, x: Float) -> Float:
+    def y_lower(self, ksi: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_lower), max(x_lower)]
 
-        x = self.min_x + x * (self.max_x - self.min_x)
+        x = self.min_x + ksi * (self.max_x - self.min_x)
         return self._y_lower_interp(x)
 
-    def repanel_spl(self, n_points: int = 200, smoothing: float = 0.0) -> None:
+    def repanel_spl(self, n_points: int = 200) -> None:
         pts = self.selig_original
         x = pts[0, :]
         y = pts[1, :]
@@ -189,10 +184,7 @@ class Airfoil:
         # Use the unique indices to get the unique x and y coordinates
         x = x[unique_indices]
         y = y[unique_indices]
-        # x = np.hstack((x, x[0]))
-        # y = np.hstack((y, y[0]))
 
-        # tck, _ = splprep([x, y], s=smoothing)
         from scipy.interpolate import CubicSpline
 
         # Airfoils 0 and 1 are defined by their cubic splines,
@@ -203,6 +195,11 @@ class Airfoil:
         s = np.zeros(x.shape)
         for i in range(1, x.shape[0]):
             s[i] = s[i - 1] + np.sqrt((x[i] - x[i - 1]) ** 2 + (y[i] - y[i - 1]) ** 2)
+        unique_s_indices = np.sort(np.unique(s, return_index=True)[1])
+        # Use the unique indices to get the unique arc length coordinates
+        s = s[unique_s_indices]
+        x = x[unique_s_indices]
+        y = y[unique_s_indices]
 
         # Normalize the arc length
         s /= s[-1]
@@ -219,6 +216,8 @@ class Airfoil:
         x_new = np.interp(tnew, s, x)
 
         lower, upper = self.split_sides(x_new, y_new)
+        lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
+        lower, upper = self.order_points(lower, upper)
         lower, upper = self.close_airfoil(lower, upper)
 
         self._x_upper = upper[0]
@@ -250,10 +249,9 @@ class Airfoil:
             xsi = (xsi - np.min(xsi)) / (np.max(xsi) - np.min(xsi))
         else:
             xsi = np.linspace(0, 1, int(n_points // 2))
-        xsi = self.min_x + (self.max_x - self.min_x) * xsi
 
-        _x_upper = xsi
-        _x_lower = xsi
+        _x_upper = self.min_x + (self.max_x - self.min_x) * xsi
+        _x_lower = self.min_x + (self.max_x - self.min_x) * xsi
         _y_upper = self.y_upper(xsi)
         _y_lower = self.y_lower(xsi)
 
@@ -276,10 +274,8 @@ class Airfoil:
         Meaning that the airfoil runs run from the trailing edge, round the leading edge,
         back to the trailing edge in either direction:
         """
-        upper = jnp.array([self._x_upper, self._y_upper], dtype=float)
-        lower = jnp.array([self._x_lower[::-1], self._y_lower[::-1]], dtype=float)
-        x_points = jnp.hstack((upper[0, :], lower[0, :]))
-        y_points = jnp.hstack((upper[1, :], lower[1, :]))
+        x_points = jnp.hstack((self._x_upper[::-1], self._x_lower))
+        y_points = jnp.hstack((self._y_upper[::-1], self._y_lower))
         return jnp.vstack((x_points, y_points))
 
     @staticmethod
@@ -304,8 +300,8 @@ class Airfoil:
         y_upper: Float = upper[1, :]
 
         # Identify the upper and lower surface leading and trailing edges
-        order_low = x_upper[0] > x_upper[-1]
-        order_up = x_lower[0] > x_lower[-1]
+        order_low = x_lower[0] > x_lower[-1]
+        order_up = x_upper[0] > x_upper[-1]
 
         # Reorder the points so that the leading edge is at the beginning and the trailing edge is at the end
         x_upper = jnp.where(
@@ -332,8 +328,8 @@ class Airfoil:
             y_lower,
         )
 
-        upper = jnp.array([x_upper, y_upper], dtype=float)
         lower = jnp.array([x_lower, y_lower], dtype=float)
+        upper = jnp.array([x_upper, y_upper], dtype=float)
         return lower, upper
 
     @staticmethod
@@ -419,28 +415,28 @@ class Airfoil:
         return lower_final, upper_final
 
     @staticmethod
-    def remove_nan_points(upper: Float, lower: Float) -> tuple[Float, Float]:
+    def remove_nan_points(lower: Float, upper: Float) -> tuple[Float, Float]:
         """Removes nan points from the airfoil"""
         upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
         lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
         return lower, upper
 
-    def thickness(self, x: Float) -> Float:
+    def thickness(self, ksi: Float) -> Float:
         """Returns the thickness of the airfoil at the given x coordinates
 
         Args:
-            x (FloatArray): X coordinates
+            Ksi (Float): Normalized x coordinates in the range [0, 1]
 
         Returns:
-            FloatArray: _description_
+            Float: Thickness of the airfoil at the given ksi coordinates
 
         """
-        thickness: Float = self.y_upper(x) - self.y_lower(x)
+        thickness: Float = self.y_upper(ksi) - self.y_lower(ksi)
         # Remove Nan
         thickness = thickness[~jnp.isnan(thickness)]
 
         # Set 0 thickness for values after x_max
-        thickness = thickness.at[x > self.max_x].set(0.0)
+        thickness = thickness.at[ksi > self.max_x].set(0.0)
         return thickness
 
     @property
@@ -489,7 +485,6 @@ class Airfoil:
         x_clean = x_arr[unique_indices]
         y_clean = y_arr[unique_indices]
         # Locate the trailing edge
-
         # Find Where x_arr = 0
         idxs = np.where(x_arr == 0)[0].flatten()
         if len(idxs) == 0:

@@ -266,7 +266,7 @@ def avl_geo(
                         )
 
             # Save Airfoil file
-            strip_airfoil.repanel_spl(180, 1e-7)
+            strip_airfoil.repanel_spl(180)
             strip_airfoil.save_selig(directory)
 
             if viscous:

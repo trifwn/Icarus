@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Literal
 
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -161,12 +162,15 @@ class StripLoads:
         except Exception as e:
             raise RuntimeError("Database instance could not be retrieved. Ensure the database is initialized.") from e
 
-        CL, CD, Cm = DB.foils_db.interpolate_polars(
-            reynolds=self.effective_reynolds,
-            airfoil=self.airfoil,
-            aoa=self.effective_aoa,
-            solver=solver,
-        )
+        try:
+            CL, CD, Cm = DB.foils_db.interpolate_polars(
+                reynolds=self.effective_reynolds,
+                airfoil=self.airfoil,
+                aoa=self.effective_aoa,
+                solver=solver,
+            )
+        except ValueError:
+            CL, CD, Cm = jnp.nan, jnp.nan, jnp.nan
 
         # Save the coefficients
         self.CL_2D = CL
@@ -245,8 +249,8 @@ class StripLoads:
         """
         CL = self.CL_2D
         CD = self.CD_2D
-        if jnp.isnan(CL) or jnp.isnan(CD):
-            raise ValueError("Viscous coefficients are not set. Call interpolate_viscous_coefficients first.")
+        # if jnp.isnan(CL) or jnp.isnan(CD):
+        #     raise ValueError("Viscous coefficients are not set. Call interpolate_viscous_coefficients first.")
 
         surface: Float = self.surface_area_proj
         dynamic_pressure = 0.5 * density * airspeed**2
@@ -260,8 +264,8 @@ class StripLoads:
         CL = self.CL_2D
         CD = self.CD_2D
         Cm = self.Cm_2D
-        if jnp.isnan(CL) or jnp.isnan(CD) or jnp.isnan(Cm):
-            raise ValueError("Viscous coefficients are not set. Call interpolate_viscous_coefficients first.")
+        # if jnp.isnan(CL) or jnp.isnan(CD) or jnp.isnan(Cm):
+        #     raise ValueError("Viscous coefficients are not set. Call interpolate_viscous_coefficients first.")
 
         surface: Float = self.surface_area_proj
         dynamic_pressure = self.effective_dynamic_pressure
@@ -281,7 +285,7 @@ class StripLoads:
 
         return Mx_2D, My_2D, Mz_2D
 
-    def get_total_lift(self, calculation="potential") -> float:
+    def get_total_lift(self, calculation: Literal["potential", "viscous"] = "potential") -> float:
         """Get total lift for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_L))
@@ -290,7 +294,7 @@ class StripLoads:
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 
-    def get_total_drag(self, calculation="potential") -> float:
+    def get_total_drag(self, calculation: Literal["potential", "viscous"] = "potential") -> float:
         """Get total drag for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_D))
@@ -302,7 +306,7 @@ class StripLoads:
     def get_total_moments(
         self,
         reference_point: Float[Array, 3],
-        calculation="potential",
+        calculation: Literal["potential", "viscous"] = "potential",
     ) -> tuple[Array, Array, Array]:
         """Get total moments for this strip.
 

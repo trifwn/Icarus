@@ -150,7 +150,7 @@ class ControlSurface:
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         func_dict = state.get("chord_function")
-        chord_function = deserialize_function(func_dict)
+        chord_function = deserialize_function(func_dict) if func_dict else None
 
         ControlSurface.__init__(
             self,

@@ -243,6 +243,7 @@ class AerodynamicLoads:
                 viscosity=viscosity,
                 velocity=airspeed,
             )
+
             # Calculate 2D aerodynamic loads for the strip
             # Use airfoil data to calculate viscous loads
             strip.interpolate_viscous_coefficients(
