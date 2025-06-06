@@ -77,9 +77,9 @@ class GenuSurface:
         self.x_0: float = surf.origin[0]
         self.y_0: float = surf.origin[1]
         self.z_0: float = surf.origin[2]
-        self.pitch: float = surf.orientation[0] * 0
-        self.cone: float = surf.orientation[1] * 0
-        self.wngang: float = surf.orientation[2] * 0
+        self.pitch: float = surf.orientation_degrees[0] * 0
+        self.cone: float = surf.orientation_degrees[1] * 0
+        self.wngang: float = surf.orientation_degrees[2] * 0
         self.x_end: float = surf.origin[0] + surf._xoffset_dist[-1]
         self.y_end: float = surf.origin[1] + surf.span
         self.z_end: float = surf.origin[2] + surf._zoffset_dist[-1]

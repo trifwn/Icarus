@@ -80,7 +80,7 @@ class NACADefintionError(Exception):
     pass
 
 
-@jax.tree_util.register_pytree_with_keys_class
+@jax.tree_util.register_pytree_node_class
 class Airfoil:
     """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
@@ -109,7 +109,9 @@ class Airfoil:
         else:
             self._name = "Airfoil"
 
-        lower, upper = self.close_airfoil(lower, upper)
+        lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
+        lower, upper = self.order_points(lower, upper)  # order points according to LE/TE
+        lower, upper = self.close_airfoil(lower, upper)  # close airfoil
 
         # Unpack coordinates
         self._x_upper = upper[0, :]
@@ -123,7 +125,12 @@ class Airfoil:
             method="linear",
             extrap=True,
         )
-        self._y_lower_interp = Interpolator_1D(self._x_lower, self._y_lower, method="linear", extrap=True)
+        self._y_lower_interp = Interpolator_1D(
+            self._x_lower,
+            self._y_lower,
+            method="linear",
+            extrap=True,
+        )
 
         self.min_x = np.min(self._x_upper)
         self.max_x = np.max(self._x_upper)
@@ -134,9 +141,7 @@ class Airfoil:
         self.n_points: int = upper.shape[1]
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
-
-        self.selig = self.to_selig()
-        self.selig_original = self.selig
+        self.selig_original = self.to_selig()
 
     @property
     def name(self) -> str:
@@ -150,13 +155,23 @@ class Airfoil:
             raise TypeError("Name must be a string")
         self._name = value.replace(" ", "")
 
-    def y_upper(self, x):
+    @property
+    def upper_surface(self) -> Float:
+        """Returns the upper surface coordinates of the airfoil"""
+        return jnp.array([self._x_upper, self._y_upper], dtype=float)
+
+    @property
+    def lower_surface(self) -> Float:
+        """Returns the lower surface coordinates of the airfoil"""
+        return jnp.array([self._x_lower, self._y_lower], dtype=float)
+
+    def y_upper(self, x: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_upper), max(x_upper)]
         x = self.min_x + x * (self.max_x - self.min_x)
         return self._y_upper_interp(x)
 
-    def y_lower(self, x):
+    def y_lower(self, x: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_lower), max(x_lower)]
 
@@ -214,7 +229,6 @@ class Airfoil:
         self.n_points = n_points
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
-        self.selig = self.to_selig()
 
     def repanel_from_internal(
         self,
@@ -256,73 +270,159 @@ class Airfoil:
         self.n_points = n_points
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
-        self.selig = self.to_selig()
-        self.selig_original = self.selig
 
-    def close_airfoil(
-        self,
+    def to_selig(self) -> Float:
+        """Returns the airfoil in the selig format.
+        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
+        back to the trailing edge in either direction:
+        """
+        upper = jnp.array([self._x_upper, self._y_upper], dtype=float)
+        lower = jnp.array([self._x_lower[::-1], self._y_lower[::-1]], dtype=float)
+        x_points = jnp.hstack((upper[0, :], lower[0, :]))
+        y_points = jnp.hstack((upper[1, :], lower[1, :]))
+        return jnp.vstack((x_points, y_points))
+
+    @staticmethod
+    def order_points(
         lower: Float,
         upper: Float,
     ) -> tuple[Float, Float]:
-        # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
-        # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
-        # Identify the upper surface trailing edge and leading edge
-        f_upper = upper[0, 0]
-        l_upper = upper[0, -1]
-        if f_upper < l_upper:
-            leading_upper = f_upper
-            le_idx_upper = 0
-            trailing_upper = l_upper
-            te_idx_upper = -1
-        else:
-            leading_upper = l_upper
-            le_idx_upper = -1
-            trailing_upper = f_upper
-            te_idx_upper = 0
+        """Orders the points of the airfoil so that the upper surface is on top and the lower surface is on the bottom.
+        The points are ordered from leading edge to trailing edge.
 
-        # Identify the lower surface trailing edge and leading edge
-        f_lower = lower[0, 0]
-        l_lower = lower[0, -1]
-        if f_lower < l_lower:
-            leading_lower = f_lower
-            le_idx_lower = 0
-            trailing_lower = l_lower
-            te_idx_lower = -1
-        else:
-            leading_lower = l_lower
-            le_idx_lower = -1
-            trailing_lower = f_lower
-            te_idx_lower = 0
+        Args:
+            lower (FloatArray): Lower surface coordinates
+            upper (FloatArray): Upper surface coordinates
 
-        # Fix the trailing edge
-        # Leading upper is the leftmost point. We need to add it to the surface with the rightmost point
-        if leading_upper == leading_lower:
-            pass
-        elif leading_upper < leading_lower:
-            if le_idx_lower == 0:
-                lower = jnp.hstack((upper[:, le_idx_upper].reshape(2, 1), lower))
-            elif le_idx_lower == -1:
-                lower = jnp.hstack((lower, upper[:, le_idx_upper].reshape(2, 1)))
-        elif leading_upper > leading_lower:
-            if le_idx_upper == 0:
-                upper = jnp.hstack((lower[:, le_idx_lower].reshape(2, 1), upper))
-            elif le_idx_upper == -1:
-                upper = jnp.hstack((upper, lower[:, le_idx_lower].reshape(2, 1)))
+        Returns:
+            tuple[FloatArray, FloatArray]: Ordered lower and upper surface coordinates
 
-        # Fix the leading edge
-        # Trailing upper is the rightmost point. We need to add it to the surface with the leftmost point
-        if trailing_upper == trailing_lower:
-            pass
-        elif trailing_upper > trailing_lower:
-            if te_idx_lower == -1:
-                lower = jnp.hstack((lower, upper[:, te_idx_upper].reshape(2, 1)))
-            elif te_idx_lower == 0:
-                lower = jnp.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
-        elif trailing_upper < trailing_lower:
-            if te_idx_upper == -1:
-                upper = jnp.hstack((upper, lower[:, te_idx_lower].reshape(2, 1)))
-            elif te_idx_upper == 0:
-                upper = jnp.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
+        """
+        x_lower: Float = lower[0, :]
+        y_lower: Float = lower[1, :]
+        x_upper: Float = upper[0, :]
+        y_upper: Float = upper[1, :]
+
+        # Identify the upper and lower surface leading and trailing edges
+        order_low = x_upper[0] > x_upper[-1]
+        order_up = x_lower[0] > x_lower[-1]
+
+        # Reorder the points so that the leading edge is at the beginning and the trailing edge is at the end
+        x_upper = jnp.where(
+            order_up,
+            x_upper[::-1],
+            x_upper,
+        )
+
+        y_upper = jnp.where(
+            order_up,
+            y_upper[::-1],
+            y_upper,
+        )
+
+        x_lower = jnp.where(
+            order_low,
+            x_lower[::-1],
+            x_lower,
+        )
+
+        y_lower = jnp.where(
+            order_low,
+            y_lower[::-1],
+            y_lower,
+        )
+
+        upper = jnp.array([x_upper, y_upper], dtype=float)
+        lower = jnp.array([x_lower, y_lower], dtype=float)
+        return lower, upper
+
+    @staticmethod
+    def close_airfoil(
+        lower: Float,
+        upper: Float,
+    ) -> tuple[Float, Float]:
+        """
+        Close airfoil by adding points at leading/trailing edges if needed.
+        Simpler approach using pre-allocated arrays and conditional filling.
+        """
+        # Extract edge points
+        upper_le = upper[:, 0:1]
+        upper_te = upper[:, -1:]
+        lower_le = lower[:, 0:1]
+        lower_te = lower[:, -1:]
+
+        upper_le_x = upper[0, 0]
+        lower_le_x = lower[0, 0]
+        upper_te_x = upper[0, -1]
+        lower_te_x = lower[0, -1]
+
+        # Determine what needs to be added
+        add_lower_le_to_upper = lower_le_x < upper_le_x
+        add_upper_le_to_lower = upper_le_x < lower_le_x
+        add_lower_te_to_upper = upper_te_x < lower_te_x
+        add_upper_te_to_lower = lower_te_x < upper_te_x
+
+        # Create arrays with maximum possible size
+        max_upper_cols = upper.shape[1] + 2  # original + potential LE + potential TE
+        max_lower_cols = lower.shape[1] + 2
+
+        # Initialize with NaN (or use zeros if you prefer)
+        upper_extended = jnp.full((2, max_upper_cols), jnp.nan)
+        lower_extended = jnp.full((2, max_lower_cols), jnp.nan)
+
+        # Build upper surface
+        upper_start_idx = jnp.where(add_lower_le_to_upper, 1, 0)
+        upper_end_idx = upper_start_idx + upper.shape[1]
+
+        # Place original upper surface
+        upper_extended = upper_extended.at[:, upper_start_idx:upper_end_idx].set(upper)
+
+        # Conditionally add leading edge
+        upper_extended = jnp.where(add_lower_le_to_upper, upper_extended.at[:, 0:1].set(lower_le), upper_extended)
+
+        # Conditionally add trailing edge
+        upper_extended = jnp.where(
+            add_lower_te_to_upper,
+            upper_extended.at[:, upper_end_idx : upper_end_idx + 1].set(lower_te),
+            upper_extended,
+        )
+
+        # Build lower surface
+        lower_start_idx = jnp.where(add_upper_le_to_lower, 1, 0)
+        lower_end_idx = lower_start_idx + lower.shape[1]
+
+        # Place original lower surface
+        lower_extended = lower_extended.at[:, lower_start_idx:lower_end_idx].set(lower)
+
+        # Conditionally add leading edge
+        lower_extended = jnp.where(add_upper_le_to_lower, lower_extended.at[:, 0:1].set(upper_le), lower_extended)
+
+        # Conditionally add trailing edge
+        lower_extended = jnp.where(
+            add_upper_te_to_lower,
+            lower_extended.at[:, lower_end_idx : lower_end_idx + 1].set(upper_te),
+            lower_extended,
+        )
+
+        # Calculate actual sizes
+        upper_actual_size = (
+            upper.shape[1] + jnp.where(add_lower_le_to_upper, 1, 0) + jnp.where(add_lower_te_to_upper, 1, 0)
+        )
+        lower_actual_size = (
+            lower.shape[1] + jnp.where(add_upper_le_to_lower, 1, 0) + jnp.where(add_upper_te_to_lower, 1, 0)
+        )
+
+        # Trim to actual sizes
+        upper_final = upper_extended[:, :upper_actual_size]
+        lower_final = lower_extended[:, :lower_actual_size]
+
+        return lower_final, upper_final
+
+    @staticmethod
+    def remove_nan_points(upper: Float, lower: Float) -> tuple[Float, Float]:
+        """Removes nan points from the airfoil"""
+        upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
+        lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
         return lower, upper
 
     def thickness(self, x: Float) -> Float:
@@ -337,7 +437,7 @@ class Airfoil:
         """
         thickness: Float = self.y_upper(x) - self.y_lower(x)
         # Remove Nan
-        thickness = thickness[~np.isnan(thickness)]
+        thickness = thickness[~jnp.isnan(thickness)]
 
         # Set 0 thickness for values after x_max
         thickness = thickness.at[x > self.max_x].set(0.0)
@@ -853,52 +953,6 @@ class Airfoil:
         """
         return np.array((self.y_upper(x) + self.y_lower(x)) / 2, dtype=float)
 
-    def to_selig(self) -> Float:
-        """Returns the airfoil in the selig format.
-        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
-        back to the trailing edge in either direction:
-        """
-        # Identify the upper and lower surface leading and trailing edges
-        if self._x_upper[0] < self._x_upper[-1]:
-            y_up = self._y_upper[::-1]
-            x_up = self._x_upper[::-1]
-        else:
-            x_up = self._x_upper
-            y_up = self._y_upper
-
-        if self._x_lower[0] > self._x_lower[-1]:
-            x_lo = self._x_lower[::-1]
-            y_lo = self._y_lower[::-1]
-        else:
-            x_lo = self._x_lower
-            y_lo = self._y_lower
-
-        # Remove NaN values
-        idx_nan = jnp.isnan(x_up) | jnp.isnan(y_up)
-        x_up = x_up[~idx_nan]
-        y_up = y_up[~idx_nan]
-
-        idx_nan = jnp.isnan(x_lo) | jnp.isnan(y_lo)
-        x_lo = x_lo[~idx_nan]
-        y_lo = y_lo[~idx_nan]
-
-        upper = jnp.array([x_up, y_up], dtype=float)
-        lower = jnp.array([x_lo, y_lo], dtype=float)
-
-        # Remove duplicates
-
-        lower, upper = self.close_airfoil(lower, upper)
-
-        x_up = upper[0]
-        y_up = upper[1]
-
-        x_lo = lower[0]
-        y_lo = lower[1]
-
-        x_points: Float = jnp.hstack((x_up, x_lo)).T
-        y_points: Float = jnp.hstack((y_up, y_lo)).T
-        return jnp.vstack((x_points, y_points))
-
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:
         """Fetches the airfoil data from the web. Specifically from the UIUC airfoil database."""
@@ -973,12 +1027,13 @@ class Airfoil:
         with open(file_name, "w") as file:
             if header:
                 file.write(f"{self.name} with {self.n_points}\n")
+
+            pts = self.to_selig()
             if inverse:
-                pts = self.selig.T[::-1]
-            else:
-                pts = self.selig.T
-            x = pts[:, 0]
-            y = pts[:, 1]
+                pts = pts[:, ::-1]
+
+            x = pts[0, :]
+            y = pts[1, :]
             # Remove NaN values and duplicates
             x_arr = np.array(x)
             y_arr = np.array(y)
@@ -1043,7 +1098,7 @@ class Airfoil:
             max_thickness (bool, optional): Whether to plot the max thickness. Defaults to False.
 
         """
-        pts = self.selig
+        pts = self.to_selig()
         x, y = pts
 
         if ax is None:

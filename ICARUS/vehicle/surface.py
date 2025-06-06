@@ -341,22 +341,22 @@ class WingSurface(RigidBody):
 
     @property
     def strip_pitches(self) -> FloatArray:
-        return self.twist_angles + self.pitch
+        return self.twist_angles + self.pitch_degrees
 
     def _on_orientation_changed(self, old_orientation: FloatArray, new_orientation: FloatArray) -> None:
         """Rotate the Wing by a given rotation matrix."""
-        old_pitch, old_yaw, old_roll = old_orientation
-        new_pitch, new_yaw, new_roll = new_orientation
+        old_pitch, old_roll, old_yaw = old_orientation
+        new_pitch, new_roll, new_yaw = new_orientation
 
         R_OLD = self._compute_rotation_matrix(
-            float(old_pitch),
-            float(old_yaw),
-            float(old_roll),
+            pitch=float(old_pitch),
+            roll=float(old_roll),
+            yaw=float(old_yaw),
         )
         R_NEW = self._compute_rotation_matrix(
-            float(new_pitch),
-            float(new_yaw),
-            float(new_roll),
+            pitch=float(new_pitch),
+            roll=float(new_roll),
+            yaw=float(new_yaw),
         )
 
         # Rotate Grid
@@ -524,7 +524,7 @@ class WingSurface(RigidBody):
                     ],
                     dtype=float,
                 ),
-                orientation=self.orientation,
+                orientation=self.orientation_degrees,
                 symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
                 spanwise_positions=-self._span_dist[::-1],
                 chord_lengths=self._chord_dist[::-1],
@@ -543,7 +543,7 @@ class WingSurface(RigidBody):
                 name=f"{self.name}_right",
                 root_airfoil=copy(self.root_airfoil),
                 origin=self._origin,
-                orientation=self.orientation,
+                orientation=self.orientation_degrees,
                 symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
                 chord_lengths=self._chord_dist,
                 spanwise_positions=self._span_dist,
@@ -637,14 +637,13 @@ class WingSurface(RigidBody):
 
         for j in range(self.N):
             airfoil = self.airfoils[j]
-
-            strip = Strip(
-                x_c4=start_points[0, j],
-                y_c4=start_points[1, j],
-                z_c4=start_points[2, j],
-                pitch=self.twist_angles[j] + self.pitch,
-                roll=self.roll,
-                yaw=self.yaw,
+            strip = Strip.from_leading_edge(
+                leading_edge_x=start_points[0, j],
+                leading_edge_y=start_points[1, j],
+                leading_edge_z=start_points[2, j],
+                pitch=self.pitch_degrees + self.twist_angles[j],
+                roll=self.roll_degrees,
+                yaw=self.yaw_degrees,
                 chord=self._chord_dist[j],
                 airfoil=airfoil,
             )
@@ -1160,7 +1159,7 @@ class WingSurface(RigidBody):
         state = {
             "name": self.name,
             "origin": self.origin,
-            "orientation": self.orientation,
+            "orientation": self.orientation_degrees,
             "spanwise_positions": np.array(self._span_dist, copy=True),
             "chord_lengths": np.array(self._chord_dist, copy=True),
             "x_offsets": np.array(self._xoffset_dist, copy=True),

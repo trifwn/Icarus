@@ -9,7 +9,6 @@ import jsonpickle
 import jsonpickle.ext.pandas as jsonpickle_pd
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
@@ -657,12 +656,12 @@ class Airplane(Optimizable):
 
     def plot(
         self,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
+        ax: Axes3D | None = None,
         movement: FloatArray | None = None,
         thin: bool = False,
         annotate: bool = False,
         show_masses: bool = True,
+        show_strips: bool = False,
     ) -> None:
         """Visualize the plane
 
@@ -672,21 +671,16 @@ class Airplane(Optimizable):
             movement (FloatArray | None, optional): Plane Movement from origin. Defaults to None.
 
         """
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
-            ax.set_title(self.name)
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
-            ax.view_init(30, 150)
-            ax.axis("scaled")
-            ax.set_xlim(-1, 1)
-            ax.set_ylim(-1, 1)
-            ax.set_zlim(-1, 1)
+        from ICARUS.visualization import parse_Axes3D
+
+        fig, ax = parse_Axes3D(ax)
+
+        ax.set_title(self.name)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+        ax.view_init(30, 150)
+        ax.axis("scaled")
 
         if isinstance(movement, ndarray):
             mov = movement
@@ -733,6 +727,12 @@ class Airplane(Optimizable):
             s=50,
             color="b",
         )
+
+        if show_strips:
+            for wing in self.wings:
+                for strip in wing.all_strips:
+                    strip.plot_3D(ax=ax)
+
         if annotate:
             ax.text(
                 self.CG[0] + mov[0],

@@ -1,7 +1,11 @@
 from typing import Sequence
 
 import distinctipy
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
+from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
@@ -92,3 +96,41 @@ def validate_surface_input(
             else:
                 raise ValueError("surfaces must be a string, WingSurface, or Wing object")
     return surface_objects
+
+
+def parse_Axes3D(ax: Axes3D | None) -> tuple[Figure, Axes3D]:
+    if ax is None:
+        _fig = plt.figure()
+        _ax = _fig.add_subplot(111, projection="3d")
+    else:
+        _ax = ax
+        _fig = _ax.get_figure()
+
+    if not isinstance(_ax, Axes3D):
+        raise ValueError("Got weird axes")
+
+    if not isinstance(_fig, Figure):
+        raise ValueError("Got weird fig, Maybe it does not exist.")
+
+    ax = _ax
+    fig = _fig
+    return fig, ax
+
+
+def parse_Axes(ax: Axes | None) -> tuple[Figure, Axes]:
+    if ax is None:
+        _fig = plt.figure()
+        _ax = _fig.add_subplot(111)
+    else:
+        _ax = ax
+        _fig = _ax.get_figure()
+
+    if not isinstance(_ax, Axes):
+        raise ValueError("Got weird axes")
+
+    if not isinstance(_fig, Figure):
+        raise ValueError("Got weird fig, Maybe it does not exist.")
+
+    ax = _ax
+    fig = _fig
+    return fig, ax

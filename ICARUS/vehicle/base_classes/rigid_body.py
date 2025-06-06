@@ -4,9 +4,9 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Any
 
-import numpy as np
+import jax.numpy as jnp
+from jaxtyping import Float
 
-from ICARUS.core.types import FloatArray
 from ICARUS.core.types import Matrix3x3
 from ICARUS.core.types import Vector3D
 
@@ -20,8 +20,8 @@ class RigidBody(ABC):
     def __init__(
         self,
         name: str,
-        origin: FloatArray,
-        orientation: FloatArray,
+        origin: Float,
+        orientation: Float,
         masses: list[Mass] | Mass | None = None,
         total_inertia: InertiaTensor | None = None,
     ) -> None:
@@ -38,11 +38,12 @@ class RigidBody(ABC):
         self._name: str = name
 
         # Define Coordinate System
-        self._origin: FloatArray = np.array(origin, dtype=float)
-        self._orientation: FloatArray = np.array(orientation, dtype=float)
+        self._origin: Float = jnp.array(origin, dtype=float)
+        # Convert orientation from degrees to radians
+        self._orientation_rad: Float = jnp.array(orientation, dtype=float) * jnp.pi / 180
 
         # Define Orientation angles
-        pitch, yaw, roll = self._orientation * np.pi / 180
+        pitch, roll, yaw = self._orientation_rad
         self._pitch: float = pitch
         self._yaw: float = yaw
         self._roll: float = roll
@@ -72,37 +73,57 @@ class RigidBody(ABC):
 
     def _update_rotation_matrix(self) -> None:
         """Update the rotation matrix based on current orientation."""
-        self.R_MAT = self._compute_rotation_matrix(self._pitch, self._yaw, self._roll)
+        self.R_MAT = self._compute_rotation_matrix(
+            pitch=self._pitch,
+            roll=self._roll,
+            yaw=self._yaw,
+        )
 
-    def _compute_rotation_matrix(self, pitch: float, yaw: float, roll: float) -> Matrix3x3:
-        R_PITCH: FloatArray = np.array(
+    @staticmethod
+    def _compute_rotation_matrix(
+        pitch: float,
+        roll: float,
+        yaw: float,
+    ) -> Matrix3x3:
+        """
+        Generate a rotation matrix from Euler angles.
+
+        Args:
+            pitch (float): Pitch angle in radians
+            yaw (float): Yaw angle in radians
+            roll (float): Roll angle in radians
+
+        Returns:
+            Matrix3x3: 3x3 rotation matrix
+        """
+        R_PITCH: Float = jnp.array(
             [
-                [np.cos(pitch), 0, np.sin(pitch)],
+                [jnp.cos(pitch), 0, jnp.sin(pitch)],
                 [0, 1, 0],
-                [-np.sin(pitch), 0, np.cos(pitch)],
+                [-jnp.sin(pitch), 0, jnp.cos(pitch)],
             ],
             dtype=float,
         )
 
-        R_YAW: FloatArray = np.array(
+        R_YAW: Float = jnp.array(
             [
-                [np.cos(yaw), -np.sin(yaw), 0],
-                [np.sin(yaw), np.cos(yaw), 0],
+                [jnp.cos(yaw), -jnp.sin(yaw), 0],
+                [jnp.sin(yaw), jnp.cos(yaw), 0],
                 [0, 0, 1],
             ],
             dtype=float,
         )
 
-        R_ROLL: FloatArray = np.array(
+        R_ROLL: Float = jnp.array(
             [
                 [1, 0, 0],
-                [0, np.cos(roll), -np.sin(roll)],
-                [0, np.sin(roll), np.cos(roll)],
+                [0, jnp.cos(roll), -jnp.sin(roll)],
+                [0, jnp.sin(roll), jnp.cos(roll)],
             ],
             dtype=float,
         )
 
-        return R_YAW.dot(R_PITCH).dot(R_ROLL)
+        return R_ROLL @ R_YAW @ R_PITCH
 
     def _compute_total_inertia(self) -> InertiaTensor:
         """Compute total inertia tensor from mass points about body origin."""
@@ -170,13 +191,13 @@ class RigidBody(ABC):
 
     # Origin properties
     @property
-    def origin(self) -> FloatArray:
+    def origin(self) -> Float:
         return self._origin
 
     @origin.setter
-    def origin(self, value: FloatArray) -> None:
-        movement = np.array(value, dtype=float) - self._origin
-        self._origin = np.array(value, dtype=float)
+    def origin(self, value: Float) -> None:
+        movement = jnp.array(value, dtype=float) - self._origin
+        self._origin = jnp.array(value, dtype=float)
 
         # Update mass points positions
         for mp in self._mass_points:
@@ -190,7 +211,7 @@ class RigidBody(ABC):
 
     @x_origin.setter
     def x_origin(self, value: float) -> None:
-        new_origin = np.array([value, self._origin[1], self._origin[2]], dtype=float)
+        new_origin = jnp.array([value, self._origin[1], self._origin[2]], dtype=float)
         self.origin = new_origin
 
     @property
@@ -199,7 +220,7 @@ class RigidBody(ABC):
 
     @y_origin.setter
     def y_origin(self, value: float) -> None:
-        new_origin = np.array([self._origin[0], value, self._origin[2]], dtype=float)
+        new_origin = jnp.array([self._origin[0], value, self._origin[2]], dtype=float)
         self.origin = new_origin
 
     @property
@@ -208,21 +229,26 @@ class RigidBody(ABC):
 
     @z_origin.setter
     def z_origin(self, value: float) -> None:
-        new_origin = np.array([self._origin[0], self._origin[1], value], dtype=float)
+        new_origin = jnp.array([self._origin[0], self._origin[1], value], dtype=float)
         self.origin = new_origin
 
     # Orientation properties
     @property
-    def orientation(self) -> FloatArray:
-        return self._orientation
+    def orientation_rad(self) -> Float:
+        return self._orientation_rad
 
-    @orientation.setter
-    def orientation(self, value: FloatArray) -> None:
-        old_orientation = self._orientation.copy()
-        new_orientation = np.array(value, dtype=float)
+    @property
+    def orientation_degrees(self) -> Float:
+        """Get orientation in degrees."""
+        return self._orientation_rad * 180 / jnp.pi
 
-        self._orientation = np.array(value, dtype=float)
-        self._pitch, self._yaw, self._roll = self._orientation * np.pi / 180
+    @orientation_rad.setter
+    def orientation_rad(self, value: Float) -> None:
+        old_orientation = self._orientation_rad.copy()
+        new_orientation = jnp.array(value, dtype=float)
+
+        self._orientation_rad = jnp.array(value, dtype=float)
+        self._pitch, self._roll, self._yaw = self._orientation_rad
 
         # R_OLD , R_NEW
         self._update_rotation_matrix()
@@ -233,39 +259,75 @@ class RigidBody(ABC):
 
         self._on_orientation_changed(old_orientation, new_orientation)
 
+    @orientation_degrees.setter
+    def orientation_degrees(self, value: Float) -> None:
+        """Set orientation in degrees."""
+        orientation_rad = jnp.array(value, dtype=float) * jnp.pi / 180
+        self.orientation_rad = orientation_rad
+
     @property
-    def pitch(self) -> float:
+    def pitch_rad(self) -> float:
         return self._pitch
 
-    @pitch.setter
-    def pitch(self, value: float) -> None:
+    @property
+    def pitch_degrees(self) -> float:
+        """Get pitch in degrees."""
+        return self._pitch * 180 / jnp.pi
+
+    @pitch_rad.setter
+    def pitch_rad(self, value: float) -> None:
         self._pitch = value
-        self.orientation = np.array([self._pitch * 180 / np.pi, self._yaw * 180 / np.pi, self._roll * 180 / np.pi])
+        self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
+
+    @pitch_degrees.setter
+    def pitch_degrees(self, value: float) -> None:
+        """Set pitch in degrees."""
+        self.pitch_rad = value * jnp.pi / 180
 
     @property
-    def yaw(self) -> float:
+    def yaw_rad(self) -> float:
         return self._yaw
 
-    @yaw.setter
-    def yaw(self, value: float) -> None:
+    @property
+    def yaw_degrees(self) -> float:
+        """Get yaw in degrees."""
+        return self._yaw * 180 / jnp.pi
+
+    @yaw_rad.setter
+    def yaw_rad(self, value: float) -> None:
         self._yaw = value
-        self.orientation = np.array([self._pitch * 180 / np.pi, self._yaw * 180 / np.pi, self._roll * 180 / np.pi])
+        self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
+
+    @yaw_degrees.setter
+    def yaw_degrees(self, value: float) -> None:
+        """Set yaw in degrees."""
+        self.yaw_degrees = value * jnp.pi / 180
 
     @property
-    def roll(self) -> float:
+    def roll_rad(self) -> float:
         return self._roll
 
-    @roll.setter
-    def roll(self, value: float) -> None:
+    @property
+    def roll_degrees(self) -> float:
+        """Get roll in degrees."""
+        return self._roll * 180 / jnp.pi
+
+    @roll_rad.setter
+    def roll_rad(self, value: float) -> None:
         self._roll = value
-        self.orientation = np.array([self._pitch * 180 / np.pi, self._yaw * 180 / np.pi, self._roll * 180 / np.pi])
+        self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
+
+    @roll_degrees.setter
+    def roll_degrees(self, value: float) -> None:
+        """Set roll in degrees."""
+        self.roll_rad = value * jnp.pi / 180
 
     # Physical properties
     @property
-    def CG(self) -> FloatArray:
+    def CG(self) -> Float:
         """Center of gravity of the body."""
         # Compute center of mass from mass points
-        total_moment = np.zeros(3)
+        total_moment = jnp.zeros(3)
         for mp in self._mass_points:
             total_moment += mp.mass * mp.position
 
@@ -300,9 +362,9 @@ class RigidBody(ABC):
         return total_inertia
 
     @property
-    def inertia(self) -> FloatArray:
+    def inertia(self) -> Float:
         """Inertia tensor as array [Ixx, Iyy, Izz, Ixy, Ixz, Iyz]."""
-        return np.array(self.inertia_tensor.to_list)
+        return jnp.array(self.inertia_tensor.to_list)
 
     # Convenience properties for inertia components
     @property
@@ -337,31 +399,31 @@ class RigidBody(ABC):
 
     # Abstract methods for handling property changes
     @abstractmethod
-    def _on_origin_changed(self, movement: FloatArray) -> None:
+    def _on_origin_changed(self, movement: Float) -> None:
         """Called when origin changes. Subclasses should update their geometry."""
         pass
 
     @abstractmethod
-    def _on_orientation_changed(self, old_orientation: FloatArray, new_orientation: FloatArray) -> None:
+    def _on_orientation_changed(self, old_orientation: Float, new_orientation: Float) -> None:
         """Called when orientation changes. Subclasses should update their geometry."""
         pass
 
     # Transform methods
-    def transform_point(self, point: FloatArray) -> FloatArray:
+    def transform_point(self, point: Float) -> Float:
         """Transform a point from local to global coordinates."""
-        return np.matmul(self.R_MAT, point) + self._origin
+        return jnp.matmul(self.R_MAT, point) + self._origin
 
-    def transform_points(self, points: FloatArray) -> FloatArray:
+    def transform_points(self, points: Float) -> Float:
         """Transform multiple points from local to global coordinates."""
-        return np.matmul(self.R_MAT, points.T).T + self._origin
+        return jnp.matmul(self.R_MAT, points.T).T + self._origin
 
-    def inverse_transform_point(self, point: FloatArray) -> FloatArray:
+    def inverse_transform_point(self, point: Float) -> Float:
         """Transform a point from global to local coordinates."""
-        return np.matmul(np.linalg.inv(self.R_MAT), point - self._origin)
+        return jnp.matmul(jnp.linalg.inv(self.R_MAT), point - self._origin)
 
-    def inverse_transform_points(self, points: FloatArray) -> FloatArray:
+    def inverse_transform_points(self, points: Float) -> Float:
         """Transform multiple points from global to local coordinates."""
-        return np.matmul(np.linalg.inv(self.R_MAT), (points - self._origin).T).T
+        return jnp.matmul(jnp.linalg.inv(self.R_MAT), (points - self._origin).T).T
 
     # Factory methods for common mass distributions
     def add_concentrated_mass(

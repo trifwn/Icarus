@@ -123,7 +123,7 @@ class Wing(RigidBody):
     ########## Rigid Body Properties ##########
     def _on_orientation_changed(self, old_orientation: FloatArray, new_orientation: FloatArray) -> None:
         for segment in self.wing_segments:
-            segment.orientation = segment.orientation + (new_orientation - old_orientation)
+            segment.orientation_degrees = segment.orientation_degrees + (new_orientation - old_orientation)
 
     def _on_origin_changed(self, movement: FloatArray) -> None:
         """Updates the origin of the wing segments when the origin of the wing changes"""

@@ -3,12 +3,14 @@ from typing import Any
 import jax
 import numpy as np
 from jax import numpy as jnp
+from jaxtyping import Float
+from jaxtyping import Int
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 
 
-@jax.tree_util.register_pytree_with_keys_class
+@jax.tree_util.register_pytree_node_class
 class NACA4(Airfoil):
     """
     NACA 4 digit airfoil class
@@ -24,14 +26,13 @@ class NACA4(Airfoil):
             xx (int): XX is the maximum thickness. In the example XX=0.12 so the maximum thickness is 0.12 or 12% of the chord
             n_points (int): Number of points to generate the airfoil. Default is 200.
         """
+        self.M: Int = jnp.array(M * 100).astype(int)
+        self.P: Int = jnp.array(P * 10).astype(int)
+        self.XX: Int = jnp.array(XX * 100).astype(int)
 
-        self.M: int = int(M * 100)
-        self.P: int = int(P * 10)
-        self.XX: int = int(XX * 100)
-
-        self.m: float = M
-        self.p: float = P
-        self.xx: float = XX
+        self.m: Float = jnp.asarray(M, dtype=float)
+        self.p: Float = jnp.asarray(P, dtype=float)
+        self.xx: Float = jnp.asarray(XX, dtype=float)
 
         upper, lower = self.gen_NACA4_points(n_points // 2)
         super().__init__(upper=upper, lower=lower)

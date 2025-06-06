@@ -109,7 +109,7 @@ def plot_gnvp_wake(
         s=5,
     )  # GRID       # type: ignore
 
-    plane.plot(fig, ax, movement=-np.array(plane.CG), show_masses=False)
+    plane.plot(ax, movement=-np.array(plane.CG), show_masses=False)
     if scale:
         ax.set_aspect("equal", "box")
     plt.show()

@@ -211,7 +211,7 @@ def avl_geo(
         f_io.write("TRANSLATE\n")
         f_io.write("0.0  0.0  0.0\n")
         f_io.write("ANGLE\n")
-        f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
+        f_io.write(f" {surf.orientation_degrees[0]}                         | dAinc\n")
         f_io.write("\n")
         f_io.write("\n")
 
@@ -219,7 +219,7 @@ def avl_geo(
             x, y, z = strip.leading_edge
 
             chord = strip.chord
-            twist = strip.pitch
+            twist = strip.pitch_degrees
             strip_airfoil = strip.airfoil
 
             N = 1

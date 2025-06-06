@@ -36,6 +36,8 @@ from .utils import (
     get_distinct_colors,
     validate_airplane_input,
     validate_surface_input,
+    parse_Axes3D,
+    parse_Axes,
 )
 from . import airfoil
 from . import airplane
@@ -58,4 +60,6 @@ __all__ = [
     "get_distinct_colors",
     "validate_airplane_input",
     "validate_surface_input",
+    "parse_Axes3D",
+    "parse_Axes",
 ]

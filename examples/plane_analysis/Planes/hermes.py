@@ -77,7 +77,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
     rudder_orientation: FloatArray = np.array(
-        [0.0, 0.0, 90.0],
+        [0.0, 90.0, 0.0],
         dtype=float,
     )
 
