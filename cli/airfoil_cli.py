@@ -64,7 +64,7 @@ def get_airfoil_file() -> Airfoil:
         exit()
     else:
         try:
-            return Airfoil.load_from_file(answers["airf_file"])
+            return Airfoil.from_file(answers["airf_file"])
         except Exception as e:
             print(e)
             return get_airfoil_file()

@@ -160,15 +160,15 @@ class NACA4(Airfoil):
     def __getstate__(self) -> dict[str, Any]:
         """Get the state of the object for pickling"""
         state = dict()
-        state["M"] = self.M
-        state["P"] = self.P
-        state["XX"] = self.XX
+        state["m"] = self.m
+        state["p"] = self.p
+        state["xx"] = self.xx
         state["n_points"] = len(self._x_lower) * 2
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Set the state of the object for unpickling"""
-        NACA4.__init__(self, M=state["M"], P=state["P"], XX=state["XX"], n_points=state["n_points"])
+        NACA4.__init__(self, M=state["m"], P=state["p"], XX=state["xx"], n_points=state["n_points"])
 
     def gen_NACA4_points(self, n_points):
         """

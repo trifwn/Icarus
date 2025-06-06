@@ -15,7 +15,7 @@ from ICARUS.vehicle import Airplane
 
 
 # DEFINING ALL AOA RUNS IN .RUN AVL FILE
-def case_def(
+def run_file(
     directory: str,
     plane: Airplane,
     state: State,
