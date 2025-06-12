@@ -138,17 +138,14 @@ def gnvp_aoa_case(
         str: Case Done Message
 
     """
-    HOMEDIR: str = DB.HOMEDIR
     PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
         solver=f"GenuVP{gnvp_version}",
     )
-    airfoils: list[str] = plane.airfoils
 
-    folder: str = angle_to_case(angle)
-    CASEDIR: str = os.path.join(PLANEDIR, folder)
-    os.makedirs(CASEDIR, exist_ok=True)
+    case_directory: str = os.path.join(PLANEDIR, angle_to_case(angle))
+    os.makedirs(case_directory, exist_ok=True)
 
     params: GenuParameters = GenuParameters(
         bodies_dicts,
@@ -166,12 +163,10 @@ def gnvp_aoa_case(
         run = gnvp3_case
 
     run(
-        CASEDIR=CASEDIR,
-        HOMEDIR=HOMEDIR,
+        case_directory=case_directory,
         movements=movements,
         genu_bodies=bodies_dicts,
         params=params,
-        airfoils=airfoils,
         solver2D=solver2D,
     )
 
@@ -411,14 +406,13 @@ def process_gnvp_polars(
 
     """
     DB = Database.get_instance()
-    HOMEDIR: str = DB.HOMEDIR
     CASEDIR = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
         solver=f"GenuVP{gnvp_version}",
     )
 
-    forces: DataFrame = log_forces(CASEDIR, HOMEDIR, gnvp_version)
+    forces: DataFrame = log_forces(CASEDIR, gnvp_version)
     plane.save()
     state.add_polar(
         polar=forces,

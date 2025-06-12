@@ -1,4 +1,3 @@
-import os
 from multiprocessing import Pool
 from subprocess import call
 from threading import Thread
@@ -19,36 +18,29 @@ from ICARUS.database import Database
 
 
 def run_angle(
-    REYNDIR: str,
-    ANGLEDIR: str,
+    directory: str,
 ) -> None:
     """Function to run OpenFoam for a given angle given it is already setup
 
     Args:
-        REYNDIR (str): REYNOLDS CASE DIRECTORY
         ANGLEDIR (float): ANGLE DIRECTORY
 
     """
-    os.chdir(ANGLEDIR)
-    call(["/bin/bash", "-c", f"{runOFscript}"])
-    os.chdir(REYNDIR)
+    call(["/bin/bash", "-c", f"{runOFscript}"], cwd=directory)
 
 
 def run_angles(
-    REYNDIR: str,
-    ANGLEDIRS: list[str],
+    case_directories: list[str],
 ) -> None:
     """Function to run multiple Openfoam Simulations (many AoAs) after they
     are already setup
 
     Args:
-        REYNDIR (str): Reynolds Parent Directory
-        ANGLEDIRS (list[str]): Angle Directory
+        case_directories (list[str]): List of directories where the cases are setup
 
     """
     with Pool(processes=CPU_TO_USE - 2) as pool:
-        args_list: list[tuple[str, str]] = [(REYNDIR, angle_dir) for angle_dir in ANGLEDIRS]
-        pool.starmap(run_angle, args_list)
+        pool.starmap(run_angle, case_directories)
 
 
 def angles_serial(
@@ -76,7 +68,6 @@ def angles_serial(
     )
 
     setup_open_foam(
-        HOMEDIR,
         AFDIR,
         REYNDIR,
         airfoil.file_name,
@@ -89,7 +80,7 @@ def angles_serial(
 
     progress_bars = []
     for pos, angle_dir in enumerate(ANGLEDIRS):
-        job = Thread(target=run_angle, args=(REYNDIR, angle_dir))
+        job = Thread(target=run_angle, args=(angle_dir,))
 
         pbar = tqdm(
             total=max_iter,
@@ -119,7 +110,6 @@ def angles_serial(
         # Join
         job.join()
         job_monitor.join()
-    os.chdir(HOMEDIR)
 
 
 def angles_parallel(
@@ -146,7 +136,6 @@ def angles_parallel(
         angles=angles,
     )
     setup_open_foam(
-        HOMEDIR,
         AFDIR,
         REYNDIR,
         airfoil.file_name,

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import os
 
+from ICARUS.database.utils import angle_to_case
 
-def get_coefficients(angle: float) -> str | None:
+
+def get_coefficients(case_directory: str, angle: float) -> str | None:
     """Function to get coefficients from OpenFoam results for a given angle.
 
     Args:
@@ -12,26 +14,21 @@ def get_coefficients(angle: float) -> str | None:
         str | None: String Containing Coefficients or None if not found
 
     """
-    if angle >= 0:
-        folder: str = str(angle)[::-1].zfill(7)[::-1]
-    else:
-        folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
-    parentDir: str = os.getcwd()
-    folders: list[str] = next(os.walk("."))[1]
-    if folder[:-1] in folders:
-        os.chdir(folder)
-        folders = next(os.walk("."))[1]
+    folder = angle_to_case(angle)
+
+    folders: list[str] = next(os.walk(case_directory))[1]
+    if folder in folders:
+        folders = next(os.walk(os.path.join(case_directory, folder)))[1]
+
     if "postProcessing" in folders:
-        os.chdir(os.path.join("postProcessing", "force_coefs"))
-        times: list[str] = next(os.walk("."))[1]
+        forces_dir = os.path.join(case_directory, "postProcessing", "force_coefs")
+        times: list[str] = next(os.walk(forces_dir))[1]
         times_num = [int(times[j]) for j in range(len(times)) if times[j].isdigit()]
         latestTime = max(times_num)
-        os.chdir(str(latestTime))
-        filen = "coefficient.dat"
+        latestTime_dir = os.path.join(forces_dir, str(latestTime))
+        filen = os.path.join(latestTime_dir, "coefficient.dat")
         with open(filen, encoding="UTF-8", newline="\n") as file:
             data: list[str] = file.readlines()
-        os.chdir(parentDir)
     else:
-        os.chdir(parentDir)
         return None
     return data[-1]

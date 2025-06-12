@@ -50,7 +50,7 @@ def serial_monitor(
 
 
 def parallel_monitor(
-    CASEDIRS: list[str],
+    case_directories: list[str],
     variables: list[str] | list[float] | FloatArray,
     max_iter: int,
     gnvp_version: int,
@@ -79,7 +79,7 @@ def parallel_monitor(
             executor.submit(
                 serial_monitor,
                 progress_bars=progress_bars,
-                CASEDIR=CASEDIRS[i],
+                CASEDIR=case_directories[i],
                 position=i,
                 lock=progress_bar_lock,
                 max_iter=max_iter,

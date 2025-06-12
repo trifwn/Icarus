@@ -9,7 +9,7 @@ from ICARUS.computation.solvers.OpenFoam.post_process.get_aero_coefficients impo
 )
 
 
-def make_polars(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> DataFrame:
+def make_polars(case_directory: str, angles: list[float]) -> DataFrame:
     """Function to make polars from OpenFoam results
 
     Args:
@@ -20,19 +20,20 @@ def make_polars(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> DataFrame:
         DataFrame: Dataframe Containing CL, CD, CM for all angles
 
     """
-    os.chdir(CASEDIR)
     cd: list[float] = []
     cl: list[float] = []
     cm: list[float] = []
-    folders: list[str] = next(os.walk("."))[1]
+    folders: list[str] = next(os.walk(case_directory))[1]
     angles_succeded: list[float] = []
+
     for angle in angles:
         if angle >= 0:
             folder: str = str(angle)[::-1].zfill(7)[::-1]
         else:
             folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
+
         if folder in folders:
-            data = get_coefficients(angle)
+            data = get_coefficients(case_directory, angle)
             if data is not None:
                 (
                     Time,
@@ -58,6 +59,6 @@ def make_polars(CASEDIR: str, HOMEDIR: str, angles: list[float]) -> DataFrame:
         columns=["AoA", "CL", "CD", "CM"],
     ).sort_values("AoA")
 
-    df.to_csv("clcd.of", index=False)
-    os.chdir(HOMEDIR)
+    clcd_file = os.path.join(case_directory, "clcd.of")
+    df.to_csv(clcd_file, index=False)
     return df

@@ -19,18 +19,12 @@ def save_multiple_reyn(
     for i, reyn_data in enumerate(polars):
         if len(reyn_data) == 0:
             continue
-        try:
-            os.chdir(airfoil_dir)
-        except FileNotFoundError:
-            try:
-                os.makedirs(airfoil_dir, exist_ok=True)
-            except FileExistsError:
-                pass
-            os.chdir(airfoil_dir)
+        os.makedirs(airfoil_dir, exist_ok=True)
 
-        reyndir: str = f"Reynolds_{np.format_float_scientific(reynolds[i], sign=False, precision=3, min_digits=3).replace('+', '')}"
+        reyn_str: str = f"Reynolds_{np.format_float_scientific(reynolds[i], sign=False, precision=3, min_digits=3).replace('+', '')}"
+        reyndir = os.path.join(airfoil_dir, reyn_str)
         os.makedirs(reyndir, exist_ok=True)
-        os.chdir(reyndir)
+
         df: DataFrame = DataFrame(reyn_data).T.rename(
             columns={"index": "AoA", 0: "CL", 1: "CD", 2: "Cm"},
         )
@@ -39,8 +33,9 @@ def save_multiple_reyn(
             print(f"Reynolds {reynolds[i]} failed to converge to a solution")
             continue
 
-        fname = "clcd.xfoil"
+        fname = os.path.join(reyndir, "clcd.xfoil")
         df.to_csv(fname, sep="\t", index=True, index_label="AoA")
+
     # If the airfoil doesn't exist in the DB, save it
     files_in_folder = os.listdir(airfoil_dir)
     if airfoil.file_name in files_in_folder:

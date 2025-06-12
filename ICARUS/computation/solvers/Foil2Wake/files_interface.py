@@ -1,4 +1,3 @@
-import os
 import subprocess
 from time import sleep
 from typing import Any
@@ -8,8 +7,7 @@ from ICARUS.computation.solvers.Foil2Wake import files_f2w as ff2w
 
 
 def sequential_run(
-    CASEDIR: str,
-    HOMEDIR: str,
+    directory: str,
     airfile: str,
     name: str,
     angles: list[float],
@@ -17,7 +15,6 @@ def sequential_run(
     mach: float,
     solver_options: dict[str, Any],
 ) -> None:
-    os.chdir(CASEDIR)
     num_of_angles: int = len(angles)
 
     # unpack solver options to args
@@ -58,13 +55,13 @@ def sequential_run(
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
+                cwd=directory,
             )
     try:
-        # os.rmdir("TMP.dir")
         pass
-        # os.remove("SOLOUTI*")
+        # os.rmdir(os.path.join(directory, "TMP.dir"))
+        # os.remove(os.path.join(directory, "SOLOUTI*"))
     except (FileNotFoundError, OSError):
         pass
 
     sleep(1.0)
-    os.chdir(HOMEDIR)

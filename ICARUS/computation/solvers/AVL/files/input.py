@@ -327,20 +327,17 @@ def avl_geo(
         file.write(contents)
 
 
-def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
-    HOMEDIR = os.getcwd()
-    os.chdir(PLANEDIR)
+def get_inertias(directory: str, plane: Airplane) -> FloatArray:
+    input_fname: str = os.path.join(directory, "inertia_scr")
+    log_fname = os.path.join(directory, "inertia_log.txt")
 
     f_io = StringIO()
     f_io.write(f"mass {plane.name}.mass\n")
     f_io.write("quit\n")
     contents: str = f_io.getvalue().expandtabs(4)
 
-    input_fname: str = os.path.join("inertia_scr")
-    log_fname = os.path.join("inertia_log.txt")
-
-    with open(input_fname, "w", encoding="utf-8") as f:
-        f.writelines(contents)
+    with open(input_fname, "w", encoding="utf-8") as file:
+        file.writelines(contents)
 
     with open(input_fname) as fin:
         with open(log_fname, "w") as fout:
@@ -349,6 +346,7 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
+                cwd=directory,
             )
         logging.debug(f"AVL return code: {res}")
 
@@ -361,9 +359,6 @@ def get_inertias(PLANEDIR: str, plane: Airplane) -> FloatArray:
     Ixz = float(lines[38][44:55])
     Ixy = float(lines[38][32:43])
     Iyz = float(lines[39][44:55])
-
-    os.chdir(HOMEDIR)
-
     return np.array([Ixx, Iyy, Izz, Ixz, Ixy, Iyz])
 
 

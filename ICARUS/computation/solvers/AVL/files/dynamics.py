@@ -67,7 +67,6 @@ def implicit_eigs(
     f_li.append("quit\n")
 
     input_f = os.path.join(DYNAMICS_DIR, "eig_mode_scr")
-    os.chdir(DYNAMICS_DIR)
     with open(input_f, "w", encoding="utf-8") as f:
         f.writelines(f_li)
 
@@ -78,8 +77,8 @@ def implicit_eigs(
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
+                cwd=DYNAMICS_DIR,
             )
-    os.chdir(HOMEDIR)
 
 
 def finite_difs(
@@ -104,7 +103,6 @@ def finite_difs(
         solver2D=solver2D,
         solver_options=solver_options,
     )
-    os.chdir(DYNAMICS_DIR)
 
     # FUNCTION FOR THE CALCULATION OF STABILITY DERIVATIVES VIA FINITED DIFEERENCE METHOD
     # This function calculates the stability derivatives of the airplane using the finite difference method.
@@ -201,5 +199,5 @@ def finite_difs(
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
+                cwd=DYNAMICS_DIR,
             )
-    os.chdir(HOMEDIR)

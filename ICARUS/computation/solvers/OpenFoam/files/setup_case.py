@@ -9,6 +9,7 @@ import numpy as np
 from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers import setup_of_script
 from ICARUS.core.types import FloatArray
+from ICARUS.database.utils import angle_to_case
 
 OFBASE = os.path.join(INSTALL_DIR, "ICARUS", "Solvers", "OpenFoam", "files")
 
@@ -22,8 +23,7 @@ class MeshType(Enum):
 
 
 def make_mesh(
-    HOMEDIR: str,
-    CASEDIR: str,
+    case_directory: str,
     airfoil_fname: str,
     mesh_type: MeshType,
 ) -> None:
@@ -35,42 +35,39 @@ def make_mesh(
     """
     if mesh_type == MeshType.structAirfoilMesher:
         # Check if struct.input exists
-        filename = os.path.join(CASEDIR, "outPatch.out")
+        filename = os.path.join(case_directory, "outPatch.out")
         if os.path.isfile(filename):
             print("Mesh is already Computed")
             return
 
-        dst: str = os.path.join(CASEDIR, "struct.input")
+        dst: str = os.path.join(case_directory, "struct.input")
         src: str = os.path.join("struct.input")
         shutil.copy(src, dst)
 
-        os.chdir(CASEDIR)
-        print(f"\t\tMaking Mesh for {airfoil_fname}")
-        call(["/bin/bash", "-c", f"{setup_of_script} -n {airfoil_fname}"])
-        os.chdir(HOMEDIR)
+        call(["/bin/bash", "-c", f"{setup_of_script} -n {airfoil_fname}"], cwd=case_directory)
 
         src = os.path.join(OFBASE, "boundaryTemplate")
-        dst = os.path.join(CASEDIR, "constant", "polyMesh", "boundary")
+        dst = os.path.join(case_directory, "constant", "polyMesh", "boundary")
         shutil.copy(src, dst)
     elif mesh_type == MeshType.copy_from:
         pass
 
 
 def init_case(
-    CASEDIR: str,
+    case_directory: str,
     angle: float,
 ) -> None:
     """
     Make the zero folder for simulation
 
     Args:
-        CASEDIR (str): Case Directory
+        case_directory (str): Case Directory
         angle (float): Angle to run
     """
     src: str = os.path.join(OFBASE, "0")
-    dst: str = os.path.join(CASEDIR, "0")
+    dst: str = os.path.join(case_directory, "0")
     shutil.copytree(src, dst, dirs_exist_ok=True)
-    filename: str = os.path.join(CASEDIR, "0", "U")
+    filename: str = os.path.join(case_directory, "0", "U")
     with open(filename, encoding="UTF-8", newline="\n") as file:
         data: list[str] = file.readlines()
     data[26] = f"internalField uniform ( {np.cos(angle)} {np.sin(angle)} 0. );\n"
@@ -79,29 +76,31 @@ def init_case(
 
 
 def constant_folder(
-    CASEDIR: str,
+    case_directory: str,
     reynolds: float,
 ) -> None:
     """
     Make the constant folder for simulation
 
     Args:
-        CASEDIR (str): Case Directory
+        case_directory (str): Case Directory
         reynolds (float): Reynolds Number
     """
     src: str = os.path.join(OFBASE, "constant")
-    dst: str = os.path.join(CASEDIR, "constant")
+    dst: str = os.path.join(case_directory, "constant")
     shutil.copytree(src, dst, dirs_exist_ok=True)
-    filename: str = os.path.join(CASEDIR, "constant", "transportProperties")
+    filename: str = os.path.join(case_directory, "constant", "transportProperties")
     with open(filename, encoding="UTF-8", newline="\n") as file:
         data: list[str] = file.readlines()
-    data[20] = f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1/reynolds,sign=False,precision=3)};\n"
+    data[20] = (
+        f"nu              [0 2 -1 0 0 0 0] {np.format_float_scientific(1 / reynolds, sign=False, precision=3)};\n"
+    )
     with open(filename, "w", encoding="UTF-8") as file:
         file.writelines(data)
 
 
 def system_folder(
-    CASEDIR: str,
+    case_directory: str,
     angle: float,
     max_iterations: int,
 ) -> None:
@@ -109,30 +108,29 @@ def system_folder(
     Make the system folder for simulation
 
     Args:
-        CASEDIR (str): Case Directory
+        case_directory (str): Case Directory
         angle (float): Angle to run
         max_iterations (int): Max iterations for the simulation
     """
     src: str = os.path.join(OFBASE, "system")
-    dst: str = os.path.join(CASEDIR, "system")
+    dst: str = os.path.join(case_directory, "system")
     shutil.copytree(src, dst, dirs_exist_ok=True)
 
-    filename: str = os.path.join(CASEDIR, "system", "controlDict")
+    filename: str = os.path.join(case_directory, "system", "controlDict")
     with open(filename, encoding="UTF-8", newline="\n") as file:
         data: list[str] = file.readlines()
     data[36] = f"endTime {max_iterations}.;\n"
     data[94] = "\t\tCofR  (0.25 0. 0.);\n"
-    data[95] = f"\t\tliftDir ({-np.sin(angle)} {np.cos(angle)} {0.});\n"
-    data[96] = f"\t\tdragDir ({np.cos(angle)} {np.sin(angle)} {0.});\n"
+    data[95] = f"\t\tliftDir ({-np.sin(angle)} {np.cos(angle)} {0.0});\n"
+    data[96] = f"\t\tdragDir ({np.cos(angle)} {np.sin(angle)} {0.0});\n"
     data[97] = "\t\tpitchAxis (0. 0. 1.);\n"
     data[98] = "\t\tmagUInf 1.;\n"
-    data[110] = f"\t\tUInf ({np.cos(angle)} {np.sin(angle)} {0.});\n"
+    data[110] = f"\t\tUInf ({np.cos(angle)} {np.sin(angle)} {0.0});\n"
     with open(filename, "w", encoding="UTF-8") as file:
         file.writelines(data)
 
 
 def setup_open_foam(
-    HOMEDIR: str,
     AFDIR: str,
     CASEDIR: str,
     airfoil_fname: str,
@@ -157,48 +155,39 @@ def setup_open_foam(
         angles = [angles]
     mesh_dir: str = ""
     for i, angle in enumerate(angles):
-        if angle >= 0:
-            folder: str = str(angle)[::-1].zfill(7)[::-1]
-        else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
-        ANGLEDIR: str = os.path.join(CASEDIR, folder)
+        folder = angle_to_case(angle)
 
-        try:
-            os.chdir(ANGLEDIR)
-        except FileNotFoundError:
-            os.makedirs(ANGLEDIR, exist_ok=True)
-            os.chdir(ANGLEDIR)
+        angle_directory: str = os.path.join(CASEDIR, folder)
+        os.makedirs(angle_directory, exist_ok=True)
 
         angle_rad: float = angle * np.pi / 180
         # MAKE 0/ FOLDER
-        init_case(ANGLEDIR, angle_rad)
+        init_case(angle_directory, angle_rad)
 
         # MAKE constant/ FOLDER
-        constant_folder(ANGLEDIR, reynolds)
+        constant_folder(angle_directory, reynolds)
 
         # MAKE system/ FOLDER
         max_iterations: int = solver_options["max_iterations"]
-        system_folder(ANGLEDIR, angle_rad, max_iterations)
+        system_folder(angle_directory, angle_rad, max_iterations)
 
         src: str = os.path.join(AFDIR, airfoil_fname)
-        dst: str = os.path.join(ANGLEDIR, airfoil_fname)
+        dst: str = os.path.join(angle_directory, airfoil_fname)
         shutil.copy(src, dst)
 
         mesh_type: MeshType = solver_options["mesh_type"]
         if i == 0:
             make_mesh(
-                HOMEDIR,
-                ANGLEDIR,
+                angle_directory,
                 airfoil_fname,
                 mesh_type,
             )
-            mesh_dir = ANGLEDIR
+            mesh_dir = angle_directory
         else:
             src = os.path.join(mesh_dir, "constant", "polyMesh")
-            dst = os.path.join(ANGLEDIR, "constant", "polyMesh")
+            dst = os.path.join(angle_directory, "constant", "polyMesh")
             shutil.copytree(src, dst, dirs_exist_ok=True)
             pass
 
         if solver_options["silent"] is False:
             pass
-        os.chdir(HOMEDIR)

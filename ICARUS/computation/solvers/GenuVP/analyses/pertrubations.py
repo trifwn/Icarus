@@ -73,13 +73,11 @@ def gnvp_disturbance_case(
 
     """
     DB = Database.get_instance()
-    HOMEDIR: str = DB.HOMEDIR
     PLANEDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
         solver=f"GenuVP{gnvp_version}",
     )
-    airfoils: list[str] = plane.airfoils
 
     movements: list[list[GNVP_Movement]] = define_movements(
         surfaces,
@@ -110,11 +108,9 @@ def gnvp_disturbance_case(
 
     run(
         CASEDIR,
-        HOMEDIR,
         movements,
         bodies_dicts,
         params,
-        airfoils,
         solver2D,
     )
 

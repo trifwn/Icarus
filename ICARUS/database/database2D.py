@@ -317,11 +317,6 @@ class Database_2D:
         airfoil_folders: list[str] = next(os.walk(self.DB2D))[1]
         for airfoil_folder in airfoil_folders:
             logging.info(f"Scanning {airfoil_folder}...")
-            # Enter self.DB2D
-            os.chdir(self.DB2D)
-            airfoil_folder_path = os.path.join(self.DB2D, airfoil_folder)
-            os.chdir(airfoil_folder_path)
-
             # Load Airfoil Object
             try:
                 self.add_airfoil(airfoil_folder)
@@ -334,7 +329,6 @@ class Database_2D:
 
             # Load Airfoil Data
             self.load_airfoil_data(airfoil_folder)
-        os.chdir(self.HOMEDIR)
 
     def load_airfoil_data(self, airfoil: str | Airfoil) -> None:
         if isinstance(airfoil, Airfoil):

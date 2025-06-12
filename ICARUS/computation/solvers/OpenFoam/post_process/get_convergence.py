@@ -1,10 +1,9 @@
-import os
-from subprocess import call
+import subprocess
 
 from ICARUS.computation.solvers import logOFscript
 
 
-def get_convergence_data(HOMEDIR: str, CASEDIR: str) -> None:
+def get_convergence_data(case_directory: str) -> None:
     """Function to create convergence data for OpenFoam results using the FoamLog script
 
     Args:
@@ -12,8 +11,4 @@ def get_convergence_data(HOMEDIR: str, CASEDIR: str) -> None:
         CASEDIR (str): Case Directory
 
     """
-    os.chdir(CASEDIR)
-    call(["/bin/bash", "-c", f"{logOFscript}"])
-    os.chdir("logs")
-
-    os.chdir(HOMEDIR)
+    subprocess.call(["/bin/bash", "-c", f"{logOFscript}"], cwd=case_directory)

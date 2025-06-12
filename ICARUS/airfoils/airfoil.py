@@ -144,13 +144,13 @@ class Airfoil:
         self.selig = self.to_selig()
         self.selig_original = self.selig
 
-    def y_upper(self, x):
+    def y_upper(self, x: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_upper), max(x_upper)]
         x = self.min_x + x * (self.max_x - self.min_x)
         return self._y_upper_interp(x)
 
-    def y_lower(self, x):
+    def y_lower(self, x: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_lower), max(x_lower)]
 

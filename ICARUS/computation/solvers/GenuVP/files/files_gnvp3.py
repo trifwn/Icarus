@@ -1,6 +1,7 @@
 import os
 from io import StringIO
 from io import TextIOWrapper
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -75,9 +76,9 @@ def file_name(input: str, file_ext: str) -> str:
     return input.ljust(12)
 
 
-def input_file() -> None:
+def input_file(directory: str) -> None:
     """Creates the input file for GNVP3"""
-    fname: str = "input"
+    fname: str = os.path.join(directory, "input")
     with open(fname, "w", encoding="utf-8") as f:
         f.write("dfile.yours\n")
         f.write("0\n")
@@ -93,270 +94,276 @@ def input_file() -> None:
         f.write("1.\n")
 
 
-def case_file(params: GenuParameters) -> None:
+def case_file(directory: str, params: GenuParameters) -> None:
     """Create Dfile for GNVP3
 
     Args:
         params (GenuParameters): An object containing all parameter values
 
     """
-    fname: str = "dfile.yours"
-    with open(fname, "w", encoding="utf-8") as f:
-        line(0, "ISTART", "(=0 for a full run, =1 for a rerun)')", f)
-        blankline(f)
-        blankline(f)
-        f.write(
-            "Three lines follow where text can be included as HEADER of the main OUTPUT file\n",
-        )
-        f.write(
-            "<------------------  maximum line length  ------------------------------------->\n",
-        )
-        f.write("SIMULATION---------------------------\n")
-        f.write("-------------------------------------\n")
-        f.write("-------------------------------------\n")
-        blankline(f)
-        f.write("Give the names of the OUTPUT files\n")
-        f.write("<---------->\n")
-        blankline(f)
-        line(
-            "YOURS.TOT",
-            "OFILE",
-            "Name of the OUTPUT file containing general  results",
-            f,
-        )
-        line(
-            "YOURS.WAK",
-            "OWAKE",
-            "Name of the OUTPUT file containing   wake   results",
-            f,
-        )
-        line(
-            "YOURS.PRE",
-            "OPRES",
-            "Name of the OUTPUT file containing pressure results",
-            f,
-        )
-        line(
-            "YOURS.BAK",
-            "RCALL",
-            "Name of the OUTPUT file containing backup   results",
-            f,
-        )
-        line("YOURS.SAS", "SUPAS", "Name of the BINARY file containing AS", f)
-        line("YOURS.SBU", "SUPBU", "Name of the BINARY file containing BU", f)
-        line(
-            "YOURS.CHW",
-            "CHWAK",
-            "Name of the OUTPUT file containing wake-sts results",
-            f,
-        )
-        line(
-            "YOURS.LOA",
-            "LOADS",
-            "Name of the OUTPUT file containing   loads  results",
-            f,
-        )
-        blankline(f)
-        blankline(f)
-        f.write("Give the general data in FREE format\n")
-        blankline(f)
-        f.write("a. The BASIC parameters\n")
-        blankline(f)
-        line(1, "NSYMF", "=1,2,3 (no-symm, axi-symm, Y-symm)", f)
-        line(params.nBods, "NBODT", "number of bodies", f)
-        line(params.nBlades, "NBLADE", "number of blades", f)
-        line(0, "IABSREF", "= 0 for GCS =1 for RCS", f)
-        line(1, "IAXISRF", "=1,2,3 gives the axis of rotation if IABSREF=1", f)
-        line(0.0, "OMEGAR", "is the rotation speed of the RCS", f)
-        f.write("\n")
-        f.write("b. The TIME parameters\n")
-        blankline(f)
-        line(
-            params.maxiter,
-            "NTIMER",
-            "number of the last time step to be performed",
-            f,
-        )
-        line(params.timestep, "DT", "time step", f)
-        line(0, "IDT", "if IDT=1 then DT is the number of steps per rotation", f)
-        line(1, "OMEAGT", "the rotation speed for the definition of the PERIOD", f)
-        line(
-            params.NMETH,
-            "NMETHT",
-            "=1 for Euler =2 for Adams Bashford time integrat. scheme",
-            f,
-        )
-        line(
-            params.NEMTIP,
-            "NEMTIP",
-            "=0,1. The latter means that tip-emission takes place",
-            f,
-        )
-        line(params.NTIMET, "NTIMET", "time step that tip-emission begins", f)
-        line(
-            params.NEMSLE,
-            "NEMSLE",
-            "=0(no action), 1(leading-edge separ. takes place)",
-            f,
-        )
-        line(
-            params.NTIMEL,
-            "NTIMEL",
-            "time step that leading-edge separation starts",
-            f,
-        )
-        line(0.0, "AZIMIN", "the initial azimuthal angle", f)
-        blankline(f)
-        f.write("c. The SOLUTION parameters\n")
-        blankline(f)
-        line(0, "IMAT", "=0 AS is calculated, =1 AS is read from disk", f)
-        line(200, "ITERM", "maximum number of potential iterations", f)
-        line(
-            params.RELAXS,
-            "RELAXS",
-            "relaxation factor for the singularity distributions",
-            f,
-        )
-        line(
-            params.EPSDS,
-            "EPSDS",
-            "convergence tolerance of the potential calculations",
-            f,
-        )
-        blankline(f)
-        f.write("d. The MOVEMENT parameters\n")
-        blankline(f)
-        line(
-            params.NLEVELT,
-            "NLEVELT",
-            "number of movements levels  ( 15 if tail rotor is considered )",
-            f,
-        )
-        blankline(f)
-        f.write("e. The FLOW parameters\n")
-        blankline(f)
-        line(params.u_freestream[0], "UINF(1)", "the velocity at infinity", f)
-        line(params.u_freestream[1], "UINF(2)", ".", f)
-        line(params.u_freestream[2], "UINF(3)", ".", f)
-        line(0, "UREF", "the reference velocity", f)
-        line(1, "ADIML", "the length scale used for the non-dimentionalisation", f)
-        line(1, "ADIMT", "the  time  scale used for the non-dimentionalisation", f)
-        line(0, "IUINFC", "0(no action), 1(UINF varies)", f)
-        line(1, "IAXISUI", "=1,2,3 gives the direction of UINF that varies", f)
-        line(
-            0.00,
-            "TIUINF(1)",
-            "time parameters of the variation   *** 5 periods ***",
-            f,
-        )
-        line(0.00, "TIUINF(2)", ".shear exponent", f)
-        line(0.00, "TIUINF(3)", ".xronos pou arxizei to INWIND", f)
-        line(0.00, "TIUINF(4)", ".tower impact factor", f)
-        line(1, "TIUINF(5)", ".record pou arxeizei na diabazei", f)
-        line(0.000, "AMUINF(1)", "", f)
-        line(0.000, "AMUINF(2)", ".", f)
-        line(0.000, "AMUINF(3)", ".", f)
-        line(0.000, "AMUINF(4)", ".", f)
-        line(0.000, "AMUINF(5)", ".", f)
-        line(0.000, "AMUINF(6)", ".", f)
-        line(0.000, "AMUINF(7)", ".", f)
-        blankline(f)
-        f.write("f. The EMISSION parameters\n")
-        blankline(f)
-        line("", "", "Number of vortex particles created within a time step", f)
-        line(params.NNEVP0, "NNEVP0", "per near-wake element of a thin  wing", f)
-        line(params.RELAXU, "RELAXU", "relaxation factor for the emission velocity", f)
-        line(
-            params.PARVEC,
-            "PARVEC",
-            "parameter for the minimum width of the near-wake elemen.",
-            f,
-        )
-        line(params.NEMIS, "NEMISS", "=1,2 (See CREATE)", f)
-        blankline(f)
-        f.write("g. The DEFORMATION parameters\n")
-        blankline(f)
-        line(params.EPSFB, "EPSFB", "Cut-off length for the bound vorticity", f)
-        line(params.EPSFW, "EPSFW", "Cut-off length for the near-wake vorticity", f)
-        line(params.EPSSR, "EPSSR", "Cut-off length for source distributions", f)
-        line(params.EPSDI, "EPSDI", "Cut-off length for source distributions", f)
-        line(
-            params.EPSVR,
-            "EPSVR",
-            "Cut-off length for the free vortex particles (final)",
-            f,
-        )
-        line(
-            params.EPSO,
-            "EPSO",
-            "Cut-off length for the free vortex particles (init.)",
-            f,
-        )
-        line(params.EPSINT, "EPSINT", "", f)
-        line(params.COEF, "COEF", "Factor for the disipation of particles", f)
-        line(params.RMETM, "RMETM", "Upper bound of the deformation rate", f)
-        line(
-            params.IDEFW,
-            "IDEFW",
-            "Parameter for the deformation induced by the near wake",
-            f,
-        )
-        line(
-            params.REFLEN,
-            "REFLEN",
-            "Length used in VELEF for suppresing far-particle calc.",
-            f,
-        )
-        line(params.IDIVVRP, "IDIVVRP", "Parameter for the subdivision of particles", f)
-        line(
-            params.FLENSC,
-            "FLENSC",
-            "Length scale for the subdivision of particles",
-            f,
-        )
-        line(params.NREWAK, "NREWAK", "Parameter for merging of particles", f)
-        line(params.NMER, "NMER", "Parameter for merging of particles", f)
-        line(params.XREWAK, "XREWAK", "X starting distance of merging", f)
-        line(params.RADMER, "RADMER", "Radius for merging", f)
-        blankline(f)
-        f.write("j. The MANAGEMENT parameters\n")
-        blankline(f)
-        line(1, "ITERPRE", "Write forces every ... time steps", f)
-        line(1, "ITERWAK", "Write wake geometry every ... time steps", f)
-        line(10000, "ITERVEL", "Write inflow velocities", f)
-        line(10000, "ITERREC", "Take back-up every ... time steps", f)
-        line(100, "ITERLOA", "Write loads every ... time steps", f)
-        line(1, "ITERCHW", "Check the wake calculations every ... time steps", f)
-        blankline(f)
-        f.write("i. The FLUID parameters\n")
-        blankline(f)
-        line(params.rho, "AIRDEN", "Fluid density", f)
-        line(params.visc, "VISCO", "Kinematic viscosity", f)
-        blankline(f)
-        f.write("k. The APPLICATION parameters\n")
-        blankline(f)
-        line(0, "IAPPLIC", "= 0(no action), 1(velocity profiles in the wakes)", f)
-        line(0, "IUEXTER", "= 0(no action), 1(there is an external velocity field)", f)
-        blankline(f)
-        blankline(f)
-        f.write("GIVE THE NAME OF THE DATA FILE FOR THE BODIES OF THE CONFIGURATION\n")
-        f.write("            ... FILEGEO\n")
-        line(
-            "hermes.geo",
-            "FILEGEO",
-            "the data file for the geometry of the configuration",
-            f,
-        )
-        f.write(
-            "                       (See DGEOM-3.frm format file, Subr. INITGEO and\n",
-        )
-        f.write("                        gnvp-3.txt)\n")
-        line(0, "IYNELST", "(1=BEAMDYN,2-ALCYONE,3=GAST)", f)
-        f.write("\n")
-        f.write("\n")
+    f = StringIO()
+    line(0, "ISTART", "(=0 for a full run, =1 for a rerun)')", f)
+    blankline(f)
+    blankline(f)
+    f.write(
+        "Three lines follow where text can be included as HEADER of the main OUTPUT file\n",
+    )
+    f.write(
+        "<------------------  maximum line length  ------------------------------------->\n",
+    )
+    f.write("SIMULATION---------------------------\n")
+    f.write("-------------------------------------\n")
+    f.write("-------------------------------------\n")
+    blankline(f)
+    f.write("Give the names of the OUTPUT files\n")
+    f.write("<---------->\n")
+    blankline(f)
+    line(
+        "YOURS.TOT",
+        "OFILE",
+        "Name of the OUTPUT file containing general  results",
+        f,
+    )
+    line(
+        "YOURS.WAK",
+        "OWAKE",
+        "Name of the OUTPUT file containing   wake   results",
+        f,
+    )
+    line(
+        "YOURS.PRE",
+        "OPRES",
+        "Name of the OUTPUT file containing pressure results",
+        f,
+    )
+    line(
+        "YOURS.BAK",
+        "RCALL",
+        "Name of the OUTPUT file containing backup   results",
+        f,
+    )
+    line("YOURS.SAS", "SUPAS", "Name of the BINARY file containing AS", f)
+    line("YOURS.SBU", "SUPBU", "Name of the BINARY file containing BU", f)
+    line(
+        "YOURS.CHW",
+        "CHWAK",
+        "Name of the OUTPUT file containing wake-sts results",
+        f,
+    )
+    line(
+        "YOURS.LOA",
+        "LOADS",
+        "Name of the OUTPUT file containing   loads  results",
+        f,
+    )
+    blankline(f)
+    blankline(f)
+    f.write("Give the general data in FREE format\n")
+    blankline(f)
+    f.write("a. The BASIC parameters\n")
+    blankline(f)
+    line(1, "NSYMF", "=1,2,3 (no-symm, axi-symm, Y-symm)", f)
+    line(params.nBods, "NBODT", "number of bodies", f)
+    line(params.nBlades, "NBLADE", "number of blades", f)
+    line(0, "IABSREF", "= 0 for GCS =1 for RCS", f)
+    line(1, "IAXISRF", "=1,2,3 gives the axis of rotation if IABSREF=1", f)
+    line(0.0, "OMEGAR", "is the rotation speed of the RCS", f)
+    f.write("\n")
+    f.write("b. The TIME parameters\n")
+    blankline(f)
+    line(
+        params.maxiter,
+        "NTIMER",
+        "number of the last time step to be performed",
+        f,
+    )
+    line(params.timestep, "DT", "time step", f)
+    line(0, "IDT", "if IDT=1 then DT is the number of steps per rotation", f)
+    line(1, "OMEAGT", "the rotation speed for the definition of the PERIOD", f)
+    line(
+        params.NMETH,
+        "NMETHT",
+        "=1 for Euler =2 for Adams Bashford time integrat. scheme",
+        f,
+    )
+    line(
+        params.NEMTIP,
+        "NEMTIP",
+        "=0,1. The latter means that tip-emission takes place",
+        f,
+    )
+    line(params.NTIMET, "NTIMET", "time step that tip-emission begins", f)
+    line(
+        params.NEMSLE,
+        "NEMSLE",
+        "=0(no action), 1(leading-edge separ. takes place)",
+        f,
+    )
+    line(
+        params.NTIMEL,
+        "NTIMEL",
+        "time step that leading-edge separation starts",
+        f,
+    )
+    line(0.0, "AZIMIN", "the initial azimuthal angle", f)
+    blankline(f)
+    f.write("c. The SOLUTION parameters\n")
+    blankline(f)
+    line(0, "IMAT", "=0 AS is calculated, =1 AS is read from disk", f)
+    line(200, "ITERM", "maximum number of potential iterations", f)
+    line(
+        params.RELAXS,
+        "RELAXS",
+        "relaxation factor for the singularity distributions",
+        f,
+    )
+    line(
+        params.EPSDS,
+        "EPSDS",
+        "convergence tolerance of the potential calculations",
+        f,
+    )
+    blankline(f)
+    f.write("d. The MOVEMENT parameters\n")
+    blankline(f)
+    line(
+        params.NLEVELT,
+        "NLEVELT",
+        "number of movements levels  ( 15 if tail rotor is considered )",
+        f,
+    )
+    blankline(f)
+    f.write("e. The FLOW parameters\n")
+    blankline(f)
+    line(params.u_freestream[0], "UINF(1)", "the velocity at infinity", f)
+    line(params.u_freestream[1], "UINF(2)", ".", f)
+    line(params.u_freestream[2], "UINF(3)", ".", f)
+    line(0, "UREF", "the reference velocity", f)
+    line(1, "ADIML", "the length scale used for the non-dimentionalisation", f)
+    line(1, "ADIMT", "the  time  scale used for the non-dimentionalisation", f)
+    line(0, "IUINFC", "0(no action), 1(UINF varies)", f)
+    line(1, "IAXISUI", "=1,2,3 gives the direction of UINF that varies", f)
+    line(
+        0.00,
+        "TIUINF(1)",
+        "time parameters of the variation   *** 5 periods ***",
+        f,
+    )
+    line(0.00, "TIUINF(2)", ".shear exponent", f)
+    line(0.00, "TIUINF(3)", ".xronos pou arxizei to INWIND", f)
+    line(0.00, "TIUINF(4)", ".tower impact factor", f)
+    line(1, "TIUINF(5)", ".record pou arxeizei na diabazei", f)
+    line(0.000, "AMUINF(1)", "", f)
+    line(0.000, "AMUINF(2)", ".", f)
+    line(0.000, "AMUINF(3)", ".", f)
+    line(0.000, "AMUINF(4)", ".", f)
+    line(0.000, "AMUINF(5)", ".", f)
+    line(0.000, "AMUINF(6)", ".", f)
+    line(0.000, "AMUINF(7)", ".", f)
+    blankline(f)
+    f.write("f. The EMISSION parameters\n")
+    blankline(f)
+    line("", "", "Number of vortex particles created within a time step", f)
+    line(params.NNEVP0, "NNEVP0", "per near-wake element of a thin  wing", f)
+    line(params.RELAXU, "RELAXU", "relaxation factor for the emission velocity", f)
+    line(
+        params.PARVEC,
+        "PARVEC",
+        "parameter for the minimum width of the near-wake elemen.",
+        f,
+    )
+    line(params.NEMIS, "NEMISS", "=1,2 (See CREATE)", f)
+    blankline(f)
+    f.write("g. The DEFORMATION parameters\n")
+    blankline(f)
+    line(params.EPSFB, "EPSFB", "Cut-off length for the bound vorticity", f)
+    line(params.EPSFW, "EPSFW", "Cut-off length for the near-wake vorticity", f)
+    line(params.EPSSR, "EPSSR", "Cut-off length for source distributions", f)
+    line(params.EPSDI, "EPSDI", "Cut-off length for source distributions", f)
+    line(
+        params.EPSVR,
+        "EPSVR",
+        "Cut-off length for the free vortex particles (final)",
+        f,
+    )
+    line(
+        params.EPSO,
+        "EPSO",
+        "Cut-off length for the free vortex particles (init.)",
+        f,
+    )
+    line(params.EPSINT, "EPSINT", "", f)
+    line(params.COEF, "COEF", "Factor for the disipation of particles", f)
+    line(params.RMETM, "RMETM", "Upper bound of the deformation rate", f)
+    line(
+        params.IDEFW,
+        "IDEFW",
+        "Parameter for the deformation induced by the near wake",
+        f,
+    )
+    line(
+        params.REFLEN,
+        "REFLEN",
+        "Length used in VELEF for suppresing far-particle calc.",
+        f,
+    )
+    line(params.IDIVVRP, "IDIVVRP", "Parameter for the subdivision of particles", f)
+    line(
+        params.FLENSC,
+        "FLENSC",
+        "Length scale for the subdivision of particles",
+        f,
+    )
+    line(params.NREWAK, "NREWAK", "Parameter for merging of particles", f)
+    line(params.NMER, "NMER", "Parameter for merging of particles", f)
+    line(params.XREWAK, "XREWAK", "X starting distance of merging", f)
+    line(params.RADMER, "RADMER", "Radius for merging", f)
+    blankline(f)
+    f.write("j. The MANAGEMENT parameters\n")
+    blankline(f)
+    line(1, "ITERPRE", "Write forces every ... time steps", f)
+    line(1, "ITERWAK", "Write wake geometry every ... time steps", f)
+    line(10000, "ITERVEL", "Write inflow velocities", f)
+    line(10000, "ITERREC", "Take back-up every ... time steps", f)
+    line(100, "ITERLOA", "Write loads every ... time steps", f)
+    line(1, "ITERCHW", "Check the wake calculations every ... time steps", f)
+    blankline(f)
+    f.write("i. The FLUID parameters\n")
+    blankline(f)
+    line(params.rho, "AIRDEN", "Fluid density", f)
+    line(params.visc, "VISCO", "Kinematic viscosity", f)
+    blankline(f)
+    f.write("k. The APPLICATION parameters\n")
+    blankline(f)
+    line(0, "IAPPLIC", "= 0(no action), 1(velocity profiles in the wakes)", f)
+    line(0, "IUEXTER", "= 0(no action), 1(there is an external velocity field)", f)
+    blankline(f)
+    blankline(f)
+    f.write("GIVE THE NAME OF THE DATA FILE FOR THE BODIES OF THE CONFIGURATION\n")
+    f.write("            ... FILEGEO\n")
+    line(
+        "hermes.geo",
+        "FILEGEO",
+        "the data file for the geometry of the configuration",
+        f,
+    )
+    f.write(
+        "                       (See DGEOM-3.frm format file, Subr. INITGEO and\n",
+    )
+    f.write("                        gnvp-3.txt)\n")
+    line(0, "IYNELST", "(1=BEAMDYN,2-ALCYONE,3=GAST)", f)
+    f.write("\n")
+    f.write("\n")
+
+    # Write to file
+    fname: str = os.path.join(directory, "dfile.yours")
+    contents: str = f.getvalue().expandtabs(4)
+    with open(fname, "w", encoding="utf-8") as file:
+        file.write(contents)
 
 
 def geo_file(
+    directory: str,
     movements: list[list[GNVP_Movement]],
     bodies_dicts: list[GenuSurface],
 ) -> None:
@@ -367,7 +374,7 @@ def geo_file(
         bd_dicts (GenuSurface): List of Bodies in GenuSurface format
 
     """
-    fname = "hermes.geo"
+    fname = os.path.join(directory, "hermes.geo")
     # with open(fname, "r") as file:
     #     data = file.readlines()
     data: list[str] = []
@@ -470,7 +477,7 @@ def geo_body_movements(data: list[str], mov: GNVP_Movement, i: int, NB: int) -> 
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cld_files(bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
+def cld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
     """Create Polars CL-CD-Cm files for each airfoil
 
     Args:
@@ -479,7 +486,7 @@ def cld_files(bodies: list[GenuSurface], params: GenuParameters, solver: str) ->
 
     """
     for bod in bodies:
-        fname: str = f"{bod.cld_fname}"
+        fname: str = os.path.join(directory, bod.cld_fname)
 
         # Get the airfoil polar
         reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
@@ -539,7 +546,7 @@ def cld_files(bodies: list[GenuSurface], params: GenuParameters, solver: str) ->
             file.write(contents)
 
 
-def bld_files(bodies: list[GenuSurface], params: GenuParameters) -> None:
+def bld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters) -> None:
     """Create BLD files for each body
 
     Args:
@@ -548,7 +555,7 @@ def bld_files(bodies: list[GenuSurface], params: GenuParameters) -> None:
 
     """
     for bod in bodies:
-        fname: str = bod.bld_fname
+        fname: str = os.path.join(directory, bod.bld_fname)
         with open(fname, "w", encoding="UTF-8") as f:
             f.write(f"INPUT FILE FOR {bod.name}\n")
             f.write("0\n")
@@ -567,7 +574,8 @@ def bld_files(bodies: list[GenuSurface], params: GenuParameters) -> None:
                 )
                 # WRITE GRID FILE Since Symmetric objects cant be defined parametrically
                 # Specify option 0 to read the file
-                with open(f"{bod.name}.WG", "w") as f_wg:
+                grid_file = os.path.join(directory, f"{bod.name}.WG")
+                with open(grid_file, "w") as f_wg:
                     grid: FloatArray | list[FloatArray] = bod.grid
                     f_wg.write("\n")
                     if isinstance(grid, list):
@@ -720,9 +728,9 @@ def bld_files(bodies: list[GenuSurface], params: GenuParameters) -> None:
             f.write("C")
 
 
-def hybrid_wake_file() -> None:
+def hybrid_wake_file(directory: str) -> None:
     """Creates the hybrid wake file for GNVP3"""
-    fname: str = "hyb.inf"
+    fname: str = os.path.join(directory, "hyb.inf")
     with open(fname, "w", encoding="utf-8") as f:
         f.write("Data for the Hybrid wake calculations \n")
         f.write("  0.150  DGRLEN\n")
@@ -732,43 +740,46 @@ def hybrid_wake_file() -> None:
 
 
 def make_input_files(
-    ANGLEDIR: str,
-    HOMEDIR: str,
+    case_directory: str,
     movements: list[list[GNVP_Movement]],
     bodies: list[GenuSurface],
     params: GenuParameters,
     solver: str,
 ) -> None:
-    os.chdir(ANGLEDIR)
     # Input File
-    input_file()
+    input_file(case_directory)
     # Hybrid Wake input file
-    hybrid_wake_file()
+    hybrid_wake_file(case_directory)
     # DFILE
-    case_file(params)
+    case_file(case_directory, params)
     # HERMES.GEO
-    geo_file(movements, bodies)
+    geo_file(case_directory, movements, bodies)
     # BLD FILES
-    bld_files(bodies, params)
+    bld_files(case_directory, bodies, params)
     # CLD FILES
-    cld_files(bodies, params, solver)
+    cld_files(case_directory, bodies, params, solver)
+
     # Check if gnvp.out exists and remove it
-    if os.path.exists("gnvp.out"):
-        os.remove("gnvp.out")
-    os.chdir(HOMEDIR)
+    out_file = os.path.join(case_directory, "gnvp.out")
+    if os.path.exists(out_file):
+        os.remove(out_file)
 
 
-def remove_results(CASEDIR: str, HOMEDIR: str) -> None:
-    """Removes the simulation results from a GNVP3 case
+def remove_results(casedir: str, homedir: str) -> None:
+    """Removes the simulation results from a GNVP3 case directory.
 
     Args:
-        CASEDIR (str): _description_
-        HOMEDIR (str): _description_
-
+        casedir (str): Path to the case directory containing result files.
+        homedir (str): Path to the home directory (unused here, but retained for interface compatibility).
     """
-    os.chdir(CASEDIR)
-    os.remove("strip*")
-    os.remove("x*")
-    os.remove("YOURS*")
-    os.remove("refstate*")
-    os.chdir(HOMEDIR)
+    case_path = Path(casedir)
+
+    patterns = ["strip*", "x*", "YOURS*", "refstate*"]
+
+    for pattern in patterns:
+        for file in case_path.glob(pattern):
+            if file.is_file():
+                try:
+                    file.unlink()
+                except Exception as e:
+                    print(f"Failed to remove {file}: {e}")

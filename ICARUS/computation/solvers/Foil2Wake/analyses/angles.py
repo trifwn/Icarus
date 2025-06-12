@@ -31,7 +31,7 @@ def f2w_single_reynolds(
     solver_options: dict[str, Any],
 ) -> None:
     DB = Database.get_instance()
-    HOMEDIR, _, REYNDIR, _ = DB.generate_airfoil_directories(
+    _, _, REYNDIR, _ = DB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,
@@ -45,7 +45,6 @@ def f2w_single_reynolds(
             target=sequential_run,
             kwargs={
                 "CASEDIR": REYNDIR,
-                "HOMEDIR": HOMEDIR,
                 "airfile": airfoil.file_name,
                 "name": name,
                 "angles": angles,
@@ -61,7 +60,6 @@ def f2w_single_reynolds(
 
     for job in jobs:
         job.join()
-    os.chdir(HOMEDIR)
 
 
 def run_single_reynolds(

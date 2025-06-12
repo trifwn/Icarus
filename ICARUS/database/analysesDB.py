@@ -1,5 +1,3 @@
-import os
-
 from ICARUS.core.base_types import Struct
 
 
@@ -13,6 +11,5 @@ class AnalysesDB:
         self.scan()
 
     def scan(self) -> None:
-        os.chdir(self.ANALYSESDB)
         # LOAD ANALYSES
-        os.chdir(self.HOMEDIR)
+        pass

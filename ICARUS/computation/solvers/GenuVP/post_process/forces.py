@@ -18,22 +18,22 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import Airplane
 
 
-def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
+def log_forces(case_directory: str, gnvp_version: int) -> DataFrame:
     """Convert the forces to polars and return a dataframe with them.
 
     Args:
-        CASEDIR (str): Case Directory
-        HOMEDIR (str): Home Directory
+        case_directory (str): Case Directory
         gnvp_version(int): Version of GNVP
 
     Returns:
         DataFrame: Resulting Polars
 
     """
-    folders: list[str] = next(os.walk(CASEDIR))[1]
+    folders: list[str] = next(os.walk(case_directory))[1]
     pols: list[list[float]] = []
+
     for folder in folders:
-        folder_path = os.path.join(CASEDIR, folder)
+        folder_path = os.path.join(case_directory, folder)
         files: list[str] = next(os.walk(folder_path))[2]
         if "LOADS_aer.dat" in files:
             name = float("".join(c for c in folder if (c.isdigit() or c == ".")))
@@ -61,9 +61,8 @@ def log_forces(CASEDIR: str, HOMEDIR: str, gnvp_version: int) -> DataFrame:
     df = df[["AoA"] + [col for col in df.columns if col != "AoA"]]
 
     # Save the DataFrame
-    forces_file: str = os.path.join(CASEDIR, f"forces.gnvp{gnvp_version}")
+    forces_file: str = os.path.join(case_directory, f"forces.gnvp{gnvp_version}")
     df.to_csv(forces_file, index=False, float_format="%.10f")
-    os.chdir(HOMEDIR)
     return df
 
 

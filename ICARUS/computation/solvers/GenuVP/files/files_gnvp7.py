@@ -2,6 +2,7 @@
 
 import os
 from io import StringIO
+from pathlib import Path
 
 import numpy as np
 from pandas import DataFrame
@@ -20,9 +21,9 @@ from ..utils import GenuSurface
 from ..utils import GNVP_Movement
 
 
-def input_file(maxiter: float, timestep: float) -> None:
+def input_file(directory: str, maxiter: float, timestep: float) -> None:
     """Create input file for gnvp7"""
-    fname: str = "input"
+    fname = os.path.join(directory, "input")
     with open(fname, "w", encoding="utf-8") as f:
         f.write(f"{maxiter}             !NTIMEM\n")
         f.write("1               !IDT\n")
@@ -30,7 +31,7 @@ def input_file(maxiter: float, timestep: float) -> None:
         f.write("1               !INIT_gn\n")
 
 
-def case_file(params: GenuParameters) -> None:
+def case_file(directory: str, params: GenuParameters) -> None:
     """Create dfile for gnvp7
 
     Args:
@@ -278,7 +279,7 @@ def case_file(params: GenuParameters) -> None:
     f_io.write(f"{name}.bcon{tabs(1)}FilBConn\n")
     f_io.write(f"{name}.wcon{tabs(1)}FilWConn\n")
 
-    fname = "dfile"
+    fname = os.path.join(directory, "dfile")
     contents: str = f_io.getvalue().expandtabs(4)
 
     with open(fname, "w", encoding="utf-8") as f:
@@ -286,6 +287,7 @@ def case_file(params: GenuParameters) -> None:
 
 
 def geo_file(
+    directory: str,
     movements: list[list[GNVP_Movement]],
     bodies: list[GenuSurface],
     params: GenuParameters,
@@ -333,7 +335,7 @@ def geo_file(
         # Write the movements
         f_io.write(f"{len(movements[i]) + 1}{tabs(3)}LEVEL   the level of movement\n")
         f_io.write(f"{bod.move_fname}{tabs(2)}FILMOV\n")
-        body_movements(movements=movements[i], NB=NB, fname=bod.move_fname)
+        body_movements(movements=movements[i], NB=NB, fname=os.path.join(directory, bod.move_fname))
         f_io.write(f"{tabs(16)}<blank>\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
@@ -349,7 +351,7 @@ def geo_file(
 
         # Write the grid parameters
         f_io.write(f"{bod.grid_fname}{tabs(2)}FilGridB\n")
-        grid_file(bod)
+        grid_file(directory, bod)
         f_io.write(f"{bod.topo_fname}{tabs(2)}FilTopoB\n")
         f_io.write(f"{bod.wake_fname}{tabs(2)}FilWakeB\n")
         f_io.write(f"{tabs(16)}<blank>\n")
@@ -369,14 +371,14 @@ def geo_file(
         f_io.write(f"1 0 0{tabs(2)}ROTOR AXIS\n")
         f_io.write("\n")
         f_io.write("------<end of body data>-----------------------------------\n")
-    fname: str = f"{params.name}.geo"
+    fname: str = os.path.join(directory, f"{params.name}.geo")
     contents: str = f_io.getvalue().expandtabs(4)
 
     with open(fname, "w", encoding="utf-8") as f:
         f.write(contents)
 
 
-def grid_file(bod: GenuSurface) -> None:
+def grid_file(directory, bod: GenuSurface) -> None:
     """Generates the grid file for a body.
 
     Args:
@@ -384,7 +386,8 @@ def grid_file(bod: GenuSurface) -> None:
             the body in GenuSurface format.
 
     """
-    with open(f"{bod.grid_fname}", "w") as f_wg:
+    fname: str = os.path.join(directory, bod.grid_fname)
+    with open(fname, "w") as f_wg:
         grid: FloatArray | list[FloatArray] = bod.grid
         f_wg.write("\n")
         if isinstance(grid, list):
@@ -409,6 +412,7 @@ def grid_file(bod: GenuSurface) -> None:
 
 
 def topology_files(
+    directory: str,
     bodies_dicts: list[GenuSurface],
 ) -> None:
     """# ! TODO: Make the description of this function more clear and accurate
@@ -435,13 +439,14 @@ def topology_files(
         f_io.write("  side4\n")
         f_io.write("---< end >------------------------------\n")
 
-        fname: str = bod.topo_fname
+        fname: str = os.path.join(directory, bod.topo_fname)
         contents: str = f_io.getvalue().expandtabs(4)
         with open(fname, "w", encoding="utf-8") as f:
             f.write(contents)
 
 
 def wake_files(
+    directory: str,
     bodies_dicts: list[GenuSurface],
 ) -> None:
     """# ! TODO: Make the description of this function more clear and accurate
@@ -473,7 +478,7 @@ def wake_files(
         f_io.write("\n")
         f_io.write("LE separation is valid for thin bodies only\n")
 
-        fname: str = bod.wake_fname
+        fname: str = os.path.join(directory, bod.wake_fname)
         contents: str = f_io.getvalue().expandtabs(4)
         with open(fname, "w", encoding="utf-8") as f:
             f.write(contents)
@@ -546,9 +551,9 @@ def body_movements(
         f.write(contents)
 
 
-def pm_file() -> None:
+def pm_file(directory: str) -> None:
     """Write the pm.input file used for the vortex particle parallelization."""
-    fname = "pm.input"
+    fname = os.path.join(directory, "pm.input")
     with open(fname, "w", encoding="utf-8") as file:
         file.write(f"0.2{tabs(2)}0.2{tabs(1)}0.2{tabs(3)}! Dpm[X,Y,Z)\n")
         file.write(f"4{tabs(6)}! projection fun\n")
@@ -568,6 +573,7 @@ def pm_file() -> None:
 
 
 def cld_files(
+    directory: str,
     bodies: list[GenuSurface],
     polars: list[AirfoilPolars],
     solver: str,
@@ -581,7 +587,7 @@ def cld_files(
 
     """
     for polar, bod in zip(polars, bodies):
-        fname: str = f"{bod.cld_fname}"
+        fname = os.path.join(directory, f"{bod.cld_fname}")
 
         f_io = StringIO()
         f_io.write(f"CL-CD POLARS by {solver}\n")
@@ -638,7 +644,7 @@ def cld_files(
             file.write(contents)
 
 
-def body_connections(NBs: int, name: str) -> None:
+def body_connections(directory: str, NBs: int, name: str) -> None:
     """Write the .bcon file for the body connections
     ! TODO: Implement
 
@@ -655,11 +661,14 @@ def body_connections(NBs: int, name: str) -> None:
         f_io.write(f"1{tabs(4)}! Number of bodies\n")
         f_io.write(f"{i + 1} {1} {1}{tabs(3)}! Index of connected Body\n")
         f_io.write("<end of connection>\n")
-    with open(f"{name}.bcon", "w", encoding="utf-8") as file:
-        file.write(f_io.getvalue().expandtabs(4))
+
+    fbcon = os.path.join(directory, f"{name}.bcon")
+    contents = f_io.getvalue().expandtabs(4)
+    with open(fbcon, "w", encoding="utf-8") as file:
+        file.write(contents)
 
 
-def wake_connections(name: str) -> None:
+def wake_connections(directory: str, name: str) -> None:
     """Write the .wcon file for the wake connections
     ! TODO: Implement
 
@@ -670,11 +679,13 @@ def wake_connections(name: str) -> None:
     f_io = StringIO()
     f_io.write(f"0{tabs(4)}!Number of Wake Connections\n")
     f_io.write("\n")
-    with open(f"{name}.wcon", "w", encoding="utf-8") as file:
+
+    fname = os.path.join(directory, f"{name}.wcon")
+    with open(fname, "w", encoding="utf-8") as file:
         file.write(f_io.getvalue().expandtabs(4))
 
 
-def angles_inp(polars) -> None:
+def angles_inp(directory: str, polars: list[AirfoilPolars]) -> None:
     angles: list[float] = []
     # Find all distinct angles in foil_dat.
     for polar in polars:
@@ -690,37 +701,34 @@ def angles_inp(polars) -> None:
 
     f_io.write("\n")
 
-    with open("angles.inp", "w", encoding="utf-8") as file:
+    fangles = os.path.join(directory, "angles.inp")
+    with open(fangles, "w", encoding="utf-8") as file:
         file.write(f_io.getvalue().expandtabs(4))
 
 
 def make_input_files(
-    ANGLEDIR: str,
-    HOMEDIR: str,
+    case_directory: str,
     movements: list[list[GNVP_Movement]],
     genu_bodies: list[GenuSurface],
     params: GenuParameters,
-    airfoils: list[str],
     solver: str,
 ) -> None:
-    os.chdir(ANGLEDIR)
-
     # Input File
-    input_file(params.maxiter, params.timestep)
+    input_file(case_directory, params.maxiter, params.timestep)
     # PM File
-    pm_file()
+    pm_file(case_directory)
     # DFILE
-    case_file(params)
+    case_file(case_directory, params)
     # GEO
-    geo_file(movements, genu_bodies, params)
+    geo_file(case_directory, movements, genu_bodies, params)
     # TOPOLOGY Files
-    topology_files(genu_bodies)
+    topology_files(case_directory, genu_bodies)
     # BODY CONNECTIONS
-    body_connections(len(genu_bodies), params.name)
+    body_connections(case_directory, len(genu_bodies), params.name)
     # Wake Connections
-    wake_connections(params.name)
+    wake_connections(case_directory, params.name)
     # WAKE Files
-    wake_files(genu_bodies)
+    wake_files(case_directory, genu_bodies)
 
     polars = []
     for bod in genu_bodies:
@@ -739,35 +747,40 @@ def make_input_files(
             )
         polars.append(polar)
     # ANGLES File
-    angles_inp(polars)
+    angles_inp(case_directory, polars)
     # CLD FILES
-    cld_files(genu_bodies, polars, solver)
-    os.chdir(HOMEDIR)
+    cld_files(case_directory, genu_bodies, polars, solver)
 
 
-def remove_results(CASEDIR: str, HOMEDIR: str) -> None:
-    """Removes the simulation results from a GNVP3 case
+def remove_results(casedir: str) -> None:
+    """Removes the simulation results from a GNVP3 case.
 
     Args:
-        CASEDIR (str): _description_
-        HOMEDIR (str): _description_
-
+        casedir (str): Path to the case directory containing result files.
     """
-    os.chdir(CASEDIR)
-    os.remove("*dat")
-    os.remove("*err")
-    os.remove("*out")
-    os.remove(".bak")
-    os.remove(".BAK")
-    os.remove("fort*")
+    case_path = Path(casedir)
 
-    os.remove("LOA*")
-    os.remove("*.TOT")
-    os.remove("CLD_res*")
-    os.remove("INIT_check")
-    os.remove("GWIN*")
-    os.remove("NWAK*")
-    os.remove("nwake")
+    patterns = [
+        "*.dat",
+        "*.err",
+        "*.out",
+        ".bak",
+        ".BAK",
+        "fort*",
+        "LOA*",
+        "*.TOT",
+        "CLD_res*",
+        "INIT_check",
+        "GWIN*",
+        "NWAK*",
+        "nwake",
+        "cpu*",
+    ]
 
-    os.remove("cpu*")
-    os.chdir(HOMEDIR)
+    for pattern in patterns:
+        for file in case_path.glob(pattern):
+            if file.is_file():
+                try:
+                    file.unlink()
+                except Exception as e:
+                    print(f"Warning: Failed to remove {file}: {e}")
