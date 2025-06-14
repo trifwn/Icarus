@@ -1,44 +1,19 @@
 import numpy as np
+import pytest
 from pandas import Series
 
-from ICARUS.database import Database
 
-
-def airplane_polars(plot: bool = False) -> None:
-    """Function to test the airplane polars.
-
-    Args:
-        plot (bool, optional): Whether to plot the results. Defaults to False.
-
-    Returns:
-        tuple[DataFrame, DataFrame]: Returns the desired and actual results.
-
-    """
+@pytest.mark.integration
+def test_airplane_polars(database_instance):
+    """Test the airplane polars comparison between different solvers."""
     planenames: list[str] = ["bmark"]
-    DB = Database.get_instance()
-    if plot:
-        from ICARUS.visualization.airplane import plot_airplane_polars
-
-        plot_airplane_polars(
-            airplanes=planenames,
-            prefixes=[
-                "GenuVP3 Potential",
-                "GenuVP3 2D",
-                # "GenuVP3 ONERA",
-                "GenuVP7 Potential",
-                "GenuVP7 2D",
-                "LSPT Potential",
-                "LSPT 2D",
-                "AVL",
-            ],
-            size=(10, 10),
-            title="Benchmark Airplane Polars",
-        )
 
     solvers = ["GNVP3 2D", "GNVP7 2D", "LSPT 2D"]
+
     for pol in solvers:
-        computed = DB.get_vehicle_polars(planenames[0], pol)
-        desired = DB.get_vehicle_polars(planenames[0], "AVL")
+        computed = database_instance.get_vehicle_polars(planenames[0], pol)
+        desired = database_instance.get_vehicle_polars(planenames[0], "AVL")
+
         try:
             AoA_d: Series[float] = desired["AoA"].astype(float)
             AoA: Series[float] = computed["AoA"].astype(float)
@@ -52,10 +27,9 @@ def airplane_polars(plot: bool = False) -> None:
             Cm_d: Series[float] = desired["Cm"].astype(float)
             Cm: Series[float] = computed[f"{pol}Cm"].astype(float)
         except KeyError:
-            print("--------ATTENTION----------")
-            print(f"{pol} not found")
-            continue
-        # Compare All Values tha correspond to same AoA
+            pytest.skip(f"{pol} not found")
+
+        # Compare All Values that correspond to same AoA
         # to x decimal places (except AoA)
         dec_prec = 2
         for a in AoA:
@@ -65,3 +39,54 @@ def airplane_polars(plot: bool = False) -> None:
                     desired=x_d[AoA_d == a].to_numpy(),
                     decimal=dec_prec,
                 )
+
+
+@pytest.mark.parametrize("plot", [False])
+def test_airplane_polars_with_plot(database_instance, plot: bool):
+    """Test airplane polars with optional plotting."""
+    planenames: list[str] = ["bmark"]
+
+    if plot:
+        pytest.importorskip("matplotlib")
+        from ICARUS.visualization.airplane import plot_airplane_polars
+
+        plot_airplane_polars(
+            airplanes=planenames,
+            prefixes=[
+                "GenuVP3 Potential",
+                "GenuVP3 2D",
+                "GenuVP7 Potential",
+                "GenuVP7 2D",
+                "LSPT Potential",
+                "LSPT 2D",
+                "AVL",
+            ],
+            size=(10, 10),
+            title="Benchmark Airplane Polars",
+        )
+
+    # Run the main test logic
+    test_airplane_polars(database_instance)
+
+
+# Backward compatibility function
+def airplane_polars(plot: bool = False) -> None:
+    """Legacy function for backward compatibility."""
+    # For backward compatibility, we need to initialize database manually
+    import os
+
+    from ICARUS.database import Database
+
+    database_folder = os.path.join(os.path.dirname(__file__), "..", "Data")
+    if not os.path.exists(database_folder):
+        database_folder = ".\\Data"
+
+    # Clear and initialize database
+    Database._instance = None
+    db = Database(database_folder)
+    db.load_all_data()
+
+    if plot:
+        test_airplane_polars_with_plot(db, plot)
+    else:
+        test_airplane_polars(db)

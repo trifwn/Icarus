@@ -1,21 +1,31 @@
 from __future__ import annotations
 
 import time
+from typing import TYPE_CHECKING
 
 import numpy as np
+import pytest
 
 from ICARUS.computation.solvers import Solver
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
-def gnvp3_run(run_parallel: bool = True) -> None:
-    print("Testing GNVP3 Running...")
 
-    # Get Plane, DB
-    from .benchmark_plane_test import get_bmark_plane
+@pytest.mark.slow
+@pytest.mark.integration
+@pytest.mark.parametrize("run_parallel", [True, False])
+def test_gnvp3_run(
+    benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
+    benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
+    run_parallel: bool,
+):
+    """Test GNVP3 solver execution in parallel and serial modes."""
+    print(f"Testing GNVP3 Running ({'Parallel' if run_parallel else 'Serial'})...")
 
-    bmark, state = get_bmark_plane("bmark")
     # Get Solver
     from ICARUS.computation.solvers.GenuVP import GenuVP3
 
@@ -37,8 +47,8 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     maxiter = 30
     timestep = 0.004
 
-    options.plane = bmark
-    options.state = state
+    options.plane = benchmark_airplane
+    options.state = benchmark_state
     options.solver2D = "Xfoil"
     options.maxiter = maxiter
     options.timestep = timestep
@@ -60,16 +70,28 @@ def gnvp3_run(run_parallel: bool = True) -> None:
     gnvp3.execute(parallel=run_parallel)
 
     end_time: float = time.perf_counter()
-    if run_parallel:
-        mode = "Parallel"
-    else:
-        mode = "Serial"
-    print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
-    print("Testing GNVP Running... Done")
+    execution_time = end_time - start_time
+    mode = "Parallel" if run_parallel else "Serial"
+    print(f"GNVP3 {mode} Run took: {execution_time:.3f} seconds")
+    print("Testing GNVP3 Running... Done")
 
-    _ = gnvp3.get_results()
-    bmark.save()
+    results = gnvp3.get_results()
+
+    # Assert that results were generated
+    assert results is not None, "GNVP3 should return results"
+
+    # Assert execution time is reasonable (less than 300 seconds)
+    assert execution_time < 300.0, f"GNVP3 execution took too long: {execution_time:.3f}s"
 
 
 if __name__ == "__main__":
-    gnvp3_run()
+    from .benchmark_plane_test import get_benchmark_plane
+    from .benchmark_plane_test import get_benchmark_state
+
+    airplane = get_benchmark_plane("bmark")
+    state = get_benchmark_state(airplane)
+    test_gnvp3_run(
+        benchmark_airplane=airplane,
+        benchmark_state=state,
+        run_parallel=False,  # Change to True for parallel execution
+    )

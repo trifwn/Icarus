@@ -1,14 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
 
-from ICARUS.airfoils import Airfoil
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.core.types import FloatArray
+if TYPE_CHECKING:
+    from ICARUS.airfoils import Airfoil
+    from ICARUS.computation.solvers import Solver
+    from ICARUS.core.types import FloatArray
 
 
-def compute_polars(
+def compute_airfoil_polars(
     airfoil: Airfoil,
     reynolds_numbers: list[float] | FloatArray,
     trips: tuple[float, float] = (1.0, 1.0),
@@ -86,6 +89,8 @@ def compute_polars(
         options.mach = mach
 
         # Set Solver Options
+        from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
+
         solver_parameters.mesh_type = MeshType.structAirfoilMesher
         solver_parameters.max_iterations = 2000
         solver_parameters.silent = False

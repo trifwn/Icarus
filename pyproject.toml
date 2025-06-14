@@ -45,6 +45,9 @@ dependencies = [
     "optax",
     "nbconvert",
     "distinctipy",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov"
 ]
 dynamic = ["version"]
 
@@ -81,3 +84,20 @@ quote-style = "double"
 [tool.isort]
 force_single_line = true
 profile = "black"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]

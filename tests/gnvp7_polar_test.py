@@ -1,18 +1,32 @@
+from __future__ import annotations
+
 import time
+from typing import TYPE_CHECKING
 
 import numpy as np
+import pytest
 
 from ICARUS.computation.solvers import Solver
 from ICARUS.core.base_types import Struct
 
+if TYPE_CHECKING:
+    from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
-def gnvp7_run(run_parallel: bool = True) -> None:
-    print("Testing GNVP7 Running...")
+from ICARUS import PLATFORM
 
-    # Get Plane, DB
-    from .benchmark_plane_test import get_bmark_plane
 
-    airplane, state = get_bmark_plane("bmark")
+@pytest.mark.slow
+@pytest.mark.integration
+@pytest.mark.parametrize("run_parallel", [True, False])
+@pytest.mark.skipif(PLATFORM == "Windows", reason="GenuVP7 solver is not available in this environment")
+def test_gnvp7_run(
+    benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
+    benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
+    run_parallel: bool,
+):
+    """Test GNVP7 solver execution in parallel and serial modes."""
+    print(f"Testing GNVP7 Running ({'Parallel' if run_parallel else 'Serial'})...")
 
     # Get Solver
     from ICARUS.computation.solvers.GenuVP import GenuVP7
@@ -34,8 +48,8 @@ def gnvp7_run(run_parallel: bool = True) -> None:
     maxiter = 30
     timestep = 0.004
 
-    options.plane = airplane
-    options.state = state
+    options.plane = benchmark_airplane
+    options.state = benchmark_state
     options.solver2D = "Xfoil"
     options.maxiter = maxiter
     options.timestep = timestep
@@ -57,14 +71,23 @@ def gnvp7_run(run_parallel: bool = True) -> None:
     gnvp7.execute(parallel=run_parallel)
 
     end_time: float = time.perf_counter()
+    execution_time = end_time - start_time
     mode = "Parallel" if run_parallel else "Serial"
-    print(f"GNVP {mode} Run took: --- %s seconds ---" % (end_time - start_time))
-    print("Testing GNVP Running... Done")
+    print(f"GNVP7 {mode} Run took: {execution_time:.3f} seconds")
+    print("Testing GNVP7 Running... Done")
 
-    _ = gnvp7.get_results()
-    airplane.save()
-    # getRunOptions()
+    results = gnvp7.get_results()
+
+    # Assert that results were generated
+    assert results is not None, "GNVP7 should return results"
+
+    # Assert execution time is reasonable (less than 300 seconds)
+    assert execution_time < 300.0, f"GNVP7 execution took too long: {execution_time:.3f}s"
 
 
 if __name__ == "__main__":
-    gnvp7_run(False)
+    # Run the test directly if this script is executed
+    pytest.main([__file__, "-v", "-s", "--tb=short"])
+    # -v: verbose output
+    # -s: disable output capturing
+    # --tb=short: use short traceback format

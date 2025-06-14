@@ -24,7 +24,7 @@ state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestrea
 angles = np.linspace(-10, 10, 11)
 
 avl_polars(plane, state, solver2D, angles)
-state.plot_polars()
+# state.plot_polars()
 
 avl_dynamics_implicit(plane=plane, state=state, solver2D=solver2D)
 impl_long, impl_late = process_avl_dynamics_implicit(plane, state)

@@ -16,8 +16,7 @@ def gnvp3_execute(case_directory: str) -> int:
     """Execute GNVP3 after setting up the inputs
 
     Args:
-        HOMEDIR (str): _description_
-        ANGLEDIR (str): _description_
+        case_directory (str): Path to the case directory containing the inputs
 
     Returns:
         int: Error Code

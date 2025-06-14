@@ -14,7 +14,6 @@ from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import (
 from ICARUS.computation.solvers.OpenFoam.analyses.monitor_progress import serial_monitor
 from ICARUS.computation.solvers.OpenFoam.files.setup_case import setup_open_foam
 from ICARUS.core.types import FloatArray
-from ICARUS.database import Database
 
 
 def run_angle(
@@ -60,31 +59,23 @@ def angles_serial(
         solver_options (dict[str, Any]): Solver Options in a dictionary
 
     """
-    DB = Database.get_instance()
-    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
+    angle_directories = setup_open_foam(
         airfoil=airfoil,
         reynolds=reynolds,
+        mach=mach,
         angles=angles,
-    )
-
-    setup_open_foam(
-        AFDIR,
-        REYNDIR,
-        airfoil.file_name,
-        reynolds,
-        mach,
-        angles,
-        solver_options,
+        solver_options=solver_options,
     )
     max_iter: int = solver_options["max_iterations"]
 
     progress_bars = []
-    for pos, angle_dir in enumerate(ANGLEDIRS):
+    for pos, angle in enumerate(angles):
+        angle_dir = angle_directories[pos]
         job = Thread(target=run_angle, args=(angle_dir,))
 
         pbar = tqdm(
             total=max_iter,
-            desc=f"\t\t{angles[pos]} Progress:",
+            desc=f"\t\t{angle} Progress:",
             position=pos,
             leave=True,
             colour="#003366",
@@ -129,16 +120,8 @@ def angles_parallel(
         solver_options (dict[str, Any]): Dictionary of solver options
 
     """
-    DB = Database.get_instance()
-    HOMEDIR, AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
-        airfoil=airfoil,
-        reynolds=reynolds,
-        angles=angles,
-    )
-    setup_open_foam(
-        AFDIR,
-        REYNDIR,
-        airfoil.file_name,
+    angle_directories = setup_open_foam(
+        airfoil,
         reynolds,
         mach,
         angles,
@@ -146,8 +129,8 @@ def angles_parallel(
     )
     max_iter: int = solver_options["max_iterations"]
 
-    job = Thread(target=run_angles, args=(REYNDIR, ANGLEDIRS))
-    job_monitor = Thread(target=parallel_monitor, args=(ANGLEDIRS, angles, max_iter))
+    job = Thread(target=run_angles, args=(angle_directories))
+    job_monitor = Thread(target=parallel_monitor, args=(angle_directories, angles, max_iter))
 
     # Start Jobs
     job.start()

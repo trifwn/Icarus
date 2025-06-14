@@ -18,20 +18,74 @@ ICARUS Computation Module
 
 This package contains an abstraction layer for solvers and analyses. The package is divided in three modules:
 
+OOP Computation Framework
+A comprehensive simulation framework featuring:
+- Type safety and dependency injection
+- Plugin architecture with advanced monitoring
+- Resource management and fault tolerance
+- Comprehensive lifecycle management
+- Visual progress bars with tqdm integration
+
+This package provides a complete solution for running complex simulations
+with professional-grade monitoring, error handling, and progress tracking.
+
 .. autosummary::
     :toctree: generated/
 
-    ICARUS.Computation.analysis - Analysis class definition
-    ICARUS.Computation.Solvers.solver - Solver class definition
-    ICARUS.Computation.options - Option class definition
+    ICARUS.Computation.analyses - Analyses module
+    ICARUS.Computation.solvers - Solvers module
 
 isort:skip_file
+
+
 """
 
-from . import analyses
-from . import results
-from . import solvers
-from . import workflow
-from .airfoil_polars import compute_polars
+try:
+    from tqdm import tqdm
 
-__all__ = ["analyses", "results", "solvers", "workflow", "compute_polars"]
+    TQDM_AVAILABLE = True
+except ImportError:
+    TQDM_AVAILABLE = False
+
+from . import core
+
+from .monitoring.progress import TqdmProgressMonitor
+
+from .execution.engines import (
+    BaseExecutionEngine,
+    AsyncExecutionEngine,
+)
+
+from .resources.manager import SimpleResourceManager
+
+from .runners import SimulationRunner
+
+from .executors import SummationExecutor
+from .reporters import ConsoleProgressReporter
+
+
+from . import analyses
+from . import solvers
+
+__version__ = "2.0.0"
+__author__ = "Enhanced OOP Framework Team"
+
+__all__ = [
+    # Core types
+    "core",
+    # Monitoring
+    "TqdmProgressMonitor",
+    # Execution engines
+    "BaseExecutionEngine",
+    "AsyncExecutionEngine",
+    # Resource management
+    "SimpleResourceManager",
+    # Main runner
+    "SimulationRunner",
+    # Examples
+    "SummationExecutor",
+    "ConsoleProgressReporter",
+    # Submodules
+    "analyses",
+    "solvers",
+]

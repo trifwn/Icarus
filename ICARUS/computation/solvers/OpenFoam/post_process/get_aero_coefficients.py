@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from ICARUS.database.utils import angle_to_case
+from ICARUS.database.utils import angle_to_directory
 
 
 def get_coefficients(case_directory: str, angle: float) -> str | None:
@@ -14,7 +14,7 @@ def get_coefficients(case_directory: str, angle: float) -> str | None:
         str | None: String Containing Coefficients or None if not found
 
     """
-    folder = angle_to_case(angle)
+    folder = angle_to_directory(angle)
 
     folders: list[str] = next(os.walk(case_directory))[1]
     if folder in folders:

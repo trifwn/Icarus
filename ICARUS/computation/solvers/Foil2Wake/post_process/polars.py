@@ -4,12 +4,11 @@ import pandas as pd
 from pandas import DataFrame
 
 
-def make_polars(case_directory: str, HOMEDIR: str) -> DataFrame:
+def make_polars(case_directory: str) -> DataFrame:
     """Make the polars from the forces and return a dataframe with them
 
     Args:
-        CASEDIR (str): Case Directory
-        HOMEDIR (str): Home Directory
+        case_directory (str): Path to the case directory containing the results
     Returns:
         DataFrame: Dataframe Containing CL, CD, CM for all angles
 

@@ -5,8 +5,8 @@ from pandas import DataFrame
 
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database import angle_to_case
-from ICARUS.database import disturbance_to_case
+from ICARUS.database import angle_to_directory
+from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
 
@@ -51,7 +51,7 @@ def collect_avl_polar_forces(
     Cms = []
 
     for angle in angles:
-        result_file = os.path.join(directory, f"{angle_to_case(angle)}.txt")
+        result_file = os.path.join(directory, f"{angle_to_directory(angle)}.txt")
 
         with open(result_file, encoding="utf-8") as f:
             con = f.readlines()
@@ -100,7 +100,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
     aoa = state.trim["AoA"] * np.pi / 180
     results = []
     for dst in state.disturbances:
-        casefile = os.path.join(DYNDIR, disturbance_to_case(dst))
+        casefile = os.path.join(DYNDIR, disturbance_to_directory(dst))
         if dst.var == "phi" or dst.var == "theta":
             Fx = 0.0
             Fy = 0.0

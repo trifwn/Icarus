@@ -32,8 +32,7 @@ class Database_3D:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, APPHOME: str, location: str) -> None:
-        self.HOMEDIR: str = APPHOME
+    def __init__(self, location: str) -> None:
         self.DB3D: str = location
         self.planes: dict[str, Airplane] = {}
         self.states: dict[str, dict[str, State]] = {}

@@ -28,6 +28,7 @@ test*.ipynb
 
 # Data folder
 Data
+tests/TestData
 
 # Playground
 *.fuse*

@@ -19,6 +19,7 @@ from ICARUS.airfoils import AirfoilPolars
 from ICARUS.airfoils import PolarNotAccurate
 from ICARUS.airfoils import ReynoldsNotIncluded
 from ICARUS.core.base_types import Struct
+from ICARUS.database.utils import angle_to_directory
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
@@ -79,12 +80,10 @@ class Database_2D:
 
     def __init__(
         self,
-        APPHOME: str,
         location: str,
         EXTERNAL_DB: str | None = None,
     ) -> None:
         """Initialize the Database_2D class."""
-        self.HOMEDIR: str = APPHOME
         self.DB2D: str = location
         if not os.path.isdir(self.DB2D):
             os.makedirs(self.DB2D)
@@ -211,9 +210,9 @@ class Database_2D:
             reynolds = [reynolds]
         airfoil.repanel_spl(400)
 
-        from ICARUS.computation.airfoil_polars import compute_polars
+        from .compute_airfoil_polars import compute_airfoil_polars
 
-        compute_polars(
+        compute_airfoil_polars(
             airfoil=airfoil,
             reynolds_numbers=reynolds,
             aoas=angles,
@@ -571,73 +570,12 @@ class Database_2D:
 
         ANGLEDIRS: list[str] = []
         for angle in angles:
-            folder = Database_2D.angle_to_dir(float(angle))
+            folder = angle_to_directory(float(angle))
             ANGLEDIRS.append(os.path.join(REYNDIR, folder))
 
         from ICARUS import INSTALL_DIR
 
         return INSTALL_DIR, AFDIR, REYNDIR, ANGLEDIRS
-
-    # STATIC METHODS
-    @staticmethod
-    def angle_to_dir(angle: float) -> str:
-        """Converts an angle to a directory name.
-
-        Args:
-            angle (float): Angle
-
-        Returns:
-            str: Directory name
-
-        """
-        if angle >= 0:
-            folder: str = str(angle)[::-1].zfill(7)[::-1]
-        else:
-            folder = "m" + str(angle)[::-1].strip("-").zfill(6)[::-1]
-        return folder
-
-    @staticmethod
-    def dir_to_angle(folder: str) -> float:
-        """Converts a directory name to an angle.
-
-        Args:
-            folder (str): Directory name
-
-        Returns:
-            float: Angle
-
-        """
-        if folder.startswith("m"):
-            angle = -float(folder[1:])
-        else:
-            angle = float(folder)
-        return angle
-
-    @staticmethod
-    def get_reynolds_from_dir(folder: str) -> float:
-        """Gets the reynolds number from a directory name.
-
-        Args:
-            folder (str): Directory name
-
-        Returns:
-            float: Reynolds number
-
-        """
-        return float(folder[10:].replace("_", "e"))
-
-    @staticmethod
-    def get_dir_from_reynolds(reynolds: float) -> str:
-        """Gets the directory name from a reynolds number.
-
-        Args:
-            reynolds (float): Reynolds number
-
-        Returns:
-            str: Directory name
-
-        """
-        return f"Reynolds_{reynolds}"
 
     @staticmethod
     def fill_polar_table(df: DataFrame) -> DataFrame:

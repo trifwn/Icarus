@@ -1,15 +1,22 @@
+from __future__ import annotations
+
 import os
 import shutil
 from enum import Enum
 from subprocess import call
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
 
 from ICARUS import INSTALL_DIR
 from ICARUS.computation.solvers import setup_of_script
-from ICARUS.core.types import FloatArray
-from ICARUS.database.utils import angle_to_case
+from ICARUS.database import Database
+from ICARUS.database.utils import angle_to_directory
+
+if TYPE_CHECKING:
+    from ICARUS.airfoils.airfoil import Airfoil
+    from ICARUS.core.types import FloatArray
 
 OFBASE = os.path.join(INSTALL_DIR, "ICARUS", "Solvers", "OpenFoam", "files")
 
@@ -131,33 +138,37 @@ def system_folder(
 
 
 def setup_open_foam(
-    AFDIR: str,
-    CASEDIR: str,
-    airfoil_fname: str,
+    airfoil: Airfoil,
     reynolds: float,
     mach: float,
     angles: list[float] | FloatArray,
     solver_options: dict[str, Any],
-) -> None:
+) -> list[str]:
     """Function to setup OpenFoam cases for a given airfoil and Reynolds number
 
     Args:
-        HOMEDIR (str): Home Directory
-        CASEDIR (str): Directory of Current Case
-        airfoil_file (str): Filename containg the arifoil geometry
-        airfoil_name (str): Name of the airfoil
+        airfoil (Airfoil): Airfoil Object
         reynolds (float): Reynolds Number
         mach (float): Mach Number
         angles (list[float]): Angle to run simulation for (degrees)
         solver_options (dict[str, Any]): Solver Options
     """
+
+    DB = Database.get_instance()
+    _, AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
+        airfoil=airfoil,
+        reynolds=reynolds,
+        angles=angles,
+    )
+    airfoil_fname: str = airfoil.file_name
+
     if isinstance(angles, float):
         angles = [angles]
     mesh_dir: str = ""
     for i, angle in enumerate(angles):
-        folder = angle_to_case(angle)
+        folder = angle_to_directory(angle)
 
-        angle_directory: str = os.path.join(CASEDIR, folder)
+        angle_directory: str = os.path.join(REYNDIR, folder)
         os.makedirs(angle_directory, exist_ok=True)
 
         angle_rad: float = angle * np.pi / 180
@@ -191,3 +202,5 @@ def setup_open_foam(
 
         if solver_options["silent"] is False:
             pass
+
+    return ANGLEDIRS

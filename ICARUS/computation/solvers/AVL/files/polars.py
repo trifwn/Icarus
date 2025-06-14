@@ -6,7 +6,7 @@ import numpy as np
 
 from ICARUS import AVL_exe
 from ICARUS.core.types import FloatArray
-from ICARUS.database import angle_to_case
+from ICARUS.database import angle_to_directory
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
 
@@ -82,13 +82,13 @@ def case_run(directory: str, plane: Airplane, angles: FloatArray | list[float]) 
         li_2.append(f"{i + 1}")
         li_2.append("x")
         li_2.append("FT")
-        li_2.append(f"{angle_to_case(angle)}.txt")
+        li_2.append(f"{angle_to_directory(angle)}.txt")
 
         if os.path.isfile(f"{li_2[-1]}"):
             li_2.append("o")
         li_2.append("fs")
-        li_2.append(f"fs_{angle_to_case(angle)}.txt")
-        if os.path.isfile(f"fs_{angle_to_case(angle)}.txt"):
+        li_2.append(f"fs_{angle_to_directory(angle)}.txt")
+        if os.path.isfile(f"fs_{angle_to_directory(angle)}.txt"):
             li_2.append("o")
 
         # li_2.append("y")

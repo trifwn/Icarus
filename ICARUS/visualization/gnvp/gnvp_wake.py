@@ -8,8 +8,8 @@ import numpy as np
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from ICARUS.database import angle_to_case
-from ICARUS.database import case_to_angle
+from ICARUS.database import angle_to_directory
+from ICARUS.database import directory_to_angle
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -54,7 +54,7 @@ def plot_gnvp_wake(
 
     """
     if isinstance(case, float):
-        case_str = angle_to_case(case)
+        case_str = angle_to_directory(case)
     elif isinstance(case, str):
         case_str = case
     else:
@@ -76,7 +76,7 @@ def plot_gnvp_wake(
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
-    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {case_to_angle(case_str)}")
+    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     gnvp_version: int = args.gnvp
     case: float = args.angle
 
-    case_str: str = angle_to_case(case)
+    case_str: str = angle_to_directory(case)
     if gnvp_version == 3:
         plot_gnvp3_wake(plane, state, case_str)
     elif gnvp_version == 7:

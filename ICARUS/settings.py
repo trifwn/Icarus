@@ -16,6 +16,8 @@ else:
 INSTALL_DIR: str = os.path.dirname(os.path.realpath(__file__))
 INSTALL_DIR = os.path.abspath(os.path.join(INSTALL_DIR, os.pardir))
 
+HAS_GPU = False
+HAS_JAX = False
 try:
     import jax
 

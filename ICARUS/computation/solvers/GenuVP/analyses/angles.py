@@ -17,7 +17,7 @@ from ICARUS import CPU_TO_USE
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database import angle_to_case
+from ICARUS.database import angle_to_directory
 
 from ..files import gnvp3_case
 from ..files import gnvp7_case
@@ -144,7 +144,7 @@ def gnvp_aoa_case(
         solver=f"GenuVP{gnvp_version}",
     )
 
-    case_directory: str = os.path.join(PLANEDIR, angle_to_case(angle))
+    case_directory: str = os.path.join(PLANEDIR, angle_to_directory(angle))
     os.makedirs(case_directory, exist_ok=True)
 
     params: GenuParameters = GenuParameters(
@@ -218,7 +218,7 @@ def gnvp_polars_serial(
     )
     progress_bars: list[tqdm[NoReturn]] = []
     for i, angle in enumerate(angles):
-        folder: str = angle_to_case(angle)
+        folder: str = angle_to_directory(angle)
         CASEDIR: str = os.path.join(PLANEDIR, folder)
 
         job = Thread(
@@ -354,7 +354,7 @@ def gnvp_polars_parallel(
         state=state,
         solver=f"GenuVP{gnvp_version}",
     )
-    folders: list[str] = [angle_to_case(angle) for angle in angles]
+    folders: list[str] = [angle_to_directory(angle) for angle in angles]
     CASEDIRS: list[str] = [os.path.join(PLANEDIR, folder) for folder in folders]
 
     refresh_pogress: float = 2

@@ -10,7 +10,7 @@ from numpy import rad2deg
 
 from ICARUS import AVL_exe
 from ICARUS.database import Database
-from ICARUS.database import disturbance_to_case
+from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
 
@@ -31,7 +31,6 @@ def implicit_eigs(
         solver="AVL",
         case="Dynamics",
     )
-    HOMEDIR = os.getcwd()
     os.makedirs(DYNAMICS_DIR, exist_ok=True)
     make_input_files(
         directory=DYNAMICS_DIR,
@@ -94,7 +93,6 @@ def finite_difs(
         solver="AVL",
         case="Dynamics",
     )
-    HOMEDIR = os.getcwd()
     os.makedirs(DYNAMICS_DIR, exist_ok=True)
     make_input_files(
         directory=DYNAMICS_DIR,
@@ -178,7 +176,7 @@ def finite_difs(
         # EXECUTE CASE
         f_io.write("x\n")
         f_io.write("FT\n")
-        case = disturbance_to_case(dst)
+        case = disturbance_to_directory(dst)
         f_io.write(f"{case}\n")
         if os.path.isfile(case):
             f_io.write("o\n")

@@ -765,14 +765,13 @@ def make_input_files(
         os.remove(out_file)
 
 
-def remove_results(casedir: str, homedir: str) -> None:
+def remove_results(case_directory: str) -> None:
     """Removes the simulation results from a GNVP3 case directory.
 
     Args:
         casedir (str): Path to the case directory containing result files.
-        homedir (str): Path to the home directory (unused here, but retained for interface compatibility).
     """
-    case_path = Path(casedir)
+    case_path = Path(case_directory)
 
     patterns = ["strip*", "x*", "YOURS*", "refstate*"]
 

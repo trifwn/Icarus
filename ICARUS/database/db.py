@@ -12,7 +12,6 @@ from ICARUS.airfoils import AirfoilPolars
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
-from .analysesDB import AnalysesDB
 from .database2D import Database_2D
 from .database3D import Database_3D
 
@@ -39,21 +38,19 @@ class Database:
             raise ValueError("Database not initialized")
         return cls._instance
 
-    def __init__(self, APPHOME: str) -> None:
+    def __init__(self, DB_PATH: str) -> None:
         """Initializes the Database
         Args:
-            APPHOME (str): The path to the database directory
+            DB_PATH (str): The path to the database directory
         """
-        APPHOME = os.path.abspath(APPHOME)
-        self.HOMEDIR: str = APPHOME
-        self.EXTERNAL_DB: str = os.path.join(APPHOME, "3d_Party")
-        DB2D: str = os.path.join(APPHOME, "2D")
-        DB3D: str = os.path.join(APPHOME, "3D")
-        ANALYSESDB: str = os.path.join(APPHOME, "Analyses")
+        DB_PATH = os.path.abspath(DB_PATH)
+        self.DB_PATH: str = DB_PATH
+        self.EXTERNAL_DB: str = os.path.join(DB_PATH, "3d_Party")
+        DB2D: str = os.path.join(DB_PATH, "2D")
+        DB3D: str = os.path.join(DB_PATH, "3D")
 
-        self.foils_db: Database_2D = Database_2D(APPHOME, DB2D)
-        self.vehicles_db: Database_3D = Database_3D(APPHOME, DB3D)
-        self.analyses_db: AnalysesDB = AnalysesDB(APPHOME, ANALYSESDB)
+        self.foils_db: Database_2D = Database_2D(DB2D)
+        self.vehicles_db: Database_3D = Database_3D(DB3D)
 
     @property
     def DB2D(self) -> str:
@@ -70,14 +67,6 @@ class Database:
     @DB3D.setter
     def DB3D(self, value: str) -> None:
         self.vehicles_db.DB3D = value
-
-    @property
-    def ANALYSESDB(self) -> str:
-        return self.analyses_db.ANALYSESDB
-
-    @ANALYSESDB.setter
-    def ANALYSESDB(self, value: str) -> None:
-        self.analyses_db.ANALYSESDB = value
 
     def load_all_data(self) -> None:
         """Loads all the data from the databases"""

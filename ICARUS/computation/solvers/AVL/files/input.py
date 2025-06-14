@@ -377,7 +377,7 @@ def get_effective_aoas(
     dfs = []
     import pandas as pd
 
-    from ICARUS.database import angle_to_case
+    from ICARUS.database import angle_to_directory
 
     DB = Database.get_instance()
     for i, angle in enumerate(angles):
@@ -385,7 +385,7 @@ def get_effective_aoas(
             DB.DB3D,
             plane.name,
             "AVL",
-            f"fs_{angle_to_case(angle)}.txt",
+            f"fs_{angle_to_directory(angle)}.txt",
         )
         file = open(path)
         lines = file.readlines()

@@ -13,8 +13,7 @@ def make_polars(case_directory: str, angles: list[float]) -> DataFrame:
     """Function to make polars from OpenFoam results
 
     Args:
-        CASEDIR (str): Case Directory
-        HOMEDIR (str): Home Directory
+        case_directory (str): Path to the case directory containing the results
         angles (list[float]): Angles to make polars for
     Returns:
         DataFrame: Dataframe Containing CL, CD, CM for all angles

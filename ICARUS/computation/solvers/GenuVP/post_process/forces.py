@@ -11,7 +11,7 @@ from pandas import Series
 
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database import disturbance_to_case
+from ICARUS.database import disturbance_to_directory
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -83,7 +83,7 @@ def forces_to_pertrubation_results(
 
     pols = []
     for dst in state.disturbances:
-        case = disturbance_to_case(dst)
+        case = disturbance_to_directory(dst)
         case_path = os.path.join(DYNDIR, case)
         casefiles: list[str] = next(os.walk(case_path))[2]
         if "LOADS_aer.dat" in casefiles:

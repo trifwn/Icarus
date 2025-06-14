@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ICARUS.database import Database_2D
+from ICARUS.database.utils import angle_to_directory
 
 
 def remove_results(casedir: str, angles: list[float]) -> None:
@@ -8,7 +8,6 @@ def remove_results(casedir: str, angles: list[float]) -> None:
 
     Args:
         casedir (str): Path to the case directory.
-        homedir (str): Path to the home directory (retained for compatibility).
         angles (list[float]): List of angles (float) used to determine folders to clean.
     """
     case_path = Path(casedir)
@@ -26,7 +25,7 @@ def remove_results(casedir: str, angles: list[float]) -> None:
     folders = {f.name for f in case_path.iterdir() if f.is_dir()}
 
     for angle in angles:
-        folder_name = Database_2D.angle_to_dir(angle=angle)
+        folder_name = angle_to_directory(angle=angle)
         trimmed_name = folder_name.rstrip("/")
 
         if trimmed_name in folders:

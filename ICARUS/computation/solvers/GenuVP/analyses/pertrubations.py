@@ -12,7 +12,7 @@ from tqdm.auto import tqdm
 from ICARUS import CPU_TO_USE
 from ICARUS.core.base_types import Struct
 from ICARUS.database import Database
-from ICARUS.database import disturbance_to_case
+from ICARUS.database import disturbance_to_directory
 
 from ..files import gnvp3_case
 from ..files import gnvp7_case
@@ -86,7 +86,7 @@ def gnvp_disturbance_case(
         [dst],
     )
 
-    folder: str = disturbance_to_case(dst)
+    folder: str = disturbance_to_directory(dst)
     CASEDIR: str = os.path.join(PLANEDIR, analysis, folder)
     os.makedirs(CASEDIR, exist_ok=True)
 
@@ -196,7 +196,7 @@ def gnvp_dynamics_serial(
             bar_format="{l_bar}{bar:30}{r_bar}",
         )
         progress_bars.append(pbar)
-        folder: str = disturbance_to_case(dst)
+        folder: str = disturbance_to_directory(dst)
         PLANEDIR: str = DB.get_vehicle_case_directory(
             airplane=plane,
             state=state,
@@ -290,7 +290,7 @@ def gnvp_dynamics_parallel(
 
             _: list[str] = pool.starmap(gnvp_disturbance_case, args_list)
 
-    folders: list[str] = [disturbance_to_case(dst) for dst in disturbances]
+    folders: list[str] = [disturbance_to_directory(dst) for dst in disturbances]
     GENUDIR: str = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,

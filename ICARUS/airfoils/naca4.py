@@ -1,7 +1,7 @@
 from typing import Any
 
+import jax.numpy as jnp
 import numpy as np
-from jax import numpy as jnp
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
