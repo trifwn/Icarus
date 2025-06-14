@@ -6,23 +6,28 @@ of the simulation framework including core functionality, edge cases,
 and integration scenarios.
 """
 
-import pytest
 import asyncio
 import time
 from datetime import datetime
-from unittest.mock import Mock, patch, AsyncMock
 from typing import Any
+from unittest.mock import AsyncMock
+from unittest.mock import Mock
+from unittest.mock import patch
 
-from ICARUS.computation.core import (
-                    TaskState, Priority, ExecutionMode, TaskId, TaskConfiguration,
-                    Task,
-                    ExecutionContext,
-                    SimulationConfig,
-                    ConfigurationError,
-)
+import pytest
+
+from ICARUS.computation.core import ConfigurationError
+from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import ExecutionMode
+from ICARUS.computation.core import Priority
+from ICARUS.computation.core import SimulationConfig
+from ICARUS.computation.core import Task
+from ICARUS.computation.core import TaskConfiguration
+from ICARUS.computation.core import TaskId
+from ICARUS.computation.core import TaskState
 from ICARUS.computation.executors import SummationExecutor
-from ICARUS.computation.runners import SimulationRunner
 from ICARUS.computation.resources.manager import SimpleResourceManager
+from ICARUS.computation.runners import SimulationRunner
 
 
 class TestTaskExecutor:
@@ -243,7 +248,7 @@ class TestSimulationRunner:
     def test_runner_with_config(self):
         """Test runner with custom configuration."""
         config = SimulationConfig(
-            execution_mode=ExecutionMode.THREADING, max_workers=8, enable_progress_monitoring=False
+            execution_mode=ExecutionMode.THREADING, max_workers=8, enable_progress_monitoring=False,
         )
 
         runner = SimulationRunner(

@@ -3,8 +3,6 @@ from __future__ import annotations
 import logging
 from threading import Event
 from time import sleep
-from typing import Dict
-from typing import List
 from weakref import WeakSet
 
 from tqdm import tqdm

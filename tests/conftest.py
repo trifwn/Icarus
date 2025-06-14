@@ -4,18 +4,21 @@ This module provides common fixtures that can be used across all test files.
 """
 
 from __future__ import annotations
+import numpy as np
 
 import os
-from typing import TYPE_CHECKING
 from typing import Generator
 
 import pytest
 
+from ICARUS.core.types import FloatArray
+from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.vehicle import SymmetryAxes
+from ICARUS.vehicle import WingSegment
+from ICARUS.airfoils import NACA4
+from ICARUS.vehicle import Airplane
+from ICARUS.flight_dynamics import State
 from ICARUS.database import Database
-
-if TYPE_CHECKING:
-    from ICARUS.flight_dynamics import State
-    from ICARUS.vehicle import Airplane
 
 
 @pytest.fixture(scope="session")
@@ -57,16 +60,51 @@ def database_instance() -> Generator[Database, None, None]:
 @pytest.fixture(scope="module")
 @pytest.mark.usefixtures("database_instance")
 def benchmark_airplane() -> Airplane:
-    """Fixture that provides a benchmark airplane and state."""
-    from .benchmark_plane_test import get_benchmark_plane
+    """Fixture that provides a benchmark airplane configuration.
 
-    return get_benchmark_plane("bmark")
+    Args:
+        name: Name for the airplane
+
+    Returns:
+        Tuple of (airplane, state)
+    """
+    origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
+    wing_position: FloatArray = np.array(
+        [0, 0.0, 0.0],
+        dtype=float,
+    )
+    wing_orientation: FloatArray = np.array(
+        [0.0, 0.0, 0.0],
+        dtype=float,
+    )
+
+    Simplewing = WingSegment(
+        name="benchmark",
+        root_airfoil=NACA4(M=0.04, P=0.4, XX=0.15),  # "NACA4415",
+        origin=origin + wing_position,
+        orientation=wing_orientation,
+        symmetries=SymmetryAxes.Y,
+        span=2 * 5,
+        sweep_offset=0.0,
+        root_chord=1.0,
+        tip_chord=1.0,
+        N=15,
+        M=15,
+        mass=1,
+    )
+    airplane = Airplane(Simplewing.name, main_wing=Simplewing)
+    return airplane
 
 
 @pytest.fixture(scope="module")
 @pytest.mark.usefixtures("database_instance")
 def benchmark_state(benchmark_airplane: Airplane) -> State:
     """Fixture that provides a benchmark state for the airplane."""
-    from .benchmark_plane_test import get_benchmark_state
+    
+    return State(
+        name="Unstick",
+        airplane=benchmark_airplane,
+        u_freestream=100,  # Example freestream velocity
+        environment=EARTH_ISA,
+    )
 
-    return get_benchmark_state(benchmark_airplane)

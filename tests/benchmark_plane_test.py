@@ -1,12 +1,7 @@
-import numpy as np
 
 from ICARUS.airfoils import NACA4
-from ICARUS.core.types import FloatArray
-from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import SymmetryAxes
-from ICARUS.vehicle import WingSegment
 
 
 def test_benchmark_plane_creation(benchmark_airplane: Airplane, benchmark_state: State) -> None:
@@ -44,50 +39,3 @@ def test_airfoil_properties(benchmark_airplane: Airplane) -> None:
     assert airfoil.m == 0.04, "Should have correct max camber"
     assert airfoil.p == 0.4, "Should have correct camber position"
     assert airfoil.xx == 0.15, "Should have correct thickness"
-
-
-def get_benchmark_plane(name: str) -> Airplane:
-    """Create a benchmark airplane configuration.
-
-    Args:
-        name: Name for the airplane
-
-    Returns:
-        Tuple of (airplane, state)
-    """
-    origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)
-    wing_position: FloatArray = np.array(
-        [0, 0.0, 0.0],
-        dtype=float,
-    )
-    wing_orientation: FloatArray = np.array(
-        [0.0, 0.0, 0.0],
-        dtype=float,
-    )
-
-    Simplewing = WingSegment(
-        name=name,
-        root_airfoil=NACA4(M=0.04, P=0.4, XX=0.15),  # "NACA4415",
-        origin=origin + wing_position,
-        orientation=wing_orientation,
-        symmetries=SymmetryAxes.Y,
-        span=2 * 5,
-        sweep_offset=0.0,
-        root_chord=1.0,
-        tip_chord=1.0,
-        N=15,
-        M=15,
-        mass=1,
-    )
-    airplane = Airplane(Simplewing.name, main_wing=Simplewing)
-    return airplane
-
-
-def get_benchmark_state(benchmark_plane: Airplane) -> State:
-    """Get the benchmark state for a given airplane."""
-    return State(
-        name="Unstick",
-        airplane=benchmark_plane,
-        u_freestream=100,  # Example freestream velocity
-        environment=EARTH_ISA,
-    )

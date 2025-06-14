@@ -5,8 +5,6 @@ import logging
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
-from typing import List
-from typing import Optional
 
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ResourceManager

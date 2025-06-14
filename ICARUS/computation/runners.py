@@ -6,9 +6,6 @@ import signal
 from threading import Event
 from threading import Thread
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
 
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ProgressReporter
