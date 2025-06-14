@@ -1,8 +1,30 @@
 import numpy as np
 import pytest
 
+from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle.airplane import Airplane
+
+
+@pytest.mark.unit
+def test_benchmark_plane(benchmark_airplane: Airplane) -> None:
+    """Test that benchmark plane can be created successfully."""
+    # Test airplane properties
+    assert benchmark_airplane is not None, "Airplane should be created"
+    assert benchmark_airplane.name == "benchmark", "Airplane should have correct name"
+    assert hasattr(benchmark_airplane, "main_wing"), "Airplane should have main wing"
+
+
+@pytest.mark.unit
+def test_wing_segment_properties(benchmark_airplane: Airplane) -> None:
+    """Test wing segment properties."""
+    wing = benchmark_airplane.main_wing
+
+    # Test wing properties that we know exist
+    assert wing.span == 10.0, "Wing should have correct span"
+    assert wing.N == 15, "Wing should have correct N panels"
+    assert wing.M == 15, "Wing should have correct M panels"
+    assert hasattr(wing, "root_airfoil"), "Wing should have root airfoil"
 
 
 @pytest.mark.unit
@@ -28,6 +50,19 @@ def test_wing_geometry(benchmark_airplane: Airplane) -> None:
     np.testing.assert_almost_equal(INERTIA, I_expected, decimal=3)
 
 
+def test_wing_properties(benchmark_airplane: Airplane) -> None:
+    """Test airfoil properties of the wing."""
+    wing = benchmark_airplane.main_wing
+    airfoil = wing.root_airfoil
+
+    # Test NACA4 airfoil properties
+    assert isinstance(airfoil, NACA4), "Should be NACA4 airfoil"
+    assert airfoil.m == 0.04, "Should have correct max camber"
+    assert airfoil.p == 0.4, "Should have correct camber position"
+    assert airfoil.xx == 0.15, "Should have correct thickness"
+
+
+@pytest.mark.unit
 def test_wing_geometry_properties(benchmark_airplane: Airplane) -> None:
     """Test individual wing properties."""
 

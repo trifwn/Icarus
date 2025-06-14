@@ -6,7 +6,7 @@ from pandas import Series
 @pytest.mark.integration
 def test_airplane_polars(database_instance):
     """Test the airplane polars comparison between different solvers."""
-    planenames: list[str] = ["bmark"]
+    planenames: list[str] = ["benchmark"]
 
     solvers = ["GNVP3 2D", "GNVP7 2D", "LSPT 2D"]
 
@@ -44,7 +44,7 @@ def test_airplane_polars(database_instance):
 @pytest.mark.parametrize("plot", [False])
 def test_airplane_polars_with_plot(database_instance, plot: bool):
     """Test airplane polars with optional plotting."""
-    planenames: list[str] = ["bmark"]
+    planenames: list[str] = ["benchmark"]
 
     if plot:
         pytest.importorskip("matplotlib")

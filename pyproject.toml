@@ -47,7 +47,7 @@ dependencies = [
     "distinctipy",
     "pytest",
     "pytest-asyncio",
-    "pytest-cov"
+    "pytest-cov",
 ]
 dynamic = ["version"]
 
@@ -90,14 +90,12 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-    "--disable-warnings",
-]
+addopts = ["-v", "--tb=short", "--strict-markers", "--disable-warnings"]
 markers = [
     "slow: marks tests as slow",
     "integration: marks tests as integration tests",
+    "benchmark: marks tests as benchmarking (uses pytest-benchmark)",
+    "performance: marks tests as performance tests",
+    "stress: marks tests as stress tests",
     "unit: marks tests as unit tests",
 ]

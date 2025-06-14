@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from abc import ABC
-from abc import abstractmethod
 from datetime import datetime
 
 from ICARUS.computation.core import ExecutionContext
@@ -13,27 +11,11 @@ from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.monitoring.progress import TqdmProgressMonitor
 
-
-class BaseExecutionEngine(ABC):
-    """Abstract base for execution engines"""
-
-    def __init__(self, max_workers: int | None = None):
-        self.max_workers = max_workers
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-    @abstractmethod
-    async def execute_tasks(
-        self,
-        tasks: list[Task],
-        progress_monitor: TqdmProgressMonitor,
-        resource_manager: ResourceManager | None = None,
-    ) -> list[TaskResult]:
-        """Execute tasks and return results"""
-        pass
+from .base_engine import BaseExecutionEngine
 
 
-class AsyncExecutionEngine(BaseExecutionEngine):
-    """Async-based execution engine with progress integration"""
+class SequentialExecutionEngine(BaseExecutionEngine):
+    """Sequential execution engine - executes tasks one by one"""
 
     async def execute_tasks(
         self,
@@ -41,25 +23,16 @@ class AsyncExecutionEngine(BaseExecutionEngine):
         progress_monitor: TqdmProgressMonitor,
         resource_manager: ResourceManager | None = None,
     ) -> list[TaskResult]:
-        """Execute tasks concurrently using asyncio"""
-        semaphore = asyncio.Semaphore(self.max_workers or 10)
+        """Execute tasks sequentially"""
+        self.logger.info(f"Starting sequential execution of {len(tasks)} tasks")
+        results = []
 
-        async def execute_single_task(task: Task) -> TaskResult:
-            async with semaphore:
-                return await self._execute_task_with_context(task, progress_monitor, resource_manager)
+        for task in tasks:
+            result = await self._execute_task_with_context(task, progress_monitor, resource_manager)
+            results.append(result)
 
-        results = await asyncio.gather(*[execute_single_task(task) for task in tasks], return_exceptions=True)
-
-        # Convert exceptions to failed results
-        processed_results = []
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                task = tasks[i]
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
-            else:
-                processed_results.append(result)
-
-        return processed_results
+        self.logger.info("Sequential execution completed")
+        return results
 
     async def _execute_task_with_context(
         self,

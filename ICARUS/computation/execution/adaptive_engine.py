@@ -1,0 +1,92 @@
+from __future__ import annotations
+
+from ICARUS.computation.core import ExecutionMode
+from ICARUS.computation.core import ResourceManager
+from ICARUS.computation.core import Task
+from ICARUS.computation.core import TaskResult
+from ICARUS.computation.monitoring.progress import TqdmProgressMonitor
+
+from .async_engine import AsyncExecutionEngine
+from .base_engine import BaseExecutionEngine
+from .multiprocessing_engine import MultiprocessingExecutionEngine
+from .sequential_engine import SequentialExecutionEngine
+from .threading_engine import ThreadingExecutionEngine
+
+
+class AdaptiveExecutionEngine(BaseExecutionEngine):
+    """
+    Adaptive execution engine that chooses the best strategy based on task characteristics
+    """
+
+    def __init__(self, max_workers: int | None = None):
+        super().__init__(max_workers)
+        self.engines = {
+            ExecutionMode.SEQUENTIAL: SequentialExecutionEngine(max_workers),
+            ExecutionMode.ASYNC: AsyncExecutionEngine(max_workers),
+            ExecutionMode.THREADING: ThreadingExecutionEngine(max_workers),
+            ExecutionMode.MULTIPROCESSING: MultiprocessingExecutionEngine(max_workers),
+        }
+
+    async def execute_tasks(
+        self,
+        tasks: list[Task],
+        progress_monitor: TqdmProgressMonitor,
+        resource_manager: ResourceManager | None = None,
+    ) -> list[TaskResult]:
+        """Execute tasks using adaptive strategy selection"""
+        execution_mode = self._select_execution_mode(tasks)
+        self.logger.info(f"Selected execution mode: {execution_mode.value} for {len(tasks)} tasks")
+
+        engine = self.engines[execution_mode]
+        return await engine.execute_tasks(tasks, progress_monitor, resource_manager)
+
+    def _select_execution_mode(self, tasks: list[Task]) -> ExecutionMode:
+        """Select the best execution mode based on task characteristics"""
+        num_tasks = len(tasks)
+
+        # Simple heuristics for mode selection
+        if num_tasks <= 1:
+            return ExecutionMode.SEQUENTIAL
+
+        # Analyze task characteristics
+        cpu_intensive_tasks = sum(1 for task in tasks if self._is_cpu_intensive(task))
+        io_intensive_tasks = sum(1 for task in tasks if self._is_io_intensive(task))
+
+        cpu_ratio = cpu_intensive_tasks / num_tasks if num_tasks > 0 else 0
+        io_ratio = io_intensive_tasks / num_tasks if num_tasks > 0 else 0
+
+        # Decision logic
+        if num_tasks <= 5:
+            return ExecutionMode.SEQUENTIAL
+        elif cpu_ratio > 0.7 and num_tasks > 10:
+            # CPU-intensive tasks benefit from multiprocessing
+            return ExecutionMode.MULTIPROCESSING
+        elif io_ratio > 0.7:
+            # I/O-intensive tasks benefit from async
+            return ExecutionMode.ASYNC
+        elif num_tasks <= 20:
+            # Medium number of mixed tasks - use threading
+            return ExecutionMode.THREADING
+        else:
+            # Large number of mixed tasks - use async for better resource management
+            return ExecutionMode.ASYNC
+
+    def _is_cpu_intensive(self, task: Task) -> bool:
+        """Determine if a task is CPU-intensive based on its characteristics"""
+        # This is a heuristic - in practice, you might want to analyze:
+        # - Task type/category
+        # - Historical execution patterns
+        # - Task configuration hints
+        # - Resource requirements
+
+        # Simple heuristic based on task name/type
+        cpu_indicators = ["compute", "calculate", "process", "transform", "analyze"]
+        task_name = task.name.lower()
+        return any(indicator in task_name for indicator in cpu_indicators)
+
+    def _is_io_intensive(self, task: Task) -> bool:
+        """Determine if a task is I/O-intensive based on its characteristics"""
+        # Simple heuristic based on task name/type
+        io_indicators = ["fetch", "download", "upload", "read", "write", "load", "save", "api", "network"]
+        task_name = task.name.lower()
+        return any(indicator in task_name for indicator in io_indicators)

@@ -12,8 +12,6 @@ from datetime import timedelta
 from enum import Enum
 from enum import auto
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Optional
 from typing import TypeVar
 
@@ -115,9 +113,9 @@ class TaskConfiguration:
     max_retries: int = 3
     timeout: Optional[timedelta] = None
     priority: Priority = Priority.NORMAL
-    resources: Dict[str, Any] = field(default_factory=dict)
-    dependencies: List[TaskId] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
+    resources: dict[str, Any] = field(default_factory=dict)
+    dependencies: list[TaskId] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     checkpoint_interval: Optional[int] = None
 
     def merge(self, other: "TaskConfiguration") -> "TaskConfiguration":

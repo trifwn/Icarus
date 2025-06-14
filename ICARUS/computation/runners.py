@@ -14,8 +14,12 @@ from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
-from ICARUS.computation.execution.engines import AsyncExecutionEngine
-from ICARUS.computation.execution.engines import BaseExecutionEngine
+from ICARUS.computation.execution import AdaptiveExecutionEngine
+from ICARUS.computation.execution import AsyncExecutionEngine
+from ICARUS.computation.execution import BaseExecutionEngine
+from ICARUS.computation.execution import MultiprocessingExecutionEngine
+from ICARUS.computation.execution import SequentialExecutionEngine
+from ICARUS.computation.execution import ThreadingExecutionEngine
 from ICARUS.computation.monitoring.progress import TqdmProgressMonitor
 from ICARUS.computation.resources.manager import SimpleResourceManager
 
@@ -43,6 +47,10 @@ class SimulationRunner:
         self._task_graph: dict[TaskId, list[TaskId]] = {}
         self._execution_engines: dict[ExecutionMode, BaseExecutionEngine] = {
             ExecutionMode.ASYNC: AsyncExecutionEngine(max_workers),
+            ExecutionMode.SEQUENTIAL: SequentialExecutionEngine(),
+            ExecutionMode.THREADING: ThreadingExecutionEngine(max_workers),
+            ExecutionMode.MULTIPROCESSING: MultiprocessingExecutionEngine(max_workers),
+            ExecutionMode.ADAPTIVE: AdaptiveExecutionEngine(max_workers),
         }
 
         # Progress monitoring

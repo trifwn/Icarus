@@ -4,21 +4,21 @@ This module provides common fixtures that can be used across all test files.
 """
 
 from __future__ import annotations
-import numpy as np
 
 import os
 from typing import Generator
 
+import numpy as np
 import pytest
 
+from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
+from ICARUS.database import Database
 from ICARUS.environment.definition import EARTH_ISA
+from ICARUS.flight_dynamics import State
+from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import SymmetryAxes
 from ICARUS.vehicle import WingSegment
-from ICARUS.airfoils import NACA4
-from ICARUS.vehicle import Airplane
-from ICARUS.flight_dynamics import State
-from ICARUS.database import Database
 
 
 @pytest.fixture(scope="session")
@@ -100,11 +100,10 @@ def benchmark_airplane() -> Airplane:
 @pytest.mark.usefixtures("database_instance")
 def benchmark_state(benchmark_airplane: Airplane) -> State:
     """Fixture that provides a benchmark state for the airplane."""
-    
+
     return State(
         name="Unstick",
         airplane=benchmark_airplane,
         u_freestream=100,  # Example freestream velocity
         environment=EARTH_ISA,
     )
-

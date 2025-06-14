@@ -248,7 +248,9 @@ class TestSimulationRunner:
     def test_runner_with_config(self):
         """Test runner with custom configuration."""
         config = SimulationConfig(
-            execution_mode=ExecutionMode.THREADING, max_workers=8, enable_progress_monitoring=False,
+            execution_mode=ExecutionMode.THREADING,
+            max_workers=8,
+            enable_progress_monitoring=False,
         )
 
         runner = SimulationRunner(
@@ -381,29 +383,6 @@ class TestIntegration:
         assert all(r.state == TaskState.COMPLETED for r in results)
         # Should have received progress updates (exact count may vary)
         assert len(progress_updates) > 0
-
-
-# Fixtures for common test objects
-@pytest.fixture
-def sample_config():
-    """Provide a sample configuration for tests."""
-    return SimulationConfig(max_workers=4, task_timeout_seconds=30.0, enable_progress_monitoring=True, debug_mode=True)
-
-
-@pytest.fixture
-def test_executor():
-    """Provide a test executor for tests."""
-    return TestTaskExecutor(execution_time=0.01)
-
-
-@pytest.fixture
-def simulation_runner(sample_config):
-    """Provide a configured simulation runner for tests."""
-    return SimulationRunner(
-        execution_mode=sample_config.execution_mode,
-        max_workers=sample_config.max_workers,
-        enable_progress_monitoring=sample_config.enable_progress_monitoring,
-    )
 
 
 # Performance benchmarks

@@ -82,16 +82,3 @@ def test_gnvp3_run(
 
     # Assert execution time is reasonable (less than 300 seconds)
     assert execution_time < 300.0, f"GNVP3 execution took too long: {execution_time:.3f}s"
-
-
-if __name__ == "__main__":
-    from .benchmark_plane_test import get_benchmark_plane
-    from .benchmark_plane_test import get_benchmark_state
-
-    airplane = get_benchmark_plane("bmark")
-    state = get_benchmark_state(airplane)
-    test_gnvp3_run(
-        benchmark_airplane=airplane,
-        benchmark_state=state,
-        run_parallel=False,  # Change to True for parallel execution
-    )

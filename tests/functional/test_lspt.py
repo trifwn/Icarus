@@ -69,18 +69,3 @@ def test_lspt_run(
 
     # Assert execution time is reasonable (less than 180 seconds)
     assert execution_time < 180.0, f"LSPT execution took too long: {execution_time:.3f}s"
-
-
-# Backward compatibility function
-def lspt_run() -> None:
-    """Legacy function for backward compatibility."""
-    from .benchmark_plane_test import get_benchmark_plane
-    from .benchmark_plane_test import get_benchmark_state
-
-    airplane = get_benchmark_plane("bmark")
-    state = get_benchmark_state(airplane)
-
-    test_lspt_run(
-        benchmark_airplane=airplane,
-        benchmark_state=state,
-    )

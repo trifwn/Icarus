@@ -51,9 +51,14 @@ from . import core
 
 from .monitoring.progress import TqdmProgressMonitor
 
-from .execution.engines import (
+from .execution import (
+    create_execution_engine,
     BaseExecutionEngine,
     AsyncExecutionEngine,
+    MultiprocessingExecutionEngine,
+    SequentialExecutionEngine,
+    ThreadingExecutionEngine,
+    AdaptiveExecutionEngine,
 )
 
 from .resources.manager import SimpleResourceManager
@@ -78,6 +83,11 @@ __all__ = [
     # Execution engines
     "BaseExecutionEngine",
     "AsyncExecutionEngine",
+    "MultiprocessingExecutionEngine",
+    "SequentialExecutionEngine",
+    "ThreadingExecutionEngine",
+    "AdaptiveExecutionEngine",
+    "create_execution_engine",
     # Resource management
     "SimpleResourceManager",
     # Main runner
