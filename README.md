@@ -1,7 +1,8 @@
 # ICARUS
 Version v1.0
-
-![image](https://github.com/user-attachments/assets/5bbbd72c-0046-4b50-85b0-facba5348f80)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5bbbd72c-0046-4b50-85b0-facba5348f80" alt="Vortex Wake">
+</p>
 
 ## Working Effort.
 Code and Tools to analyze the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name). This software is developed for it to be used as part of a more general optimization workflow that will use different fidelity levels to produce mission specific aircrafts.
