@@ -38,11 +38,14 @@ except ImportError:
 
 ### SOLVER EXECUTABLES ###
 
+
 if PLATFORM == "Windows":
     # Check if context has been set
-    if multiprocessing.get_start_method() != "spawn":
-        multiprocessing.set_start_method("spawn")
-
+    try:
+        if multiprocessing.get_start_method() != "spawn":
+            multiprocessing.set_start_method("spawn")
+    except RuntimeError:
+        pass
     GenuVP3_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp3.exe")
     GenuVP7_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp7.exe")
     F2W_exe: str = os.path.join(INSTALL_DIR, "bin", "f2w.exe")
