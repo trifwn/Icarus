@@ -5,40 +5,33 @@ This module contains the primary data structures used throughout the framework
 for progress tracking, task results, and other core data representations.
 """
 
+import traceback
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 from datetime import timedelta
-from typing import Any
-from typing import Dict
-from typing import Generic
-from typing import Optional
+from typing import Any, Dict, Generic, Optional
 
 from .protocols import SerializableMixin
-from .types import T
-from .types import TaskId
-from .types import TaskState
+from .types import T, TaskId, TaskState
 
 
 @dataclass
-class ProgressUpdate(SerializableMixin):
+class ProgressEvent(SerializableMixin):
     """
-    Enhanced progress tracking with tqdm compatibility.
-
-    Represents a progress update for a task, including current status,
-    completion percentage, and any associated metadata or error information.
+    Represents a progress update for a task.
 
     Attributes:
-        task_id: Unique identifier of the task
-        name: Human-readable name of the task
-        current_step: Current step number (0-based)
-        total_steps: Total number of steps
-        message: Optional progress message
-        percentage: Calculated completion percentage
-        timestamp: When this progress update was created
-        metadata: Additional metadata about the progress
-        completed: Whether the task has completed
-        error: Any error that occurred during execution
+        task_id: Unique identifier of the task.
+        name: Human-readable name of the task.
+        current_step: Current step number.
+        total_steps: Total number of steps.
+        message: Optional progress message.
+        percentage: Calculated completion percentage.
+        timestamp: When this progress update was created.
+        metadata: Additional metadata about the progress.
+        completed: Whether the task has completed.
+        error: Any error that occurred during execution.
     """
 
     task_id: TaskId
@@ -52,30 +45,20 @@ class ProgressUpdate(SerializableMixin):
     completed: bool = False
     error: Optional[Exception] = None
 
-    # Legacy compatibility fields for existing code
-    current_iteration: int = field(init=False)
-    max_iterations: int = field(init=False)
-    progress_percentage: Optional[float] = field(init=False)
-
     def __post_init__(self):
         """Calculate derived fields after initialization."""
-        object.__setattr__(
-            self,
-            "percentage",
-            (self.current_step / self.total_steps * 100) if self.total_steps > 0 else 0,
-        )
-        # Legacy compatibility
-        object.__setattr__(self, "current_iteration", self.current_step)
-        object.__setattr__(self, "max_iterations", self.total_steps)
-        object.__setattr__(self, "progress_percentage", self.percentage)
+        self.percentage = (self.current_step / self.total_steps * 100) if self.total_steps > 0 else 0
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert progress update to dictionary representation.
+        """Convert progress update to a serializable dictionary."""
+        error_info = None
+        if self.error:
+            error_info = {
+                "type": type(self.error).__name__,
+                "message": str(self.error),
+                "traceback": traceback.format_exc(),
+            }
 
-        Returns:
-            Dictionary containing all progress update data
-        """
         return {
             "task_id": str(self.task_id),
             "name": self.name,
@@ -86,20 +69,16 @@ class ProgressUpdate(SerializableMixin):
             "timestamp": self.timestamp.isoformat(),
             "metadata": self.metadata,
             "completed": self.completed,
-            "error": str(self.error) if self.error else None,
+            "error": error_info,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ProgressUpdate":
-        """
-        Create progress update from dictionary representation.
+    def from_dict(cls, data: Dict[str, Any]) -> "ProgressEvent":
+        """Create a ProgressUpdate instance from a dictionary."""
+        error = None
+        if data.get("error"):
+            error = Exception(f"{data['error']['type']}: {data['error']['message']}")
 
-        Args:
-            data: Dictionary containing progress update data
-
-        Returns:
-            New ProgressUpdate instance
-        """
         return cls(
             task_id=TaskId(data["task_id"]),
             name=data["name"],
@@ -108,32 +87,29 @@ class ProgressUpdate(SerializableMixin):
             message=data.get("message", ""),
             metadata=data.get("metadata", {}),
             completed=data.get("completed", False),
-            error=Exception(data["error"]) if data.get("error") else None,
+            error=error,
         )
 
 
 @dataclass
 class TaskResult(SerializableMixin, Generic[T]):
     """
-    Enhanced task results with type safety.
-
-    Represents the final result of a task execution, including success/failure
-    status, timing information, and any error details.
+    Represents the final result of a task's execution.
 
     Attributes:
-        task_id: Unique identifier of the task
-        state: Final state of the task
-        result: The actual result data (if successful)
-        error: Any error that occurred during execution
-        execution_time: How long the task took to execute
-        retry_count: Number of retries attempted
-        metadata: Additional metadata about the execution
-        timestamp: When the result was created
+        task_id: Unique identifier of the task.
+        state: Final state of the task (e.g., COMPLETED, FAILED).
+        output: The actual result data (if successful).
+        error: Any exception that occurred during execution.
+        execution_time: How long the task took to execute.
+        retry_count: Number of retries attempted.
+        metadata: Additional metadata about the execution.
+        timestamp: When the result was created.
     """
 
     task_id: TaskId
     state: TaskState
-    result: Optional[T] = None
+    output: Optional[T] = None
     error: Optional[Exception] = None
     execution_time: Optional[timedelta] = None
     retry_count: int = 0
@@ -142,26 +118,33 @@ class TaskResult(SerializableMixin, Generic[T]):
 
     @property
     def success(self) -> bool:
-        """
-        Check if the task completed successfully.
-
-        Returns:
-            True if the task completed without errors
-        """
+        """Check if the task completed successfully."""
         return self.state == TaskState.COMPLETED and self.error is None
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert task result to dictionary representation.
+        """Convert task result to a serializable dictionary."""
+        serialized_output = None
+        if self.output is not None:
+            if isinstance(self.output, SerializableMixin):
+                serialized_output = self.output.to_dict()
+            else:
+                # Fallback for non-serializable objects.
+                # Consider logging a warning here.
+                serialized_output = str(self.output)
 
-        Returns:
-            Dictionary containing all task result data
-        """
+        error_info = None
+        if self.error:
+            error_info = {
+                "type": type(self.error).__name__,
+                "message": str(self.error),
+                "traceback": traceback.format_exc(),
+            }
+
         return {
             "task_id": str(self.task_id),
             "state": self.state.name,
-            "result": str(self.result) if self.result is not None else None,
-            "error": str(self.error) if self.error else None,
+            "output": serialized_output,
+            "error": error_info,
             "execution_time": self.execution_time.total_seconds() if self.execution_time else None,
             "retry_count": self.retry_count,
             "metadata": self.metadata,
@@ -170,21 +153,21 @@ class TaskResult(SerializableMixin, Generic[T]):
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TaskResult":
-        """
-        Create task result from dictionary representation.
+        """Create a TaskResult instance from a dictionary."""
+        error = None
+        if data.get("error"):
+            error = Exception(f"<{data['error']['type']}> {data['error']['message']}")
 
-        Args:
-            data: Dictionary containing task result data
+        execution_time = None
+        if data.get("execution_time") is not None:
+            execution_time = timedelta(seconds=data["execution_time"])
 
-        Returns:
-            New TaskResult instance
-        """
         return cls(
             task_id=TaskId(data["task_id"]),
             state=TaskState[data["state"]],
-            result=data.get("result"),
-            error=Exception(data["error"]) if data.get("error") else None,
-            execution_time=timedelta(seconds=data["execution_time"]) if data.get("execution_time") else None,
+            output=data.get("output"),
+            error=error,
+            execution_time=execution_time,
             retry_count=data.get("retry_count", 0),
             metadata=data.get("metadata", {}),
         )

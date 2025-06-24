@@ -4,7 +4,7 @@ from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
-from ICARUS.computation.monitoring.progress import TqdmProgressMonitor
+from ICARUS.computation.core.protocols import ProgressMonitor, ProgressReporter
 
 from .async_engine import AsyncExecutionEngine
 from .base_engine import BaseExecutionEngine
@@ -20,7 +20,8 @@ class AdaptiveExecutionEngine(BaseExecutionEngine):
 
     def __init__(self, max_workers: int | None = None):
         super().__init__(max_workers)
-        self.engines = {
+        self.current_execution_mode: ExecutionMode | None = None
+        self.engines: dict[ExecutionMode, BaseExecutionEngine] = {
             ExecutionMode.SEQUENTIAL: SequentialExecutionEngine(max_workers),
             ExecutionMode.ASYNC: AsyncExecutionEngine(max_workers),
             ExecutionMode.THREADING: ThreadingExecutionEngine(max_workers),
@@ -30,15 +31,18 @@ class AdaptiveExecutionEngine(BaseExecutionEngine):
     async def execute_tasks(
         self,
         tasks: list[Task],
-        progress_monitor: TqdmProgressMonitor,
+        progress_reporter: ProgressReporter,
         resource_manager: ResourceManager | None = None,
     ) -> list[TaskResult]:
         """Execute tasks using adaptive strategy selection"""
         execution_mode = self._select_execution_mode(tasks)
+
+        self.current_execution_mode = execution_mode
+
         self.logger.info(f"Selected execution mode: {execution_mode.value} for {len(tasks)} tasks")
 
         engine = self.engines[execution_mode]
-        return await engine.execute_tasks(tasks, progress_monitor, resource_manager)
+        return await engine.execute_tasks(tasks, progress_reporter, resource_manager)
 
     def _select_execution_mode(self, tasks: list[Task]) -> ExecutionMode:
         """Select the best execution mode based on task characteristics"""
@@ -90,3 +94,20 @@ class AdaptiveExecutionEngine(BaseExecutionEngine):
         io_indicators = ["fetch", "download", "upload", "read", "write", "load", "save", "api", "network"]
         task_name = task.name.lower()
         return any(indicator in task_name for indicator in io_indicators)
+
+    async def _start_progress_monitoring(
+        self,
+        progress_monitor: ProgressMonitor,
+    ) -> None:
+        """Start the progress monitor for the selected execution mode"""
+        if self.current_execution_mode is None:
+            raise ValueError("Execution mode not set. Call execute_tasks first.")
+
+        engine = self.engines[self.current_execution_mode]
+        await engine._start_progress_monitoring(progress_monitor)
+
+    async def _stop_progress_monitoring(self) -> None:
+        """Stop the progress monitor if it was started"""
+        for engine in self.engines.values():
+            if hasattr(engine, "_stop_progress_monitoring"):
+                await engine._stop_progress_monitoring()

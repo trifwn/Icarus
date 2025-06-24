@@ -12,7 +12,8 @@ from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
-from ICARUS.computation.monitoring.progress import TqdmProgressMonitor
+from ICARUS.computation.core.protocols import ProgressMonitor, ProgressReporter
+from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import BaseExecutionEngine
 
@@ -23,7 +24,7 @@ class MultiprocessingExecutionEngine(BaseExecutionEngine):
     async def execute_tasks(
         self,
         tasks: list[Task],
-        progress_monitor: TqdmProgressMonitor,
+        progress_reporter: ProgressReporter | None = None,
         resource_manager: ResourceManager | None = None,
     ) -> list[TaskResult]:
         """Execute tasks using process pool"""
@@ -33,14 +34,17 @@ class MultiprocessingExecutionEngine(BaseExecutionEngine):
 
         max_workers = self.max_workers or min(mp.cpu_count(), len(tasks) or 1)
 
+        # Use the shared event_queue from the monitor (if provided)
+        # progress_queue = getattr(progress_reporter, "event_queue", None) if progress_reporter else None
+
         # Execute in process pool
         loop = asyncio.get_event_loop()
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            # Create partial function with fixed arguments
             execute_func = partial(
-                _execute_task_in_process, progress_monitor=progress_monitor, resource_manager=resource_manager,
+                _execute_task_in_process,
+                progress_reporter=progress_reporter,
+                resource_manager=resource_manager,
             )
-
             futures = [loop.run_in_executor(executor, execute_func, task) for task in tasks]
             results = await asyncio.gather(*futures, return_exceptions=True)
 
@@ -56,10 +60,38 @@ class MultiprocessingExecutionEngine(BaseExecutionEngine):
         self.logger.info("Multiprocessing execution completed")
         return processed_results
 
+    async def _start_progress_monitoring(self, progress_monitor: ProgressMonitor) -> None:
+        """Start the progress monitor in a separate process if enabled."""
+        queue = mp.Queue()
+        self.progress_monitor = progress_monitor
+        progress_monitor.set_event_queue(queue)
+
+        # Spawn the monitor Process Thread on the main process
+        self.monitor_process = mp.Process(
+            target=progress_monitor.monitor_loop,
+            name="ProgressMonitor",
+            args=(queue,),
+        )
+
+    async def _stop_progress_monitoring(self) -> None:
+        """Stop the progress monitor if it is running."""
+        if self.monitor_process and self.monitor_process.is_alive():
+            try:
+                # Send sentinel value to stop
+                self.progress_monitor.event_queue.put("STOP")
+                self.monitor_process.join(timeout=2)
+                if self.monitor_process.is_alive():
+                    self.monitor_process.terminate()
+                    self.logger.warning("Progress monitor process did not stop gracefully")
+            except Exception as e:
+                self.logger.error(f"Error stopping monitor process: {e}")
+        else:
+            self.logger.debug("Progress monitor process was not running")
+
 
 def _execute_task_in_process(
     task: Task,
-    progress_monitor: TqdmProgressMonitor,
+    progress_reporter: ProgressReporter | None,
     resource_manager: ResourceManager | None,
 ) -> TaskResult:
     """
@@ -72,11 +104,12 @@ def _execute_task_in_process(
 
     try:
         context = ExecutionContext(
-            task.id,
-            task.config,
-            progress_monitor,
-            resource_manager,
-            logging.getLogger(f"task.{task.name}"),
+            task_id=task.id,
+            config=task.config,
+            execution_mode=ExecutionMode.MULTIPROCESSING,
+            progress_reporter=progress_reporter,
+            resource_manager=resource_manager,
+            logger=logging.getLogger(f"task.{task.name}"),
         )
 
         start_time = datetime.now()
@@ -104,12 +137,13 @@ def _execute_task_in_process(
                 task_result = TaskResult(
                     task_id=task.id,
                     state=TaskState.COMPLETED,
-                    result=result,
+                    output=result,
                     execution_time=datetime.now() - start_time,
                 )
 
                 task.state = TaskState.COMPLETED
-                await progress_monitor.report_completion(task_result)
+                if context.progress_reporter is not None:
+                    await context.progress_reporter.report_completion(task_result)
                 return task_result
 
             except asyncio.TimeoutError:
@@ -121,7 +155,8 @@ def _execute_task_in_process(
                     execution_time=datetime.now() - start_time,
                 )
                 task.state = TaskState.FAILED
-                await progress_monitor.report_completion(task_result)
+                if context.progress_reporter is not None:
+                    await context.progress_reporter.report_completion(task_result)
                 return task_result
 
             except Exception as e:
@@ -132,7 +167,8 @@ def _execute_task_in_process(
                     execution_time=datetime.now() - start_time,
                 )
                 task.state = TaskState.FAILED
-                await progress_monitor.report_completion(task_result)
+                if context.progress_reporter is not None:
+                    await context.progress_reporter.report_completion(task_result)
                 return task_result
 
             finally:

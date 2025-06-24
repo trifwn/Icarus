@@ -3,43 +3,41 @@ from __future__ import annotations
 import logging
 import os
 import signal
-from threading import Event
-from threading import Thread
 from typing import Any
 
 from ICARUS.computation.core import ExecutionMode
-from ICARUS.computation.core import ProgressReporter
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
+from ICARUS.computation.core import ConcurrencyPrimitives
+from ICARUS.computation.core.protocols import ProgressMonitor
+from ICARUS.computation.core.utils.concurrency import EventLike
 from ICARUS.computation.execution import AdaptiveExecutionEngine
 from ICARUS.computation.execution import AsyncExecutionEngine
 from ICARUS.computation.execution import BaseExecutionEngine
 from ICARUS.computation.execution import MultiprocessingExecutionEngine
 from ICARUS.computation.execution import SequentialExecutionEngine
 from ICARUS.computation.execution import ThreadingExecutionEngine
-from ICARUS.computation.monitoring.progress import TqdmProgressMonitor
+from ICARUS.computation.reporters import Reporter
 from ICARUS.computation.resources.manager import SimpleResourceManager
 
 
 class SimulationRunner:
-    """Enhanced simulation runner with tqdm progress bars and full OOP design"""
+    """Enhanced simulation runner with improved multiprocessing support"""
 
     def __init__(
         self,
         execution_mode: ExecutionMode = ExecutionMode.ASYNC,
         max_workers: int | None = None,
         resource_manager: ResourceManager | None = None,
-        progress_refresh_rate: float = 0.2,
-        enable_progress_monitoring: bool = True,
+        progress_monitor: ProgressMonitor | None = None,
     ):
         self.execution_mode = execution_mode
         self.max_workers = max_workers or min(os.cpu_count() or 4, 8)
         self.resource_manager = resource_manager or SimpleResourceManager()
-        self.progress_refresh_rate = progress_refresh_rate
-        self.enable_progress_monitoring = enable_progress_monitoring
+        self.enable_progress_monitoring = progress_monitor is not None
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Task management
@@ -54,14 +52,13 @@ class SimulationRunner:
         }
 
         # Progress monitoring
-        self.progress_monitor: TqdmProgressMonitor | None = None
-        self.monitor_thread: Thread | None = None
+        self.progress_monitor: ProgressMonitor | None = progress_monitor
+        self.monitor_primatives: ConcurrencyPrimitives | None = None
 
         # State management
         self._running = False
         self._cancelled = False
         self._results: list[TaskResult] = []
-        self.stop_event = Event()
 
         # Setup logging
         if not self.logger.handlers:
@@ -71,12 +68,12 @@ class SimulationRunner:
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
 
-    def _setup_signal_handlers(self):
+    def _setup_signal_handlers(self, event: EventLike) -> None:
         """Setup signal handlers for clean shutdown on CTRL+C."""
 
         def signal_handler(signum, frame):
             self.logger.warning("\nShutdown signal received. Cleaning up...")
-            self.stop_event.set()
+            event.set()
             self.cancel()
 
         signal.signal(signal.SIGINT, signal_handler)
@@ -100,27 +97,6 @@ class SimulationRunner:
             self.add_task(task)
         return self
 
-    def add_progress_observer(self, observer: ProgressReporter) -> SimulationRunner:
-        """Add progress observer"""
-        if self.progress_monitor:
-            self.progress_monitor.add_observer(observer)
-        return self
-
-    def _start_progress_monitoring(self):
-        """Start the progress monitor in a separate thread if enabled."""
-        if not self.enable_progress_monitoring or not self._tasks:
-            return
-
-        self.progress_monitor = TqdmProgressMonitor(self._tasks, self.progress_refresh_rate)
-
-        def monitor_runner():
-            if self.progress_monitor:
-                with self.progress_monitor:
-                    self.progress_monitor.monitor_loop()
-
-        self.monitor_thread = Thread(target=monitor_runner, daemon=True)
-        self.monitor_thread.start()
-
     async def run(self) -> list[TaskResult]:
         """Execute all tasks with dependency resolution and progress bars"""
         if not self._tasks:
@@ -129,10 +105,6 @@ class SimulationRunner:
 
         self._running = True
         self.logger.info(f"Starting execution of {len(self._tasks)} tasks in {self.execution_mode.value} mode")
-
-        # Setup signal handlers and progress monitoring
-        self._setup_signal_handlers()
-        self._start_progress_monitoring()
 
         try:
             # Sort tasks by dependencies and priority
@@ -143,23 +115,37 @@ class SimulationRunner:
             if not engine:
                 raise ValueError(f"Unsupported execution mode: {self.execution_mode}")
 
-            # Create progress monitor if not already created
-            if not self.progress_monitor:
-                self.progress_monitor = TqdmProgressMonitor(sorted_tasks, self.progress_refresh_rate)
+            if self.enable_progress_monitoring and self.progress_monitor:
+                # Setup signal handlers and progress monitoring
+                self.progress_monitor.set_tasks(sorted_tasks)
+
+                cancellation_event = self.execution_mode.create_event()
+
+                self._setup_signal_handlers(cancellation_event)
+                self.progress_monitor.add_cancellation_event(cancellation_event)
+
+                await engine._start_progress_monitoring(progress_monitor=self.progress_monitor)
+
+            reporter = Reporter(sorted_tasks)
+            if self.enable_progress_monitoring and self.progress_monitor:
+                # Add progress monitor as an observer to the reporter
+                reporter.add_observer(self.progress_monitor)
 
             # Execute tasks
-            self._results = await engine.execute_tasks(sorted_tasks, self.progress_monitor, self.resource_manager)
+            self._results = await engine.execute_tasks(sorted_tasks, reporter, self.resource_manager)
 
+            if self.enable_progress_monitoring and self.progress_monitor:
+                await engine._stop_progress_monitoring()
             return self._results
 
         except Exception as e:
             self.logger.error(f"Execution failed: {e}")
             raise
+
         finally:
             self._running = False
-            self.stop_event.set()
-            if self.monitor_thread and self.monitor_thread.is_alive():
-                self.monitor_thread.join(timeout=1.0)
+            if self.monitor_primatives:
+                self.monitor_primatives.event.set()  # Signal monitor to stop
             self.logger.info("Execution finished.")
 
     async def run_tasks(self, tasks: list[Task]) -> list[TaskResult]:
@@ -206,7 +192,7 @@ class SimulationRunner:
             "task_states": {str(task.id): task.state.name for task in self._tasks},
             "task_progress": {
                 str(task.id): {
-                    "current_step": task._current_progress,
+                    "current_step": task._progress,
                     "total_steps": task._total_progress,
                     "message": task._progress_message,
                     "completed": task.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED],

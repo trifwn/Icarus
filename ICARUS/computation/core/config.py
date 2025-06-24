@@ -85,6 +85,8 @@ class SimulationConfig:
         """Validate configuration after initialization."""
         self._validate_config()
         self._apply_environment_overrides()
+        if isinstance(self.log_file_path, str):
+            self.log_file_path = Path(self.log_file_path)
 
     def _validate_config(self):
         """Validate configuration values."""
@@ -143,21 +145,29 @@ class SimulationConfig:
         try:
             with open(config_path) as f:
                 if config_path.suffix.lower() in [".yml", ".yaml"]:
-                    data = yaml.safe_load(f)
+                    config_data = yaml.safe_load(f)
                 elif config_path.suffix.lower() == ".json":
-                    data = json.load(f)
+                    config_data = json.load(f)
                 else:
                     raise ConfigurationError(f"Unsupported config file format: {config_path.suffix}")
+            
+            # Convert enums from string values
+            if "execution_mode" in config_data:
+                config_data["execution_mode"] = ExecutionMode(config_data["execution_mode"])
+            if "default_task_priority" in config_data:
+                config_data["default_task_priority"] = Priority[config_data["default_task_priority"]]
+            if "log_level" in config_data:
+                config_data["log_level"] = LogLevel(config_data["log_level"])
 
-            return cls(**data)
+            return cls(**config_data)
 
         except (json.JSONDecodeError, yaml.YAMLError) as e:
             raise ConfigurationError(f"Failed to parse configuration file: {e}")
-        except TypeError as e:
+        except (TypeError, KeyError) as e:
             raise ConfigurationError(f"Invalid configuration parameters: {e}")
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert configuration to dictionary."""
+        """Convert configuration to a serializable dictionary."""
         result = {}
         for key, value in self.__dict__.items():
             if isinstance(value, Enum):
@@ -170,29 +180,29 @@ class SimulationConfig:
 
     def save_to_file(self, config_path: Union[str, Path]):
         """
-        Save configuration to file.
+        Save configuration to a file.
 
         Args:
-            config_path: Path where to save the configuration
+            config_path: Path where to save the configuration (e.g., 'config.yml')
         """
         config_path = Path(config_path)
         config_dict = self.to_dict()
 
         with open(config_path, "w") as f:
             if config_path.suffix.lower() in [".yml", ".yaml"]:
-                yaml.dump(config_dict, f, default_flow_style=False)
+                yaml.dump(config_dict, f, default_flow_style=False, sort_keys=False)
             else:
                 json.dump(config_dict, f, indent=2)
 
     def merge(self, other: "SimulationConfig") -> "SimulationConfig":
         """
-        Merge with another configuration, with other taking precedence.
+        Merge with another configuration, with 'other' taking precedence.
 
         Args:
-            other: Configuration to merge with
+            other: The configuration to merge with.
 
         Returns:
-            New merged configuration
+            A new, merged SimulationConfig instance.
         """
         merged_dict = self.to_dict()
         merged_dict.update(other.to_dict())

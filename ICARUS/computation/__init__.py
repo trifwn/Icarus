@@ -40,16 +40,9 @@ isort:skip_file
 
 """
 
-try:
-    from tqdm import tqdm
-
-    TQDM_AVAILABLE = True
-except ImportError:
-    TQDM_AVAILABLE = False
-
 from . import core
 
-from .monitoring.progress import TqdmProgressMonitor
+from .monitors.progress import RichProgressMonitor
 
 from .execution import (
     create_execution_engine,
@@ -64,9 +57,7 @@ from .execution import (
 from .resources.manager import SimpleResourceManager
 
 from .runners import SimulationRunner
-
-from .executors import SummationExecutor
-from .reporters import ConsoleProgressReporter
+from .observers import ConsoleProgressObserver
 
 
 from . import analyses
@@ -79,7 +70,7 @@ __all__ = [
     # Core types
     "core",
     # Monitoring
-    "TqdmProgressMonitor",
+    "RichProgressMonitor",
     # Execution engines
     "BaseExecutionEngine",
     "AsyncExecutionEngine",
@@ -93,8 +84,7 @@ __all__ = [
     # Main runner
     "SimulationRunner",
     # Examples
-    "SummationExecutor",
-    "ConsoleProgressReporter",
+    "ConsoleProgressObserver",
     # Submodules
     "analyses",
     "solvers",
