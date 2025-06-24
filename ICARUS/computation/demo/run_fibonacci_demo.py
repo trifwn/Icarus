@@ -10,6 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def run_demo(config_name: str):
     """Run the demo with a specific configuration."""
     demo_script = Path(__file__).parent / "fibonacci_demo.py"

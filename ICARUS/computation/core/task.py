@@ -7,11 +7,18 @@ in the simulation framework.
 
 from datetime import datetime
 from threading import Lock
-from typing import Generic, List, Optional, Tuple
+from typing import Generic
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 from .data_structures import ProgressEvent
 from .protocols import TaskExecutor
-from .types import TaskConfiguration, TaskId, TaskInput, TaskOutput, TaskState
+from .types import TaskConfiguration
+from .types import TaskId
+from .types import TaskInput
+from .types import TaskOutput
+from .types import TaskState
 
 
 class Task(Generic[TaskInput, TaskOutput]):

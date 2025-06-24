@@ -11,9 +11,15 @@ from dataclasses import field
 from datetime import timedelta
 from enum import Enum
 from enum import auto
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import TypeVar
 
-from .utils.concurrency import ConcurrencyPrimitives, ConcurrencyType, EventLike, LockLike
+from .utils.concurrency import ConcurrencyPrimitives
+from .utils.concurrency import ConcurrencyType
+from .utils.concurrency import EventLike
+from .utils.concurrency import LockLike
 
 # ===== TYPE VARIABLES =====
 
@@ -77,7 +83,6 @@ class ExecutionMode(Enum):
         """
         self.concurrency_type: ConcurrencyType | None = None
 
-    
     def get_primitives(self) -> ConcurrencyPrimitives:
         """
         Get the concurrency primitives for this execution mode.
@@ -87,9 +92,9 @@ class ExecutionMode(Enum):
         """
         if self.concurrency_type is None:
             self.concurrency_type = ConcurrencyType(self.value)
-            
+
         primitives = ConcurrencyPrimitives.get_concurrency_primitives(self.concurrency_type)
-        return primitives 
+        return primitives
 
     def create_lock(self) -> LockLike:
         """

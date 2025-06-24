@@ -8,11 +8,16 @@ reporting, logging, and cancellation mechanisms.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 from .data_structures import ProgressEvent
-from .protocols import ProgressReporter, ResourceManager
-from .types import TaskConfiguration, TaskId, ExecutionMode
+from .protocols import ProgressReporter
+from .protocols import ResourceManager
+from .types import ExecutionMode
+from .types import TaskConfiguration
+from .types import TaskId
 
 
 class ExecutionContext:

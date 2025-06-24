@@ -16,25 +16,29 @@ Usage:
     python fibonacci_demo.py [--numbers N1 N2 ...] [--delay DELAY] [--mode MODE]
 """
 
-import asyncio
 import argparse
-import time
+import asyncio
+import logging
 import sys
+import time
 from pathlib import Path
 from typing import Any
-import logging
 
 from ICARUS.computation.monitors.progress import RichProgressMonitor
 
 # Add the examples directory to the path so we can import our executor
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ICARUS.computation.core.data_structures import TaskResult
 from fibonacci_executor import FibonacciExecutor
 
-from ICARUS.computation.core.types import ExecutionMode, Priority, TaskConfiguration, TaskId, TaskState
-from ICARUS.computation.core.task import Task
 from ICARUS.computation.core.config import SimulationConfig
+from ICARUS.computation.core.data_structures import TaskResult
+from ICARUS.computation.core.task import Task
+from ICARUS.computation.core.types import ExecutionMode
+from ICARUS.computation.core.types import Priority
+from ICARUS.computation.core.types import TaskConfiguration
+from ICARUS.computation.core.types import TaskId
+from ICARUS.computation.core.types import TaskState
 from ICARUS.computation.runners import SimulationRunner
 
 
@@ -244,7 +248,10 @@ async def main():
         help="Fibonacci numbers to calculate (default: 8-22)",
     )
     parser.add_argument(
-        "--delay", type=float, default=0.015, help="Delay per calculation step in seconds (default: 0.015)"
+        "--delay",
+        type=float,
+        default=0.015,
+        help="Delay per calculation step in seconds (default: 0.015)",
     )
     parser.add_argument(
         "--mode",
@@ -321,7 +328,7 @@ def print_performance_comparison(results: dict[str, dict[str, Any]]):
                     f"{result['success_rate']:.1f}%",
                     f"{result['throughput']:.2f}",
                     f"{result.get('worker_count', 'N/A')}",
-                )
+                ),
             )
         else:
             print(row_format.format(mode_name.upper(), "FAILED", "0.0%", "0.00", "N/A"))
@@ -337,7 +344,7 @@ def print_performance_comparison(results: dict[str, dict[str, Any]]):
         # Find highest throughput
         highest_throughput = max(successful_modes, key=lambda x: x[1]["throughput"])
         print(
-            f"   🚀 Highest throughput: {highest_throughput[0].upper()} ({highest_throughput[1]['throughput']:.2f} tasks/s)"
+            f"   🚀 Highest throughput: {highest_throughput[0].upper()} ({highest_throughput[1]['throughput']:.2f} tasks/s)",
         )
 
         # Show scaling efficiency

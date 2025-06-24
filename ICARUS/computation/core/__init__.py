@@ -14,7 +14,6 @@ from .protocols import ProgressReporter
 from .protocols import ResourceManager
 from .protocols import SerializableMixin
 from .protocols import TaskExecutor
-from .protocols import ProgressReporter
 from .context import ExecutionContext
 from .data_structures import ProgressEvent
 from .data_structures import TaskResult

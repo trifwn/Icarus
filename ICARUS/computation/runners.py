@@ -5,13 +5,13 @@ import os
 import signal
 from typing import Any
 
+from ICARUS.computation.core import ConcurrencyPrimitives
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
-from ICARUS.computation.core import ConcurrencyPrimitives
 from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.utils.concurrency import EventLike
 from ICARUS.computation.execution import AdaptiveExecutionEngine

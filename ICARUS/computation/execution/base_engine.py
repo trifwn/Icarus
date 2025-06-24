@@ -8,7 +8,8 @@ from typing import Any
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
-from ICARUS.computation.core.protocols import ProgressMonitor, ProgressReporter
+from ICARUS.computation.core.protocols import ProgressMonitor
+from ICARUS.computation.core.protocols import ProgressReporter
 
 
 class BaseExecutionEngine(ABC):

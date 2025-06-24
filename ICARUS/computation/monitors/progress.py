@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-import logging
 import asyncio
-from time import sleep
+import logging
 from multiprocessing import Queue
+from time import sleep
 
-from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.core.data_structures import ProgressEvent
-from ICARUS.computation.core import Task, TaskResult
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 from rich.live import Live
 from rich.panel import Panel
+from rich.progress import BarColumn
+from rich.progress import Progress
+from rich.progress import SpinnerColumn
+from rich.progress import TextColumn
 from rich.table import Table
-from rich.console import Group
 
+from ICARUS.computation.core import Task
+from ICARUS.computation.core import TaskResult
+from ICARUS.computation.core.data_structures import ProgressEvent
+from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.utils.concurrency import EventLike
 
 
@@ -37,7 +40,9 @@ class RichProgressMonitor(ProgressMonitor):
             expand=True,
         )
         self.overall_progress = Progress(
-            BarColumn(bar_width=None), TextColumn("[progress.percentage]{task.percentage:>3.0f}%"), expand=True
+            BarColumn(bar_width=None),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            expand=True,
         )
 
         self.logger = logging.getLogger(__name__)

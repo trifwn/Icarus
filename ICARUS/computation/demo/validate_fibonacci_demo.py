@@ -6,8 +6,8 @@ This script performs basic validation to ensure the demo components
 are working correctly before running the full demo.
 """
 
-import sys
 import asyncio
+import sys
 from pathlib import Path
 
 # Add the examples directory to the path
@@ -19,8 +19,10 @@ async def test_fibonacci_executor():
     print("🧪 Testing Fibonacci Executor...")
 
     try:
+        from unittest.mock import AsyncMock
+        from unittest.mock import Mock
+
         from fibonacci_executor import FibonacciExecutor
-        from unittest.mock import AsyncMock, Mock
 
         # Create mock context
         context = Mock()
@@ -53,10 +55,13 @@ async def test_simulation_framework():
     print("🧪 Testing Simulation Framework...")
 
     try:
-        from ICARUS.computation.core.types import ExecutionMode, Priority, TaskConfiguration
-        from ICARUS.computation.core.task import Task
-        from ICARUS.computation.runners import SimulationRunner
         from fibonacci_executor import FibonacciExecutor
+
+        from ICARUS.computation.core.task import Task
+        from ICARUS.computation.core.types import ExecutionMode
+        from ICARUS.computation.core.types import Priority
+        from ICARUS.computation.core.types import TaskConfiguration
+        from ICARUS.computation.runners import SimulationRunner
 
         # Create a simple task
         executor = FibonacciExecutor(delay_per_step=0.001)
@@ -91,6 +96,7 @@ async def test_demo_components():
 
     try:
         from examples.computation.fibonacci_demo import FibonacciDemo
+
         from ICARUS.computation.core.types import ExecutionMode
 
         # Create demo instance
@@ -119,14 +125,16 @@ def test_imports():
 
     try:
         # Test ICARUS computation imports
-        from ICARUS.computation.core.types import ExecutionMode, Priority, TaskConfiguration
-        from ICARUS.computation.core.task import Task
-        from ICARUS.computation.core.config import SimulationConfig
-        from ICARUS.computation.runners import SimulationRunner
-        from ICARUS.computation.core.data_structures import TaskState
-
         # Test local imports
         from fibonacci_executor import FibonacciExecutor
+
+        from ICARUS.computation.core.config import SimulationConfig
+        from ICARUS.computation.core.data_structures import TaskState
+        from ICARUS.computation.core.task import Task
+        from ICARUS.computation.core.types import ExecutionMode
+        from ICARUS.computation.core.types import Priority
+        from ICARUS.computation.core.types import TaskConfiguration
+        from ICARUS.computation.runners import SimulationRunner
 
         print("   ✅ All imports successful")
         return True

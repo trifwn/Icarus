@@ -1,7 +1,10 @@
 import logging
 from weakref import WeakSet
-from ICARUS.computation.core.data_structures import ProgressEvent, TaskResult
-from ICARUS.computation.core.protocols import ProgressObserver, ProgressReporter
+
+from ICARUS.computation.core.data_structures import ProgressEvent
+from ICARUS.computation.core.data_structures import TaskResult
+from ICARUS.computation.core.protocols import ProgressObserver
+from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.task import Task
 
 

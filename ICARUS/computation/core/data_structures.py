@@ -10,10 +10,15 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 from datetime import timedelta
-from typing import Any, Dict, Generic, Optional
+from typing import Any
+from typing import Dict
+from typing import Generic
+from typing import Optional
 
 from .protocols import SerializableMixin
-from .types import T, TaskId, TaskState
+from .types import T
+from .types import TaskId
+from .types import TaskState
 
 
 @dataclass

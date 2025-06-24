@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from ICARUS.computation.core import ProgressEvent
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core.protocols import ProgressObserver

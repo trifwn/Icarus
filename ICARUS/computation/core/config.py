@@ -150,7 +150,7 @@ class SimulationConfig:
                     config_data = json.load(f)
                 else:
                     raise ConfigurationError(f"Unsupported config file format: {config_path.suffix}")
-            
+
             # Convert enums from string values
             if "execution_mode" in config_data:
                 config_data["execution_mode"] = ExecutionMode(config_data["execution_mode"])

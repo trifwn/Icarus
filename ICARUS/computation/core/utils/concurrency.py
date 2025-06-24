@@ -8,11 +8,13 @@ synchronization primitives based on the selected ExecutionMode.
 """
 
 import asyncio
-from enum import Enum
 import multiprocessing
 import threading
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Protocol
+from enum import Enum
+from typing import Callable
+from typing import Coroutine
+from typing import Protocol
 
 
 class LockLike(Protocol):

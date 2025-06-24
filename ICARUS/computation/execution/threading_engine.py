@@ -6,8 +6,13 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from threading import Thread
 
-from ICARUS.computation.core import ExecutionContext, ResourceManager, Task, TaskResult, TaskState
-from ICARUS.computation.core.protocols import ProgressReporter, ProgressMonitor
+from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import ResourceManager
+from ICARUS.computation.core import Task
+from ICARUS.computation.core import TaskResult
+from ICARUS.computation.core import TaskState
+from ICARUS.computation.core.protocols import ProgressMonitor
+from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import BaseExecutionEngine

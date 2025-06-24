@@ -7,7 +7,8 @@ with progress reporting, showcasing the simulation framework capabilities.
 
 import asyncio
 import multiprocessing
-from typing import Tuple, Any
+from typing import Any
+from typing import Tuple
 
 from ICARUS.computation.core.context import ExecutionContext
 from ICARUS.computation.core.protocols import TaskExecutor

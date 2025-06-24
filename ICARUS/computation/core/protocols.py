@@ -7,17 +7,23 @@ the contracts for various components in the simulation framework.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Protocol, Sequence, runtime_checkable
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Generic
+from typing import Protocol
+from typing import Sequence
+from typing import runtime_checkable
 
 from ICARUS.computation.core.utils.concurrency import EventLike
 
-
-from .types import TaskInput, TaskOutput
+from .types import TaskInput
+from .types import TaskOutput
 
 if TYPE_CHECKING:
-    from .task import Task
     from .context import ExecutionContext
-    from .data_structures import ProgressEvent, TaskResult
+    from .data_structures import ProgressEvent
+    from .data_structures import TaskResult
+    from .task import Task
 
 
 class SerializableMixin:
@@ -189,10 +195,10 @@ class ProgressMonitor(ProgressObserver, Protocol):
 
     def add_cancellation_event(self, event: EventLike) -> None:
         """
-        Add cancellation event for graceful shutdown. 
+        Add cancellation event for graceful shutdown.
 
         Args:
-            
+
         """
         ...
 
