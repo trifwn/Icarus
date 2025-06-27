@@ -11,6 +11,7 @@ from dataclasses import field
 from datetime import timedelta
 from enum import Enum
 from enum import auto
+from multiprocessing.managers import SyncManager
 from typing import Any
 from typing import List
 from typing import Optional
@@ -18,8 +19,6 @@ from typing import TypeVar
 
 from .utils.concurrency import ConcurrencyPrimitives
 from .utils.concurrency import ConcurrencyType
-from .utils.concurrency import EventLike
-from .utils.concurrency import LockLike
 
 # ===== TYPE VARIABLES =====
 
@@ -82,57 +81,37 @@ class ExecutionMode(Enum):
         Initialize the enum member with concurrency primitives.
         """
         self.concurrency_type: ConcurrencyType | None = None
+        self._primitives: ConcurrencyPrimitives | None = None
+        self.mp_manager: Optional[SyncManager] = None
 
-    def get_primitives(self) -> ConcurrencyPrimitives:
+    def set_multiprocessing_manager(self, manager: SyncManager) -> None:
         """
-        Get the concurrency primitives for this execution mode.
+        Set the multiprocessing manager for this execution mode.
 
+        Args:
+            manager: A Manager instance to use for multiprocessing primitives.
+        """
+        if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
+            raise ValueError(f"Cannot set manager for non-multiprocessing mode: {self.value}")
+        self.mp_manager = manager
+        self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(manager)
+
+    @property
+    def primitives(self) -> ConcurrencyPrimitives:
+        """Get the concurrency primitives for this execution mode.
+        If not already set, initialize them based on the concurrency type.
         Returns:
             A ConcurrencyPrimitives object containing lock and event factories.
         """
-        if self.concurrency_type is None:
-            self.concurrency_type = ConcurrencyType(self.value)
+        if self._primitives is None:
+            if self.concurrency_type is None:
+                self.concurrency_type = ConcurrencyType(self.value)
 
-        primitives = ConcurrencyPrimitives.get_concurrency_primitives(self.concurrency_type)
-        return primitives
-
-    def create_lock(self) -> LockLike:
-        """
-        Create a lock appropriate for the current execution mode.
-
-        Returns:
-            A lock object (e.g., threading.Lock, asyncio.Lock, multiprocessing.Lock, DummyLock).
-        """
-        return self.get_primitives().lock()
-
-    def create_event(self) -> EventLike:
-        """
-        Create an event appropriate for the current execution mode.
-
-        Returns:
-            An event object (e.g., threading.Event, asyncio.Event, multiprocessing.Event, DummyEvent).
-        """
-        return self.get_primitives().event()
-
-    @classmethod
-    def validate(cls, value: str) -> "ExecutionMode":
-        """
-        Validate and return an ExecutionMode for the given value.
-
-        Args:
-            value: The string value to validate
-
-        Returns:
-            The corresponding ExecutionMode enum member
-
-        Raises:
-            ValueError: If the value is not a valid execution mode
-        """
-        try:
-            return cls(value)
-        except ValueError:
-            valid_modes = [mode.value for mode in cls]
-            raise ValueError(f"Invalid execution mode: {value}. Valid modes are: {valid_modes}")
+            if self.concurrency_type is ConcurrencyType.MULTIPROCESSING and self.mp_manager is not None:
+                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(self.mp_manager)
+            else:
+                self._primitives = ConcurrencyPrimitives.from_type(self.concurrency_type)
+        return self._primitives
 
 
 # ===== CORE DATA TYPES =====

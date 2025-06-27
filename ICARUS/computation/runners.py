@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
-import signal
 from typing import Any
 
-from ICARUS.computation.core import ConcurrencyPrimitives
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
@@ -13,7 +11,6 @@ from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.core.utils.concurrency import EventLike
 from ICARUS.computation.execution import AdaptiveExecutionEngine
 from ICARUS.computation.execution import AsyncExecutionEngine
 from ICARUS.computation.execution import BaseExecutionEngine
@@ -36,48 +33,26 @@ class SimulationRunner:
     ):
         self.execution_mode = execution_mode
         self.max_workers = max_workers or min(os.cpu_count() or 4, 8)
-        self.resource_manager = resource_manager or SimpleResourceManager()
-        self.enable_progress_monitoring = progress_monitor is not None
+
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Task management
         self._tasks: list[Task] = []
         self._task_graph: dict[TaskId, list[TaskId]] = {}
         self._execution_engines: dict[ExecutionMode, BaseExecutionEngine] = {
-            ExecutionMode.ASYNC: AsyncExecutionEngine(max_workers),
+            ExecutionMode.ASYNC: AsyncExecutionEngine(),
             ExecutionMode.SEQUENTIAL: SequentialExecutionEngine(),
-            ExecutionMode.THREADING: ThreadingExecutionEngine(max_workers),
-            ExecutionMode.MULTIPROCESSING: MultiprocessingExecutionEngine(max_workers),
-            ExecutionMode.ADAPTIVE: AdaptiveExecutionEngine(max_workers),
+            ExecutionMode.THREADING: ThreadingExecutionEngine(),
+            ExecutionMode.MULTIPROCESSING: MultiprocessingExecutionEngine(),
+            ExecutionMode.ADAPTIVE: AdaptiveExecutionEngine(),
         }
 
         # Progress monitoring
         self.progress_monitor: ProgressMonitor | None = progress_monitor
-        self.monitor_primatives: ConcurrencyPrimitives | None = None
+        self.resource_manager = resource_manager or SimpleResourceManager(execution_mode.primitives)
 
         # State management
-        self._running = False
-        self._cancelled = False
         self._results: list[TaskResult] = []
-
-        # Setup logging
-        if not self.logger.handlers:
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
-            self.logger.setLevel(logging.INFO)
-
-    def _setup_signal_handlers(self, event: EventLike) -> None:
-        """Setup signal handlers for clean shutdown on CTRL+C."""
-
-        def signal_handler(signum, frame):
-            self.logger.warning("\nShutdown signal received. Cleaning up...")
-            event.set()
-            self.cancel()
-
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
 
     def add_task(self, task: Task) -> None:
         """
@@ -109,43 +84,48 @@ class SimulationRunner:
         try:
             # Sort tasks by dependencies and priority
             sorted_tasks = self._resolve_dependencies()
+            # Get the ProgressReporter
+            reporter = Reporter(sorted_tasks)
+            monitor = self.progress_monitor
+            manager = self.resource_manager
+
+            # Get ProgressMonitor if enabled
+            if monitor:
+                # Add progress monitor as an observer to the reporter
+                reporter.add_observer(monitor)
+                monitor.set_tasks(sorted_tasks)
 
             # Get execution engine
             engine = self._execution_engines.get(self.execution_mode)
             if not engine:
                 raise ValueError(f"Unsupported execution mode: {self.execution_mode}")
 
-            if self.enable_progress_monitoring and self.progress_monitor:
-                # Setup signal handlers and progress monitoring
-                self.progress_monitor.set_tasks(sorted_tasks)
+            with engine(
+                tasks=sorted_tasks,
+                max_workers=self.max_workers,
+                progress_reporter=reporter,
+                progress_monitor=monitor,
+                resource_manager=manager,
+            ) as execution_engine:
+                if execution_engine.progress_monitor:
+                    await execution_engine._start_progress_monitoring()
 
-                cancellation_event = self.execution_mode.create_event()
+                # Execute tasks
+                self._results = await execution_engine.execute_tasks()
 
-                self._setup_signal_handlers(cancellation_event)
-                self.progress_monitor.add_cancellation_event(cancellation_event)
-
-                await engine._start_progress_monitoring(progress_monitor=self.progress_monitor)
-
-            reporter = Reporter(sorted_tasks)
-            if self.enable_progress_monitoring and self.progress_monitor:
-                # Add progress monitor as an observer to the reporter
-                reporter.add_observer(self.progress_monitor)
-
-            # Execute tasks
-            self._results = await engine.execute_tasks(sorted_tasks, reporter, self.resource_manager)
-
-            if self.enable_progress_monitoring and self.progress_monitor:
-                await engine._stop_progress_monitoring()
-            return self._results
+                if execution_engine.progress_monitor:
+                    await execution_engine._stop_progress_monitoring()
+                return self._results
 
         except Exception as e:
             self.logger.error(f"Execution failed: {e}")
-            raise
+            raise (e)
 
         finally:
-            self._running = False
-            if self.monitor_primatives:
-                self.monitor_primatives.event.set()  # Signal monitor to stop
+            # if monitor:
+            #     if monitor.stop_event:
+            #         if not monitor.stop_event.is_set():
+            #             monitor.stop_event.set()
             self.logger.info("Execution finished.")
 
     async def run_tasks(self, tasks: list[Task]) -> list[TaskResult]:
@@ -203,7 +183,6 @@ class SimulationRunner:
 
     def cancel(self) -> None:
         """Cancel all running tasks"""
-        self._cancelled = True
         for task in self._tasks:
             if task.state == TaskState.RUNNING:
                 task.state = TaskState.CANCELLED

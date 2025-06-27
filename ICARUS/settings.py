@@ -3,6 +3,23 @@ import os
 import platform
 
 PLATFORM = platform.system()
+
+if PLATFORM == "Windows":
+    # Check if context has been set
+    try:
+        if multiprocessing.get_start_method() != "spawn":
+            multiprocessing.set_start_method("spawn", force=True)
+    except RuntimeError:
+        print(f"Multiprocessing start method set to '{multiprocessing.get_start_method()}'.")
+        pass
+elif PLATFORM == "Linux":
+    try:
+        if multiprocessing.get_start_method() != "forkserver":
+            multiprocessing.set_start_method("forkserver", force=True)
+    except RuntimeError as e:
+        print(f"Multiprocessing start method set to '{multiprocessing.get_start_method()}'. Got error: {e}")
+        pass
+
 CPU_COUNT: int = multiprocessing.cpu_count()
 
 if CPU_COUNT > 2:
@@ -40,23 +57,12 @@ except ImportError:
 
 
 if PLATFORM == "Windows":
-    # Check if context has been set
-    try:
-        if multiprocessing.get_start_method() != "spawn":
-            multiprocessing.set_start_method("spawn")
-    except RuntimeError:
-        pass
     GenuVP3_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp3.exe")
     GenuVP7_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp7.exe")
     F2W_exe: str = os.path.join(INSTALL_DIR, "bin", "f2w.exe")
     Foil_Section_exe: str = os.path.join(INSTALL_DIR, "bin", "foil_section.exe")
     AVL_exe: str = os.path.join(INSTALL_DIR, "bin", "avl.exe")
 elif PLATFORM == "Linux":
-    try:
-        if multiprocessing.get_start_method() != "forkserver":
-            multiprocessing.set_start_method("forkserver")
-    except RuntimeError:
-        pass
     GenuVP3_exe = os.path.join(INSTALL_DIR, "bin", "gnvp3")
     GenuVP7_exe = os.path.join(INSTALL_DIR, "bin", "gnvp7")
     F2W_exe = os.path.join(INSTALL_DIR, "bin", "f2w")

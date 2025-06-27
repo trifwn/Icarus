@@ -16,9 +16,9 @@ def run_demo(config_name: str):
     demo_script = Path(__file__).parent / "fibonacci_demo.py"
 
     configs = {
-        "quick": ["--numbers"] + list(map(str, range(10, 16))) + ["--delay", "0.01"],
-        "standard": ["--numbers"] + list(map(str, range(8, 23))) + ["--delay", "0.015"],
-        "performance": ["--numbers"] + list(map(str, range(5, 31))) + ["--delay", "0.005"],
+        "quick": ["--numbers"] + list(map(str, range(10, 16))) + ["--delay", "0.05"],
+        "standard": ["--numbers"] + list(map(str, range(8, 23))) + ["--delay", "0.05"],
+        "performance": ["--numbers"] + list(map(str, range(5, 31))) + ["--delay", "0.05"],
         "sequential": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "sequential"],
         "async": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "async"],
         "threading": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "threading"],

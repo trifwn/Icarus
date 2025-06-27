@@ -10,7 +10,6 @@ from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
-from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
@@ -20,18 +19,23 @@ from .base_engine import BaseExecutionEngine
 class SequentialExecutionEngine(BaseExecutionEngine):
     """Sequential execution engine - executes tasks one by one"""
 
-    async def execute_tasks(
-        self,
-        tasks: list[Task],
-        progress_reporter: ProgressReporter,
-        resource_manager: ResourceManager | None = None,
-    ) -> list[TaskResult]:
+    execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL
+
+    def __enter__(self) -> BaseExecutionEngine:
+        """Context manager entry point to prepare execution context."""
+        return super().__enter__()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context manager exit point to clean up execution context."""
+        ...
+
+    async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks sequentially"""
-        self.logger.info(f"Starting sequential execution of {len(tasks)} tasks")
+        self.logger.info(f"Starting sequential execution of {len(self.tasks)} tasks")
         results = []
 
-        for task in tasks:
-            result = await self._execute_task_with_context(task, progress_reporter, resource_manager)
+        for task in self.tasks:
+            result = await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
             results.append(result)
 
         self.logger.info("Sequential execution completed")
@@ -40,7 +44,7 @@ class SequentialExecutionEngine(BaseExecutionEngine):
     async def _execute_task_with_context(
         self,
         task: Task,
-        progress_reporter: ProgressReporter,
+        progress_reporter: ProgressReporter | None,
         resource_manager: ResourceManager | None,
     ) -> TaskResult:
         """Execute a single task with full context management"""
@@ -82,7 +86,8 @@ class SequentialExecutionEngine(BaseExecutionEngine):
             )
 
             task.state = TaskState.COMPLETED
-            await progress_reporter.report_completion(task_result)
+            if progress_reporter:
+                progress_reporter.report_completion(task_result)
             return task_result
 
         except asyncio.TimeoutError:
@@ -94,7 +99,8 @@ class SequentialExecutionEngine(BaseExecutionEngine):
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
-            await progress_reporter.report_completion(task_result)
+            if progress_reporter:
+                progress_reporter.report_completion(task_result)
             return task_result
 
         except Exception as e:
@@ -105,7 +111,9 @@ class SequentialExecutionEngine(BaseExecutionEngine):
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
-            await progress_reporter.report_completion(task_result)
+
+            if progress_reporter:
+                progress_reporter.report_completion(task_result)
             return task_result
 
         finally:
@@ -113,18 +121,18 @@ class SequentialExecutionEngine(BaseExecutionEngine):
             await context.release_resources()
             await task.executor.cleanup()
 
-    async def _start_progress_monitoring(self, progress_monitor: ProgressMonitor) -> None:
+    async def _start_progress_monitoring(self) -> None:
         """Start the progress monitor in a separate thread if enabled."""
         # Create a queue for progress events (local & multiproc)
-        self.progress_monitor = progress_monitor
+        if self.progress_monitor:
 
-        def monitor_runner():
-            if self.progress_monitor:
-                with self.progress_monitor:
-                    asyncio.run(self.progress_monitor.monitor_loop())
+            def monitor_runner():
+                if self.progress_monitor:
+                    with self.progress_monitor:
+                        asyncio.run(self.progress_monitor.monitor_loop())
 
-        self.monitor_thread = Thread(target=monitor_runner, daemon=True)
-        self.monitor_thread.start()
+            self.monitor_thread = Thread(target=monitor_runner, daemon=True)
+            self.monitor_thread.start()
 
     async def _stop_progress_monitoring(self) -> None:
         """Stop the progress monitor if it is running."""
@@ -134,13 +142,3 @@ class SequentialExecutionEngine(BaseExecutionEngine):
                 self.logger.warning("Progress monitor thread did not stop gracefully")
         else:
             self.logger.debug("Progress monitor thread was not running")
-
-        # event_queue = mp.Queue()
-        # Initialize monitor with shared queue
-        # Store queue for engine usage if needed
-        # self.progress_queue = event_queue
-
-        # Only use a background thread for non-multiprocessing modes
-        # In multiprocessing, the main thread should handle the live display
-        # The monitor loop will be called directly in the main thread
-        # if self.execution_mode != ExecutionMode.MULTIPROCESSING:

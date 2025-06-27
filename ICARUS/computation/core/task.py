@@ -6,7 +6,8 @@ in the simulation framework.
 """
 
 from datetime import datetime
-from threading import Lock
+
+# from threading import Lock
 from typing import Generic
 from typing import List
 from typing import Optional
@@ -42,7 +43,7 @@ class Task(Generic[TaskInput, TaskOutput]):
     """
 
     _id_counter = 0
-    _id_lock = Lock()  # Lock to make the counter thread-safe
+    # _id_lock = Lock()  # Lock to make the counter thread-safe
 
     def __init__(
         self,
@@ -74,9 +75,9 @@ class Task(Generic[TaskInput, TaskOutput]):
         self._state_history: List[Tuple[TaskState, datetime]] = [(TaskState.PENDING, self.created_at)]
 
         # Assign a thread-safe numeric ID
-        with Task._id_lock:
-            Task._id_counter += 1
-            self.id_num = Task._id_counter
+        # with Task._id_lock:
+        Task._id_counter += 1
+        self.id_num = Task._id_counter
 
         # Progress tracking attributes
         self._progress = 0

@@ -9,7 +9,6 @@ from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
-from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
@@ -17,29 +16,35 @@ from .base_engine import BaseExecutionEngine
 
 
 class AsyncExecutionEngine(BaseExecutionEngine):
+    execution_mode: ExecutionMode = ExecutionMode.ASYNC
     """Async-based execution engine with progress integration"""
+
+    def __enter__(self) -> BaseExecutionEngine:
+        """Context manager entry point to prepare execution context."""
+        return super().__enter__()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context manager exit point to clean up execution context."""
+        ...
 
     async def execute_tasks(
         self,
-        tasks: list[Task],
-        progress_reporter: ProgressReporter,
-        resource_manager: ResourceManager | None = None,
     ) -> list[TaskResult]:
         """Execute tasks concurrently using asyncio"""
-        self.logger.info(f"Starting async execution of {len(tasks)} tasks with max_workers={self.max_workers}")
+        self.logger.info(f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
         semaphore = asyncio.Semaphore(self.max_workers or 10)
 
         async def execute_single_task(task: Task) -> TaskResult:
             async with semaphore:
-                return await self._execute_task_with_context(task, progress_reporter, resource_manager)
+                return await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
 
-        results = await asyncio.gather(*[execute_single_task(task) for task in tasks], return_exceptions=True)
+        results = await asyncio.gather(*[execute_single_task(task) for task in self.tasks], return_exceptions=True)
 
         # Convert exceptions to failed results
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                task = tasks[i]
+                task = self.tasks[i]
                 processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
             else:
                 processed_results.append(result)
@@ -50,7 +55,7 @@ class AsyncExecutionEngine(BaseExecutionEngine):
     async def _execute_task_with_context(
         self,
         task: Task,
-        progress_reporter: ProgressReporter,
+        progress_reporter: ProgressReporter | None,
         resource_manager: ResourceManager | None,
     ) -> TaskResult:
         """Execute a single task with full context management"""
@@ -93,7 +98,8 @@ class AsyncExecutionEngine(BaseExecutionEngine):
             )
 
             task.state = TaskState.COMPLETED
-            await progress_reporter.report_completion(task_result)
+            if progress_reporter:
+                progress_reporter.report_completion(task_result)
             return task_result
 
         except asyncio.TimeoutError:
@@ -105,7 +111,8 @@ class AsyncExecutionEngine(BaseExecutionEngine):
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
-            await progress_reporter.report_completion(task_result)
+            if progress_reporter:
+                progress_reporter.report_completion(task_result)
             return task_result
 
         except Exception as e:
@@ -116,7 +123,8 @@ class AsyncExecutionEngine(BaseExecutionEngine):
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
-            await progress_reporter.report_completion(task_result)
+            if progress_reporter:
+                progress_reporter.report_completion(task_result)
             return task_result
 
         finally:
@@ -124,18 +132,21 @@ class AsyncExecutionEngine(BaseExecutionEngine):
             await context.release_resources()
             await task.executor.cleanup()
 
-    async def _start_progress_monitoring(self, progress_monitor: ProgressMonitor) -> None:
+    async def _start_progress_monitoring(self) -> None:
         """Start the progress monitor in an asyncio task if enabled."""
+        if self.progress_monitor:
+            self.logger.debug("Starting progress monitoring")
 
-        async def monitor_runner():
-            if progress_monitor:
-                with progress_monitor:
-                    await progress_monitor.monitor_loop()
+            async def monitor_runner():
+                if self.progress_monitor:
+                    with self.progress_monitor:
+                        await self.progress_monitor.monitor_loop()
 
-        self.monitor_task = asyncio.create_task(monitor_runner())
+            self.monitor_task = asyncio.create_task(monitor_runner())
 
     async def _stop_progress_monitoring(self) -> None:
         """Stop the progress monitor if it is running."""
+        self.logger.debug("Stopping progress monitoring")
         if self.monitor_task and not self.monitor_task.done():
             self.monitor_task.cancel()
             try:

@@ -72,12 +72,10 @@ class ExecutionContext:
         self.start_time = datetime.now()
 
         # Get concurrency primitives appropriate for the execution mode
-        self.cancellation_token = execution_mode.create_event()
-
         self._resources: Dict[str, Any] = {}
         self._metadata: Dict[str, Any] = {}
 
-    async def report_progress(self, current: int, total: int, message: str = "", name: str = "") -> None:
+    def report_progress(self, current: int, total: int, message: str = "", name: str = "") -> None:
         """
         Report progress if a reporter is available.
 
@@ -95,7 +93,7 @@ class ExecutionContext:
                 total_steps=total,
                 message=message,
             )
-            await self.progress_reporter.report_progress(progress)
+            self.progress_reporter.report_progress(progress)
 
     async def acquire_resources(self) -> None:
         """
@@ -121,23 +119,3 @@ class ExecutionContext:
             await self.resource_manager.release_resources(self._resources)
             self._resources.clear()
             self.logger.info("Successfully released resources.")
-
-    @property
-    def is_cancelled(self) -> bool:
-        """
-        Check if task was cancelled.
-
-        Returns:
-            True if the task has been cancelled.
-        """
-        return self.cancellation_token.is_set()
-
-    def cancel(self) -> None:
-        """
-        Cancel the task.
-
-        Sets the cancellation token to signal that the task
-        should stop execution as soon as possible.
-        """
-        self.logger.warning("Cancellation requested for task.")
-        self.cancellation_token.set()

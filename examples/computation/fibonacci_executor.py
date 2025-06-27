@@ -6,8 +6,6 @@ with progress reporting, showcasing the simulation framework capabilities.
 """
 
 import asyncio
-import multiprocessing
-from typing import Any
 from typing import Tuple
 
 from ICARUS.computation.core.context import ExecutionContext
@@ -35,20 +33,6 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
         """
         self.delay_per_step = delay_per_step
         self.max_number = max_number
-        self._lock = multiprocessing.Lock()
-
-    def __getstate__(self) -> dict[str, Any]:
-        """Make the executor pickle-compatible for multiprocessing."""
-        return {
-            "delay_per_step": self.delay_per_step,
-            "max_number": self.max_number,
-        }
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        """Restore state from pickle."""
-        self.delay_per_step = state["delay_per_step"]
-        self.max_number = state["max_number"]
-        self._lock = multiprocessing.Lock()
 
     async def execute(self, n: int, context: ExecutionContext) -> Tuple[int, int]:
         """
@@ -70,10 +54,10 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
 
         # Handle edge cases
         if n <= 0:
-            await context.report_progress(1, 1, "Completed: F(0) = 0")
+            context.report_progress(1, 1, "Completed: F(0) = 0")
             return (n, 0)
         elif n == 1:
-            await context.report_progress(1, 1, "Completed: F(1) = 1")
+            context.report_progress(1, 1, "Completed: F(1) = 1")
             return (n, 1)
 
         # Initialize for iterative calculation
@@ -81,7 +65,7 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
         total_steps = n
 
         # Report initial progress
-        await context.report_progress(1, total_steps, f"Starting F({n}) calculation...")
+        context.report_progress(1, total_steps, f"Starting F({n}) calculation...")
 
         # Use time.sleep instead of asyncio.sleep for multiprocessing compatibility
         if self.delay_per_step > 0:
@@ -91,26 +75,23 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
 
         # Iterative Fibonacci calculation with progress reporting
         for i in range(2, n + 1):
-            # Check for cancellation
-            if context.is_cancelled:
-                raise asyncio.CancelledError(f"Fibonacci calculation cancelled at step {i}")
-
             # Calculate next Fibonacci number
             a, b = b, a + b
 
             # Report progress every few steps or at key milestones
             if i % max(1, n // 20) == 0 or i == n:
                 percentage = (i / n) * 100
-                await context.report_progress(i, n, f"F({i}) = {b:,} ({percentage:.1f}%)")
+                context.report_progress(i, n, f"F({i}) = {b:,} ({percentage:.1f}%)")
 
             # Add artificial delay for demo visualization
             if self.delay_per_step > 0:
                 import time
 
                 time.sleep(self.delay_per_step)
+                await asyncio.sleep(0)  # Yield control to event loop
 
         # Final progress report
-        await context.report_progress(n, n, f"Completed: F({n}) = {b:,}")
+        context.report_progress(n, n, f"Completed: F({n}) = {b:,}")
 
         return (n, b)
 
@@ -135,22 +116,12 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
 
         return True
 
-    async def cancel(self, task_id: str) -> None:
+    async def cancel(self) -> None:
         """
-        Cancel a running task.
-
-        Args:
-            task_id: ID of the task to cancel
+        Handle cancellation of the Fibonacci calculation.
+        This method can be used to clean up resources or state if needed.
         """
-        # For this simple executor, cancellation is handled through the context
-        # The execute method checks context.is_cancelled
         pass
 
     async def cleanup(self) -> None:
-        """
-        Perform cleanup after task execution.
-
-        For this simple executor, no cleanup is needed, but this method
-        demonstrates the protocol requirement.
-        """
         pass

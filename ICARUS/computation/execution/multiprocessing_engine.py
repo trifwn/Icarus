@@ -3,17 +3,16 @@ from __future__ import annotations
 import asyncio
 import logging
 import multiprocessing as mp
+import threading
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
-from functools import partial
+from typing import Any
 
 from ICARUS.computation.core import ExecutionContext
-from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import BaseExecutionEngine
@@ -22,38 +21,39 @@ from .base_engine import BaseExecutionEngine
 class MultiprocessingExecutionEngine(BaseExecutionEngine):
     """Multiprocessing-based execution engine using ProcessPoolExecutor"""
 
-    async def execute_tasks(
-        self,
-        tasks: list[Task],
-        progress_reporter: ProgressReporter | None = None,
-        resource_manager: ResourceManager | None = None,
-    ) -> list[TaskResult]:
+    execution_mode: ExecutionMode = ExecutionMode.MULTIPROCESSING
+
+    def __enter__(self) -> BaseExecutionEngine:
+        """Context manager entry point to prepare execution context."""
+        self.logger.info(f"Entering engine: {self.__class__.__name__}")
+        concurrent_vars_req = self.request_concurrent_vars()
+        self.execution_mode.set_multiprocessing_manager(mp.Manager())
+        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(concurrent_vars_req)
+        self.set_concurrent_vars(concurent_vars)
+        return self
+
+    async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks using process pool"""
         self.logger.info(
-            f"Starting multiprocessing execution of {len(tasks)} tasks with max_workers={self.max_workers}",
+            f"Starting multiprocessing execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
         )
-
-        max_workers = self.max_workers or min(mp.cpu_count(), len(tasks) or 1)
-
-        # Use the shared event_queue from the monitor (if provided)
-        # progress_queue = getattr(progress_reporter, "event_queue", None) if progress_reporter else None
+        max_workers = self.max_workers or min(mp.cpu_count(), len(self.tasks) or 1)
 
         # Execute in process pool
-        loop = asyncio.get_event_loop()
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            execute_func = partial(
-                _execute_task_in_process,
-                progress_reporter=progress_reporter,
-                resource_manager=resource_manager,
-            )
-            futures = [loop.run_in_executor(executor, execute_func, task) for task in tasks]
-            results = await asyncio.gather(*futures, return_exceptions=True)
+        with ProcessPoolExecutor(
+            max_workers=max_workers,
+            initializer=MultiprocessingExecutionEngine.set_concurrent_vars,
+            initargs=(
+                self,
+                self.concurrent_variables if self.concurrent_variables else {},
+            ),
+        ) as executor:
+            results = executor.map(self._execute_task, self.tasks)
 
         # Convert exceptions to failed results
         processed_results = []
-        for i, result in enumerate(results):
+        for i, (task, result) in enumerate(zip(self.tasks, results)):
             if isinstance(result, Exception):
-                task = tasks[i]
                 processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
             else:
                 processed_results.append(result)
@@ -61,123 +61,125 @@ class MultiprocessingExecutionEngine(BaseExecutionEngine):
         self.logger.info("Multiprocessing execution completed")
         return processed_results
 
-    async def _start_progress_monitoring(self, progress_monitor: ProgressMonitor) -> None:
+    async def _start_progress_monitoring(self) -> None:
         """Start the progress monitor in a separate process if enabled."""
-        queue = mp.Queue()
-        self.progress_monitor = progress_monitor
-        progress_monitor.set_event_queue(queue)
+        if self.progress_monitor:
 
-        # Spawn the monitor Process Thread on the main process
-        self.monitor_process = mp.Process(
-            target=progress_monitor.monitor_loop,
-            name="ProgressMonitor",
-            args=(queue,),
-        )
+            def monitor_runner():
+                if self.progress_monitor:
+                    with self.progress_monitor:
+                        asyncio.run(self.progress_monitor.monitor_loop())
+
+            self.monitor_thread = threading.Thread(target=monitor_runner, daemon=True)
+            self.monitor_thread.start()
 
     async def _stop_progress_monitoring(self) -> None:
         """Stop the progress monitor if it is running."""
-        if self.monitor_process and self.monitor_process.is_alive():
+        if self.terminate_event:
+            self.terminate_event.set()
+        if self.monitor_thread and self.monitor_thread.is_alive():
             try:
-                # Send sentinel value to stop
-                self.progress_monitor.event_queue.put("STOP")
-                self.monitor_process.join(timeout=2)
-                if self.monitor_process.is_alive():
-                    self.monitor_process.terminate()
+                self.monitor_thread.join(timeout=1)
+                if self.monitor_thread.is_alive():
                     self.logger.warning("Progress monitor process did not stop gracefully")
             except Exception as e:
                 self.logger.error(f"Error stopping monitor process: {e}")
         else:
             self.logger.debug("Progress monitor process was not running")
 
+    def __getstate__(self) -> dict[str, Any]:
+        """Custom serialization to avoid issues with multiprocessing."""
+        state = self.__dict__.copy()
+        state.pop("monitor_thread", None)
+        return state
 
-def _execute_task_in_process(
-    task: Task,
-    progress_reporter: ProgressReporter | None,
-    resource_manager: ResourceManager | None,
-) -> TaskResult:
-    """
-    Execute a single task in a separate process.
-    This function needs to be at module level for multiprocessing to work.
-    """
-    # Create new event loop for this process
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Custom deserialization to restore state."""
+        self.__dict__.update(state)
+        self.monitor_thread = None
 
-    try:
-        context = ExecutionContext(
-            task_id=task.id,
-            config=task.config,
-            execution_mode=ExecutionMode.MULTIPROCESSING,
-            progress_reporter=progress_reporter,
-            resource_manager=resource_manager,
-            logger=logging.getLogger(f"task.{task.name}"),
-        )
+    def _execute_task(
+        self,
+        task: Task,
+    ) -> TaskResult:
+        """
+        Execute a single task in a separate process.
+        This function needs to be at module level for multiprocessing to work.
+        """
+        # Create new event loop for this process
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-        start_time = datetime.now()
-        task.state = TaskState.RUNNING
+        try:
+            context = ExecutionContext(
+                task_id=task.id,
+                config=task.config,
+                execution_mode=ExecutionMode.MULTIPROCESSING,
+                progress_reporter=self.progress_reporter,
+                resource_manager=self.resource_manager,
+                logger=logging.getLogger(f"task.{task.name}"),
+            )
 
-        async def execute():
-            try:
-                # Acquire resources
-                await context.acquire_resources()
+            start_time = datetime.now()
+            task.state = TaskState.RUNNING
 
-                # Validate input
-                if not await task.executor.validate_input(task.input):
-                    raise ValueError("Task input validation failed")
+            async def execute():
+                try:
+                    # Acquire resources
+                    await context.acquire_resources()
 
-                # Execute with timeout
-                if task.config.timeout:
-                    result = await asyncio.wait_for(
-                        task.executor.execute(task.input, context),
-                        timeout=task.config.timeout.total_seconds(),
+                    # Validate input
+                    if not await task.executor.validate_input(task.input):
+                        raise ValueError("Task input validation failed")
+
+                    # Execute with timeout
+                    if task.config.timeout:
+                        result = await asyncio.wait_for(
+                            task.executor.execute(task.input, context),
+                            timeout=task.config.timeout.total_seconds(),
+                        )
+                    else:
+                        result = await task.executor.execute(task.input, context)
+
+                    # Create successful result
+                    task_result = TaskResult(
+                        task_id=task.id,
+                        state=TaskState.COMPLETED,
+                        output=result,
+                        execution_time=datetime.now() - start_time,
                     )
-                else:
-                    result = await task.executor.execute(task.input, context)
 
-                # Create successful result
-                task_result = TaskResult(
-                    task_id=task.id,
-                    state=TaskState.COMPLETED,
-                    output=result,
-                    execution_time=datetime.now() - start_time,
-                )
+                    task.state = TaskState.COMPLETED
+                    if context.progress_reporter is not None:
+                        context.progress_reporter.report_completion(task_result)
+                    return task_result
 
-                task.state = TaskState.COMPLETED
-                if context.progress_reporter is not None:
-                    await context.progress_reporter.report_completion(task_result)
-                return task_result
+                except Exception as e:
+                    task_result = TaskResult(
+                        task_id=task.id,
+                        state=TaskState.FAILED,
+                        error=e,
+                        execution_time=datetime.now() - start_time,
+                    )
+                    task.state = TaskState.FAILED
+                    if context.progress_reporter is not None:
+                        context.progress_reporter.report_completion(task_result)
+                    return task_result
 
-            except asyncio.TimeoutError:
-                error = Exception(f"Task timed out after {task.config.timeout}")
-                task_result = TaskResult(
-                    task_id=task.id,
-                    state=TaskState.FAILED,
-                    error=error,
-                    execution_time=datetime.now() - start_time,
-                )
-                task.state = TaskState.FAILED
-                if context.progress_reporter is not None:
-                    await context.progress_reporter.report_completion(task_result)
-                return task_result
+                finally:
+                    # Always clean up resources
+                    await context.release_resources()
+                    await task.executor.cleanup()
 
-            except Exception as e:
-                task_result = TaskResult(
-                    task_id=task.id,
-                    state=TaskState.FAILED,
-                    error=e,
-                    execution_time=datetime.now() - start_time,
-                )
-                task.state = TaskState.FAILED
-                if context.progress_reporter is not None:
-                    await context.progress_reporter.report_completion(task_result)
-                return task_result
+            return loop.run_until_complete(execute())
 
-            finally:
-                # Always clean up resources
-                await context.release_resources()
-                await task.executor.cleanup()
+        finally:
+            loop.close()
 
-        return loop.run_until_complete(execute())
 
-    finally:
-        loop.close()
+def run_monitor_loop(pm: ProgressMonitor) -> None:
+    """Run the monitor loop in a separate process."""
+    try:
+        asyncio.run(pm.monitor_loop())
+    except Exception as e:
+        logging.error(f"Error in progress monitor loop: {e}")

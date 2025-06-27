@@ -14,7 +14,10 @@ from typing import Protocol
 from typing import Sequence
 from typing import runtime_checkable
 
+from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
+from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
 from ICARUS.computation.core.utils.concurrency import EventLike
+from ICARUS.computation.core.utils.concurrency import QueueLike
 
 from .types import TaskInput
 from .types import TaskOutput
@@ -65,6 +68,34 @@ class SerializableMixin:
 
 
 @runtime_checkable
+class ConcurrentMixin(Protocol):
+    """
+    Mixin class for concurrent objects.
+
+    Provides a standard interface for objects that can share computer resources
+    and run concurrently.
+    """
+
+    def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
+        """
+        Request the concurrent variables needed by the object.
+
+        This method should be called before using any concurrent features
+        to ensure that the necessary resources are available.
+        """
+        ...
+
+    def set_concurrent_vars(self, vars: dict[str, ConcurrentVariable]) -> None:
+        """
+        Set the concurrent variables for the object.
+
+        Args:
+            vars: A dictionary containing the concurrent variables (e.g., locks, events, queues)
+        """
+        ...
+
+
+@runtime_checkable
 class TaskExecutor(Protocol, Generic[TaskInput, TaskOutput]):
     """
     Protocol defining the task execution interface.
@@ -109,7 +140,8 @@ class TaskExecutor(Protocol, Generic[TaskInput, TaskOutput]):
 
 
 @runtime_checkable
-class ProgressReporter(Protocol):
+class ProgressReporter(ConcurrentMixin, Protocol):
+    event_queue: QueueLike
     """
     Protocol for progress reporting.
 
@@ -117,7 +149,7 @@ class ProgressReporter(Protocol):
     progress updates from running tasks.
     """
 
-    async def report_progress(self, progress: ProgressEvent) -> None:
+    def report_progress(self, progress: ProgressEvent) -> None:
         """
         Report a progress update for a task.
 
@@ -126,7 +158,7 @@ class ProgressReporter(Protocol):
         """
         ...
 
-    async def report_completion(self, result: TaskResult) -> None:
+    def report_completion(self, result: TaskResult) -> None:
         """
         Report the completion of a task.
 
@@ -136,7 +168,8 @@ class ProgressReporter(Protocol):
         ...
 
 
-class ProgressObserver(Protocol):
+@runtime_checkable
+class ProgressObserver(ConcurrentMixin, Protocol):
     """
     Protocol for observing progress updates.
 
@@ -144,7 +177,7 @@ class ProgressObserver(Protocol):
     progress updates from tasks.
     """
 
-    async def on_progress_update(self, progress: ProgressEvent) -> None:
+    def on_progress_update(self, progress: ProgressEvent) -> None:
         """
         Handle a progress update event.
 
@@ -153,7 +186,7 @@ class ProgressObserver(Protocol):
         """
         ...
 
-    async def on_task_completion(self, result: TaskResult) -> None:
+    def on_task_completion(self, result: TaskResult) -> None:
         """
         Handle task completion event.
 
@@ -171,6 +204,9 @@ class ProgressMonitor(ProgressObserver, Protocol):
     Defines the interface for components that create, update,
     and finalize progress visualization or reporting.
     """
+
+    event_queue: QueueLike
+    termination_event: EventLike
 
     def __enter__(self) -> ProgressMonitor:
         """Enter the monitoring context (e.g., initialize bars)."""
@@ -190,24 +226,6 @@ class ProgressMonitor(ProgressObserver, Protocol):
 
         Args:
             tasks: A list of tasks to monitor.
-        """
-        ...
-
-    def add_cancellation_event(self, event: EventLike) -> None:
-        """
-        Add cancellation event for graceful shutdown.
-
-        Args:
-
-        """
-        ...
-
-    def set_event_queue(self, queue: Any) -> None:
-        """
-        Set the event queue for inter-process communication.
-
-        Args:
-            queue: The queue to use for event communication.
         """
         ...
 

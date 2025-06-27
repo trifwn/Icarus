@@ -45,14 +45,13 @@ from ICARUS.computation.runners import SimulationRunner
 class FibonacciDemo:
     """Demo class that orchestrates Fibonacci calculations across different execution modes."""
 
-    def __init__(self, numbers: list[int] | None = None, delay_per_step: float = 0.02):
+    def __init__(self, numbers: list[int] | None = None, delay_per_step: float = 0.2):
         """Initialize the demo."""
         self.numbers = numbers or list(range(8, 23))  # F(8) through F(22) for good visualization
         self.delay_per_step = delay_per_step
         self.results: dict[str, dict[str, Any]] = {}
 
         # Configure logging
-        logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         self.logger = logging.getLogger("FibonacciDemo")
 
     def create_tasks(self) -> list[Task]:
@@ -104,7 +103,7 @@ class FibonacciDemo:
         runner = SimulationRunner(
             execution_mode=config.execution_mode,
             max_workers=config.max_workers,
-            progress_monitor=RichProgressMonitor() if config.enable_progress_monitoring else None,
+            progress_monitor=RichProgressMonitor(1.0) if config.enable_progress_monitoring else None,
         )
 
         # Create tasks
@@ -127,6 +126,10 @@ class FibonacciDemo:
             for result in results:
                 if isinstance(result, Exception):
                     self.logger.error(f"Task execution failed with exception: {result}")
+                    import traceback
+
+                    traceback.print_exc()
+
                 if isinstance(result, TaskResult) and result.state == TaskState.FAILED:
                     self.logger.error(f"Task {result.task_id} failed with error: {result.error}")
                     if result.error:
@@ -181,6 +184,9 @@ class FibonacciDemo:
         except Exception as e:
             execution_time = time.time() - start_time
             print(f"❌ Execution failed: {e}")
+            import traceback
+
+            traceback.print_exc()
 
             for result in results:
                 if isinstance(result, Exception):
@@ -239,6 +245,7 @@ class FibonacciDemo:
 
 async def main():
     """Main demo function."""
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     parser = argparse.ArgumentParser(description="Fibonacci Simulation Framework Demo")
     parser.add_argument(
         "--numbers",
@@ -250,7 +257,7 @@ async def main():
     parser.add_argument(
         "--delay",
         type=float,
-        default=0.015,
+        default=0.1,
         help="Delay per calculation step in seconds (default: 0.015)",
     )
     parser.add_argument(
