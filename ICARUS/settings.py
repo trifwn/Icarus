@@ -1,7 +1,7 @@
+import logging
 import multiprocessing
 import os
 import platform
-import logging
 
 # Set up logging
 logging.basicConfig(

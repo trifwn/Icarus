@@ -6,6 +6,7 @@ with progress reporting, showcasing the simulation framework capabilities.
 """
 
 import asyncio
+
 from ICARUS.computation.core.context import ExecutionContext
 from ICARUS.computation.core.protocols import TaskExecutorProtocol
 

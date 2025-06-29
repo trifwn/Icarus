@@ -41,9 +41,6 @@ isort:skip_file
 """
 
 from . import core
-
-from .monitors.progress import RichProgressMonitor
-
 from .engines import (
     create_execution_engine,
     AbstractEngine,
@@ -55,10 +52,10 @@ from .engines import (
 )
 
 from .resources.manager import SimpleResourceManager
-
-from .runners import SimulationRunner
+from .monitors.rich_progress import RichProgressMonitor
 from .observers import ConsoleProgressObserver
 from .reporters import Reporter
+from .runners import SimulationRunner
 
 
 from . import analyses

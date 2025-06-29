@@ -10,9 +10,10 @@ from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from . import create_execution_engine
+
 from . import Reporter
 from . import SimpleResourceManager
+from . import create_execution_engine
 
 
 class SimulationRunner:
@@ -109,10 +110,6 @@ class SimulationRunner:
             raise (e)
 
         finally:
-            # if monitor:
-            #     if monitor.stop_event:
-            #         if not monitor.stop_event.is_set():
-            #             monitor.stop_event.set()
             self.logger.info("Execution finished.")
 
     async def run_tasks(self, tasks: list[Task]) -> list[TaskResult]:

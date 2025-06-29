@@ -9,7 +9,9 @@ from datetime import datetime
 
 # from threading import Lock
 from threading import Lock
-from typing import Any, Callable, Generic
+from typing import Any
+from typing import Callable
+from typing import Generic
 from typing import List
 from typing import Optional
 from typing import Tuple

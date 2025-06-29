@@ -42,7 +42,7 @@ class TaskState(Enum):
     CANCELLED = auto()
     RETRYING = auto()
 
-    def can_transition_to(self, new_state: 'TaskState') -> bool:
+    def can_transition_to(self, new_state: "TaskState") -> bool:
         """Check if transition to new_state is valid."""
         valid_transitions = {
             TaskState.PENDING: {TaskState.QUEUED, TaskState.CANCELLED},
