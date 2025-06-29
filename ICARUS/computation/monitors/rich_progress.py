@@ -23,6 +23,7 @@ from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
 from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
 from ICARUS.computation.core.utils.concurrency import EventLike
 from ICARUS.computation.core.utils.concurrency import QueueLike
+from ICARUS.settings import ICARUS_CONSOLE
 
 
 class RichProgressMonitor(ProgressMonitor):
@@ -101,6 +102,7 @@ class RichProgressMonitor(ProgressMonitor):
 
     def __enter__(self):
         """Context manager entry - create progress bars."""
+        self.logger.debug("Entering RichProgressMonitor context")
         self.progress = Progress(
             TextColumn("{task.description}", justify="left", style="cyan"),
             SpinnerColumn(),
@@ -127,7 +129,15 @@ class RichProgressMonitor(ProgressMonitor):
             Panel(self.overall_progress, title="Overall Progress", border_style="green", padding=(1, 2), expand=True),
             Panel(self.progress, title="[b]Jobs", border_style="red", padding=(1, 2), expand=True),
         )
-        self.live = Live(self.progress_table, refresh_per_second=10, screen=False, auto_refresh=True, transient=True)
+        self.live = Live(
+            self.progress_table,
+            console=ICARUS_CONSOLE,
+            refresh_per_second=4,
+            screen=False,
+            auto_refresh=True,
+            transient=True,
+        )
+
         self.live.__enter__()
         return self
 
@@ -162,7 +172,6 @@ class RichProgressMonitor(ProgressMonitor):
         """Applies a ProgressUpdate to its corresponding progress bar."""
         if update.task_id is None:
             return
-
         # Ensure update.task_id is the correct type (TaskId)
         task = next((t for t in self.tasks if t.id == update.task_id), None)
         if not task or task.id_num not in self.task_id_map:
@@ -184,8 +193,6 @@ class RichProgressMonitor(ProgressMonitor):
         total_steps = sum(self.progress.tasks[tid].total for tid in self.task_id_map.values())
         if self.overall_task is not None:
             self.overall_progress.update(self.overall_task, completed=total_completed, total=total_steps)
-
-        # all_completed = all(task.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED] for task in self.tasks)
 
     async def monitor_loop(self):
         """Main monitoring loop, polls each task's probe."""

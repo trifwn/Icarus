@@ -2,11 +2,58 @@ import logging
 import multiprocessing
 import os
 import platform
+from rich.console import Console
+import sys
+import builtins
+from rich.logging import RichHandler
+
+# Detect if running in a Jupyter Notebook environment
+try:
+    from IPython.core.getipython import get_ipython
+    if get_ipython() is not None:
+        IN_JUPYTER = True
+    else:
+        IN_JUPYTER = False
+except ImportError:
+    IN_JUPYTER = False
+
+ICARUS_THEME = "solarized-dark"
+
+# If running in Jupyter, set the console to use Rich's Jupyter console
+if IN_JUPYTER:
+    ICARUS_CONSOLE = Console(
+        file=sys.stdout,
+        force_jupyter=True,
+        theme ="solarized-dark",
+        # soft_wrap=True,
+    )
+
+else:
+    # Rich Console for logging and output
+    ICARUS_CONSOLE = Console(
+        file=sys.stdout,
+        force_terminal=True,
+        theme = "solarized-dark",
+        # soft_wrap=True,
+        # highlight=False,  # Disable syntax highlighting for better performance in large outputs
+    )
+
+# Make console the default stream for print and logging
+builtins.print = ICARUS_CONSOLE.print
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(name)s - %(message)s",
+    handlers=[
+        RichHandler(
+            console=ICARUS_CONSOLE,
+            rich_tracebacks=True,
+            show_level=True,
+            show_time=True,
+            show_path=True,
+        )
+    ],
 )
 logging.getLogger("asyncio").setLevel(logging.WARNING)
 logger = logging.getLogger("ICARUS")
