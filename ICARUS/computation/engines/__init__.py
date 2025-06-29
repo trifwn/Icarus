@@ -7,20 +7,20 @@ isort: skip-file
 
 from __future__ import annotations
 
-from .adaptive_engine import AdaptiveExecutionEngine
-from .async_engine import AsyncExecutionEngine
-from .base_engine import AbstractExecutionEngine
+from .adaptive_engine import AdaptiveEngine
+from .async_engine import AsyncEngine
+from .base_engine import AbstractEngine
 from .engine_creator import create_execution_engine
-from .multiprocessing_engine import MultiprocessingExecutionEngine
+from .multiprocessing_engine import MultiprocessingEngine
 from .sequential_engine import SequentialExecutionEngine
-from .threading_engine import ThreadingExecutionEngine
+from .threading_engine import ThreadingEngine
 
 __all__ = [
-    "AbstractExecutionEngine",
-    "AsyncExecutionEngine",
-    "MultiprocessingExecutionEngine",
+    "AbstractEngine",
+    "AsyncEngine",
+    "MultiprocessingEngine",
     "SequentialExecutionEngine",
-    "ThreadingExecutionEngine",
-    "AdaptiveExecutionEngine",
+    "ThreadingEngine",
+    "AdaptiveEngine",
     "create_execution_engine",
 ]

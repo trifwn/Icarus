@@ -4,19 +4,19 @@ from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 
-from .async_engine import AsyncExecutionEngine
-from .base_engine import AbstractExecutionEngine
-from .multiprocessing_engine import MultiprocessingExecutionEngine
+from .async_engine import AsyncEngine
+from .base_engine import AbstractEngine
+from .multiprocessing_engine import MultiprocessingEngine
 from .sequential_engine import SequentialExecutionEngine
-from .threading_engine import ThreadingExecutionEngine
+from .threading_engine import ThreadingEngine
 
 
-class AdaptiveExecutionEngine(AbstractExecutionEngine):
+class AdaptiveEngine(AbstractEngine):
     """
     Adaptive execution engine that chooses the best strategy based on task characteristics
     """
 
-    def __enter__(self) -> AbstractExecutionEngine:
+    def __enter__(self) -> AbstractEngine:
         """Context manager entry point to prepare execution context."""
         ...
 
@@ -27,11 +27,11 @@ class AdaptiveExecutionEngine(AbstractExecutionEngine):
     def __init__(self):
         super().__init__()
         self.current_execution_mode: ExecutionMode | None = None
-        self.engines: dict[ExecutionMode, AbstractExecutionEngine] = {
+        self.engines: dict[ExecutionMode, AbstractEngine] = {
             ExecutionMode.SEQUENTIAL: SequentialExecutionEngine(),
-            ExecutionMode.ASYNC: AsyncExecutionEngine(),
-            ExecutionMode.THREADING: ThreadingExecutionEngine(),
-            ExecutionMode.MULTIPROCESSING: MultiprocessingExecutionEngine(),
+            ExecutionMode.ASYNC: AsyncEngine(),
+            ExecutionMode.THREADING: ThreadingEngine(),
+            ExecutionMode.MULTIPROCESSING: MultiprocessingEngine(),
         }
 
     @property

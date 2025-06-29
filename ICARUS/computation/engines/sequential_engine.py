@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from threading import Thread
 
@@ -14,15 +13,15 @@ from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
-from .base_engine import AbstractExecutionEngine
+from .base_engine import AbstractEngine
 
 
-class ThreadingExecutionEngine(AbstractExecutionEngine):
-    """Threading-based execution engine using ThreadPoolExecutor"""
+class SequentialExecutionEngine(AbstractEngine):
+    """Sequential execution engine - executes tasks one by one"""
 
-    execution_mode: ExecutionMode = ExecutionMode.THREADING
+    execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL
 
-    def __enter__(self) -> AbstractExecutionEngine:
+    def __enter__(self) -> AbstractEngine:
         """Context manager entry point to prepare execution context."""
         return super().__enter__()
 
@@ -31,45 +30,16 @@ class ThreadingExecutionEngine(AbstractExecutionEngine):
         ...
 
     async def execute_tasks(self) -> list[TaskResult]:
-        """Execute tasks using thread pool"""
-        self.logger.info(f"Starting threading execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
-        # Prepare execution-specific resources (e.g., locks)
-        if not self.tasks:
-            self.logger.warning("No tasks provided for threading execution")
-            return []
+        """Execute tasks sequentially"""
+        self.logger.info(f"Starting sequential execution of {len(self.tasks)} tasks")
+        results = []
 
-        max_workers = self.max_workers or min(32, (len(self.tasks) or 1) + 4)
+        for task in self.tasks:
+            result = await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
+            results.append(result)
 
-        def sync_execute_task(task: Task) -> TaskResult:
-            """Synchronous wrapper for task execution"""
-            # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                # include exec_ctx into context
-                return loop.run_until_complete(
-                    self._execute_task_with_context(task, self.progress_reporter, self.resource_manager),
-                )
-            finally:
-                loop.close()
-
-        # Execute in thread pool
-        loop = asyncio.get_event_loop()
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [loop.run_in_executor(executor, sync_execute_task, task) for task in self.tasks]
-            results = await asyncio.gather(*futures, return_exceptions=True)
-
-        # Convert exceptions to failed results
-        processed_results = []
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                task = self.tasks[i]
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
-            else:
-                processed_results.append(result)
-
-        self.logger.info("Threading execution completed")
-        return processed_results
+        self.logger.info("Sequential execution completed")
+        return results
 
     async def _execute_task_with_context(
         self,
@@ -78,11 +48,10 @@ class ThreadingExecutionEngine(AbstractExecutionEngine):
         resource_manager: ResourceManager | None,
     ) -> TaskResult:
         """Execute a single task with full context management"""
-        # Create execution context and inject mode-specific resources
         context = ExecutionContext(
             task_id=task.id,
             config=task.config,
-            execution_mode=ExecutionMode.THREADING,
+            execution_mode=ExecutionMode.SEQUENTIAL,
             progress_reporter=progress_reporter,
             resource_manager=resource_manager,
             logger=logging.getLogger(f"task.{task.name}"),
@@ -142,6 +111,7 @@ class ThreadingExecutionEngine(AbstractExecutionEngine):
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
+
             if progress_reporter:
                 progress_reporter.report_completion(task_result)
             return task_result
@@ -161,14 +131,11 @@ class ThreadingExecutionEngine(AbstractExecutionEngine):
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())
 
-            # Start the monitor in a separate thread
             self.monitor_thread = Thread(target=monitor_runner, daemon=True)
             self.monitor_thread.start()
 
     async def _stop_progress_monitoring(self) -> None:
         """Stop the progress monitor if it is running."""
-        if self.terminate_event:
-            self.terminate_event.set()
         if self.monitor_thread and self.monitor_thread.is_alive():
             self.monitor_thread.join(timeout=1)
             if self.monitor_thread.is_alive():

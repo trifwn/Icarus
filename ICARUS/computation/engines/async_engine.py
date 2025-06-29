@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
-from threading import Thread
 
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ResourceManager
@@ -13,15 +12,14 @@ from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
-from .base_engine import AbstractExecutionEngine
+from .base_engine import AbstractEngine
 
 
-class SequentialExecutionEngine(AbstractExecutionEngine):
-    """Sequential execution engine - executes tasks one by one"""
+class AsyncEngine(AbstractEngine):
+    execution_mode: ExecutionMode = ExecutionMode.ASYNC
+    """Async-based execution engine with progress integration"""
 
-    execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL
-
-    def __enter__(self) -> AbstractExecutionEngine:
+    def __enter__(self) -> AbstractEngine:
         """Context manager entry point to prepare execution context."""
         return super().__enter__()
 
@@ -29,17 +27,30 @@ class SequentialExecutionEngine(AbstractExecutionEngine):
         """Context manager exit point to clean up execution context."""
         ...
 
-    async def execute_tasks(self) -> list[TaskResult]:
-        """Execute tasks sequentially"""
-        self.logger.info(f"Starting sequential execution of {len(self.tasks)} tasks")
-        results = []
+    async def execute_tasks(
+        self,
+    ) -> list[TaskResult]:
+        """Execute tasks concurrently using asyncio"""
+        self.logger.info(f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
+        semaphore = asyncio.Semaphore(self.max_workers or 10)
 
-        for task in self.tasks:
-            result = await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
-            results.append(result)
+        async def execute_single_task(task: Task) -> TaskResult:
+            async with semaphore:
+                return await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
 
-        self.logger.info("Sequential execution completed")
-        return results
+        results = await asyncio.gather(*[execute_single_task(task) for task in self.tasks], return_exceptions=True)
+
+        # Convert exceptions to failed results
+        processed_results = []
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                task = self.tasks[i]
+                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
+            else:
+                processed_results.append(result)
+
+        self.logger.info("Async execution completed")
+        return processed_results
 
     async def _execute_task_with_context(
         self,
@@ -51,7 +62,7 @@ class SequentialExecutionEngine(AbstractExecutionEngine):
         context = ExecutionContext(
             task_id=task.id,
             config=task.config,
-            execution_mode=ExecutionMode.SEQUENTIAL,
+            execution_mode=ExecutionMode.ASYNC,
             progress_reporter=progress_reporter,
             resource_manager=resource_manager,
             logger=logging.getLogger(f"task.{task.name}"),
@@ -60,6 +71,7 @@ class SequentialExecutionEngine(AbstractExecutionEngine):
         start_time = datetime.now()
         task.state = TaskState.RUNNING
 
+        # Prepare monitoring primitives
         try:
             # Acquire resources
             await context.acquire_resources()
@@ -111,7 +123,6 @@ class SequentialExecutionEngine(AbstractExecutionEngine):
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
-
             if progress_reporter:
                 progress_reporter.report_completion(task_result)
             return task_result
@@ -122,23 +133,27 @@ class SequentialExecutionEngine(AbstractExecutionEngine):
             await task.executor.cleanup()
 
     async def _start_progress_monitoring(self) -> None:
-        """Start the progress monitor in a separate thread if enabled."""
-        # Create a queue for progress events (local & multiproc)
+        """Start the progress monitor in an asyncio task if enabled."""
         if self.progress_monitor:
+            self.logger.debug("Starting progress monitoring")
 
-            def monitor_runner():
+            async def monitor_runner():
                 if self.progress_monitor:
                     with self.progress_monitor:
-                        asyncio.run(self.progress_monitor.monitor_loop())
+                        await self.progress_monitor.monitor_loop()
 
-            self.monitor_thread = Thread(target=monitor_runner, daemon=True)
-            self.monitor_thread.start()
+            self.monitor_task = asyncio.create_task(monitor_runner())
 
     async def _stop_progress_monitoring(self) -> None:
         """Stop the progress monitor if it is running."""
-        if self.monitor_thread and self.monitor_thread.is_alive():
-            self.monitor_thread.join(timeout=1)
-            if self.monitor_thread.is_alive():
-                self.logger.warning("Progress monitor thread did not stop gracefully")
+        self.logger.debug("Stopping progress monitoring")
+        if self.monitor_task and not self.monitor_task.done():
+            self.monitor_task.cancel()
+            try:
+                await asyncio.wait_for(self.monitor_task, timeout=1.0)
+            except asyncio.TimeoutError:
+                self.logger.warning("Progress monitor task did not stop gracefully")
+            except asyncio.CancelledError:
+                pass
         else:
-            self.logger.debug("Progress monitor thread was not running")
+            self.logger.debug("Progress monitor task was not running")

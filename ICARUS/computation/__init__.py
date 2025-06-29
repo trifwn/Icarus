@@ -44,20 +44,21 @@ from . import core
 
 from .monitors.progress import RichProgressMonitor
 
-from .execution import (
+from .engines import (
     create_execution_engine,
-    AbstractExecutionEngine,
-    AsyncExecutionEngine,
-    MultiprocessingExecutionEngine,
+    AbstractEngine,
+    AsyncEngine,
+    MultiprocessingEngine,
     SequentialExecutionEngine,
-    ThreadingExecutionEngine,
-    AdaptiveExecutionEngine,
+    ThreadingEngine,
+    AdaptiveEngine,
 )
 
 from .resources.manager import SimpleResourceManager
 
 from .runners import SimulationRunner
 from .observers import ConsoleProgressObserver
+from .reporters import Reporter
 
 
 from . import analyses
@@ -69,22 +70,24 @@ __author__ = "Enhanced OOP Framework Team"
 __all__ = [
     # Core types
     "core",
-    # Monitoring
-    "RichProgressMonitor",
     # Execution engines
-    "AbstractExecutionEngine",
-    "AsyncExecutionEngine",
-    "MultiprocessingExecutionEngine",
+    "AbstractEngine",
+    "AsyncEngine",
+    "MultiprocessingEngine",
     "SequentialExecutionEngine",
-    "ThreadingExecutionEngine",
-    "AdaptiveExecutionEngine",
+    "ThreadingEngine",
+    "AdaptiveEngine",
     "create_execution_engine",
     # Resource management
     "SimpleResourceManager",
     # Main runner
     "SimulationRunner",
-    # Examples
+    # Reporters
+    "Reporter",
+    # Observers
     "ConsoleProgressObserver",
+    # Monitors
+    "RichProgressMonitor",
     # Submodules
     "analyses",
     "solvers",

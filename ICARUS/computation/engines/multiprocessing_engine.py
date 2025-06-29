@@ -15,15 +15,15 @@ from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.types import ExecutionMode
 
-from .base_engine import AbstractExecutionEngine
+from .base_engine import AbstractEngine
 
 
-class MultiprocessingExecutionEngine(AbstractExecutionEngine):
+class MultiprocessingEngine(AbstractEngine):
     """Multiprocessing-based execution engine using ProcessPoolExecutor"""
 
     execution_mode: ExecutionMode = ExecutionMode.MULTIPROCESSING
 
-    def __enter__(self) -> AbstractExecutionEngine:
+    def __enter__(self) -> AbstractEngine:
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()
@@ -42,7 +42,7 @@ class MultiprocessingExecutionEngine(AbstractExecutionEngine):
         # Execute in process pool
         with ProcessPoolExecutor(
             max_workers=max_workers,
-            initializer=MultiprocessingExecutionEngine.set_concurrent_vars,
+            initializer=MultiprocessingEngine.set_concurrent_vars,
             initargs=(
                 self,
                 self.concurrent_variables if self.concurrent_variables else {},
@@ -52,9 +52,9 @@ class MultiprocessingExecutionEngine(AbstractExecutionEngine):
 
         # Convert exceptions to failed results
         processed_results = []
-        for i, (task, result) in enumerate(zip(self.tasks, results)):
+        for result in results:
             if isinstance(result, Exception):
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
+                processed_results.append(TaskResult(task_id=result.task_id, state=TaskState.FAILED, error=result))
             else:
                 processed_results.append(result)
 

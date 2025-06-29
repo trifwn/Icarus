@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any
 
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
@@ -11,9 +10,9 @@ from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.execution.engine_creator import create_execution_engine
-from ICARUS.computation.reporters import Reporter
-from ICARUS.computation.resources.manager import SimpleResourceManager
+from . import create_execution_engine
+from . import Reporter
+from . import SimpleResourceManager
 
 
 class SimulationRunner:
