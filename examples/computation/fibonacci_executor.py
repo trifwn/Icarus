@@ -6,13 +6,11 @@ with progress reporting, showcasing the simulation framework capabilities.
 """
 
 import asyncio
-from typing import Tuple
-
 from ICARUS.computation.core.context import ExecutionContext
-from ICARUS.computation.core.protocols import TaskExecutor
+from ICARUS.computation.core.protocols import TaskExecutorProtocol
 
 
-class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
+class FibonacciExecutor(TaskExecutorProtocol[int, tuple[int, int]]):
     """
     Executor that calculates Fibonacci numbers with progress reporting.
 
@@ -24,17 +22,10 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
     """
 
     def __init__(self, delay_per_step: float = 0.01, max_number: int = 10000):
-        """
-        Initialize the Fibonacci executor.
-
-        Args:
-            delay_per_step: Artificial delay per calculation step for demo purposes
-            max_number: Maximum Fibonacci number to calculate for safety
-        """
         self.delay_per_step = delay_per_step
         self.max_number = max_number
 
-    async def execute(self, n: int, context: ExecutionContext) -> Tuple[int, int]:
+    async def execute(self, n: int, context: ExecutionContext) -> tuple[int, int]:
         """
         Calculate the nth Fibonacci number with progress reporting.
 
@@ -43,7 +34,7 @@ class FibonacciExecutor(TaskExecutor[int, Tuple[int, int]]):
             context: Execution context for progress reporting and cancellation
 
         Returns:
-            Tuple of (position, fibonacci_value)
+            tuple of (position, fibonacci_value)
 
         Raises:
             asyncio.CancelledError: If task is cancelled during execution

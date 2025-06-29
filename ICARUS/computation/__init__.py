@@ -46,7 +46,7 @@ from .monitors.progress import RichProgressMonitor
 
 from .execution import (
     create_execution_engine,
-    BaseExecutionEngine,
+    AbstractExecutionEngine,
     AsyncExecutionEngine,
     MultiprocessingExecutionEngine,
     SequentialExecutionEngine,
@@ -72,7 +72,7 @@ __all__ = [
     # Monitoring
     "RichProgressMonitor",
     # Execution engines
-    "BaseExecutionEngine",
+    "AbstractExecutionEngine",
     "AsyncExecutionEngine",
     "MultiprocessingExecutionEngine",
     "SequentialExecutionEngine",

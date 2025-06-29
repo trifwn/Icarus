@@ -15,15 +15,15 @@ from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.types import ExecutionMode
 
-from .base_engine import BaseExecutionEngine
+from .base_engine import AbstractExecutionEngine
 
 
-class MultiprocessingExecutionEngine(BaseExecutionEngine):
+class MultiprocessingExecutionEngine(AbstractExecutionEngine):
     """Multiprocessing-based execution engine using ProcessPoolExecutor"""
 
     execution_mode: ExecutionMode = ExecutionMode.MULTIPROCESSING
 
-    def __enter__(self) -> BaseExecutionEngine:
+    def __enter__(self) -> AbstractExecutionEngine:
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()

@@ -21,7 +21,6 @@ from .utils.concurrency import ConcurrencyPrimitives
 from .utils.concurrency import ConcurrencyType
 
 # ===== TYPE VARIABLES =====
-
 T = TypeVar("T")
 R = TypeVar("R")
 TaskInput = TypeVar("TaskInput", contravariant=True)
@@ -29,8 +28,6 @@ TaskOutput = TypeVar("TaskOutput", covariant=True)
 
 
 # ===== ENUMS =====
-
-
 class TaskState(Enum):
     """
     Defines all possible states a task can be in during its lifecycle.
@@ -45,6 +42,21 @@ class TaskState(Enum):
     CANCELLED = auto()
     RETRYING = auto()
 
+    def can_transition_to(self, new_state: 'TaskState') -> bool:
+        """Check if transition to new_state is valid."""
+        valid_transitions = {
+            TaskState.PENDING: {TaskState.QUEUED, TaskState.CANCELLED},
+            TaskState.QUEUED: {TaskState.RUNNING, TaskState.CANCELLED},
+            TaskState.RUNNING: {TaskState.PAUSED, TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED},
+            TaskState.PAUSED: {TaskState.RUNNING, TaskState.CANCELLED},
+            TaskState.FAILED: {TaskState.RETRYING, TaskState.CANCELLED},
+            TaskState.RETRYING: {TaskState.RUNNING, TaskState.FAILED, TaskState.CANCELLED},
+            # Terminal states
+            TaskState.COMPLETED: set(),
+            TaskState.CANCELLED: set(),
+        }
+        return new_state in valid_transitions.get(self, set())
+
 
 class Priority(Enum):
     """
@@ -57,64 +69,7 @@ class Priority(Enum):
     CRITICAL = 4
 
 
-class ExecutionMode(Enum):
-    """
-    Defines the execution strategy for the simulation framework.
-    """
-
-    SEQUENTIAL = "sequential"
-    THREADING = "threading"
-    MULTIPROCESSING = "multiprocessing"
-    ASYNC = "async"
-    ADAPTIVE = "adaptive"
-
-    def __new__(cls, value):
-        """
-        Custom __new__ method to initialize concurrency primitives.
-        """
-        obj = object.__new__(cls)
-        obj._value_ = value
-        return obj
-
-    def __init__(self, value):
-        """
-        Initialize the enum member with concurrency primitives.
-        """
-        self.concurrency_type: ConcurrencyType | None = None
-        self._primitives: ConcurrencyPrimitives | None = None
-        self.mp_manager: Optional[SyncManager] = None
-
-    def set_multiprocessing_manager(self, manager: SyncManager) -> None:
-        """
-        Set the multiprocessing manager for this execution mode.
-
-        Args:
-            manager: A Manager instance to use for multiprocessing primitives.
-        """
-        if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
-            raise ValueError(f"Cannot set manager for non-multiprocessing mode: {self.value}")
-        self.mp_manager = manager
-        self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(manager)
-
-    @property
-    def primitives(self) -> ConcurrencyPrimitives:
-        """Get the concurrency primitives for this execution mode.
-        If not already set, initialize them based on the concurrency type.
-        Returns:
-            A ConcurrencyPrimitives object containing lock and event factories.
-        """
-        if self._primitives is None:
-            if self.concurrency_type is None:
-                self.concurrency_type = ConcurrencyType(self.value)
-
-            if self.concurrency_type is ConcurrencyType.MULTIPROCESSING and self.mp_manager is not None:
-                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(self.mp_manager)
-            else:
-                self._primitives = ConcurrencyPrimitives.from_type(self.concurrency_type)
-        return self._primitives
-
-
-# ===== CORE DATA TYPES =====
+# ===== DATA CLASSES =====
 @dataclass(frozen=True)
 class TaskId:
     """
@@ -175,3 +130,61 @@ class TaskConfiguration:
             tags=list(set(self.tags + other.tags)),
             checkpoint_interval=other.checkpoint_interval or self.checkpoint_interval,
         )
+
+
+# ===== EXECUTION MODE =====
+class ExecutionMode(Enum):
+    """
+    Defines the execution strategy for the simulation framework.
+    """
+
+    SEQUENTIAL = "sequential"
+    THREADING = "threading"
+    MULTIPROCESSING = "multiprocessing"
+    ASYNC = "async"
+    ADAPTIVE = "adaptive"
+
+    def __new__(cls, value):
+        """
+        Custom __new__ method to initialize concurrency primitives.
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+
+    def __init__(self, value):
+        """
+        Initialize the enum member with concurrency primitives.
+        """
+        self.concurrency_type: ConcurrencyType | None = None
+        self._primitives: ConcurrencyPrimitives | None = None
+        self.mp_manager: Optional[SyncManager] = None
+
+    def set_multiprocessing_manager(self, manager: SyncManager) -> None:
+        """
+        Set the multiprocessing manager for this execution mode.
+
+        Args:
+            manager: A Manager instance to use for multiprocessing primitives.
+        """
+        if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
+            raise ValueError(f"Cannot set manager for non-multiprocessing mode: {self.value}")
+        self.mp_manager = manager
+        self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(manager)
+
+    @property
+    def primitives(self) -> ConcurrencyPrimitives:
+        """Get the concurrency primitives for this execution mode.
+        If not already set, initialize them based on the concurrency type.
+        Returns:
+            A ConcurrencyPrimitives object containing lock and event factories.
+        """
+        if self._primitives is None:
+            if self.concurrency_type is None:
+                self.concurrency_type = ConcurrencyType(self.value)
+
+            if self.concurrency_type is ConcurrencyType.MULTIPROCESSING and self.mp_manager is not None:
+                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(self.mp_manager)
+            else:
+                self._primitives = ConcurrencyPrimitives.from_type(self.concurrency_type)
+        return self._primitives

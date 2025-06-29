@@ -8,13 +8,14 @@ in the simulation framework.
 from datetime import datetime
 
 # from threading import Lock
-from typing import Generic
+from threading import Lock
+from typing import Any, Callable, Generic
 from typing import List
 from typing import Optional
 from typing import Tuple
 
 from .data_structures import ProgressEvent
-from .protocols import TaskExecutor
+from .protocols import TaskExecutorProtocol
 from .types import TaskConfiguration
 from .types import TaskId
 from .types import TaskInput
@@ -43,15 +44,16 @@ class Task(Generic[TaskInput, TaskOutput]):
     """
 
     _id_counter = 0
-    # _id_lock = Lock()  # Lock to make the counter thread-safe
+    _id_lock = Lock()  # Lock to make the counter thread-safe
 
     def __init__(
         self,
         name: str,
-        executor: TaskExecutor[TaskInput, TaskOutput],
+        executor: TaskExecutorProtocol[TaskInput, TaskOutput],
         task_input: TaskInput,
         config: Optional[TaskConfiguration] = None,
         task_id: Optional[TaskId] = None,
+        progress_probe: Optional[Callable[[], ProgressEvent]] = None,
     ):
         """
         Initialize a new task.
@@ -62,6 +64,7 @@ class Task(Generic[TaskInput, TaskOutput]):
             task_input: Input data for the task.
             config: Optional configuration (uses defaults if not provided).
             task_id: Optional task ID (generates one if not provided).
+            progress_probe: Optional callable to probe task progress.
         """
         self.id = task_id or TaskId()
         self.name = name
@@ -71,7 +74,6 @@ class Task(Generic[TaskInput, TaskOutput]):
         self.created_at = datetime.now()
 
         # State is managed externally by the runner/scheduler
-        self._state = TaskState.PENDING
         self._state_history: List[Tuple[TaskState, datetime]] = [(TaskState.PENDING, self.created_at)]
 
         # Assign a thread-safe numeric ID
@@ -80,15 +82,17 @@ class Task(Generic[TaskInput, TaskOutput]):
         self.id_num = Task._id_counter
 
         # Progress tracking attributes
-        self._progress = 0
-        self._total_progress: int | None = None
-        self._progress_message = ""
-        self._last_progress_update = self.created_at
+        self.current_step: int = 0
+        self.total_steps: int = 1
+        self.progress_message = ""
+
+        # Optional progress probe callable
+        self.progress_probe = progress_probe
 
     @property
     def state(self) -> TaskState:
         """Returns the current state of the task."""
-        return self._state
+        return self._state_history[-1][0]
 
     @state.setter
     def state(self, new_state: TaskState) -> None:
@@ -105,58 +109,12 @@ class Task(Generic[TaskInput, TaskOutput]):
         Args:
             new_state: The new state to set for the task.
         """
-        if new_state != self._state:
-            self._state = new_state
+        currenct_state = self.state
+        if new_state != currenct_state:
             self._state_history.append((new_state, datetime.now()))
 
-    def progress_probe(self) -> ProgressEvent:
-        """
-        Get a snapshot of the current progress.
-
-        This method is useful for monitoring systems to poll the task's
-        latest progress information.
-
-        Returns:
-            A ProgressUpdate data object for this task.
-        """
-        is_finished = self.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED]
-        error = None
-        if self.state == TaskState.FAILED:
-            # Note: The actual exception object is in the TaskResult.
-            # This is just a placeholder for the probe.
-            error = Exception("Task failed")
-
-        return ProgressEvent(
-            task_id=self.id,
-            name=self.name,
-            current_step=self._progress,
-            total_steps=self._total_progress if self._total_progress else 100,
-            message=self._progress_message,
-            completed=is_finished,
-            error=error,
-        )
-
-    def update_progress(self, progress_event: ProgressEvent) -> None:
-        """
-        Update the task's internal progress information.
-
-        Args:
-            progress_event: A ProgressEvent containing the current progress and any relevant message.
-        """
-        if progress_event.task_id != self.id:
-            raise ValueError("ProgressEvent task_id does not match this task's ID")
-        self._progress = progress_event.current_step
-        self._total_progress = progress_event.total_steps
-        self._progress_message = progress_event.message
-        self._last_progress_update = datetime.now()
-
-        # Update the state
-        if progress_event.completed:
-            self.state = TaskState.COMPLETED
-        elif progress_event.error:
-            self.state = TaskState.FAILED
-
-    def get_state_history(self) -> List[Tuple[TaskState, datetime]]:
+    @property
+    def state_history(self) -> List[Tuple[TaskState, datetime]]:
         """
         Get the complete state transition history.
 
@@ -165,15 +123,25 @@ class Task(Generic[TaskInput, TaskOutput]):
         """
         return self._state_history.copy()
 
-    def get_progress(self) -> int:
-        """Get current progress as a percentage."""
-        if self._total_progress:
-            return int((self._progress / self._total_progress) * 100)
-        return self._progress
+    def register_progress(self, progress_event: ProgressEvent) -> None:
+        """
+        Update the task's internal progress information.
 
-    def get_progress_message(self) -> str:
-        """Get the current progress message."""
-        return self._progress_message
+        Args:
+            progress_event: A ProgressEvent containing the current progress and any relevant message.
+        """
+        if progress_event.task_id != self.id:
+            raise ValueError("ProgressEvent task_id does not match this task's ID")
+
+        self.current_step = progress_event.current_step
+        self.total_steps = progress_event.total_steps
+        self.progress_message = progress_event.message
+
+        # Update the state
+        if progress_event.completed:
+            self.state = TaskState.COMPLETED
+        elif progress_event.error:
+            self.state = TaskState.FAILED
 
     def __repr__(self) -> str:
         """String representation of the task."""
@@ -186,3 +154,10 @@ class Task(Generic[TaskInput, TaskOutput]):
     def __hash__(self) -> int:
         """Hash the task based on its unique ID."""
         return hash(self.id)
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Prepare the task for serialization."""
+        state = self.__dict__.copy()
+        # Remove non-serializable attributes
+        state.pop("_id_lock", None)
+        return state

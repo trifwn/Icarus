@@ -14,11 +14,19 @@ from typing import Any
 from typing import Dict
 from typing import Generic
 from typing import Optional
+from enum import Enum, auto
 
 from .protocols import SerializableMixin
 from .types import T
 from .types import TaskId
 from .types import TaskState
+
+
+class ProgressEventType(Enum):
+    STEP_COMPLETED = auto()
+    STATUS_CHANGED = auto()
+    ERROR_OCCURRED = auto()
+    TASK_COMPLETED = auto()
 
 
 @dataclass
@@ -51,7 +59,11 @@ class ProgressEvent(SerializableMixin):
     error: Optional[Exception] = None
 
     def __post_init__(self):
-        """Calculate derived fields after initialization."""
+        """Calculate derived fields and validate after initialization."""
+        if self.current_step < 0 or self.total_steps < 0:
+            raise ValueError("Steps cannot be negative")
+        if self.current_step > self.total_steps:
+            raise ValueError("Current step cannot exceed total steps")
         self.percentage = (self.current_step / self.total_steps * 100) if self.total_steps > 0 else 0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -94,6 +106,13 @@ class ProgressEvent(SerializableMixin):
             completed=data.get("completed", False),
             error=error,
         )
+
+    @classmethod
+    def step_completed(
+        cls, task_id: TaskId, name: str, current_step: int, total_steps: int, message: str = ""
+    ) -> "ProgressEvent":
+        """Create a step completion progress event."""
+        return cls(task_id=task_id, name=name, current_step=current_step, total_steps=total_steps, message=message)
 
 
 @dataclass
@@ -142,7 +161,8 @@ class TaskResult(SerializableMixin, Generic[T]):
             error_info = {
                 "type": type(self.error).__name__,
                 "message": str(self.error),
-                "traceback": traceback.format_exc(),
+                "args": self.error.args,
+                "traceback": traceback.format_exception(type(self.error), self.error, self.error.__traceback__),
             }
 
         return {

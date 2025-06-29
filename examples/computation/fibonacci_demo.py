@@ -24,22 +24,22 @@ import time
 from pathlib import Path
 from typing import Any
 
-from ICARUS.computation.monitors.progress import RichProgressMonitor
 
 # Add the examples directory to the path so we can import our executor
 sys.path.insert(0, str(Path(__file__).parent))
 
 from fibonacci_executor import FibonacciExecutor
 
-from ICARUS.computation.core.config import SimulationConfig
-from ICARUS.computation.core.data_structures import TaskResult
-from ICARUS.computation.core.task import Task
-from ICARUS.computation.core.types import ExecutionMode
-from ICARUS.computation.core.types import Priority
-from ICARUS.computation.core.types import TaskConfiguration
-from ICARUS.computation.core.types import TaskId
-from ICARUS.computation.core.types import TaskState
-from ICARUS.computation.runners import SimulationRunner
+from ICARUS.computation.core import SimulationConfig
+from ICARUS.computation.core import TaskResult
+from ICARUS.computation.core import Task
+from ICARUS.computation.core import ExecutionMode
+from ICARUS.computation.core import Priority
+from ICARUS.computation.core import TaskConfiguration
+from ICARUS.computation.core import TaskId
+from ICARUS.computation.core import TaskState
+from ICARUS.computation import SimulationRunner
+from ICARUS.computation import RichProgressMonitor
 
 
 class FibonacciDemo:

@@ -1,6 +1,15 @@
 import multiprocessing
 import os
 import platform
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
+logger = logging.getLogger("ICARUS")
 
 PLATFORM = platform.system()
 

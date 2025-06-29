@@ -17,7 +17,7 @@ from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
 from ICARUS.computation.core.utils.concurrency import EventLike
 
 
-class BaseExecutionEngine(ConcurrentMixin, ABC):
+class AbstractExecutionEngine(ConcurrentMixin, ABC):
     """Abstract base for execution engines"""
 
     execution_mode: ExecutionMode
@@ -38,7 +38,7 @@ class BaseExecutionEngine(ConcurrentMixin, ABC):
     @abstractmethod
     async def _stop_progress_monitoring(self) -> None: ...
 
-    def __enter__(self) -> BaseExecutionEngine:
+    def __enter__(self) -> AbstractExecutionEngine:
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()
@@ -58,7 +58,7 @@ class BaseExecutionEngine(ConcurrentMixin, ABC):
         progress_monitor: ProgressMonitor | None = None,
         resource_manager: ResourceManager | None = None,
         max_workers: int | None = None,
-    ) -> BaseExecutionEngine:
+    ) -> AbstractExecutionEngine:
         self.logger.info(f"Starting execution with {self.__class__.__name__}")
         self.tasks = tasks
         self.progress_reporter = progress_reporter

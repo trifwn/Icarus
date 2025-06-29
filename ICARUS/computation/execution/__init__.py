@@ -9,14 +9,14 @@ from __future__ import annotations
 
 from .adaptive_engine import AdaptiveExecutionEngine
 from .async_engine import AsyncExecutionEngine
-from .base_engine import BaseExecutionEngine
+from .base_engine import AbstractExecutionEngine
 from .engine_creator import create_execution_engine
 from .multiprocessing_engine import MultiprocessingExecutionEngine
 from .sequential_engine import SequentialExecutionEngine
 from .threading_engine import ThreadingExecutionEngine
 
 __all__ = [
-    "BaseExecutionEngine",
+    "AbstractExecutionEngine",
     "AsyncExecutionEngine",
     "MultiprocessingExecutionEngine",
     "SequentialExecutionEngine",

@@ -13,7 +13,7 @@ from .types import TaskState
 from .protocols import ProgressReporter
 from .protocols import ResourceManager
 from .protocols import SerializableMixin
-from .protocols import TaskExecutor
+from .protocols import TaskExecutorProtocol
 from .context import ExecutionContext
 from .data_structures import ProgressEvent
 from .data_structures import TaskResult
@@ -37,7 +37,7 @@ __all__ = [
     "ProgressEvent",
     "TaskResult",
     # Protocols and interfaces
-    "TaskExecutor",
+    "TaskExecutorProtocol",
     "ProgressReporter",
     "ProgressReporter",
     "ResourceManager",

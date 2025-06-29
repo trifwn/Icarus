@@ -11,12 +11,7 @@ from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.execution import AdaptiveExecutionEngine
-from ICARUS.computation.execution import AsyncExecutionEngine
-from ICARUS.computation.execution import BaseExecutionEngine
-from ICARUS.computation.execution import MultiprocessingExecutionEngine
-from ICARUS.computation.execution import SequentialExecutionEngine
-from ICARUS.computation.execution import ThreadingExecutionEngine
+from ICARUS.computation.execution.engine_creator import create_execution_engine
 from ICARUS.computation.reporters import Reporter
 from ICARUS.computation.resources.manager import SimpleResourceManager
 
@@ -39,13 +34,6 @@ class SimulationRunner:
         # Task management
         self._tasks: list[Task] = []
         self._task_graph: dict[TaskId, list[TaskId]] = {}
-        self._execution_engines: dict[ExecutionMode, BaseExecutionEngine] = {
-            ExecutionMode.ASYNC: AsyncExecutionEngine(),
-            ExecutionMode.SEQUENTIAL: SequentialExecutionEngine(),
-            ExecutionMode.THREADING: ThreadingExecutionEngine(),
-            ExecutionMode.MULTIPROCESSING: MultiprocessingExecutionEngine(),
-            ExecutionMode.ADAPTIVE: AdaptiveExecutionEngine(),
-        }
 
         # Progress monitoring
         self.progress_monitor: ProgressMonitor | None = progress_monitor
@@ -96,7 +84,7 @@ class SimulationRunner:
                 monitor.set_tasks(sorted_tasks)
 
             # Get execution engine
-            engine = self._execution_engines.get(self.execution_mode)
+            engine = create_execution_engine(self.execution_mode)
             if not engine:
                 raise ValueError(f"Unsupported execution mode: {self.execution_mode}")
 
@@ -146,40 +134,6 @@ class SimulationRunner:
         # Simple implementation - in production, use proper topological sort
         tasks_by_priority = sorted(self._tasks, key=lambda t: t.config.priority.value, reverse=True)
         return tasks_by_priority
-
-    def get_summary(self) -> dict[str, Any]:
-        """Get comprehensive execution summary"""
-        if not self._results:
-            return {
-                "total_tasks": len(self._tasks),
-                "successful": 0,
-                "failed": 0,
-                "success_rate": 0,
-                "execution_mode": self.execution_mode.value,
-            }
-
-        successful = [r for r in self._results if r.success]
-        execution_times = [r.execution_time.total_seconds() for r in self._results if r.execution_time]
-        return {
-            "total_tasks": len(self._results),
-            "successful": len(successful),
-            "failed": len(self._results) - len(successful),
-            "success_rate": len(successful) / len(self._results) * 100 if self._results else 0,
-            "total_execution_time": sum(execution_times),
-            "average_execution_time": sum(execution_times) / len(execution_times) if execution_times else 0,
-            "execution_mode": self.execution_mode.value,
-            "task_results": [r.to_dict() for r in self._results],
-            "task_states": {str(task.id): task.state.name for task in self._tasks},
-            "task_progress": {
-                str(task.id): {
-                    "current_step": task._progress,
-                    "total_steps": task._total_progress,
-                    "message": task._progress_message,
-                    "completed": task.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED],
-                }
-                for task in self._tasks
-            },
-        }
 
     def cancel(self) -> None:
         """Cancel all running tasks"""

@@ -723,7 +723,6 @@ class LSPT_Plane:
             xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
             ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
             zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-            print(D_pan[i], i)
             ax_now.plot_surface(xs, ys, zs, color=coolwarm(D_pan[i]), alpha=0.9)
 
         # Add colorbar

@@ -13,15 +13,15 @@ from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressReporter
 from ICARUS.computation.core.types import ExecutionMode
 
-from .base_engine import BaseExecutionEngine
+from .base_engine import AbstractExecutionEngine
 
 
-class SequentialExecutionEngine(BaseExecutionEngine):
+class SequentialExecutionEngine(AbstractExecutionEngine):
     """Sequential execution engine - executes tasks one by one"""
 
     execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL
 
-    def __enter__(self) -> BaseExecutionEngine:
+    def __enter__(self) -> AbstractExecutionEngine:
         """Context manager entry point to prepare execution context."""
         return super().__enter__()
 

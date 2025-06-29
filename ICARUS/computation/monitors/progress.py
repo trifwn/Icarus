@@ -48,8 +48,6 @@ class RichProgressMonitor(ProgressMonitor):
         self._event_queue: QueueLike | None = None
         self._termination_event: EventLike | None = None
 
-        logging.getLogger("asyncio").setLevel(logging.WARNING)
-
     def set_tasks(self, tasks: list[Task]) -> None:
         """Set the tasks to monitor"""
         self.tasks = tasks
@@ -103,8 +101,6 @@ class RichProgressMonitor(ProgressMonitor):
 
     def __enter__(self):
         """Context manager entry - create progress bars."""
-        self.logger.debug("Entering RichProgressMonitor context with a total of %d tasks", len(self.tasks))
-
         self.progress = Progress(
             TextColumn("{task.description}", justify="left", style="cyan"),
             SpinnerColumn(),
@@ -120,7 +116,7 @@ class RichProgressMonitor(ProgressMonitor):
 
         total = 0
         for task in self.tasks:
-            total_steps = task._total_progress if task._total_progress else 100
+            total_steps = task.total_steps
             tid = self.progress.add_task(f"[cyan]{task.name}", total=total_steps)
             self.task_id_map[task.id_num] = tid
             total += total_steps
@@ -155,8 +151,8 @@ class RichProgressMonitor(ProgressMonitor):
             progress = ProgressEvent(
                 task_id=result.task_id,
                 name=task.name,
-                current_step=task._total_progress if task._total_progress else 1,
-                total_steps=task._total_progress if task._total_progress else 1,
+                current_step=task.total_steps,
+                total_steps=task.total_steps,
                 completed=True,
                 error=result.error,
             )
@@ -205,12 +201,14 @@ class RichProgressMonitor(ProgressMonitor):
                     self.logger.debug(f"Error reading event queue: {e}")
 
             # # Otherwise, probe local tasks (threading or async mode)
-            # for task in self.tasks:
-            #     try:
-            #         update = task.progress_probe()
-            #         events.append(update)
-            #     except Exception as e:
-            #         self.logger.debug(f"Error probing task {task.id_num}: {e}")
+            if not events:
+                for task in self.tasks:
+                    if task.progress_probe:
+                        try:
+                            update = task.progress_probe()
+                            events.append(update)
+                        except Exception as e:
+                            self.logger.debug(f"Error probing task {task.id_num}: {e}")
 
             # Process all collected events
             for evt in events:

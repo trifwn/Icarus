@@ -46,7 +46,7 @@ class Reporter(ProgressReporter):
         # Notify observers
         task = next((t for t in self.tasks if t.id == event.task_id), None)
         if task:
-            task.update_progress(event)
+            task.register_progress(event)
 
         # Put event in the queue for processing
         if self.event_queue:

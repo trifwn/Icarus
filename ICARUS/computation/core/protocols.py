@@ -29,7 +29,8 @@ if TYPE_CHECKING:
     from .task import Task
 
 
-class SerializableMixin:
+@runtime_checkable
+class SerializableMixin(Protocol):
     """
     Mixin class for objects that can be serialized.
 
@@ -44,11 +45,8 @@ class SerializableMixin:
 
         Returns:
             A dictionary containing the object's data.
-
-        Raises:
-            NotImplementedError: Must be implemented by subclasses.
         """
-        raise NotImplementedError
+        ...
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SerializableMixin:
@@ -57,14 +55,8 @@ class SerializableMixin:
 
         Args:
             data: A dictionary containing the object's data.
-
-        Returns:
-            A new instance of the class.
-
-        Raises:
-            NotImplementedError: Must be implemented by subclasses.
         """
-        raise NotImplementedError
+        ...
 
 
 @runtime_checkable
@@ -96,7 +88,7 @@ class ConcurrentMixin(Protocol):
 
 
 @runtime_checkable
-class TaskExecutor(Protocol, Generic[TaskInput, TaskOutput]):
+class TaskExecutorProtocol(Protocol, Generic[TaskInput, TaskOutput]):
     """
     Protocol defining the task execution interface.
 
@@ -126,6 +118,15 @@ class TaskExecutor(Protocol, Generic[TaskInput, TaskOutput]):
 
         Returns:
             True if the input is valid, False otherwise.
+        """
+        ...
+
+    async def cancel(self) -> None:
+        """
+        Handle cancellation of the task execution.
+
+        This method can be used to clean up resources or state if needed.
+        It should be idempotent and safe to call multiple times.
         """
         ...
 
