@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from ICARUS.computation.core import ProgressEvent
-from ICARUS.computation.core import TaskResult
-from ICARUS.computation.core.protocols import ProgressObserver
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
+from core import ProgressEvent
+from core import TaskResult
+from core.protocols import ProgressObserver
+from core.utils.concurrency import ConcurrencyFeature
+from core.utils.concurrency import ConcurrentVariable
 
 
 class ConsoleProgressObserver(ProgressObserver):

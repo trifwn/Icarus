@@ -11,7 +11,9 @@ from matplotlib.axes import Axes
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Series
-from tabulate import tabulate
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
@@ -533,49 +535,54 @@ class State:
                 )
 
     def __str__(self) -> str:
-        ss = io.StringIO()
-        ss.write(f"State: {self.name}\n")
-        ss.write(f"{self.trim_to_string()}\n")
-        ss.write(f"\n{45 * '--'}\n")
+        """Rich string representation of the State."""
+        console = Console(file=io.StringIO(), force_terminal=False, width=120)
+
+        # Main Panel for the state
+        trim_info = self.trim_to_string()
+        panel_content = f"State: [bold]{self.name}[/bold]\n{trim_info}"
+        console.print(Panel(panel_content, title="[bold green]State Information[/bold green]", border_style="blue"))
 
         def convert_to_str(num: complex) -> str:
-            # CHeck is it complex
             try:
                 return f"{num.real:.3f} {num.imag:+.3f}j"
             except AttributeError:
                 return f"{num:.3f}"
 
         if hasattr(self, "state_space"):
-            ss.write("\nLongitudal State:\n")
-            ss.write(
-                f"Eigen Values: {[convert_to_str(item) for item in self.state_space.longitudal.eigenvalues]}\n",
+            # Longitudal
+            long_eigen_values = ", ".join([convert_to_str(item) for item in self.state_space.longitudal.eigenvalues])
+            long_eigen_vectors = "\n".join(
+                "  " + ", ".join([convert_to_str(i) for i in item]) for item in self.state_space.longitudal.eigenvectors
             )
-            ss.write("Eigen Vectors:\n")
-            for item in self.state_space.longitudal.eigenvectors:
-                ss.write(f"\t{[convert_to_str(i) for i in item]}\n")
-            ss.write("\nThe State Space Matrix:\n")
-            ss.write(
-                tabulate(
-                    self.state_space.longitudal.A,
-                    tablefmt="github",
-                    floatfmt=".3f",
-                ),
+            long_panel_content = (
+                f"[bold]Eigen Values:[/bold] {long_eigen_values}\n[bold]Eigen Vectors:[/bold]\n{long_eigen_vectors}"
             )
+            long_panel = Panel(long_panel_content, title="[cyan]Longitudal State[/cyan]", border_style="cyan")
+            console.print(long_panel)
 
-            ss.write(f"\n\n{45 * '--'}\n")
+            long_table = Table(title="State Space Matrix", show_header=False)
+            for row in self.state_space.longitudal.A:
+                long_table.add_row(*[f"{item:.3f}" for item in row])
+            console.print(long_table)
 
-            ss.write("\nLateral State:\n")
-            ss.write(
-                f"Eigen Values: {[convert_to_str(item) for item in self.state_space.lateral.eigenvalues]}\n",
+            # Lateral
+            lat_eigen_values = ", ".join([convert_to_str(item) for item in self.state_space.lateral.eigenvalues])
+            lat_eigen_vectors = "\n".join(
+                "  " + ", ".join([convert_to_str(i) for i in item]) for item in self.state_space.lateral.eigenvectors
             )
-            ss.write("Eigen Vectors:\n")
-            for item in self.state_space.lateral.eigenvectors:
-                ss.write(f"\t{[convert_to_str(i) for i in item]}\n")
-            ss.write("\nThe State Space Matrix:\n")
-            ss.write(
-                tabulate(self.state_space.lateral.A, tablefmt="github", floatfmt=".3f"),
+            lat_panel_content = (
+                f"[bold]Eigen Values:[/bold] {lat_eigen_values}\n[bold]Eigen Vectors:[/bold]\n{lat_eigen_vectors}"
             )
-        return ss.getvalue()
+            lat_panel = Panel(lat_panel_content, title="[magenta]Lateral State[/magenta]", border_style="magenta")
+            console.print(lat_panel)
+
+            lat_table = Table(title="State Space Matrix", show_header=False)
+            for row in self.state_space.lateral.A:
+                lat_table.add_row(*[f"{item:.3f}" for item in row])
+            console.print(lat_table)
+
+        return str(console._file)
 
     def to_json(self) -> str:
         """Pickle the state object to a json string.

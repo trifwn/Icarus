@@ -5,16 +5,16 @@ import signal
 from abc import ABC
 from abc import abstractmethod
 
+from ICARUS.computation.core import ConcurrencyFeature
+from ICARUS.computation.core import ConcurrentVariable
+from ICARUS.computation.core import EventLike
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core.protocols import ConcurrentMixin
 from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.protocols import ProgressReporter
-from ICARUS.computation.core.types import ExecutionMode
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import EventLike
 
 
 class AbstractEngine(ConcurrentMixin, ABC):

@@ -1,18 +1,20 @@
+import builtins
 import logging
 import multiprocessing
 import os
 import platform
-from rich.console import Console
 import sys
-import builtins
-from rich.logging import RichHandler
+
 import jsonpickle.ext.numpy as jsonpickle_numpy
 import jsonpickle.ext.pandas as jsonpickle_pd
-
+from rich.console import Console
+from rich.logging import RichHandler
+from rich.traceback import install
 
 # Detect if running in a Jupyter Notebook environment
 try:
     from IPython.core.getipython import get_ipython
+
     if get_ipython() is not None:
         IN_JUPYTER = True
     else:
@@ -55,11 +57,14 @@ logging.basicConfig(
             show_level=True,
             show_time=True,
             show_path=True,
-        )
+        ),
     ],
 )
 logging.getLogger("asyncio").setLevel(logging.WARNING)
 logger = logging.getLogger("ICARUS")
+
+# Nice Traceback
+install(show_locals=True)
 
 PLATFORM = platform.system()
 

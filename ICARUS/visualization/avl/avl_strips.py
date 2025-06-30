@@ -41,7 +41,7 @@ def plot_avl_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
-    from ICARUS.computation.solvers.AVL import get_strip_data
+    from ICARUS.solvers.AVL import get_strip_data
 
     strip_data = get_strip_data(plane, state, case)
 
@@ -126,7 +126,7 @@ def plot_avl_strip_data_2D(
     """
     Function to plot the 2D strips of a given airplane.
     """
-    from ICARUS.computation.solvers.AVL import get_strip_data
+    from ICARUS.solvers.AVL import get_strip_data
 
     if isinstance(surface_name, str):
         surface = plane.get_surface(surface_name)

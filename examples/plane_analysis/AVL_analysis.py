@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Planes.hermes import hermes
 
-from ICARUS.computation.solvers.AVL import avl_dynamics_fd
-from ICARUS.computation.solvers.AVL import avl_dynamics_implicit
-from ICARUS.computation.solvers.AVL import avl_polars
-from ICARUS.computation.solvers.AVL import process_avl_dynamics_implicit
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.AVL import avl_dynamics_fd
+from ICARUS.solvers.AVL import avl_dynamics_implicit
+from ICARUS.solvers.AVL import avl_polars
+from ICARUS.solvers.AVL import process_avl_dynamics_implicit
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
 database_folder = "E:\\Icarus\\Data"

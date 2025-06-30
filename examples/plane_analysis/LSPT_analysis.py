@@ -11,13 +11,13 @@ from typing import Any
 import numpy as np
 from Planes.hermes import hermes
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.Icarus_LSPT import LSPT
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.Icarus_LSPT import LSPT
 from ICARUS.vehicle import Airplane
 
 

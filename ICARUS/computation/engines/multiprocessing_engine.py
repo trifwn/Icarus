@@ -9,11 +9,11 @@ from datetime import datetime
 from typing import Any
 
 from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import AbstractEngine
 

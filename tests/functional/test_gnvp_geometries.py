@@ -3,11 +3,11 @@ import sys
 import numpy as np
 import pytest
 
-from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_3
-from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_7
 from ICARUS.core.types import FloatArray
 from ICARUS.database import angle_to_directory
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.GenuVP.post_process import get_wake_data_3
+from ICARUS.solvers.GenuVP.post_process import get_wake_data_7
 from ICARUS.vehicle import Airplane
 from ICARUS.visualization.gnvp import plot_gnvp3_wake
 from ICARUS.visualization.gnvp import plot_gnvp7_wake

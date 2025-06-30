@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.solvers import Solver
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ def test_avl_run(
     """Test AVL solver execution."""
     print("Testing AVL Running ...")
     # Get Solver
-    from ICARUS.computation.solvers.AVL import AVL
+    from ICARUS.solvers.AVL import AVL
 
     avl: Solver = AVL()
     analysis: str = avl.get_analyses_names()[0]

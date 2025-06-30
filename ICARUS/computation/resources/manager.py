@@ -2,12 +2,12 @@ from asyncio.locks import Lock as asyncio_lock
 from collections import defaultdict
 from multiprocessing.synchronize import Lock as mp_lock
 from pathlib import Path
-from threading import RLock as threading_lock
+from threading import _RLock as threading_lock
 from typing import Any
 
+from ICARUS.computation.core import ConcurrencyPrimitives
+from ICARUS.computation.core import LockLike
 from ICARUS.computation.core.protocols import ResourceManager
-from ICARUS.computation.core.utils.concurrency import ConcurrencyPrimitives
-from ICARUS.computation.core.utils.concurrency import LockLike
 
 
 class SimpleResourceManager(ResourceManager):

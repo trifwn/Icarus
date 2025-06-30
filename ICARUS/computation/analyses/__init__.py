@@ -2,17 +2,18 @@
 isort:skip_file
 """
 
-from .input import AirfoilInput
-from .input import AirplaneInput
-from .input import BoolInput
-from .input import FloatInput
-from .input import Input
-from .input import IntInput
-from .input import ListFloatInput
-from .input import ListInput
-from .input import NDArrayInput
-from .input import StateInput
-from .input import StrInput
+from .analysis_input import AirfoilInput
+from .analysis_input import AirplaneInput
+from .analysis_input import BoolInput
+from .analysis_input import FloatInput
+from .analysis_input import Input
+from .analysis_input import IntInput
+from .analysis_input import ListFloatInput
+from .analysis_input import ListInput
+from .analysis_input import NDArrayInput
+from .analysis_input import StateInput
+from .analysis_input import StrInput
+from .analysis_input import AnalysisInput
 
 from .analysis import Analysis
 
@@ -21,6 +22,8 @@ from .rerun_analysis import BaseRerunAnalysis
 # Airfoil Polar Analysis
 from .airfoil_polar_analysis import BaseAirfoilPolarAnalysis
 from .airfoil_polar_analysis import BaseAirfoil_MultiReyn_PolarAnalysis
+from .airfoil_polar_analysis import AirfoilPolarAnalysisInput
+from .airfoil_polar_analysis import AirfoilMultiReynsPolarAnalysisInput
 
 # Airplane Polar Analysis
 from .airplane_polar_analysis import BaseAirplanePolarAnalysis
@@ -41,10 +44,13 @@ __all__ = [
     "NDArrayInput",
     "StateInput",
     "StrInput",
+    "AnalysisInput",
     "Analysis",
     "BaseRerunAnalysis",
     "BaseAirfoilPolarAnalysis",
     "BaseAirfoil_MultiReyn_PolarAnalysis",
+    "AirfoilPolarAnalysisInput",
+    "AirfoilMultiReynsPolarAnalysisInput",
     "BaseAirplanePolarAnalysis",
     "BaseDynamicAnalysis",
 ]

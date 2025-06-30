@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from .surface_connections import SurfaceConnection
 
 
-
 class Airplane(Optimizable):
     def __init__(
         self,

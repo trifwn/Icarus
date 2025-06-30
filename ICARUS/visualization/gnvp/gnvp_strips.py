@@ -38,7 +38,7 @@ def plot_gnvp_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
-    from ICARUS.computation.solvers.GenuVP.post_process import get_strip_data
+    from ICARUS.solvers.GenuVP.post_process import get_strip_data
 
     all_strip_data, body_data = get_strip_data(plane, state, case, NBs, gnvp_version)
 
@@ -103,7 +103,7 @@ def plot_gnvp_strip_data_2D(
     if type(NB) is not int:
         return 0
 
-    from ICARUS.computation.solvers.GenuVP.post_process import get_strip_data
+    from ICARUS.solvers.GenuVP.post_process import get_strip_data
 
     strip_data, data = get_strip_data(plane, state, case, [NB], gnvp_version)
 

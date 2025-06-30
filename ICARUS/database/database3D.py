@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import Airplane
 
 
-
 class Database_3D:
     """Class to represent the 3D Database. It contains all the information and results
     of the 3D analysis of the vehicles.
@@ -341,12 +340,8 @@ class Database_3D:
         if gnvp_version == 7:
             return
         for case in cases:
-            from ICARUS.computation.solvers.GenuVP.post_process import (
-                get_error_convergence,
-            )
-            from ICARUS.computation.solvers.GenuVP.post_process import (
-                get_loads_convergence,
-            )
+            from ICARUS.solvers.GenuVP.post_process import get_error_convergence
+            from ICARUS.solvers.GenuVP.post_process import get_loads_convergence
 
             # Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load

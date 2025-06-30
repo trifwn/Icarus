@@ -26,7 +26,6 @@ dependencies = [
     "ipykernel",
     "ipywidgets",
     "ipython",
-    "tabulate",
     "pre-commit",
     "regex",
     "tqdm",

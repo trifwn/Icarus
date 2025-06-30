@@ -9,13 +9,13 @@ import time
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.vehicle import Airplane
 
 # DB CONNECTION
@@ -62,11 +62,11 @@ def main(GNVP_VERSION: int) -> None:
     DYNAMIC_ANALYSIS: dict[str, float] = {name: False}
 
     if GNVP_VERSION == 7:
-        from ICARUS.computation.solvers.GenuVP import GenuVP7
+        from ICARUS.solvers.GenuVP import GenuVP7
 
         gnvp: Solver = GenuVP7()
     elif GNVP_VERSION == 3:
-        from ICARUS.computation.solvers.GenuVP import GenuVP3
+        from ICARUS.solvers.GenuVP import GenuVP3
 
         gnvp = GenuVP3()
     else:
@@ -124,17 +124,17 @@ def main(GNVP_VERSION: int) -> None:
             gnvp.print_analysis_options()
 
             polars_time: float = time.time()
-            gnvp.execute(parallel=True)
+            gnvp.execute()
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
             plane.save()
 
-            from ICARUS.computation.solvers.GenuVP import process_gnvp_polars
+            from ICARUS.solvers.GenuVP import process_gnvp_polars
 
             process_gnvp_polars(plane, state, GNVP_VERSION)
 
-            # from ICARUS.computation.solvers.AVL import avl_polars
+            # from ICARUS.solvers.AVL import avl_polars
 
             # avl_polars(plane, state, "XFLR", angles)
 
@@ -209,7 +209,7 @@ def main(GNVP_VERSION: int) -> None:
 
             pert_time: float = time.time()
             print("Running Pertrubations")
-            gnvp.execute(parallel=True)
+            gnvp.execute()
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
             # Get Results And Save

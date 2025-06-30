@@ -110,7 +110,12 @@ class ProgressEvent(SerializableMixin):
 
     @classmethod
     def step_completed(
-        cls, task_id: TaskId, name: str, current_step: int, total_steps: int, message: str = "",
+        cls,
+        task_id: TaskId,
+        name: str,
+        current_step: int,
+        total_steps: int,
+        message: str = "",
     ) -> "ProgressEvent":
         """Create a step completion progress event."""
         return cls(task_id=task_id, name=name, current_step=current_step, total_steps=total_steps, message=message)

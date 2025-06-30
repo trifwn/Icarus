@@ -14,13 +14,12 @@ from typing import Protocol
 from typing import Sequence
 from typing import runtime_checkable
 
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import EventLike
-from ICARUS.computation.core.utils.concurrency import QueueLike
-
 from .types import TaskInput
 from .types import TaskOutput
+from .utils.concurrency import ConcurrencyFeature
+from .utils.concurrency import ConcurrentVariable
+from .utils.concurrency import EventLike
+from .utils.concurrency import QueueLike
 
 if TYPE_CHECKING:
     from .context import ExecutionContext

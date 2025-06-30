@@ -22,14 +22,13 @@ class BaseAirplanePolarAnalysis(Analysis):
         self,
         solver_name: str,
         execute_fun: Callable[..., Any],
-        parallel_execute_fun: Callable[..., Any] | None = None,
         unhook: Callable[..., Any] | None = None,
         extra_options: list[Input] = [],
     ) -> None:
         super().__init__(
             solver_name=solver_name,
             analysis_name="Aiplane Polar Analysis",
-            options=[
+            inputs=[
                 airplane_option,
                 state_opion,
                 solver_2D_option,
@@ -37,6 +36,5 @@ class BaseAirplanePolarAnalysis(Analysis):
                 *extra_options,
             ],
             execute_fun=execute_fun,
-            parallel_execute_fun=parallel_execute_fun,
             unhook=unhook,
         )

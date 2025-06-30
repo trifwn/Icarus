@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+from ICARUS.computation import Solver
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
 database_folder = "E:\\Icarus\\Data"
@@ -92,7 +92,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     xfoil.print_analysis_options()
 
     # RUN
-    xfoil.execute(parallel=False)
+    xfoil.execute()
     # Get polar
     polar = DB.get_airfoil_polars(airfoil_flap)
     polar.data

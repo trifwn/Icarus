@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.solvers import Solver
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ def test_gnvp7_run(
     print(f"Testing GNVP7 Running ({'Parallel' if run_parallel else 'Serial'})...")
 
     # Get Solver
-    from ICARUS.computation.solvers.GenuVP import GenuVP7
+    from ICARUS.solvers.GenuVP import GenuVP7
 
     gnvp7: Solver = GenuVP7()
 
@@ -68,7 +68,7 @@ def test_gnvp7_run(
     _ = gnvp7.get_analysis_options(verbose=True)
 
     start_time: float = time.perf_counter()
-    gnvp7.execute(parallel=run_parallel)
+    gnvp7.execute()
 
     end_time: float = time.perf_counter()
     execution_time = end_time - start_time

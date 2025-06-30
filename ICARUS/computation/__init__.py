@@ -57,9 +57,22 @@ from .observers import ConsoleProgressObserver
 from .reporters import Reporter
 from .runners import SimulationRunner
 
+from .solver_parameters import (
+    SolverParameters,
+    NoSolverParameters,
+    # Specific parameter types
+    Parameter,
+    BoolParameter,
+    FloatParameter,
+    IntParameter,
+    IntOrNoneParameter,
+    StrParameter,
+)
 
 from . import analyses
-from . import solvers
+
+from .base_solver import Solver
+
 
 __version__ = "2.0.0"
 __author__ = "Enhanced OOP Framework Team"
@@ -85,7 +98,18 @@ __all__ = [
     "ConsoleProgressObserver",
     # Monitors
     "RichProgressMonitor",
-    # Submodules
+    # Solver Parameters
+    "SolverParameters",
+    "NoSolverParameters",
+    # Specific solver parameter types
+    "Parameter",
+    "BoolParameter",
+    "FloatParameter",
+    "IntParameter",
+    "IntOrNoneParameter",
+    "StrParameter",
+    # Analyses
     "analyses",
-    "solvers",
+    # Base Solver
+    "Solver",
 ]

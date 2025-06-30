@@ -61,11 +61,11 @@ def plot_gnvp_wake(
         raise ValueError(f"Case must be a string or a float, got {type(case)}")
 
     if gnvp_version == 3:
-        from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_3
+        from ICARUS.solvers.GenuVP.post_process import get_wake_data_3
 
         get_wake_data = get_wake_data_3
     elif gnvp_version == 7:
-        from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_7
+        from ICARUS.solvers.GenuVP.post_process import get_wake_data_7
 
         get_wake_data = get_wake_data_7
     else:

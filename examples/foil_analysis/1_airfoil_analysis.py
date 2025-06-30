@@ -5,12 +5,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
+from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
+from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
 
 
 def main() -> None:
@@ -102,7 +103,7 @@ def main() -> None:
         # Foil2Wake
         if calcF2W:
             f2w_stime: float = time.time()
-            from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
+            from ICARUS.solvers.Foil2Wake.f2w_section import Foil2Wake
 
             f2w_s: Solver = Foil2Wake()
 
@@ -126,16 +127,17 @@ def main() -> None:
             f2w_solver_parameters.timestep = 0.1
 
             f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
-            f2w_s.execute(parallel=True)
+            f2w_s.execute(execution_mode=True)
 
             _ = f2w_s.get_results()
             f2w_etime: float = time.time()
 
             print(f"Foil2Wake completed in {f2w_etime - f2w_stime} seconds")
+
         # XFoil
         if calcXFoil:
             xfoil_stime: float = time.time()
-            from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+            from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
             xfoil: Solver = Xfoil()
 
@@ -147,7 +149,7 @@ def main() -> None:
 
             # Get Options
             xfoil_options: Struct = xfoil.get_analysis_options()
-            xfoil_solver_parameters: Struct = xfoil.get_solver_parameters()
+            xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
 
             # Set Options
             xfoil_options.airfoil = airfoil
@@ -165,11 +167,11 @@ def main() -> None:
             xfoil_solver_parameters.Ncrit = Ncrit
             xfoil_solver_parameters.xtr = (0.1, 0.2)
             xfoil_solver_parameters.print = False
-            # xfoil.print_solver_options()
+            # xfoil.print_solver_parameters()
 
             # RUN and SAVE
             xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-            xfoil.execute(parallel=True)
+            xfoil.execute()
 
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")
@@ -179,7 +181,7 @@ def main() -> None:
             of_stime: float = time.time()
             for reyn in reynolds:
                 print(f"Running OpenFoam for Re={reyn}")
-                from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
+                from ICARUS.solvers.OpenFoam.open_foam import OpenFoam
 
                 open_foam: Solver = OpenFoam()
 
@@ -202,7 +204,7 @@ def main() -> None:
                 of_solver_parameters.mesh_type = MeshType.structAirfoilMesher
                 of_solver_parameters.max_iterations = 100
                 of_solver_parameters.silent = False
-                # xfoil.print_solver_options()
+                # xfoil.print_solver_parameters()
 
                 # RUN
                 open_foam.define_analysis(of_options, of_solver_parameters)

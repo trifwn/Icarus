@@ -7,7 +7,7 @@ import numpy as np
 
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
-    from ICARUS.computation.solvers import Solver
+    from ICARUS.computation import Solver
     from ICARUS.core.types import FloatArray
 
 
@@ -22,7 +22,7 @@ def compute_airfoil_polars(
     plot_polars: bool = False,
 ) -> None:
     if solver_name == "Xfoil":
-        from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+        from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
         solver: Solver = Xfoil()
 
@@ -50,7 +50,7 @@ def compute_airfoil_polars(
         solver_parameters.repanel_n = repanel
 
     elif solver_name == "Foil2Wake":
-        from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
+        from ICARUS.solvers.Foil2Wake.f2w_section import Foil2Wake
 
         solver = Foil2Wake()
         # Import Analysis
@@ -71,7 +71,7 @@ def compute_airfoil_polars(
         solver_parameters.f_trip_low = trips[1]
 
     elif solver_name == "OpenFoam":
-        from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
+        from ICARUS.solvers.OpenFoam.open_foam import OpenFoam
 
         solver = OpenFoam()
         # Import Analysis
@@ -89,7 +89,7 @@ def compute_airfoil_polars(
         options.mach = mach
 
         # Set Solver Options
-        from ICARUS.computation.solvers.OpenFoam.files.setup_case import MeshType
+        from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
 
         solver_parameters.mesh_type = MeshType.structAirfoilMesher
         solver_parameters.max_iterations = 2000
@@ -103,7 +103,7 @@ def compute_airfoil_polars(
     solver.print_analysis_options()
 
     # RUN
-    solver.execute(parallel=False)
+    solver.execute()
     # Get polar
     if plot_polars:
         import matplotlib.pyplot as plt

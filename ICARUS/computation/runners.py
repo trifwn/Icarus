@@ -122,7 +122,7 @@ class SimulationRunner:
         Returns:
             List of task results
         """
-        self._tasks = tasks
+        self.add_tasks(tasks)
         return await self.run()
 
     def _resolve_dependencies(self) -> list[Task]:

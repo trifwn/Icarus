@@ -1,13 +1,13 @@
 import logging
 
-from ICARUS.computation.core.data_structures import ProgressEvent
-from ICARUS.computation.core.data_structures import TaskResult
-from ICARUS.computation.core.protocols import ProgressObserver
-from ICARUS.computation.core.protocols import ProgressReporter
-from ICARUS.computation.core.task import Task
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import QueueLike
+from .core import ConcurrencyFeature
+from .core import ConcurrentVariable
+from .core import ProgressEvent
+from .core import QueueLike
+from .core import Task
+from .core import TaskResult
+from .core.protocols import ProgressObserver
+from .core.protocols import ProgressReporter
 
 
 class Reporter(ProgressReporter):

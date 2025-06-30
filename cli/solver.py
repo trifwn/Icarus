@@ -4,7 +4,7 @@ from inquirer import List
 from inquirer import Text
 from inquirer import prompt
 
-from ICARUS.computation.solvers import Solver
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 
 

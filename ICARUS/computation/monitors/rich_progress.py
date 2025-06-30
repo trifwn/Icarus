@@ -14,15 +14,15 @@ from rich.progress import TaskID
 from rich.progress import TextColumn
 from rich.table import Table
 
+from ICARUS.computation.core import ConcurrencyFeature
+from ICARUS.computation.core import ConcurrentVariable
+from ICARUS.computation.core import EventLike
+from ICARUS.computation.core import ProgressEvent
+from ICARUS.computation.core import QueueLike
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
-from ICARUS.computation.core.data_structures import ProgressEvent
+from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.core.types import TaskState
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import EventLike
-from ICARUS.computation.core.utils.concurrency import QueueLike
 from ICARUS.settings import ICARUS_CONSOLE
 
 

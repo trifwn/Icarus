@@ -5,10 +5,11 @@ import numpy as np
 import pytest
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation.solvers import Solver
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
+from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
 
 
 @pytest.fixture(scope="module")
@@ -81,9 +82,9 @@ def test_xfoil_single_airfoil(
     print(f"\nRunning airfoil {airfoil.name}\n")
     start_time: float = time.time()
 
-    from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+    from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
-    xfoil: Solver = Xfoil()
+    xfoil: Xfoil = Xfoil()
 
     # Import Analysis - Sequential Angle run for multiple reynolds
     analysis = xfoil.get_analyses_names()[1]
@@ -91,7 +92,7 @@ def test_xfoil_single_airfoil(
 
     # Get Options
     xfoil_options: Struct = xfoil.get_analysis_options()
-    xfoil_solver_parameters: Struct = xfoil.get_solver_parameters()
+    xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
 
     # Set Options
     xfoil_options.airfoil = airfoil
@@ -109,7 +110,7 @@ def test_xfoil_single_airfoil(
 
     # RUN
     xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-    xfoil.execute(parallel=True)
+    xfoil.execute()
 
     end_time: float = time.time()
     execution_time = end_time - start_time

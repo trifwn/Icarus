@@ -2,9 +2,9 @@ import os
 
 import numpy as np
 
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import DiscretizationType
 from ICARUS.vehicle import SymmetryAxes

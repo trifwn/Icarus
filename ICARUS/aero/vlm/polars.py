@@ -21,14 +21,14 @@ def lspt_polars(
     state: State,
     solver2D: str,
     angles: FloatArray | list[float],
-    solver_options: dict[str, Any],
+    solver_parameters: dict[str, Any],
 ) -> None:
     """Function to run the wing LLT solver
 
     Args:
         plane (Airplane): Airplane Object
         options (dict[str, Any]): Options
-        solver_options (dict[str, Any]): Solver Options
+        solver_parameters (dict[str, Any]): Solver Options
 
     """
     DB = Database.get_instance()

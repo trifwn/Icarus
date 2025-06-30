@@ -18,12 +18,12 @@ from cli.analysis import set_analysis
 from cli.analysis import set_analysis_options
 from cli.solver import set_solver_parameters
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.Foil2Wake.f2w_section import Foil2Wake
-from ICARUS.computation.solvers.OpenFoam.open_foam import OpenFoam
-from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+from ICARUS.computation import Solver
 from ICARUS.core.base_types import Struct
 from ICARUS.database import Database
+from ICARUS.solvers.Foil2Wake.f2w_section import Foil2Wake
+from ICARUS.solvers.OpenFoam.open_foam import OpenFoam
+from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
 from .cli_home import cli_home
 

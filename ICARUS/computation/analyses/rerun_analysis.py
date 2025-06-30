@@ -19,7 +19,7 @@ class BaseRerunAnalysis(Analysis):
         super().__init__(
             solver_name=solver_name,
             analysis_name="Rerun Analysis",
-            options=[casedir, *extra_options],
+            inputs=[casedir, *extra_options],
             execute_fun=execute_fun,
             unhook=unhook,
         )
