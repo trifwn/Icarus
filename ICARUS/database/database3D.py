@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 import jsonpickle
-import jsonpickle.ext.pandas as jsonpickle_pd
 import pandas as pd
 from pandas import DataFrame
 
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
 
-jsonpickle_pd.register_handlers()
 
 
 class Database_3D:

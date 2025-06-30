@@ -6,7 +6,6 @@ from typing import Any
 from typing import Sequence
 
 import jsonpickle
-import jsonpickle.ext.pandas as jsonpickle_pd
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
@@ -26,7 +25,6 @@ if TYPE_CHECKING:
     from . import WingSurface
     from .surface_connections import SurfaceConnection
 
-jsonpickle_pd.register_handlers()
 
 
 class Airplane(Optimizable):

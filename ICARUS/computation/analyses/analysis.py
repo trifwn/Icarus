@@ -8,8 +8,6 @@ from typing import Any
 from typing import Callable
 
 import jsonpickle
-import jsonpickle.ext.numpy as jsonpickle_numpy
-import jsonpickle.ext.pandas as jsonpickle_pd
 from pandas import DataFrame
 from tabulate import tabulate
 
@@ -18,8 +16,6 @@ if TYPE_CHECKING:
 
 from . import Input
 
-jsonpickle_pd.register_handlers()
-jsonpickle_numpy.register_handlers()
 
 
 class Analysis:

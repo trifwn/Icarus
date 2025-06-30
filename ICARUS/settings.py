@@ -6,6 +6,9 @@ from rich.console import Console
 import sys
 import builtins
 from rich.logging import RichHandler
+import jsonpickle.ext.numpy as jsonpickle_numpy
+import jsonpickle.ext.pandas as jsonpickle_pd
+
 
 # Detect if running in a Jupyter Notebook environment
 try:
@@ -140,3 +143,7 @@ elif PLATFORM == "Linux":
 
     if not os.access(AVL_exe, os.X_OK):
         os.chmod(AVL_exe, 0o755)
+
+# Register jsonpickle handlers for numpy and pandas
+jsonpickle_pd.register_handlers()
+jsonpickle_numpy.register_handlers()
