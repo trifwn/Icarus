@@ -31,8 +31,11 @@ dependencies = [
     "regex",
     "tqdm",
     "xmltodict",
-    "inquirer",
-    "pyfiglet",
+    "rich",
+    "rich-cli",
+    "typer",
+    "textual",
+    "textual-dev",
     "gitpython",
     "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
     'jax',
@@ -52,7 +55,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-icarus-cli = "cli:cli_home"
+icarus = "cli.main:app"
+icarus-tui = "cli.tui_app:main"
 
 [tool.setuptools.package-data]
 ICARUS = ["bin/*"]

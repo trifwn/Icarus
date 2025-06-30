@@ -24,7 +24,6 @@ if IN_JUPYTER:
     ICARUS_CONSOLE = Console(
         file=sys.stdout,
         force_jupyter=True,
-        theme ="solarized-dark",
         # soft_wrap=True,
     )
 
@@ -33,7 +32,6 @@ else:
     ICARUS_CONSOLE = Console(
         file=sys.stdout,
         force_terminal=True,
-        theme = "solarized-dark",
         # soft_wrap=True,
         # highlight=False,  # Disable syntax highlighting for better performance in large outputs
     )

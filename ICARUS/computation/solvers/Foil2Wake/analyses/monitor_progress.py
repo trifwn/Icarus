@@ -11,7 +11,7 @@ from ICARUS.computation.solvers.Foil2Wake.post_process.progress import latest_ti
 
 
 def serial_monitor(
-    progress_bars: list[tqdm[NoReturn]],
+    progress_bars: list[tqdm],
     REYNDIR: str,
     reyn_str: str,
     name: str,
