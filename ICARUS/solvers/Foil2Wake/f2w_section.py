@@ -16,7 +16,7 @@ class Foil2Wake_PolarAnalysis(BaseAirfoilPolarAnalysis):
         super().__init__(
             solver_name="Foil2Wake",
             execute_fun=run_single_reynolds,
-            unhook=process_f2w_run,
+            post_execute_fun=process_f2w_run,
         )
 
 
@@ -25,7 +25,7 @@ class Foil2Wake_MultiReyn_PolarAnanlysis(BaseAirfoil_MultiReyn_PolarAnalysis):
         super().__init__(
             solver_name="Foil2Wake",
             execute_fun=run_multiple_reynolds_sequentially,
-            unhook=process_f2w_run,
+            post_execute_fun=process_f2w_run,
         )
 
 

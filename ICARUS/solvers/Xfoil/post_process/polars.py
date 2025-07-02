@@ -1,6 +1,5 @@
 import os
 
-import numpy as np
 from pandas import DataFrame
 
 from ICARUS.airfoils import Airfoil
@@ -8,21 +7,30 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 
 
-def save_multiple_reyn(
+def save_polar_results(
     airfoil: Airfoil,
-    polars: list[dict[str, FloatArray]],
     reynolds: list[float],
+    results: FloatArray,
 ) -> None:
+    """Saves the polar results to the database."""
+
     DB = Database.get_instance()
-    airfoil_dir: str = os.path.join(DB.DB2D, f"{airfoil.name.upper()}")
-    for i, reyn_data in enumerate(polars):
+    reyn_dicts: list[dict[str, FloatArray]] = []
+    for reyn_data in results:
+        tempDict: dict[str, FloatArray] = {}
+        for aoa_data in reyn_data:
+            tempDict[str(aoa_data[0])] = aoa_data[1:4]
+        reyn_dicts.append(tempDict)
+
+    for i, reyn_data in enumerate(reyn_dicts):
         if len(reyn_data) == 0:
             continue
-        os.makedirs(airfoil_dir, exist_ok=True)
 
-        reyn_str: str = f"Reynolds_{np.format_float_scientific(reynolds[i], sign=False, precision=3, min_digits=3).replace('+', '')}"
-        reyndir = os.path.join(airfoil_dir, reyn_str)
-        os.makedirs(reyndir, exist_ok=True)
+        _, airfoil_dir, reynolds_dir, _ = Database.generate_airfoil_directories(
+            airfoil=airfoil,
+            reynolds=reynolds[i],
+        )
+        os.makedirs(airfoil_dir, exist_ok=True)
 
         df: DataFrame = DataFrame(reyn_data).T.rename(
             columns={"index": "AoA", 0: "CL", 1: "CD", 2: "Cm"},
@@ -32,7 +40,7 @@ def save_multiple_reyn(
             print(f"Reynolds {reynolds[i]} failed to converge to a solution")
             continue
 
-        fname = os.path.join(reyndir, "clcd.xfoil")
+        fname = os.path.join(reynolds_dir, "clcd.xfoil")
         df.to_csv(fname, sep="\t", index=True, index_label="AoA")
 
     # If the airfoil doesn't exist in the DB, save it
@@ -41,5 +49,4 @@ def save_multiple_reyn(
         airfoil.save_selig(airfoil_dir)
 
     # Add Results to Database
-    print(f"Adding {airfoil.name.upper()} to the database")
     DB.load_airfoil_data(airfoil)

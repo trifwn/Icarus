@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
@@ -28,8 +28,8 @@ def main() -> None:
 
     # RUN SETUP
     calcXFoil: bool = True
-    calcF2W: bool = False
-    calcOpenFoam: bool = False
+    calcF2W: bool = True
+    calcOpenFoam: bool = True
 
     print("Running:")
     print(f"\tFoil2Wake section: {calcF2W}")
@@ -105,20 +105,18 @@ def main() -> None:
             f2w_stime: float = time.time()
             from ICARUS.solvers.Foil2Wake.f2w_section import Foil2Wake
 
-            f2w_s: Solver = Foil2Wake()
+            f2w_s: Foil2Wake = Foil2Wake()
 
-            analysis: str = f2w_s.get_analyses_names()[1]  # Multiple Reynolds
-            f2w_s.select_analysis(analysis)
-            f2w_options: Struct = f2w_s.get_analysis_options()
-            f2w_solver_parameters: Struct = f2w_s.get_solver_parameters()
+            analysis: Analysis = f2w_s.get_analyses()[1]  # Multiple Reynolds
 
-            # Set Options
-            f2w_options.airfoil = airfoil
-            f2w_options.reynolds = reynolds
-            f2w_options.mach = MACH
-            f2w_options.angles = angles
-            f2w_s.print_analysis_options()
+            # Set Inputs
+            f2w_inputs = analysis.get_analysis_input()
+            f2w_inputs.airfoil = airfoil
+            f2w_inputs.reynolds = reynolds
+            f2w_inputs.mach = MACH
+            f2w_inputs.angles = angles
 
+            f2w_solver_parameters = f2w_s.get_solver_parameters()
             f2w_solver_parameters.f_trip_upper = 0.1
             f2w_solver_parameters.f_trip_low = 1.0
             f2w_solver_parameters.Ncrit = Ncrit
@@ -126,10 +124,12 @@ def main() -> None:
             f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
             f2w_solver_parameters.timestep = 0.1
 
-            f2w_s.define_analysis(f2w_options, f2w_solver_parameters)
-            f2w_s.execute(execution_mode=True)
+            results = f2w_s.execute(
+                analysis=analysis,
+                inputs=f2w_inputs,
+                solver_parameters=f2w_solver_parameters,
+            )
 
-            _ = f2w_s.get_results()
             f2w_etime: float = time.time()
 
             print(f"Foil2Wake completed in {f2w_etime - f2w_stime} seconds")
@@ -144,24 +144,22 @@ def main() -> None:
             # Import Analysis
             # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
             # 1) Sequential Angle run for multiple reynolds
-            analysis = xfoil.get_analyses_names()[1]  # Run
-            xfoil.select_analysis(analysis)
+            analysis = xfoil.get_analyses()[1]  # Run
 
             # Get Options
-            xfoil_options: Struct = xfoil.get_analysis_options()
-            xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
+            xfoil_inputs = analysis.get_analysis_input()
 
             # Set Options
-            xfoil_options.airfoil = airfoil
-            xfoil_options.reynolds = reynolds
-            xfoil_options.mach = MACH
-            xfoil_options.max_aoa = aoa_max
-            xfoil_options.min_aoa = aoa_min
-            xfoil_options.aoa_step = 0.5
+            xfoil_inputs.airfoil = airfoil
+            xfoil_inputs.reynolds = reynolds
+            xfoil_inputs.mach = MACH
+            xfoil_inputs.max_aoa = aoa_max
+            xfoil_inputs.min_aoa = aoa_min
+            xfoil_inputs.aoa_step = 0.5
             # xfoil_options.angles = angles  # For options 2 and 3
 
-            xfoil.print_analysis_options()
             # Set Solver Options
+            xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
             xfoil_solver_parameters.max_iter = 500
 
             xfoil_solver_parameters.Ncrit = Ncrit
@@ -170,8 +168,11 @@ def main() -> None:
             # xfoil.print_solver_parameters()
 
             # RUN and SAVE
-            xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-            xfoil.execute()
+            xfoil.execute(
+                analysis=analysis,
+                inputs=xfoil_inputs,
+                solver_parameters=xfoil_solver_parameters,
+            )
 
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")
@@ -186,29 +187,30 @@ def main() -> None:
                 open_foam: Solver = OpenFoam()
 
                 # Import Analysis
-                analysis = open_foam.get_analyses_names()[0]  # Run
-                open_foam.select_analysis(analysis)
+                analysis = open_foam.get_analyses()[0]  # Run
 
                 # Get Options
-                of_options: Struct = open_foam.get_analysis_options()
-                of_solver_parameters: Struct = open_foam.get_solver_parameters()
+                of_inputs = analysis.get_analysis_input()
 
                 # Set Options
-                of_options.airfoil = airfoil
-                of_options.angles = angles
-                of_options.reynolds = reyn
-                of_options.mach = MACH
-                open_foam.print_analysis_options()
+                of_inputs.airfoil = airfoil
+                of_inputs.angles = angles
+                of_inputs.reynolds = reyn
+                of_inputs.mach = MACH
 
                 # Set Solver Options
+                of_solver_parameters = open_foam.get_solver_parameters()
                 of_solver_parameters.mesh_type = MeshType.structAirfoilMesher
                 of_solver_parameters.max_iterations = 100
                 of_solver_parameters.silent = False
                 # xfoil.print_solver_parameters()
 
                 # RUN
-                open_foam.define_analysis(of_options, of_solver_parameters)
-                open_foam.execute()
+                open_foam.execute(
+                    analysis=analysis,
+                    inputs=of_inputs,
+                    solver_parameters=of_solver_parameters,
+                )
             of_etime: float = time.time()
             print(f"OpenFoam completed in {of_etime - of_stime} seconds")
 

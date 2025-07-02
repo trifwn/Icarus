@@ -1,12 +1,10 @@
 from typing import Any
 
-from ICARUS.computation.analyses import FloatInput
-from ICARUS.computation.analyses import IntInput
 from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
 from ICARUS.computation.analyses.airplane_polar_analysis import (
     BaseAirplanePolarAnalysis,
 )
-from ICARUS.computation.analyses.rerun_analysis import BaseRerunAnalysis
+from ICARUS.computation.analyses.case_analysis import CaseAnalysis
 from ICARUS.computation.base_solver import Solver
 from ICARUS.computation.solver_parameters import BoolParameter
 from ICARUS.computation.solver_parameters import FloatParameter
@@ -19,18 +17,18 @@ from . import process_gnvp3_dynamics
 from . import process_gnvp_polars_3
 from .files.gnvp3_interface import gnvp3_execute
 
-timestep_option = FloatInput(
-    "timestep",
-    "Timestep = 0.05 * chord / u_inf",
-)
+# timestep_option = FloatInput(
+#     "timestep",
+#     "Timestep = 0.05 * chord / u_inf",
+# )
 
-maxiter_option = IntInput(
-    "maxiter",
-    "Maximum number of iterations",
-)
+# maxiter_option = IntInput(
+#     "maxiter",
+#     "Maximum number of iterations",
+# )
 
 
-class GenuVP3_RerunCase(BaseRerunAnalysis):
+class GenuVP3_RerunCase(CaseAnalysis):
     def __init__(self) -> None:
         super().__init__(
             "GenuVP3",
@@ -44,7 +42,7 @@ class GenuVP3_PolarAnalysis(BaseAirplanePolarAnalysis):
             solver_name="GenuVP3",
             execute_fun=gnvp3_polars,
             unhook=process_gnvp_polars_3,
-            extra_options=[timestep_option, maxiter_option],
+            # extra_options=[timestep_option, maxiter_option],
         )
 
 
@@ -54,7 +52,7 @@ class GenuVP3_DynamicAnalysis(BaseDynamicAnalysis):
             solver_name="GenuVP3",
             execute_fun=gnvp3_dynamics_serial,
             unhook=process_gnvp3_dynamics,
-            extra_options=[timestep_option, maxiter_option],
+            # extra_options=[timestep_option, maxiter_option],
         )
 
 

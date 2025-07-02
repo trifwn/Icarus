@@ -5,6 +5,8 @@ from typing import Literal
 
 import numpy as np
 
+from ICARUS.computation.analyses.analysis import Analysis
+
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
     from ICARUS.computation import Solver
@@ -27,22 +29,21 @@ def compute_airfoil_polars(
         solver: Solver = Xfoil()
 
         # Import Analysis
-        analysis: str = solver.get_analyses_names()[1]  # Run
-        solver.select_analysis(analysis)
+        analysis: Analysis = solver.get_analyses()[1]  # Run
 
         # Get Options
-        options = solver.get_analysis_options(verbose=False)
-        solver_parameters = solver.get_solver_parameters()
+        inputs = analysis.get_analysis_input(verbose=False)
 
         # Set Options
-        options.airfoil = airfoil
-        options.mach = mach
-        options.reynolds = reynolds_numbers
-        options.min_aoa = min(aoas)
-        options.max_aoa = max(aoas)
-        options.aoa_step = aoas[1] - aoas[0]
+        inputs.airfoil = airfoil
+        inputs.mach = mach
+        inputs.reynolds = reynolds_numbers
+        inputs.min_aoa = min(aoas)
+        inputs.max_aoa = max(aoas)
+        inputs.aoa_step = aoas[1] - aoas[0]
 
         # Set Solver Options
+        solver_parameters = solver.get_solver_parameters()
         solver_parameters.max_iter = 200
         solver_parameters.Ncrit = 9
         solver_parameters.xtr = (trips[0], trips[1])
@@ -54,19 +55,18 @@ def compute_airfoil_polars(
 
         solver = Foil2Wake()
         # Import Analysis
-        analysis = solver.get_analyses_names()[1]  # Run
-        solver.select_analysis(analysis)
+        analysis = solver.get_analyses()[1]  # Run
 
         # Get Options
-        options = solver.get_analysis_options(verbose=False)
-        solver_parameters = solver.get_solver_parameters()
+        inputs = analysis.get_analysis_input(verbose=False)
 
         # Set Options
-        options.airfoil = airfoil
-        options.reynolds = reynolds_numbers
-        options.mach = mach
-        options.angles = aoas
+        inputs.airfoil = airfoil
+        inputs.reynolds = reynolds_numbers
+        inputs.mach = mach
+        inputs.angles = aoas
 
+        solver_parameters = solver.get_solver_parameters()
         solver_parameters.f_trip_upper = trips[0]
         solver_parameters.f_trip_low = trips[1]
 
@@ -75,20 +75,17 @@ def compute_airfoil_polars(
 
         solver = OpenFoam()
         # Import Analysis
-        analysis = solver.get_analyses_names()[1]  # Run
-        solver.select_analysis(analysis)
+        analysis = solver.get_analyses()[1]  # Run
 
-        # Get Options
-        options = solver.get_analysis_options(verbose=False)
+        # Set Inputs
+        inputs = analysis.get_analysis_input(verbose=False)
+        inputs.airfoil = airfoil
+        inputs.angles = aoas
+        inputs.reynolds = reynolds_numbers
+        inputs.mach = mach
+
+        # Get Solver Parameters
         solver_parameters = solver.get_solver_parameters()
-
-        # Set Options
-        options.airfoil = airfoil
-        options.angles = aoas
-        options.reynolds = reynolds_numbers
-        options.mach = mach
-
-        # Set Solver Options
         from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
 
         solver_parameters.mesh_type = MeshType.structAirfoilMesher
@@ -98,12 +95,12 @@ def compute_airfoil_polars(
     else:
         raise ValueError("Solver not recognized")
 
-    # Run Solver
-    solver.define_analysis(options, solver_parameters)
-    solver.print_analysis_options()
-
     # RUN
-    solver.execute()
+    solver.execute(
+        analysis=analysis,
+        inputs=inputs,
+        solver_parameters=solver_parameters,
+    )
     # Get polar
     if plot_polars:
         import matplotlib.pyplot as plt

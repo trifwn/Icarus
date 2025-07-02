@@ -58,13 +58,3 @@ class AVL(Solver):
             ],
             solver_parameters=[use_avl_control_option],
         )
-
-
-# # EXAMPLE USAGE
-if __name__ == "__main__":
-    avl = AVL()
-    available_analyses = avl.get_analyses_names()
-    analysis = avl.analyses[available_analyses[0]]
-    avl.select_analysis(analysis.name)
-    options = avl.get_analysis_options()
-    # etc...

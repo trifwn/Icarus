@@ -6,11 +6,11 @@ from matplotlib import pyplot as plt
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
-from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+from ICARUS.solvers.Xfoil.xfoil import XfoilAseq, XfoilAseqInput, XfoilSolverParameters
 
 
 def main() -> None:
@@ -19,7 +19,10 @@ def main() -> None:
 
     # SETUP DB CONNECTION
     # CHANGE THIS TO YOUR DATABASE FOLDER
-    database_folder = "E:\\Icarus\\Data"
+    database_folder = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "Data",
+    )
 
     # Load the database
     DB = Database(database_folder)
@@ -101,24 +104,20 @@ def main() -> None:
             # Import Analysis
             # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
             # 1) Sequential Angle run for multiple reynolds
-            analysis = xfoil.get_analyses_names()[1]  # Run
-            xfoil.select_analysis(analysis)
-
-            # Get Options
-            xfoil_options: Struct = xfoil.get_analysis_options()
-            xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
+            analysis: XfoilAseq = xfoil.get_analyses()[1]  # Run
 
             # Set Options
-            xfoil_options.airfoil = airfoil
-            xfoil_options.reynolds = reynolds
-            xfoil_options.mach = MACH
-            xfoil_options.max_aoa = aoa_max
-            xfoil_options.min_aoa = aoa_min
-            xfoil_options.aoa_step = aoa_step
+            xfoil_inputs:  XfoilAseqInput = analysis.get_analysis_input()
+            xfoil_inputs.airfoil = airfoil
+            xfoil_inputs.reynolds = reynolds
+            xfoil_inputs.mach = MACH
+            xfoil_inputs.max_aoa = aoa_max
+            xfoil_inputs.min_aoa = aoa_min
+            xfoil_inputs.aoa_step = aoa_step
             # xfoil_options.angles = angles  # For options 2 and 3
 
-            xfoil.print_analysis_options()
             # Set Solver Options
+            xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
             xfoil_solver_parameters.max_iter = 500
             xfoil_solver_parameters.Ncrit = Ncrit
             xfoil_solver_parameters.xtr = (0.1, 0.2)
@@ -126,8 +125,12 @@ def main() -> None:
             # xfoil.print_solver_parameters()
 
             # RUN and SAVE
-            xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-            xfoil.execute()
+            xfoil.execute(
+                analysis=analysis,
+                inputs=xfoil_inputs,
+                solver_parameters=xfoil_solver_parameters,
+                execution_mode=ExecutionMode.MULTIPROCESSING,
+            )
 
             xfoil_etime: float = time.time()
             print(f"XFoil completed in {xfoil_etime - xfoil_stime} seconds")

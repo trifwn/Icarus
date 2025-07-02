@@ -1,50 +1,57 @@
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Callable
+from typing import Optional
 
 from ICARUS.airfoils import Airfoil
 
-from . import AirfoilInput as AirfoilInputDef
 from . import Analysis
-from . import AnalysisInput
-from . import FloatInput
-from . import Input
-from . import ListFloatInput
-
-airfoil_option = AirfoilInputDef()
-mach_option = FloatInput(name="mach", description="Mach number")
-
-multi_reynolds_option = ListFloatInput(
-    name="reynolds",
-    description="List of Reynold's numbers to run",
-)
-
-reynolds_option = FloatInput(
-    name="reynolds",
-    description="Reynold's numbers to run",
-)
-
-angles = ListFloatInput("angles", "List of angles to run polars")
+from . import BaseAnalysisInput
 
 
 @dataclass
-class AirfoilPolarAnalysisInput(AnalysisInput):
-    """Input for a single Reynolds airfoil polar analysis."""
+class AirfoilPolarAnalysisInput(BaseAnalysisInput):
+    """Input parameters for analyzing airfoil polar at specific angles."""
 
-    airfoil: Airfoil
-    mach: float
-    reynolds: float
-    angles: list[float]
+    airfoil: Optional[Airfoil] = field(
+        default=None,
+        metadata={"description": "Airfoil object to be analyzed"},
+    )
+    mach: Optional[float] = field(
+        default=None,
+        metadata={"description": "Mach number for the analysis"},
+    )
+    reynolds: Optional[float] = field(
+        default=None,
+        metadata={"description": "Reynolds number for the analysis"},
+    )
+    angles: Optional[list[float]] = field(
+        default=None,
+        metadata={"description": "List of angles of attack (in degrees) to run polar analysis"},
+    )
 
 
 @dataclass
-class AirfoilMultiReynsPolarAnalysisInput(AnalysisInput):
+class AirfoilMultiReynsPolarAnalysisInput(BaseAnalysisInput):
     """Input for a multi-Reynolds airfoil polar analysis."""
 
-    airfoil: Airfoil
-    mach: float
-    reynolds: list[float]
-    angles: list[float]
+    airfoil: Optional[Airfoil] = field(
+        default=None,
+        metadata={"description": "Airfoil object to be analyzed"},
+    )
+    mach: Optional[float] = field(
+        default=None,
+        metadata={"description": "Mach number for the analysis"},
+    )
+    reynolds: Optional[list[float]] = field(
+        default=None,
+        metadata={"description": "List of Reynolds numbers to run the analysis"},
+    )
+    angles: Optional[list[float]] = field(
+        default=None,
+        metadata={"description": "List of angles of attack (in degrees) for polar analysis"},
+    )
 
 
 class BaseAirfoilPolarAnalysis(Analysis[AirfoilPolarAnalysisInput]):
@@ -52,22 +59,14 @@ class BaseAirfoilPolarAnalysis(Analysis[AirfoilPolarAnalysisInput]):
         self,
         solver_name: str,
         execute_fun: Callable[..., Any],
-        unhook: Callable[..., Any] | None = None,
-        extra_options: list[Input] = [],
+        post_execute_fun: Callable[..., Any] | None = None,
     ) -> None:
         super().__init__(
             analysis_name="Airfoil Polar Analysis For a single Reynolds",
             solver_name=solver_name,
-            inputs=[
-                airfoil_option,
-                mach_option,
-                reynolds_option,
-                angles,
-                *extra_options,
-            ],
             execute_fun=execute_fun,
-            unhook=unhook,
-            input_type=AirfoilPolarAnalysisInput,
+            post_execute_fun=post_execute_fun,
+            input_type=AirfoilPolarAnalysisInput(),
         )
 
 
@@ -76,20 +75,12 @@ class BaseAirfoil_MultiReyn_PolarAnalysis(Analysis[AirfoilMultiReynsPolarAnalysi
         self,
         solver_name: str,
         execute_fun: Callable[..., Any],
-        unhook: Callable[..., Any] | None = None,
-        extra_options: list[Input] = [],
+        post_execute_fun: Callable[..., Any] | None = None,
     ) -> None:
         super().__init__(
             solver_name=solver_name,
             analysis_name="Airfoil Polar Analysis for Multiple Reynold's Numbers",
-            inputs=[
-                airfoil_option,
-                mach_option,
-                multi_reynolds_option,
-                angles,
-                *extra_options,
-            ],
             execute_fun=execute_fun,
-            unhook=unhook,
-            input_type=AirfoilMultiReynsPolarAnalysisInput,
+            post_execute_fun=post_execute_fun,
+            input_type=AirfoilMultiReynsPolarAnalysisInput(),
         )

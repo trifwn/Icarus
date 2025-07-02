@@ -7,7 +7,8 @@ import numpy as np
 import pytest
 
 from ICARUS.computation import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.analyses.analysis import Analysis
+from ICARUS.computation.core.types import ExecutionMode
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -34,12 +35,10 @@ def test_gnvp7_run(
     gnvp7: Solver = GenuVP7()
 
     # Set Analysis
-    analysis: str = gnvp7.get_analyses_names()[0]
-    gnvp7.select_analysis(analysis)
+    analysis: Analysis = gnvp7.get_analyses()[0]
 
     # Set Options
-    options: Struct = gnvp7.get_analysis_options(verbose=True)
-    solver_parameters: Struct = gnvp7.get_solver_parameters()
+    inputs = analysis.get_analysis_input(verbose=True)
 
     AoAmin = -5
     AoAmax = 5
@@ -48,13 +47,14 @@ def test_gnvp7_run(
     maxiter = 30
     timestep = 0.004
 
-    options.plane = benchmark_airplane
-    options.state = benchmark_state
-    options.solver2D = "Xfoil"
-    options.maxiter = maxiter
-    options.timestep = timestep
-    options.angles = angles
+    inputs.plane = benchmark_airplane
+    inputs.state = benchmark_state
+    inputs.solver2D = "Xfoil"
+    inputs.maxiter = maxiter
+    inputs.timestep = timestep
+    inputs.angles = angles
 
+    solver_parameters = gnvp7.get_solver_parameters()
     solver_parameters.Split_Symmetric_Bodies = False
     solver_parameters.Use_Grid = True
 
@@ -64,19 +64,19 @@ def test_gnvp7_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    gnvp7.define_analysis(options, solver_parameters)
-    _ = gnvp7.get_analysis_options(verbose=True)
-
+    execution_mode = ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
     start_time: float = time.perf_counter()
-    gnvp7.execute()
-
+    results = gnvp7.execute(
+        analysis=analysis,
+        inputs=inputs,
+        solver_parameters=solver_parameters,
+        execution_mode=execution_mode,
+    )
     end_time: float = time.perf_counter()
     execution_time = end_time - start_time
-    mode = "Parallel" if run_parallel else "Serial"
-    print(f"GNVP7 {mode} Run took: {execution_time:.3f} seconds")
-    print("Testing GNVP7 Running... Done")
 
-    results = gnvp7.get_results()
+    print(f"GNVP7 {execution_mode} Run took: {execution_time:.3f} seconds")
+    print("Testing GNVP7 Running... Done")
 
     # Assert that results were generated
     assert results is not None, "GNVP7 should return results"

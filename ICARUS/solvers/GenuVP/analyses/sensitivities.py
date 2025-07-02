@@ -71,7 +71,7 @@ def sensitivities_serial(
     timestep: float,
     angle: float,
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> None:
     """For each pertrubation in the sensitivity attribute of the dynamic airplane
     object, run a simulation in GNVP3. Can be used mainly for a sensitivity

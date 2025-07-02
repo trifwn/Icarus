@@ -93,6 +93,7 @@ class Database_2D:
         self.airfoils = Struct()
 
         self.EXTERNAL_DB = EXTERNAL_DB
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def get_airfoil_names(self) -> list[str]:
         """Returns the available airfoils in the database.
@@ -315,7 +316,7 @@ class Database_2D:
         # Get Folders
         airfoil_folders: list[str] = next(os.walk(self.DB2D))[1]
         for airfoil_folder in airfoil_folders:
-            logging.info(f"Scanning {airfoil_folder}...")
+            self.logger.info(f"Scanning {airfoil_folder}...")
             # Load Airfoil Object
             try:
                 self.add_airfoil(airfoil_folder)
@@ -334,15 +335,16 @@ class Database_2D:
             airfoil_name = airfoil.name.upper()
         else:
             airfoil_name = airfoil.upper()
+        self.logger.info(f"Adding {airfoil_name} to the database")
 
         # Load Computed Data
         data = self.read_airfoil_data_folder(airfoil_folder=airfoil_name)
 
         # Check if the data is empty
         if not data:
-            logging.info(f"No data found for airfoil {airfoil_name}")
+            self.logger.info(f"No data found for airfoil {airfoil_name}")
             return
-        logging.info(f"Loading data for airfoil {airfoil_name}")
+        self.logger.info(f"Loading data for airfoil {airfoil_name}")
 
         # Create Polar Object
         inverted_data: dict[str, dict[str, DataFrame]] = {}
@@ -455,7 +457,7 @@ class Database_2D:
                 naca_foil.save_selig(airfoil_dir)
 
                 self.airfoils[airfoil_folder.upper()] = naca_foil
-                logging.info(f"Loaded airfoil {airfoil_folder} from NACA Digits")
+                self.logger.info(f"Loaded airfoil {airfoil_folder} from NACA Digits")
                 return
             except Exception as e:
                 print(
@@ -472,7 +474,7 @@ class Database_2D:
                     airfoil_folder.lower(),
                 )
                 self.airfoils[airfoil_folder] = Airfoil.from_file(filename)
-                logging.info(f"Loaded airfoil {airfoil_folder} from self.DB2D")
+                self.logger.info(f"Loaded airfoil {airfoil_folder} from self.DB2D")
             except Exception as e:
                 print(
                     f"Error loading airfoil {airfoil_folder} from self.DB2D. Got error: {e}",
@@ -484,7 +486,7 @@ class Database_2D:
                     airfoil_folder.lower(),
                 )
                 print(f"Loaded airfoil {airfoil_folder} from WEB")
-                logging.info(
+                self.logger.info(
                     f"Loaded airfoil {airfoil_folder} from web and saved to DB",
                 )
                 return
@@ -522,7 +524,7 @@ class Database_2D:
                         # load the airfoil from the flap folder
                         filename = os.path.join(self.EXTERNAL_DB, name, name + ".dat")
                         self.airfoils[airfoil_folder] = Airfoil.from_file(filename)
-                        logging.info(
+                        self.logger.info(
                             f"Loaded airfoil {airfoil_folder} from EXTERNAL DB",
                         )
                 else:
@@ -534,7 +536,7 @@ class Database_2D:
     def generate_airfoil_directories(
         airfoil: Airfoil,
         reynolds: float,
-        angles: list[float] | FloatArray,
+        angles: list[float] | FloatArray = [],
     ) -> tuple[str, str, str, list[str]]:
         db = Database_2D.get_instance()
         AFDIR: str = os.path.join(

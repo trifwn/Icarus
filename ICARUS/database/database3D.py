@@ -38,6 +38,8 @@ class Database_3D:
         self.polars: dict[str, DataFrame] = {}
         self.transient_data: dict[str, Struct] = {}
 
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         if not os.path.isdir(self.DB3D):
             os.makedirs(self.DB3D)
 
@@ -153,7 +155,7 @@ class Database_3D:
                 raise error
 
     def read_plane_data(self, vehicle_folder: str) -> None:
-        logging.info(f"Adding Vehicle at {vehicle_folder}")
+        self.logger.info(f"Adding Vehicle at {vehicle_folder}")
         # Enter self.DB3D
         vehicle_folder_path = os.path.join(self.DB3D, vehicle_folder)
         # Load Vehicle object
@@ -285,7 +287,7 @@ class Database_3D:
             )
         else:
             raise ValueError(f"Solver {solver} not recognized")
-        logging.info(f"Added Polars for {vehicle.name} {solver}")
+        self.logger.info(f"Added Polars for {vehicle.name} {solver}")
 
     def load_gnvp_data(
         self,
@@ -377,7 +379,7 @@ class Database_3D:
         try:
             forces_df = pd.read_csv(file_lspt)
             self.add_forces(vehicle_name, forces_df)
-            logging.info(f"Loading Forces from {file_lspt}")
+            self.logger.info(f"Loading Forces from {file_lspt}")
             for name in ["LSPT Potential", "LSPT 2D"]:
                 self.add_polars_from_forces(
                     plane=vehicle,
@@ -401,7 +403,7 @@ class Database_3D:
         try:
             forces_df = pd.read_csv(forces_file)
             self.add_forces(vehicle_name, forces_df)
-            logging.info(f"Loading AVL Forces from {forces_file}")
+            self.logger.info(f"Loading AVL Forces from {forces_file}")
             for name in ["AVL"]:
                 self.add_polars_from_forces(
                     plane=vehicle,
@@ -437,10 +439,10 @@ class Database_3D:
         prefix: str,
     ) -> None:
         if plane is None:
-            logging.info("Could not Create Polars")
+            self.logger.info("Could not Create Polars")
             return
         if state is None:
-            logging.info("Could not Create Polars")
+            self.logger.info("Could not Create Polars")
             return
 
         Q = state.dynamic_pressure

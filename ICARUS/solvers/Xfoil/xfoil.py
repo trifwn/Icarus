@@ -1,81 +1,73 @@
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Optional
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation import Solver
 from ICARUS.computation import SolverParameters
-from ICARUS.computation.analyses import AirfoilInput
 from ICARUS.computation.analyses import Analysis
-from ICARUS.computation.analyses import AnalysisInput
-from ICARUS.computation.analyses import FloatInput
-from ICARUS.computation.analyses import ListFloatInput
+from ICARUS.computation.analyses import BaseAnalysisInput
 from ICARUS.computation.analyses.airfoil_polar_analysis import (
     BaseAirfoil_MultiReyn_PolarAnalysis,
 )
-from ICARUS.solvers.Xfoil.analyses.angles import multiple_reynolds_serial
-from ICARUS.solvers.Xfoil.analyses.angles import multiple_reynolds_serial_seq
-
-mach_option = FloatInput(name="mach", description="Mach number")
-
-multi_reynolds_option = ListFloatInput(
-    name="reynolds",
-    description="List of Reynold's numbers to run",
-)
-min_angle = FloatInput(
-    "min_aoa",
-    "Minimum angle of attack",
-)
-max_angle = FloatInput(
-    "max_aoa",
-    "Maximum angle of attack",
-)
-aoa_step = FloatInput(
-    "aoa_step",
-    "Step between each angle of attack",
-)
+from ICARUS.computation.analyses.analysis_input import iter_field
+from ICARUS.solvers.Xfoil.analyses.angles import aseq_analysis, aseq_analysis_reset_bl
+from ICARUS.solvers.Xfoil.post_process.polars import save_polar_results
 
 
 @dataclass
-class XfoilAseqPolarAnalysisInput(AnalysisInput):
-    airfoil: Airfoil
-    mach: float
-    reynolds: list[float]
-    min_aoa: float
-    max_aoa: float
-    aoa_step: float
+class XfoilAseqInput(BaseAnalysisInput):
+    """Input parameters for Xfoil airfoil polar analysis with angle of attack sweep."""
+
+    airfoil: Optional[Airfoil] = field(
+        default=None,
+        metadata={"description": "Airfoil object to be analyzed"},
+    )
+    mach: Optional[float] = field(
+        default=None,
+        metadata={"description": "Mach number for the analysis"},
+    )
+    reynolds: Optional[list[float] | float] = iter_field(
+        order=0,
+        default=None,
+        metadata={"description": "List of Reynolds numbers to analyze"},
+    )
+    min_aoa: Optional[float] = field(
+        default=None,
+        metadata={"description": "Minimum angle of attack in degrees"},
+    )
+    max_aoa: Optional[float] = field(
+        default=None,
+        metadata={"description": "Maximum angle of attack in degrees"},
+    )
+    aoa_step: Optional[float] = field(
+        default=None,
+        metadata={"description": "Angle of attack step in degrees"},
+    )
 
 
-class Xfoil_Aseq_PolarAnalysis(Analysis):
+class XfoilAseq(Analysis[XfoilAseqInput]):
     def __init__(
         self,
     ) -> None:
         super().__init__(
             solver_name="Xfoil",
             analysis_name="Airfoil Polar Analysis For a multiple Reynolds using aseq",
-            inputs=[
-                AirfoilInput(),
-                mach_option,
-                multi_reynolds_option,
-                min_angle,
-                max_angle,
-                aoa_step,
-            ],
-            execute_fun=multiple_reynolds_serial,
-            unhook=None,
-            input_type=XfoilAseqPolarAnalysisInput,
+            execute_fun=aseq_analysis,
+            post_execute_fun=save_polar_results,
+            input_type=XfoilAseqInput(),
         )
 
 
-class Xfoil_PolarAnalysis(BaseAirfoil_MultiReyn_PolarAnalysis):
+class XfoilAseqResetBL(BaseAirfoil_MultiReyn_PolarAnalysis):
     def __init__(
         self,
     ) -> None:
         super().__init__(
             solver_name="Xfoil",
-            execute_fun=multiple_reynolds_serial_seq,
-            unhook=None,
+            execute_fun=aseq_analysis_reset_bl,
+            post_execute_fun=save_polar_results,
         )
-
 
 @dataclass
 class XfoilSolverParameters(SolverParameters):
@@ -110,8 +102,8 @@ class Xfoil(Solver[XfoilSolverParameters]):
             solver_type="2D-IBLM",
             fidelity=1,
             available_analyses=[
-                Xfoil_PolarAnalysis(),
-                Xfoil_Aseq_PolarAnalysis(),
+                XfoilAseqResetBL(),
+                XfoilAseq(),
             ],
             solver_parameters=XfoilSolverParameters(),
         )

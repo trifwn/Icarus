@@ -441,7 +441,8 @@ class AirfoilPolars:
 
         # Clear all axes legends
         for ax in axs.flatten():
-            ax.legend().remove()
+            if ax.get_legend() is not None:
+                ax.legend().remove()
 
         ax = axs[0, 0]
         ax.legend(title="Reynolds Numbers", loc="upper left")

@@ -109,7 +109,7 @@ class Database:
     def generate_airfoil_directories(
         airfoil: Airfoil,
         reynolds: float,
-        angles: list[float] | FloatArray,
+        angles: list[float] | FloatArray = [],
     ) -> tuple[str, str, str, list[str]]:
         return Database_2D.generate_airfoil_directories(airfoil, reynolds, angles)
 

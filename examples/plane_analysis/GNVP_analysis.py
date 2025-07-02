@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS.computation import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
@@ -97,10 +97,8 @@ def main(GNVP_VERSION: int) -> None:
             # 1: Angles Sequential
             # 2: Angles Parallel
 
-            analysis: str = gnvp.get_analyses_names()[0]
-            gnvp.select_analysis(analysis)
-            options: Struct = gnvp.get_analysis_options()
-            solver_parameters: Struct = gnvp.get_solver_parameters()
+            analysis: Analysis = gnvp.get_analyses()[0]
+            inputs = analysis.get_analysis_input()
             AOA_MIN = -6
             AOA_MAX = 10
             NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
@@ -110,21 +108,23 @@ def main(GNVP_VERSION: int) -> None:
                 NO_AOA,
             )
 
-            options.plane = plane
-            options.solver2D = "XFLR"
-            options.state = state
-            options.maxiter = maxiter[plane.name]
-            options.timestep = timestep[plane.name]
-            options.angles = angles
+            inputs.plane = plane
+            inputs.solver2D = "XFLR"
+            inputs.state = state
+            inputs.maxiter = maxiter[plane.name]
+            inputs.timestep = timestep[plane.name]
+            inputs.angles = angles
 
+            solver_parameters = gnvp.get_solver_parameters()
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
 
-            gnvp.define_analysis(options, solver_parameters)
-            gnvp.print_analysis_options()
-
             polars_time: float = time.time()
-            gnvp.execute()
+            gnvp.execute(
+                analysis=analysis,
+                inputs=inputs,
+                solver_parameters=solver_parameters,
+            )
             print(
                 f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
             )
@@ -184,36 +184,33 @@ def main(GNVP_VERSION: int) -> None:
             # 4 Pertrubations Parallel
             # 5 Sesitivity Analysis Serial
             # 6 Sesitivity Analysis Parallel
-            analysis = gnvp.get_analyses_names()[1]  # Pertrubations PARALLEL
+            analysis = gnvp.get_analyses()[1]  # Pertrubations PARALLEL
             print(f"Selecting Analysis: {analysis}")
-            gnvp.select_analysis(analysis)
 
-            options = gnvp.get_analysis_options(verbose=False)
-            solver_parameters = gnvp.get_solver_parameters(verbose=False)
+            inputs = analysis.get_analysis_input(verbose=False)
 
-            if options is None:
+            if inputs is None:
                 raise ValueError("Options not set")
             # Set Options
-            options.plane = plane
-            options.state = unstick
-            options.solver2D = "Xfoil"
-            options.maxiter = maxiter[plane.name]
-            options.timestep = timestep[plane.name]
-            # options.angle = unstick.trim["AoA"]
+            inputs.plane = plane
+            inputs.state = unstick
+            inputs.solver2D = "Xfoil"
+            inputs.maxiter = maxiter[plane.name]
+            inputs.timestep = timestep[plane.name]
 
+            solver_parameters = gnvp.get_solver_parameters(verbose=False)
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             # Run Analysis
-            gnvp.define_analysis(options, solver_parameters)
-            gnvp.print_analysis_options()
-
             pert_time: float = time.time()
             print("Running Pertrubations")
-            gnvp.execute()
+            results = gnvp.execute(
+                analysis=analysis,
+                inputs=inputs,
+                solver_parameters=solver_parameters,
+            )
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
-            # Get Results And Save
-            _ = gnvp.get_results()
     # print time program took
     print(f"WORKFLOW FOR {GNVP_VERSION} TERMINATED")
     print(f"Execution took : --- {time.time() - start_time} seconds ---")

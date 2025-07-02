@@ -4,12 +4,14 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
+GNVP_LOGGER = logging.getLogger("ICARUS.solvers.GenuVP")
+
 
 def get_loads_convergence(file: str, gnvp_version: int) -> DataFrame:
     if gnvp_version == 3:
         return get_loads_convergence_3(file)
     if gnvp_version == 7:
-        logging.info("Load Convergence for GenuVP7 not implemented")
+        GNVP_LOGGER.info("Load Convergence for GenuVP7 not implemented")
         df = DataFrame()
         return df
     raise ValueError(f"GenuVP version {gnvp_version} not recognized")
@@ -19,7 +21,7 @@ def get_error_convergence(file: str, df: DataFrame, gnvp_version: int) -> DataFr
     if gnvp_version == 3:
         return get_error_convergence_3(file, df)
     if gnvp_version == 7:
-        logging.info("Error Convergence for GenuVP7 not implemented")
+        GNVP_LOGGER.info("Error Convergence for GenuVP7 not implemented")
         df = DataFrame()
         return df
     raise ValueError(f"GenuVP version {gnvp_version} not recognized")
@@ -62,10 +64,10 @@ def get_error_convergence_3(file: str, df: DataFrame) -> DataFrame:
             df.insert(3, "ERRORM", np.array(errorm, dtype=float))
         except ValueError as e:
             print(e)
-            logging.info(f"Some Run Had Problems! Could not add convergence data\n{e}")
+            GNVP_LOGGER.info(f"Some Run Had Problems! Could not add convergence data\n{e}")
 
     except FileNotFoundError:
-        logging.info(f"No gnvp3.out or gnvp7.out file found in {file}!")
+        GNVP_LOGGER.info(f"No gnvp3.out or gnvp7.out file found in {file}!")
     return df
 
 

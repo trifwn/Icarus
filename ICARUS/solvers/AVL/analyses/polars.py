@@ -16,6 +16,8 @@ from ..files.polars import case_run
 from ..files.polars import case_setup
 from ..files.polars import run_file
 
+AVL_LOGGER = logging.getLogger("ICARUS.solvers.GenuVP")
+
 
 def avl_polars(
     plane: Airplane,
@@ -87,7 +89,7 @@ def process_avl_polars(
 
     finally:
         state.save(case_directory)
-        logging.info("Adding Results to Database")
+        AVL_LOGGER.info("Adding Results to Database")
         # Add Plane to Database
         file_plane: str = os.path.join(case_directory, f"{plane.name}.json")
         _ = DB.load_vehicle(name=plane.name, file=file_plane)

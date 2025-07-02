@@ -5,11 +5,10 @@ from inquirer import Text
 from inquirer import prompt
 
 from ICARUS.computation import Solver
-from ICARUS.core.base_types import Struct
 
 
 def set_solver_parameters(solver: Solver) -> None:
-    parameters: Struct = solver.get_solver_parameters(verbose=True)
+    parameters = solver.get_solver_parameters(verbose=True)
     change_prompt: list[List] = [
         List(
             "change",

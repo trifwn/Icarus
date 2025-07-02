@@ -436,15 +436,12 @@ def airplane_cli(DB: Database, return_home: bool = False) -> None:
 
             # Set Solver Options and Parameters
             gnvp3_s: Solver = gnvp_3_solvers[vehicle.name]
-            gnvp3_options: Struct = gnvp3_s.get_analysis_options(verbose=True)
+            gnvp3_options: Struct = gnvp3_s.get_analysis_input(verbose=True)
             gnvp3_options.plane = vehicle
 
             # Run Solver
-            gnvp_3_solvers[vehicle.name].set_analysis_options(gnvp3_options)
-            gnvp_3_solvers[vehicle.name].execute()
-
-            # Get Results
-            _ = gnvp_3_solvers[vehicle.name].get_results()
+            gnvp_3_solvers[vehicle.name].set_analysis_input(gnvp3_options)
+            results = gnvp_3_solvers[vehicle.name].execute()
 
             gnvp_3_etime: float = time.time()
             print(f"Foil2Wake completed in {gnvp_3_etime - gnvp_3_stime} seconds")
@@ -455,11 +452,11 @@ def airplane_cli(DB: Database, return_home: bool = False) -> None:
 
             # Set Solver Options and Parameters
             gnvp_7: Solver = gnvp_7_solvers[vehicle.name]
-            gnvp_7_options: Struct = gnvp_7.get_analysis_options(verbose=True)
+            gnvp_7_options: Struct = gnvp_7.get_analysis_input(verbose=True)
             gnvp_7_options.plane = vehicle
 
             # Run Solver and Get Results
-            gnvp_7_solvers[vehicle.name].set_analysis_options(gnvp_7_options)
+            gnvp_7_solvers[vehicle.name].set_analysis_input(gnvp_7_options)
             gnvp_7_solvers[vehicle.name].execute()
 
             gnvp_7_etime: float = time.time()
@@ -471,11 +468,11 @@ def airplane_cli(DB: Database, return_home: bool = False) -> None:
 
             # Set Solver Options and Parameters
             lspt: Solver = lspt_solvers[vehicle.name]
-            lspt_options: Struct = lspt.get_analysis_options(verbose=True)
+            lspt_options: Struct = lspt.get_analysis_input(verbose=True)
             lspt_options.plane = vehicle
 
             # Run Solver and Get Results
-            lspt_solvers[vehicle.name].set_analysis_options(lspt_options)
+            lspt_solvers[vehicle.name].set_analysis_input(lspt_options)
             lspt_solvers[vehicle.name].execute()
 
             lspt_etime: float = time.time()

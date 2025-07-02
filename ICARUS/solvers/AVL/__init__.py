@@ -22,6 +22,7 @@ from .avl import AVL_DynamicAnalysisImplicit
 from .avl import AVL_PolarAnalysis
 from .avl import use_avl_control_option
 
+
 __all__ = [
     "AVL",
     "AVL_PolarAnalysis",

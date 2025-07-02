@@ -22,7 +22,6 @@ from .utils.concurrency import ConcurrencyType
 
 # ===== TYPE VARIABLES =====
 T = TypeVar("T")
-R = TypeVar("R")
 TaskInput = TypeVar("TaskInput", contravariant=True)
 TaskOutput = TypeVar("TaskOutput", covariant=True)
 

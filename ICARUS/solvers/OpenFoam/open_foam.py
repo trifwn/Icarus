@@ -14,7 +14,7 @@ class OpenFoam_MultiReyn_PolarAnanlysis(BaseAirfoil_MultiReyn_PolarAnalysis):
         super().__init__(
             solver_name="Foil2Wake",
             execute_fun=angles_serial,
-            unhook=None,
+            post_execute_fun=None,
         )
 
 

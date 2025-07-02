@@ -13,19 +13,22 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from ICARUS.computation import NoSolverParameters
-from ICARUS.computation import RichProgressMonitor
-from ICARUS.computation import SimulationRunner
-from ICARUS.computation import SolverParameters
-from ICARUS.computation.analyses import Analysis
 from ICARUS.computation.core import ExecutionMode
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.core.data_structures import TaskResult
+from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.settings import ICARUS_CONSOLE
+
+from . import NoSolverParameters
+from . import RichProgressMonitor
+from . import SimulationRunner
+from . import SolverParameters
+from .analyses import Analysis
+from .analyses import BaseAnalysisInput
 
 SolverParametersType = TypeVar("SolverParametersType", bound=SolverParameters)
 
 
-class Solver(Generic[SolverParametersType]):
+class Solver(Generic[SolverParametersType ],):
     """Abstract class to represent a solver. It is used to run analyses."""
 
     def __init__(
@@ -33,7 +36,7 @@ class Solver(Generic[SolverParametersType]):
         name: str,
         solver_type: str,
         fidelity: int,
-        available_analyses: list[Analysis],
+        available_analyses: list[Analysis[Any]],
         solver_parameters: SolverParametersType,
     ) -> None:
         """Initialize the Solver class.
@@ -55,59 +58,16 @@ class Solver(Generic[SolverParametersType]):
         except AssertionError:
             logging.error("Fidelity must be an integer")
         self.fidelity: int = fidelity
-        self.analyses: dict[str, Analysis] = {}
+        self.analyses: dict[str, Analysis[BaseAnalysisInput]] = {}
         for analysis in available_analyses:
             self.analyses[analysis.name] = analysis
-        self.mode: str = "None"
         self.solver_parameters: SolverParametersType = solver_parameters
-        self.latest_results: list[Any] = []
+        self.task_results: list[TaskResult] = []
 
-    def get_analyses_names(self, verbose: bool = False) -> list[str]:
+    def get_analyses(self, verbose: bool = False) -> list[Analysis]:
         if verbose:
             print(self)
-        return list(self.analyses.keys())
-
-    def select_analysis(self, identifier: str | int) -> None:
-        """Set the analysis to be used.
-
-        Args:
-            analysis (str): Analysis Name.
-
-        """
-        if isinstance(identifier, str):
-            self.mode = identifier
-        elif isinstance(identifier, int):
-            self.mode = list(self.analyses.keys())[identifier]
-        else:
-            raise ValueError("Invalid Analysis Identifier")
-
-    def get_analysis_options(self, verbose: bool = False) -> Struct:
-        """Get the options of the selected analysis.
-
-        Args:
-            verbose (bool, optional): Displays the option if True. Defaults to False.
-
-        Raises:
-            Exception: If the analysis has not been selected.
-
-        Returns:
-            Struct: Struct Object containing the analysis options.
-
-        """
-        # Convert Option Object to struct
-        ret: Struct = Struct()
-        print(self.mode)
-        for option in self.analyses[self.mode].inputs.values():
-            ret[option.name] = option.value
-
-        if verbose:
-            print(self.analyses[self.mode])
-        return ret
-
-    def set_analysis_options(self, options: Struct | dict[str, Any]) -> None:
-        """Set"""
-        for key in options.keys():
-            self.analyses[self.mode].inputs[key].value = options[key]
+        return list(self.analyses.values())
 
     def get_solver_parameters(self, verbose: bool = False) -> SolverParametersType:
         """Get the solver parameters of the selected analysis."""
@@ -136,61 +96,70 @@ class Solver(Generic[SolverParametersType]):
         except TypeError as e:
             self.logger.error(f"Failed to set solver parameters: {e}")
 
-    def define_analysis(
+    def execute(
         self,
-        options: Struct | dict[str, Any],
+        analysis: Analysis[BaseAnalysisInput],
+        inputs: BaseAnalysisInput | dict[str, Any] | list[BaseAnalysisInput | dict[str, Any]],
         solver_parameters: dict[str, Any] | SolverParametersType | None = None,
-    ) -> None:
-        """Set the options of the selected analysis."""
-        if self.mode is not None:
-            self.set_analysis_options(options)
-            if solver_parameters:
-                self.set_solver_parameters(solver_parameters)
-
-    def execute(self, execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL) -> None:
+        execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL,
+        progress_monitor: ProgressMonitor = RichProgressMonitor(),
+    ) -> Any:
         """
         Run the selected analysis asynchronously.
         This method constructs the AnalysisInput and uses the SimulationRunner.
         """
-        analysis = self.analyses[self.mode]
+        if not isinstance(analysis, Analysis):
+            raise TypeError("Analysis must be an instance of Analysis class")
 
-        progress_monitor = RichProgressMonitor()
-        runner = SimulationRunner(execution_mode=execution_mode, progress_monitor=progress_monitor)
-        results = asyncio.run(analysis.run_analysis(runner, solver_parameters=self.solver_parameters))
-        self.latest_results = results
+        if not isinstance(inputs, (BaseAnalysisInput, dict, list)):
+            raise TypeError("Inputs must be a BaseAnalysisInput, dict, or list of BaseAnalysisInput or dict")
 
-    def get_results(self, analysis_name: str | None = None) -> Any:
-        """
-        Get the results of the last execution or run the unhook function.
-        """
-        analysis = self.analyses[analysis_name or self.mode]
-        # In the new paradigm, results are returned by execute. This is for unhooking.
+        if not isinstance(solver_parameters, (SolverParameters, dict, type(None))):
+            raise TypeError("Solver parameters must be a SolverParametersType, dict, or None")
 
-        if self.latest_results:
-            # Assuming we want to process the first result
-            task_result = self.latest_results[0]
-            if task_result.success:
-                # To call unhook, we need the original input
-                # This part of the flow needs careful redesign.
-                # For now, returning the raw result.
-                return task_result.result
+        if not isinstance(execution_mode, ExecutionMode):
+            raise TypeError("Execution mode must be an instance of ExecutionMode")
 
-        # Fallback for old unhook logic, though it might not be applicable
-        if hasattr(analysis, "unhook") and callable(analysis.unhook):
-            # This would need an AnalysisInput, which we don't have here.
-            # This indicates a bigger design change is needed for result processing.
-            logging.warning(
-                "Cannot get results via unhook without a corresponding input. Returning latest raw results if available.",
-            )
+        if analysis.name not in self.analyses.keys():
+            raise ValueError(f"Analysis '{analysis.name}' is not available in this solver.")
 
-        return self.latest_results
-
-    def print_analysis_options(self) -> None:
-        """Print the options of the selected analysis."""
-        if self.mode is not None:
-            print(self.analyses[self.mode])
+        if isinstance(inputs, list):
+            analysis.set_analysis_multiple_inputs(inputs)
         else:
-            print("Analysis hase not been Selected")
+            analysis.set_analysis_input(inputs)
+
+        if solver_parameters:
+            self.set_solver_parameters(solver_parameters)
+
+        runner = SimulationRunner(execution_mode=execution_mode, progress_monitor=progress_monitor)
+        tasks, task_results = asyncio.run(analysis.run_analysis(runner, solver_parameters=self.solver_parameters))
+
+        results = []
+        for input in analysis.inputs:
+            input_task_ids = []
+            for input_name, sub_input in input.expand_dataclass().items():
+                task = next((t for t in tasks if t.metadata.get("input_name", None) == input_name), None)
+                if task is None:
+                    self.logger.error(f"Input: {input_name} not found in task list.")
+                    continue
+                else:
+                    input_task_ids.append(task.id)
+
+            input_results = [
+                next((tr.output for tr in task_results if tr.task_id == task.id), None)
+                for task in tasks
+                if task.id in input_task_ids
+            ]
+            # fold_results
+            input_results = input.fold_results(input_results)
+
+            results.append(
+                analysis.post_run_analysis(
+                    input,
+                    input_results,
+                )
+            )
+        return results
 
     def print_solver_parameters(self) -> None:
         """Prints the solver parameters in a rich table format."""

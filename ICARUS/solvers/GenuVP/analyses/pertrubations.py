@@ -10,7 +10,6 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.core.base_types import Struct
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_directory
 
@@ -47,7 +46,7 @@ def gnvp_disturbance_case(
     dst: Disturbance,
     analysis: str,
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> str:
     """Run a single disturbance simulation in GNVP3
 
@@ -140,7 +139,7 @@ def gnvp_dynamics_serial(
     maxiter: int,
     timestep: float,
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> None:
     """For each pertrubation in the plane object, run a simulation in GNVP3.
     Can be used mainly for a pertrubation analysis. This analysis is serial.
@@ -151,7 +150,7 @@ def gnvp_dynamics_serial(
         solver2D (str): 2D Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        solver_parameters (dict[str, Any] | Struct): Solver Options
+        solver_parameters (dict[str, Any]): Solver Options
 
     """
     DB = Database.get_instance()
@@ -232,7 +231,7 @@ def gnvp_dynamics_parallel(
     maxiter: int,
     timestep: float,
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> None:
     """For each pertrubation in the plane object, run a simulation in GNVP3.
     Can be used mainly for a pertrubation analysis. This analysis is parallel.
@@ -243,7 +242,7 @@ def gnvp_dynamics_parallel(
         solver2D (str): Solver to be used for foil data
         maxiter (int): Max Iterations
         timestep (float): Timestep for the simulation
-        solver_parameters (dict[str, Any] | Struct): Solver Options
+        solver_parameters (dict[str, Any]): Solver Options
 
     """
     DB = Database.get_instance()

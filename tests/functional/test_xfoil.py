@@ -5,8 +5,6 @@ import numpy as np
 import pytest
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation import Solver
-from ICARUS.core.base_types import Struct
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
@@ -87,30 +85,30 @@ def test_xfoil_single_airfoil(
     xfoil: Xfoil = Xfoil()
 
     # Import Analysis - Sequential Angle run for multiple reynolds
-    analysis = xfoil.get_analyses_names()[1]
-    xfoil.select_analysis(analysis)
+    analysis = xfoil.get_analyses()[1]
 
-    # Get Options
-    xfoil_options: Struct = xfoil.get_analysis_options()
-    xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
-
-    # Set Options
-    xfoil_options.airfoil = airfoil
-    xfoil_options.reynolds = xfoil_parameters["reynolds"]
-    xfoil_options.mach = xfoil_parameters["mach"]
-    xfoil_options.max_aoa = xfoil_parameters["aoa_max"]
-    xfoil_options.min_aoa = xfoil_parameters["aoa_min"]
-    xfoil_options.aoa_step = 0.5
+    # Set Inputs
+    xfoil_inputs = analysis.get_analysis_input()
+    xfoil_inputs.airfoil = airfoil
+    xfoil_inputs.reynolds = xfoil_parameters["reynolds"]
+    xfoil_inputs.mach = xfoil_parameters["mach"]
+    xfoil_inputs.max_aoa = xfoil_parameters["aoa_max"]
+    xfoil_inputs.min_aoa = xfoil_parameters["aoa_min"]
+    xfoil_inputs.aoa_step = 0.5
 
     # Set Solver Options
+    xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
     xfoil_solver_parameters.max_iter = 500
     xfoil_solver_parameters.Ncrit = xfoil_parameters["Ncrit"]
     xfoil_solver_parameters.xtr = (0.2, 0.2)
     xfoil_solver_parameters.print = False
 
     # RUN
-    xfoil.define_analysis(xfoil_options, xfoil_solver_parameters)
-    xfoil.execute()
+    xfoil.execute(
+        analysis=analysis,
+        inputs=xfoil_inputs,
+        solver_parameters=xfoil_solver_parameters,
+    )
 
     end_time: float = time.time()
     execution_time = end_time - start_time

@@ -13,7 +13,6 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from ICARUS import CPU_TO_USE
-from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import angle_to_directory
@@ -39,6 +38,9 @@ class StopRunningThreadError(Exception):
     pass
 
 
+GNVP_LOGGER = logging.getLogger("ICARUS.solvers.GenuVP")
+
+
 def gnvp_polars(
     plane: Airplane,
     state: State,
@@ -46,7 +48,7 @@ def gnvp_polars(
     maxiter: int,
     timestep: float,
     angles: list[float] | FloatArray,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
     parallel: bool = False,
     gnvp_version: Literal[3, 7] = 3,
 ) -> None:
@@ -117,7 +119,7 @@ def gnvp_aoa_case(
     movements: list[list[GNVP_Movement]],
     bodies_dicts: list[GenuSurface],
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> None:
     """Run a single angle simulation in GNVP3
 
@@ -178,7 +180,7 @@ def gnvp_polars_serial(
     timestep: float,
     angles: list[float] | FloatArray,
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> None:
     """Run Multiple Angles Simulation in GNVP3
 
@@ -280,7 +282,7 @@ def gnvp_polars_parallel(
     timestep: float,
     angles: list[float] | FloatArray,
     gnvp_version: int,
-    solver_parameters: dict[str, Any] | Struct,
+    solver_parameters: dict[str, Any],
 ) -> None:
     """Run all specified angle simulations in GNVP3 in parallel
 
@@ -420,7 +422,7 @@ def process_gnvp_polars(
     )
     state.save(CASEDIR)
 
-    logging.info("Adding Results to Database")
+    GNVP_LOGGER.info("Adding Results to Database")
     # Add Plane to Database
     file_plane: str = os.path.join(CASEDIR, f"{plane.name}.json")
     _ = DB.load_vehicle(name=plane.name, file=file_plane)

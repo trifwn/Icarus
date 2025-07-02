@@ -211,8 +211,8 @@ def airfoil_cli(DB: Database, return_home: bool = False) -> None:
 
             # Set Solver Options and Parameters
             f2w_s: Solver = f2w_solvers[airfoil.name]
-            f2w_options: Struct = f2w_s.get_analysis_options(verbose=True)
-            f2w_solver_parameters: Struct = f2w_s.get_solver_parameters()
+            f2w_options = f2w_s.get_analysis_input(verbose=True)
+            f2w_solver_parameters = f2w_s.get_solver_parameters()
             f2w_options.airfoil = airfoil
 
             # Run Solver
@@ -220,10 +220,8 @@ def airfoil_cli(DB: Database, return_home: bool = False) -> None:
                 f2w_options,
                 f2w_solver_parameters,
             )
-            f2w_solvers[airfoil.name].execute()
+            results = f2w_solvers[airfoil.name].execute()
 
-            # Get Results
-            _ = f2w_solvers[airfoil.name].get_results()
 
             f2w_etime: float = time.time()
             print(f"Foil2Wake completed in {f2w_etime - f2w_stime} seconds")
@@ -234,7 +232,7 @@ def airfoil_cli(DB: Database, return_home: bool = False) -> None:
 
             # Set Solver Options and Parameters
             xfoil: Solver = xfoil_solvers[airfoil.name]
-            xfoil_options: Struct = xfoil.get_analysis_options(verbose=True)
+            xfoil_options: Struct = xfoil.get_analysis_input(verbose=True)
             xfoil_options.airfoil = airfoil
 
             # Run Solver and Get Results
@@ -250,7 +248,7 @@ def airfoil_cli(DB: Database, return_home: bool = False) -> None:
 
             # Set Solver Options and Parameters
             open_foam: Solver = open_foam_solvers[airfoil.name]
-            open_foam_options: Struct = open_foam.get_analysis_options(verbose=True)
+            open_foam_options: Struct = open_foam.get_analysis_input(verbose=True)
             open_foam_options.airfoil = airfoil
 
             for reyn in open_foam_options.reynolds:

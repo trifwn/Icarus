@@ -56,6 +56,7 @@ class Task(Generic[TaskInput, TaskOutput]):
         config: Optional[TaskConfiguration] = None,
         task_id: Optional[TaskId] = None,
         progress_probe: Optional[Callable[[], ProgressEvent]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ):
         """
         Initialize a new task.
@@ -74,6 +75,7 @@ class Task(Generic[TaskInput, TaskOutput]):
         self.input = task_input
         self.config = config or TaskConfiguration()
         self.created_at = datetime.now()
+        self.metadata = metadata or {}
 
         # State is managed externally by the runner/scheduler
         self._state_history: List[Tuple[TaskState, datetime]] = [(TaskState.PENDING, self.created_at)]

@@ -7,7 +7,6 @@ from typing import Any
 
 import numpy as np
 
-from ICARUS.core.base_types import Struct
 from ICARUS.core.types import FloatArray
 
 from . import GenuSurface
@@ -27,7 +26,7 @@ class GenuParameters:
         u_freestream: float,
         angle_deg: float,
         environment: Environment,
-        solver_parameters: dict[str, Any] | Struct,
+        solver_parameters: dict[str, Any],
     ) -> None:
         """Set the parameters for the gnvp3 solver.
 
