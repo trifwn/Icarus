@@ -39,14 +39,15 @@ solver_parameters: list[Parameter] = [
 
 
 class OpenFoam(Solver):
+    analyses = [
+        OpenFoam_MultiReyn_PolarAnanlysis(),
+    ]
+
     def __init__(self) -> None:
         super().__init__(
             name="OpenFoam",
             solver_type="3D-RANS",
             fidelity=1,
-            available_analyses=[
-                OpenFoam_MultiReyn_PolarAnanlysis(),
-            ],
             solver_parameters=solver_parameters,
         )
 

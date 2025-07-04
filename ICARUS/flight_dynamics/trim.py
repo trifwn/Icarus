@@ -19,7 +19,7 @@ class TrimOutsidePolars(Exception):
     """Raise when Trim can't be computed due to Cm not crossing zero at the imported polars"""
 
 
-def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
+def trim_state(state: State) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -88,16 +88,6 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
     CL_OVER_CD = cl_trim / cd_trim
     CM0: float = float(state.polar[state.polar["AoA"] == 0.0]["Cm"].to_list()[0])
 
-    # Print How accurate is the trim
-    if verbose:
-        print(
-            f"Cm is {state.polar['Cm'][trim_loc1]} instead of 0 at AoA = {state.polar['AoA'][trim_loc1]}",
-        )
-        print(
-            f"Interpolated values are: AoA = {aoa_trim} , Cm = {cm_trim}, Cl = {cl_trim}",
-        )
-        print(f"Trim velocity is {U_CRUISE} m/s")
-
     # Calculate the static margin
     aoas = state.polar["AoA"].to_numpy(dtype=float)
     cls = state.polar["CL"].to_numpy(dtype=float)
@@ -128,6 +118,7 @@ def trim_state(state: State, verbose: bool = True) -> dict[str, float]:
         "AoA": aoa_trim,
         "CL": cl_trim,
         "CD": cd_trim,
+        "Cm": cm_trim,
         "CL/CD": CL_OVER_CD,
         "Cm0": CM0,
         "Static Margin": static_margin,

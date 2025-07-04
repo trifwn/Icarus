@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 from Planes.hermes import hermes
@@ -5,13 +7,15 @@ from Planes.hermes import hermes
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
-from ICARUS.solvers.AVL import avl_dynamics_fd
-from ICARUS.solvers.AVL import avl_dynamics_implicit
-from ICARUS.solvers.AVL import avl_polars
+from ICARUS.settings import INSTALL_DIR
+from ICARUS.solvers.AVL import AVL
 from ICARUS.solvers.AVL import process_avl_dynamics_implicit
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
-database_folder = "E:\\Icarus\\Data"
+database_folder = os.path.join(
+    INSTALL_DIR,
+    "Data",
+)
 # Load the database
 DB = Database(database_folder)
 plane = hermes("hermes")
@@ -23,10 +27,12 @@ state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestrea
 
 angles = np.linspace(-10, 10, 11)
 
-avl_polars(plane, state, solver2D, angles)
+avl = AVL()
+
+avl.polars(plane, state, solver2D, angles)
 # state.plot_polars()
 
-avl_dynamics_implicit(plane=plane, state=state, solver2D=solver2D)
+avl.dynamics_implicit(plane=plane, state=state, solver2D=solver2D)
 impl_long, impl_late = process_avl_dynamics_implicit(plane, state)
 
 
@@ -44,24 +50,15 @@ epsilons = {
 
 # epsilons = None
 state.add_all_pertrubations("Central", epsilons)
-state.get_pertrub()
+state.print_pertrubations()
 
-avl_dynamics_fd(plane, state, solver2D)
+avl.dynamics(plane, state, solver2D)
 
-print(state)
 fig = plt.figure(figsize=(12, 6))
 axs = fig.subplots(1, 2)
 axs = axs.flatten()
 
 state.plot_eigenvalues(axs=axs)
-
-# x = [ele.real for ele in impl_late]
-# y = [ele.imag for ele in impl_late]
-# axs[0].scatter(x, y, marker="x", label="Implicit", color="m")
-
-# x = [ele.real for ele in impl_long]
-# y = [ele.imag for ele in impl_long]
-# axs[1].scatter(x, y, marker="o", label="Implicit", color="m")
 
 axs[0].set_title("Lateral")
 axs[1].set_title("Longitudinal")

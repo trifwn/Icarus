@@ -124,7 +124,7 @@ def disturbance2movement(disturbance: Disturbance) -> GNVP_Movement:
         disturbed["a1"] = -disturbed["a1"]
         disturbed["a2"] = -disturbed["a2"]
 
-    if disturbance.isRotational:
+    if disturbance.is_rotational:
         # Conver Rad 2 Deg
         disturbed["a1"] = np.rad2deg(disturbed["a1"])
         disturbed["a2"] = np.rad2deg(disturbed["a2"])

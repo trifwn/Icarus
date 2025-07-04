@@ -8,8 +8,7 @@ from typing import Literal
 from pandas import DataFrame
 
 from ICARUS.airfoils import AirfoilData
-from ICARUS.airfoils import AirfoilPolars
-from ICARUS.core.base_types import Struct
+from ICARUS.airfoils import AirfoilPolarMap
 from ICARUS.core.types import FloatArray
 
 from .database2D import Database_2D
@@ -77,7 +76,7 @@ class Database:
     def get_airfoil(self, name: str) -> Airfoil:
         return self.foils_db.get_airfoil(name)
 
-    def get_airfoil_polars(self, airfoil: str | Airfoil, solver: str | None = None) -> AirfoilPolars:
+    def get_airfoil_polars(self, airfoil: str | Airfoil, solver: str | None = None) -> AirfoilPolarMap:
         return self.foils_db.get_polars(airfoil, solver=solver)
 
     def get_or_compute_airfoil_polars(
@@ -87,7 +86,7 @@ class Database:
         aoa: list[float] | FloatArray,
         solver_name: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
         REYNOLDS_BINS: list[float] | FloatArray | None = None,
-    ) -> AirfoilPolars:
+    ) -> AirfoilPolarMap:
         return self.foils_db.get_or_compute_polars(
             airfoil=airfoil,
             reynolds=reynolds,
@@ -102,19 +101,19 @@ class Database:
     def get_airfoil_names(self) -> list[str]:
         return self.foils_db.get_airfoil_names()
 
-    def load_airfoil_data(self, airfoil: str | Airfoil) -> None:
+    def load_airfoil_data(self, airfoil: Airfoil) -> None:
         self.foils_db.load_airfoil_data(airfoil)
 
     @staticmethod
     def generate_airfoil_directories(
         airfoil: Airfoil,
-        reynolds: float,
+        reynolds: float | None = None,
         angles: list[float] | FloatArray = [],
-    ) -> tuple[str, str, str, list[str]]:
+    ) -> tuple[str, str, list[str]]:
         return Database_2D.generate_airfoil_directories(airfoil, reynolds, angles)
 
     @property
-    def airfoils(self) -> Struct:
+    def airfoils(self) -> dict[str, Airfoil]:
         return self.foils_db.airfoils
 
     @property

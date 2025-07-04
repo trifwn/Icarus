@@ -5,6 +5,7 @@ It is also possible to do a pertubation analysis for each aircraft.
 THIS PROGRAM USES THE LSPT SOLVER Developed in this project.
 """
 
+import os
 import time
 from typing import Any
 
@@ -17,16 +18,22 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
+
+# CHANGE THIS TO YOUR DATABASE FOLDER
+from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.Icarus_LSPT import LSPT
 from ICARUS.vehicle import Airplane
+
+database_folder = os.path.join(
+    INSTALL_DIR,
+    "Data",
+)
 
 
 def main() -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
 
-    # # DB CONNECTION
-    database_folder = "E:\\Icarus\\Data"
     # Load the database
     _ = Database(database_folder)
 

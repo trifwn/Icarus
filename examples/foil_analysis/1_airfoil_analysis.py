@@ -10,6 +10,7 @@ from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
+from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
 from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
 
@@ -20,7 +21,7 @@ def main() -> None:
 
     # SETUP DB CONNECTION
     # CHANGE THIS TO YOUR DATABASE FOLDER
-    database_folder = "E:\\Icarus\\Data"
+    database_folder = os.path.join(INSTALL_DIR, "Data")
 
     # Load the database
     DB = Database(database_folder)
@@ -224,7 +225,7 @@ def main() -> None:
             airfoil_folder = os.path.join("Data/images/")
             polar.plot()
             plt.show(block=True)
-            polar.save_polar_plot_img(airfoil_folder, "xfoil")
+            polar.save_polar_plot_img(airfoil_folder)
 
         except Exception as e:
             print(f"Error saving polar plot. Got: {e}")

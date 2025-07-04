@@ -217,12 +217,13 @@ for param in gnvp3_solver_parameter_list:
 
 
 class GenuVP3(Solver):
+    analyses = [GenuVP3_PolarAnalysis(), GenuVP3_DynamicAnalysis(), GenuVP3_RerunCase()]
+
     def __init__(self) -> None:
         super().__init__(
             "GenuVP3",
             "3D VPM",
             2,
-            [GenuVP3_PolarAnalysis(), GenuVP3_DynamicAnalysis(), GenuVP3_RerunCase()],
             solver_parameters=gnvp3_solver_parameter_list,
         )
 

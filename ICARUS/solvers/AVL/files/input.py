@@ -9,7 +9,7 @@ import numpy as np
 from pandas import DataFrame
 
 from ICARUS import AVL_exe
-from ICARUS.airfoils import AirfoilPolars
+from ICARUS.airfoils.metrics.polar_map import AirfoilPolarMap
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
@@ -289,7 +289,7 @@ def avl_geo(
 
                 try:
                     DB = Database.get_instance()
-                    polar_obj: AirfoilPolars = DB.get_or_compute_airfoil_polars(
+                    polar_obj: AirfoilPolarMap = DB.get_or_compute_airfoil_polars(
                         airfoil=strip_airfoil,
                         reynolds=reynolds,
                         solver_name=solver2D,

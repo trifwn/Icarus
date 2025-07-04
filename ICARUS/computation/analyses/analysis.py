@@ -10,7 +10,6 @@ from typing import Generic
 from typing import TypeVar
 
 import jsonpickle
-from pandas import DataFrame
 from rich.console import Console
 from rich.table import Table
 
@@ -77,7 +76,7 @@ class Analysis(Generic[AnalysisInput]):
         analysis_name (str): Name of the analysis
         inputs (list[Input]): Analysis options
         execute_fun (Callable[..., Any]): Function to run the analysis
-        unhook (Callable[...,Any] | None, optional): Function to run after the analysis for post processing. Defaults to None.
+        post_execute_fun (Callable[...,Any] | None, optional): Function to run after the analysis for post processing. Defaults to None.
 
     """
 
@@ -101,13 +100,20 @@ class Analysis(Generic[AnalysisInput]):
 
         self.solver_name: str = solver_name
         self.name: str = analysis_name
-        self.execute: Callable[..., Any] = execute_fun
+
+        if not callable(execute_fun):
+            raise TypeError(f"execute_fun must be callable, got {type(execute_fun)}")
+        self._execute_fun = execute_fun
+
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.input_type: AnalysisInput = input_type
         self.inputs: list[AnalysisInput] = []
 
         self.post_execute_fun: Callable[..., Any] | None = post_execute_fun
+
+    # def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+    #     # return self.execute_fun(*args, **kwargs)
 
     def __str__(self) -> str:
         """String representation of the analysis
@@ -235,7 +241,7 @@ class Analysis(Generic[AnalysisInput]):
                 )
 
                 # Instantiate Executor
-                executor = AnalysisExecutor(self.execute)
+                executor = AnalysisExecutor(self._execute_fun)
 
                 # Prepare metadata
                 task_metadata = {
@@ -273,10 +279,6 @@ class Analysis(Generic[AnalysisInput]):
         Returns:
             list[TaskResult]: A list of task results.
         """
-        # This is a simplification; a more robust implementation would be needed
-        # to map the old Struct-based options to the new AnalysisInput dataclasses.
-        # For now, we assume the analysis has a corresponding input type that can be instantiated.
-
         if not self.inputs:
             raise ValueError("No inputs provided for the analysis. Please set the inputs before running.")
 
@@ -371,7 +373,7 @@ class Analysis(Generic[AnalysisInput]):
         return {
             "solver_name": self.solver_name,
             "name": self.name,
-            "execute": self.execute,
+            "execute": self._execute_fun,
             "unhook": getattr(self, "unhook", lambda: 0),
             "input_type": self.input_type,
         }
@@ -379,6 +381,6 @@ class Analysis(Generic[AnalysisInput]):
     def __setstate__(self, state: dict[str, Any]) -> None:
         self.solver_name = state["solver_name"]
         self.name = state["name"]
-        self.execute = state["execute"]
+        self._execute_fun = state["execute"]
         self.post_execute_fun = state["unhook"]
         self.input_type = state["input_type"]

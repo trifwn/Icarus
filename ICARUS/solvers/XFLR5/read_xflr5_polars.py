@@ -20,7 +20,7 @@ def parse_airfoil_name(file_name: str) -> str:
     return name
 
 
-def read_polars_2d(directory: str) -> None:
+def read_XFLR5_airfoil_polars(directory: str) -> None:
     """Reads the polars from XFLR5 and stores them in the database.
 
     Args:
@@ -94,14 +94,14 @@ def read_polars_2d(directory: str) -> None:
         # Add to the database
         if airfoil_name not in DB.foils_db.polars.keys():
             DB.foils_db.polars[airfoil_name] = AirfoilData(
-                name=airfoil_name,
-                data={"XFLR": reynolds_data[airfoil_name]},
+                airfoil_name=airfoil_name,
+                polar_maps={"XFLR": reynolds_data[airfoil_name]},
             )
         else:
-            DB.foils_db.polars[airfoil_name].add_solver("XFLR", reynolds_data[airfoil_name])
+            DB.foils_db.polars[airfoil_name].add_polar_map("XFLR", reynolds_data[airfoil_name])
 
 
-def read_XFLR5_polars(
+def read_XFLR5_airplane_polars(
     filename: str,
     plane_name: str,
 ) -> DataFrame | None:

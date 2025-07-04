@@ -15,13 +15,13 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
-from ICARUS.solvers.XFLR5.polars import read_polars_2d
+from ICARUS.solvers.XFLR5.read_xflr5_polars import read_XFLR5_airfoil_polars
 from ICARUS.vehicle import Airplane
 
 # DB CONNECTION
 database_folder = os.path.join("/mnt/e/ICARUS", "Data")
 DB = Database(database_folder)
-read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
+read_XFLR5_airfoil_polars(os.path.join(DB.EXTERNAL_DB, "2D"))
 
 
 def main(GNVP_VERSION: int) -> None:
@@ -177,7 +177,7 @@ def main(GNVP_VERSION: int) -> None:
             epsilons = None
 
             unstick.add_all_pertrubations("Central", epsilons)
-            unstick.get_pertrub()
+            unstick.print_pertrubations()
 
             # Define Analysis for Pertrubations
             # 3 Pertrubations Serial

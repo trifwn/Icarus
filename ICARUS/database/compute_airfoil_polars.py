@@ -5,8 +5,6 @@ from typing import Literal
 
 import numpy as np
 
-from ICARUS.computation.analyses.analysis import Analysis
-
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
     from ICARUS.computation import Solver
@@ -29,7 +27,7 @@ def compute_airfoil_polars(
         solver: Solver = Xfoil()
 
         # Import Analysis
-        analysis: Analysis = solver.get_analyses()[1]  # Run
+        analysis = solver.aseq  # Run
 
         # Get Options
         inputs = analysis.get_analysis_input(verbose=False)

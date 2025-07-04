@@ -1,4 +1,4 @@
-def angles_sepatation(all_angles: list[float]) -> tuple[list[float], list[float]]:
+def separate_angles(all_angles: list[float]) -> tuple[list[float], list[float]]:
     """Separate angles in positive and negative.
 
     Args:

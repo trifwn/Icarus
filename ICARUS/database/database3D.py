@@ -477,7 +477,6 @@ class Database_3D:
                     polar=forces,
                     polar_prefix=prefix,
                     is_dimensional=True,
-                    verbose=False,
                 )
         except Exception as error:
             logging.debug(f"Error adding polar {error}")

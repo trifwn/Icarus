@@ -219,12 +219,13 @@ for param in gnvp7_solver_parameter_list:
 
 
 class GenuVP7(Solver):
+    analyses = [GenuVP7_PolarAnalysis(), GenuVP7_DynamicAnalysis(), GenuVP7_RerunCase()]
+
     def __init__(self) -> None:
         super().__init__(
             "GenuVP7",
             "3D VPM",
             2,
-            [GenuVP7_PolarAnalysis(), GenuVP7_DynamicAnalysis(), GenuVP7_RerunCase()],
             solver_parameters=gnvp7_solver_parameter_list,
         )
 

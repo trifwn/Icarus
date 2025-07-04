@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils import AirfoilPolars
+from ICARUS.airfoils.metrics.polar_map import AirfoilPolarMap
 from ICARUS.core.types import FloatArray
 from ICARUS.core.utils import ff2
 from ICARUS.core.utils import ff3
@@ -492,7 +492,7 @@ def cld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters,
         reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
         try:
             DB = Database.get_instance()
-            polars: AirfoilPolars = DB.get_or_compute_airfoil_polars(
+            polars: AirfoilPolarMap = DB.get_or_compute_airfoil_polars(
                 airfoil=DB.get_airfoil(bod.airfoil_name),
                 reynolds=reynolds,
                 solver_name=solver,
@@ -509,20 +509,20 @@ def cld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters,
         blankline(f_io)
         line(2, "NSPAN", "Number of positions for which CL-CD data are given", f_io)
         line(
-            len(polars.reynolds_nums),
+            len(polars.reynolds_numbers),
             "! NMACH",
             "Mach numbers for which CL-CD are given",
             f_io,
         )
-        for _ in range(len(polars.reynolds_nums)):
+        for _ in range(len(polars.reynolds_numbers)):
             f_io.write("0.08\n")
         f_io.write("! Reyn numbers for which CL-CD are given\n")
-        for reyn in polars.reynolds_keys:
+        for reyn in polars.reynolds_strings:
             f_io.write(f"{reyn.zfill(5)}\n")
         blankline(f_io)
 
         df: DataFrame = polars.df
-        angles = polars.angles
+        angles = polars.angles_of_attack
 
         for radpos in [-100.0, 100.0]:
             line(radpos, "RADPOS", "! Radial Position", f_io)

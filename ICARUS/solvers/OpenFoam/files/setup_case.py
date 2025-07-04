@@ -155,7 +155,7 @@ def setup_open_foam(
     """
 
     DB = Database.get_instance()
-    _, AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
+    AFDIR, REYNDIR, ANGLEDIRS = DB.generate_airfoil_directories(
         airfoil=airfoil,
         reynolds=reynolds,
         angles=angles,

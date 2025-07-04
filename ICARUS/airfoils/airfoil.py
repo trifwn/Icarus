@@ -65,9 +65,8 @@ import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
 
+from ICARUS.core.interpolation.scipy import ScipyInterpolator1D
 from ICARUS.core.types import FloatArray
-
-from ._interpolate import Interpolator
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -103,7 +102,7 @@ class Airfoil:
         """
         name = name.replace(" ", "")
         self.name: str = name
-        self.file_name: str = name
+        self.file_name: str = f"{name.lower()}.airfoil"
 
         lower, upper = self.close_airfoil(lower, upper)
 
@@ -116,14 +115,14 @@ class Airfoil:
         self._x_lower = lower[0, :]
         self._y_lower = lower[1, :]
 
-        self._y_upper_interp = Interpolator(
+        self._y_upper_interp = ScipyInterpolator1D(
             self._x_upper,
             self._y_upper,
             kind="linear",
             bounds_error=False,
             fill_value="extrapolate",  # type: ignore[call-arg]
         )
-        self._y_lower_interp = Interpolator(
+        self._y_lower_interp = ScipyInterpolator1D(
             self._x_lower,
             self._y_lower,
             kind="linear",
@@ -1078,7 +1077,7 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        return f"Airfoil: {self.name}  ({len(self._x_lower)} x {len(self._x_upper)})"
 
     def __str__(self) -> str:
         """Returns the string representation of the airfoil
@@ -1087,7 +1086,7 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        return f"Airfoil({self.name})"
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Sets the state of the airfoil

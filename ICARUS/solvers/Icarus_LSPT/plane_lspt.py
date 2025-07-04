@@ -30,11 +30,12 @@ solver_parameters: list[Parameter] = [
 
 
 class LSPT(Solver):
+    analyses = [LSPT_PolarAnalysis()]
+
     def __init__(self) -> None:
         super().__init__(
             "LSPT",
             "3D VLM",
             1,
-            [LSPT_PolarAnalysis()],
             solver_parameters=solver_parameters,
         )

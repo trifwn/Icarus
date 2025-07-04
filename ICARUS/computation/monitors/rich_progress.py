@@ -124,11 +124,19 @@ class RichProgressMonitor(ProgressMonitor):
             total += total_steps
         self.overall_task = self.overall_progress.add_task("All Jobs", total=int(total))
 
-        self.progress_table = Table.grid(expand=True)
+        self.progress_table = Table.grid(
+            expand=True,
+            padding=(0, 1),
+        )
+        # Define column widths: 1/3 and 2/3
+        self.progress_table.add_column(ratio=1)  # First column
+        self.progress_table.add_column(ratio=2)  # Second column
+
         self.progress_table.add_row(
             Panel(self.overall_progress, title="Overall Progress", border_style="green", padding=(1, 2), expand=True),
             Panel(self.progress, title="[b]Jobs", border_style="red", padding=(1, 2), expand=True),
         )
+
         self.live = Live(
             self.progress_table,
             console=ICARUS_CONSOLE,

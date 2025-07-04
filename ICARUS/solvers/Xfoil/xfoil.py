@@ -11,15 +11,18 @@ from ICARUS.computation.analyses.airfoil_polar_analysis import (
     BaseAirfoil_MultiReyn_PolarAnalysis,
 )
 from ICARUS.computation.analyses.analysis_input import iter_field
-from ICARUS.solvers.Xfoil.analyses.angles import aseq_analysis, aseq_analysis_reset_bl
-from ICARUS.solvers.Xfoil.post_process.polars import save_polar_results
+from ICARUS.core.types import FloatArray
+from ICARUS.solvers.Xfoil.analyses.angles import xfoil_aseq
+from ICARUS.solvers.Xfoil.analyses.angles import xfoil_aseq_reset_bl
+from ICARUS.solvers.Xfoil.post_process.save_polars import save_polar_results
 
 
 @dataclass
 class XfoilAseqInput(BaseAnalysisInput):
     """Input parameters for Xfoil airfoil polar analysis with angle of attack sweep."""
 
-    airfoil: Optional[Airfoil] = field(
+    airfoil: Optional[Airfoil | list[Airfoil]] = iter_field(
+        order=1,
         default=None,
         metadata={"description": "Airfoil object to be analyzed"},
     )
@@ -27,7 +30,7 @@ class XfoilAseqInput(BaseAnalysisInput):
         default=None,
         metadata={"description": "Mach number for the analysis"},
     )
-    reynolds: Optional[list[float] | float] = iter_field(
+    reynolds: Optional[FloatArray | list[float] | float] = iter_field(
         order=0,
         default=None,
         metadata={"description": "List of Reynolds numbers to analyze"},
@@ -47,27 +50,32 @@ class XfoilAseqInput(BaseAnalysisInput):
 
 
 class XfoilAseq(Analysis[XfoilAseqInput]):
+    __call__ = staticmethod(xfoil_aseq)
+
     def __init__(
         self,
     ) -> None:
         super().__init__(
             solver_name="Xfoil",
             analysis_name="Airfoil Polar Analysis For a multiple Reynolds using aseq",
-            execute_fun=aseq_analysis,
+            execute_fun=xfoil_aseq,
             post_execute_fun=save_polar_results,
             input_type=XfoilAseqInput(),
         )
 
 
 class XfoilAseqResetBL(BaseAirfoil_MultiReyn_PolarAnalysis):
+    __call__ = staticmethod(xfoil_aseq_reset_bl)
+
     def __init__(
         self,
     ) -> None:
         super().__init__(
             solver_name="Xfoil",
-            execute_fun=aseq_analysis_reset_bl,
+            execute_fun=xfoil_aseq_reset_bl,
             post_execute_fun=save_polar_results,
         )
+
 
 @dataclass
 class XfoilSolverParameters(SolverParameters):
@@ -96,15 +104,15 @@ class XfoilSolverParameters(SolverParameters):
 
 
 class Xfoil(Solver[XfoilSolverParameters]):
+    aseq: XfoilAseq = XfoilAseq()
+    aseq_reset_bl: XfoilAseqResetBL = XfoilAseqResetBL()
+    analyses = [aseq_reset_bl, aseq]
+
     def __init__(self) -> None:
         super().__init__(
             name="XFoil",
             solver_type="2D-IBLM",
             fidelity=1,
-            available_analyses=[
-                XfoilAseqResetBL(),
-                XfoilAseq(),
-            ],
             solver_parameters=XfoilSolverParameters(),
         )
 

@@ -11,6 +11,7 @@ from matplotlib.axes import Axes
 from matplotlib.markers import MarkerStyle
 from pandas import DataFrame
 from pandas import Series
+from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -22,7 +23,7 @@ from ICARUS.visualization import markers
 from ICARUS.visualization import polar_plot
 from ICARUS.visualization import pre_existing_figure
 
-from .disturbances import Disturbance as dst
+from .disturbances import Disturbance
 from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
 from .stability import StateSpace
@@ -114,7 +115,7 @@ class State:
         # Initialize Disturbances For Dynamic Analysis and Sensitivity Analysis
         self.scheme: str = "Central"
         self.epsilons: dict[str, float] = {}
-        self.disturbances: list[dst] = []
+        self.disturbances: list[Disturbance] = []
         self.pertrubation_results: DataFrame = DataFrame()
         self.sensitivities: Struct = Struct()
 
@@ -242,7 +243,6 @@ class State:
         polar: DataFrame,
         polar_prefix: str | None = None,
         is_dimensional: bool = True,
-        verbose: bool = True,
     ) -> None:
         # Remove prefix from polar columns
         if polar_prefix is not None:
@@ -278,7 +278,7 @@ class State:
 
         # GET TRIM STATE
         try:
-            self.trim = trim_state(self, verbose=verbose)
+            self.trim = trim_state(self)
             self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
         except (TrimNotPossible, TrimOutsidePolars) as e:
             self.trimmable = False
@@ -310,7 +310,7 @@ class State:
         self.polar["CD"] = self.polar[f"{polar_prefix} CD"]
         self.polar["Cm"] = self.polar[f"{polar_prefix} Cm"]
         try:
-            self.trim = trim_state(self, verbose=False)
+            self.trim = trim_state(self)
             self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
         except TrimNotPossible:
             self.trim_dynamic_pressure = np.nan
@@ -366,16 +366,32 @@ class State:
             *longitudal_pertrubations(self, scheme, epsilon),
             *lateral_pertrubations(self, scheme, epsilon),
         ]
-        self.disturbances.append(dst(None, 0))
+        self.disturbances.append(Disturbance(None, 0))
 
     def sensitivity_analysis(self, var: str, space: list[float] | FloatArray) -> None:
         self.sensitivities[var] = []
         for e in space:
-            self.sensitivities[var].append(dst(var, float(e)))
+            self.sensitivities[var].append(Disturbance(var, float(e)))
 
-    def get_pertrub(self) -> None:
-        for disturbance in self.disturbances:
-            print(disturbance)
+    def print_pertrubations(self) -> None:
+        console = Console()
+        table = Table(title="Disturbance Summary", show_lines=True)
+
+        table.add_column("Name", style="bold cyan")
+        table.add_column("Type", style="magenta")
+        table.add_column("Amplitude", justify="right", style="yellow")
+        table.add_column("Axis", style="green")
+
+        for d in self.disturbances:
+            table.add_row(
+                d.name,
+                f"Rotational {d.type}" if d.is_rotational else f"Translational {d.type}",
+                f"{d.amplitude:.3f}" if d.amplitude is not None else "N/A",
+                f"{d.axis if d.axis is not None else 'N/A'}",
+            )
+        # Center the table
+        centered_table = Align.center(table)
+        console.print(centered_table)
 
     def set_pertrubation_results(
         self,

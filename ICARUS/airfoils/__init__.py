@@ -38,10 +38,14 @@ Airfoil Polars Analysis
 """
 
 from .airfoil import Airfoil
-from .airfoil_polars import AirfoilData
-from .airfoil_polars import AirfoilPolars
-from .airfoil_polars import PolarNotAccurate
-from .airfoil_polars import ReynoldsNotIncluded
+from .metrics import AirfoilData
+from .metrics import AirfoilOperatingConditions
+from .metrics import AirfoilOperatingPointMetrics
+from .metrics import AirfoilPolar
+from .metrics import AirfoilPolarMap
+from .metrics import AirfoilPressure
+from .metrics import PolarNotAccurate
+from .metrics import ReynoldsNotIncluded
 from .naca4 import NACA4
 from .naca5 import NACA5
 
@@ -50,9 +54,14 @@ __all__ = [
     "Airfoil",
     "NACA4",
     "NACA5",
+    # Aerodynamic Data Classes
+    "AirfoilOperatingPointMetrics",
+    "AirfoilPressure",
+    "AirfoilOperatingConditions",
     # Result Classes
     "AirfoilData",
-    "AirfoilPolars",
+    "AirfoilPolar",
+    "AirfoilPolarMap",
     # Exceptions
     "PolarNotAccurate",
     "ReynoldsNotIncluded",

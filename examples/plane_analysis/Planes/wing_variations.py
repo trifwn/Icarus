@@ -1,6 +1,6 @@
 import numpy as np
 
-from ICARUS.core.types import DataDict
+from ICARUS.airfoils.naca4 import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import PointMass
@@ -9,7 +9,6 @@ from ICARUS.vehicle import WingSegment
 
 
 def wing_var_chord_offset(
-    airfoils: DataDict,
     name: str,
     root_chord: float,
     tip_chord: float,
@@ -40,7 +39,7 @@ def wing_var_chord_offset(
 
     main_wing = WingSegment(
         name="wing",
-        root_airfoil=airfoils["NACA4415"],
+        root_airfoil=NACA4.from_name("NACA4415"),
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,

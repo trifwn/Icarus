@@ -56,7 +56,6 @@ def test_avl_run(
     print(f"AVL Run took: {execution_time:.3f} seconds")
     print("Testing AVL Running... Done")
 
-
     # Assert that results were generated
     assert results is not None, "AVL should return results"
 

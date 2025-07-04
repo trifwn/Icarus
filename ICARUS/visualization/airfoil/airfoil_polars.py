@@ -74,12 +74,12 @@ def plot_airfoil_polars(
 
     for i, solver in enumerate(solvers):
         polar_obj = airfoil_data.get_polars(solver)
-        reynolds_list = polar_obj.reynolds_nums
+        reynolds_list = polar_obj.reynolds_numbers
         for j, reynolds in enumerate(reynolds_list):
             try:
-                polar_df = polar_obj.get_reynolds_subtable(reynolds)
+                polar = polar_obj.get_polar(reynolds)
                 # Sort the data by AoA
-                polar_df = polar_df.sort_values(by="AoA")
+                polar_df = polar.df.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar_df = polar_df.loc[(polar_df["AoA"] >= aoa_bounds[0]) & (polar_df["AoA"] <= aoa_bounds[1])]

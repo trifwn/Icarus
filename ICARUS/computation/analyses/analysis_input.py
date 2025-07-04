@@ -15,6 +15,8 @@ from typing import get_type_hints
 import numpy as np
 import numpy.typing as npt
 
+from ICARUS.core.format import short_format
+
 
 def iter_field(*, order: int, **kwargs):
     metadata = dict(kwargs.pop("metadata", {}))
@@ -131,8 +133,10 @@ class BaseAnalysisInput(ABC):
         for name in iter_field_names:
             val = getattr(self, name)
             if val is None:
+                continue
                 raise ValueError(f"Iter field '{name}' is None, cannot expand")
             if not hasattr(val, "__iter__") or isinstance(val, (str, bytes)):
+                continue
                 raise ValueError(f"Iter field '{name}' is not iterable")
             iterables.append(val)
 
@@ -145,7 +149,7 @@ class BaseAnalysisInput(ABC):
             new_instance = replace(self, **replace_kwargs)
 
             # Build descriptive key string: "field1: value1 | field2: value2 | ..."
-            key_parts = [f"{name}: {val}" for name, val in replace_kwargs.items()]
+            key_parts = [f"{name}= {short_format(val)}" for name, val in replace_kwargs.items()]
             key = " | ".join(key_parts)
 
             expanded_dict[key] = new_instance
@@ -169,6 +173,8 @@ class BaseAnalysisInput(ABC):
         for name in iter_field_names:
             val = getattr(self, name)
             if val is None or not hasattr(val, "__len__"):
+                shapes.append(1)
+                continue
                 raise ValueError(f"Iter field {name} must be a non-empty iterable")
             shapes.append(len(val))
         return shapes

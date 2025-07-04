@@ -109,15 +109,16 @@ solver_parameters: list[Parameter] = [
 
 
 class Foil2Wake(Solver):
+    analyses = [
+        Foil2Wake_PolarAnalysis(),
+        Foil2Wake_MultiReyn_PolarAnanlysis(),
+    ]
+
     def __init__(self) -> None:
         super().__init__(
             name="Foil2Wake",
             solver_type="2D-IBLM",
             fidelity=1,
-            available_analyses=[
-                Foil2Wake_PolarAnalysis(),
-                Foil2Wake_MultiReyn_PolarAnanlysis(),
-            ],
             solver_parameters=solver_parameters,
         )
 

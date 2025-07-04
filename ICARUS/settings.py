@@ -64,7 +64,10 @@ logging.getLogger("asyncio").setLevel(logging.WARNING)
 logger = logging.getLogger("ICARUS")
 
 # Nice Traceback
-install(show_locals=True)
+# install(show_locals=True)
+install()
+
+# np.set_printoptions(precision=3, suppress=True, floatmode="fixed")
 
 PLATFORM = platform.system()
 

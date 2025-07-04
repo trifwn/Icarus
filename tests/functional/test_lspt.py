@@ -60,7 +60,6 @@ def test_lspt_run(
     print(f"LSPT Run took: {execution_time:.3f} seconds")
     print("Testing LSPT Running... Done")
 
-
     # Assert that results were generated
     assert results is not None, "LSPT should return results"
 

@@ -38,7 +38,7 @@ def avl_polars(
     case_setup(case_directory, plane, state)
     case_run(case_directory, plane, angles)
     polar_df = process_avl_polars(plane, state, angles)
-    state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True, verbose=False)
+    state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True)
 
 
 def process_avl_polars(

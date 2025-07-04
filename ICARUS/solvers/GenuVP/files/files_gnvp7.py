@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils import AirfoilPolars
+from ICARUS.airfoils import AirfoilPolarMap
 from ICARUS.core.types import FloatArray
 from ICARUS.core.utils import ff2
 from ICARUS.core.utils import ff4
@@ -575,7 +575,7 @@ def pm_file(directory: str) -> None:
 def cld_files(
     directory: str,
     bodies: list[GenuSurface],
-    polars: list[AirfoilPolars],
+    polars: list[AirfoilPolarMap],
     solver: str,
 ) -> None:
     """Write the .cld files for the airfoils. These files contain the CL-CD-CM polars
@@ -594,13 +594,13 @@ def cld_files(
 
         # WRITE MACH AND REYNOLDS NUMBERS
         f_io.write(
-            f"{len(polar.reynolds_nums)}  ! Mach/Reynolds combs for which CL-CD are given\n",
+            f"{len(polar.reynolds_numbers)}  ! Mach/Reynolds combs for which CL-CD are given\n",
         )
-        for i, _ in enumerate(polar.reynolds_nums):
+        for i, _ in enumerate(polar.reynolds_numbers):
             f_io.write(f"0.08000{tabs(1)}")
         f_io.write("MACH\n")
 
-        for reyn in polar.reynolds_keys:
+        for reyn in polar.reynolds_strings:
             f_io.write(f"{reyn.zfill(4)}{tabs(1)}")
         f_io.write("Reynolds\n")
 
@@ -610,7 +610,7 @@ def cld_files(
         # GET ALL 2D Airfoil POLARS IN ONE TABLE
         df: DataFrame = polar.df
         # Get Angles
-        angles: FloatArray = polar.angles
+        angles: FloatArray = polar.angles_of_attack
         # FILL FILE
         for radpos in [-100.0, 100.0]:
             f_io.write(f"!profile: {radpos}\n")
@@ -619,11 +619,40 @@ def cld_files(
             )
 
             anglenum: int = len(angles)
-            flap_angle: float = polar.flap_angle  # Flap Angle
-            a_zero_pot: float = polar.a_zero_pot  # Potential Zero Lift Angle
-            cm_pot: float = polar.cm_pot  # Potential Cm at Zero Lift Angle
-            a_zero: float = polar.a_zero_visc  # Viscous Zero Lift Angle
-            cl_slope: float = polar.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
+
+            # TODO: Add logic to handle flap angle, a_zero_pot, cm_pot, a_zero, cl_slope
+            flap_angle: float = 0.0  # polar.flap_angle  # Flap Angle
+            a_zero_pot: float = 0.0  # polar.a_zero_pot  # Potential Zero Lift Angle
+            cm_pot: float = 0.0  # polar.cm_pot  # Potential Cm at Zero Lift Angle
+            a_zero: float = 0.0  # polar.a_zero_visc  # Viscous Zero Lift Angle
+            cl_slope: float = 0.0  # polar.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
+
+            # Flap Angle
+            # self.flap_angle: float = 0.0  # airfoil.flap_angle
+
+            # # Potential Zero Lift Angle
+            # if "CL_Potential" in df.keys():
+            #     potential_cl: pd.Series[float] = df["CL_Potential"]
+            #     potential_cm: pd.Series[float] = df["Cm_Potential"]
+            # else:
+            #     least_idx: int = self.reynolds_nums.index(min(self.reynolds_nums))
+            #     potential_cl = df[f"CL_{self.reynolds_keys[least_idx]}"]
+            #     potential_cl.index = Index(df["AoA"].astype("float32"))
+            #     potential_cm = df[f"Cm_{self.reynolds_keys[least_idx]}"]
+            #     potential_cm.index = Index(df["AoA"].astype("float32"))
+            # self.a_zero_pot: float = self.get_zero_lift_angle(potential_cl)
+
+            # # Potential Cm at Zero Lift Angle
+            # self.cm_pot: float = self.get_zero_lift_cm(potential_cm, self.a_zero_pot)
+
+            # # Viscous Zero Lift Angle
+            # max_idx: int = self.reynolds_nums.index(max(self.reynolds_nums))
+            # viscous: pd.Series[float] = df[f"CL_{self.reynolds_keys[max_idx]}"]
+            # viscous.index = Index(df["AoA"].astype("float32"))
+            # self.a_zero_visc: float = self.get_zero_lift_angle(viscous)
+
+            # # Slope of Cl vs Alpha (viscous)
+            # self.cl_slope_visc: float = self.get_cl_slope(viscous)
 
             f_io.write(f"{anglenum} ")
             for item in [flap_angle, a_zero_pot, cm_pot, a_zero, cl_slope]:
@@ -685,11 +714,11 @@ def wake_connections(directory: str, name: str) -> None:
         file.write(f_io.getvalue().expandtabs(4))
 
 
-def angles_inp(directory: str, polars: list[AirfoilPolars]) -> None:
+def angles_inp(directory: str, polars: list[AirfoilPolarMap]) -> None:
     angles: list[float] = []
     # Find all distinct angles in foil_dat.
     for polar in polars:
-        angles.extend(polar.angles)
+        angles.extend(polar.angles_of_attack)
     angles = [angle for angle in angles if not np.isnan(angle)]
     angles = list(set(angles))
     angles.sort()
@@ -735,7 +764,7 @@ def make_input_files(
         reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
         try:
             DB = Database.get_instance()
-            polar: AirfoilPolars = DB.get_or_compute_airfoil_polars(
+            polar: AirfoilPolarMap = DB.get_or_compute_airfoil_polars(
                 airfoil=DB.get_airfoil(bod.airfoil_name),
                 reynolds=reynolds,
                 solver_name=solver,

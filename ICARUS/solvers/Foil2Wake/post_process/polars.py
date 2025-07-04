@@ -31,6 +31,6 @@ def make_polars(case_directory: str) -> DataFrame:
     df: DataFrame = pd.DataFrame(dat, columns=["AoA", "CL", "CD", "Cm"]).sort_values(
         "AoA",
     )
-    clcd_file = os.path.join(case_directory, "clcd.f2w")
+    clcd_file = os.path.join(case_directory, "polar.f2w")
     df.to_csv(clcd_file, index=False)
     return df

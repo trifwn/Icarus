@@ -28,7 +28,7 @@ def test_airfoils(database_instance: Database) -> list[Airfoil]:
 
 
 @pytest.fixture
-def xfoil_parameters() -> dict[str, float | np.ndarray]:
+def xfoil_parameters():
     """Fixture that provides common Xfoil parameters."""
     # PARAMETERS FOR ESTIMATION
     chord_max: float = 0.16
@@ -53,7 +53,7 @@ def xfoil_parameters() -> dict[str, float | np.ndarray]:
     # ANGLE OF ATTACK SETUP
     aoa_min: float = -8
     aoa_max: float = 14
-    Ncrit = 9
+    Ncrit = 9.0
 
     return {
         "reynolds": reynolds,
@@ -85,7 +85,7 @@ def test_xfoil_single_airfoil(
     xfoil: Xfoil = Xfoil()
 
     # Import Analysis - Sequential Angle run for multiple reynolds
-    analysis = xfoil.get_analyses()[1]
+    analysis = xfoil.aseq
 
     # Set Inputs
     xfoil_inputs = analysis.get_analysis_input()
@@ -122,7 +122,7 @@ def test_xfoil_single_airfoil(
             airfoil_folder = os.path.join(database_instance.DB_PATH, "images")
             os.makedirs(airfoil_folder, exist_ok=True)
             polar.plot()
-            polar.save_polar_plot_img(airfoil_folder, "xfoil")
+            polar.save_polar_plot_img(airfoil_folder)
             plt.close("all")  # Close plots to avoid memory issues
 
             # Check that image was created

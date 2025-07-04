@@ -56,6 +56,6 @@ def make_polars(case_directory: str, angles: list[float]) -> DataFrame:
         columns=["AoA", "CL", "CD", "CM"],
     ).sort_values("AoA")
 
-    clcd_file = os.path.join(case_directory, "clcd.of")
+    clcd_file = os.path.join(case_directory, "polar.of")
     df.to_csv(clcd_file, index=False)
     return df
