@@ -125,7 +125,7 @@ def main() -> None:
             f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
             f2w_solver_parameters.timestep = 0.1
 
-            results = f2w_s.execute(
+            _ = f2w_s.execute(
                 analysis=analysis,
                 inputs=f2w_inputs,
                 solver_parameters=f2w_solver_parameters,

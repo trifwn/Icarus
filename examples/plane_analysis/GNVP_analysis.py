@@ -204,7 +204,7 @@ def main(GNVP_VERSION: int) -> None:
             # Run Analysis
             pert_time: float = time.time()
             print("Running Pertrubations")
-            results = gnvp.execute(
+            _ = gnvp.execute(
                 analysis=analysis,
                 inputs=inputs,
                 solver_parameters=solver_parameters,

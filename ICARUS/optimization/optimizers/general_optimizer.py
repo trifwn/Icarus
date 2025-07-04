@@ -11,11 +11,11 @@ from scipy.optimize import NonlinearConstraint
 from scipy.optimize import OptimizeResult
 from scipy.optimize import minimize
 
+from ICARUS import MAX_FLOAT
+from ICARUS import MAX_INT
 from ICARUS.core.base_types import Optimizable
 from ICARUS.core.types import FloatArray
 
-from .. import MAX_FLOAT
-from .. import MAX_INT
 from ..callbacks.optimization_callback import OptimizationCallback
 
 

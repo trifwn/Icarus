@@ -7,6 +7,7 @@ import sys
 
 import jsonpickle.ext.numpy as jsonpickle_numpy
 import jsonpickle.ext.pandas as jsonpickle_pd
+import numpy as np
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.traceback import install
@@ -155,3 +156,8 @@ elif PLATFORM == "Linux":
 # Register jsonpickle handlers for numpy and pandas
 jsonpickle_pd.register_handlers()
 jsonpickle_numpy.register_handlers()
+
+ii64 = np.iinfo(np.int64)
+f64 = np.finfo(np.float64)
+MAX_INT = ii64.max - 1
+MAX_FLOAT = float(f64.max)

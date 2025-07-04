@@ -6,10 +6,10 @@ from typing import Callable
 
 from scipy.optimize import OptimizeResult
 
+from ICARUS import MAX_FLOAT
+from ICARUS import MAX_INT
 from ICARUS.core.types import FloatArray
 from ICARUS.flight_dynamics import State
-from ICARUS.optimization import MAX_FLOAT
-from ICARUS.optimization import MAX_INT
 from ICARUS.optimization.callbacks import OptimizationCallback
 
 from . import Airplane_Optimizer

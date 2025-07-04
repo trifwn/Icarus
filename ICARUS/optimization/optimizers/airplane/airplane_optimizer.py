@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
+from ICARUS import MAX_FLOAT
+from ICARUS import MAX_INT
 from ICARUS.core.types import FloatArray
-from ICARUS.optimization import MAX_FLOAT
-from ICARUS.optimization import MAX_INT
 from ICARUS.optimization.callbacks import OptimizationCallback
 
 from .. import General_SOO_Optimizer

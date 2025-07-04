@@ -19,6 +19,8 @@ from .settings import (
     F2W_exe,
     Foil_Section_exe,
     AVL_exe,
+    MAX_FLOAT,
+    MAX_INT,
 )
 from . import core
 from . import airfoils
@@ -41,6 +43,8 @@ __all__ = [
     "HAS_GPU",
     "HAS_JAX",
     "INSTALL_DIR",
+    "MAX_FLOAT",
+    "MAX_INT",
     # Executables
     "GenuVP3_exe",
     "GenuVP7_exe",
