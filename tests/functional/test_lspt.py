@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation import Solver
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 
@@ -27,7 +26,7 @@ def test_lspt_run(
     # Get Solver
     from ICARUS.solvers.Icarus_LSPT import LSPT
 
-    lspt: Solver = LSPT()
+    lspt: LSPT = LSPT()
 
     # Set Analysis
     analysis: Analysis = lspt.get_analyses()[0]

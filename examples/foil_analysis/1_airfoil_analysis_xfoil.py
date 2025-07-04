@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation import Solver
 from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
@@ -72,7 +71,7 @@ def main() -> None:
 
     from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
-    xfoil: Solver = Xfoil()
+    xfoil = Xfoil()
     print(xfoil)
 
     # Import Analysis

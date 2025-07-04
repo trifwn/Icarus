@@ -9,7 +9,6 @@ import time
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.computation import Solver
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
@@ -64,7 +63,7 @@ def main(GNVP_VERSION: int) -> None:
     if GNVP_VERSION == 7:
         from ICARUS.solvers.GenuVP import GenuVP7
 
-        gnvp: Solver = GenuVP7()
+        gnvp = GenuVP7()
     elif GNVP_VERSION == 3:
         from ICARUS.solvers.GenuVP import GenuVP3
 

@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation import Solver
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
@@ -30,7 +29,7 @@ def test_gnvp3_run(
     # Get Solver
     from ICARUS.solvers.GenuVP import GenuVP3
 
-    gnvp3: Solver = GenuVP3()
+    gnvp3 = GenuVP3()
 
     # Set Analysis
     polar_analysis: Analysis = gnvp3.get_analyses()[0]

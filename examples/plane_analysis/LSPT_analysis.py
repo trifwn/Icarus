@@ -12,7 +12,6 @@ from typing import Any
 import numpy as np
 from Planes.hermes import hermes
 
-from ICARUS.computation import Solver
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
@@ -69,7 +68,7 @@ def main() -> None:
             u_freestream=UINF[airplane.name],
         )
         # # Get Solver
-        lspt: Solver = LSPT()
+        lspt = LSPT()
 
         # ## AoA Run
         # 0: Angles Sequential

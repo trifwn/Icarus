@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation import Solver
 from ICARUS.computation.analyses.analysis import Analysis
 
 if TYPE_CHECKING:
@@ -25,7 +24,7 @@ def test_avl_run(
     # Get Solver
     from ICARUS.solvers.AVL import AVL
 
-    avl: Solver = AVL()
+    avl = AVL()
     analysis: Analysis = avl.get_analyses()[0]
 
     # Set Options

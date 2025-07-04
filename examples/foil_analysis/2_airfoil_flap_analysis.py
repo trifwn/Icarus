@@ -3,7 +3,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ICARUS.computation import Solver
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
@@ -72,7 +71,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     )
     airfoil_flap.repanel_spl(200)
 
-    xfoil: Solver = Xfoil()
+    xfoil = Xfoil()
 
     # Import Analysis
     analysis: Analysis = xfoil.aseq

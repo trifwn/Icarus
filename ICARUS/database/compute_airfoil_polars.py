@@ -7,7 +7,6 @@ import numpy as np
 
 if TYPE_CHECKING:
     from ICARUS.airfoils import Airfoil
-    from ICARUS.computation import Solver
     from ICARUS.core.types import FloatArray
 
 
@@ -24,7 +23,7 @@ def compute_airfoil_polars(
     if solver_name == "Xfoil":
         from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
-        solver: Solver = Xfoil()
+        solver = Xfoil()
 
         # Import Analysis
         analysis = solver.aseq  # Run
