@@ -16,7 +16,6 @@ from .settings import (
     # Executables
     GenuVP3_exe,
     GenuVP7_exe,
-    F2W_exe,
     Foil_Section_exe,
     AVL_exe,
     MAX_FLOAT,

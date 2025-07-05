@@ -113,6 +113,7 @@ class Foil2Wake(Solver):
         Foil2Wake_PolarAnalysis(),
         Foil2Wake_MultiReyn_PolarAnanlysis(),
     ]
+    polars = Foil2Wake_PolarAnalysis()
 
     def __init__(self) -> None:
         super().__init__(

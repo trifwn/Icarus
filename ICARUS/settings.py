@@ -125,33 +125,44 @@ except ImportError:
 
 
 if PLATFORM == "Windows":
-    GenuVP3_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp3.exe")
-    GenuVP7_exe: str = os.path.join(INSTALL_DIR, "bin", "gnvp7.exe")
-    F2W_exe: str = os.path.join(INSTALL_DIR, "bin", "f2w.exe")
-    Foil_Section_exe: str = os.path.join(INSTALL_DIR, "bin", "foil_section.exe")
-    AVL_exe: str = os.path.join(INSTALL_DIR, "bin", "avl.exe")
+    EXE_DIR = os.path.join(INSTALL_DIR, "bin", "Windows")
+
+    GenuVP3_exe: str = os.path.join(EXE_DIR, "gnvp3.exe")
+    Foil_Section_exe: str = os.path.join(EXE_DIR, "foil_section.exe")
+    AVL_exe: str = os.path.join(EXE_DIR, "avl.exe")
+
+    GenuVP7_exe: str = os.path.join(EXE_DIR, "gnvp7.exe")
+
 elif PLATFORM == "Linux":
-    GenuVP3_exe = os.path.join(INSTALL_DIR, "bin", "gnvp3")
-    GenuVP7_exe = os.path.join(INSTALL_DIR, "bin", "gnvp7")
-    F2W_exe = os.path.join(INSTALL_DIR, "bin", "f2w")
-    Foil_Section_exe = os.path.join(INSTALL_DIR, "bin", "foil_section")
-    AVL_exe = os.path.join(INSTALL_DIR, "bin", "avl")
+    EXE_DIR = os.path.join(INSTALL_DIR, "bin", PLATFORM)
 
-    # Check if the files have execution permission
-    if not os.access(GenuVP3_exe, os.X_OK):
-        os.chmod(GenuVP3_exe, 0o755)
+    Foil_Section_exe = os.path.join(EXE_DIR, "foil_section")
+    AVL_exe = os.path.join(EXE_DIR, "avl")
+    GenuVP3_exe = os.path.join(EXE_DIR, "gnvp3")
+    GenuVP7_exe = os.path.join(EXE_DIR, "gnvp7")
 
-    if not os.access(GenuVP7_exe, os.X_OK):
-        os.chmod(GenuVP7_exe, 0o755)
 
-    # if not os.access(F2W_exe, os.X_OK):
-    # os.chmod(F2W_exe, 0o755)
+elif PLATFORM == "Darwin":
+    EXE_DIR = os.path.join(INSTALL_DIR, "bin", "MacOS")
 
-    if not os.access(Foil_Section_exe, os.X_OK):
-        os.chmod(Foil_Section_exe, 0o755)
+    AVL_exe = os.path.join(EXE_DIR, "avl")
+    GenuVP3_exe = os.path.join(EXE_DIR, "gnvp3")
+    Foil_Section_exe = os.path.join(EXE_DIR, "foil_section-aarch64")
 
-    if not os.access(AVL_exe, os.X_OK):
-        os.chmod(AVL_exe, 0o755)
+    GenuVP7_exe = os.path.join(EXE_DIR, "gnvp7")
+
+# Check if the files have execution permission
+if not os.access(GenuVP3_exe, os.X_OK):
+    os.chmod(GenuVP3_exe, 0o755)
+
+# if not os.access(GenuVP7_exe, os.X_OK):
+#     os.chmod(GenuVP7_exe, 0o755)
+
+if not os.access(Foil_Section_exe, os.X_OK):
+    os.chmod(Foil_Section_exe, 0o755)
+
+if not os.access(AVL_exe, os.X_OK):
+    os.chmod(AVL_exe, 0o755)
 
 # Register jsonpickle handlers for numpy and pandas
 jsonpickle_pd.register_handlers()

@@ -155,7 +155,7 @@ class AirfoilPolarMap:
                 limit_direction="forward",
                 axis=1,
             )
-        df.dropna(axis=0, subset=df.columns[1:], how="all", inplace=True)
+        df.dropna(axis=0, how="all", subset=df.columns[1:], inplace=True)
         return df
 
     def get_cl_cd_parabolic(self, reynolds: float) -> tuple[FloatArray, FloatArray, FloatArray]:
