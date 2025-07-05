@@ -32,7 +32,7 @@ dependencies = [
     "rich",
     "xmltodict",
     "pyfiglet",
-    "xfoil @git+https://github.com/trifwn/xfoil-python-windows.git",
+    "xfoil @git+https://github.com/trifwn/xfoil-python-prebuilt.git",
     'jax',
     'jaxlib',
     'jaxtyping',
