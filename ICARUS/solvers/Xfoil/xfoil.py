@@ -1,15 +1,13 @@
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Optional
+from typing import final
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation import Solver
 from ICARUS.computation import SolverParameters
 from ICARUS.computation.analyses import Analysis
 from ICARUS.computation.analyses import BaseAnalysisInput
-from ICARUS.computation.analyses.airfoil_polar_analysis import (
-    BaseAirfoil_MultiReyn_PolarAnalysis,
-)
+from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
 from ICARUS.computation.analyses.analysis_input import iter_field
 from ICARUS.core.types import FloatArray
 from ICARUS.solvers.Xfoil.analyses.angles import xfoil_aseq
@@ -21,34 +19,35 @@ from ICARUS.solvers.Xfoil.post_process.save_polars import save_polar_results
 class XfoilAseqInput(BaseAnalysisInput):
     """Input parameters for Xfoil airfoil polar analysis with angle of attack sweep."""
 
-    airfoil: Optional[Airfoil | list[Airfoil]] = iter_field(
+    airfoil: None | Airfoil | list[Airfoil] = iter_field(
         order=1,
         default=None,
         metadata={"description": "Airfoil object to be analyzed"},
     )
-    mach: Optional[float] = field(
+    mach: None | float = field(
         default=None,
         metadata={"description": "Mach number for the analysis"},
     )
-    reynolds: Optional[FloatArray | list[float] | float] = iter_field(
+    reynolds: None | FloatArray | list[float] | float = iter_field(
         order=0,
         default=None,
         metadata={"description": "List of Reynolds numbers to analyze"},
     )
-    min_aoa: Optional[float] = field(
+    min_aoa: None | float = field(
         default=None,
         metadata={"description": "Minimum angle of attack in degrees"},
     )
-    max_aoa: Optional[float] = field(
+    max_aoa: None | float = field(
         default=None,
         metadata={"description": "Maximum angle of attack in degrees"},
     )
-    aoa_step: Optional[float] = field(
+    aoa_step: None | float = field(
         default=None,
         metadata={"description": "Angle of attack step in degrees"},
     )
 
 
+@final
 class XfoilAseq(Analysis[XfoilAseqInput]):
     __call__ = staticmethod(xfoil_aseq)
 
@@ -64,7 +63,8 @@ class XfoilAseq(Analysis[XfoilAseqInput]):
         )
 
 
-class XfoilAseqResetBL(BaseAirfoil_MultiReyn_PolarAnalysis):
+@final
+class XfoilAseqResetBL(BaseAirfoilPolarAnalysis):
     __call__ = staticmethod(xfoil_aseq_reset_bl)
 
     def __init__(
@@ -103,6 +103,7 @@ class XfoilSolverParameters(SolverParameters):
     )
 
 
+@final
 class Xfoil(Solver[XfoilSolverParameters]):
     aseq: XfoilAseq = XfoilAseq()
     aseq_reset_bl: XfoilAseqResetBL = XfoilAseqResetBL()

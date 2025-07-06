@@ -307,7 +307,8 @@ class Analysis(Generic[AnalysisInput]):
 
                 traceback.print_exc()
 
-            if isinstance(result, TaskResult) and result.state == TaskState.FAILED:
+            if isinstance(result, TaskResult) and result.state == TaskState.FAILED and result.error:
+                raise(result.error)
                 self.logger.error(f"Task {result.task_id} failed with error: {result.error}")
         return tasks, results
 

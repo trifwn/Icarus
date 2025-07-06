@@ -1,6 +1,4 @@
-from ICARUS.computation.analyses.airfoil_polar_analysis import (
-    BaseAirfoil_MultiReyn_PolarAnalysis,
-)
+from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
 from ICARUS.computation.base_solver import Solver
 from ICARUS.computation.solver_parameters import BoolParameter
 from ICARUS.computation.solver_parameters import IntParameter
@@ -9,7 +7,7 @@ from ICARUS.solvers.OpenFoam.analyses.angles import angles_serial
 from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
 
 
-class OpenFoam_MultiReyn_PolarAnanlysis(BaseAirfoil_MultiReyn_PolarAnalysis):
+class OpenFoam_MultiReyn_PolarAnanlysis(BaseAirfoilPolarAnalysis):
     def __init__(self) -> None:
         super().__init__(
             solver_name="Foil2Wake",

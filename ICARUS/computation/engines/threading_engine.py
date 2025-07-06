@@ -4,7 +4,9 @@ import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+import sys
 from threading import Thread
+import traceback
 
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ExecutionMode
@@ -121,8 +123,9 @@ class ThreadingEngine(AbstractEngine):
                 progress_reporter.report_completion(task_result)
             return task_result
 
-        except asyncio.TimeoutError:
-            error = Exception(f"Task timed out after {task.config.timeout}")
+        except Exception as e:
+            _, _, tb = sys.exc_info()
+            error = e.with_traceback(tb)
             task_result = TaskResult(
                 task_id=task.id,
                 state=TaskState.FAILED,
@@ -133,19 +136,7 @@ class ThreadingEngine(AbstractEngine):
             if progress_reporter:
                 progress_reporter.report_completion(task_result)
             return task_result
-
-        except Exception as e:
-            task_result = TaskResult(
-                task_id=task.id,
-                state=TaskState.FAILED,
-                error=e,
-                execution_time=datetime.now() - start_time,
-            )
-            task.state = TaskState.FAILED
-            if progress_reporter:
-                progress_reporter.report_completion(task_result)
-            return task_result
-
+ 
         finally:
             # Always clean up resources
             await context.release_resources()

@@ -28,13 +28,12 @@ from .analyses import BaseAnalysisInput
 
 SolverParametersType = TypeVar("SolverParametersType", bound=SolverParameters)
 AnalysisInputType = TypeVar("AnalysisInputType", bound=BaseAnalysisInput)
-AnalysisType = Analysis[AnalysisInputType]  # Type alias for Analysis with specific input type
 
 
 class Solver(Generic[SolverParametersType]):
     """Abstract class to represent a solver. It is used to run analyses."""
 
-    analyses: list[AnalysisType]
+    analyses: list[Analysis[Any]]
 
     def __init__(
         self,

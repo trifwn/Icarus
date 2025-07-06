@@ -36,28 +36,6 @@ class AirfoilPressure:
     cp: list[float] | npt.NDArray[np.float64]
 
 
-@dataclass
-class AirfoilOperatingPointMetrics:
-    """
-    Represents the comprehensive aerodynamic performance metrics of an airfoil
-    at a specific set of operating conditions.
-
-    Attributes:
-        operating_conditions (AirfoilOperatingConditions): The conditions under which the results were obtained.
-        Cl (float): The total lift coefficient (CL).
-        Cd (float): The total drag coefficient (CD).
-        Cp (float): The total pressure coefficient (CP), typically calculated as Cp = Cl / (0.5 * rho * V^2).
-        CP_distribution (AirfoilPressureDistribution): Minimum pressure coefficient.
-    """
-
-    operating_conditions: AirfoilOperatingConditions
-    Cl: float
-    Cd: float
-    Cm: float
-    Cp_min: float
-    Cp_distribution: AirfoilPressure | None = None
-
-
 # @dataclass
 # class AirfoilSurfacePressureDistribution:
 #     """
@@ -84,3 +62,27 @@ class AirfoilOperatingPointMetrics:
 
 #     upper_surface_distribution: AirfoilSurfacePressureDistribution
 #     lower_surface_distribution: AirfoilSurfacePressureDistribution
+
+
+@dataclass
+class AirfoilOperatingPointMetrics:
+    """
+    Represents the comprehensive aerodynamic performance metrics of an airfoil
+    at a specific set of operating conditions.
+
+    Attributes:
+        operating_conditions (AirfoilOperatingConditions): The conditions under which the results were obtained.
+        Cl (float): The total lift coefficient (CL).
+        Cd (float): The total drag coefficient (CD).
+        Cp (float): The total pressure coefficient (CP), typically calculated as Cp = Cl / (0.5 * rho * V^2).
+        CP_distribution (AirfoilPressureDistribution): Minimum pressure coefficient.
+    """
+
+    operating_conditions: AirfoilOperatingConditions
+    Cl: float
+    Cd: float
+    Cm: float
+    Cp_min: float
+    Cp_distribution: AirfoilPressure | None = None
+
+

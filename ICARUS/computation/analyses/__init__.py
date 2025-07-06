@@ -21,9 +21,7 @@ from .case_analysis import CaseAnalysis
 
 # Airfoil Polar Analysis
 from .airfoil_polar_analysis import BaseAirfoilPolarAnalysis
-from .airfoil_polar_analysis import BaseAirfoil_MultiReyn_PolarAnalysis
 from .airfoil_polar_analysis import AirfoilPolarAnalysisInput
-from .airfoil_polar_analysis import AirfoilMultiReynsPolarAnalysisInput
 
 # Airplane Polar Analysis
 from .airplane_polar_analysis import BaseAirplanePolarAnalysis
@@ -48,9 +46,7 @@ __all__ = [
     "Analysis",
     "CaseAnalysis",
     "BaseAirfoilPolarAnalysis",
-    "BaseAirfoil_MultiReyn_PolarAnalysis",
     "AirfoilPolarAnalysisInput",
-    "AirfoilMultiReynsPolarAnalysisInput",
     "BaseAirplanePolarAnalysis",
     "BaseDynamicAnalysis",
 ]

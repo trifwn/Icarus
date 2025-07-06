@@ -1,61 +1,63 @@
+from __future__ import annotations
+import os
 import subprocess
 from time import sleep
-from typing import Any
+from typing import TYPE_CHECKING
 
 from ICARUS import Foil_Section_exe
-from ICARUS.solvers.Foil2Wake import files_f2w as ff2w
+from ICARUS.airfoils import Airfoil
+from ICARUS.database import Database
+from .files_f2w import io_file, design_file, input_file
+
+if TYPE_CHECKING:
+    from ICARUS.solvers.Foil2Wake.f2w_section import Foil2WakeSolverParameters
 
 
 def sequential_run(
-    directory: str,
-    airfile: str,
+    airfoil: Airfoil,
     name: str,
     angles: list[float],
     reynolds: float,
     mach: float,
-    solver_parameters: dict[str, Any],
+    solver_parameters: Foil2WakeSolverParameters,
 ) -> None:
-    num_of_angles: int = len(angles)
-
-    # unpack solver options to args
-    max_iter: int = solver_parameters["max_iter"]
-    timestep: float = solver_parameters["timestep"]
-    f_trip_low: float = solver_parameters["f_trip_low"]
-    f_trip_upper: float = solver_parameters["f_trip_upper"]
-    Ncrit: float = solver_parameters["Ncrit"]
+    DB = Database.get_instance()
+    _, REYNDIR, _ = DB.generate_airfoil_directories(
+        airfoil=airfoil,
+        reynolds=reynolds,
+        angles=angles,
+    )
 
     # IO FILES
-    ff2w.io_file(airfile, name)
+    io_file(REYNDIR, airfoil.file_name, name)
 
     # DESIGN.INP
-    ff2w.design_file(
-        number_of_angles=num_of_angles,
+    design_file(
+        directory=REYNDIR,
         angles=angles,
         name=name,
     )
 
     # F2W.INP
-    ff2w.input_file(
+    input_file(
+        directory=REYNDIR,
         reynolds=reynolds,
         mach=mach,
-        max_iter=max_iter,
-        timestep=timestep,
-        ftrip_low=f_trip_low,
-        ftrip_upper=f_trip_upper,
-        Ncrit=Ncrit,
         name=name,
         solver_parameters=solver_parameters,
     )
 
     # RUN Files
-    with open(f"{name}.out", "w") as fout:
-        with open(f"io_{name}.files") as fin:
+    file_name_out = os.path.join(REYNDIR, f"{name}.out")
+    file_name_in = os.path.join(REYNDIR, f"io_{name}.files")
+    with open(file_name_out, "w") as fout:
+        with open(file_name_in) as fin:
             subprocess.call(
                 [Foil_Section_exe],
                 stdin=fin,
                 stdout=fout,
                 stderr=fout,
-                cwd=directory,
+                cwd=REYNDIR,
             )
     try:
         pass

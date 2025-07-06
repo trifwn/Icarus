@@ -1,129 +1,137 @@
-from ICARUS.computation.analyses.airfoil_polar_analysis import (
-    BaseAirfoil_MultiReyn_PolarAnalysis,
-)
-from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
+from dataclasses import dataclass
+from dataclasses import field
+from typing import final
+
+from ICARUS.airfoils import Airfoil
+from ICARUS.computation.analyses import Analysis, BaseAnalysisInput
+from ICARUS.computation.analyses.analysis_input import iter_field
 from ICARUS.computation.base_solver import Solver
-from ICARUS.computation.solver_parameters import FloatParameter
-from ICARUS.computation.solver_parameters import IntParameter
-from ICARUS.computation.solver_parameters import Parameter
-from ICARUS.solvers.Foil2Wake.analyses.angles import process_f2w_run
-from ICARUS.solvers.Foil2Wake.analyses.angles import run_multiple_reynolds_sequentially
-from ICARUS.solvers.Foil2Wake.analyses.angles import run_single_reynolds
+from ICARUS.computation.solver_parameters import SolverParameters
+from ICARUS.core.types import FloatArray
+from ICARUS.solvers.Foil2Wake.post_process.polars import process_f2w_run
+from ICARUS.solvers.Foil2Wake.analyses.angles import f2w_aseq
 
 
-class Foil2Wake_PolarAnalysis(BaseAirfoilPolarAnalysis):
+@dataclass
+class Foil2WakeAseqInput(BaseAnalysisInput):
+    """Input parameters for analyzing airfoil polar at specific angles."""
+
+    airfoil: None | Airfoil | list[Airfoil] = iter_field(
+        order=1,
+        default=None,
+        metadata={"description": "Airfoil object to be analyzed"},
+    )
+    mach: None | float = field(
+        default=None,
+        metadata={"description": "Mach number for the analysis"},
+    )
+    reynolds: None | float | list[float] | FloatArray = iter_field(
+        order=0,
+        default=None,
+        metadata={"description": "Reynolds number for the analysis"},
+    )
+    angles: None | list[float] | FloatArray = field(
+        default=None,
+        metadata={
+            "description": "List of angles of attack (in degrees) to run polar analysis"
+        },
+    )
+
+
+@final
+class Foil2WakeAseq(Analysis[Foil2WakeAseqInput]):
+    __call__ = staticmethod(f2w_aseq)
+
     def __init__(self) -> None:
         super().__init__(
+            analysis_name="Airfoil Polar Analysis",
             solver_name="Foil2Wake",
-            execute_fun=run_single_reynolds,
+            execute_fun=f2w_aseq,
             post_execute_fun=process_f2w_run,
+            input_type=Foil2WakeAseqInput(),
         )
 
 
-class Foil2Wake_MultiReyn_PolarAnanlysis(BaseAirfoil_MultiReyn_PolarAnalysis):
-    def __init__(self) -> None:
-        super().__init__(
-            solver_name="Foil2Wake",
-            execute_fun=run_multiple_reynolds_sequentially,
-            post_execute_fun=process_f2w_run,
-        )
+@dataclass
+class Foil2WakeSolverParameters(SolverParameters):
+    """Complete solver parameters."""
+
+    iterations: int = field(
+        default=251, metadata={"description": "NTIMEM | Maximum number of iterations"}
+    )
+    timestep: float = field(
+        default=0.01, metadata={"description": "DT1 | Simulation timestep"}
+    )
+    f_trip_low: float = field(
+        default=0.1,
+        metadata={"description": "TRANSLO | Transition points for lower surface"},
+    )
+    f_trip_upper: float = field(
+        default=0.1,
+        metadata={"description": "TRANSUP | Transition points for upper surface"},
+    )
+    Ncrit: float = field(
+        default=9.0,
+        metadata={"description": "N critical value for transition (e^N method)"},
+    )
+    boundary_layer_iteration_start: int = field(
+        default=250, metadata={"description": "NTIME_bl | Start solving boundary layer"}
+    )
+    trailing_edge_angle: float = field(
+        default=0.0, metadata={"description": "TEANGLE (deg) | Trailing edge angle"}
+    )
+    u_freestrem: float = field(
+        default=1.0, metadata={"description": "UINF | Freestream velocity"}
+    )
+    Cuttoff_1: float = field(
+        default=0.1, metadata={"description": "EPS1 | Cutoff parameter"}
+    )
+    Cuttoff_2: float = field(
+        default=0.1, metadata={"description": "EPS2 | Cutoff parameter"}
+    )
+    EPSCOE: float = field(
+        default=1.0, metadata={"description": "EPSCOE | Cutoff coefficient"}
+    )
+    NWS: int = field(default=3, metadata={"description": "NWS | ???"})
+    CCC1: float = field(default=0.03, metadata={"description": "CCC1 | ???"})
+    CCC2: float = field(default=0.03, metadata={"description": "CCC2 | ???"})
+    CCGON1: float = field(default=30.0, metadata={"description": "CCGON1 | ???"})
+    CCGON2: float = field(default=30.0, metadata={"description": "CCGON2 | ???"})
+    IMOVE: int = field(default=1, metadata={"description": "IMOVE | ???"})
+    A0: float = field(default=0.0, metadata={"description": "A0 | ???"})
+    AMPL: float = field(default=0.0, metadata={"description": "AMPL | ???"})
+    APHASE: float = field(default=0.0, metadata={"description": "APHASE | ???"})
+    AKF: float = field(default=0.0, metadata={"description": "AKF | ???"})
+    Chord_hinge: float = field(
+        default=0.25,
+        metadata={"description": "XC | Pitch point (0.25 = quarter chord)"},
+    )
+    ITEFLAP: int = field(
+        default=1, metadata={"description": "ITEFLAP | 1: use flap, 0: don't use flap"}
+    )
+    XEXT: float = field(default=0.0, metadata={"description": "XEXT | ???"})
+    YEXT: float = field(default=0.0, metadata={"description": "YEXT | ???"})
+    NTEWT: int = field(default=9, metadata={"description": "NTEWT | ???"})
+    NTEST: int = field(default=9, metadata={"description": "NTEST | ???"})
+    IBOUNDL: int = field(
+        default=1, metadata={"description": "IBOUNDL | 1: solve BL, 0: don't solve"}
+    )
+    IYNEXTERN: int = field(default=0, metadata={"description": "IYNEXTERN | ???"})
+    ITSEPAR: int = field(default=0, metadata={"description": "ITSEPAR | ???"})
+    ISTEADY: int = field(default=1, metadata={"description": "ISTEADY | ???"})
 
 
-solver_parameters: list[Parameter] = [
-    IntParameter(
-        "max_iter",
-        251,
-        "NTIMEM | Maximum number of iterations",
-    ),
-    FloatParameter(
-        "timestep",
-        0.01,
-        "DT1 | Simulation timestep",
-    ),
-    FloatParameter(
-        "f_trip_low",
-        0.1,
-        "TRANSLO | Transition points for positive and negative angles for the lower surface",
-    ),
-    FloatParameter(
-        "f_trip_upper",
-        0.1,
-        "TRANSUP | Transition points for positive and negative angles for the upper surface",
-    ),
-    FloatParameter(
-        "Ncrit",
-        9,
-        "N critical value for transition according to e to N method",
-    ),
-    IntParameter(
-        "boundary_layer_solve_time",
-        250,
-        "NTIME_bl | When to start solving the boundary layer",
-    ),
-    FloatParameter("trailing_edge_angle", 0.0, "TEANGLE (deg) | Trailing edge angle"),
-    FloatParameter("u_freestrem", 1.0, "UINF | Freestream velocity"),
-    FloatParameter("Cuttoff_1", 0.1, "EPS1 | ..."),
-    FloatParameter("Cuttoff_2", 0.1, "EPS2 | ..."),
-    FloatParameter("EPSCOE", 1.0, "EPSCOE | ..."),
-    IntParameter("NWS", 3, "NWS | ..."),
-    FloatParameter("CCC1", 0.03, "CCC1 | ..."),
-    FloatParameter("CCC2", 0.03, "CCC2 | ..."),
-    FloatParameter("CCGON1", 30.0, "CCGON1 | ..."),
-    FloatParameter("CCGON2", 30.0, "CCGON2 | ..."),
-    IntParameter("IMOVE", 1, "IMOVE | ..."),
-    FloatParameter("A0", 0.0, "A0 | ..."),
-    FloatParameter("AMPL", 0.0, "AMPL | ..."),
-    FloatParameter("APHASE", 0.0, "APHASE | ..."),
-    FloatParameter("AKF", 0.0, "AKF | ..."),
-    FloatParameter(
-        "Chord_hinge",
-        0.25,
-        "XC | Point from where to pitch the airfoil. 0.25 is the quarter chord",
-    ),
-    IntParameter(
-        "ITEFLAP",
-        1,
-        "ITEFLAP | Whether to use flap or not. 1: use flap, 0: don't use flap",
-    ),
-    FloatParameter("XEXT", 0.0, "XEXT | ..."),
-    FloatParameter("YEXT", 0.0, "YEXT | ..."),
-    FloatParameter(
-        "NTEWT",
-        9,
-        "NTEWT | ...",
-    ),
-    FloatParameter(
-        "NTEST",
-        9,
-        "NTEST | ...",
-    ),
-    IntParameter(
-        "IBOUNDL",
-        1,
-        "IBOUNDL | Whether to use solve the boundary layer or not. 1: solve, 0: don't solve",
-    ),
-    IntParameter("IYNEXTERN", 0, "IYNEXTERN | ..."),
-    IntParameter("ITSEPAR", 0, "ITSEPAR | ..."),
-    IntParameter("ISTEADY", 1, "ISTEADY | ..."),
-]
-
-
-class Foil2Wake(Solver):
+@final
+class Foil2Wake(Solver[Foil2WakeSolverParameters]):
     analyses = [
-        Foil2Wake_PolarAnalysis(),
-        Foil2Wake_MultiReyn_PolarAnanlysis(),
+        Foil2WakeAseq(),
     ]
-    polars = Foil2Wake_PolarAnalysis()
+    aseq = Foil2WakeAseq()
 
     def __init__(self) -> None:
         super().__init__(
             name="Foil2Wake",
             solver_type="2D-IBLM",
             fidelity=1,
-            solver_parameters=solver_parameters,
+            solver_parameters=Foil2WakeSolverParameters(),
         )
-
-
-# Example Usage
-if __name__ == "__main__":
-    pass

@@ -120,8 +120,10 @@ def main() -> None:
             f2w_solver_parameters.f_trip_upper = 0.1
             f2w_solver_parameters.f_trip_low = 1.0
             f2w_solver_parameters.Ncrit = Ncrit
-            f2w_solver_parameters.max_iter = 250
-            f2w_solver_parameters.boundary_layer_solve_time = 249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            f2w_solver_parameters.iterations = 250
+            f2w_solver_parameters.boundary_layer_iteration_start = (
+                249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
+            )
             f2w_solver_parameters.timestep = 0.1
 
             _ = f2w_s.execute(
@@ -159,7 +161,9 @@ def main() -> None:
             # xfoil_options.angles = angles  # For options 2 and 3
 
             # Set Solver Options
-            xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
+            xfoil_solver_parameters: XfoilSolverParameters = (
+                xfoil.get_solver_parameters()
+            )
             xfoil_solver_parameters.max_iter = 500
 
             xfoil_solver_parameters.Ncrit = Ncrit

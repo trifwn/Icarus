@@ -9,7 +9,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 from ICARUS.settings import INSTALL_DIR
-from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+from ICARUS.solvers.Foil2Wake.f2w_section import Foil2WakeSolverParameters
 
 
 def main() -> None:
@@ -27,11 +27,11 @@ def main() -> None:
     DB.load_all_data()
 
     # RUN SETUP
-    airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
+    airfoil_names: list[str] = ["0015"]  # "0008", "0012", "2412", "4415"]
     airfoils_to_compute: list[Airfoil] = []
     for airfoil_name in airfoil_names:
         airfoil = DB.get_airfoil(f"NACA{airfoil_name}")
-        airfoil.repanel_spl(160)
+        airfoil.repanel_spl(200)
         airfoils_to_compute.append(airfoil)
 
     print(f"Computing: {len(airfoils_to_compute)}")
@@ -56,51 +56,43 @@ def main() -> None:
     reynolds: FloatArray = np.linspace(
         start=reynolds_min,
         stop=reynolds_max,
-        num=12,
+        num=3,
     )
 
-    # ANGLE OF ATTACK SETUP
-    aoa_min: float = -8
-    aoa_max: float = 14
-    aoa_step: float = 1.0
-
     # Transition to turbulent Boundary Layer
-    # ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 1.0}
-    # ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 1.0}
     Ncrit = 9
+    angles = np.linspace(-8, 12, 21)  # Angles of attack in degrees
 
     from ICARUS.solvers.Foil2Wake import Foil2Wake
 
-    xfoil = Xfoil()
-    print(xfoil)
+    f2w = Foil2Wake()
+    print(f2w)
 
     # Import Analysis
     # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
     # 1) Sequential Angle run for multiple reynolds
-    analysis = xfoil.aseq
+    analysis = f2w.aseq
 
     # Set Options
-    xfoil_inputs = analysis.get_analysis_input()
-    xfoil_inputs.airfoil = airfoils_to_compute
-    xfoil_inputs.reynolds = reynolds
-    xfoil_inputs.mach = MACH
-    xfoil_inputs.max_aoa = aoa_max
-    xfoil_inputs.min_aoa = aoa_min
-    xfoil_inputs.aoa_step = aoa_step
+    f2w_inputs = analysis.get_analysis_input()
+    f2w_inputs.airfoil = airfoils_to_compute
+    f2w_inputs.reynolds = reynolds
+    f2w_inputs.mach = MACH
+    f2w_inputs.angles = angles
 
     # Set Solver Options
-    xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
-    xfoil_solver_parameters.max_iter = 500
-    xfoil_solver_parameters.Ncrit = Ncrit
-    xfoil_solver_parameters.xtr = (0.1, 0.2)
-    xfoil_solver_parameters.print = False
-    # xfoil.print_solver_parameters()
+    f2w_solver_parameters: Foil2WakeSolverParameters = f2w.get_solver_parameters()
+    f2w_solver_parameters.iterations = 350
+    f2w.solver_parameters.boundary_layer_iteration_start = 349
+    f2w_solver_parameters.Ncrit = Ncrit
+    f2w_solver_parameters.f_trip_upper = 0.1
+    f2w_solver_parameters.f_trip_low = 0.2
 
     # RUN and SAVE
-    xfoil.execute(
+    f2w.execute(
         analysis=analysis,
-        inputs=xfoil_inputs,
-        solver_parameters=xfoil_solver_parameters,
+        inputs=f2w_inputs,
+        solver_parameters=f2w_solver_parameters,
         execution_mode=ExecutionMode.THREADING,
     )
 

@@ -547,7 +547,8 @@ class Database_2D:
         reynolds: float | None = None,
         angles: list[float] | FloatArray = [],
     ) -> tuple[str, str, list[str]]:
-        db = Database_2D.get_instance()
+        db = Database_2D.get_instance()        
+
         AFDIR: str = os.path.join(
             db.DB2D,
             f"{airfoil.name.upper()}",

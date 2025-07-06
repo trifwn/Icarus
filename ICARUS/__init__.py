@@ -47,7 +47,6 @@ __all__ = [
     # Executables
     "GenuVP3_exe",
     "GenuVP7_exe",
-    "F2W_exe",
     "Foil_Section_exe",
     "AVL_exe",
     # Module imports

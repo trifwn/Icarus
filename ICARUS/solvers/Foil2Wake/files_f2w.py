@@ -1,19 +1,24 @@
-from typing import Any
+from __future__ import annotations
 
+import os
+from typing import TYPE_CHECKING
 import numpy as np
-
 from ICARUS import PLATFORM
 
+if TYPE_CHECKING:
+    from ICARUS.solvers.Foil2Wake.f2w_section import Foil2WakeSolverParameters
 
-def io_file(airfile: str, name: str) -> None:
+
+def io_file(directory: str, airfile: str, name: str) -> None:
     """Creates the io.files file for section f2w
 
     Args:
+        directory (str): Directory where the files will be saved
         airfile (str): Name of the file containing the airfoil geometry
         name (str): Positive or Negative Run
 
     """
-    fname = f"io_{name}.files"
+    fname = os.path.join(directory, f"io_{name}.files")
     with open(fname, "w", encoding="utf-8") as f:
         f.write("***** input files  *****\n")
         f.write(f"design_{name}.inp\n")
@@ -39,7 +44,7 @@ def io_file(airfile: str, name: str) -> None:
 
 
 def design_file(
-    number_of_angles: int,
+    directory: str,
     angles: list[float],
     name: str,
 ) -> None:
@@ -47,12 +52,14 @@ def design_file(
     the file for positive or negative angles
 
     Args:
+        directory (str): Directory where the files will be saved
         number_of_angles (int): Number of angles
         angles (list[float]): List of angles
         name (str): pos or neg. Meaning positive or negative run
 
     """
-    fname: str = f"design_{name}.inp"
+    number_of_angles = len(angles)
+    fname: str = os.path.join(directory, f"design_{name}.inp")
     with open(fname, "w", encoding="utf-8") as f:
         f.write(f"{angles[0]}\n")
         f.write("0            ! ISOL\n")
@@ -78,15 +85,11 @@ def design_file(
 
 
 def input_file(
+    directory: str,
     reynolds: float,
     mach: float,
-    max_iter: float,
-    timestep: float,
-    ftrip_low: float,
-    ftrip_upper: float,
-    Ncrit: float,
     name: str,
-    solver_parameters: dict[str, tuple[Any, str, Any]],
+    solver_parameters: Foil2WakeSolverParameters,
 ) -> None:
     """Creates the input file for section f2w program
 
@@ -98,37 +101,37 @@ def input_file(
         name (str): _description_
 
     """
-    fname: str = f"f2w_{name}.inp"
+    fname: str = os.path.join(directory, f"f2w_{name}.inp")
     with open(fname, "w", encoding="utf-8") as f:
         f.write("0.        ! TEANGLE (deg)\n")
         f.write("1.        ! UINF\n")
-        f.write(f"{max_iter}     ! NTIMEM\n")
-        f.write(f"{timestep}     ! DT1\n")
-        f.write(f"{timestep}     ! DT2\n")  # IS NOT IMPLEMENTED
-        f.write(f"{solver_parameters['Cuttoff_1']}    ! EPS1\n")
-        f.write(f"{solver_parameters['Cuttoff_2']}    ! EPS2\n")
-        f.write(f"{solver_parameters['EPSCOE']}     ! EPSCOE\n")
-        f.write(f"{solver_parameters['NWS']}        ! NWS\n")
-        f.write(f"{solver_parameters['CCC1']}    ! CCC1\n")
-        f.write(f"{solver_parameters['CCC2']}    ! CCC2\n")
-        f.write(f"{solver_parameters['CCGON1']}      ! CCGON1\n")
-        f.write(f"{solver_parameters['CCGON2']}      ! CCGON2\n")
-        f.write(f"{solver_parameters['IMOVE']}        ! IMOVE\n")
-        f.write(f" {solver_parameters['A0']}   ! A0\n")
-        f.write(f" {solver_parameters['AMPL']}   ! AMPL\n")
-        f.write(f" {solver_parameters['APHASE']}   ! APHASE\n")
-        f.write(f" {solver_parameters['AKF']}   ! AKF\n")
-        f.write(f"{solver_parameters['Chord_hinge']}     ! XC\n")
-        f.write(f"{solver_parameters['ITEFLAP']}        ! ITEFLAP\n")
-        f.write(f"{solver_parameters['XEXT']}     ! XEXT\n")
-        f.write(f"{solver_parameters['YEXT']}      ! YEXT\n")
+        f.write(f"{solver_parameters.iterations}     ! NTIMEM\n")
+        f.write(f"{solver_parameters.timestep}     ! DT1\n")
+        f.write(f"{solver_parameters.timestep}     ! DT2\n")  # IS NOT IMPLEMENTED
+        f.write(f"{solver_parameters.Cuttoff_1}    ! EPS1\n")
+        f.write(f"{solver_parameters.Cuttoff_2}    ! EPS2\n")
+        f.write(f"{solver_parameters.EPSCOE}     ! EPSCOE\n")
+        f.write(f"{solver_parameters.NWS}        ! NWS\n")
+        f.write(f"{solver_parameters.CCC1}    ! CCC1\n")
+        f.write(f"{solver_parameters.CCC2}    ! CCC2\n")
+        f.write(f"{solver_parameters.CCGON1}      ! CCGON1\n")
+        f.write(f"{solver_parameters.CCGON2}      ! CCGON2\n")
+        f.write(f"{solver_parameters.IMOVE}        ! IMOVE\n")
+        f.write(f" {solver_parameters.A0}   ! A0\n")
+        f.write(f" {solver_parameters.AMPL}   ! AMPL\n")
+        f.write(f" {solver_parameters.APHASE}   ! APHASE\n")
+        f.write(f" {solver_parameters.AKF}   ! AKF\n")
+        f.write(f"{solver_parameters.Chord_hinge}     ! XC\n")
+        f.write(f"{solver_parameters.ITEFLAP}        ! ITEFLAP\n")
+        f.write(f"{solver_parameters.XEXT}     ! XEXT\n")
+        f.write(f"{solver_parameters.YEXT}      ! YEXT\n")
         f.write("\n")
-        f.write(f"{solver_parameters['NTEWT']}        ! NTEWT\n")
-        f.write(f"{solver_parameters['NTEST']}        ! NTEST\n")
+        f.write(f"{solver_parameters.NTEWT}        ! NTEWT\n")
+        f.write(f"{solver_parameters.NTEST}        ! NTEST\n")
         f.write("\n")
-        f.write(f"{solver_parameters['IBOUNDL']}        ! IBOUNDL\n")
-        f.write(f"{solver_parameters['boundary_layer_solve_time']}      ! NTIME_bl\n")
-        f.write(f"{solver_parameters['IYNEXTERN']}        ! IYNEXTERN\n")
+        f.write(f"{solver_parameters.IBOUNDL}        ! IBOUNDL\n")
+        f.write(f"{solver_parameters.boundary_layer_iteration_start}      ! NTIME_bl\n")
+        f.write(f"{solver_parameters.IYNEXTERN}        ! IYNEXTERN\n")
         f.write("\n")
         f.write(
             f"{np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(8)}  ! Reynolds\n",
@@ -136,16 +139,20 @@ def input_file(
         f.write("\n")
         f.write(f"{str(mach)[::-1].zfill(3)[::-1]}      ! Mach     Number\n")
         f.write("\n")
-        f.write(f"{str(ftrip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n")
-        f.write(f"{str(ftrip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n")
-        f.write(f"{int(Ncrit)}\t\t  ! AMPLUP_tr\n")
-        f.write(f"{int(Ncrit)}\t\t  ! AMPLUP_tr\n")
-        f.write("\n")
         f.write(
-            f"{solver_parameters['ITSEPAR']}         ! ITSEPAR (1: 2 wake calculation)\n",
+            f"{str(solver_parameters.f_trip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n"
         )
         f.write(
-            f"{solver_parameters['ISTEADY']}         ! ISTEADY (1: steady calculation)\n",
+            f"{str(solver_parameters.f_trip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n"
+        )
+        f.write(f"{int(solver_parameters.Ncrit)}\t\t  ! AMPLUP_tr\n")
+        f.write(f"{int(solver_parameters.Ncrit)}\t\t  ! AMPLUP_tr\n")
+        f.write("\n")
+        f.write(
+            f"{solver_parameters.ITSEPAR}         ! ITSEPAR (1: 2 wake calculation)\n",
+        )
+        f.write(
+            f"{solver_parameters.ISTEADY}         ! ISTEADY (1: steady calculation)\n",
         )
         f.write("\n")
         f.write("\n")

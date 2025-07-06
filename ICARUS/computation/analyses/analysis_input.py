@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from dataclasses import fields
 from dataclasses import replace
-from typing import Any
+from types import UnionType
+from typing import Any, List
 from typing import Union
 from typing import get_args
 from typing import get_origin
@@ -61,16 +62,23 @@ class BaseAnalysisInput(ABC):
         Helper to handle typing constructs like Optional, Union, etc.
         """
         origin = get_origin(expected_type)
-
-        if origin is Union:
+        if origin is Union or origin is UnionType:
             # Handle Optional[...] or Union[T1, T2, ...]
             return any(
-                self._is_instance_of_type(value, arg) for arg in get_args(expected_type) if arg is not type(None)
+                self._is_instance_of_type(value, arg)
+                for arg in get_args(expected_type)
+                if arg is not type(None)
             )
 
         if origin is not None:
             # Generic like list[float], dict[str, int], etc.
             return isinstance(value, origin)
+
+        if origin in (list, List):
+            (inner_type,) = get_args(expected_type)
+            return isinstance(value, list) and all(
+                self._is_instance_of_type(item, inner_type) for item in value
+            )
 
         return isinstance(value, expected_type)
 
@@ -149,7 +157,9 @@ class BaseAnalysisInput(ABC):
             new_instance = replace(self, **replace_kwargs)
 
             # Build descriptive key string: "field1: value1 | field2: value2 | ..."
-            key_parts = [f"{name}= {short_format(val)}" for name, val in replace_kwargs.items()]
+            key_parts = [
+                f"{name}= {short_format(val)}" for name, val in replace_kwargs.items()
+            ]
             key = " | ".join(key_parts)
 
             expanded_dict[key] = new_instance
@@ -187,7 +197,9 @@ class BaseAnalysisInput(ABC):
         total_size = np.prod(shapes) if shapes else 1
 
         if len(flat_results) != total_size:
-            raise ValueError(f"Number of results {len(flat_results)} does not match expansion size {total_size}")
+            raise ValueError(
+                f"Number of results {len(flat_results)} does not match expansion size {total_size}"
+            )
 
         # Create 1D object array from results
         obj_array = np.empty(total_size, dtype=object)

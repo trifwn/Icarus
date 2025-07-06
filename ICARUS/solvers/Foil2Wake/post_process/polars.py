@@ -1,10 +1,74 @@
 import os
 
-import pandas as pd
+import numpy as np
 from pandas import DataFrame
 
+from ICARUS.airfoils import (
+    Airfoil,
+    AirfoilOperatingConditions,
+    AirfoilOperatingPointMetrics,
+    AirfoilPolar,
+)
+from ICARUS.airfoils.metrics.aerodynamic_dataclasses import (
+    AirfoilPressure,
+)
+from ICARUS.core.types import FloatArray
+from ICARUS.database import Database, directory_to_angle
 
-def make_polars(case_directory: str) -> DataFrame:
+
+def process_f2w_run(
+    airfoil: Airfoil | list[Airfoil],
+    reynolds: FloatArray | list[float] | float,
+) -> dict[float, DataFrame]:
+    polars: dict[float, DataFrame] = {}
+    DB = Database.get_instance()
+
+    if isinstance(airfoil, Airfoil):
+        airfoil_list = [airfoil]
+    elif isinstance(airfoil, list):
+        airfoil_list = airfoil
+    else:
+        raise TypeError(
+            f"airfoil must be either an Airfoil object or a list of Airfoil objects. Got {type(airfoil)}",
+        )
+
+    if isinstance(reynolds, float):
+        reynolds_list: list[float] = [reynolds]
+    elif isinstance(reynolds, list):
+        reynolds_list = reynolds
+    elif isinstance(reynolds, np.ndarray):
+        reynolds_list = reynolds.tolist()
+    else:
+        raise TypeError(
+            f"reynolds must be either a float or a list of floats. Got {type(reynolds)}",
+        )
+
+    for airfoil in airfoil_list:
+        for reyn in reynolds_list:
+            _, REYNDIR, _ = DB.generate_airfoil_directories(
+                airfoil=airfoil,
+                reynolds=reyn,
+            )
+
+            try:
+                polar = get_polar(
+                    case_directory=REYNDIR,
+                    reynolds=reyn,
+                    mach=0.0,  # Mach number is not used in Foil2Wake)
+                )
+                polar.save(REYNDIR, "polar.xfoil")
+            except ValueError as e:
+                continue
+
+        DB.load_airfoil_data(airfoil)
+    return polars
+
+
+def get_polar(
+    case_directory: str,
+    reynolds: float,
+    mach: float,
+) -> AirfoilPolar:
     """Make the polars from the forces and return a dataframe with them
 
     Args:
@@ -14,23 +78,50 @@ def make_polars(case_directory: str) -> DataFrame:
 
     """
     folders: list[str] = next(os.walk(case_directory))[1]
-    res_file = "AERLOAD.OUT"
-    dat: list[list[float]] = []
-    for folder in folders:
-        folder_path = os.path.join(case_directory, folder)
-        if "AERLOAD.OUT" in next(os.walk(folder))[2]:
-            load_file = os.path.join(folder_path, res_file)
-            with open(load_file, encoding="UTF-8") as f:
-                data: str = f.read()
-            if data == "":
-                continue
-            values = [x.strip() for x in data.split(" ") if x != ""]
-            cl, cd, cm, aoa = (values[7], values[8], values[11], values[17])
-            dat.append([float(aoa), float(cl), float(cd), float(cm)])
 
-    df: DataFrame = pd.DataFrame(dat, columns=["AoA", "CL", "CD", "Cm"]).sort_values(
-        "AoA",
-    )
-    clcd_file = os.path.join(case_directory, "polar.f2w")
-    df.to_csv(clcd_file, index=False)
-    return df
+    metrics: list[AirfoilOperatingPointMetrics] = []
+    for folder in folders:
+        load_file = "AERLOAD.OUT"
+        pressure_file = "COEFPRE.OUT"
+        folder_path = os.path.join(case_directory, folder)
+
+        if load_file not in next(os.walk(folder_path))[2]:
+            continue
+
+        if pressure_file not in next(os.walk(folder_path))[2]:
+            continue
+
+        aoa = directory_to_angle(folder)
+        op = AirfoilOperatingConditions(
+            aoa=aoa, reynolds_number=reynolds, mach_number=mach
+        )
+
+        load_file = os.path.join(folder_path, load_file)
+        with open(load_file,'r', encoding="UTF-8") as f:
+            data: list[str] = f.readlines()
+        if len(data) < 2:
+            continue
+
+        values = [x.strip() for x in data[-1].split(" ") if x != ""]
+        cl, cd, cm, aoa = (values[7], values[8], values[11], values[17])
+
+        load_file = os.path.join(folder_path, pressure_file)
+        pressure_data = np.loadtxt(load_file).T
+
+        x = pressure_data[0]
+        y = pressure_data[3]
+        cp = pressure_data[1]
+
+        cp_distribution = AirfoilPressure(x=x, y=y, cp=cp)
+
+        metric = AirfoilOperatingPointMetrics(
+            operating_conditions=op,
+            Cl=float(cl),
+            Cd=float(cd),
+            Cm=float(cm),
+            Cp_min=np.min(cp),
+            Cp_distribution=cp_distribution,
+        )
+        metrics.append(metric)
+
+    return AirfoilPolar.from_airfoil_metrics(metrics)
