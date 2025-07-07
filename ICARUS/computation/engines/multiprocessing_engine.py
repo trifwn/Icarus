@@ -28,9 +28,46 @@ class MultiprocessingEngine(AbstractEngine):
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()
         self.execution_mode.set_multiprocessing_manager(mp.Manager())
-        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(concurrent_vars_req)
+        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(
+            concurrent_vars_req,
+        )
         self.set_concurrent_vars(concurent_vars)
+
+        # # Set up terminate event for graceful shutdown
+        # queue = concurent_vars.get("Console_Queue")
+        # if queue is None or not isinstance(queue, QueueLike):
+        #     raise ValueError(
+        #         "MultiprocessingEngine requires a 'Console_Queue' in concurrent variables.",
+        #     )
+
+        # # -------------------------
+        # # 🌍 Set up global logging
+        # # -------------------------
+        # self.log_queue = queue
+
+        # # Rich handler (used only in the main process)
+        # rich_handler = RichHandler(rich_tracebacks=True, show_path=False)
+        # rich_handler.setFormatter(logging.Formatter("%(message)s"))
+
+        # # Queue listener listens for records from workers and uses Rich
+        # self.listener = QueueListener(self.log_queue, rich_handler)
+        # self.listener.start()
+
+        # # Global root logger uses a QueueHandler
+        # root_logger = logging.getLogger()
+        # root_logger.setLevel(logging.INFO)
+
+        # # Only add if not already added
+        # if not any(isinstance(h, QueueHandler) for h in root_logger.handlers):
+        #     root_logger.handlers = []  # Clear default handlers
+        #     root_logger.addHandler(QueueHandler(self.log_queue))
+
         return self
+
+    # def __exit__(self, exc_type, exc_val, exc_tb):
+    #     self.logger.info(f"Exiting engine: {self.__class__.__name__}")
+    #     if hasattr(self, "listener"):
+    #         self.listener.stop()
 
     async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks using process pool"""
@@ -54,7 +91,13 @@ class MultiprocessingEngine(AbstractEngine):
         processed_results = []
         for result in results:
             if isinstance(result, Exception):
-                processed_results.append(TaskResult(task_id=result.task_id, state=TaskState.FAILED, error=result))
+                processed_results.append(
+                    TaskResult(
+                        task_id=result.task_id,
+                        state=TaskState.FAILED,
+                        error=result,
+                    ),
+                )
             else:
                 processed_results.append(result)
 
@@ -65,7 +108,7 @@ class MultiprocessingEngine(AbstractEngine):
         """Start the progress monitor in a separate process if enabled."""
         if self.progress_monitor:
 
-            def monitor_runner():
+            def monitor_runner() -> None:
                 if self.progress_monitor:
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())
@@ -81,7 +124,9 @@ class MultiprocessingEngine(AbstractEngine):
             try:
                 self.monitor_thread.join(timeout=1)
                 if self.monitor_thread.is_alive():
-                    self.logger.warning("Progress monitor process did not stop gracefully")
+                    self.logger.warning(
+                        "Progress monitor process did not stop gracefully",
+                    )
             except Exception as e:
                 self.logger.error(f"Error stopping monitor process: {e}")
         else:
@@ -123,7 +168,7 @@ class MultiprocessingEngine(AbstractEngine):
             start_time = datetime.now()
             task.state = TaskState.RUNNING
 
-            async def execute():
+            async def execute() -> TaskResult[Any]:
                 try:
                     # Acquire resources
                     await context.acquire_resources()

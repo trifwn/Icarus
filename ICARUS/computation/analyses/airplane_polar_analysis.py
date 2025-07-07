@@ -5,6 +5,7 @@ from typing import Callable
 from typing import Optional
 
 from ICARUS.computation.analyses.analysis_input import BaseAnalysisInput
+from ICARUS.core.types import FloatArray
 from ICARUS.flight_dynamics.state import State
 from ICARUS.vehicle.airplane import Airplane
 
@@ -15,7 +16,7 @@ from . import Analysis
 class AirplaneStaticAnalysisInput(BaseAnalysisInput):
     """Input for a multi-Reynolds airfoil polar analysis."""
 
-    airfoil: Optional[Airplane] = field(
+    plane: Optional[Airplane] = field(
         default=None,
         metadata={"description": "Airplane object to be analyzed"},
     )
@@ -23,17 +24,13 @@ class AirplaneStaticAnalysisInput(BaseAnalysisInput):
         default=None,
         metadata={"description": "Flight state (e.g., speed, altitude, orientation)"},
     )
-    solver_2D: Optional[str] = field(
-        default=None,
-        metadata={"description": "Name of the 2D solver used for aerodynamic sectional analysis"},
-    )
-    angles: Optional[list[float]] = field(
+    angles: Optional[list[float] | FloatArray] = field(
         default=None,
         metadata={"description": "List of angles of attack (in degrees) to evaluate"},
     )
 
 
-class BaseAirplanePolarAnalysis(Analysis[AirplaneStaticAnalysisInput]):
+class BaseAirplaneAseq(Analysis[AirplaneStaticAnalysisInput]):
     def __init__(
         self,
         solver_name: str,

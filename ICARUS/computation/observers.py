@@ -25,7 +25,9 @@ class ConsoleProgressObserver(ProgressObserver):
         """Print progress to console"""
         # Throttle updates
         last = self._last_update.get(progress.task_id, datetime.min)
-        print(f"Task {progress.task_id}: {progress.percentage:.1f}% - {progress.message}")
+        print(
+            f"Task {progress.task_id}: {progress.percentage:.1f}% - {progress.message}",
+        )
         if (datetime.now() - last).total_seconds() < 0.5:
             return
 

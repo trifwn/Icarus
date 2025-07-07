@@ -83,18 +83,26 @@ def plot_airfoils_at_reynolds(
                 if reynolds is None:
                     reyn_idx = int(len(polar.reynolds_numbers) // 2)
                     reyn = polar.reynolds_numbers[reyn_idx]
-                    print(f"Reynolds number not provided for {airfoil_name}. Selecting Reynolds number: {reyn:,}")
+                    print(
+                        f"Reynolds number not provided for {airfoil_name}. Selecting Reynolds number: {reyn:,}",
+                    )
                 else:
                     available_reynolds = polar.reynolds_numbers
                     # Find the closest reynolds number to the given reynolds
-                    reyn = min(available_reynolds, key=lambda x: abs(float(x) - reynolds))
+                    reyn = min(
+                        available_reynolds,
+                        key=lambda x: abs(float(x) - reynolds),
+                    )
                 polar_df = polar.get_polar(reyn)
 
                 # Sort the data by AoA
                 polar_df = polar_df.df.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar_df = polar_df.loc[(polar_df["AoA"] >= aoa_bounds[0]) & (polar_df["AoA"] <= aoa_bounds[1])]
+                    polar_df = polar_df.loc[
+                        (polar_df["AoA"] >= aoa_bounds[0])
+                        & (polar_df["AoA"] <= aoa_bounds[1])
+                    ]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[1] == "CL/CD" or plot[1] == "CL/CD":
                         polar_df["CL/CD"] = polar_df["CL"] / polar_df["CD"]

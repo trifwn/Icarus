@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import os
 from typing import TYPE_CHECKING
+
 import numpy as np
+
 from ICARUS import PLATFORM
 
 if TYPE_CHECKING:
-    from ICARUS.solvers.Foil2Wake.f2w_section import Foil2WakeSolverParameters
+    from ICARUS.solvers.Foil2Wake import Foil2WakeSolverParameters
 
 
-def io_file(directory: str, airfile: str, name: str) -> None:
+def input_file(directory: str, airfile: str, name: str) -> None:
     """Creates the io.files file for section f2w
 
     Args:
@@ -30,8 +32,8 @@ def io_file(directory: str, airfile: str, name: str) -> None:
         f.write("AIRFOIL.OUT\n")
         f.write("TREWAKE.OUT\n")
         f.write("SEPWAKE.OUT\n")
-        f.write("COEFPRE.OUT\n")
-        f.write("AERLOAD.OUT\n")
+        f.write("cp.dat\n")
+        f.write("aerloa.dat\n")
         f.write("BDLAYER.OUT\n")
         f.write(f"SOL{name}.INI\n")
         f.write(f"SOL{name}.TMP\n")
@@ -43,7 +45,7 @@ def io_file(directory: str, airfile: str, name: str) -> None:
         f.write("\n")
 
 
-def design_file(
+def io_file(
     directory: str,
     angles: list[float],
     name: str,
@@ -84,7 +86,7 @@ def design_file(
         f.write("\n")
 
 
-def input_file(
+def design_file_section(
     directory: str,
     reynolds: float,
     mach: float,
@@ -126,11 +128,11 @@ def input_file(
         f.write(f"{solver_parameters.XEXT}     ! XEXT\n")
         f.write(f"{solver_parameters.YEXT}      ! YEXT\n")
         f.write("\n")
-        f.write(f"{solver_parameters.NTEWT}        ! NTEWT\n")
-        f.write(f"{solver_parameters.NTEST}        ! NTEST\n")
+        f.write(f"{solver_parameters.NTEW}        ! NTEWT\n")
+        f.write(f"{solver_parameters.NTES}        ! NTEST\n")
         f.write("\n")
         f.write(f"{solver_parameters.IBOUNDL}        ! IBOUNDL\n")
-        f.write(f"{solver_parameters.boundary_layer_iteration_start}      ! NTIME_bl\n")
+        f.write(f"{solver_parameters.iterations - 1}      ! NTIME_bl\n")
         f.write(f"{solver_parameters.IYNEXTERN}        ! IYNEXTERN\n")
         f.write("\n")
         f.write(
@@ -140,10 +142,10 @@ def input_file(
         f.write(f"{str(mach)[::-1].zfill(3)[::-1]}      ! Mach     Number\n")
         f.write("\n")
         f.write(
-            f"{str(solver_parameters.f_trip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n"
+            f"{str(solver_parameters.f_trip_low)[::-1].zfill(3)[::-1]}    1  ! TRANSLO\n",
         )
         f.write(
-            f"{str(solver_parameters.f_trip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n"
+            f"{str(solver_parameters.f_trip_upper)[::-1].zfill(3)[::-1]}    2  ! TRANSLO\n",
         )
         f.write(f"{int(solver_parameters.Ncrit)}\t\t  ! AMPLUP_tr\n")
         f.write(f"{int(solver_parameters.Ncrit)}\t\t  ! AMPLUP_tr\n")
@@ -155,5 +157,98 @@ def input_file(
             f"{solver_parameters.ISTEADY}         ! ISTEADY (1: steady calculation)\n",
         )
         f.write("\n")
+        f.write("\n")
+        f.write("\n")
+
+
+def design_file(
+    directory: str,
+    airfoil_file_name: str,
+    aoa: float,
+    solver_parameters: Foil2WakeSolverParameters,
+) -> None:
+    """Creates the input file for section f2w program
+
+    Args:
+        Reynolds (float): Reynolds number for this simulation
+        Mach (float): Mach Number for this simulation
+        ftrip_low (dict[str, float]): Dictionary of lower transition points for positive and negative angles
+        ftrip_upper (dict[str,float]): Dictionary of upper transition points for positive and negative angles
+        name (str): _description_
+
+    """
+    fname: str = os.path.join(directory, "dfile")
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write("3          ! IFOIL\n")
+        f.write(f"{airfoil_file_name}\n")
+
+        f.write(f"{aoa}        ! ANGL\n")
+        f.write("1.        ! UINF\n")
+        f.write(f"{solver_parameters.iterations}     ! NTIMEM\n")
+        f.write(f"{solver_parameters.timestep}     ! DT1\n")
+        f.write(f"{solver_parameters.timestep}     ! DT2\n")
+        f.write(f"{solver_parameters.Cuttoff_1}    ! EPS1\n")
+        f.write(f"{solver_parameters.Cuttoff_2}    ! EPS2\n")
+        f.write(f"{solver_parameters.EPSCOE}     ! EPSCOE\n")
+        f.write(f"{solver_parameters.NWS}        ! NWS\n")
+        f.write(f"{solver_parameters.CCC1}    ! CCC1\n")
+        f.write(f"{solver_parameters.CCC2}    ! CCC2\n")
+        f.write(f"{solver_parameters.CCGON1}      ! CCGON1\n")
+        f.write(f"{solver_parameters.CCGON2}      ! CCGON2\n")
+
+        f.write(f"{solver_parameters.IMOVE}        ! IMOVE\n")
+        f.write(f" {solver_parameters.A0}   ! A0\n")
+        f.write(f" {solver_parameters.AMPL}   ! AMPL\n")
+        f.write(f" {solver_parameters.APHASE}   ! APHASE\n")
+        f.write(f" {solver_parameters.NTIME_INI}         ! NTIME_INI\n")
+        f.write(f" {solver_parameters.AKF}   ! AKF\n")
+        f.write(f"{solver_parameters.Chord_hinge}     ! XC\n")
+        f.write("\n")
+
+        f.write(f"{solver_parameters.ITEFLAP}  ! ITEFLAP\n")
+        f.write(f"{solver_parameters.XEXT}     ! XEXT\n")
+        f.write(f"{solver_parameters.YEXT}     ! YEXT\n")
+        f.write("\n")
+        f.write(f"{solver_parameters.NTEW}        ! NTEWT\n")
+        f.write(f"{solver_parameters.NTES}        ! NTEST\n")
+        f.write("\n")
+        f.write(f"{solver_parameters.IBOUNDL}        ! IBOUNDL\n")
+        f.write(f"{solver_parameters.iterations - 1}      ! NTIME_bl\n")
+        f.write(f"{solver_parameters.IYNEXTERN}        ! IYNEXTERN\n")
+        f.write("blfile\n")
+
+
+def boundary_layer_file(
+    directory: str,
+    reynolds: float,
+    mach: float,
+    solver_parameters: Foil2WakeSolverParameters,
+) -> None:
+    fname: str = os.path.join(directory, "blfile")
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write(
+            f"{np.format_float_scientific(reynolds, sign=False, precision=3, min_digits=3).zfill(8)}  ! Reynolds\n",
+        )
+        f.write(f"{str(mach)[::-1].zfill(3)[::-1]}      ! Mach     Number\n")
+        f.write("\n")
+
+        f.write(f"{solver_parameters.IRSOL}\t\t  ! IRSOL\n")
+        f.write(
+            f"{str(solver_parameters.f_trip_low)[::-1].zfill(3)[::-1]}    ! SLXTRLO_IN\n",
+        )
+        f.write(
+            f"{str(solver_parameters.f_trip_upper)[::-1].zfill(3)[::-1]}  ! SLXTRUP_IN\n",
+        )
+        f.write("\n")
+
+        f.write(f"{int(solver_parameters.Ncrit)}\t\t  ! AMPLUP_tr\n")
+        f.write(f"{int(solver_parameters.Ncrit)}\t\t  ! AMPLLO_tr\n")
+        f.write("\n")
+        f.write(
+            f"{solver_parameters.ITSEPAR}         ! ITSEPAR (1: 2 wake calculation)\n",
+        )
+        f.write(
+            f"{solver_parameters.ISTEADY}         ! ISTEADY (1: steady calculation)\n",
+        )
         f.write("\n")
         f.write("\n")

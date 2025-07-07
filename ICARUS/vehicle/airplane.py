@@ -99,7 +99,9 @@ class Airplane(Optimizable):
         surf_names = list(self.surface_dict.keys())
         for name in surf_names:
             surf = self.surface_dict[name]
-            if surf.is_symmetric_y and any([cont.inverse_symmetric for cont in self.surfaces[0].controls]):
+            if surf.is_symmetric_y and any(
+                [cont.inverse_symmetric for cont in self.surfaces[0].controls],
+            ):
                 # Split the surface into 2 symmetric surfaces
                 self.surface_dict[name] = surf.split_xz_symmetric_wing()
 
@@ -765,7 +767,11 @@ class Airplane(Optimizable):
         return {
             "name": self.name,
             "main_wing": self.main_wing,
-            "other_surfaces": [surf for surf in self.surface_dict.values() if surf.name != self.main_wing_name],
+            "other_surfaces": [
+                surf
+                for surf in self.surface_dict.values()
+                if surf.name != self.main_wing_name
+            ],
             "orientation": self.orientation,
             "point_masses": self.point_masses,
             "cg_overwrite": self.CG if self.overwrite_mass else None,
@@ -797,7 +803,11 @@ class Airplane(Optimizable):
         return Airplane(
             name=self.name,
             main_wing=self.main_wing,
-            other_surfaces=[surf for surf in self.surface_dict.values() if surf.name != self.main_wing_name],
+            other_surfaces=[
+                surf
+                for surf in self.surface_dict.values()
+                if surf.name != self.main_wing_name
+            ],
             orientation=self.orientation,
             point_masses=self.point_masses,
             cg_overwrite=self.CG if self.overwrite_mass else None,

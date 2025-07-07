@@ -1,16 +1,11 @@
 from multiprocessing import Pool
 from subprocess import call
-from threading import Thread
 from typing import Any
-
-from tqdm.auto import tqdm
 
 from ICARUS import CPU_TO_USE
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
 from ICARUS.solvers import runOFscript
-from ICARUS.solvers.OpenFoam.analyses.monitor_progress import parallel_monitor
-from ICARUS.solvers.OpenFoam.analyses.monitor_progress import serial_monitor
 from ICARUS.solvers.OpenFoam.files.setup_case import setup_open_foam
 
 
@@ -64,41 +59,8 @@ def angles_serial(
         angles=angles,
         solver_parameters=solver_parameters,
     )
-    max_iter: int = solver_parameters["max_iterations"]
-
-    progress_bars = []
-    for pos, angle in enumerate(angles):
-        angle_dir = angle_directories[pos]
-        job = Thread(target=run_angle, args=(angle_dir,))
-
-        pbar = tqdm(
-            total=max_iter,
-            desc=f"\t\t{angle} Progress:",
-            position=pos,
-            leave=True,
-            colour="#003366",
-            bar_format="{l_bar}{bar:30}{r_bar}",
-        )
-        progress_bars.append(pbar)
-
-        job_monitor = Thread(
-            target=serial_monitor,
-            kwargs={
-                "progress_bars": progress_bars,
-                "ANGLEDIR": angle_dir,
-                "position": pos,
-                "lock": None,
-                "max_iter": max_iter,
-                "refresh_progress": 2,
-            },
-        )
-        # Start Jobs
-        job.start()
-        job_monitor.start()
-
-        # Join
-        job.join()
-        job_monitor.join()
+    for angle_dir in angle_directories:
+        run_angle(angle_dir)
 
 
 def angles_parallel(
@@ -125,15 +87,5 @@ def angles_parallel(
         angles,
         solver_parameters,
     )
-    max_iter: int = solver_parameters["max_iterations"]
 
-    job = Thread(target=run_angles, args=(angle_directories))
-    job_monitor = Thread(target=parallel_monitor, args=(angle_directories, angles, max_iter))
-
-    # Start Jobs
-    job.start()
-    job_monitor.start()
-
-    # Join
-    job.join()
-    job_monitor.join()
+    run_angles(case_directories=angle_directories)

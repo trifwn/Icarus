@@ -1,23 +1,18 @@
-from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseDynamicAnalysis
-from ICARUS.computation.analyses.airplane_polar_analysis import (
-    BaseAirplanePolarAnalysis,
-)
+from dataclasses import dataclass
+from typing import Literal
+
+from ICARUS.computation import SolverParameters
+from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseStabilityAnalysis
+from ICARUS.computation.analyses.airplane_polar_analysis import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
-from ICARUS.computation.solver_parameters import BoolParameter
-from ICARUS.solvers.AVL import avl_dynamics_fd
-from ICARUS.solvers.AVL import avl_dynamics_implicit
 from ICARUS.solvers.AVL import avl_polars
+from ICARUS.solvers.AVL import avl_stability_fd
+from ICARUS.solvers.AVL import avl_stability_implicit
 from ICARUS.solvers.AVL import process_avl_dynamics_fd
 from ICARUS.solvers.AVL import process_avl_dynamics_implicit
 
-use_avl_control_option = BoolParameter(
-    name="use_avl_control",
-    description="Use AVL control surface deflections",
-    default_value=False,
-)
 
-
-class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
+class AVL_PolarAnalysis(BaseAirplaneAseq):
     __call__ = staticmethod(avl_polars)
 
     def __init__(
@@ -26,33 +21,47 @@ class AVL_PolarAnalysis(BaseAirplanePolarAnalysis):
         super().__init__("AVL", avl_polars, unhook=None)
 
 
-class AVL_DynamicAnalysisFD(BaseDynamicAnalysis):
-    __call__ = staticmethod(avl_dynamics_fd)
-
-    def __init__(self) -> None:
-        super().__init__("AVL", avl_dynamics_fd, unhook=process_avl_dynamics_fd)
-
-
-class AVL_DynamicAnalysisImplicit(BaseDynamicAnalysis):
-    __call__ = staticmethod(avl_dynamics_implicit)
+class AVL_StabilityFD(BaseStabilityAnalysis):
+    __call__ = staticmethod(avl_stability_fd)
 
     def __init__(self) -> None:
         super().__init__(
             "AVL",
-            avl_dynamics_implicit,
-            unhook=process_avl_dynamics_implicit,
+            avl_stability_fd,
+            post_execute_fun=process_avl_dynamics_fd,
         )
 
 
-class AVL(Solver):
-    polars = AVL_PolarAnalysis()
-    dynamics = AVL_DynamicAnalysisFD()
-    dynamics_implicit = AVL_DynamicAnalysisImplicit()
+class AVL_StabilityImplicit(BaseStabilityAnalysis):
+    __call__ = staticmethod(avl_stability_implicit)
+
+    def __init__(self) -> None:
+        super().__init__(
+            "AVL",
+            avl_stability_implicit,
+            post_execute_fun=process_avl_dynamics_implicit,
+        )
+
+
+@dataclass
+class AVLParameters(SolverParameters):
+    """Parameters for the AVL solver."""
+
+    use_avl_control: bool = False
+    cd_parasitic: float = 0.0
+    run_invscid: bool = False
+    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil"
+
+
+class AVL(Solver[AVLParameters]):
+    aseq = AVL_PolarAnalysis()
+    stability = AVL_StabilityFD()
+    stability_implicit = AVL_StabilityImplicit()
 
     analyses = [
         AVL_PolarAnalysis(),
-        AVL_DynamicAnalysisFD(),
-        AVL_DynamicAnalysisImplicit(),
+        AVL_StabilityFD(),
+        AVL_StabilityImplicit(),
     ]
 
     def __init__(self) -> None:
@@ -60,5 +69,5 @@ class AVL(Solver):
             name="AVL",
             solver_type="3D VLM",
             fidelity=1,
-            solver_parameters=[use_avl_control_option],
+            solver_parameters=AVLParameters(),
         )

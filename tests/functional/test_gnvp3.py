@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 
@@ -29,10 +28,12 @@ def test_gnvp3_run(
     # Get Solver
     from ICARUS.solvers.GenuVP import GenuVP3
 
+    # from ICARUS.solvers.GenuVP import GenuVP7
+
     gnvp3 = GenuVP3()
 
     # Set Analysis
-    polar_analysis: Analysis = gnvp3.get_analyses()[0]
+    polar_analysis = gnvp3.aseq
 
     # Set Options
     inputs = polar_analysis.get_analysis_input(verbose=True)
@@ -47,12 +48,11 @@ def test_gnvp3_run(
 
     inputs.plane = benchmark_airplane
     inputs.state = benchmark_state
-    inputs.solver2D = "Xfoil"
-    inputs.maxiter = maxiter
-    inputs.timestep = timestep
     inputs.angles = angles
 
     solver_parameters = gnvp3.get_solver_parameters()
+    solver_parameters.iterations = maxiter
+    solver_parameters.timestep = timestep
     solver_parameters.Split_Symmetric_Bodies = False
     solver_parameters.Use_Grid = True
 
@@ -62,7 +62,9 @@ def test_gnvp3_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    execution_mode = ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
+    execution_mode = (
+        ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
+    )
     start_time: float = time.perf_counter()
     results = gnvp3.execute(
         analysis=polar_analysis,
@@ -80,4 +82,6 @@ def test_gnvp3_run(
     assert results is not None, "GNVP3 should return results"
 
     # Assert execution time is reasonable (less than 300 seconds)
-    assert execution_time < 300.0, f"GNVP3 execution took too long: {execution_time:.3f}s"
+    assert (
+        execution_time < 300.0
+    ), f"GNVP3 execution took too long: {execution_time:.3f}s"

@@ -24,7 +24,6 @@ A comprehensive simulation framework featuring:
 - Plugin architecture with advanced monitoring
 - Resource management and fault tolerance
 - Comprehensive lifecycle management
-- Visual progress bars with tqdm integration
 
 This package provides a complete solution for running complex simulations
 with professional-grade monitoring, error handling, and progress tracking.
@@ -62,9 +61,6 @@ from .solver_parameters import (
     NoSolverParameters,
     # Specific parameter types
     Parameter,
-    BoolParameter,
-    FloatParameter,
-    IntParameter,
     IntOrNoneParameter,
     StrParameter,
 )

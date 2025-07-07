@@ -14,7 +14,9 @@ def serialize_function(func: Callable[[Any], Any]) -> dict[str, Any] | None:
     return None
 
 
-def deserialize_function(func_dict: dict[str, Any] | None) -> Callable[[Any], Any] | None:
+def deserialize_function(
+    func_dict: dict[str, Any] | None,
+) -> Callable[[Any], Any] | None:
     if func_dict:
         func_type, func_info = list(func_dict.items())[0]
         if func_type == "py/method":

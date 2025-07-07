@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 import numpy as np
 
 from ICARUS.core.types import FloatArray
 
+from .. import GenuVP3Parameters
+from .. import GenuVP7Parameters
 from . import GenuSurface
 
 if TYPE_CHECKING:
@@ -16,17 +17,15 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import Airplane
 
 
-class GenuParameters:
+class GenuCaseParams:
     def __init__(
         self,
         genu_bodies: list[GenuSurface],
         plane: Airplane,
-        maxiter: int,
-        timestep: float,
         u_freestream: float,
         angle_deg: float,
         environment: Environment,
-        solver_parameters: dict[str, Any],
+        solver_parameters: GenuVP3Parameters | GenuVP7Parameters,
     ) -> None:
         """Set the parameters for the gnvp3 solver.
 
@@ -50,7 +49,7 @@ class GenuParameters:
         dens: float = environment.air_density
         visc: float = environment.air_kinematic_viscosity
 
-        airVelocity: list[float] = [
+        velocity: list[float] = [
             u_freestream * np.cos(angle),
             0.0,
             u_freestream * np.sin(angle),
@@ -60,42 +59,43 @@ class GenuParameters:
         self.nBods: int = n_bodies
         self.nBlades: int = num_airfoils
         self.CG: FloatArray = plane.CG
-        self.maxiter: int = maxiter
-        self.timestep: float = timestep
-        self.u_freestream: list[float] = airVelocity
+        self.maxiter: int = solver_parameters.iterations
+        self.timestep: float = solver_parameters.timestep
+        self.u_freestream: list[float] = velocity
         self.rho: float = dens
         self.visc: float = visc
-        self.Split_Symmetric_Bodies: bool = solver_parameters["Split_Symmetric_Bodies"]
-        self.Use_Grid: bool = solver_parameters["Use_Grid"]
+        self.Split_Symmetric_Bodies: bool = solver_parameters.Split_Symmetric_Bodies
+        self.Use_Grid: bool = solver_parameters.Use_Grid
+        self.solver2D: str = solver_parameters.solver2D
         # LOW LEVEL OPTION
-        self.NMETH = solver_parameters["Integration_Scheme"]
-        self.NEMTIP = solver_parameters["Tip_Emmision"]
-        self.NTIMET = solver_parameters["Tip_Emmision_Begins"]
-        self.NEMSLE = solver_parameters["Leading_Edge_Separation"]
-        self.NTIMEL = solver_parameters["Leading_Edge_Separation_Begins"]
-        self.RELAXS = solver_parameters["Relaxation_Factor"]
-        self.EPSDS = solver_parameters["Pot_Convergence_Tolerence"]
-        self.NLEVELT = solver_parameters["Movement_Levels"]
-        self.NNEVP0 = solver_parameters["Vortex_Particle_Count"]
-        self.RELAXU = solver_parameters["Vortex_Particle_Relaxation"]
-        self.PARVEC = solver_parameters["Minimum_Width_Parameter"]
-        self.NEMIS = solver_parameters["NEMIS"]
-        self.EPSFB = solver_parameters["Bound_Vorticity_Cutoff"]
-        self.EPSFW = solver_parameters["Wake_Vorticity_Cutoff"]
-        self.EPSSR = solver_parameters["Cutoff_Length_Sources"]
-        self.EPSDI = solver_parameters["Cutoff_Length_Sources2"]
-        self.EPSVR = solver_parameters["Vortex_Cutoff_Length_f"]
-        self.EPSO = solver_parameters["Vortex_Cutoff_Length_i"]
-        self.EPSINT = solver_parameters["EPSINT"]
-        self.COEF = solver_parameters["Particle_Dissipation_Factor"]
-        self.RMETM = solver_parameters["Upper_Deformation_Rate"]
-        self.IDEFW = solver_parameters["Wake_Deformation_Parameter"]
-        self.REFLEN = solver_parameters["REFLEN"]
-        self.IDIVVRP = solver_parameters["Particle_Subdivision_Parameter"]
-        self.FLENSC = solver_parameters["Subdivision_Length_Scale"]
-        self.NREWAK = solver_parameters["Wake_Particle_Merging_Parameter"]
-        self.NMER = solver_parameters["Particle_Merging_Parameter"]
-        self.XREWAK = solver_parameters["Merging_Starting_Distance"]
-        self.RADMER = solver_parameters["Merging_Radius"]
-        self.Elasticity_Solver = solver_parameters["Wake_Vorticity_Cutoff"]
-        self.IYNELST = solver_parameters["Elasticity_Solver"]
+        self.NMETH = solver_parameters.Integration_Scheme
+        self.NEMTIP = solver_parameters.Tip_Emmision
+        self.NTIMET = solver_parameters.Tip_Emmision_Begins
+        self.NEMSLE = solver_parameters.Leading_Edge_Separation
+        self.NTIMEL = solver_parameters.Leading_Edge_Separation_Begins
+        self.RELAXS = solver_parameters.Relaxation_Factor
+        self.EPSDS = solver_parameters.Pot_Convergence_Tolerence
+        self.NLEVELT = solver_parameters.Movement_Levels
+        self.NNEVP0 = solver_parameters.Vortex_Particle_Count
+        self.RELAXU = solver_parameters.Vortex_Particle_Relaxation
+        self.PARVEC = solver_parameters.Minimum_Width_Parameter
+        self.NEMIS = solver_parameters.NEMIS
+        self.EPSFB = solver_parameters.Bound_Vorticity_Cutoff
+        self.EPSFW = solver_parameters.Wake_Vorticity_Cutoff
+        self.EPSSR = solver_parameters.Cutoff_Length_Sources
+        self.EPSDI = solver_parameters.Cutoff_Length_Sources2
+        self.EPSVR = solver_parameters.Vortex_Cutoff_Length_f
+        self.EPSO = solver_parameters.Vortex_Cutoff_Length_i
+        self.EPSINT = solver_parameters.EPSINT
+        self.COEF = solver_parameters.Particle_Dissipation_Factor
+        self.RMETM = solver_parameters.Upper_Deformation_Rate
+        self.IDEFW = solver_parameters.Wake_Deformation_Parameter
+        self.REFLEN = solver_parameters.REFLEN
+        self.IDIVVRP = solver_parameters.Particle_Subdivision_Parameter
+        self.FLENSC = solver_parameters.Subdivision_Length_Scale
+        self.NREWAK = solver_parameters.Wake_Particle_Merging_Parameter
+        self.NMER = solver_parameters.Particle_Merging_Parameter
+        self.XREWAK = solver_parameters.Merging_Starting_Distance
+        self.RADMER = solver_parameters.Merging_Radius
+        self.Elasticity_Solver = solver_parameters.Wake_Vorticity_Cutoff
+        self.IYNELST = solver_parameters.Elasticity_Solver

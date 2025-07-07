@@ -11,10 +11,14 @@ def clean_open_foam(casedir: str) -> None:
     case_path = Path(casedir)
 
     for folder in case_path.iterdir():
-        if folder.is_dir() and (folder.name.startswith("m") or folder.name[:1].isdigit()):
+        if folder.is_dir() and (
+            folder.name.startswith("m") or folder.name[:1].isdigit()
+        ):
             subdirs = [d for d in folder.iterdir() if d.is_dir() and d.name.isdigit()]
             iteration_nums = sorted(int(d.name) for d in subdirs)
-            iteration_folders = [folder / str(n) for n in iteration_nums[1:-1]]  # Keep first and last
+            iteration_folders = [
+                folder / str(n) for n in iteration_nums[1:-1]
+            ]  # Keep first and last
 
             for subfolder in iteration_folders:
                 try:

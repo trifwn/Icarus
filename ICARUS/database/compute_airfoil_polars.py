@@ -35,8 +35,8 @@ def compute_airfoil_polars(
         inputs.airfoil = airfoil
         inputs.mach = mach
         inputs.reynolds = reynolds_numbers
-        inputs.min_aoa = min(aoas)
-        inputs.max_aoa = max(aoas)
+        inputs.min_aoa = float(np.min(aoas))
+        inputs.max_aoa = float(np.max(aoas))
         inputs.aoa_step = aoas[1] - aoas[0]
 
         # Set Solver Options
@@ -48,13 +48,11 @@ def compute_airfoil_polars(
         solver_parameters.repanel_n = repanel
 
     elif solver_name == "Foil2Wake":
-        from ICARUS.solvers.Foil2Wake.f2w_section import Foil2Wake
+        from ICARUS.solvers.Foil2Wake import Foil2Wake
 
         solver = Foil2Wake()
-        # Import Analysis
-        analysis = solver.get_analyses()[1]  # Run
-
         # Get Options
+        analysis = solver.aseq
         inputs = analysis.get_analysis_input(verbose=False)
 
         # Set Options

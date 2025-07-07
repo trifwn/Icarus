@@ -124,7 +124,6 @@ def nwake_data_7(
             a.append([x, y, z])
         except ValueError:
             pass
-            # print(foo)
 
     B: FloatArray = np.array(a, dtype=float)
 
@@ -233,7 +232,6 @@ def grid_data_7(
             a.append([x, y, z])
         except ValueError:
             pass
-            # print(foo)
 
     C: FloatArray = np.array(a, dtype=float)
 

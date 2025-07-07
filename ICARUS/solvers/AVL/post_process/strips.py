@@ -57,7 +57,9 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
                     if current_surface not in surfaces.keys():
                         surfaces[current_surface] = df
                     else:
-                        surfaces[current_surface] = pd.concat([surfaces[current_surface], df])
+                        surfaces[current_surface] = pd.concat(
+                            [surfaces[current_surface], df],
+                        )
                     table_rows = []
                     table_columns = None
                     inside_table = False
@@ -123,7 +125,11 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
         # Sort by j and reset the index.
         surfaces[key] = df.sort_values(by="j").reset_index(drop=True)
 
-    master_df = pd.concat(surfaces.values(), keys=list(surfaces.keys()), names=["surface_name"])
+    master_df = pd.concat(
+        surfaces.values(),
+        keys=list(surfaces.keys()),
+        names=["surface_name"],
+    )
     # ('wing', np.int64(0)) -> 'wing'
     # ('wing', np.int64(1)) -> 'wing_1'
     master_df.index = master_df.index.get_level_values(0)

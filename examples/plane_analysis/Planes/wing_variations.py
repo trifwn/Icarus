@@ -53,9 +53,21 @@ def wing_var_chord_offset(
     )
 
     added_masses: list[PointMass] = [
-        PointMass(mass=0.500, position=np.array([-0.40, 0.0, 0.0], dtype=float), name="motor"),  # Motor
-        PointMass(mass=1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="battery"),  # Battery
-        PointMass(mass=0.900, position=np.array([0.130, 0.0, 0.0], dtype=float), name="payload"),  # Payload
+        PointMass(
+            mass=0.500,
+            position=np.array([-0.40, 0.0, 0.0], dtype=float),
+            name="motor",
+        ),  # Motor
+        PointMass(
+            mass=1.000,
+            position=np.array([0.090, 0.0, 0.0], dtype=float),
+            name="battery",
+        ),  # Battery
+        PointMass(
+            mass=0.900,
+            position=np.array([0.130, 0.0, 0.0], dtype=float),
+            name="payload",
+        ),  # Payload
     ]
     airplane = Airplane(name, main_wing=main_wing)
     airplane.add_point_masses(added_masses)

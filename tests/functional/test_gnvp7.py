@@ -19,7 +19,10 @@ from ICARUS import PLATFORM
 @pytest.mark.slow
 @pytest.mark.integration
 @pytest.mark.parametrize("run_parallel", [True, False])
-@pytest.mark.skipif(PLATFORM == "Windows", reason="GenuVP7 solver is not available in this environment")
+@pytest.mark.skipif(
+    PLATFORM == "Windows",
+    reason="GenuVP7 solver is not available in this environment",
+)
 def test_gnvp7_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
@@ -63,7 +66,9 @@ def test_gnvp7_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    execution_mode = ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
+    execution_mode = (
+        ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
+    )
     start_time: float = time.perf_counter()
     results = gnvp7.execute(
         analysis=analysis,
@@ -81,7 +86,9 @@ def test_gnvp7_run(
     assert results is not None, "GNVP7 should return results"
 
     # Assert execution time is reasonable (less than 300 seconds)
-    assert execution_time < 300.0, f"GNVP7 execution took too long: {execution_time:.3f}s"
+    assert (
+        execution_time < 300.0
+    ), f"GNVP7 execution took too long: {execution_time:.3f}s"
 
 
 if __name__ == "__main__":

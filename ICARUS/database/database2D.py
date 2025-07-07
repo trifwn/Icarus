@@ -126,7 +126,11 @@ class Database_2D:
             except FileNotFoundError:
                 raise AirfoilNotFoundError(airfoil_name)
 
-    def get_polars(self, airfoil: str | Airfoil, solver: str | None = None) -> AirfoilPolarMap:
+    def get_polars(
+        self,
+        airfoil: str | Airfoil,
+        solver: str | None = None,
+    ) -> AirfoilPolarMap:
         """Returns the polars object from the database.
 
         Args:
@@ -153,7 +157,11 @@ class Database_2D:
         try:
             polar = airfoil_data.get_polars(solver=solver)
         except KeyError:
-            raise PolarsNotFoundError(airfoil_name, solver, list(airfoil_data.polars.keys()))
+            raise PolarsNotFoundError(
+                airfoil_name,
+                solver,
+                list(airfoil_data.polars.keys()),
+            )
         return polar
 
     def get_airfoil_data(self, airfoil: str | Airfoil) -> AirfoilData:
@@ -316,7 +324,10 @@ class Database_2D:
                 # Load Airfoil Data
                 self.load_airfoil_data(airfoil)
             except Exception as e:
-                logging.error(f"Airfoil {airfoil_folder} could not be loaded. Skipping...", exc_info=e)
+                logging.error(
+                    f"Airfoil {airfoil_folder} could not be loaded. Skipping...",
+                    exc_info=e,
+                )
                 continue
 
     def load_airfoil_data(self, airfoil: Airfoil) -> None:
@@ -466,7 +477,9 @@ class Database_2D:
         if self.EXTERNAL_DB and self._try_load_from_external_db(airfoil_name):
             return self.airfoils[airfoil_name]
 
-        raise FileNotFoundError(f"Could not find or generate airfoil '{airfoil_name}' from any source.")
+        raise FileNotFoundError(
+            f"Could not find or generate airfoil '{airfoil_name}' from any source.",
+        )
 
     def _try_load_from_naca(self, airfoil_name: str) -> bool:
         if airfoil_name.startswith("NACA") and (len(airfoil_name) in [4 + 4, 5 + 4]):
@@ -475,18 +488,26 @@ class Database_2D:
                 self.add_airfoil(naca_foil)
                 return True
             except Exception as e:
-                self.logger.warning(f"Could not generate NACA airfoil {airfoil_name}: {e}")
+                self.logger.warning(
+                    f"Could not generate NACA airfoil {airfoil_name}: {e}",
+                )
         return False
 
     def _try_load_from_filesystem(self, airfoil_name: str) -> bool:
-        airfoil_path = os.path.join(self.DB2D, airfoil_name.upper(), f"{airfoil_name.lower()}.airfoil")
+        airfoil_path = os.path.join(
+            self.DB2D,
+            airfoil_name.upper(),
+            f"{airfoil_name.lower()}.airfoil",
+        )
         if os.path.exists(airfoil_path):
             try:
                 self.airfoils[airfoil_name] = Airfoil.from_file(airfoil_path)
                 self.logger.info(f"Loaded airfoil {airfoil_name} from local DB.")
                 return True
             except Exception as e:
-                self.logger.error(f"Error loading airfoil {airfoil_name} from local DB: {e}")
+                self.logger.error(
+                    f"Error loading airfoil {airfoil_name} from local DB: {e}",
+                )
         return False
 
     def _try_load_from_web(self, airfoil_name: str) -> bool:
@@ -545,9 +566,9 @@ class Database_2D:
     def generate_airfoil_directories(
         airfoil: Airfoil,
         reynolds: float | None = None,
-        angles: list[float] | FloatArray = [],
+        angles: float | list[float] | FloatArray = [],
     ) -> tuple[str, str, list[str]]:
-        db = Database_2D.get_instance()        
+        db = Database_2D.get_instance()
 
         AFDIR: str = os.path.join(
             db.DB2D,
@@ -584,9 +605,23 @@ class Database_2D:
         shutil.copy(airfile, REYNDIR)
 
         ANGLEDIRS: list[str] = []
-        for angle in angles:
+
+        if isinstance(angles, float):
+            angle_list: list[float] = [angles]
+        elif isinstance(angles, list):
+            angle_list = angles
+        elif isinstance(angles, np.ndarray):
+            angle_list = angles.tolist()
+        else:
+            raise TypeError(
+                f"Expected float, list or np.ndarray for angles, got {type(angles)}",
+            )
+
+        for angle in angle_list:
             folder = angle_to_directory(float(angle))
-            ANGLEDIRS.append(os.path.join(REYNDIR, folder))
+            angle_dir = os.path.join(REYNDIR, folder)
+            os.makedirs(angle_dir, exist_ok=True)
+            ANGLEDIRS.append(angle_dir)
 
         return AFDIR, REYNDIR, ANGLEDIRS
 
@@ -658,13 +693,25 @@ class Database_2D:
 
         # Interpolate the CL, CD and Cm values for the given aoa for each reynolds
         try:
-            CL_up: float = float(np.interp(aoa, upper_polar.df["AoA"], upper_polar.df["CL"]))
-            CD_up: float = float(np.interp(aoa, upper_polar.df["AoA"], upper_polar.df["CD"]))
-            Cm_up: float = float(np.interp(aoa, upper_polar.df["AoA"], upper_polar.df["Cm"]))
+            CL_up: float = float(
+                np.interp(aoa, upper_polar.df["AoA"], upper_polar.df["CL"]),
+            )
+            CD_up: float = float(
+                np.interp(aoa, upper_polar.df["AoA"], upper_polar.df["CD"]),
+            )
+            Cm_up: float = float(
+                np.interp(aoa, upper_polar.df["AoA"], upper_polar.df["Cm"]),
+            )
 
-            CL_low: float = float(np.interp(aoa, lower_polar.df["AoA"], lower_polar.df["CL"]))
-            CD_low: float = float(np.interp(aoa, lower_polar.df["AoA"], lower_polar.df["CD"]))
-            Cm_low: float = float(np.interp(aoa, lower_polar.df["AoA"], lower_polar.df["Cm"]))
+            CL_low: float = float(
+                np.interp(aoa, lower_polar.df["AoA"], lower_polar.df["CL"]),
+            )
+            CD_low: float = float(
+                np.interp(aoa, lower_polar.df["AoA"], lower_polar.df["CD"]),
+            )
+            Cm_low: float = float(
+                np.interp(aoa, lower_polar.df["AoA"], lower_polar.df["Cm"]),
+            )
 
             # Interpolate between the 2 CL, CD and Cm values
             CL = float(

@@ -18,12 +18,22 @@ def run_demo(config_name: str):
     configs = {
         "quick": ["--numbers"] + list(map(str, range(10, 16))) + ["--delay", "0.05"],
         "standard": ["--numbers"] + list(map(str, range(8, 23))) + ["--delay", "0.05"],
-        "performance": ["--numbers"] + list(map(str, range(5, 31))) + ["--delay", "0.05"],
-        "sequential": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "sequential"],
+        "performance": ["--numbers"]
+        + list(map(str, range(5, 31)))
+        + ["--delay", "0.05"],
+        "sequential": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "sequential"],
         "async": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "async"],
-        "threading": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "threading"],
-        "multiprocessing": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "multiprocessing"],
-        "adaptive": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "adaptive"],
+        "threading": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "threading"],
+        "multiprocessing": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "multiprocessing"],
+        "adaptive": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "adaptive"],
     }
 
     if config_name not in configs:

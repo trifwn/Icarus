@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import logging
 from dataclasses import asdict
+from functools import partial
 from io import StringIO
 from typing import Any
 from typing import Callable
@@ -20,7 +21,6 @@ from ICARUS.computation.core import Priority
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskConfiguration
 from ICARUS.computation.core import TaskExecutorProtocol
-from ICARUS.computation.core import TaskId
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 
@@ -34,10 +34,14 @@ class AnalysisExecutor(TaskExecutorProtocol):
     A simple task executor for running analysis functions.
     """
 
-    def __init__(self, execute_fun: Callable[..., Any]):
+    def __init__(self, execute_fun: Callable[..., Any]) -> None:
         self.execute_fun = execute_fun
 
-    async def execute(self, task_input: dict[str, Any], context: ExecutionContext) -> Any:
+    async def execute(
+        self,
+        task_input: dict[str, Any],
+        context: ExecutionContext,
+    ) -> Any:
         """
         Executes the analysis function.
         Note: This executor runs a synchronous function. The execution engine
@@ -87,6 +91,7 @@ class Analysis(Generic[AnalysisInput]):
         execute_fun: Callable[..., Any],
         input_type: AnalysisInput,
         post_execute_fun: Callable[..., Any] | None = None,
+        monitor_progress_fun: Callable[..., Any] | None = None,
     ) -> None:
         """Initializes an Analysis object
 
@@ -111,6 +116,7 @@ class Analysis(Generic[AnalysisInput]):
         self.inputs: list[AnalysisInput] = []
 
         self.post_execute_fun: Callable[..., Any] | None = post_execute_fun
+        self.monitor_progress_fun: Callable[..., Any] | None = monitor_progress_fun
 
     # def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
     #     # return self.execute_fun(*args, **kwargs)
@@ -179,12 +185,17 @@ class Analysis(Generic[AnalysisInput]):
         elif isinstance(inputs, dict):
             input_dict = inputs
         else:
-            raise TypeError(f"Inputs must be an AnalysisInput or a dictionary, got {type(inputs)}")
+            raise TypeError(
+                f"Inputs must be an AnalysisInput or a dictionary, got {type(inputs)}",
+            )
 
         # Update the analysis input with the provided inputs
         self.inputs = [self.input_type.get_input(input_dict)]
 
-    def set_analysis_multiple_inputs(self, inputs: list[AnalysisInput | dict[str, Any]]) -> None:
+    def set_analysis_multiple_inputs(
+        self,
+        inputs: list[AnalysisInput | dict[str, Any]],
+    ) -> None:
         """Set multiple inputs for the selected analysis.
 
         Args:
@@ -205,7 +216,6 @@ class Analysis(Generic[AnalysisInput]):
         self,
         inputs: list[AnalysisInput],
         solver_parameters: SolverParameters,
-        task_id: TaskId | None = None,
         priority: Priority = Priority.NORMAL,
         metadata: dict[str, Any] | None = None,
     ) -> list[Task]:
@@ -252,14 +262,30 @@ class Analysis(Generic[AnalysisInput]):
                     **(metadata or {}),
                 }
 
+                progress_probe = None
+                if self.monitor_progress_fun:
+                    args_needed = list(
+                        inspect.signature(self.monitor_progress_fun).parameters.keys(),
+                    )
+                    kwargs: dict[str, Any] = {
+                        key: value
+                        for key, value in task_input.items()
+                        if key in args_needed
+                    }
+
+                    progress_probe = partial(
+                        self.monitor_progress_fun,
+                        **kwargs,
+                    )
+
                 # Return task definition
                 task = Task(
-                    name=f"{input_name}",
+                    name=f"{input_name}" if input_name else self.name,
                     executor=executor,
                     task_input=task_input,
                     config=config,
-                    task_id=task_id,
                     metadata=task_metadata,
+                    progress_probe=progress_probe,
                 )
                 tasks.append(task)
 
@@ -280,12 +306,16 @@ class Analysis(Generic[AnalysisInput]):
             list[TaskResult]: A list of task results.
         """
         if not self.inputs:
-            raise ValueError("No inputs provided for the analysis. Please set the inputs before running.")
+            raise ValueError(
+                "No inputs provided for the analysis. Please set the inputs before running.",
+            )
 
         if not isinstance(self.inputs, list):
             raise ValueError("Inputs must be a list of AnalysisInput instances.")
 
-        if not all(isinstance(input_item, type(self.input_type)) for input_item in self.inputs):
+        if not all(
+            isinstance(input_item, type(self.input_type)) for input_item in self.inputs
+        ):
             raise ValueError(
                 f"All inputs must be of type {self.input_type.__name__}. "
                 f"Received types: {[type(input_item).__name__ for input_item in self.inputs]}",
@@ -307,9 +337,15 @@ class Analysis(Generic[AnalysisInput]):
 
                 traceback.print_exc()
 
-            if isinstance(result, TaskResult) and result.state == TaskState.FAILED and result.error:
-                raise(result.error)
-                self.logger.error(f"Task {result.task_id} failed with error: {result.error}")
+            if (
+                isinstance(result, TaskResult)
+                and result.state == TaskState.FAILED
+                and result.error
+            ):
+                raise (result.error)
+                self.logger.error(
+                    f"Task {result.task_id} failed with error: {result.error}",
+                )
         return tasks, results
 
     def estimate_resource_requirements(self) -> dict[str, Any]:
@@ -332,23 +368,36 @@ class Analysis(Generic[AnalysisInput]):
         analysis_lower = self.name.lower()
 
         # CPU-intensive indicators
-        if any(keyword in analysis_lower for keyword in ["cfd", "fem", "optimization", "simulation", "polar"]):
+        if any(
+            keyword in analysis_lower
+            for keyword in ["cfd", "fem", "optimization", "simulation", "polar"]
+        ):
             base_requirements["cpu_cores"] = 4
             base_requirements["memory_mb"] = 2048
             base_requirements["estimated_time_seconds"] = 300
 
         # I/O intensive indicators
-        if any(keyword in analysis_lower for keyword in ["file", "read", "write", "load", "save", "export"]):
+        if any(
+            keyword in analysis_lower
+            for keyword in ["file", "read", "write", "load", "save", "export"]
+        ):
             base_requirements["disk_mb"] = 1024
             base_requirements["network_bandwidth_mbps"] = 10
 
         # Memory intensive indicators
-        if any(keyword in analysis_lower for keyword in ["mesh", "large", "detailed", "high_res"]):
+        if any(
+            keyword in analysis_lower
+            for keyword in ["mesh", "large", "detailed", "high_res"]
+        ):
             base_requirements["memory_mb"] = 4096
 
         return base_requirements
 
-    def post_run_analysis(self, analysis_input: AnalysisInput, analysis_results: Any) -> Any:
+    def post_run_analysis(
+        self,
+        analysis_input: AnalysisInput,
+        analysis_results: Any,
+    ) -> Any:
         """Function to get the results. Calls the unhooks function.
 
         Returns:
@@ -356,8 +405,14 @@ class Analysis(Generic[AnalysisInput]):
 
         """
         if self.post_execute_fun is not None:
-            args_needed = list(inspect.signature(self.post_execute_fun).parameters.keys())
-            kwargs: dict[str, Any] = {key: value for key, value in asdict(analysis_input).items() if key in args_needed}
+            args_needed = list(
+                inspect.signature(self.post_execute_fun).parameters.keys(),
+            )
+            kwargs: dict[str, Any] = {
+                key: value
+                for key, value in asdict(analysis_input).items()
+                if key in args_needed
+            }
             if "results" in args_needed:
                 kwargs["results"] = analysis_results
             return self.post_execute_fun(

@@ -66,7 +66,10 @@ def pre_existing_figure(
                 # Reuse provided axes
                 axs_now = flatten_axes(axs)
                 # Ensure suptitle exists
-                if getattr(fig, "_suptitle", None) is None and effective_title is not None:
+                if (
+                    getattr(fig, "_suptitle", None) is None
+                    and effective_title is not None
+                ):
                     fig.suptitle(effective_title)
 
             # Execute plotting

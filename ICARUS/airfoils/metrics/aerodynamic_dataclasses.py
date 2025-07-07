@@ -84,5 +84,3 @@ class AirfoilOperatingPointMetrics:
     Cm: float
     Cp_min: float
     Cp_distribution: AirfoilPressure | None = None
-
-

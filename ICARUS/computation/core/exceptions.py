@@ -19,7 +19,12 @@ class SimulationFrameworkError(Exception):
 class TaskExecutionError(SimulationFrameworkError):
     """Raised when a task fails during execution."""
 
-    def __init__(self, task_id: TaskId, message: str, original_error: Optional[Exception] = None):
+    def __init__(
+        self,
+        task_id: TaskId,
+        message: str,
+        original_error: Optional[Exception] = None,
+    ):
         self.task_id = task_id
         self.original_error = original_error
         super().__init__(f"Task {task_id} failed: {message}")
@@ -37,7 +42,9 @@ class DependencyResolutionError(SimulationFrameworkError):
     def __init__(self, task_id: TaskId, missing_dependencies: list[TaskId]):
         self.task_id = task_id
         self.missing_dependencies = missing_dependencies
-        super().__init__(f"Task {task_id} has unresolved dependencies: {missing_dependencies}")
+        super().__init__(
+            f"Task {task_id} has unresolved dependencies: {missing_dependencies}",
+        )
 
 
 class TaskTimeoutError(SimulationFrameworkError):

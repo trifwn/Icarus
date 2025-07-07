@@ -279,7 +279,9 @@ class State:
         # GET TRIM STATE
         try:
             self.trim = trim_state(self)
-            self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
+            self.trim_dynamic_pressure = (
+                0.5 * self.environment.air_density * self.trim["U"] ** 2.0
+            )
         except (TrimNotPossible, TrimOutsidePolars) as e:
             self.trimmable = False
             self.trim = {}
@@ -311,19 +313,33 @@ class State:
         self.polar["Cm"] = self.polar[f"{polar_prefix} Cm"]
         try:
             self.trim = trim_state(self)
-            self.trim_dynamic_pressure = 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
+            self.trim_dynamic_pressure = (
+                0.5 * self.environment.air_density * self.trim["U"] ** 2.0
+            )
         except TrimNotPossible:
             self.trim_dynamic_pressure = np.nan
             self.trim = {}
             self.trimmable = False
 
     def change_pertrubation_prefix(self, pertrubation_prefix: str) -> None:
-        self.pertrubation_results["Fx"] = self.pertrubation_results[f"{pertrubation_prefix} Fx"]
-        self.pertrubation_results["Fy"] = self.pertrubation_results[f"{pertrubation_prefix} Fy"]
-        self.pertrubation_results["Fz"] = self.pertrubation_results[f"{pertrubation_prefix} Fz"]
-        self.pertrubation_results["Mx"] = self.pertrubation_results[f"{pertrubation_prefix} Mx"]
-        self.pertrubation_results["My"] = self.pertrubation_results[f"{pertrubation_prefix} My"]
-        self.pertrubation_results["Mz"] = self.pertrubation_results[f"{pertrubation_prefix} Mz"]
+        self.pertrubation_results["Fx"] = self.pertrubation_results[
+            f"{pertrubation_prefix} Fx"
+        ]
+        self.pertrubation_results["Fy"] = self.pertrubation_results[
+            f"{pertrubation_prefix} Fy"
+        ]
+        self.pertrubation_results["Fz"] = self.pertrubation_results[
+            f"{pertrubation_prefix} Fz"
+        ]
+        self.pertrubation_results["Mx"] = self.pertrubation_results[
+            f"{pertrubation_prefix} Mx"
+        ]
+        self.pertrubation_results["My"] = self.pertrubation_results[
+            f"{pertrubation_prefix} My"
+        ]
+        self.pertrubation_results["Mz"] = self.pertrubation_results[
+            f"{pertrubation_prefix} Mz"
+        ]
         self.stability_fd()
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
@@ -385,7 +401,9 @@ class State:
         for d in self.disturbances:
             table.add_row(
                 d.name,
-                f"Rotational {d.type}" if d.is_rotational else f"Translational {d.type}",
+                f"Rotational {d.type}"
+                if d.is_rotational
+                else f"Translational {d.type}",
                 f"{d.amplitude:.3f}" if d.amplitude is not None else "N/A",
                 f"{d.axis if d.axis is not None else 'N/A'}",
             )
@@ -444,8 +462,20 @@ class State:
             y_pos = [yj for xj, yj in zip(x, y) if xj > 0]
             x_neg = [xj for xj in x if xj < 0]
             y_neg = [yj for xj, yj in zip(x, y) if xj < 0]
-            ax.scatter(x_pos, y_pos, label="Longitudal", color="r", marker=MarkerStyle("x"))
-            ax.scatter(x_neg, y_neg, label="Longitudal", color="r", marker=MarkerStyle("o"))
+            ax.scatter(
+                x_pos,
+                y_pos,
+                label="Longitudal",
+                color="r",
+                marker=MarkerStyle("x"),
+            )
+            ax.scatter(
+                x_neg,
+                y_neg,
+                label="Longitudal",
+                color="r",
+                marker=MarkerStyle("o"),
+            )
             i += 1
 
         # Lateral plot
@@ -458,8 +488,20 @@ class State:
             y_pos = [yj for xj, yj in zip(x, y) if xj > 0]
             x_neg = [xj for xj in x if xj < 0]
             y_neg = [yj for xj, yj in zip(x, y) if xj < 0]
-            ax.scatter(x_pos, y_pos, label="Lateral", color="b", marker=MarkerStyle("x"))
-            ax.scatter(x_neg, y_neg, label="Lateral", color="b", marker=MarkerStyle("o"))
+            ax.scatter(
+                x_pos,
+                y_pos,
+                label="Lateral",
+                color="b",
+                marker=MarkerStyle("x"),
+            )
+            ax.scatter(
+                x_neg,
+                y_neg,
+                label="Lateral",
+                color="b",
+                marker=MarkerStyle("o"),
+            )
 
         # Common styling
         for ax in axs[: i + 1]:
@@ -508,9 +550,13 @@ class State:
 
         prefixes_available = self.get_polar_prefixes()
         if prefixes is None:
-            prefixes_to_plot = [prefix for prefix in prefixes_available if not prefix.endswith("ONERA")]
+            prefixes_to_plot = [
+                prefix for prefix in prefixes_available if not prefix.endswith("ONERA")
+            ]
         else:
-            prefixes_to_plot = [prefix for prefix in prefixes if prefix in prefixes_available]
+            prefixes_to_plot = [
+                prefix for prefix in prefixes if prefix in prefixes_available
+            ]
 
         polar: DataFrame = self.polar.copy()
         S: float = self.S
@@ -521,13 +567,19 @@ class State:
             if dimensional:
                 polar[f"{prefix} CL"] = polar[f"{prefix} CL"] * dynamic_pressure * S
                 polar[f"{prefix} CD"] = polar[f"{prefix} CD"] * dynamic_pressure * S
-                polar[f"{prefix} Cm"] = polar[f"{prefix} Cm"] * dynamic_pressure * S * MAC
+                polar[f"{prefix} Cm"] = (
+                    polar[f"{prefix} Cm"] * dynamic_pressure * S * MAC
+                )
 
             for plot, ax in zip(plots, axs[: len(plots)]):
                 if plot[0] == "CL/CD" or plot[1] == "CL/CD":
-                    polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                    polar[f"{prefix} CL/CD"] = (
+                        polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                    )
                 if plot[0] == "CD/CL" or plot[1] == "CD/CL":
-                    polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                    polar[f"{prefix} CD/CL"] = (
+                        polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                    )
 
                 key0 = f"{prefix} {plot[0]}"
                 key1 = f"{prefix} {plot[1]}"
@@ -544,7 +596,9 @@ class State:
                     y,
                     ls="--",
                     color=color if color is not None else None,
-                    label=f"{self.name} {prefix}" if label is None else f"{label} {prefix}",
+                    label=f"{self.name} {prefix}"
+                    if label is None
+                    else f"{label} {prefix}",
                     marker=markers[j],
                     markersize=5,
                     linewidth=1.5,
@@ -557,7 +611,13 @@ class State:
         # Main Panel for the state
         trim_info = self.trim_to_string()
         panel_content = f"State: [bold]{self.name}[/bold]\n{trim_info}"
-        console.print(Panel(panel_content, title="[bold green]State Information[/bold green]", border_style="blue"))
+        console.print(
+            Panel(
+                panel_content,
+                title="[bold green]State Information[/bold green]",
+                border_style="blue",
+            ),
+        )
 
         def convert_to_str(num: complex) -> str:
             try:
@@ -567,14 +627,22 @@ class State:
 
         if hasattr(self, "state_space"):
             # Longitudal
-            long_eigen_values = ", ".join([convert_to_str(item) for item in self.state_space.longitudal.eigenvalues])
+            long_eigen_values = ", ".join(
+                [
+                    convert_to_str(item)
+                    for item in self.state_space.longitudal.eigenvalues
+                ],
+            )
             long_eigen_vectors = "\n".join(
-                "  " + ", ".join([convert_to_str(i) for i in item]) for item in self.state_space.longitudal.eigenvectors
+                "  " + ", ".join([convert_to_str(i) for i in item])
+                for item in self.state_space.longitudal.eigenvectors
             )
-            long_panel_content = (
-                f"[bold]Eigen Values:[/bold] {long_eigen_values}\n[bold]Eigen Vectors:[/bold]\n{long_eigen_vectors}"
+            long_panel_content = f"[bold]Eigen Values:[/bold] {long_eigen_values}\n[bold]Eigen Vectors:[/bold]\n{long_eigen_vectors}"
+            long_panel = Panel(
+                long_panel_content,
+                title="[cyan]Longitudal State[/cyan]",
+                border_style="cyan",
             )
-            long_panel = Panel(long_panel_content, title="[cyan]Longitudal State[/cyan]", border_style="cyan")
             console.print(long_panel)
 
             long_table = Table(title="State Space Matrix", show_header=False)
@@ -583,14 +651,19 @@ class State:
             console.print(long_table)
 
             # Lateral
-            lat_eigen_values = ", ".join([convert_to_str(item) for item in self.state_space.lateral.eigenvalues])
+            lat_eigen_values = ", ".join(
+                [convert_to_str(item) for item in self.state_space.lateral.eigenvalues],
+            )
             lat_eigen_vectors = "\n".join(
-                "  " + ", ".join([convert_to_str(i) for i in item]) for item in self.state_space.lateral.eigenvectors
+                "  " + ", ".join([convert_to_str(i) for i in item])
+                for item in self.state_space.lateral.eigenvectors
             )
-            lat_panel_content = (
-                f"[bold]Eigen Values:[/bold] {lat_eigen_values}\n[bold]Eigen Vectors:[/bold]\n{lat_eigen_vectors}"
+            lat_panel_content = f"[bold]Eigen Values:[/bold] {lat_eigen_values}\n[bold]Eigen Vectors:[/bold]\n{lat_eigen_vectors}"
+            lat_panel = Panel(
+                lat_panel_content,
+                title="[magenta]Lateral State[/magenta]",
+                border_style="magenta",
             )
-            lat_panel = Panel(lat_panel_content, title="[magenta]Lateral State[/magenta]", border_style="magenta")
             console.print(lat_panel)
 
             lat_table = Table(title="State Space Matrix", show_header=False)

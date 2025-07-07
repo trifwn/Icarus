@@ -64,7 +64,9 @@ def get_error_convergence_3(file: str, df: DataFrame) -> DataFrame:
             df.insert(3, "ERRORM", np.array(errorm, dtype=float))
         except ValueError as e:
             print(e)
-            GNVP_LOGGER.info(f"Some Run Had Problems! Could not add convergence data\n{e}")
+            GNVP_LOGGER.info(
+                f"Some Run Had Problems! Could not add convergence data\n{e}",
+            )
 
     except FileNotFoundError:
         GNVP_LOGGER.info(f"No gnvp3.out or gnvp7.out file found in {file}!")

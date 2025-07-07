@@ -22,17 +22,16 @@ plane = hermes("hermes")
 
 env = EARTH_ISA
 UINF = 20
-solver2D = "Xfoil"
 state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestream=UINF)
 
 angles = np.linspace(-10, 10, 11)
 
 avl = AVL()
 
-avl.polars(plane, state, solver2D, angles)
+avl.aseq(plane, state, angles)
 # state.plot_polars()
 
-avl.dynamics_implicit(plane=plane, state=state, solver2D=solver2D)
+avl.stability_implicit(plane=plane, state=state)
 impl_long, impl_late = process_avl_dynamics_implicit(plane, state)
 
 
@@ -52,7 +51,7 @@ epsilons = {
 state.add_all_pertrubations("Central", epsilons)
 state.print_pertrubations()
 
-avl.dynamics(plane, state, solver2D)
+avl.stability(plane, state)
 
 fig = plt.figure(figsize=(12, 6))
 axs = fig.subplots(1, 2)

@@ -59,19 +59,35 @@ def trim_state(state: State) -> dict[str, float]:
     if trim_loc1 < trim_loc2:
         if trim_loc1 != 0:
             trim_loc3 = trim_loc1 - 1
-            d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+            d2_cd = (
+                state.polar["CD"][trim_loc3]
+                - 2 * state.polar["CD"][trim_loc1]
+                + state.polar["CD"][trim_loc2]
+            )
         else:
             d2_cd = 0
     elif trim_loc1 != len(state.polar["CD"]) - 1:
         trim_loc3 = trim_loc1 + 1
-        d2_cd = state.polar["CD"][trim_loc3] - 2 * state.polar["CD"][trim_loc1] + state.polar["CD"][trim_loc2]
+        d2_cd = (
+            state.polar["CD"][trim_loc3]
+            - 2 * state.polar["CD"][trim_loc1]
+            + state.polar["CD"][trim_loc2]
+        )
     else:
         d2_cd = 0
 
-    aoa_trim = state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
+    aoa_trim = (
+        state.polar["AoA"][trim_loc1] - state.polar["Cm"][trim_loc1] * d_aoa / d_cm
+    )
 
-    cm_trim = state.polar["Cm"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cm / d_aoa
-    cl_trim = state.polar["CL"][trim_loc1] + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cl / d_aoa
+    cm_trim = (
+        state.polar["Cm"][trim_loc1]
+        + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cm / d_aoa
+    )
+    cl_trim = (
+        state.polar["CL"][trim_loc1]
+        + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cl / d_aoa
+    )
     cd_trim = (
         state.polar["CD"][trim_loc1]
         + (aoa_trim - state.polar["AoA"][trim_loc1]) * d_cd / d_aoa

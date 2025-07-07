@@ -66,7 +66,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
 
     airfoil_flap = airfoil.flap(
         flap_hinge_chord_percentage=0.63,
-        flap_angle=flap_angle,
+        flap_angle=float(flap_angle),
         chord_extension=1.0,
     )
     airfoil_flap.repanel_spl(200)

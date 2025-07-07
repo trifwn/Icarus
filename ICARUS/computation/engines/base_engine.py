@@ -42,7 +42,9 @@ class AbstractEngine(ConcurrentMixin, ABC):
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()
-        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(concurrent_vars_req)
+        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(
+            concurrent_vars_req,
+        )
         self.set_concurrent_vars(concurent_vars)
         return self
 
@@ -71,6 +73,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
         """Request concurrent variables required by this engine."""
         vars = {
             "TERMINATE": ConcurrencyFeature.EVENT,
+            "Console_Queue": ConcurrencyFeature.QUEUE,
         }
         if self.progress_reporter:
             vars.update(self.progress_reporter.request_concurrent_vars())
@@ -85,7 +88,9 @@ class AbstractEngine(ConcurrentMixin, ABC):
         else:
             raise KeyError("TERMINATE event is required for execution engine")
         if not isinstance(terminate_event, EventLike):
-            raise TypeError(f"Expected EventLike for 'TERMINATE', got {type(terminate_event)}")
+            raise TypeError(
+                f"Expected EventLike for 'TERMINATE', got {type(terminate_event)}",
+            )
         self.terminate_event = terminate_event
 
         if self.progress_reporter:

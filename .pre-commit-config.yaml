@@ -57,7 +57,6 @@ repos:
           - "types-pyOpenSSL"
           - "types-redis"
           - "types-requests"
-          - "types-tqdm"
           - "types-xmltodict"
           - "types-openpyxl"
           - "types-PyYAML"

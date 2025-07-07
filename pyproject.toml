@@ -28,7 +28,6 @@ dependencies = [
     "ipywidgets",
     "ipython",
     "pre-commit",
-    "tqdm",
     "rich",
     "xmltodict",
     "pyfiglet",
@@ -95,4 +94,3 @@ markers = [
     "stress: marks tests as stress tests",
     "unit: marks tests as unit tests",
 ]
-

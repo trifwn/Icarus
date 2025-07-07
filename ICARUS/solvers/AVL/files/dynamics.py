@@ -1,8 +1,6 @@
 import os
 import subprocess
 from io import StringIO
-from typing import Any
-from typing import Literal
 
 import numpy as np
 from numpy import deg2rad
@@ -12,6 +10,7 @@ from ICARUS import AVL_exe
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.AVL.avl import AVLParameters
 from ICARUS.vehicle import Airplane
 
 from .input import make_input_files
@@ -20,8 +19,7 @@ from .input import make_input_files
 def implicit_eigs(
     plane: Airplane,
     state: State,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_parameters: dict[str, Any] = {},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
     # EIGENVALUE ANALYSIS BASED ON THE IMPLICIT DIFFERENTIATION APPROACH OF M.DRELA AND AVL
     DB = Database.get_instance()
@@ -36,7 +34,6 @@ def implicit_eigs(
         directory=DYNAMICS_DIR,
         plane=plane,
         state=state,
-        solver2D=solver2D,
         solver_parameters=solver_parameters,
     )
     log = os.path.join(DYNAMICS_DIR, "eig_log.txt")
@@ -83,8 +80,7 @@ def implicit_eigs(
 def finite_difs(
     plane: Airplane,
     state: State,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_parameters: dict[str, Any] = {},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
     DB = Database.get_instance()
     DYNAMICS_DIR = DB.get_vehicle_case_directory(
@@ -98,7 +94,6 @@ def finite_difs(
         directory=DYNAMICS_DIR,
         plane=plane,
         state=state,
-        solver2D=solver2D,
         solver_parameters=solver_parameters,
     )
 

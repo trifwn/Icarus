@@ -236,7 +236,7 @@ def implicit_dynamics_post(
     lateral_matrix = []
     indexes = np.arange(0, 8, 1) * 6
     for i in indexes:
-        long_vec, lat_vec, mode = get_matrix(i, sec_2_use)
+        long_vec, lat_vec, mode = get_matrix(int(i), sec_2_use)
         if float(np.mean(np.abs(long_vec))) < float(np.mean(np.abs(lat_vec))):
             lateral_matrix.append(mode)
         else:
@@ -245,4 +245,13 @@ def implicit_dynamics_post(
     return longitudal_matrix, lateral_matrix
 
 
-cols: list[str] = ["Epsilon", "Type", "AVL Fx", "AVL Fy", "AVL Fz", "AVL Mx", "AVL My", "AVL Mz"]
+cols: list[str] = [
+    "Epsilon",
+    "Type",
+    "AVL Fx",
+    "AVL Fy",
+    "AVL Fz",
+    "AVL Mx",
+    "AVL My",
+    "AVL Mz",
+]

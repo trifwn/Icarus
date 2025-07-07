@@ -63,4 +63,6 @@ def test_lspt_run(
     assert results is not None, "LSPT should return results"
 
     # Assert execution time is reasonable (less than 180 seconds)
-    assert execution_time < 180.0, f"LSPT execution took too long: {execution_time:.3f}s"
+    assert (
+        execution_time < 180.0
+    ), f"LSPT execution took too long: {execution_time:.3f}s"

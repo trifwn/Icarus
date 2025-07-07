@@ -5,11 +5,38 @@ from typing import TYPE_CHECKING
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
-from ICARUS.solvers.Foil2Wake.files_interface import sequential_run
+from ICARUS.solvers.Foil2Wake.files import run_aseq
+from ICARUS.solvers.Foil2Wake.files import run_case
 from ICARUS.solvers.Foil2Wake.utils import separate_angles
 
 if TYPE_CHECKING:
-    from ICARUS.solvers.Foil2Wake.f2w_section import Foil2WakeSolverParameters
+    from ICARUS.solvers.Foil2Wake import Foil2WakeSolverParameters
+
+
+def f2w(
+    airfoil: Airfoil,
+    reynolds: float,
+    mach: float,
+    angles: float,
+    solver_parameters: Foil2WakeSolverParameters,
+) -> None:
+    """
+    Function exists to rename parameter `angles` to `aoa` for consistency with other analyses.
+
+    Args:
+        airfoil (Airfoil): Airfoil object to be analyzed.
+        reynolds (float): Reynolds number for the analysis.
+        mach (float): Mach number for the analysis.
+        angles (float): Angle of attack in degrees.
+        solver_parameters (Foil2WakeSolverParameters): Solver parameters for the Foil2Wake analysis.
+    """
+    run_case(
+        airfoil=airfoil,
+        aoa=angles,
+        reynolds=reynolds,
+        mach=mach,
+        solver_parameters=solver_parameters,
+    )
 
 
 def f2w_aseq(
@@ -28,10 +55,9 @@ def f2w_aseq(
         runs.append(("neg", nangles))
 
     if len(runs) == 1:
-        name, selected_angles = runs[0]
-        sequential_run(
+        _, selected_angles = runs[0]
+        run_aseq(
             airfoil=airfoil,
-            name=name,
             angles=selected_angles,
             reynolds=reynolds,
             mach=mach,
@@ -41,9 +67,8 @@ def f2w_aseq(
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = [
                 executor.submit(
-                    sequential_run,
+                    run_aseq,
                     airfoil=airfoil,
-                    name=name,
                     angles=selected_angles,
                     reynolds=reynolds,
                     mach=mach,

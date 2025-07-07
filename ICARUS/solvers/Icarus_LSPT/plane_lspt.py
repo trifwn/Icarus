@@ -1,12 +1,12 @@
 from ICARUS.aero.vlm import lspt_polars
-from ICARUS.computation.analyses import BaseAirplanePolarAnalysis
+from ICARUS.computation.analyses import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
 from ICARUS.computation.solver_parameters import IntOrNoneParameter
 from ICARUS.computation.solver_parameters import Parameter
 from ICARUS.computation.solver_parameters import StrParameter
 
 
-class LSPT_PolarAnalysis(BaseAirplanePolarAnalysis):
+class LSPT_PolarAnalysis(BaseAirplaneAseq):
     def __init__(self) -> None:
         super().__init__(
             solver_name="LSPT",

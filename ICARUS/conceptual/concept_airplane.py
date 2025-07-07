@@ -301,7 +301,9 @@ class ConceptAirplane:
         args_to_suppress: list[str] = [],
         **kwargs: dict[str, Any],
     ) -> Callable[..., Any]:
-        not_defined: list[str] = [arg for arg in args_to_suppress or self.get_missing_parameters()]
+        not_defined: list[str] = [
+            arg for arg in args_to_suppress or self.get_missing_parameters()
+        ]
         print(
             f"Function will try to evaluate with the following params as inputs: {not_defined}",
         )

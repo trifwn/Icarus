@@ -91,15 +91,15 @@ def test_xfoil_single_airfoil(
     xfoil_inputs = analysis.get_analysis_input()
     xfoil_inputs.airfoil = airfoil
     xfoil_inputs.reynolds = xfoil_parameters["reynolds"]
-    xfoil_inputs.mach = xfoil_parameters["mach"]
-    xfoil_inputs.max_aoa = xfoil_parameters["aoa_max"]
-    xfoil_inputs.min_aoa = xfoil_parameters["aoa_min"]
+    xfoil_inputs.mach = float(xfoil_parameters["mach"])
+    xfoil_inputs.max_aoa = float(xfoil_parameters["aoa_max"])
+    xfoil_inputs.min_aoa = float(xfoil_parameters["aoa_min"])
     xfoil_inputs.aoa_step = 0.5
 
     # Set Solver Options
     xfoil_solver_parameters: XfoilSolverParameters = xfoil.get_solver_parameters()
     xfoil_solver_parameters.max_iter = 500
-    xfoil_solver_parameters.Ncrit = xfoil_parameters["Ncrit"]
+    xfoil_solver_parameters.Ncrit = int(xfoil_parameters["Ncrit"])
     xfoil_solver_parameters.xtr = (0.2, 0.2)
     xfoil_solver_parameters.print = False
 
@@ -135,7 +135,9 @@ def test_xfoil_single_airfoil(
     # Assert that execution completed in reasonable time
     assert (
         execution_time < 600.0
-    ), f"Xfoil took too long: {execution_time:.2f}s"  # Try to get polar data to verify computation succeeded
+    ), (
+        f"Xfoil took too long: {execution_time:.2f}s"
+    )  # Try to get polar data to verify computation succeeded
     try:
         polar = database_instance.get_airfoil_polars(airfoil)
         assert polar is not None, "Polar data should be generated"

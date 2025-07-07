@@ -122,9 +122,13 @@ class Strip:
 
         """
         strip: list[FloatArray] = [
-            self.x0 + self.chords[0] * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
+            self.x0
+            + self.chords[0]
+            * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
             self.y0 + np.repeat(0, self.airfoil_start.n_points),
-            self.z0 + self.chords[0] * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
+            self.z0
+            + self.chords[0]
+            * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
         ]
         return np.array(strip)
 
@@ -136,9 +140,13 @@ class Strip:
 
         """
         strip: list[FloatArray] = [
-            self.x1 + self.chords[1] * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
+            self.x1
+            + self.chords[1]
+            * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
             self.y1 + np.repeat(0, self.airfoil_start.n_points),
-            self.z1 + self.chords[1] * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
+            self.z1
+            + self.chords[1]
+            * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
         ]
         return np.array(strip)
 

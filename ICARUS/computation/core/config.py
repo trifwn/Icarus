@@ -149,13 +149,19 @@ class SimulationConfig:
                 elif config_path.suffix.lower() == ".json":
                     config_data = json.load(f)
                 else:
-                    raise ConfigurationError(f"Unsupported config file format: {config_path.suffix}")
+                    raise ConfigurationError(
+                        f"Unsupported config file format: {config_path.suffix}",
+                    )
 
             # Convert enums from string values
             if "execution_mode" in config_data:
-                config_data["execution_mode"] = ExecutionMode(config_data["execution_mode"])
+                config_data["execution_mode"] = ExecutionMode(
+                    config_data["execution_mode"],
+                )
             if "default_task_priority" in config_data:
-                config_data["default_task_priority"] = Priority[config_data["default_task_priority"]]
+                config_data["default_task_priority"] = Priority[
+                    config_data["default_task_priority"]
+                ]
             if "log_level" in config_data:
                 config_data["log_level"] = LogLevel(config_data["log_level"])
 

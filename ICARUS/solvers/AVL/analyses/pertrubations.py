@@ -1,30 +1,30 @@
-from typing import Any
-from typing import Literal
-
 import numpy as np
 from pandas import DataFrame
 
 from ICARUS.database import Database
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.AVL.avl import AVLParameters
 from ICARUS.solvers.AVL.files.dynamics import finite_difs
 from ICARUS.solvers.AVL.files.dynamics import implicit_eigs
 from ICARUS.vehicle import Airplane
 
 
-def avl_dynamics_implicit(
+def avl_stability_implicit(
     plane: Airplane,
     state: State,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_parameters: dict[str, Any] = {},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
-    implicit_eigs(plane=plane, state=state, solver2D=solver2D, solver_parameters=solver_parameters)
+    implicit_eigs(
+        plane=plane,
+        state=state,
+        solver_parameters=solver_parameters,
+    )
 
 
-def avl_dynamics_fd(
+def avl_stability_fd(
     plane: Airplane,
     state: State,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_parameters: dict[str, Any] = {},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
     if state.trim == {}:
         print("Trimming the plane")
@@ -38,7 +38,6 @@ def avl_dynamics_fd(
         avl_polars(
             plane=plane,
             state=state,
-            solver2D=solver2D,
             angles=angles,
             solver_parameters=solver_parameters,
         )
@@ -46,7 +45,11 @@ def avl_dynamics_fd(
         print("Calculating the epsilons")
         state.add_all_pertrubations("Central")
         print(state.epsilons)
-    finite_difs(plane=plane, state=state, solver2D=solver2D, solver_parameters=solver_parameters)
+    finite_difs(
+        plane=plane,
+        state=state,
+        solver_parameters=solver_parameters,
+    )
     process_avl_dynamics_fd(plane, state)
 
 

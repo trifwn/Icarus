@@ -9,7 +9,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 from ICARUS.settings import INSTALL_DIR
-from ICARUS.solvers.Foil2Wake.f2w_section import Foil2WakeSolverParameters
+from ICARUS.solvers.Foil2Wake import Foil2WakeSolverParameters
 
 
 def main() -> None:
@@ -56,7 +56,7 @@ def main() -> None:
     reynolds: FloatArray = np.linspace(
         start=reynolds_min,
         stop=reynolds_max,
-        num=3,
+        num=1,
     )
 
     # Transition to turbulent Boundary Layer
@@ -83,7 +83,6 @@ def main() -> None:
     # Set Solver Options
     f2w_solver_parameters: Foil2WakeSolverParameters = f2w.get_solver_parameters()
     f2w_solver_parameters.iterations = 350
-    f2w.solver_parameters.boundary_layer_iteration_start = 349
     f2w_solver_parameters.Ncrit = Ncrit
     f2w_solver_parameters.f_trip_upper = 0.1
     f2w_solver_parameters.f_trip_low = 0.2
@@ -93,7 +92,8 @@ def main() -> None:
         analysis=analysis,
         inputs=f2w_inputs,
         solver_parameters=f2w_solver_parameters,
-        execution_mode=ExecutionMode.THREADING,
+        # execution_mode=ExecutionMode.THREADING,
+        execution_mode=ExecutionMode.SEQUENTIAL,
     )
 
     try:

@@ -624,7 +624,9 @@ class Airfoil:
             Airfoil: Flapped airfoil
 
         """
-        flap_hinge_1 = flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        flap_hinge_1 = (
+            flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        )
         if flap_angle == 0 or flap_hinge_1 == 1.0:
             return self
         theta = np.deg2rad(flap_angle)
@@ -989,7 +991,11 @@ class Airfoil:
             for x, y in zip(x_clean, y_clean):
                 file.write(f"{x:.6f} {y:.6f}\n")
 
-    def save_le(self, directory: str | None = None) -> None:
+    def save_le(
+        self,
+        directory: str | None = None,
+        header: bool = False,
+    ) -> None:
         """Saves the airfoil in the revese selig format.
 
         Args:
@@ -1009,7 +1015,8 @@ class Airfoil:
             file_name = self.file_name
 
         with open(file_name, "w") as file:
-            file.write(f"{self.name}\n\n")
+            if header:
+                file.write(f"{self.name} with {self.n_points}\n")
             for x, y in pts.T:
                 file.write(f" {x:.6f} {y:.6f}\n")
 

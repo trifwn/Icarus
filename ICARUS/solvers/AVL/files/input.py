@@ -2,8 +2,6 @@ import logging
 import os
 import subprocess
 from io import StringIO
-from typing import Any
-from typing import Literal
 
 import numpy as np
 from pandas import DataFrame
@@ -15,6 +13,7 @@ from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 from ICARUS.environment import Environment
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.AVL.avl import AVLParameters
 from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import DiscretizationType
 from ICARUS.vehicle import WingSegment
@@ -25,12 +24,11 @@ def make_input_files(
     directory: str,
     plane: Airplane,
     state: State,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_parameters: dict[str, Any] = {"use_avl_control": False},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
     control_vector_dict = state.control_vector_dict
     avl_mass(directory, plane, state.environment)
-    avl_geo(directory, plane, state, state.u_freestream, solver2D, solver_parameters)
+    avl_geo(directory, plane, state, state.u_freestream, solver_parameters)
     state.set_control(control_vector_dict)
 
 
@@ -113,8 +111,7 @@ def avl_geo(
     plane: Airplane,
     state: State,
     u_inf: float,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil",
-    solver_parameters: dict[str, float] = {},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
     environment = state.environment
     if os.path.isfile(f"{directory}/{plane.name}.avl"):
@@ -136,10 +133,7 @@ def avl_geo(
     )
     f_io.write(f"  {0}     {0}     {0}   | Xref   Yref   Zref\n")
 
-    if "CDp" in solver_parameters:
-        CDp = solver_parameters["CDp"]
-    else:
-        CDp = 0.0
+    CDp = solver_parameters.cd_parasitic
     f_io.write(f" {CDp}                               | CDp  (optional)\n")
 
     surfaces: list[WingSurface] = []
@@ -152,7 +146,7 @@ def avl_geo(
         f_io.write(f"#SURFACE {i} name {surf.name}\n")
 
     # Use control from AVL vs ICARUS
-    if "use_avl_control" in solver_parameters:
+    if solver_parameters.use_avl_control:
         state.set_control({k: 0.0 for k in state.control_vars})
         use_avl_control = True
     else:
@@ -190,9 +184,8 @@ def avl_geo(
         f_io.write("\n")
 
         viscous = True
-        if "inviscid" in solver_parameters:
-            if solver_parameters["inviscid"]:
-                viscous = False
+        if solver_parameters.run_invscid:
+            viscous = False
 
         if not surf.is_lifting:
             viscous = False
@@ -284,7 +277,9 @@ def avl_geo(
             if viscous:
                 # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
-                reynolds = strip.mean_chord * u_inf / environment.air_kinematic_viscosity
+                reynolds = (
+                    strip.mean_chord * u_inf / environment.air_kinematic_viscosity
+                )
                 # Get the airfoil polar
 
                 try:
@@ -292,7 +287,7 @@ def avl_geo(
                     polar_obj: AirfoilPolarMap = DB.get_or_compute_airfoil_polars(
                         airfoil=strip_airfoil,
                         reynolds=reynolds,
-                        solver_name=solver2D,
+                        solver_name=solver_parameters.solver2D,
                         aoa=np.linspace(-10, 16, 53),
                     )
                     f_io.write("CDCL\n")
@@ -385,7 +380,7 @@ def get_effective_aoas(
             DB.DB3D,
             plane.name,
             "AVL",
-            f"fs_{angle_to_directory(angle)}.txt",
+            f"fs_{angle_to_directory(float(angle))}.txt",
         )
         file = open(path)
         lines = file.readlines()
@@ -399,7 +394,11 @@ def get_effective_aoas(
             elif len(k) > 56 and (
                 k[47].isdigit()
                 or k[46].isdigit()
-                or (k[56].isdigit() and not k.startswith("  Xref") and not k.startswith("  Sref"))
+                or (
+                    k[56].isdigit()
+                    and not k.startswith("  Xref")
+                    and not k.startswith("  Sref")
+                )
             ):
                 surfs.append(j)
 

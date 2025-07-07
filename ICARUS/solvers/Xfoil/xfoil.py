@@ -99,7 +99,9 @@ class XfoilSolverParameters(SolverParameters):
     )
     repanel_n: int = field(
         default=0,
-        metadata={"description": "Number of panels to repanel the airfoil. 0 for no repaneling"},
+        metadata={
+            "description": "Number of panels to repanel the airfoil. 0 for no repaneling",
+        },
     )
 
 

@@ -1,8 +1,9 @@
+from dataclasses import dataclass
+from dataclasses import field
+
+from ICARUS.computation import SolverParameters
 from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
 from ICARUS.computation.base_solver import Solver
-from ICARUS.computation.solver_parameters import BoolParameter
-from ICARUS.computation.solver_parameters import IntParameter
-from ICARUS.computation.solver_parameters import Parameter
 from ICARUS.solvers.OpenFoam.analyses.angles import angles_serial
 from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
 
@@ -16,27 +17,25 @@ class OpenFoam_MultiReyn_PolarAnanlysis(BaseAirfoilPolarAnalysis):
         )
 
 
-solver_parameters: list[Parameter] = [
-    Parameter(
-        "mesh_type",
-        MeshType.structAirfoilMesher,
-        "Type of mesh to use",
-        MeshType,
-    ),
-    IntParameter(
-        "max_iterations",
-        400,
-        "Maximum number of iterations",
-    ),
-    BoolParameter(
-        "silent",
-        False,
-        "Whether to print progress or not",
-    ),
-]
+@dataclass
+class OpenFoamParameters(SolverParameters):
+    """Generic solver parameters."""
+
+    mesh_type: MeshType = field(
+        default=MeshType.structAirfoilMesher,
+        metadata={"description": "Type of mesh to use"},
+    )
+    max_iterations: int = field(
+        default=400,
+        metadata={"description": "Maximum number of iterations"},
+    )
+    silent: bool = field(
+        default=False,
+        metadata={"description": "Whether to print progress or not"},
+    )
 
 
-class OpenFoam(Solver):
+class OpenFoam(Solver[OpenFoamParameters()]):
     analyses = [
         OpenFoam_MultiReyn_PolarAnanlysis(),
     ]
@@ -46,11 +45,5 @@ class OpenFoam(Solver):
             name="OpenFoam",
             solver_type="3D-RANS",
             fidelity=1,
-            solver_parameters=solver_parameters,
+            solver_parameters=OpenFoamParameters(),
         )
-
-
-# Example Usage
-if __name__ == "__main__":
-    pass
-    # open_foam = OpenFoam()

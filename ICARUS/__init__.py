@@ -17,6 +17,7 @@ from .settings import (
     GenuVP3_exe,
     GenuVP7_exe,
     Foil_Section_exe,
+    Foil_exe,
     AVL_exe,
     MAX_FLOAT,
     MAX_INT,
@@ -48,6 +49,7 @@ __all__ = [
     "GenuVP3_exe",
     "GenuVP7_exe",
     "Foil_Section_exe",
+    "Foil_exe",
     "AVL_exe",
     # Module imports
     "core",

@@ -28,7 +28,9 @@ class Airplane_Optimizer(General_SOO_Optimizer):
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
         linear_constraints: list[dict[str, FloatArray | str | float]] = [],
-        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
+        non_linear_constraints: list[
+            dict[str, Callable[..., float] | str | float]
+        ] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,

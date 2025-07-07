@@ -5,7 +5,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
@@ -103,11 +102,11 @@ def main() -> None:
         # Foil2Wake
         if calcF2W:
             f2w_stime: float = time.time()
-            from ICARUS.solvers.Foil2Wake.f2w_section import Foil2Wake
+            from ICARUS.solvers.Foil2Wake import Foil2Wake
 
             f2w_s: Foil2Wake = Foil2Wake()
 
-            analysis: Analysis = f2w_s.get_analyses()[1]  # Multiple Reynolds
+            analysis = f2w_s.aseq
 
             # Set Inputs
             f2w_inputs = analysis.get_analysis_input()
@@ -121,9 +120,6 @@ def main() -> None:
             f2w_solver_parameters.f_trip_low = 1.0
             f2w_solver_parameters.Ncrit = Ncrit
             f2w_solver_parameters.iterations = 250
-            f2w_solver_parameters.boundary_layer_iteration_start = (
-                249  # IF STEADY SHOULD BE 1 LESS THAN MAX ITER
-            )
             f2w_solver_parameters.timestep = 0.1
 
             _ = f2w_s.execute(

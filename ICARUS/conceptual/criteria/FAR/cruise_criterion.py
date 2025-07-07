@@ -29,9 +29,14 @@ def far_5_cruise_speed(
 
     """
     q_over_mach_sq = (
-        1478.36 - 0.0523741 * altitude + 6.90146 * (10**-7) * altitude**2 - 3.32065 * (10**-12) * altitude**3
+        1478.36
+        - 0.0523741 * altitude
+        + 6.90146 * (10**-7) * altitude**2
+        - 3.32065 * (10**-12) * altitude**3
     )
     q: float = q_over_mach_sq * MACH**2
 
-    thrust_loading = q * (cd_0 + 0.005) / wing_loading + wing_loading / (np.pi * AR * e * q)
+    thrust_loading = q * (cd_0 + 0.005) / wing_loading + wing_loading / (
+        np.pi * AR * e * q
+    )
     return (wing_loading, thrust_loading)

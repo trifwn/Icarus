@@ -46,7 +46,9 @@ class FibonacciDemo:
 
     def __init__(self, numbers: list[int] | None = None, delay_per_step: float = 0.2):
         """Initialize the demo."""
-        self.numbers = numbers or list(range(8, 23))  # F(8) through F(22) for good visualization
+        self.numbers = numbers or list(
+            range(8, 23),
+        )  # F(8) through F(22) for good visualization
         self.delay_per_step = delay_per_step
         self.results: dict[str, dict[str, Any]] = {}
 
@@ -74,11 +76,21 @@ class FibonacciDemo:
             config = TaskConfiguration(
                 priority=priority,
                 max_retries=2,
-                tags=["fibonacci", f"batch_{i // 5}", f"priority_{priority.name.lower()}"],
+                tags=[
+                    "fibonacci",
+                    f"batch_{i // 5}",
+                    f"priority_{priority.name.lower()}",
+                ],
             )
 
             # Create task
-            task = Task(task_id=TaskId(), name=f"Fibonacci_F({n})", executor=executor, task_input=n, config=config)
+            task = Task(
+                task_id=TaskId(),
+                name=f"Fibonacci_F({n})",
+                executor=executor,
+                task_input=n,
+                config=config,
+            )
 
             tasks.append(task)
 
@@ -102,7 +114,9 @@ class FibonacciDemo:
         runner = SimulationRunner(
             execution_mode=config.execution_mode,
             max_workers=config.max_workers,
-            progress_monitor=RichProgressMonitor(1.0) if config.enable_progress_monitoring else None,
+            progress_monitor=RichProgressMonitor(1.0)
+            if config.enable_progress_monitoring
+            else None,
         )
 
         # Create tasks
@@ -130,7 +144,9 @@ class FibonacciDemo:
                     traceback.print_exc()
 
                 if isinstance(result, TaskResult) and result.state == TaskState.FAILED:
-                    self.logger.error(f"Task {result.task_id} failed with error: {result.error}")
+                    self.logger.error(
+                        f"Task {result.task_id} failed with error: {result.error}",
+                    )
                     if result.error:
                         raise (result.error)
 
@@ -191,7 +207,9 @@ class FibonacciDemo:
                 if isinstance(result, Exception):
                     self.logger.error(f"Task execution failed with exception: {result}")
                 if isinstance(result, TaskResult) and result.state == TaskState.FAILED:
-                    self.logger.error(f"Task {result.task_id} failed with error: {result.error}")
+                    self.logger.error(
+                        f"Task {result.task_id} failed with error: {result.error}",
+                    )
                     if result.error:
                         raise (result.error)
 
@@ -205,7 +223,10 @@ class FibonacciDemo:
                 "success_rate": 0.0,
             }
 
-    async def run_all_modes(self, modes: list[ExecutionMode] | None = None) -> dict[str, dict[str, Any]]:
+    async def run_all_modes(
+        self,
+        modes: list[ExecutionMode] | None = None,
+    ) -> dict[str, dict[str, Any]]:
         """Run the demo across all specified execution modes."""
         if modes is None:
             modes = [
@@ -220,7 +241,9 @@ class FibonacciDemo:
 
         print("🎯 ICARUS Simulation Framework - Fibonacci Calculation Demo")
         print("=" * 70)
-        print(f"This demo will calculate Fibonacci numbers F(n) for n in: {self.numbers}")
+        print(
+            f"This demo will calculate Fibonacci numbers F(n) for n in: {self.numbers}",
+        )
         print("Each calculation includes artificial delays for visualization.")
         print("Progress bars will show real-time execution status.")
 
@@ -244,7 +267,10 @@ class FibonacciDemo:
 
 async def main():
     """Main demo function."""
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     parser = argparse.ArgumentParser(description="Fibonacci Simulation Framework Demo")
     parser.add_argument(
         "--numbers",
@@ -261,7 +287,14 @@ async def main():
     )
     parser.add_argument(
         "--mode",
-        choices=["sequential", "async", "threading", "multiprocessing", "adaptive", "all"],
+        choices=[
+            "sequential",
+            "async",
+            "threading",
+            "multiprocessing",
+            "adaptive",
+            "all",
+        ],
         default="all",
         help="Execution mode to run (default: all)",
     )
@@ -299,7 +332,9 @@ async def main():
             print_performance_comparison(results)
 
         print("\n🎉 Demo completed successfully!")
-        print(f"📋 Summary: Calculated Fibonacci numbers for {len(args.numbers)} values")
+        print(
+            f"📋 Summary: Calculated Fibonacci numbers for {len(args.numbers)} values",
+        )
         print("🕒 Total execution across all modes completed")
 
     except KeyboardInterrupt:
@@ -345,7 +380,9 @@ def print_performance_comparison(results: dict[str, dict[str, Any]]):
 
         # Find fastest mode
         fastest_mode = min(successful_modes, key=lambda x: x[1]["execution_time"])
-        print(f"   ⚡ Fastest: {fastest_mode[0].upper()} ({fastest_mode[1]['execution_time']:.2f}s)")
+        print(
+            f"   ⚡ Fastest: {fastest_mode[0].upper()} ({fastest_mode[1]['execution_time']:.2f}s)",
+        )
 
         # Find highest throughput
         highest_throughput = max(successful_modes, key=lambda x: x[1]["throughput"])
@@ -367,7 +404,9 @@ def print_performance_comparison(results: dict[str, dict[str, Any]]):
                     speedup = sequential_time / result["execution_time"]
                     workers = result.get("worker_count", 1)
                     efficiency = (speedup / workers) * 100 if workers > 1 else 100
-                    print(f"   {mode_name.upper()}: {speedup:.2f}x speedup, {efficiency:.1f}% efficiency")
+                    print(
+                        f"   {mode_name.upper()}: {speedup:.2f}x speedup, {efficiency:.1f}% efficiency",
+                    )
 
 
 if __name__ == "__main__":

@@ -98,7 +98,10 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
                 polar_maps={"XFLR": reynolds_data[airfoil_name]},
             )
         else:
-            DB.foils_db.polars[airfoil_name].add_polar_map("XFLR", reynolds_data[airfoil_name])
+            DB.foils_db.polars[airfoil_name].add_polar_map(
+                "XFLR",
+                reynolds_data[airfoil_name],
+            )
 
 
 def read_XFLR5_airplane_polars(
@@ -146,7 +149,9 @@ def read_XFLR5_airplane_polars(
         DB.vehicles_db.polars[plane_name] = df
     else:
         # Check if the XFLR Key is already in the database and drop the old one
-        cols = [col for col in DB.vehicles_db.polars[plane_name].columns if "XFLR5" in col]
+        cols = [
+            col for col in DB.vehicles_db.polars[plane_name].columns if "XFLR5" in col
+        ]
         DB.vehicles_db.polars[plane_name].drop(columns=cols, inplace=True)
 
         DB.vehicles_db.polars[plane_name] = DB.vehicles_db.polars[plane_name].merge(

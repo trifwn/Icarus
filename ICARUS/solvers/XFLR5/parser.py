@@ -182,8 +182,12 @@ def parse_xfl_project(filename: str) -> Airplane:
                 N_prev = min(N_prev, 10)
                 M_prev = min(M_prev, 6)
 
-                span = 2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
-                pos = origin + wing_position + section_position  # - np.array((chord_prev / 4, 0, 0))
+                span = (
+                    2 * (y_pos - y_pos_prev) if is_symmetric else (y_pos - y_pos_prev)
+                )
+                pos = (
+                    origin + wing_position + section_position
+                )  # - np.array((chord_prev / 4, 0, 0))
                 surf = WingSegment(
                     name=f"{name}_{i}",
                     root_airfoil=airfoil_prev,  # Should interpolate. RN there is only taking the prev airfoil
@@ -229,7 +233,11 @@ def parse_xfl_project(filename: str) -> Airplane:
     airplane: Airplane = Airplane(
         name=plane_name,
         main_wing=lifting_surfaces["wing"],
-        other_surfaces=[lifting_surface for name, lifting_surface in lifting_surfaces.items() if name != "wing"],
+        other_surfaces=[
+            lifting_surface
+            for name, lifting_surface in lifting_surfaces.items()
+            if name != "wing"
+        ],
     )
     airplane.add_point_masses(point_masses)
     return airplane

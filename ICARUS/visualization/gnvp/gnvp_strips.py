@@ -63,9 +63,13 @@ def plot_gnvp_strip_data_3D(
         if i + 1 not in NBs:
             continue
         for j, surf in enumerate(wg.all_strips):
-            strip_df: DataFrame = body_data[(body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)]
+            strip_df: DataFrame = body_data[
+                (body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)
+            ]
 
-            strip_values: list[float] = [float(item) for item in strip_df[category].values]
+            strip_values: list[float] = [
+                float(item) for item in strip_df[category].values
+            ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
             surf.plot(fig, ax, color=color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)

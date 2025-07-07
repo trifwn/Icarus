@@ -31,21 +31,32 @@ class AsyncEngine(AbstractEngine):
         self,
     ) -> list[TaskResult]:
         """Execute tasks concurrently using asyncio"""
-        self.logger.info(f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
+        self.logger.info(
+            f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
+        )
         semaphore = asyncio.Semaphore(self.max_workers or 10)
 
         async def execute_single_task(task: Task) -> TaskResult:
             async with semaphore:
-                return await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
+                return await self._execute_task_with_context(
+                    task,
+                    self.progress_reporter,
+                    self.resource_manager,
+                )
 
-        results = await asyncio.gather(*[execute_single_task(task) for task in self.tasks], return_exceptions=True)
+        results = await asyncio.gather(
+            *[execute_single_task(task) for task in self.tasks],
+            return_exceptions=True,
+        )
 
         # Convert exceptions to failed results
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 task = self.tasks[i]
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
+                processed_results.append(
+                    TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),
+                )
             else:
                 processed_results.append(result)
 

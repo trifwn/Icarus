@@ -9,7 +9,6 @@ from .forces import load_columns_3
 from .forces import load_columns_7
 from .forces import log_forces
 from .max_iter import get_max_iterations_3
-from .progress import latest_time
 from .strips import get_strip_data
 from .strips import strip_columns_3
 from .strips import strip_columns_7
@@ -27,7 +26,6 @@ __all__ = [
     "load_columns_3",
     "load_columns_7",
     "get_max_iterations_3",
-    "latest_time",
     "get_strip_data",
     "strip_columns_3",
     "strip_columns_7",

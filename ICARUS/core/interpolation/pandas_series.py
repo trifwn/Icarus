@@ -37,7 +37,10 @@ def interpolate_series_value(xval: float, series: Series[float]) -> float:
     return float(np.interp(xval, series.index.to_numpy(), series.to_numpy()))
 
 
-def interpolate_series(xs: list[float] | FloatArray, series: Series[float]) -> Series[float]:
+def interpolate_series(
+    xs: list[float] | FloatArray,
+    series: Series[float],
+) -> Series[float]:
     """Interpolate Pandas Series
 
     Args:
@@ -51,7 +54,10 @@ def interpolate_series(xs: list[float] | FloatArray, series: Series[float]) -> S
     # compute xs as the linear interpolation of xs where df is a dataframe and
     #  df.x are the x coordinates, and df.y are the y coordinates. df.x is expected to be sorted.
     xs_sorted = np.sort(xs)
-    return Series(np.interp(xs_sorted, series.index.to_numpy(), series.to_numpy()), index=xs_sorted)
+    return Series(
+        np.interp(xs_sorted, series.index.to_numpy(), series.to_numpy()),
+        index=xs_sorted,
+    )
 
 
 def get_linear_series(series: Series[float]) -> Series[float]:

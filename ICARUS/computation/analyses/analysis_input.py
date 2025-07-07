@@ -7,7 +7,8 @@ from dataclasses import field
 from dataclasses import fields
 from dataclasses import replace
 from types import UnionType
-from typing import Any, List
+from typing import Any
+from typing import List
 from typing import Union
 from typing import get_args
 from typing import get_origin
@@ -198,7 +199,7 @@ class BaseAnalysisInput(ABC):
 
         if len(flat_results) != total_size:
             raise ValueError(
-                f"Number of results {len(flat_results)} does not match expansion size {total_size}"
+                f"Number of results {len(flat_results)} does not match expansion size {total_size}",
             )
 
         # Create 1D object array from results

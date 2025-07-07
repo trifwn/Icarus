@@ -17,7 +17,7 @@ from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 
 from ..utils.genu_movement import GNVP_Movement
-from ..utils.genu_parameters import GenuParameters
+from ..utils.genu_parameters import GenuCaseParams
 from ..utils.genu_surface import GenuSurface
 
 
@@ -94,7 +94,7 @@ def input_file(directory: str) -> None:
         f.write("1.\n")
 
 
-def case_file(directory: str, params: GenuParameters) -> None:
+def case_file(directory: str, params: GenuCaseParams) -> None:
     """Create Dfile for GNVP3
 
     Args:
@@ -477,7 +477,12 @@ def geo_body_movements(data: list[str], mov: GNVP_Movement, i: int, NB: int) -> 
     data.append("            FILTMSA  file name for TIME SERIES [IMOVEB=6]\n")
 
 
-def cld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters, solver: str) -> None:
+def cld_files(
+    directory: str,
+    bodies: list[GenuSurface],
+    params: GenuCaseParams,
+    solver: str,
+) -> None:
     """Create Polars CL-CD-Cm files for each airfoil
 
     Args:
@@ -489,7 +494,11 @@ def cld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters,
         fname: str = os.path.join(directory, bod.cld_fname)
 
         # Get the airfoil polar
-        reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
+        reynolds = float(
+            bod.mean_aerodynamic_chord
+            * np.linalg.norm(params.u_freestream)
+            / params.visc,
+        )
         try:
             DB = Database.get_instance()
             polars: AirfoilPolarMap = DB.get_or_compute_airfoil_polars(
@@ -546,7 +555,11 @@ def cld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters,
             file.write(contents)
 
 
-def bld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters) -> None:
+def bld_files(
+    directory: str,
+    bodies: list[GenuSurface],
+    params: GenuCaseParams,
+) -> None:
     """Create BLD files for each body
 
     Args:
@@ -626,7 +639,9 @@ def bld_files(directory: str, bodies: list[GenuSurface], params: GenuParameters)
             offset: float = round(bod.offset / (bod.y_end - bod.y_0), ndigits=5)
 
             f.write("IEXRC      NFILRC      RC  (1)    RC  (NNC)\n")
-            f.write(f"1          0           0.         {ff5(bod.y_end - bod.y_0, 8)}\n")
+            f.write(
+                f"1          0           0.         {ff5(bod.y_end - bod.y_0, 8)}\n",
+            )
             blankline(f)
             f.write(
                 "IEXCH      NFILCH      FCCH(1)    FCCH(2)   FCCH(3)    FCCH(4)    FCCH(5)    FCCH(6)\n",
@@ -743,8 +758,7 @@ def make_input_files(
     case_directory: str,
     movements: list[list[GNVP_Movement]],
     bodies: list[GenuSurface],
-    params: GenuParameters,
-    solver: str,
+    params: GenuCaseParams,
 ) -> None:
     # Input File
     input_file(case_directory)
@@ -757,7 +771,7 @@ def make_input_files(
     # BLD FILES
     bld_files(case_directory, bodies, params)
     # CLD FILES
-    cld_files(case_directory, bodies, params, solver)
+    cld_files(case_directory, bodies, params, params.solver2D)
 
     # Check if gnvp.out exists and remove it
     out_file = os.path.join(case_directory, "gnvp.out")

@@ -5,16 +5,16 @@ This module contains the main Task class that represents a unit of work
 in the simulation framework.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 
 # from threading import Lock
+from functools import partial
 from threading import Lock
 from typing import Any
 from typing import Callable
 from typing import Generic
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 from .data_structures import ProgressEvent
 from .protocols import TaskExecutorProtocol
@@ -53,11 +53,11 @@ class Task(Generic[TaskInput, TaskOutput]):
         name: str,
         executor: TaskExecutorProtocol[TaskInput, TaskOutput],
         task_input: TaskInput,
-        config: Optional[TaskConfiguration] = None,
-        task_id: Optional[TaskId] = None,
-        progress_probe: Optional[Callable[[], ProgressEvent]] = None,
-        metadata: Optional[dict[str, Any]] = None,
-    ):
+        config: TaskConfiguration | None = None,
+        task_id: TaskId | None = None,
+        progress_probe: Callable[[Task], ProgressEvent] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
         """
         Initialize a new task.
 
@@ -78,7 +78,9 @@ class Task(Generic[TaskInput, TaskOutput]):
         self.metadata = metadata or {}
 
         # State is managed externally by the runner/scheduler
-        self._state_history: List[Tuple[TaskState, datetime]] = [(TaskState.PENDING, self.created_at)]
+        self._state_history: list[tuple[TaskState, datetime]] = [
+            (TaskState.PENDING, self.created_at),
+        ]
 
         # Assign a thread-safe numeric ID
         # with Task._id_lock:
@@ -91,7 +93,7 @@ class Task(Generic[TaskInput, TaskOutput]):
         self.progress_message = ""
 
         # Optional progress probe callable
-        self.progress_probe = progress_probe
+        self.progress_probe = partial(progress_probe, self) if progress_probe else None
 
     @property
     def state(self) -> TaskState:
@@ -118,7 +120,7 @@ class Task(Generic[TaskInput, TaskOutput]):
             self._state_history.append((new_state, datetime.now()))
 
     @property
-    def state_history(self) -> List[Tuple[TaskState, datetime]]:
+    def state_history(self) -> list[tuple[TaskState, datetime]]:
         """
         Get the complete state transition history.
 

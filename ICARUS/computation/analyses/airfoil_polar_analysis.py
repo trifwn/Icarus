@@ -33,7 +33,9 @@ class AirfoilPolarAnalysisInput(BaseAnalysisInput):
     angles: Optional[list[float] | FloatArray | float] = iter_field(
         order=0,
         default=None,
-        metadata={"description": "List of angles of attack (in degrees) to run polar analysis"},
+        metadata={
+            "description": "List of angles of attack (in degrees) to run polar analysis",
+        },
     )
 
 

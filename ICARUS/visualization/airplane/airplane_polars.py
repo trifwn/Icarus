@@ -45,7 +45,10 @@ def plot_airplane_polars(
     """
     if not isinstance(airplanes, list):
         airplanes = [airplanes]
-    assert isinstance(airplanes, list), "Airplanes must be a list of strings or Airplane objects"
+    assert isinstance(
+        airplanes,
+        list,
+    ), "Airplanes must be a list of strings or Airplane objects"
 
     number_of_plots = len(plots)
     DB = Database.get_instance()
@@ -100,9 +103,13 @@ def plot_airplane_polars(
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
-                        polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                        polar[f"{prefix} CL/CD"] = (
+                            polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                        )
                     if plot[0] == "CD/CL" or plot[1] == "CD/CL":
-                        polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                        polar[f"{prefix} CD/CL"] = (
+                            polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                        )
 
                     key0 = f"{prefix} {plot[0]}"
                     key1 = f"{prefix} {plot[1]}"

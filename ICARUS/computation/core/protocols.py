@@ -95,7 +95,11 @@ class TaskExecutorProtocol(Protocol, Generic[TaskInput, TaskOutput]):
     to be compatible with the simulation framework.
     """
 
-    async def execute(self, task_input: TaskInput, context: ExecutionContext) -> TaskOutput:
+    async def execute(
+        self,
+        task_input: TaskInput,
+        context: ExecutionContext,
+    ) -> TaskOutput:
         """
         Execute the task with the given input and context.
 

@@ -50,24 +50,9 @@ class Parameter:
         return ss.getvalue()
 
 
-class BoolParameter(Parameter):
-    def __init__(self, name: str, default_value: bool, description: str):
-        super().__init__(name, default_value, description, bool)
-
-
-class IntParameter(Parameter):
-    def __init__(self, name: str, default_value: int, description: str):
-        super().__init__(name, default_value, description, int)
-
-
 class IntOrNoneParameter(Parameter):
     def __init__(self, name: str, default_value: int | None, description: str):
         super().__init__(name, default_value, description, int)
-
-
-class FloatParameter(Parameter):
-    def __init__(self, name: str, default_value: float, description: str):
-        super().__init__(name, default_value, description, float)
 
 
 class StrParameter(Parameter):

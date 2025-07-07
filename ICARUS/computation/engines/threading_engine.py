@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-import sys
 from threading import Thread
-import traceback
 
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ExecutionMode
@@ -34,7 +33,9 @@ class ThreadingEngine(AbstractEngine):
 
     async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks using thread pool"""
-        self.logger.info(f"Starting threading execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
+        self.logger.info(
+            f"Starting threading execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
+        )
         # Prepare execution-specific resources (e.g., locks)
         if not self.tasks:
             self.logger.warning("No tasks provided for threading execution")
@@ -50,7 +51,11 @@ class ThreadingEngine(AbstractEngine):
             try:
                 # include exec_ctx into context
                 return loop.run_until_complete(
-                    self._execute_task_with_context(task, self.progress_reporter, self.resource_manager),
+                    self._execute_task_with_context(
+                        task,
+                        self.progress_reporter,
+                        self.resource_manager,
+                    ),
                 )
             finally:
                 loop.close()
@@ -58,7 +63,10 @@ class ThreadingEngine(AbstractEngine):
         # Execute in thread pool
         loop = asyncio.get_event_loop()
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [loop.run_in_executor(executor, sync_execute_task, task) for task in self.tasks]
+            futures = [
+                loop.run_in_executor(executor, sync_execute_task, task)
+                for task in self.tasks
+            ]
             results = await asyncio.gather(*futures, return_exceptions=True)
 
         # Convert exceptions to failed results
@@ -66,7 +74,9 @@ class ThreadingEngine(AbstractEngine):
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 task = self.tasks[i]
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
+                processed_results.append(
+                    TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),
+                )
             else:
                 processed_results.append(result)
 
@@ -136,7 +146,7 @@ class ThreadingEngine(AbstractEngine):
             if progress_reporter:
                 progress_reporter.report_completion(task_result)
             return task_result
- 
+
         finally:
             # Always clean up resources
             await context.release_resources()

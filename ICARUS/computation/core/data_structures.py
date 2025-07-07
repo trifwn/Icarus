@@ -65,7 +65,9 @@ class ProgressEvent(SerializableMixin):
             raise ValueError("Steps cannot be negative")
         if self.current_step > self.total_steps:
             raise ValueError("Current step cannot exceed total steps")
-        self.percentage = (self.current_step / self.total_steps * 100) if self.total_steps > 0 else 0
+        self.percentage = (
+            (self.current_step / self.total_steps * 100) if self.total_steps > 0 else 0
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert progress update to a serializable dictionary."""
@@ -118,7 +120,13 @@ class ProgressEvent(SerializableMixin):
         message: str = "",
     ) -> "ProgressEvent":
         """Create a step completion progress event."""
-        return cls(task_id=task_id, name=name, current_step=current_step, total_steps=total_steps, message=message)
+        return cls(
+            task_id=task_id,
+            name=name,
+            current_step=current_step,
+            total_steps=total_steps,
+            message=message,
+        )
 
 
 @dataclass
@@ -168,7 +176,11 @@ class TaskResult(SerializableMixin, Generic[T]):
                 "type": type(self.error).__name__,
                 "message": str(self.error),
                 "args": self.error.args,
-                "traceback": traceback.format_exception(type(self.error), self.error, self.error.__traceback__),
+                "traceback": traceback.format_exception(
+                    type(self.error),
+                    self.error,
+                    self.error.__traceback__,
+                ),
             }
 
         return {
@@ -176,7 +188,9 @@ class TaskResult(SerializableMixin, Generic[T]):
             "state": self.state.name,
             "output": serialized_output,
             "error": error_info,
-            "execution_time": self.execution_time.total_seconds() if self.execution_time else None,
+            "execution_time": self.execution_time.total_seconds()
+            if self.execution_time
+            else None,
             "retry_count": self.retry_count,
             "metadata": self.metadata,
             "timestamp": self.timestamp.isoformat(),

@@ -28,7 +28,9 @@ class Environment:
         self.air_molar_mass: float = 0.0289644
         self.air_specific_heat_constant_pressure: float = 1005.7
         self.UNIVERSAL_GAS_CONSTANT: float = 8.31447
-        self.SPECIFIC_GAS_CONSTANT: float = self.UNIVERSAL_GAS_CONSTANT / self.air_molar_mass
+        self.SPECIFIC_GAS_CONSTANT: float = (
+            self.UNIVERSAL_GAS_CONSTANT / self.air_molar_mass
+        )
         self.gamma: float = 1.4
         self.air_specific_heat_constant_volume: float = 718.7
 
@@ -87,7 +89,10 @@ class Environment:
         self._set_altitude(h)
 
         self.pressure = self.reference_pressure * np.exp(
-            -self.GRAVITY * self.air_molar_mass * (h - self.reference_altitude) / (self.UNIVERSAL_GAS_CONSTANT * T),
+            -self.GRAVITY
+            * self.air_molar_mass
+            * (h - self.reference_altitude)
+            / (self.UNIVERSAL_GAS_CONSTANT * T),
         )
 
     def set_temperature_and_pressure_from_altitude(

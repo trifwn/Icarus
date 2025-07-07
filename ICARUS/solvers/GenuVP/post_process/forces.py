@@ -104,7 +104,12 @@ def forces_to_pertrubation_results(
     df: DataFrame = DataFrame(pols, columns=["Type", "Epsilon", *cols[1:]])
 
     for col in df.columns:
-        if col.endswith("Fz") or col.endswith("Fx") or col.endswith("Mx") or col.endswith("Mz"):
+        if (
+            col.endswith("Fz")
+            or col.endswith("Fx")
+            or col.endswith("Mx")
+            or col.endswith("Mz")
+        ):
             df[col] = -df[col]
 
     df.pop("TIME")
@@ -166,7 +171,11 @@ def rotate_gnvp_forces(
     return data
 
 
-def set_default_name_to_use(forces: DataFrame, gnvp_version: int, default_name_to_use: str | None = None) -> DataFrame:
+def set_default_name_to_use(
+    forces: DataFrame,
+    gnvp_version: int,
+    default_name_to_use: str | None = None,
+) -> DataFrame:
     if default_name_to_use is None:
         default_name_to_use = "Potential"
 

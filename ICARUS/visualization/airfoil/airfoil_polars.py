@@ -62,7 +62,9 @@ def plot_airfoil_polars(
     DB = Database.get_instance()
     airfoil_data = DB.get_airfoil_data(airfoil_name)
     solvers = [solver for solver in solvers if solver in airfoil_data.solvers]
-    solvers_not_in_db = [solver for solver in solvers if solver not in airfoil_data.solvers]
+    solvers_not_in_db = [
+        solver for solver in solvers if solver not in airfoil_data.solvers
+    ]
 
     if isinstance(airfoil_name, Airfoil):
         airfoil_name = airfoil_name.name
@@ -82,7 +84,10 @@ def plot_airfoil_polars(
                 polar_df = polar.df.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar_df = polar_df.loc[(polar_df["AoA"] >= aoa_bounds[0]) & (polar_df["AoA"] <= aoa_bounds[1])]
+                    polar_df = polar_df.loc[
+                        (polar_df["AoA"] >= aoa_bounds[0])
+                        & (polar_df["AoA"] <= aoa_bounds[1])
+                    ]
 
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[1] == "CL/CD" or plot[1] == "CL/CD":

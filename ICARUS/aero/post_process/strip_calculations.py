@@ -19,7 +19,19 @@ def get_potential_loads(
     ws: Array,
     gammas: Array,
     verbose: bool = True,
-) -> tuple[float, float, float, float, float, float, float, float, float, FloatArray, FloatArray]:
+) -> tuple[
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    FloatArray,
+    FloatArray,
+]:
     dens: float = state.environment.air_density
     umag = state.u_freestream
 
@@ -41,7 +53,9 @@ def get_potential_loads(
             D_pan[strip.panel_idxs[j]] = -dens * strip.width * g * w[j]
 
             if j == strip.num_panels - 1:
-                D_trefftz += -dens / 2 * strip.width * gammas[strip.panel_idxs[j]] * w[j]
+                D_trefftz += (
+                    -dens / 2 * strip.width * gammas[strip.panel_idxs[j]] * w[j]
+                )
 
     # Calculate the torque. The torque is calculated w.r.t. the CG
     # and is the sum of the torques of each panel times the distance

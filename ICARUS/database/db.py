@@ -76,7 +76,11 @@ class Database:
     def get_airfoil(self, name: str) -> Airfoil:
         return self.foils_db.get_airfoil(name)
 
-    def get_airfoil_polars(self, airfoil: str | Airfoil, solver: str | None = None) -> AirfoilPolarMap:
+    def get_airfoil_polars(
+        self,
+        airfoil: str | Airfoil,
+        solver: str | None = None,
+    ) -> AirfoilPolarMap:
         return self.foils_db.get_polars(airfoil, solver=solver)
 
     def get_or_compute_airfoil_polars(
@@ -108,7 +112,7 @@ class Database:
     def generate_airfoil_directories(
         airfoil: Airfoil,
         reynolds: float | None = None,
-        angles: list[float] | FloatArray = [],
+        angles: float | list[float] | FloatArray = [],
     ) -> tuple[str, str, list[str]]:
         return Database_2D.generate_airfoil_directories(airfoil, reynolds, angles)
 
@@ -127,10 +131,20 @@ class Database:
     def get_vehicle(self, name: str) -> Airplane:
         return self.vehicles_db.get_vehicle(name)
 
-    def get_vehicle_polars(self, vehicle: str | Airplane, solver: str | None = None) -> DataFrame:
+    def get_vehicle_polars(
+        self,
+        vehicle: str | Airplane,
+        solver: str | None = None,
+    ) -> DataFrame:
         return self.vehicles_db.get_polars(vehicle)
 
-    def get_vehicle_case_directory(self, airplane: Airplane, state: State, solver: str, case: str | None = None) -> str:
+    def get_vehicle_case_directory(
+        self,
+        airplane: Airplane,
+        state: State,
+        solver: str,
+        case: str | None = None,
+    ) -> str:
         return self.vehicles_db.get_case_directory(airplane, state, solver, case)
 
     def get_vehicle_names(self) -> list[str]:
@@ -139,7 +153,13 @@ class Database:
     def get_vehicle_states(self, vehicle: str | Airplane) -> dict[str, State]:
         return self.vehicles_db.get_states(vehicle)
 
-    def load_vehicle_solver_data(self, vehicle: Airplane, state: State, folder: str, solver: str) -> None:
+    def load_vehicle_solver_data(
+        self,
+        vehicle: Airplane,
+        state: State,
+        folder: str,
+        solver: str,
+    ) -> None:
         self.vehicles_db.load_solver_data(
             vehicle=vehicle,
             state=state,

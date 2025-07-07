@@ -16,7 +16,7 @@ from ICARUS.core.utils import tabs
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 
-from ..utils import GenuParameters
+from ..utils import GenuCaseParams
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
 
@@ -31,7 +31,7 @@ def input_file(directory: str, maxiter: float, timestep: float) -> None:
         f.write("1               !INIT_gn\n")
 
 
-def case_file(directory: str, params: GenuParameters) -> None:
+def case_file(directory: str, params: GenuCaseParams) -> None:
     """Create dfile for gnvp7
 
     Args:
@@ -92,7 +92,9 @@ def case_file(directory: str, params: GenuParameters) -> None:
         f"{ff2(params.NTIMEL)}{tabs(2)}NTIMEL{sps(5)}time step that leading-edge separation starts\n",
     )
     # Root emission parameters
-    f_io.write(f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n")
+    f_io.write(
+        f"0{tabs(3)}NEMROOT{sps(4)}=0(no action), 1(root emission takes place)\n",
+    )
     f_io.write(f"0{tabs(3)}NTIMERO{sps(4)}time step that root emission starts\n")
     f_io.write(f"0.{tabs(3)}AZIMIN{sps(5)}the initial azimuthal angle\n")
 
@@ -290,7 +292,7 @@ def geo_file(
     directory: str,
     movements: list[list[GNVP_Movement]],
     bodies: list[GenuSurface],
-    params: GenuParameters,
+    params: GenuCaseParams,
 ) -> None:
     """Creates the geofile for GNVP7. The geofile contains the information about
     the geometry of the bodies and the movements of the bodies.
@@ -335,7 +337,11 @@ def geo_file(
         # Write the movements
         f_io.write(f"{len(movements[i]) + 1}{tabs(3)}LEVEL   the level of movement\n")
         f_io.write(f"{bod.move_fname}{tabs(2)}FILMOV\n")
-        body_movements(movements=movements[i], NB=NB, fname=os.path.join(directory, bod.move_fname))
+        body_movements(
+            movements=movements[i],
+            NB=NB,
+            fname=os.path.join(directory, bod.move_fname),
+        )
         f_io.write(f"{tabs(16)}<blank>\n")
         f_io.write(f"{tabs(16)}<blank>\n")
 
@@ -625,7 +631,9 @@ def cld_files(
             a_zero_pot: float = 0.0  # polar.a_zero_pot  # Potential Zero Lift Angle
             cm_pot: float = 0.0  # polar.cm_pot  # Potential Cm at Zero Lift Angle
             a_zero: float = 0.0  # polar.a_zero_visc  # Viscous Zero Lift Angle
-            cl_slope: float = 0.0  # polar.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
+            cl_slope: float = (
+                0.0  # polar.cl_slope_visc  # Slope of Cl vs Alpha (viscous)
+            )
 
             # Flap Angle
             # self.flap_angle: float = 0.0  # airfoil.flap_angle
@@ -739,8 +747,7 @@ def make_input_files(
     case_directory: str,
     movements: list[list[GNVP_Movement]],
     genu_bodies: list[GenuSurface],
-    params: GenuParameters,
-    solver: str,
+    params: GenuCaseParams,
 ) -> None:
     # Input File
     input_file(case_directory, params.maxiter, params.timestep)
@@ -761,13 +768,17 @@ def make_input_files(
 
     polars = []
     for bod in genu_bodies:
-        reynolds = float(bod.mean_aerodynamic_chord * np.linalg.norm(params.u_freestream) / params.visc)
+        reynolds = float(
+            bod.mean_aerodynamic_chord
+            * np.linalg.norm(params.u_freestream)
+            / params.visc,
+        )
         try:
             DB = Database.get_instance()
             polar: AirfoilPolarMap = DB.get_or_compute_airfoil_polars(
                 airfoil=DB.get_airfoil(bod.airfoil_name),
                 reynolds=reynolds,
-                solver_name=solver,
+                solver_name=params.solver2D,
                 aoa=np.linspace(-10, 16, 53),
             )
         except PolarsNotFoundError:
@@ -778,7 +789,7 @@ def make_input_files(
     # ANGLES File
     angles_inp(case_directory, polars)
     # CLD FILES
-    cld_files(case_directory, genu_bodies, polars, solver)
+    cld_files(case_directory, genu_bodies, polars, params.solver2D)
 
 
 def remove_results(casedir: str) -> None:

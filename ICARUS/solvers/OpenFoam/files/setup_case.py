@@ -51,7 +51,10 @@ def make_mesh(
         src: str = os.path.join("struct.input")
         shutil.copy(src, dst)
 
-        call(["/bin/bash", "-c", f"{setup_of_script} -n {airfoil_fname}"], cwd=case_directory)
+        call(
+            ["/bin/bash", "-c", f"{setup_of_script} -n {airfoil_fname}"],
+            cwd=case_directory,
+        )
 
         src = os.path.join(OFBASE, "boundaryTemplate")
         dst = os.path.join(case_directory, "constant", "polyMesh", "boundary")
@@ -166,12 +169,12 @@ def setup_open_foam(
         angles = [angles]
     mesh_dir: str = ""
     for i, angle in enumerate(angles):
-        folder = angle_to_directory(angle)
+        folder = angle_to_directory(float(angle))
 
         angle_directory: str = os.path.join(REYNDIR, folder)
         os.makedirs(angle_directory, exist_ok=True)
 
-        angle_rad: float = angle * np.pi / 180
+        angle_rad: float = float(angle * np.pi / 180)
         # MAKE 0/ FOLDER
         init_case(angle_directory, angle_rad)
 

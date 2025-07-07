@@ -46,10 +46,19 @@ class TaskState(Enum):
         valid_transitions = {
             TaskState.PENDING: {TaskState.QUEUED, TaskState.CANCELLED},
             TaskState.QUEUED: {TaskState.RUNNING, TaskState.CANCELLED},
-            TaskState.RUNNING: {TaskState.PAUSED, TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED},
+            TaskState.RUNNING: {
+                TaskState.PAUSED,
+                TaskState.COMPLETED,
+                TaskState.FAILED,
+                TaskState.CANCELLED,
+            },
             TaskState.PAUSED: {TaskState.RUNNING, TaskState.CANCELLED},
             TaskState.FAILED: {TaskState.RETRYING, TaskState.CANCELLED},
-            TaskState.RETRYING: {TaskState.RUNNING, TaskState.FAILED, TaskState.CANCELLED},
+            TaskState.RETRYING: {
+                TaskState.RUNNING,
+                TaskState.FAILED,
+                TaskState.CANCELLED,
+            },
             # Terminal states
             TaskState.COMPLETED: set(),
             TaskState.CANCELLED: set(),
@@ -121,9 +130,13 @@ class TaskConfiguration:
             A new TaskConfiguration instance with the merged settings.
         """
         return TaskConfiguration(
-            max_retries=other.max_retries if other.max_retries != 3 else self.max_retries,
+            max_retries=other.max_retries
+            if other.max_retries != 3
+            else self.max_retries,
             timeout=other.timeout or self.timeout,
-            priority=other.priority if other.priority != Priority.NORMAL else self.priority,
+            priority=other.priority
+            if other.priority != Priority.NORMAL
+            else self.priority,
             resources={**self.resources, **other.resources},
             dependencies=list(set(self.dependencies + other.dependencies)),
             tags=list(set(self.tags + other.tags)),
@@ -167,7 +180,9 @@ class ExecutionMode(Enum):
             manager: A Manager instance to use for multiprocessing primitives.
         """
         if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
-            raise ValueError(f"Cannot set manager for non-multiprocessing mode: {self.value}")
+            raise ValueError(
+                f"Cannot set manager for non-multiprocessing mode: {self.value}",
+            )
         self.mp_manager = manager
         self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(manager)
 
@@ -182,8 +197,15 @@ class ExecutionMode(Enum):
             if self.concurrency_type is None:
                 self.concurrency_type = ConcurrencyType(self.value)
 
-            if self.concurrency_type is ConcurrencyType.MULTIPROCESSING and self.mp_manager is not None:
-                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(self.mp_manager)
+            if (
+                self.concurrency_type is ConcurrencyType.MULTIPROCESSING
+                and self.mp_manager is not None
+            ):
+                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(
+                    self.mp_manager,
+                )
             else:
-                self._primitives = ConcurrencyPrimitives.from_type(self.concurrency_type)
+                self._primitives = ConcurrencyPrimitives.from_type(
+                    self.concurrency_type,
+                )
         return self._primitives

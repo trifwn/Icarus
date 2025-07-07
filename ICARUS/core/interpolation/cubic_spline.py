@@ -41,7 +41,9 @@ def cubic_spline_interpolate(
 
         y2[i] = (sig - 1.0) / p
 
-        ddydx = (ya[i + 1] - ya[i]) / (xa[i + 1] - xa[i]) - (ya[i] - ya[i - 1]) / (xa[i] - xa[i - 1])
+        ddydx = (ya[i + 1] - ya[i]) / (xa[i + 1] - xa[i]) - (ya[i] - ya[i - 1]) / (
+            xa[i] - xa[i - 1]
+        )
 
         u[i] = (6.0 * ddydx / wx - sig * u[i - 1]) / p
 
@@ -81,6 +83,10 @@ def cubic_spline_interpolate(
         b = (queryPoints[i] - xa[klo]) / h
 
         # Cubic spline polynomial is now evaluated.
-        results[i] = a * ya[klo] + b * ya[khi] + ((a * a * a - a) * y2[klo] + (b * b * b - b) * y2[khi]) * (h * h) / 6.0
+        results[i] = (
+            a * ya[klo]
+            + b * ya[khi]
+            + ((a * a * a - a) * y2[klo] + (b * b * b - b) * y2[khi]) * (h * h) / 6.0
+        )
 
     return results

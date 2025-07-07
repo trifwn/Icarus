@@ -37,7 +37,12 @@ def run_file(
             li.append(f"{name}         ->  {name}       =    {value:.5f}")
 
     ar = np.array(li)
-    np.savetxt(os.path.join(directory, f"{plane.name}.run"), ar, delimiter=" ", fmt="%s")
+    np.savetxt(
+        os.path.join(directory, f"{plane.name}.run"),
+        ar,
+        delimiter=" ",
+        fmt="%s",
+    )
 
 
 def case_setup(directory: str, plane: Airplane, state: State) -> None:
@@ -79,6 +84,7 @@ def case_run(directory: str, plane: Airplane, angles: FloatArray | list[float]) 
     li_2.append("MSET 0")
     li_2.append("oper")
     for i, angle in enumerate(angles):
+        angle = float(angle)
         li_2.append(f"{i + 1}")
         li_2.append("x")
         li_2.append("FT")

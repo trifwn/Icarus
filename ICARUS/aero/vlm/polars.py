@@ -89,4 +89,9 @@ def save_results(
     _ = DB.load_vehicle(name=plane.name, file=file_plane)
 
     # Add Forces to Database
-    DB.load_vehicle_solver_data(vehicle=plane, state=state, folder=plane.directory, solver="LSPT")
+    DB.load_vehicle_solver_data(
+        vehicle=plane,
+        state=state,
+        folder=plane.directory,
+        solver="LSPT",
+    )

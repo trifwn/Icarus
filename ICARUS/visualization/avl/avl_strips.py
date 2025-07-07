@@ -107,7 +107,9 @@ def plot_avl_strip_data_3D(
                 break
 
             strip_df: DataFrame = strip_data[strip_data["j"] == surface_idx]
-            strip_values: list[float] = [float(item) for item in strip_df[category].values]
+            strip_values: list[float] = [
+                float(item) for item in strip_df[category].values
+            ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
             strip.plot(fig, ax, color=color)
 

@@ -78,14 +78,18 @@ if PLATFORM == "Windows":
         if multiprocessing.get_start_method() != "spawn":
             multiprocessing.set_start_method("spawn", force=True)
     except RuntimeError:
-        print(f"Multiprocessing start method set to '{multiprocessing.get_start_method()}'.")
+        print(
+            f"Multiprocessing start method set to '{multiprocessing.get_start_method()}'.",
+        )
         pass
 elif PLATFORM == "Linux":
     try:
         if multiprocessing.get_start_method() != "forkserver":
             multiprocessing.set_start_method("forkserver", force=True)
     except RuntimeError as e:
-        print(f"Multiprocessing start method set to '{multiprocessing.get_start_method()}'. Got error: {e}")
+        print(
+            f"Multiprocessing start method set to '{multiprocessing.get_start_method()}'. Got error: {e}",
+        )
         pass
 
 CPU_COUNT: int = multiprocessing.cpu_count()
@@ -129,6 +133,7 @@ if PLATFORM == "Windows":
 
     GenuVP3_exe: str = os.path.join(EXE_DIR, "gnvp3.exe")
     Foil_Section_exe: str = os.path.join(EXE_DIR, "foil_section.exe")
+    Foil_exe: str = os.path.join(EXE_DIR, "foil2w.exe")
     AVL_exe: str = os.path.join(EXE_DIR, "avl.exe")
 
     GenuVP7_exe: str = os.path.join(EXE_DIR, "gnvp7.exe")
@@ -137,6 +142,7 @@ elif PLATFORM == "Linux":
     EXE_DIR = os.path.join(INSTALL_DIR, "bin", PLATFORM)
 
     Foil_Section_exe = os.path.join(EXE_DIR, "foil_section")
+    Foil_exe = os.path.join(EXE_DIR, "foil2w")
     AVL_exe = os.path.join(EXE_DIR, "avl")
     GenuVP3_exe = os.path.join(EXE_DIR, "gnvp3")
     GenuVP7_exe = os.path.join(EXE_DIR, "gnvp7")
@@ -148,6 +154,7 @@ elif PLATFORM == "Darwin":
     AVL_exe = os.path.join(EXE_DIR, "avl")
     GenuVP3_exe = os.path.join(EXE_DIR, "gnvp3")
     Foil_Section_exe = os.path.join(EXE_DIR, "foil_section-aarch64")
+    Foil_exe = os.path.join(EXE_DIR, "foil2w-aarch64")
 
     GenuVP7_exe = os.path.join(EXE_DIR, "gnvp7")
 

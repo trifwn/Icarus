@@ -3,17 +3,14 @@ import os
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.airfoils import (
-    Airfoil,
-    AirfoilOperatingConditions,
-    AirfoilOperatingPointMetrics,
-    AirfoilPolar,
-)
-from ICARUS.airfoils.metrics.aerodynamic_dataclasses import (
-    AirfoilPressure,
-)
+from ICARUS.airfoils import Airfoil
+from ICARUS.airfoils import AirfoilOperatingConditions
+from ICARUS.airfoils import AirfoilOperatingPointMetrics
+from ICARUS.airfoils import AirfoilPolar
+from ICARUS.airfoils.metrics.aerodynamic_dataclasses import AirfoilPressure
 from ICARUS.core.types import FloatArray
-from ICARUS.database import Database, directory_to_angle
+from ICARUS.database import Database
+from ICARUS.database import directory_to_angle
 
 
 def process_f2w_run(
@@ -51,20 +48,20 @@ def process_f2w_run(
             )
 
             try:
-                polar = get_polar(
+                polar = make_polars(
                     case_directory=REYNDIR,
                     reynolds=reyn,
                     mach=0.0,  # Mach number is not used in Foil2Wake)
                 )
                 polar.save(REYNDIR, "polar.xfoil")
-            except ValueError as e:
+            except ValueError:
                 continue
 
         DB.load_airfoil_data(airfoil)
     return polars
 
 
-def get_polar(
+def make_polars(
     case_directory: str,
     reynolds: float,
     mach: float,
@@ -81,8 +78,8 @@ def get_polar(
 
     metrics: list[AirfoilOperatingPointMetrics] = []
     for folder in folders:
-        load_file = "AERLOAD.OUT"
-        pressure_file = "COEFPRE.OUT"
+        load_file = "aerloa.dat"
+        pressure_file = "cp.dat"
         folder_path = os.path.join(case_directory, folder)
 
         if load_file not in next(os.walk(folder_path))[2]:
@@ -93,11 +90,13 @@ def get_polar(
 
         aoa = directory_to_angle(folder)
         op = AirfoilOperatingConditions(
-            aoa=aoa, reynolds_number=reynolds, mach_number=mach
+            aoa=aoa,
+            reynolds_number=reynolds,
+            mach_number=mach,
         )
 
         load_file = os.path.join(folder_path, load_file)
-        with open(load_file,'r', encoding="UTF-8") as f:
+        with open(load_file, encoding="UTF-8") as f:
             data: list[str] = f.readlines()
         if len(data) < 2:
             continue

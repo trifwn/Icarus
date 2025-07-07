@@ -53,7 +53,11 @@ def xfoil_aseq(
 
     metrics = []
     for angle, cl, cd, cm, cp in zip(aXF, clXF, cdXF, cmXF, cpXF):
-        op = AirfoilOperatingConditions(aoa=angle, reynolds_number=reynolds, mach_number=mach)
+        op = AirfoilOperatingConditions(
+            aoa=angle,
+            reynolds_number=reynolds,
+            mach_number=mach,
+        )
         metric = AirfoilOperatingPointMetrics(
             operating_conditions=op,
             Cl=cl,
@@ -94,7 +98,11 @@ def xfoil_aseq_reset_bl(
 
     metrics = []
     for angle in angles:
-        op = AirfoilOperatingConditions(aoa=angle, reynolds_number=reynolds, mach_number=mach)
+        op = AirfoilOperatingConditions(
+            aoa=angle,
+            reynolds_number=reynolds,
+            mach_number=mach,
+        )
 
         cl, cd, cm, cp = xf.a(angle)
         x, y, cp_distribution = xf.get_cp_distribution()

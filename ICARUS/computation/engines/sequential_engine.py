@@ -35,7 +35,11 @@ class SequentialExecutionEngine(AbstractEngine):
         results = []
 
         for task in self.tasks:
-            result = await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
+            result = await self._execute_task_with_context(
+                task,
+                self.progress_reporter,
+                self.resource_manager,
+            )
             results.append(result)
 
         self.logger.info("Sequential execution completed")

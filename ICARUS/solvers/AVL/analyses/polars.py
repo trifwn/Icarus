@@ -1,7 +1,5 @@
 import logging
 import os
-from typing import Any
-from typing import Literal
 
 from pandas import DataFrame
 
@@ -9,6 +7,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics import State
 from ICARUS.solvers.AVL import collect_avl_polar_forces
+from ICARUS.solvers.AVL.avl import AVLParameters
 from ICARUS.vehicle import Airplane
 
 from ..files.input import make_input_files
@@ -22,9 +21,8 @@ AVL_LOGGER = logging.getLogger("ICARUS.solvers.GenuVP")
 def avl_polars(
     plane: Airplane,
     state: State,
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str,
     angles: FloatArray | list[float],
-    solver_parameters: dict[str, Any] = {"use_avl_control": False},
+    solver_parameters: AVLParameters = AVLParameters(),
 ) -> None:
     DB = Database.get_instance()
     case_directory = DB.get_vehicle_case_directory(
@@ -34,7 +32,7 @@ def avl_polars(
     )
 
     run_file(case_directory, plane, state, angles)
-    make_input_files(case_directory, plane, state, solver2D, solver_parameters)
+    make_input_files(case_directory, plane, state, solver_parameters)
     case_setup(case_directory, plane, state)
     case_run(case_directory, plane, angles)
     polar_df = process_avl_polars(plane, state, angles)

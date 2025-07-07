@@ -75,7 +75,7 @@ class Solver(Generic[SolverParametersType]):
         self.solver_parameters: SolverParametersType = solver_parameters
         self.task_results: list[TaskResult] = []
 
-    def get_analyses(self, verbose: bool = False) -> list[AnalysisType]:
+    def get_analyses(self, verbose: bool = False) -> list[Analysis]:
         if verbose:
             print(self)
         return list(self.analyses)
@@ -86,7 +86,10 @@ class Solver(Generic[SolverParametersType]):
             self.print_solver_parameters()
         return self.solver_parameters
 
-    def set_solver_parameters(self, parameters: dict[str, Any] | SolverParametersType) -> None:
+    def set_solver_parameters(
+        self,
+        parameters: dict[str, Any] | SolverParametersType,
+    ) -> None:
         """Set the solver parameters of the selected analysis from a dictionary."""
         if not is_dataclass(self.solver_parameters):
             return
@@ -109,8 +112,10 @@ class Solver(Generic[SolverParametersType]):
 
     def execute(
         self,
-        analysis: AnalysisType,
-        inputs: BaseAnalysisInput | dict[str, Any] | list[BaseAnalysisInput | dict[str, Any]],
+        analysis: Analysis,
+        inputs: BaseAnalysisInput
+        | dict[str, Any]
+        | list[BaseAnalysisInput | dict[str, Any]],
         solver_parameters: dict[str, Any] | SolverParametersType | None = None,
         execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL,
         progress_monitor: ProgressMonitor = RichProgressMonitor(),
@@ -123,16 +128,22 @@ class Solver(Generic[SolverParametersType]):
             raise TypeError("Analysis must be an instance of Analysis class")
 
         if not isinstance(inputs, (BaseAnalysisInput, dict, list)):
-            raise TypeError("Inputs must be a BaseAnalysisInput, dict, or list of BaseAnalysisInput or dict")
+            raise TypeError(
+                "Inputs must be a BaseAnalysisInput, dict, or list of BaseAnalysisInput or dict",
+            )
 
         if not isinstance(solver_parameters, (SolverParameters, dict, type(None))):
-            raise TypeError("Solver parameters must be a SolverParametersType, dict, or None")
+            raise TypeError(
+                "Solver parameters must be a SolverParametersType, dict, or None",
+            )
 
         if not isinstance(execution_mode, ExecutionMode):
             raise TypeError("Execution mode must be an instance of ExecutionMode")
 
         if analysis.name not in self.analyses_names:
-            raise ValueError(f"Analysis '{analysis.name}' is not available in this solver.")
+            raise ValueError(
+                f"Analysis '{analysis.name}' is not available in this solver.",
+            )
 
         if isinstance(inputs, list):
             analysis.set_analysis_multiple_inputs(inputs)
@@ -142,7 +153,10 @@ class Solver(Generic[SolverParametersType]):
         if solver_parameters:
             self.set_solver_parameters(solver_parameters)
 
-        runner = SimulationRunner(execution_mode=execution_mode, progress_monitor=progress_monitor)
+        runner = SimulationRunner(
+            execution_mode=execution_mode,
+            progress_monitor=progress_monitor,
+        )
 
         # Check if there is an event loop running
         try:
@@ -150,16 +164,30 @@ class Solver(Generic[SolverParametersType]):
             # Create a separate thread so we can block before returning
             with ThreadPoolExecutor(1) as pool:
                 tasks, task_results = pool.submit(
-                    lambda: asyncio.run(analysis.run_analysis(runner, solver_parameters=self.solver_parameters)),
+                    lambda: asyncio.run(
+                        analysis.run_analysis(
+                            runner,
+                            solver_parameters=self.solver_parameters,
+                        ),
+                    ),
                 ).result()
         except RuntimeError:
-            tasks, task_results = asyncio.run(analysis.run_analysis(runner, solver_parameters=self.solver_parameters))
+            tasks, task_results = asyncio.run(
+                analysis.run_analysis(runner, solver_parameters=self.solver_parameters),
+            )
 
         results = []
         for input in analysis.inputs:
             input_task_ids = []
             for input_name, sub_input in input.expand_dataclass().items():
-                task = next((t for t in tasks if t.metadata.get("input_name", None) == input_name), None)
+                task = next(
+                    (
+                        t
+                        for t in tasks
+                        if t.metadata.get("input_name", None) == input_name
+                    ),
+                    None,
+                )
                 if task is None:
                     self.logger.error(f"Input: {input_name} not found in task list.")
                     continue
@@ -237,7 +265,9 @@ class Solver(Generic[SolverParametersType]):
         str_io = StringIO()
         console = Console(file=str_io, force_terminal=False, width=120)
 
-        analysis_list = "\n".join([f"{i}) {key}" for i, key in enumerate(self.analyses_names, start=1)])
+        analysis_list = "\n".join(
+            [f"{i}) {key}" for i, key in enumerate(self.analyses_names, start=1)],
+        )
 
         panel = Panel(
             analysis_list,

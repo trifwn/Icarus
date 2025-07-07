@@ -98,7 +98,9 @@ class LSPT_Plane:
             surf_id += 1
 
         self.num_strips = num_strips
-        self.lifting_surfaces = [surface for surface in self.surfaces if surface.is_lifting]
+        self.lifting_surfaces = [
+            surface for surface in self.surfaces if surface.is_lifting
+        ]
 
         # Plane properties
         self.S: float = plane.S
@@ -151,22 +153,31 @@ class LSPT_Plane:
                 surface.grid,
             )
             # Get the wake shedding indices
-            self.surface_dict[surface.name]["wake_shedding_panel_indices"] = NM_panels + jnp.arange(
-                (surface.M - 2),
-                (surface.N - 1) * (surface.M - 1),
-                surface.M - 1,
+            self.surface_dict[surface.name]["wake_shedding_panel_indices"] = (
+                NM_panels
+                + jnp.arange(
+                    (surface.M - 2),
+                    (surface.N - 1) * (surface.M - 1),
+                    surface.M - 1,
+                )
             )
-            self.surface_dict[surface.name]["wake_shedding_grid_indices"] = NM_grid + jnp.arange(
-                (surface.M - 1),
-                surface.N * surface.M,
-                surface.M,
+            self.surface_dict[surface.name]["wake_shedding_grid_indices"] = (
+                NM_grid
+                + jnp.arange(
+                    (surface.M - 1),
+                    surface.N * surface.M,
+                    surface.M,
+                )
             )
 
             chords = surface._chord_dist
             span_dist = surface._span_dist
             # Get all the strips by their panel indices
             for i in range(surface.N - 1):
-                strip_idxs = jnp.arange(i * (surface.M - 1), (i + 1) * (surface.M - 1)) + NM_panels
+                strip_idxs = (
+                    jnp.arange(i * (surface.M - 1), (i + 1) * (surface.M - 1))
+                    + NM_panels
+                )
 
                 strips.append(strip_idxs)
                 self.strip_data.append(
@@ -184,10 +195,16 @@ class LSPT_Plane:
 
         # Get the wake shedding indices
         self.wake_shedding_panel_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["wake_shedding_panel_indices"] for surface in self.surfaces],
+            [
+                self.surface_dict[surface.name]["wake_shedding_panel_indices"]
+                for surface in self.surfaces
+            ],
         )
         self.wake_shedding_grid_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["wake_shedding_grid_indices"] for surface in self.surfaces],
+            [
+                self.surface_dict[surface.name]["wake_shedding_grid_indices"]
+                for surface in self.surfaces
+            ],
         )
 
         # Add the near wake panels
@@ -195,10 +212,16 @@ class LSPT_Plane:
         self.create_flat_wake_panels()
 
         self.near_wake_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["near_wake_panel_indices"] for surface in self.surfaces],
+            [
+                self.surface_dict[surface.name]["near_wake_panel_indices"]
+                for surface in self.surfaces
+            ],
         )
         self.flat_wake_panel_indices: Int[Array, ...] = jnp.concatenate(
-            [self.surface_dict[surface.name]["flat_wake_panel_indices"] for surface in self.surfaces],
+            [
+                self.surface_dict[surface.name]["flat_wake_panel_indices"]
+                for surface in self.surfaces
+            ],
         )
         self.PANEL_NUM: int = NM_panels + len(self.near_wake_indices)
 
@@ -208,7 +231,9 @@ class LSPT_Plane:
         """
         for surface in self.surfaces:
             # Get wake shedding indices
-            wake_shedding_indices: Array = self.surface_dict[surface.name]["wake_shedding_panel_indices"]
+            wake_shedding_indices: Array = self.surface_dict[surface.name][
+                "wake_shedding_panel_indices"
+            ]
             # Getting the panel indices that are shedding wake gives us the orientation of the wake
             # For each panel that is shedding wake, we will add a panel in the near wake
             near_wake_panel_indices = jnp.zeros_like(wake_shedding_indices)
@@ -273,7 +298,9 @@ class LSPT_Plane:
                     len(self.panels) - 1,
                 )
 
-            self.surface_dict[surface.name]["near_wake_panel_indices"] = near_wake_panel_indices
+            self.surface_dict[surface.name]["near_wake_panel_indices"] = (
+                near_wake_panel_indices
+            )
 
     def create_flat_wake_panels(
         self,
@@ -306,7 +333,9 @@ class LSPT_Plane:
             MAC = surface.mean_aerodynamic_chord
 
             # Get the near wake panels
-            near_wake_indices = self.surface_dict[surface.name]["near_wake_panel_indices"]
+            near_wake_indices = self.surface_dict[surface.name][
+                "near_wake_panel_indices"
+            ]
             near_wake_panels = self.panels[near_wake_indices]
 
             self.surface_dict[surface.name]["flat_wake_panel_indices"] = jnp.zeros(
@@ -365,7 +394,9 @@ class LSPT_Plane:
 
                     # Note the wake panel indices
                     self.surface_dict[surface.name]["flat_wake_panel_indices"] = (
-                        self.surface_dict[surface.name]["flat_wake_panel_indices"].at[num].set(flat_wake_idxs[i])
+                        self.surface_dict[surface.name]["flat_wake_panel_indices"]
+                        .at[num]
+                        .set(flat_wake_idxs[i])
                     )
                     num += 1
                     near_wake_panel = flat_wake_panel

@@ -6,7 +6,7 @@ from pandas import DataFrame
 from ICARUS import GenuVP3_exe
 
 from ..post_process import log_forces
-from ..utils import GenuParameters
+from ..utils import GenuCaseParams
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
 from .files_gnvp3 import make_input_files
@@ -54,8 +54,7 @@ def gnvp3_case(
     case_directory: str,
     movements: list[list[GNVP_Movement]],
     genu_bodies: list[GenuSurface],
-    params: GenuParameters,
-    solver2D: str,
+    params: GenuCaseParams,
 ) -> None:
     """Makes input and runs GNVP3, for a specified Case
 
@@ -72,6 +71,5 @@ def gnvp3_case(
         movements,
         genu_bodies,
         params,
-        solver2D,
     )
     gnvp3_execute(case_directory)

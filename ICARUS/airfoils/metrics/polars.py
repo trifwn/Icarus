@@ -48,7 +48,10 @@ class AirfoilPolar:
 
         # Extract Reynolds number from the first metric
         reynolds = list_of_metrics[0].operating_conditions.reynolds_number
-        if not all(metric.operating_conditions.reynolds_number == reynolds for metric in list_of_metrics):
+        if not all(
+            metric.operating_conditions.reynolds_number == reynolds
+            for metric in list_of_metrics
+        ):
             raise ValueError("All metrics must have the same Reynolds number.")
 
         data = {
@@ -93,7 +96,12 @@ class AirfoilPolar:
     @property
     def reynolds_string(self) -> str:
         """Get Reynolds number as a string."""
-        return np.format_float_scientific(self.reynolds, sign=False, precision=3, min_digits=3).replace("+", "")
+        return np.format_float_scientific(
+            self.reynolds,
+            sign=False,
+            precision=3,
+            min_digits=3,
+        ).replace("+", "")
 
     def get_aero_coefficients(self, aoa: float) -> tuple[float, float, float]:
         """Get Aero Coefficients"""
@@ -186,7 +194,12 @@ class AirfoilPolar:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        ax.plot(self.angles, self.cl_curve, label=f"Reynolds {self.reynolds:,.0f}", color=color)
+        ax.plot(
+            self.angles,
+            self.cl_curve,
+            label=f"Reynolds {self.reynolds:,.0f}",
+            color=color,
+        )
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Lift Coefficient")
         ax.set_title(f"Reynolds {self.reynolds:,.0f} Cl Curve")
@@ -206,7 +219,12 @@ class AirfoilPolar:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        ax.plot(self.angles, self.cd_curve, label=f"Reynolds {self.reynolds:,.0f}", color=color)
+        ax.plot(
+            self.angles,
+            self.cd_curve,
+            label=f"Reynolds {self.reynolds:,.0f}",
+            color=color,
+        )
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Drag Coefficient")
         ax.set_title(f"Reynolds {self.reynolds:,.0f} Cd Curve")
@@ -228,7 +246,12 @@ class AirfoilPolar:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        ax.plot(self.angles, cl_over_cd, label=f"Reynolds {self.reynolds:,.0f}", color=color)
+        ax.plot(
+            self.angles,
+            cl_over_cd,
+            label=f"Reynolds {self.reynolds:,.0f}",
+            color=color,
+        )
         ax.set_xlabel("Angle of Attack [deg]")
         ax.set_ylabel("Lift to Drag Ratio")
         ax.set_title(f"Reynolds {self.reynolds:,.0f} Cl/Cd Curve")
@@ -279,10 +302,12 @@ class AirfoilPolar:
         polar1: AirfoilPolar,
         polar2: AirfoilPolar,
         reynolds: float,
-    ):
+    ) -> AirfoilPolar:
         """Interpolate between two polars at a given Reynolds number."""
         if polar1.reynolds == polar2.reynolds:
-            raise ReynoldsNotIncluded("Reynolds numbers must be different for interpolation.")
+            raise ReynoldsNotIncluded(
+                "Reynolds numbers must be different for interpolation.",
+            )
 
         # Interpolate angles
         angles = np.unique(np.concatenate((polar1.angles, polar2.angles)))
@@ -296,9 +321,21 @@ class AirfoilPolar:
         cm_curve2 = interpolate_series(angles, polar2.cm_curve)
 
         # Interpolate coefficients
-        cl_curve = np.interp(reynolds, [polar1.reynolds, polar2.reynolds], [cl_curve1, cl_curve2])
-        cd_curve = np.interp(reynolds, [polar1.reynolds, polar2.reynolds], [cd_curve1, cd_curve2])
-        cm_curve = np.interp(reynolds, [polar1.reynolds, polar2.reynolds], [cm_curve1, cm_curve2])
+        cl_curve = np.interp(
+            reynolds,
+            [polar1.reynolds, polar2.reynolds],
+            [cl_curve1, cl_curve2],
+        )
+        cd_curve = np.interp(
+            reynolds,
+            [polar1.reynolds, polar2.reynolds],
+            [cd_curve1, cd_curve2],
+        )
+        cm_curve = np.interp(
+            reynolds,
+            [polar1.reynolds, polar2.reynolds],
+            [cm_curve1, cm_curve2],
+        )
 
         df = DataFrame(
             {

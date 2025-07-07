@@ -23,7 +23,14 @@ def plot_gnvp3_wake(
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    plot_gnvp_wake(gnvp_version=3, state=state, plane=plane, case=case, scale=scale, figsize=figsize)
+    plot_gnvp_wake(
+        gnvp_version=3,
+        state=state,
+        plane=plane,
+        case=case,
+        scale=scale,
+        figsize=figsize,
+    )
 
 
 def plot_gnvp7_wake(
@@ -33,7 +40,14 @@ def plot_gnvp7_wake(
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    plot_gnvp_wake(gnvp_version=7, state=state, plane=plane, case=case, scale=scale, figsize=figsize)
+    plot_gnvp_wake(
+        gnvp_version=7,
+        state=state,
+        plane=plane,
+        case=case,
+        scale=scale,
+        figsize=figsize,
+    )
 
 
 def plot_gnvp_wake(
@@ -76,7 +90,9 @@ def plot_gnvp_wake(
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
-    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}")
+    ax.set_title(
+        f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}",
+    )
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)

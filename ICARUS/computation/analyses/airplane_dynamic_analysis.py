@@ -12,10 +12,10 @@ from . import Analysis
 
 
 @dataclass
-class AirplaneDynamicAnalysisInput(BaseAnalysisInput):
+class AirplaneStabilityAnalysisInput(BaseAnalysisInput):
     """Input parameters for a dynamic analysis involving an airplane and its flight state."""
 
-    airfoil: Optional[Airplane] = field(
+    plane: Optional[Airplane] = field(
         default=None,
         metadata={"description": "Airplane object to be analyzed dynamically"},
     )
@@ -23,23 +23,19 @@ class AirplaneDynamicAnalysisInput(BaseAnalysisInput):
         default=None,
         metadata={"description": "Flight state describing velocity, altitude, etc."},
     )
-    solver_2D: Optional[str] = field(
-        default=None,
-        metadata={"description": "Name of the 2D solver to be used for sectional analysis"},
-    )
 
 
-class BaseDynamicAnalysis(Analysis[AirplaneDynamicAnalysisInput]):
+class BaseStabilityAnalysis(Analysis[AirplaneStabilityAnalysisInput]):
     def __init__(
         self,
         solver_name: str,
         execute_fun: Callable[..., Any],
-        unhook: Callable[..., Any] | None = None,
+        post_execute_fun: Callable[..., Any] | None = None,
     ) -> None:
         super().__init__(
             analysis_name="Dynamic Analysis",
             solver_name=solver_name,
             execute_fun=execute_fun,
-            post_execute_fun=unhook,
-            input_type=AirplaneDynamicAnalysisInput(),
+            post_execute_fun=post_execute_fun,
+            input_type=AirplaneStabilityAnalysisInput(),
         )
