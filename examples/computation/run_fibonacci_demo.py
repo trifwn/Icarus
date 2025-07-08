@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-def run_demo(config_name: str):
+def run_demo(config_name: str) -> None:
     """Run the demo with a specific configuration."""
     demo_script = Path(__file__).parent / "fibonacci_demo.py"
 
@@ -58,7 +58,7 @@ def run_demo(config_name: str):
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main function."""
     if len(sys.argv) != 2:
         print("Usage: python run_fibonacci_demo.py <config_name>")

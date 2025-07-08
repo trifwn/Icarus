@@ -297,7 +297,7 @@ class Database_2D:
             try:
                 return self.get_polars(airfoil.name, solver=solver_name)
             except PolarsNotFoundError:
-                print(
+                self.logger.info(
                     f"\tPolar for {airfoil.name} not found in database. Trying to recompute with even stricter trip conditions...",
                 )
                 self.compute_polars(
@@ -724,9 +724,6 @@ class Database_2D:
                 np.interp(reynolds, [lower_reynolds, upper_reynolds], [Cm_low, Cm_up]),
             )
         except KeyError as e:
-            print(airfoil_name)
-            print(upper_reynolds)
-            print(lower_reynolds)
             raise KeyError(f"Key {e} not found in database!")
 
         return CL, CD, Cm

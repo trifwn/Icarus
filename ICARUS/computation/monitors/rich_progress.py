@@ -15,6 +15,7 @@ from rich.progress import TaskID
 from rich.progress import TextColumn
 from rich.table import Table
 
+from ICARUS import ICARUS_CONSOLE
 from ICARUS.computation.core import ConcurrencyFeature
 from ICARUS.computation.core import ConcurrentVariable
 from ICARUS.computation.core import EventLike
@@ -24,7 +25,6 @@ from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.settings import ICARUS_CONSOLE
 
 
 class RichProgressMonitor(ProgressMonitor):

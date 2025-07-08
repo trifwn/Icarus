@@ -4,6 +4,7 @@ import subprocess
 from io import StringIO
 
 import numpy as np
+import pandas as pd
 from pandas import DataFrame
 
 from ICARUS import AVL_exe
@@ -275,7 +276,6 @@ def avl_geo(
             strip_airfoil.save_selig(directory)
 
             if viscous:
-                # print(f"\tCalculating polar for {strip.mean_airfoil.name}")
                 # Calculate average reynolds number
                 reynolds = (
                     strip.mean_chord * u_inf / environment.air_kinematic_viscosity
@@ -361,17 +361,7 @@ def get_effective_aoas(
     plane: Airplane,
     angles: FloatArray | list[float],
 ) -> list[DataFrame]:
-    # for i, s in enumerate(plane.surfaces)
-    #     if i0
-    #         start += plane.surfaces[i-1].N2
-    #         inds.append(start+np.arange(1,s.N+1))
-    #         print(plane.surfaces[i-1].name)
-    #     else
-    #         inds.append(np.arange(1,s.N+1))
-
     dfs = []
-    import pandas as pd
-
     from ICARUS.database import angle_to_directory
 
     DB = Database.get_instance()

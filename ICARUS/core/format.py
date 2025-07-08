@@ -1,28 +1,29 @@
 from functools import singledispatch
+from typing import Any
 
 
 @singledispatch
-def short_format(val):
+def short_format(val: Any) -> str:
     return str(val)
 
 
 @short_format.register
-def _(val: float):
+def _(val: float) -> str:
     return f"{val:.3f}"
 
 
 @short_format.register
-def _(val: list):
+def _(val: list[Any]) -> str:
     return f"[{len(val)} items]"
 
 
 @short_format.register
-def _(val: dict):
+def _(val: dict[Any, Any]) -> str:
     return f"{{{len(val)} items}}"
 
 
 @short_format.register
-def _(val: str):
+def _(val: str) -> str:
     if len(val) > 10:
         return f"{val[:10]}..."
     return val

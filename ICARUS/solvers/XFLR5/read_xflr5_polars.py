@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 
@@ -7,6 +8,8 @@ from pandas import DataFrame
 
 from ICARUS.airfoils import AirfoilData
 from ICARUS.database import Database
+
+XFLR5_LOGGER = logging.getLogger("XFLR5")
 
 
 def parse_airfoil_name(file_name: str) -> str:
@@ -32,7 +35,7 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
 
     # Check if the XFLR5 directory exists
     if not os.path.exists(directory):
-        print("XFLR5 directory not found")
+        XFLR5_LOGGER.info("XFLR5 directory not found")
         return
 
     files: list[str] = next(os.walk(directory))[2]
@@ -66,7 +69,7 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
                 engine="python",
             )
         except pd.errors.EmptyDataError:
-            print("\tCould not read the file")
+            XFLR5_LOGGER.info("\tCould not read the file %s", file_name)
             continue
 
         xflr_df.columns = pd.Index(xfoilcols)

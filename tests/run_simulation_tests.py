@@ -21,7 +21,7 @@ performance_simulation_file = (
 )
 
 
-def run_basic_tests():
+def run_basic_tests() -> bool:
     """Run basic functionality tests."""
     print("🧪 Running basic functionality tests...")
     cmd = ["python", "-m", "pytest", basic_simultion_file, "-v", "--tb=short"]
@@ -37,7 +37,7 @@ def run_basic_tests():
     return result.returncode == 0
 
 
-def run_performance_tests():
+def run_performance_tests() -> bool:
     """Run performance benchmark tests."""
     print("⚡ Running performance benchmarks...")
     cmd = [
@@ -62,7 +62,7 @@ def run_performance_tests():
     return result.returncode == 0
 
 
-def run_stress_tests():
+def run_stress_tests() -> bool:
     """Run stress tests."""
     print("🔥 Running stress tests...")
     cmd = [
@@ -87,7 +87,7 @@ def run_stress_tests():
     return result.returncode == 0
 
 
-def run_integration_tests():
+def run_integration_tests() -> bool:
     """Run integration tests."""
     print("🔗 Running integration tests...")
     cmd = [
@@ -110,7 +110,7 @@ def run_integration_tests():
     return result.returncode == 0
 
 
-def generate_coverage_report():
+def generate_coverage_report() -> None:
     """Generate test coverage report."""
     print("📊 Generating coverage report...")
     # Install coverage if not available
@@ -151,7 +151,7 @@ def generate_coverage_report():
     print("📝 HTML coverage report generated in htmlcov/")
 
 
-def validate_configuration():
+def validate_configuration() -> bool:
     """Validate configuration loading."""
     print("⚙️  Validating configuration...")
 
@@ -179,7 +179,7 @@ def validate_configuration():
         return False
 
 
-def main():
+def main() -> None:
     """Main test runner."""
     parser = argparse.ArgumentParser(
         description="ICARUS Simulation Framework Test Runner",

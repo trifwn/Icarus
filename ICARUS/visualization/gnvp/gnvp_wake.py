@@ -104,26 +104,26 @@ def plot_gnvp_wake(
     p = ax.scatter(
         xs=XP[:, 0],
         ys=XP[:, 1],
-        zs=XP[:, 2],
+        zs=XP[:, 2],  # type: ignore
         c=np.linalg.norm(QP, axis=1),
         s=5,
-    )  # WAKE   # type: ignore
+    )  # WAKE
     fig.colorbar(p, ax=ax)
 
     ax.scatter(
         xs=B1[:, 0],
         ys=B1[:, 1],
-        zs=B1[:, 2],
+        zs=B1[:, 2],  # type: ignore
         color="k",
         s=5,
-    )  # NEARWAKE   # type: ignore
+    )  # NEARWAKE
     ax.scatter(
         xs=C1[:, 0],
         ys=C1[:, 1],
-        zs=C1[:, 2],
+        zs=C1[:, 2],  # type: ignore
         color="g",
         s=5,
-    )  # GRID       # type: ignore
+    )  # GRID
 
     plane.plot(fig, ax, movement=-np.array(plane.CG), show_masses=False)
     if scale:

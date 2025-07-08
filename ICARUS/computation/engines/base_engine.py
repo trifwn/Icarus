@@ -4,6 +4,7 @@ import logging
 import signal
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 
 from ICARUS.computation.core import ConcurrencyFeature
 from ICARUS.computation.core import ConcurrentVariable
@@ -24,11 +25,11 @@ class AbstractEngine(ConcurrentMixin, ABC):
 
     def __init__(
         self,
-    ):
+    ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
-    async def execute_tasks(self) -> list[TaskResult]:
+    async def execute_tasks(self) -> list[TaskResult[Any]]:
         """Execute tasks and return results"""
         ...
 
@@ -48,7 +49,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
         self.set_concurrent_vars(concurent_vars)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         """Context manager exit point to clean up execution context."""
         pass
 
@@ -73,7 +74,6 @@ class AbstractEngine(ConcurrentMixin, ABC):
         """Request concurrent variables required by this engine."""
         vars = {
             "TERMINATE": ConcurrencyFeature.EVENT,
-            "Console_Queue": ConcurrencyFeature.QUEUE,
         }
         if self.progress_reporter:
             vars.update(self.progress_reporter.request_concurrent_vars())
@@ -91,6 +91,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
             raise TypeError(
                 f"Expected EventLike for 'TERMINATE', got {type(terminate_event)}",
             )
+        # Set up terminate event for graceful shutdown
         self.terminate_event = terminate_event
 
         if self.progress_reporter:

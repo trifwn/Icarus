@@ -7,6 +7,9 @@ from matplotlib.figure import SubFigure
 
 from .figure_setup import flatten_axes
 
+# _Wrapped
+# from typing import Any, Callable
+
 
 def pre_existing_figure(
     subplots: tuple[int, int] = (1, 2),

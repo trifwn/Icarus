@@ -124,7 +124,7 @@ class Database_3D:
         # Try to Load Vehicle object
         file_plane: str = os.path.join(self.DB3D, name, f"{name}.json")
         plane_obj: Airplane | None = self.load_vehicle(name, file_plane)
-        print(f"Loaded Plane {plane_obj}")
+        self.logger.info(f"Loaded Plane {plane_obj}")
         if plane_obj is None:
             raise ValueError(f"No Vehicle Object Found at {file_plane}")
 
@@ -138,7 +138,7 @@ class Database_3D:
         if isinstance(vehicle, Airplane):
             vehicle = vehicle.name
 
-        print(f"Getting States for {vehicle}")
+        self.logger.info(f"Getting States for {vehicle}")
         if vehicle in self.states.keys():
             return self.states[vehicle]
         self.read_plane_data(vehicle)
@@ -149,7 +149,7 @@ class Database_3D:
 
     def read_all_data(self) -> None:
         if not os.path.isdir(self.DB3D):
-            print(f"Creating self.DB3D directory at {self.DB3D}...")
+            self.logger.info(f"Creating self.DB3D directory at {self.DB3D}...")
             os.makedirs(self.DB3D, exist_ok=True)
 
         vehicle_folders: list[str] = next(os.walk(self.DB3D))[1]
@@ -157,7 +157,7 @@ class Database_3D:
             try:
                 self.read_plane_data(vehicle_folder)
             except Exception as error:
-                print(f"Error reading {vehicle_folder}! Got error {error}")
+                self.logger.info(f"Error reading {vehicle_folder}! Got error {error}")
                 raise error
 
     def read_plane_data(self, vehicle_folder: str) -> None:
@@ -211,7 +211,9 @@ class Database_3D:
                         solver=solver_folder,
                     )
                 except ValueError:
-                    print(f"Unknown Solver {solver_folder} for {vehicle_name}")
+                    self.logger.info(
+                        f"Unknown Solver {solver_folder} for {vehicle_name}",
+                    )
 
     def load_vehicle(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.
@@ -335,12 +337,10 @@ class Database_3D:
                     prefix=name,
                 )
         except FileNotFoundError:
-            logging.debug(
-                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
+            self.logger.info(
+                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!No polars Created as well",
             )
-            print(
-                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
-            )
+
         cases: list[str] = next(os.walk(folder))[1]
         if "Dynamics" in cases:
             cases.remove("Dynamics")
@@ -356,11 +356,9 @@ class Database_3D:
                 state.set_pertrubation_results(pertrubations_df)
                 state.stability_fd()
             except Exception as error:
-                print(
+                self.logger.info(
                     f"Error setting pertrubation results {error} for {vehicle_name} GenuVP{gnvp_version}",
                 )
-                # raise(error)
-                logging.debug(f"Error setting pertrubation results {error}")
                 state.pertrubation_results = pertrubations_df
 
         if gnvp_version == 7:
@@ -382,7 +380,6 @@ class Database_3D:
                 loads_file,
                 gnvp_version,
             )
-            # print(load_convergence)
             convergence: DataFrame = get_error_convergence(
                 log_file,
                 load_convergence,
@@ -446,10 +443,9 @@ class Database_3D:
                     state.set_pertrubation_results(pertrubations_df, "AVL")
                     state.stability_fd()
                 except (ValueError, KeyError) as error:
-                    print(
+                    self.logger.info(
                         f"Error setting pertrubation results {error} for {vehicle_name} AVL",
                     )
-                    logging.debug(f"Error setting pertrubation results {error}")
                     state.pertrubation_results = pertrubations_df
 
         except FileNotFoundError:
@@ -498,7 +494,7 @@ class Database_3D:
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
         try:
             if prefix not in state.get_polar_prefixes():
-                print(
+                self.logger.info(
                     f"\tAdding Polars for {plane.name} {prefix} to State {state.name}",
                 )
                 state.add_polar(

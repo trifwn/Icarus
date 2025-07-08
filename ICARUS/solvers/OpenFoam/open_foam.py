@@ -35,7 +35,7 @@ class OpenFoamParameters(SolverParameters):
     )
 
 
-class OpenFoam(Solver[OpenFoamParameters()]):
+class OpenFoam(Solver[OpenFoamParameters]):
     analyses = [
         OpenFoam_MultiReyn_PolarAnanlysis(),
     ]

@@ -50,7 +50,7 @@ def get_wake_data_3(
     c: list[list[float]] = []
     iteration = 0
     maxiter: int = get_max_iterations_3(plane, state, case)
-    for i, line in enumerate(data):
+    for line in data:
         if line.startswith("WAKE"):
             foo: list[str] = line.split()
             iteration = int(foo[3])
@@ -58,7 +58,7 @@ def get_wake_data_3(
         if iteration >= maxiter:
             foo = line.split()
             if len(foo) == 13:
-                i, x, y, z, vx, vy, vz, ux, uy, uz, gx, gy, gz = (float(i) for i in foo)
+                _, x, y, z, vx, vy, vz, ux, uy, uz, gx, gy, gz = (float(i) for i in foo)
                 positions.append([x, y, z])
                 vorticity.append([vx, vy, vz])
                 velocity.append([ux, uy, uz])

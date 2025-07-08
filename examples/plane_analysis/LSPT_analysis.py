@@ -12,14 +12,13 @@ from typing import Any
 import numpy as np
 from Planes.hermes import hermes
 
+# CHANGE THIS TO YOUR DATABASE FOLDER
+from ICARUS import INSTALL_DIR
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
-
-# CHANGE THIS TO YOUR DATABASE FOLDER
-from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.Icarus_LSPT import LSPT
 from ICARUS.vehicle import Airplane
 

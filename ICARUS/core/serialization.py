@@ -22,10 +22,18 @@ def deserialize_function(
         if func_type == "py/method":
             obj, func_name = func_info
             function = getattr(obj, func_name)
+            if not callable(function):
+                raise TypeError(
+                    f"Object {obj} does not have a callable method '{func_name}'",
+                )
         elif func_type == "py/function":
             module_name, func_name = func_info.rsplit(".", 1)
             module = __import__(module_name, fromlist=[func_name])
             function = getattr(module, func_name)
+            if not callable(function):
+                raise TypeError(
+                    f"Module {module_name} does not have a callable function '{func_name}'",
+                )
         else:
             function = None
     else:

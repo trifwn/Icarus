@@ -742,10 +742,8 @@ class Airplane(Optimizable):
         if self.__class__ == Airplane.__class__:
             encoded = jsonpickle.encode(self)
         else:
-            # print("Converting to Airplane")
             # Encode the object as only an Airplane object
             other = Airplane.__copy__(self)
-            # print(f"Other is {other}, {type(other)}")
             encoded = jsonpickle.encode(other)
             del other
 

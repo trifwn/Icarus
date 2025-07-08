@@ -43,15 +43,18 @@ def plot_airplane_polars(
         tuple[ndarray, Figure]: Array of Axes and Figure
 
     """
+    DB = Database.get_instance()
     if not isinstance(airplanes, list):
-        airplanes = [airplanes]
-    assert isinstance(
-        airplanes,
-        list,
-    ), "Airplanes must be a list of strings or Airplane objects"
+        airplane_list = [airplanes]
+
+    for i, airplane in enumerate(airplane_list):
+        if isinstance(airplane, str):
+            airplane_list[i] = DB.get_vehicle(airplane)
+        elif not isinstance(airplane, Airplane):
+            raise TypeError(f"Expected Airplane or str, got {type(airplane)}")
 
     number_of_plots = len(plots)
-    DB = Database.get_instance()
+
     # Divide the plots equally
     sqrt_num = number_of_plots**0.5
     i: int = int(np.ceil(sqrt_num))
@@ -86,14 +89,14 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors_ = distinctipy.get_colors(len(airplanes) * len(prefixes))
-    for i, airplane in enumerate(airplanes):
+    colors_ = distinctipy.get_colors(len(airplane_list) * len(prefixes))
+    for i, airplane in enumerate(airplane_list):
         if isinstance(airplane, Airplane):
             airplane = airplane.name
 
         polar: DataFrame = DB.get_vehicle_polars(airplane)
         for j, prefix in enumerate(prefixes):
-            if len(airplanes) == 1:
+            if len(airplane_list) == 1:
                 c = colors_[j]
                 m = "o"
             else:

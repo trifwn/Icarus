@@ -162,7 +162,7 @@ class ProgressReporter(ConcurrentMixin, Protocol):
         """
         ...
 
-    def report_completion(self, result: TaskResult) -> None:
+    def report_completion(self, result: TaskResult[Any]) -> None:
         """
         Report the completion of a task.
 
@@ -190,7 +190,7 @@ class ProgressObserver(ConcurrentMixin, Protocol):
         """
         ...
 
-    def on_task_completion(self, result: TaskResult) -> None:
+    def on_task_completion(self, result: TaskResult[Any]) -> None:
         """
         Handle task completion event.
 
@@ -209,14 +209,14 @@ class ProgressMonitor(ProgressObserver, Protocol):
     and finalize progress visualization or reporting.
     """
 
-    event_queue: QueueLike
+    event_queue: QueueLike | None
     termination_event: EventLike
 
     def __enter__(self) -> ProgressMonitor:
         """Enter the monitoring context (e.g., initialize bars)."""
         ...
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         """Exit the monitoring context (e.g., clean up bars)."""
         ...
 

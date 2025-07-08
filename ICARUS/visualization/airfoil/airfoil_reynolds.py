@@ -70,7 +70,7 @@ def plot_airfoils_at_reynolds(
     for j, airfoil_name in enumerate(airfoil_names):
         for i, solver in enumerate(solvers):
             try:
-                polar: AirfoilPolarMap = DB.get_airfoil_polars(
+                polar_map: AirfoilPolarMap = DB.get_airfoil_polars(
                     airfoil=airfoil_name,
                     solver=solver,
                 )
@@ -81,22 +81,22 @@ def plot_airfoils_at_reynolds(
                 continue
             try:
                 if reynolds is None:
-                    reyn_idx = int(len(polar.reynolds_numbers) // 2)
-                    reyn = polar.reynolds_numbers[reyn_idx]
+                    reyn_idx = int(len(polar_map.reynolds_numbers) // 2)
+                    reyn = polar_map.reynolds_numbers[reyn_idx]
                     print(
                         f"Reynolds number not provided for {airfoil_name}. Selecting Reynolds number: {reyn:,}",
                     )
                 else:
-                    available_reynolds = polar.reynolds_numbers
+                    available_reynolds = polar_map.reynolds_numbers
                     # Find the closest reynolds number to the given reynolds
                     reyn = min(
                         available_reynolds,
                         key=lambda x: abs(float(x) - reynolds),
                     )
-                polar_df = polar.get_polar(reyn)
+                polar = polar_map.get_polar(reyn)
 
                 # Sort the data by AoA
-                polar_df = polar_df.df.sort_values(by="AoA")
+                polar_df = polar.df.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
                     polar_df = polar_df.loc[

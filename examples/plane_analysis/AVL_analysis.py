@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Planes.hermes import hermes
 
+from ICARUS import INSTALL_DIR
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
-from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.AVL import AVL
 from ICARUS.solvers.AVL import process_avl_dynamics_implicit
 

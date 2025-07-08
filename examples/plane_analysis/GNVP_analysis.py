@@ -45,7 +45,7 @@ def main(GNVP_VERSION: int) -> None:
     TEMPERATURE: dict[str, int] = {name: 273 + 15}
 
     STATIC_ANALYSIS: dict[str, float] = {name: True}
-    DYNAMIC_ANALYSIS: dict[str, float] = {name: True}
+    DYNAMIC_ANALYSIS: dict[str, float] = {name: False}
 
     if GNVP_VERSION == 7:
         from ICARUS.solvers.GenuVP import GenuVP7
@@ -102,7 +102,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 10
+            solver_parameters.iterations = 100
 
             polars_time: float = time.time()
             gnvp.execute(
@@ -171,7 +171,7 @@ def main(GNVP_VERSION: int) -> None:
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
 
     # print time program took
-    print(f"WORKFLOW FOR {GNVP_VERSION} TERMINATED")
+    print(f"WORKFLOW FOR GenuVP{GNVP_VERSION} TERMINATED")
     print(f"Execution took : --- {time.time() - start_time} seconds ---")
 
 

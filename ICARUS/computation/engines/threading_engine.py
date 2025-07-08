@@ -157,7 +157,7 @@ class ThreadingEngine(AbstractEngine):
         # Create a queue for progress events (local & multiproc)
         if self.progress_monitor:
 
-            def monitor_runner():
+            def monitor_runner() -> None:
                 if self.progress_monitor:
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())

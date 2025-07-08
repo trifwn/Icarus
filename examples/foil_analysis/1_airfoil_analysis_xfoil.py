@@ -3,12 +3,12 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
+from ICARUS import INSTALL_DIR
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
-from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
 
 
@@ -60,8 +60,8 @@ def main() -> None:
     )
 
     # ANGLE OF ATTACK SETUP
-    aoa_min: float = -8.
-    aoa_max: float = 14.
+    aoa_min: float = -8.0
+    aoa_max: float = 14.0
     aoa_step: float = 1.0
 
     # Transition to turbulent Boundary Layer

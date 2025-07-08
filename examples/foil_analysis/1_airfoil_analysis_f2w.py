@@ -3,12 +3,12 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
+from ICARUS import INSTALL_DIR
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
-from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.Foil2Wake import Foil2WakeSolverParameters
 
 

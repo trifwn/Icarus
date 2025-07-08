@@ -3,12 +3,11 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+# CHANGE THIS TO YOUR DATABASE FOLDER
+from ICARUS import INSTALL_DIR
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-
-# CHANGE THIS TO YOUR DATABASE FOLDER
-from ICARUS.settings import INSTALL_DIR
 from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
 database_folder = os.path.join(

@@ -180,7 +180,7 @@ class NACA4(Airfoil):
             n_points=state["n_points"],
         )
 
-    def gen_NACA4_points(self, n_points):
+    def gen_NACA4_points(self, n_points) -> tuple[FloatArray, FloatArray]:
         """
         Generate upper and lower points for a NACA 4 airfoil using JAX.
 

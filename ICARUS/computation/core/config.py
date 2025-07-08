@@ -81,14 +81,14 @@ class SimulationConfig:
     # Custom settings
     custom_settings: Dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate configuration after initialization."""
         self._validate_config()
         self._apply_environment_overrides()
         if isinstance(self.log_file_path, str):
             self.log_file_path = Path(self.log_file_path)
 
-    def _validate_config(self):
+    def _validate_config(self) -> None:
         """Validate configuration values."""
         if self.max_workers is not None and self.max_workers <= 0:
             raise ConfigurationError("max_workers must be positive")
@@ -105,7 +105,7 @@ class SimulationConfig:
         if self.max_retry_attempts < 0:
             raise ConfigurationError("max_retry_attempts must be non-negative")
 
-    def _apply_environment_overrides(self):
+    def _apply_environment_overrides(self) -> None:
         """Apply configuration overrides from environment variables."""
         env_mappings = {
             "ICARUS_SIM_MAX_WORKERS": ("max_workers", int),
@@ -184,7 +184,7 @@ class SimulationConfig:
                 result[key] = value
         return result
 
-    def save_to_file(self, config_path: Union[str, Path]):
+    def save_to_file(self, config_path: Union[str, Path]) -> None:
         """
         Save configuration to a file.
 

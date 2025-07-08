@@ -14,10 +14,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from ICARUS import ICARUS_CONSOLE
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core.data_structures import TaskResult
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.settings import ICARUS_CONSOLE
 
 from . import NoSolverParameters
 from . import RichProgressMonitor
@@ -118,7 +118,7 @@ class Solver(Generic[SolverParametersType]):
         | list[BaseAnalysisInput | dict[str, Any]],
         solver_parameters: dict[str, Any] | SolverParametersType | None = None,
         execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL,
-        progress_monitor: ProgressMonitor = RichProgressMonitor(),
+        progress_monitor: ProgressMonitor | None = RichProgressMonitor(),
     ) -> Any:
         """
         Run the selected analysis asynchronously.

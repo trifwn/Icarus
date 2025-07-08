@@ -33,7 +33,6 @@ class Polynomial2DInterpolator:
         B = zp
 
         coeff, r, rank, s = np.linalg.lstsq(A, B, rcond=-1)
-        print(coeff)
 
         def f(x, y):
         return coeff[0] + coeff[1]*x + coeff[2]*y + coeff[3]*x**2 + coeff[4]*x**2*y + coeff[5]*x**2*y**2 + coeff[6]*y**2 + coeff[7]*x*y**2 + coeff[8]* x*y
@@ -79,9 +78,6 @@ class Polynomial2DInterpolator:
 
         # Solve the least squares problem
         coefficients, r, rank, s = jnp.linalg.lstsq(A, z, rcond=-1)
-        # print(f"Rank: {rank}")
-        # print(f"Residual: {r}")
-        # print(f"Singular values: {s}")
         self.coefficients = coefficients
 
     partial(jax.jit, static_argnums=(0,))

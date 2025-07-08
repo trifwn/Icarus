@@ -165,7 +165,6 @@ def setup_plot(
                     clcd_lines[airplanes[i]] = clcd_line
                     break
                 except ValueError as e:
-                    print(style)
                     raise e
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {airplanes[i]},{solver}")

@@ -445,7 +445,7 @@ class PointMass:
                 bounds[2][1],  # z bounds
                 **opts,
             )
-            return result[0] * mass
+            return float(result[0]) * mass
 
         # Compute inertia components
         I_xx = compute_moment(lambda x, y, z: y**2 + z**2)

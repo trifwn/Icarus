@@ -25,7 +25,7 @@ class SimulationRunner:
         max_workers: int | None = None,
         resource_manager: ResourceManager | None = None,
         progress_monitor: ProgressMonitor | None = None,
-    ):
+    ) -> None:
         self.execution_mode = execution_mode
         self.max_workers = max_workers or min(os.cpu_count() or 4, 8)
 

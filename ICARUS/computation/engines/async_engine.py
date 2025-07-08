@@ -148,7 +148,7 @@ class AsyncEngine(AbstractEngine):
         if self.progress_monitor:
             self.logger.debug("Starting progress monitoring")
 
-            async def monitor_runner():
+            async def monitor_runner() -> None:
                 if self.progress_monitor:
                     with self.progress_monitor:
                         await self.progress_monitor.monitor_loop()

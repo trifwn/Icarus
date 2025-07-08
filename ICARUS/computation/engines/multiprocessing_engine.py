@@ -8,12 +8,16 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from typing import Any
 
+from ICARUS import setup_logging
+from ICARUS import setup_mp_logging
+from ICARUS.computation.core import ConcurrencyFeature
+from ICARUS.computation.core import ConcurrentVariable
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ExecutionMode
+from ICARUS.computation.core import QueueLike
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
-from ICARUS.computation.core.protocols import ProgressMonitor
 
 from .base_engine import AbstractEngine
 
@@ -23,51 +27,52 @@ class MultiprocessingEngine(AbstractEngine):
 
     execution_mode: ExecutionMode = ExecutionMode.MULTIPROCESSING
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.manager = None
+        self.listener = None
+        self.log_queue = None
+
+    def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
+        """Request concurrent variables required by this engine."""
+        vars = super().request_concurrent_vars()
+        # We'll manage the queue ourselves using Manager
+        vars["Console_Queue"] = ConcurrencyFeature.QUEUE
+        return vars
+
+    def set_concurrent_vars(self, vars: dict[str, ConcurrentVariable]) -> None:
+        """Set concurrent variables for this engine."""
+        super().set_concurrent_vars(vars)
+        self.log_queue = vars["Console_Queue"]
+        if not isinstance(self.log_queue, QueueLike):
+            raise TypeError(
+                "MultiprocessingEngine requires a multiprocessing Queue for logging",
+            )
+
+        self.listener = setup_mp_logging(self.log_queue)
+        if self.listener is not None:
+            self.listener.start()
+
     def __enter__(self) -> AbstractEngine:
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()
         self.execution_mode.set_multiprocessing_manager(mp.Manager())
-        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(
+        concurrent_vars = self.execution_mode.primitives.get_concurrent_variables(
             concurrent_vars_req,
         )
-        self.set_concurrent_vars(concurent_vars)
-
-        # # Set up terminate event for graceful shutdown
-        # queue = concurent_vars.get("Console_Queue")
-        # if queue is None or not isinstance(queue, QueueLike):
-        #     raise ValueError(
-        #         "MultiprocessingEngine requires a 'Console_Queue' in concurrent variables.",
-        #     )
-
-        # # -------------------------
-        # # 🌍 Set up global logging
-        # # -------------------------
-        # self.log_queue = queue
-
-        # # Rich handler (used only in the main process)
-        # rich_handler = RichHandler(rich_tracebacks=True, show_path=False)
-        # rich_handler.setFormatter(logging.Formatter("%(message)s"))
-
-        # # Queue listener listens for records from workers and uses Rich
-        # self.listener = QueueListener(self.log_queue, rich_handler)
-        # self.listener.start()
-
-        # # Global root logger uses a QueueHandler
-        # root_logger = logging.getLogger()
-        # root_logger.setLevel(logging.INFO)
-
-        # # Only add if not already added
-        # if not any(isinstance(h, QueueHandler) for h in root_logger.handlers):
-        #     root_logger.handlers = []  # Clear default handlers
-        #     root_logger.addHandler(QueueHandler(self.log_queue))
-
+        self.set_concurrent_vars(concurrent_vars)
         return self
 
-    # def __exit__(self, exc_type, exc_val, exc_tb):
-    #     self.logger.info(f"Exiting engine: {self.__class__.__name__}")
-    #     if hasattr(self, "listener"):
-    #         self.listener.stop()
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.logger.info("Shutting down engine")
+
+        # Stop the queue listener
+        if hasattr(self, "listener") and self.listener:
+            self.listener.stop()
+            self.listener = None
+        # Revert global logging configuration
+        setup_logging()
 
     async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks using process pool"""
@@ -85,6 +90,16 @@ class MultiprocessingEngine(AbstractEngine):
                 self.concurrent_variables if self.concurrent_variables else {},
             ),
         ) as executor:
+            # Submit dummy tasks to force process initialization
+            dummy_futures = [executor.submit(dummy_task) for _ in range(max_workers)]
+            for f in dummy_futures:
+                f.result()  # Wait for all workers to start and run initializer
+
+            # Start the progress monitor if enabled
+            if self.monitor_thread:
+                self.monitor_thread.start()
+
+            # Submit tasks to the executor
             results = executor.map(self._execute_task, self.tasks)
 
         # Convert exceptions to failed results
@@ -114,7 +129,7 @@ class MultiprocessingEngine(AbstractEngine):
                         asyncio.run(self.progress_monitor.monitor_loop())
 
             self.monitor_thread = threading.Thread(target=monitor_runner, daemon=True)
-            self.monitor_thread.start()
+            # self.monitor_thread.start()
 
     async def _stop_progress_monitoring(self) -> None:
         """Stop the progress monitor if it is running."""
@@ -135,13 +150,16 @@ class MultiprocessingEngine(AbstractEngine):
     def __getstate__(self) -> dict[str, Any]:
         """Custom serialization to avoid issues with multiprocessing."""
         state = self.__dict__.copy()
+        # Remove non-serializable items
         state.pop("monitor_thread", None)
+        state.pop("listener", None)
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Custom deserialization to restore state."""
         self.__dict__.update(state)
         self.monitor_thread = None
+        self.listener = None
 
     def _execute_task(
         self,
@@ -197,6 +215,9 @@ class MultiprocessingEngine(AbstractEngine):
                     task.state = TaskState.COMPLETED
                     if context.progress_reporter is not None:
                         context.progress_reporter.report_completion(task_result)
+
+                    # Log success
+                    context.logger.info(f"Task {task.id} completed successfully")
                     return task_result
 
                 except Exception as e:
@@ -209,6 +230,9 @@ class MultiprocessingEngine(AbstractEngine):
                     task.state = TaskState.FAILED
                     if context.progress_reporter is not None:
                         context.progress_reporter.report_completion(task_result)
+
+                    # Log failure
+                    context.logger.error(f"Task {task.id} failed: {e}")
                     return task_result
 
                 finally:
@@ -218,13 +242,22 @@ class MultiprocessingEngine(AbstractEngine):
 
             return loop.run_until_complete(execute())
 
+        except Exception as e:
+            # Handle any errors that occur outside the async context
+            logger = logging.getLogger(f"task.{task.name}")
+            logger.error(f"Critical error in task {task.id}: {e}")
+            return TaskResult(
+                task_id=task.id,
+                state=TaskState.FAILED,
+                error=e,
+                execution_time=datetime.now() - start_time
+                if "start_time" in locals()
+                else None,
+            )
         finally:
             loop.close()
 
 
-def run_monitor_loop(pm: ProgressMonitor) -> None:
-    """Run the monitor loop in a separate process."""
-    try:
-        asyncio.run(pm.monitor_loop())
-    except Exception as e:
-        logging.error(f"Error in progress monitor loop: {e}")
+def dummy_task() -> None:
+    """Dummy task to ensure process pool workers are initialized."""
+    pass

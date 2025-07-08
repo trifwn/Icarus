@@ -1,3 +1,5 @@
+from typing import Any
+
 from scipy.interpolate import interp1d
 
 
@@ -16,7 +18,7 @@ class ScipyInterpolator1D(interp1d):
         :fill_value: (str or float) If a string, it must be one of 'extrapolate', 'constant', 'nearest', 'zero', 'slinear', 'quadratic', or 'cubic'
     """
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         """
         This method defines the state to be pickled for interp1d objects.
 
@@ -38,7 +40,7 @@ class ScipyInterpolator1D(interp1d):
             # "kwargs": self.kwargs,
         }
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         """
         This method reconstructs the interp1d object from the pickled state.
 
@@ -55,14 +57,12 @@ class ScipyInterpolator1D(interp1d):
         # self.args = state["args"]
         # self.kwargs = state["kwargs"]
         # Recreate the spline object during initialization
-        self.__init__(
-            self.xi,
-            self.yi,
+        ScipyInterpolator1D.__init__(
+            self,
+            x=self.xi,
+            y=self.yi,
             kind=self.kind,
             bounds_error=self.bounds_error,
             fill_value=self.fill_value,
-            # assume_sorted=self.assume_sorted,
             copy=self.copy,
-            # args=self.args,
-            # kwargs=self.kwargs,
         )

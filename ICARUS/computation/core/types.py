@@ -15,6 +15,7 @@ from multiprocessing.managers import SyncManager
 from typing import Any
 from typing import List
 from typing import Optional
+from typing import Self
 from typing import TypeVar
 
 from .utils.concurrency import ConcurrencyPrimitives
@@ -92,7 +93,7 @@ class TaskId:
         """Return the string representation of the UUID."""
         return self.value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
@@ -156,7 +157,7 @@ class ExecutionMode(Enum):
     ASYNC = "async"
     ADAPTIVE = "adaptive"
 
-    def __new__(cls, value):
+    def __new__(cls, value) -> Self:
         """
         Custom __new__ method to initialize concurrency primitives.
         """
@@ -164,7 +165,7 @@ class ExecutionMode(Enum):
         obj._value_ = value
         return obj
 
-    def __init__(self, value):
+    def __init__(self, value) -> None:
         """
         Initialize the enum member with concurrency primitives.
         """
