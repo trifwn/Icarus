@@ -60,8 +60,8 @@ def main() -> None:
     )
 
     # ANGLE OF ATTACK SETUP
-    aoa_min: float = -8
-    aoa_max: float = 14
+    aoa_min: float = -8.
+    aoa_max: float = 14.
     aoa_step: float = 1.0
 
     # Transition to turbulent Boundary Layer
