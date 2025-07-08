@@ -55,7 +55,7 @@ class FibonacciDemo:
         # Configure logging
         self.logger = logging.getLogger("FibonacciDemo")
 
-    def create_tasks(self) -> list[Task]:
+    def create_tasks(self) -> list[Task[int, tuple[int, int]]]:
         """Create Fibonacci calculation tasks."""
         tasks = []
 
@@ -265,7 +265,7 @@ class FibonacciDemo:
         return all_results
 
 
-async def main():
+async def main() -> None:
     """Main demo function."""
     logging.basicConfig(
         level=logging.DEBUG,
@@ -345,7 +345,7 @@ async def main():
         sys.exit(1)
 
 
-def print_performance_comparison(results: dict[str, dict[str, Any]]):
+def print_performance_comparison(results: dict[str, dict[str, Any]]) -> None:
     """Print a comprehensive performance comparison between execution modes."""
     print(f"\n{'=' * 70}")
     print("📊 PERFORMANCE COMPARISON")

@@ -142,7 +142,7 @@ def main() -> None:
             # Import Analysis
             # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
             # 1) Sequential Angle run for multiple reynolds
-            analysis = xfoil.get_analyses()[1]  # Run
+            analysis = xfoil.aseq  # Run
 
             # Get Options
             xfoil_inputs = analysis.get_analysis_input()

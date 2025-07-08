@@ -41,7 +41,7 @@ class RichProgressMonitor(ProgressMonitor):
     def __init__(
         self,
         refresh_rate: float = 0.5,
-    ):
+    ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.refresh_rate = refresh_rate
@@ -171,7 +171,12 @@ class RichProgressMonitor(ProgressMonitor):
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         """Context manager exit - cleanup progress bars."""
         self.logger.debug("Exiting RichProgressMonitor context")
         if self.live is not None:

@@ -83,8 +83,8 @@ def main(GNVP_VERSION: int) -> None:
             # 1: Angles Sequential
             # 2: Angles Parallel
 
-            analysis = gnvp.aseq
-            inputs = analysis.get_analysis_input()
+            polar_analysis = gnvp.aseq
+            inputs = polar_analysis.get_analysis_input()
             AOA_MIN = -6
             AOA_MAX = 10
             NO_AOA: int = (AOA_MAX - AOA_MIN) + 1
@@ -106,7 +106,7 @@ def main(GNVP_VERSION: int) -> None:
 
             polars_time: float = time.time()
             gnvp.execute(
-                analysis=analysis,
+                analysis=polar_analysis,
                 inputs=inputs,
                 solver_parameters=solver_parameters,
                 execution_mode=ExecutionMode.MULTIPROCESSING,
@@ -148,10 +148,10 @@ def main(GNVP_VERSION: int) -> None:
             # 4 Pertrubations Parallel
             # 5 Sesitivity Analysis Serial
             # 6 Sesitivity Analysis Parallel
-            analysis = gnvp.stability  # Pertrubations PARALLEL
-            print(f"Selecting Analysis: {analysis}")
+            stability_analysis = gnvp.stability  # Pertrubations PARALLEL
+            print(f"Selecting Analysis: {stability_analysis}")
 
-            inputs = analysis.get_analysis_input(verbose=False)
+            inputs = stability_analysis.get_analysis_input(verbose=False)
             inputs.plane = plane
             inputs.state = unstick
             inputs.disturbances = copy.copy(unstick.disturbances)
@@ -163,7 +163,7 @@ def main(GNVP_VERSION: int) -> None:
             pert_time: float = time.time()
             print("Running Pertrubations")
             _ = gnvp.execute(
-                analysis=analysis,
+                analysis=stability_analysis,
                 inputs=inputs,
                 solver_parameters=solver_parameters,
                 execution_mode=ExecutionMode.MULTIPROCESSING,

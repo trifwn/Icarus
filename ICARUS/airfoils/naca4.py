@@ -83,7 +83,7 @@ class NACA4(Airfoil):
         XX = int(digits[2:4]) / 100.0
         return cls(M, P, XX)
 
-    def _camber_line(self, xsi):
+    def _camber_line(self, xsi) -> tuple[Any, Any]:
         """
         Calculate the camber line and its derivative for a NACA 4 digit airfoil.
         Args:
@@ -180,7 +180,7 @@ class NACA4(Airfoil):
             n_points=state["n_points"],
         )
 
-    def gen_NACA4_points(self, n_points) -> tuple[FloatArray, FloatArray]:
+    def gen_NACA4_points(self, n_points: int) -> tuple[Any, Any]:
         """
         Generate upper and lower points for a NACA 4 airfoil using JAX.
 
