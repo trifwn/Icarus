@@ -171,7 +171,7 @@ class ExecutionMode(Enum):
         """
         self.concurrency_type: ConcurrencyType | None = None
         self._primitives: ConcurrencyPrimitives | None = None
-        self.mp_manager: Optional[SyncManager] = None
+        self._mp_manager: Optional[SyncManager] = None
 
     def set_multiprocessing_manager(self, manager: SyncManager) -> None:
         """
@@ -184,8 +184,19 @@ class ExecutionMode(Enum):
             raise ValueError(
                 f"Cannot set manager for non-multiprocessing mode: {self.value}",
             )
-        self.mp_manager = manager
+        self._mp_manager = manager
         self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(manager)
+
+    def clear_multiprocessing_manager(self) -> None:
+        """
+        Unset the multiprocessing manager for this execution mode.
+        """
+        if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
+            raise ValueError(
+                f"Cannot unset manager for non-multiprocessing mode: {self.value}",
+            )
+        self._mp_manager = None
+        self._primitives = None
 
     @property
     def primitives(self) -> ConcurrencyPrimitives:
@@ -200,13 +211,30 @@ class ExecutionMode(Enum):
 
             if (
                 self.concurrency_type is ConcurrencyType.MULTIPROCESSING
-                and self.mp_manager is not None
+                and self._mp_manager is not None
             ):
                 self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(
-                    self.mp_manager,
+                    self._mp_manager,
                 )
             else:
                 self._primitives = ConcurrencyPrimitives.from_type(
                     self.concurrency_type,
                 )
         return self._primitives
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        # Remove non-serializable items
+        state.pop("_primitives", None)
+        state.pop("_mp_manager", None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self._primitives = None
+        self._mp_manager = None
+        self.concurrency_type = (
+            ConcurrencyType(self.value)
+            if "concurrency_type" not in state
+            else state.get("concurrency_type")
+        )

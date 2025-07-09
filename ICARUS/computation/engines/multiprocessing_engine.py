@@ -30,7 +30,6 @@ class MultiprocessingEngine(AbstractEngine):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.listener = None
-        self.log_queue = None
         self.monitor_thread = None
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
@@ -43,21 +42,23 @@ class MultiprocessingEngine(AbstractEngine):
     def set_concurrent_vars(self, vars: dict[str, ConcurrentVariable]) -> None:
         """Set concurrent variables for this engine."""
         super().set_concurrent_vars(vars)
-        self.log_queue = vars["Console_Queue"]
-        if not isinstance(self.log_queue, QueueLike):
+        log_queue = vars["Console_Queue"]
+        if not isinstance(log_queue, QueueLike):
             raise TypeError(
                 "MultiprocessingEngine requires a multiprocessing Queue for logging",
             )
 
-        self.listener = setup_mp_logging(self.log_queue)
+        self.listener = setup_mp_logging(log_queue)
         if self.listener is not None:
             self.listener.start()
 
     def __enter__(self) -> AbstractEngine:
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
+        self.mp_manager = mp.Manager()
+
         concurrent_vars_req = self.request_concurrent_vars()
-        self.execution_mode.set_multiprocessing_manager(mp.Manager())
+        self.execution_mode.set_multiprocessing_manager(self.mp_manager)
         concurrent_vars = self.execution_mode.primitives.get_concurrent_variables(
             concurrent_vars_req,
         )
@@ -71,6 +72,12 @@ class MultiprocessingEngine(AbstractEngine):
         if hasattr(self, "listener") and self.listener:
             self.listener.stop()
             self.listener = None
+
+        if hasattr(self, "mp_manager") and self.mp_manager:
+            self.mp_manager.shutdown()
+            self.mp_manager = None
+        self.execution_mode.clear_multiprocessing_manager()
+
         # Revert global logging configuration
         setup_logging()
 
@@ -152,8 +159,10 @@ class MultiprocessingEngine(AbstractEngine):
         state = self.__dict__.copy()
         # Remove non-serializable items
         state.pop("monitor_thread", None)
-        state.pop("log_queue", None)
         state.pop("listener", None)
+        state.pop("concurrent_variables", None)
+        state.pop("terminate_event", None)
+        state.pop("mp_manager", None)
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
@@ -161,7 +170,9 @@ class MultiprocessingEngine(AbstractEngine):
         self.__dict__.update(state)
         self.monitor_thread = None
         self.listener = None
-        self.log_queue = None
+        self.concurrent_variables = None
+        self.terminate_event = None
+        self.mp_manager = None
 
     def _execute_task(
         self,

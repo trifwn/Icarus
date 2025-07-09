@@ -149,7 +149,8 @@ def main(GNVP_VERSION: int) -> None:
             # 5 Sesitivity Analysis Serial
             # 6 Sesitivity Analysis Parallel
             stability_analysis = gnvp.stability  # Pertrubations PARALLEL
-            print(f"Selecting Analysis: {stability_analysis}")
+            print("Selecting Analysis:")
+            print(stability_analysis)
 
             inputs = stability_analysis.get_analysis_input(verbose=False)
             inputs.plane = plane
