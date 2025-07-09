@@ -14,7 +14,7 @@ from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
 from ICARUS.environment import Environment
 from ICARUS.flight_dynamics import State
-from ICARUS.solvers.AVL.avl import AVLParameters
+from ICARUS.solvers.AVL import AVLParameters
 from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import DiscretizationType
 from ICARUS.vehicle import WingSegment

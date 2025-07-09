@@ -3,7 +3,7 @@ from pandas import DataFrame
 
 from ICARUS.database import Database
 from ICARUS.flight_dynamics import State
-from ICARUS.solvers.AVL.avl import AVLParameters
+from ICARUS.solvers.AVL import AVLParameters
 from ICARUS.solvers.AVL.files.dynamics import finite_difs
 from ICARUS.solvers.AVL.files.dynamics import implicit_eigs
 from ICARUS.vehicle import Airplane

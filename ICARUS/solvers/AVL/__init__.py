@@ -5,6 +5,7 @@ isort:skip_file
 
 from __future__ import annotations
 
+from .avl_parameters import AVLParameters
 from .post_process.post import collect_avl_polar_forces
 from .post_process.post import finite_difs_post
 from .post_process.post import implicit_dynamics_post
@@ -23,6 +24,7 @@ from .avl import AVL_PolarAnalysis
 
 
 __all__ = [
+    "AVLParameters",
     "AVL",
     "AVL_PolarAnalysis",
     "AVL_StabilityFD",

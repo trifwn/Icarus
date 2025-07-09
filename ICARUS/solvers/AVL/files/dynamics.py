@@ -10,7 +10,7 @@ from ICARUS import AVL_exe
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import State
-from ICARUS.solvers.AVL.avl import AVLParameters
+from ICARUS.solvers.AVL import AVLParameters
 from ICARUS.vehicle import Airplane
 
 from .input import make_input_files

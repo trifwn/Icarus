@@ -7,7 +7,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics import State
 from ICARUS.solvers.AVL import collect_avl_polar_forces
-from ICARUS.solvers.AVL.avl import AVLParameters
+from ICARUS.solvers.AVL import AVLParameters
 from ICARUS.vehicle import Airplane
 
 from ..files.input import make_input_files

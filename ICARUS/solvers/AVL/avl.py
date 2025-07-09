@@ -1,7 +1,5 @@
-from dataclasses import dataclass
-from typing import Literal
+from __future__ import annotations
 
-from ICARUS.computation import SolverParameters
 from ICARUS.computation.analyses.airplane_dynamic_analysis import BaseStabilityAnalysis
 from ICARUS.computation.analyses.airplane_polar_analysis import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
@@ -10,6 +8,7 @@ from ICARUS.solvers.AVL import avl_stability_fd
 from ICARUS.solvers.AVL import avl_stability_implicit
 from ICARUS.solvers.AVL import process_avl_dynamics_fd
 from ICARUS.solvers.AVL import process_avl_dynamics_implicit
+from .avl_parameters import AVLParameters
 
 
 class AVL_PolarAnalysis(BaseAirplaneAseq):
@@ -42,15 +41,6 @@ class AVL_StabilityImplicit(BaseStabilityAnalysis):
             post_execute_fun=process_avl_dynamics_implicit,
         )
 
-
-@dataclass
-class AVLParameters(SolverParameters):
-    """Parameters for the AVL solver."""
-
-    use_avl_control: bool = False
-    cd_parasitic: float = 0.0
-    run_invscid: bool = False
-    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil"
 
 
 class AVL(Solver[AVLParameters]):
