@@ -8,6 +8,7 @@ from ICARUS.solvers.AVL import avl_stability_fd
 from ICARUS.solvers.AVL import avl_stability_implicit
 from ICARUS.solvers.AVL import process_avl_dynamics_fd
 from ICARUS.solvers.AVL import process_avl_dynamics_implicit
+
 from .avl_parameters import AVLParameters
 
 
@@ -40,7 +41,6 @@ class AVL_StabilityImplicit(BaseStabilityAnalysis):
             avl_stability_implicit,
             post_execute_fun=process_avl_dynamics_implicit,
         )
-
 
 
 class AVL(Solver[AVLParameters]):

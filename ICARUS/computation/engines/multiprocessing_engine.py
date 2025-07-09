@@ -94,7 +94,6 @@ class MultiprocessingEngine(AbstractEngine):
             dummy_futures = [executor.submit(dummy_task) for _ in range(100)]
             for f in dummy_futures:
                 f.result()  # Wait for all workers to start and run initializer
-            
 
             # Start the progress monitor if enabled
             if self.monitor_thread:
@@ -153,7 +152,7 @@ class MultiprocessingEngine(AbstractEngine):
         state = self.__dict__.copy()
         # Remove non-serializable items
         state.pop("monitor_thread", None)
-        state.pop('log_queue', None)
+        state.pop("log_queue", None)
         state.pop("listener", None)
         return state
 

@@ -20,7 +20,6 @@ def separate_angles(
             pangles.append(ang)
         elif ang == 0:
             pangles.append(ang)
-            nangles.append(ang)
         else:
             nangles.append(ang)
     nangles = nangles[::-1]

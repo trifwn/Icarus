@@ -9,6 +9,7 @@ from pandas import DataFrame
 
 from ICARUS.database import Database
 from ICARUS.database import disturbance_to_directory
+from ICARUS.flight_dynamics import Disturbance
 
 from .. import GenuVP3Parameters
 from .. import GenuVP7Parameters
@@ -19,8 +20,6 @@ from ..utils import GenuCaseParams
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
 from ..utils import define_movements
-
-from ICARUS.flight_dynamics import Disturbance
 
 if TYPE_CHECKING:
     from ICARUS.environment import Environment
