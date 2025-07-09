@@ -214,6 +214,10 @@ class Database_3D:
                     self.logger.info(
                         f"Unknown Solver {solver_folder} for {vehicle_name}",
                     )
+                except FileNotFoundError:
+                    self.logger.info(
+                        f"Solver Data not found for {vehicle_name} in {solver_folder_path}",
+                    )
 
     def load_vehicle(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.

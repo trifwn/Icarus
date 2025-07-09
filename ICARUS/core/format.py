@@ -13,12 +13,12 @@ def _(val: float) -> str:
 
 
 @short_format.register
-def _(val: list[Any]) -> str:
+def _(val: list) -> str:
     return f"[{len(val)} items]"
 
 
 @short_format.register
-def _(val: dict[Any, Any]) -> str:
+def _(val: dict) -> str:
     return f"{{{len(val)} items}}"
 
 

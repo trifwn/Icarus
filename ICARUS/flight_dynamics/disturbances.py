@@ -38,13 +38,19 @@ class Disturbance:
             self.axis = None
             self.type = None
             self.amplitude = None
-            self.name: str = "Trim"
             self.var: str = "Trim"
         else:
             raise ValueError("Invalid disturbance variable")
+
         if variable is not None:
-            self.name = f"{variable} disturbance"
             self.var = variable
+
+    @property
+    def name(self) -> str:
+        """Get the name of the disturbance"""
+        if self.var is None:
+            return "Trim"
+        return f"{self.var} disturbance"
 
     @property
     def is_rotational(self) -> bool:
@@ -58,4 +64,6 @@ class Disturbance:
         return self.amplitude is not None and self.amplitude > 0
 
     def __str__(self) -> str:
-        return f"{self.name}:\tType:\t{self.type} and \tAmplitude:\t{self.amplitude} and \tAxis:\t{self.axis}"
+        if self.amplitude is None:
+            return "Trim"
+        return f"{self.var} ({self.type} @ axis ={self.axis}) = {self.amplitude:.3f}"

@@ -20,9 +20,10 @@ from ..utils import GenuSurface
 from ..utils import GNVP_Movement
 from ..utils import define_movements
 
+from ICARUS.flight_dynamics import Disturbance
+
 if TYPE_CHECKING:
     from ICARUS.environment import Environment
-    from ICARUS.flight_dynamics import Disturbance
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
     from ICARUS.vehicle import WingSurface

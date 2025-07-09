@@ -29,9 +29,9 @@ class MultiprocessingEngine(AbstractEngine):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.manager = None
         self.listener = None
         self.log_queue = None
+        self.monitor_thread = None
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
         """Request concurrent variables required by this engine."""
@@ -91,9 +91,10 @@ class MultiprocessingEngine(AbstractEngine):
             ),
         ) as executor:
             # Submit dummy tasks to force process initialization
-            dummy_futures = [executor.submit(dummy_task) for _ in range(max_workers)]
+            dummy_futures = [executor.submit(dummy_task) for _ in range(100)]
             for f in dummy_futures:
                 f.result()  # Wait for all workers to start and run initializer
+            
 
             # Start the progress monitor if enabled
             if self.monitor_thread:
@@ -152,6 +153,7 @@ class MultiprocessingEngine(AbstractEngine):
         state = self.__dict__.copy()
         # Remove non-serializable items
         state.pop("monitor_thread", None)
+        state.pop('log_queue', None)
         state.pop("listener", None)
         return state
 
@@ -160,6 +162,7 @@ class MultiprocessingEngine(AbstractEngine):
         self.__dict__.update(state)
         self.monitor_thread = None
         self.listener = None
+        self.log_queue = None
 
     def _execute_task(
         self,

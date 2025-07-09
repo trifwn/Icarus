@@ -342,7 +342,6 @@ class Analysis(Generic[AnalysisInput]):
                 and result.state == TaskState.FAILED
                 and result.error
             ):
-                raise (result.error)
                 self.logger.error(
                     f"Task {result.task_id} failed with error: {result.error}",
                 )
