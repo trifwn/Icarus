@@ -26,7 +26,7 @@ def plot_avl_strip_data_3D(
     plane: Airplane,
     state: State,
     case: str,
-    surface_names: str | list[str] | Sequence[WingSurface] | WingSurface,
+    surface_names: str | WingSurface | list[str] | list[WingSurface],
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -41,26 +41,27 @@ def plot_avl_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
-    from ICARUS.computation.solvers.AVL import get_strip_data
+    from ICARUS.solvers.AVL import get_strip_data
 
     strip_data = get_strip_data(plane, state, case)
 
-    if isinstance(surface_names, str):
-        surfaces: Sequence[WingSurface] = [plane.get_surface(surface_names)]
-    elif isinstance(surface_names, WingSurface):
-        surfaces = [surface_names]
-    elif isinstance(surface_names, list):
-        if all(isinstance(item, str) for item in surface_names):
-            surfaces = [plane.get_surface(surf_name) for surf_name in surface_names]
-        elif all(isinstance(item, WingSurface) for item in surface_names):
-            surfaces = surface_names
+    if not isinstance(surface_names, list):
+        # If surface_names is not a list, convert it to a list
+        _surface_list = [surface_names]
+
+    surface_list: Sequence[WingSurface] = []
+    for item in _surface_list:
+        if isinstance(item, str):
+            # If item is a string, get the surface by name
+            surface_list.append(plane.get_surface(item))
+        elif isinstance(item, WingSurface):
+            # If item is a WingSurface, append it directly
+            surface_list.append(item)
         else:
             raise ValueError("surface_name must be a string or a WingSurface object")
-    else:
-        raise ValueError("surface_name must be a string or a WingSurface object")
 
     _surface_names: list[str] = []
-    for surface in surfaces:
+    for surface in surface_list:
         if isinstance(surface, Wing):
             # Get the separate segments of the merged wing
             _surface_names.extend([s.name for s in surface.get_separate_segments()])
@@ -107,7 +108,9 @@ def plot_avl_strip_data_3D(
                 break
 
             strip_df: DataFrame = strip_data[strip_data["j"] == surface_idx]
-            strip_values: list[float] = [float(item) for item in strip_df[category].values]
+            strip_values: list[float] = [
+                float(item) for item in strip_df[category].values
+            ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
             strip.plot(fig, ax, color=color)
 
@@ -126,7 +129,7 @@ def plot_avl_strip_data_2D(
     """
     Function to plot the 2D strips of a given airplane.
     """
-    from ICARUS.computation.solvers.AVL import get_strip_data
+    from ICARUS.solvers.AVL import get_strip_data
 
     if isinstance(surface_name, str):
         surface = plane.get_surface(surface_name)

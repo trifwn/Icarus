@@ -5,28 +5,33 @@ It is also possible to do a pertubation analysis for each aircraft.
 THIS PROGRAM USES THE LSPT SOLVER Developed in this project.
 """
 
+import os
 import time
 from typing import Any
 
 import numpy as np
 from Planes.hermes import hermes
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.Icarus_LSPT import LSPT
-from ICARUS.core.base_types import Struct
+# CHANGE THIS TO YOUR DATABASE FOLDER
+from ICARUS import INSTALL_DIR
+from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.Icarus_LSPT import LSPT
 from ICARUS.vehicle import Airplane
+
+database_folder = os.path.join(
+    INSTALL_DIR,
+    "Data",
+)
 
 
 def main() -> None:
     """Main function to run the simulations."""
     start_time: float = time.time()
 
-    # # DB CONNECTION
-    database_folder = "E:\\Icarus\\Data"
     # Load the database
     _ = Database(database_folder)
 
@@ -62,15 +67,14 @@ def main() -> None:
             u_freestream=UINF[airplane.name],
         )
         # # Get Solver
-        lspt: Solver = LSPT()
+        lspt = LSPT()
 
         # ## AoA Run
         # 0: Angles Sequential
 
-        analysis: str = lspt.get_analyses_names()[0]
-        lspt.select_analysis(analysis)
-        options: Struct = lspt.get_analysis_options(verbose=False)
-        solver_parameters: Struct = lspt.get_solver_parameters()
+        analysis: Analysis = lspt.get_analyses()[0]
+        inputs = analysis.get_analysis_input(verbose=False)
+        solver_parameters = lspt.get_solver_parameters()
 
         AOA_MIN = -5
         AOA_MAX = 6
@@ -81,19 +85,20 @@ def main() -> None:
             NO_AOA,
         )
 
-        options.plane = airplane
-        options.state = state
-        options.solver2D = "Xfoil"
-        options.angles = angles
+        inputs.plane = airplane
+        inputs.state = state
+        inputs.solver2D = "Xfoil"
+        inputs.angles = angles
 
         solver_parameters.Ground_Effect = True
         solver_parameters.Wake_Geom_Type = "TE-Geometrical"
 
-        lspt.define_analysis(options, solver_parameters)
-        lspt.print_analysis_options()
-
         polars_time: float = time.time()
-        lspt.execute()
+        lspt.execute(
+            analysis=analysis,
+            inputs=inputs,
+            solver_parameters=solver_parameters,
+        )
         print(
             f"Polars took : --- {time.time() - polars_time} seconds --- in Parallel Mode",
         )

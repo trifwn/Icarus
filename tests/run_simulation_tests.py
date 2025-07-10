@@ -13,11 +13,15 @@ import time
 from pathlib import Path
 
 this_file = Path(__file__).resolve()
-basic_simultion_file = this_file.parent / "unit" / "computation" / "test_simulation_basic.py"
-performance_simulation_file = this_file.parent / "unit" / "computation" / "test_simulation_performance.py"
+basic_simultion_file = (
+    this_file.parent / "unit" / "computation" / "test_simulation_basic.py"
+)
+performance_simulation_file = (
+    this_file.parent / "unit" / "computation" / "test_simulation_performance.py"
+)
 
 
-def run_basic_tests():
+def run_basic_tests() -> bool:
     """Run basic functionality tests."""
     print("🧪 Running basic functionality tests...")
     cmd = ["python", "-m", "pytest", basic_simultion_file, "-v", "--tb=short"]
@@ -33,7 +37,7 @@ def run_basic_tests():
     return result.returncode == 0
 
 
-def run_performance_tests():
+def run_performance_tests() -> bool:
     """Run performance benchmark tests."""
     print("⚡ Running performance benchmarks...")
     cmd = [
@@ -58,7 +62,7 @@ def run_performance_tests():
     return result.returncode == 0
 
 
-def run_stress_tests():
+def run_stress_tests() -> bool:
     """Run stress tests."""
     print("🔥 Running stress tests...")
     cmd = [
@@ -83,10 +87,17 @@ def run_stress_tests():
     return result.returncode == 0
 
 
-def run_integration_tests():
+def run_integration_tests() -> bool:
     """Run integration tests."""
     print("🔗 Running integration tests...")
-    cmd = ["python", "-m", "pytest", f"{basic_simultion_file}::TestIntegration", "-v", "--tb=short"]
+    cmd = [
+        "python",
+        "-m",
+        "pytest",
+        f"{basic_simultion_file}::TestIntegration",
+        "-v",
+        "--tb=short",
+    ]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode == 0:
@@ -99,7 +110,7 @@ def run_integration_tests():
     return result.returncode == 0
 
 
-def generate_coverage_report():
+def generate_coverage_report() -> None:
     """Generate test coverage report."""
     print("📊 Generating coverage report...")
     # Install coverage if not available
@@ -115,7 +126,16 @@ def generate_coverage_report():
         subprocess.run([sys.executable, "-m", "pip", "install", "coverage"])
 
     # Run tests with coverage
-    cmd = ["python", "-m", "coverage", "run", "--source=ICARUS.computation", "-m", "pytest", "test_simulation_basic.py"]
+    cmd = [
+        "python",
+        "-m",
+        "coverage",
+        "run",
+        "--source=ICARUS.computation",
+        "-m",
+        "pytest",
+        "test_simulation_basic.py",
+    ]
     subprocess.run(cmd, capture_output=True)
 
     # Generate report
@@ -131,7 +151,7 @@ def generate_coverage_report():
     print("📝 HTML coverage report generated in htmlcov/")
 
 
-def validate_configuration():
+def validate_configuration() -> bool:
     """Validate configuration loading."""
     print("⚙️  Validating configuration...")
 
@@ -159,20 +179,36 @@ def validate_configuration():
         return False
 
 
-def main():
+def main() -> None:
     """Main test runner."""
-    parser = argparse.ArgumentParser(description="ICARUS Simulation Framework Test Runner")
+    parser = argparse.ArgumentParser(
+        description="ICARUS Simulation Framework Test Runner",
+    )
     parser.add_argument("--basic", action="store_true", help="Run basic tests only")
-    parser.add_argument("--performance", action="store_true", help="Run performance tests only")
+    parser.add_argument(
+        "--performance",
+        action="store_true",
+        help="Run performance tests only",
+    )
     parser.add_argument("--stress", action="store_true", help="Run stress tests only")
-    parser.add_argument("--integration", action="store_true", help="Run integration tests only")
-    parser.add_argument("--coverage", action="store_true", help="Generate coverage report")
+    parser.add_argument(
+        "--integration",
+        action="store_true",
+        help="Run integration tests only",
+    )
+    parser.add_argument(
+        "--coverage",
+        action="store_true",
+        help="Generate coverage report",
+    )
     parser.add_argument("--all", action="store_true", help="Run all tests (default)")
 
     args = parser.parse_args()
 
     # Default to running all tests if no specific test type is specified
-    if not any([args.basic, args.performance, args.stress, args.integration, args.coverage]):
+    if not any(
+        [args.basic, args.performance, args.stress, args.integration, args.coverage],
+    ):
         args.all = True
 
     start_time = time.time()

@@ -6,12 +6,12 @@ from datetime import datetime
 from threading import Thread
 
 from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressReporter
-from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import AbstractEngine
 
@@ -35,7 +35,11 @@ class SequentialExecutionEngine(AbstractEngine):
         results = []
 
         for task in self.tasks:
-            result = await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
+            result = await self._execute_task_with_context(
+                task,
+                self.progress_reporter,
+                self.resource_manager,
+            )
             results.append(result)
 
         self.logger.info("Sequential execution completed")
@@ -126,7 +130,7 @@ class SequentialExecutionEngine(AbstractEngine):
         # Create a queue for progress events (local & multiproc)
         if self.progress_monitor:
 
-            def monitor_runner():
+            def monitor_runner() -> None:
                 if self.progress_monitor:
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())

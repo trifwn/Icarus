@@ -7,6 +7,9 @@ from matplotlib.figure import SubFigure
 
 from .figure_setup import flatten_axes
 
+# _Wrapped
+# from typing import Any, Callable
+
 
 def pre_existing_figure(
     subplots: tuple[int, int] = (1, 2),
@@ -66,7 +69,10 @@ def pre_existing_figure(
                 # Reuse provided axes
                 axs_now = flatten_axes(axs)
                 # Ensure suptitle exists
-                if getattr(fig, "_suptitle", None) is None and effective_title is not None:
+                if (
+                    getattr(fig, "_suptitle", None) is None
+                    and effective_title is not None
+                ):
                     fig.suptitle(effective_title)
 
             # Execute plotting

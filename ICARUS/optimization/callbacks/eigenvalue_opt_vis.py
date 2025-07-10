@@ -103,8 +103,12 @@ class EigenvalueOptimizationVisualizer(OptimizationCallback):
             self.setup()
 
         try:
-            new_eigenvalues_longitudal: ComplexArray = state.state_space.longitudal.eigenvalues
-            new_eigenvalues_lateral: ComplexArray = state.state_space.lateral.eigenvalues
+            new_eigenvalues_longitudal: ComplexArray = (
+                state.state_space.longitudal.eigenvalues
+            )
+            new_eigenvalues_lateral: ComplexArray = (
+                state.state_space.lateral.eigenvalues
+            )
         except AttributeError:
             return
 

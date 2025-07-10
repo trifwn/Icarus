@@ -89,15 +89,21 @@ class WingSegment(WingSurface):
         self._spanwise_twist_distribution = spanwise_twist_distribution
 
         self._span_spacing = (
-            span_spacing if isinstance(span_spacing, DiscretizationType) else DiscretizationType[span_spacing]
+            span_spacing
+            if isinstance(span_spacing, DiscretizationType)
+            else DiscretizationType[span_spacing]
         )
         self._chord_spacing = (
-            chord_spacing if isinstance(chord_spacing, DiscretizationType) else DiscretizationType[chord_spacing]
+            chord_spacing
+            if isinstance(chord_spacing, DiscretizationType)
+            else DiscretizationType[chord_spacing]
         )
 
         # Set the airfoils of the wing segment
         assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
-        assert isinstance(tip_airfoil, Airfoil) or tip_airfoil is None, "Tip Airfoil must be an Airfoil or None"
+        assert (
+            isinstance(tip_airfoil, Airfoil) or tip_airfoil is None
+        ), "Tip Airfoil must be an Airfoil or None"
 
         self._root_airfoil = root_airfoil
         if tip_airfoil is None:

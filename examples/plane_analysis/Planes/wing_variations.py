@@ -1,6 +1,6 @@
 import numpy as np
 
-from ICARUS.core.types import DataDict
+from ICARUS.airfoils.naca4 import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import PointMass
@@ -9,7 +9,6 @@ from ICARUS.vehicle import WingSegment
 
 
 def wing_var_chord_offset(
-    airfoils: DataDict,
     name: str,
     root_chord: float,
     tip_chord: float,
@@ -40,7 +39,7 @@ def wing_var_chord_offset(
 
     main_wing = WingSegment(
         name="wing",
-        root_airfoil=airfoils["NACA4415"],
+        root_airfoil=NACA4.from_name("NACA4415"),
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,
@@ -54,9 +53,21 @@ def wing_var_chord_offset(
     )
 
     added_masses: list[PointMass] = [
-        PointMass(mass=0.500, position=np.array([-0.40, 0.0, 0.0], dtype=float), name="motor"),  # Motor
-        PointMass(mass=1.000, position=np.array([0.090, 0.0, 0.0], dtype=float), name="battery"),  # Battery
-        PointMass(mass=0.900, position=np.array([0.130, 0.0, 0.0], dtype=float), name="payload"),  # Payload
+        PointMass(
+            mass=0.500,
+            position=np.array([-0.40, 0.0, 0.0], dtype=float),
+            name="motor",
+        ),  # Motor
+        PointMass(
+            mass=1.000,
+            position=np.array([0.090, 0.0, 0.0], dtype=float),
+            name="battery",
+        ),  # Battery
+        PointMass(
+            mass=0.900,
+            position=np.array([0.130, 0.0, 0.0], dtype=float),
+            name="payload",
+        ),  # Payload
     ]
     airplane = Airplane(name, main_wing=main_wing)
     airplane.add_point_masses(added_masses)

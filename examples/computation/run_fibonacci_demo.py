@@ -11,19 +11,29 @@ import sys
 from pathlib import Path
 
 
-def run_demo(config_name: str):
+def run_demo(config_name: str) -> None:
     """Run the demo with a specific configuration."""
     demo_script = Path(__file__).parent / "fibonacci_demo.py"
 
     configs = {
         "quick": ["--numbers"] + list(map(str, range(10, 16))) + ["--delay", "0.05"],
         "standard": ["--numbers"] + list(map(str, range(8, 23))) + ["--delay", "0.05"],
-        "performance": ["--numbers"] + list(map(str, range(5, 31))) + ["--delay", "0.05"],
-        "sequential": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "sequential"],
+        "performance": ["--numbers"]
+        + list(map(str, range(5, 31)))
+        + ["--delay", "0.05"],
+        "sequential": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "sequential"],
         "async": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "async"],
-        "threading": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "threading"],
-        "multiprocessing": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "multiprocessing"],
-        "adaptive": ["--numbers"] + list(map(str, range(10, 21))) + ["--mode", "adaptive"],
+        "threading": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "threading"],
+        "multiprocessing": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "multiprocessing"],
+        "adaptive": ["--numbers"]
+        + list(map(str, range(10, 21)))
+        + ["--mode", "adaptive"],
     }
 
     if config_name not in configs:
@@ -48,7 +58,7 @@ def run_demo(config_name: str):
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main function."""
     if len(sys.argv) != 2:
         print("Usage: python run_fibonacci_demo.py <config_name>")

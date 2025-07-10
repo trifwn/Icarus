@@ -66,7 +66,9 @@ def polar_plot(
                 total_axes = subplots[0] * subplots[1] if subplots else 1
                 # Check if the number of axes matches the number of plots
                 if len(flat_axs) != total_axes:
-                    print(f"Warning: {len(flat_axs)} axes provided, but {total_axes} expected. Creating new figure.")
+                    print(
+                        f"Warning: {len(flat_axs)} axes provided, but {total_axes} expected. Creating new figure.",
+                    )
                     need_recreate = True
             else:
                 print("Warning: No axes provided. Creating new figure.")
@@ -74,7 +76,9 @@ def polar_plot(
 
             # Create new figure/axes if needed
             if need_recreate:
-                print(f"Creating new figure with size {figsize} and subplots {subplots}.")
+                print(
+                    f"Creating new figure with size {figsize} and subplots {subplots}.",
+                )
                 fig = plt.figure(figsize=figsize)
                 axs_prod = fig.subplots(*subplots)
                 axs_now = flatten_axes(axs_prod)
@@ -87,7 +91,10 @@ def polar_plot(
 
                 axs_now = flatten_axes(axs)
                 # Ensure suptitle exists
-                if getattr(fig, "_suptitle", None) is None and effective_title is not None:
+                if (
+                    getattr(fig, "_suptitle", None) is None
+                    and effective_title is not None
+                ):
                     fig.suptitle(effective_title)
 
             # Execute plotting

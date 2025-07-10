@@ -53,14 +53,13 @@ repos:
           - "numpy"
           - "pandas-stubs"
           - "jsonpickle"
-          - "types-tabulate"
           - "types-attrs"
           - "types-pyOpenSSL"
           - "types-redis"
           - "types-requests"
-          - "types-tqdm"
           - "types-xmltodict"
           - "types-openpyxl"
+          - "types-PyYAML"
 
   - repo: local
     hooks:

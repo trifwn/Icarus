@@ -165,7 +165,6 @@ def setup_plot(
                     clcd_lines[airplanes[i]] = clcd_line
                     break
                 except ValueError as e:
-                    print(style)
                     raise e
             except KeyError as solver:
                 print(f"Run Doesn't Exist: {airplanes[i]},{solver}")
@@ -242,7 +241,9 @@ def cg_investigation(
 
     # Get the plane from the database
     DB = Database.get_instance()
-    planes: list[Airplane] = [DB.get_vehicle(airplane_name) for airplane_name in airplane_names]
+    planes: list[Airplane] = [
+        DB.get_vehicle(airplane_name) for airplane_name in airplane_names
+    ]
 
     fig, cl_lines, cd_lines, cm_lines, clcd_lines, collections, annots = setup_plot(
         airplane_names,
@@ -283,7 +284,10 @@ def cg_investigation(
             initial_CM = initial_CMs[airplane]
             aoas_now = aoas[airplane]
 
-            new_CM = initial_CM + (new_cg - cg_x_orig) * (cl) / planes[0].mean_aerodynamic_chord
+            new_CM = (
+                initial_CM
+                + (new_cg - cg_x_orig) * (cl) / planes[0].mean_aerodynamic_chord
+            )
             cm_line.set_ydata(new_CM)
 
             # Interpolate the aoa for cm = 0 with numpy

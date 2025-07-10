@@ -64,6 +64,7 @@ class QueueLike(Protocol):
     def get(self, *args, **kwargs) -> Any: ...
     def empty(self) -> bool: ...
     def get_nowait(self, *args, **kwargs) -> Any: ...
+    def put_nowait(self, *args, **kwargs) -> None: ...
 
 
 class DummyLock:
@@ -81,13 +82,13 @@ class DummyLock:
 
 
 class DummyEvent:
-    def __init__(self):
+    def __init__(self) -> None:
         self._is_set = False
 
-    def is_set(self):
+    def is_set(self) -> bool:
         return self._is_set
 
-    def set(self):
+    def set(self) -> None:
         self._is_set = True
 
 
@@ -151,7 +152,10 @@ class ConcurrencyPrimitives:
     queue: Callable[[], QueueLike]
 
     @classmethod
-    def from_multiprocessing_manager(cls, manager: SyncManager) -> "ConcurrencyPrimitives":
+    def from_multiprocessing_manager(
+        cls,
+        manager: SyncManager,
+    ) -> "ConcurrencyPrimitives":
         """
         Create ConcurrencyPrimitives using a multiprocessing manager.
 
@@ -216,7 +220,10 @@ class ConcurrencyPrimitives:
             return self.queue()
         raise ValueError(f"Unsupported concurrency feature: {feature.value}")
 
-    def get_concurrent_variables(self, features: dict[str, ConcurrencyFeature]) -> dict[str, ConcurrentVariable]:
+    def get_concurrent_variables(
+        self,
+        features: dict[str, ConcurrencyFeature],
+    ) -> dict[str, ConcurrentVariable]:
         """
         Get a dictionary of new instances for the requested concurrent variable types.
 
@@ -227,4 +234,7 @@ class ConcurrencyPrimitives:
             A dictionary mapping feature names to their corresponding concurrent variable instances.
         """
 
-        return {name: self.get_concurrent_variable(feature) for name, feature in features.items()}
+        return {
+            name: self.get_concurrent_variable(feature)
+            for name, feature in features.items()
+        }

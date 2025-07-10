@@ -68,9 +68,15 @@ def test_wing_geometry_properties(benchmark_airplane: Airplane) -> None:
 
     # Test that properties exist and are reasonable
     assert hasattr(benchmark_airplane, "S"), "Airplane should have wing area property"
-    assert hasattr(benchmark_airplane, "mean_aerodynamic_chord"), "Airplane should have MAC property"
+    assert hasattr(
+        benchmark_airplane,
+        "mean_aerodynamic_chord",
+    ), "Airplane should have MAC property"
     assert hasattr(benchmark_airplane, "CG"), "Airplane should have CG property"
-    assert hasattr(benchmark_airplane, "inertia"), "Airplane should have inertia property"
+    assert hasattr(
+        benchmark_airplane,
+        "inertia",
+    ), "Airplane should have inertia property"
 
     # Test that values are positive where expected
     assert benchmark_airplane.S > 0, "Wing area should be positive"

@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
@@ -27,17 +26,17 @@ def test_gnvp3_run(
     print(f"Testing GNVP3 Running ({'Parallel' if run_parallel else 'Serial'})...")
 
     # Get Solver
-    from ICARUS.computation.solvers.GenuVP import GenuVP3
+    from ICARUS.solvers.GenuVP import GenuVP3
 
-    gnvp3: Solver = GenuVP3()
+    # from ICARUS.solvers.GenuVP import GenuVP7
+
+    gnvp3 = GenuVP3()
 
     # Set Analysis
-    polar_analysis: str = gnvp3.get_analyses_names()[0]
-    gnvp3.select_analysis(polar_analysis)
+    polar_analysis = gnvp3.aseq
 
     # Set Options
-    options: Struct = gnvp3.get_analysis_options(verbose=True)
-    solver_parameters: Struct = gnvp3.get_solver_parameters()
+    inputs = polar_analysis.get_analysis_input(verbose=True)
 
     AoAmin = -5
     AoAmax = 5
@@ -47,13 +46,13 @@ def test_gnvp3_run(
     maxiter = 30
     timestep = 0.004
 
-    options.plane = benchmark_airplane
-    options.state = benchmark_state
-    options.solver2D = "Xfoil"
-    options.maxiter = maxiter
-    options.timestep = timestep
-    options.angles = angles
+    inputs.plane = benchmark_airplane
+    inputs.state = benchmark_state
+    inputs.angles = angles
 
+    solver_parameters = gnvp3.get_solver_parameters()
+    solver_parameters.iterations = maxiter
+    solver_parameters.timestep = timestep
     solver_parameters.Split_Symmetric_Bodies = False
     solver_parameters.Use_Grid = True
 
@@ -63,22 +62,26 @@ def test_gnvp3_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    gnvp3.define_analysis(options, solver_parameters)
-    _ = gnvp3.get_analysis_options(verbose=True)
+    execution_mode = (
+        ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
+    )
     start_time: float = time.perf_counter()
-
-    gnvp3.execute(parallel=run_parallel)
-
+    results = gnvp3.execute(
+        analysis=polar_analysis,
+        inputs=inputs,
+        solver_parameters=solver_parameters,
+        execution_mode=execution_mode,
+    )
     end_time: float = time.perf_counter()
     execution_time = end_time - start_time
-    mode = "Parallel" if run_parallel else "Serial"
-    print(f"GNVP3 {mode} Run took: {execution_time:.3f} seconds")
-    print("Testing GNVP3 Running... Done")
 
-    results = gnvp3.get_results()
+    print(f"GNVP3 {execution_mode} Run took: {execution_time:.3f} seconds")
+    print("Testing GNVP3 Running... Done")
 
     # Assert that results were generated
     assert results is not None, "GNVP3 should return results"
 
     # Assert execution time is reasonable (less than 300 seconds)
-    assert execution_time < 300.0, f"GNVP3 execution took too long: {execution_time:.3f}s"
+    assert (
+        execution_time < 300.0
+    ), f"GNVP3 execution took too long: {execution_time:.3f}s"

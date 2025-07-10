@@ -4,9 +4,9 @@ import os
 
 import numpy as np
 
-from ICARUS.computation.solvers.XFLR5.polars import read_polars_2d
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.solvers.XFLR5.read_xflr5_polars import read_XFLR5_airfoil_polars
 from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import SymmetryAxes
 from ICARUS.vehicle import Wing
@@ -30,7 +30,7 @@ def e190_takeoff_generator(
 
     """
     DB = Database("./Data")
-    read_polars_2d(os.path.join(DB.EXTERNAL_DB, "2D"))
+    read_XFLR5_airfoil_polars(os.path.join(DB.EXTERNAL_DB, "2D"))
     from ICARUS.airfoils import Airfoil
 
     naca64418: Airfoil = DB.get_airfoil("NACA64418")

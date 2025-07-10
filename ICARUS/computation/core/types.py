@@ -15,6 +15,7 @@ from multiprocessing.managers import SyncManager
 from typing import Any
 from typing import List
 from typing import Optional
+from typing import Self
 from typing import TypeVar
 
 from .utils.concurrency import ConcurrencyPrimitives
@@ -22,7 +23,6 @@ from .utils.concurrency import ConcurrencyType
 
 # ===== TYPE VARIABLES =====
 T = TypeVar("T")
-R = TypeVar("R")
 TaskInput = TypeVar("TaskInput", contravariant=True)
 TaskOutput = TypeVar("TaskOutput", covariant=True)
 
@@ -47,10 +47,19 @@ class TaskState(Enum):
         valid_transitions = {
             TaskState.PENDING: {TaskState.QUEUED, TaskState.CANCELLED},
             TaskState.QUEUED: {TaskState.RUNNING, TaskState.CANCELLED},
-            TaskState.RUNNING: {TaskState.PAUSED, TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED},
+            TaskState.RUNNING: {
+                TaskState.PAUSED,
+                TaskState.COMPLETED,
+                TaskState.FAILED,
+                TaskState.CANCELLED,
+            },
             TaskState.PAUSED: {TaskState.RUNNING, TaskState.CANCELLED},
             TaskState.FAILED: {TaskState.RETRYING, TaskState.CANCELLED},
-            TaskState.RETRYING: {TaskState.RUNNING, TaskState.FAILED, TaskState.CANCELLED},
+            TaskState.RETRYING: {
+                TaskState.RUNNING,
+                TaskState.FAILED,
+                TaskState.CANCELLED,
+            },
             # Terminal states
             TaskState.COMPLETED: set(),
             TaskState.CANCELLED: set(),
@@ -84,7 +93,7 @@ class TaskId:
         """Return the string representation of the UUID."""
         return self.value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
@@ -122,9 +131,13 @@ class TaskConfiguration:
             A new TaskConfiguration instance with the merged settings.
         """
         return TaskConfiguration(
-            max_retries=other.max_retries if other.max_retries != 3 else self.max_retries,
+            max_retries=other.max_retries
+            if other.max_retries != 3
+            else self.max_retries,
             timeout=other.timeout or self.timeout,
-            priority=other.priority if other.priority != Priority.NORMAL else self.priority,
+            priority=other.priority
+            if other.priority != Priority.NORMAL
+            else self.priority,
             resources={**self.resources, **other.resources},
             dependencies=list(set(self.dependencies + other.dependencies)),
             tags=list(set(self.tags + other.tags)),
@@ -144,7 +157,7 @@ class ExecutionMode(Enum):
     ASYNC = "async"
     ADAPTIVE = "adaptive"
 
-    def __new__(cls, value):
+    def __new__(cls, value) -> Self:
         """
         Custom __new__ method to initialize concurrency primitives.
         """
@@ -152,13 +165,13 @@ class ExecutionMode(Enum):
         obj._value_ = value
         return obj
 
-    def __init__(self, value):
+    def __init__(self, value) -> None:
         """
         Initialize the enum member with concurrency primitives.
         """
         self.concurrency_type: ConcurrencyType | None = None
         self._primitives: ConcurrencyPrimitives | None = None
-        self.mp_manager: Optional[SyncManager] = None
+        self._mp_manager: Optional[SyncManager] = None
 
     def set_multiprocessing_manager(self, manager: SyncManager) -> None:
         """
@@ -168,9 +181,22 @@ class ExecutionMode(Enum):
             manager: A Manager instance to use for multiprocessing primitives.
         """
         if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
-            raise ValueError(f"Cannot set manager for non-multiprocessing mode: {self.value}")
-        self.mp_manager = manager
+            raise ValueError(
+                f"Cannot set manager for non-multiprocessing mode: {self.value}",
+            )
+        self._mp_manager = manager
         self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(manager)
+
+    def clear_multiprocessing_manager(self) -> None:
+        """
+        Unset the multiprocessing manager for this execution mode.
+        """
+        if self.concurrency_type is not ConcurrencyType.MULTIPROCESSING:
+            raise ValueError(
+                f"Cannot unset manager for non-multiprocessing mode: {self.value}",
+            )
+        self._mp_manager = None
+        self._primitives = None
 
     @property
     def primitives(self) -> ConcurrencyPrimitives:
@@ -183,8 +209,32 @@ class ExecutionMode(Enum):
             if self.concurrency_type is None:
                 self.concurrency_type = ConcurrencyType(self.value)
 
-            if self.concurrency_type is ConcurrencyType.MULTIPROCESSING and self.mp_manager is not None:
-                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(self.mp_manager)
+            if (
+                self.concurrency_type is ConcurrencyType.MULTIPROCESSING
+                and self._mp_manager is not None
+            ):
+                self._primitives = ConcurrencyPrimitives.from_multiprocessing_manager(
+                    self._mp_manager,
+                )
             else:
-                self._primitives = ConcurrencyPrimitives.from_type(self.concurrency_type)
+                self._primitives = ConcurrencyPrimitives.from_type(
+                    self.concurrency_type,
+                )
         return self._primitives
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        # Remove non-serializable items
+        state.pop("_primitives", None)
+        state.pop("_mp_manager", None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self._primitives = None
+        self._mp_manager = None
+        self.concurrency_type = (
+            ConcurrencyType(self.value)
+            if "concurrency_type" not in state
+            else state.get("concurrency_type")
+        )

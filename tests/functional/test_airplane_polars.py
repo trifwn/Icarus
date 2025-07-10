@@ -2,9 +2,11 @@ import numpy as np
 import pytest
 from pandas import Series
 
+from ICARUS.database.db import Database
+
 
 @pytest.mark.integration
-def test_airplane_polars(database_instance):
+def test_airplane_polars(database_instance: Database) -> None:
     """Test the airplane polars comparison between different solvers."""
     planenames: list[str] = ["benchmark"]
 
@@ -42,7 +44,7 @@ def test_airplane_polars(database_instance):
 
 
 @pytest.mark.parametrize("plot", [False])
-def test_airplane_polars_with_plot(database_instance, plot: bool):
+def test_airplane_polars_with_plot(database_instance: Database, plot: bool):
     """Test airplane polars with optional plotting."""
     planenames: list[str] = ["benchmark"]
 

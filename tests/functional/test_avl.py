@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.core.base_types import Struct
+from ICARUS.computation.analyses.analysis import Analysis
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -23,16 +22,13 @@ def test_avl_run(
     """Test AVL solver execution."""
     print("Testing AVL Running ...")
     # Get Solver
-    from ICARUS.computation.solvers.AVL import AVL
+    from ICARUS.solvers.AVL import AVL
 
-    avl: Solver = AVL()
-    analysis: str = avl.get_analyses_names()[0]
-
-    avl.select_analysis(analysis)
+    avl = AVL()
+    analysis: Analysis = avl.get_analyses()[0]
 
     # Set Options
-    options: Struct = avl.get_analysis_options(verbose=True)
-    solver_parameters: Struct = avl.get_solver_parameters(verbose=True)
+    options = analysis.get_analysis_input(verbose=True)
 
     AoAmin = -10
     AoAmax = 10
@@ -44,20 +40,20 @@ def test_avl_run(
     options.solver2D = "Xfoil"
     options.angles = angles
 
+    solver_parameters = avl.get_solver_parameters(verbose=True)
     solver_parameters.use_avl_control = False
 
-    avl.define_analysis(options=options, solver_parameters=solver_parameters)
-    _ = avl.get_analysis_options(verbose=True)
     start_time: float = time.perf_counter()
-
-    avl.execute()
-
+    results = avl.execute(
+        analysis=analysis,
+        inputs=options,
+        solver_parameters=solver_parameters,
+    )
     end_time: float = time.perf_counter()
     execution_time = end_time - start_time
+
     print(f"AVL Run took: {execution_time:.3f} seconds")
     print("Testing AVL Running... Done")
-
-    results = avl.get_results()
 
     # Assert that results were generated
     assert results is not None, "AVL should return results"

@@ -26,5 +26,5 @@ Xfoil
 Foil2Wake
 --------------------------------------
 
-.. include:: ../../../../ICARUS/solvers/Airfoil/f2w_section.py
+.. include:: ../../../../ICARUS/solvers/Airfoil/foil2wake.py
    :literal:

@@ -5,12 +5,12 @@ import logging
 from datetime import datetime
 
 from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressReporter
-from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import AbstractEngine
 
@@ -31,21 +31,32 @@ class AsyncEngine(AbstractEngine):
         self,
     ) -> list[TaskResult]:
         """Execute tasks concurrently using asyncio"""
-        self.logger.info(f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
+        self.logger.info(
+            f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
+        )
         semaphore = asyncio.Semaphore(self.max_workers or 10)
 
         async def execute_single_task(task: Task) -> TaskResult:
             async with semaphore:
-                return await self._execute_task_with_context(task, self.progress_reporter, self.resource_manager)
+                return await self._execute_task_with_context(
+                    task,
+                    self.progress_reporter,
+                    self.resource_manager,
+                )
 
-        results = await asyncio.gather(*[execute_single_task(task) for task in self.tasks], return_exceptions=True)
+        results = await asyncio.gather(
+            *[execute_single_task(task) for task in self.tasks],
+            return_exceptions=True,
+        )
 
         # Convert exceptions to failed results
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 task = self.tasks[i]
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
+                processed_results.append(
+                    TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),
+                )
             else:
                 processed_results.append(result)
 
@@ -137,7 +148,7 @@ class AsyncEngine(AbstractEngine):
         if self.progress_monitor:
             self.logger.debug("Starting progress monitoring")
 
-            async def monitor_runner():
+            async def monitor_runner() -> None:
                 if self.progress_monitor:
                     with self.progress_monitor:
                         await self.progress_monitor.monitor_loop()

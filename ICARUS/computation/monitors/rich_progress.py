@@ -4,6 +4,7 @@ import asyncio
 import logging
 from time import sleep
 from typing import Any
+from typing import Self
 
 from rich.live import Live
 from rich.panel import Panel
@@ -14,16 +15,16 @@ from rich.progress import TaskID
 from rich.progress import TextColumn
 from rich.table import Table
 
+from ICARUS import ICARUS_CONSOLE
+from ICARUS.computation.core import ConcurrencyFeature
+from ICARUS.computation.core import ConcurrentVariable
+from ICARUS.computation.core import EventLike
+from ICARUS.computation.core import ProgressEvent
+from ICARUS.computation.core import QueueLike
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
-from ICARUS.computation.core.data_structures import ProgressEvent
+from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
-from ICARUS.computation.core.types import TaskState
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import EventLike
-from ICARUS.computation.core.utils.concurrency import QueueLike
-from ICARUS.settings import ICARUS_CONSOLE
 
 
 class RichProgressMonitor(ProgressMonitor):
@@ -40,7 +41,7 @@ class RichProgressMonitor(ProgressMonitor):
     def __init__(
         self,
         refresh_rate: float = 0.5,
-    ):
+    ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.refresh_rate = refresh_rate
@@ -100,7 +101,7 @@ class RichProgressMonitor(ProgressMonitor):
         """Set the event used for stopping the monitor."""
         self._termination_event = event
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         """Context manager entry - create progress bars."""
         self.logger.debug("Entering RichProgressMonitor context")
         self.progress = Progress(
@@ -124,24 +125,58 @@ class RichProgressMonitor(ProgressMonitor):
             total += total_steps
         self.overall_task = self.overall_progress.add_task("All Jobs", total=int(total))
 
-        self.progress_table = Table.grid(expand=True)
-        self.progress_table.add_row(
-            Panel(self.overall_progress, title="Overall Progress", border_style="green", padding=(1, 2), expand=True),
-            Panel(self.progress, title="[b]Jobs", border_style="red", padding=(1, 2), expand=True),
+        self.progress_table = Table.grid(
+            expand=True,
+            padding=(0, 1),
         )
-        self.live = Live(
-            self.progress_table,
-            console=ICARUS_CONSOLE,
-            refresh_per_second=4,
-            screen=False,
-            auto_refresh=True,
-            transient=True,
+        # Define column widths: 1/3 and 2/3
+        self.progress_table.add_column(ratio=1)  # First column
+        self.progress_table.add_column(ratio=2)  # Second column
+
+        self.progress_table.add_row(
+            Panel(
+                self.overall_progress,
+                title="Overall Progress",
+                border_style="green",
+                padding=(1, 2),
+                expand=True,
+            ),
+            Panel(
+                self.progress,
+                title="[b]Jobs",
+                border_style="red",
+                padding=(1, 2),
+                expand=True,
+            ),
         )
 
-        self.live.__enter__()
+        # Check if Live has been initialized
+        if ICARUS_CONSOLE._live is None:
+            self.live = Live(
+                self.progress_table,
+                console=ICARUS_CONSOLE,
+                refresh_per_second=4,
+                screen=False,
+                auto_refresh=True,
+                transient=True,
+            )
+            self.live.__enter__()
+        else:
+            self.live = ICARUS_CONSOLE._live
+            # Add the table to the existing live console
+            self.live.update(
+                self.progress_table,
+                refresh=True,
+            )
+
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         """Context manager exit - cleanup progress bars."""
         self.logger.debug("Exiting RichProgressMonitor context")
         if self.live is not None:
@@ -180,21 +215,44 @@ class RichProgressMonitor(ProgressMonitor):
         completed = update.current_step
         total = update.total_steps
         if update.error:
-            self.progress.update(tid, total=total, completed=completed, description=f"[red]{update.name} - ERROR")
+            self.progress.update(
+                tid,
+                total=total,
+                completed=completed,
+                description=f"[red]{update.name} - ERROR",
+            )
         elif update.completed:
-            self.progress.update(tid, total=total, completed=total, description=f"[green]{update.name} - DONE")
+            self.progress.update(
+                tid,
+                total=total,
+                completed=total,
+                description=f"[green]{update.name} - DONE",
+            )
         else:
             desc = f"{update.name} - {update.percentage:.2f}%"
             if update.message:
                 desc += f" - {update.message}"
-            self.progress.update(tid, total=total, completed=completed, description=desc)
+            self.progress.update(
+                tid,
+                total=total,
+                completed=completed,
+                description=desc,
+            )
         # Update overall progress
-        total_completed = sum(self.progress.tasks[tid].completed for tid in self.task_id_map.values())
-        total_steps = sum(self.progress.tasks[tid].total for tid in self.task_id_map.values())
+        total_completed = sum(
+            self.progress.tasks[tid].completed for tid in self.task_id_map.values()
+        )
+        total_steps = sum(
+            self.progress.tasks[tid].total for tid in self.task_id_map.values()
+        )
         if self.overall_task is not None:
-            self.overall_progress.update(self.overall_task, completed=total_completed, total=total_steps)
+            self.overall_progress.update(
+                self.overall_task,
+                completed=total_completed,
+                total=total_steps,
+            )
 
-    async def monitor_loop(self):
+    async def monitor_loop(self) -> None:
         """Main monitoring loop, polls each task's probe."""
         while not self.termination_event.is_set():
             events: list[ProgressEvent] = []
@@ -202,7 +260,7 @@ class RichProgressMonitor(ProgressMonitor):
                 try:
                     # Drain all pending events
                     while not self.event_queue.empty():
-                        evt = self.event_queue.get()
+                        evt = self.event_queue.get_nowait()
                         events.append(evt)
                 except Exception as e:
                     self.logger.debug(f"Error reading event queue: {e}")
@@ -215,13 +273,17 @@ class RichProgressMonitor(ProgressMonitor):
                             update = task.progress_probe()
                             events.append(update)
                         except Exception as e:
-                            self.logger.debug(f"Error probing task {task.id_num}: {e}")
+                            self.logger.info(f"Error probing task {task.id_num}: {e}")
 
             # Process all collected events
             for evt in events:
                 self.handle_progress_event(evt)
 
-            if all(task.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED] for task in self.tasks):
+            if all(
+                task.state
+                in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED]
+                for task in self.tasks
+            ):
                 break
             await asyncio.sleep(self.refresh_rate)
         self.logger.debug("Progress monitor loop stopped")

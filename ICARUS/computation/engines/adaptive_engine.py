@@ -47,7 +47,9 @@ class AdaptiveEngine(AbstractEngine):
 
         self.current_execution_mode = execution_mode
 
-        self.logger.info(f"Selected execution mode: {execution_mode.value} for {len(self.tasks)} tasks")
+        self.logger.info(
+            f"Selected execution mode: {execution_mode.value} for {len(self.tasks)} tasks",
+        )
 
         engine = self.engines[execution_mode]
         return await engine.execute_tasks()
@@ -99,7 +101,17 @@ class AdaptiveEngine(AbstractEngine):
     def _is_io_intensive(self, task: Task) -> bool:
         """Determine if a task is I/O-intensive based on its characteristics"""
         # Simple heuristic based on task name/type
-        io_indicators = ["fetch", "download", "upload", "read", "write", "load", "save", "api", "network"]
+        io_indicators = [
+            "fetch",
+            "download",
+            "upload",
+            "read",
+            "write",
+            "load",
+            "save",
+            "api",
+            "network",
+        ]
         task_name = task.name.lower()
         return any(indicator in task_name for indicator in io_indicators)
 

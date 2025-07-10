@@ -25,7 +25,7 @@ class SimulationRunner:
         max_workers: int | None = None,
         resource_manager: ResourceManager | None = None,
         progress_monitor: ProgressMonitor | None = None,
-    ):
+    ) -> None:
         self.execution_mode = execution_mode
         self.max_workers = max_workers or min(os.cpu_count() or 4, 8)
 
@@ -37,7 +37,9 @@ class SimulationRunner:
 
         # Progress monitoring
         self.progress_monitor: ProgressMonitor | None = progress_monitor
-        self.resource_manager = resource_manager or SimpleResourceManager(execution_mode.primitives)
+        self.resource_manager = resource_manager or SimpleResourceManager(
+            execution_mode.primitives,
+        )
 
         # State management
         self._results: list[TaskResult] = []
@@ -67,7 +69,9 @@ class SimulationRunner:
             return []
 
         self._running = True
-        self.logger.info(f"Starting execution of {len(self._tasks)} tasks in {self.execution_mode.value} mode")
+        self.logger.info(
+            f"Starting execution of {len(self._tasks)} tasks in {self.execution_mode.value} mode",
+        )
 
         try:
             # Sort tasks by dependencies and priority
@@ -122,13 +126,17 @@ class SimulationRunner:
         Returns:
             List of task results
         """
-        self._tasks = tasks
+        self.add_tasks(tasks)
         return await self.run()
 
     def _resolve_dependencies(self) -> list[Task]:
         """Resolve task dependencies using topological sort"""
         # Simple implementation - in production, use proper topological sort
-        tasks_by_priority = sorted(self._tasks, key=lambda t: t.config.priority.value, reverse=True)
+        tasks_by_priority = sorted(
+            self._tasks,
+            key=lambda t: t.config.priority.value,
+            reverse=True,
+        )
         return tasks_by_priority
 
     def cancel(self) -> None:

@@ -51,7 +51,7 @@ class ExecutionContext:
         progress_reporter: Optional[ProgressReporter] = None,
         resource_manager: Optional[ResourceManager] = None,
         logger: Optional[logging.Logger] = None,
-    ):
+    ) -> None:
         """
         Initialize the execution context.
 
@@ -75,7 +75,13 @@ class ExecutionContext:
         self._resources: Dict[str, Any] = {}
         self._metadata: Dict[str, Any] = {}
 
-    def report_progress(self, current: int, total: int, message: str = "", name: str = "") -> None:
+    def report_progress(
+        self,
+        current: int,
+        total: int,
+        message: str = "",
+        name: str = "",
+    ) -> None:
         """
         Report progress if a reporter is available.
 
@@ -104,7 +110,9 @@ class ExecutionContext:
         """
         if self.resource_manager and self.config.resources:
             self.logger.debug(f"Acquiring resources: {self.config.resources}")
-            self._resources = await self.resource_manager.acquire_resources(self.config.resources)
+            self._resources = await self.resource_manager.acquire_resources(
+                self.config.resources,
+            )
             self.logger.info("Successfully acquired resources.")
 
     async def release_resources(self) -> None:

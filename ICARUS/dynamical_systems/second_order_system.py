@@ -22,7 +22,9 @@ class SecondOrderSystem(DynamicalSystem):
         M: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray,
         K: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray,
         C: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray,
-        f_ext: Callable[[float, jnp.ndarray], jnp.ndarray] | jnp.ndarray | FloatArray = lambda t, u: jnp.zeros_like(
+        f_ext: Callable[[float, jnp.ndarray], jnp.ndarray]
+        | jnp.ndarray
+        | FloatArray = lambda t, u: jnp.zeros_like(
             u,
         ),
     ) -> None:
@@ -95,8 +97,12 @@ class SecondOrderSystem(DynamicalSystem):
         # The first n elements of x represent the displacement u and the second n elements represent the velocity v
 
         n = x.shape[0] // 2  # Half the size for each part of the state
-        u = x[:n].reshape(-1, 1).squeeze()  # First half represents u (displacement), reshape to column vector
-        v = x[n:].reshape(-1, 1).squeeze()  # Second half represents v (velocity), reshape to column vector
+        u = (
+            x[:n].reshape(-1, 1).squeeze()
+        )  # First half represents u (displacement), reshape to column vector
+        v = (
+            x[n:].reshape(-1, 1).squeeze()
+        )  # Second half represents v (velocity), reshape to column vector
 
         M = self.M(t, x)
         C = self.C(t, x)

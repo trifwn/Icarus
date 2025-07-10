@@ -54,4 +54,7 @@ __all__ = [
 
 # from .f2w_pressure import plot_angle_cp, plot_multiple_cps < Deprecated
 
-__functions__: list[Callable[..., Any]] = [plot_airfoil_polars, plot_airfoils_at_reynolds]
+__functions__: list[Callable[..., Any]] = [
+    plot_airfoil_polars,
+    plot_airfoils_at_reynolds,
+]

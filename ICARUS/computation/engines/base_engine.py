@@ -4,17 +4,18 @@ import logging
 import signal
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 
+from ICARUS.computation.core import ConcurrencyFeature
+from ICARUS.computation.core import ConcurrentVariable
+from ICARUS.computation.core import EventLike
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core.protocols import ConcurrentMixin
 from ICARUS.computation.core.protocols import ProgressMonitor
 from ICARUS.computation.core.protocols import ProgressReporter
-from ICARUS.computation.core.types import ExecutionMode
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import EventLike
 
 
 class AbstractEngine(ConcurrentMixin, ABC):
@@ -24,11 +25,11 @@ class AbstractEngine(ConcurrentMixin, ABC):
 
     def __init__(
         self,
-    ):
+    ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
-    async def execute_tasks(self) -> list[TaskResult]:
+    async def execute_tasks(self) -> list[TaskResult[Any]]:
         """Execute tasks and return results"""
         ...
 
@@ -42,11 +43,13 @@ class AbstractEngine(ConcurrentMixin, ABC):
         """Context manager entry point to prepare execution context."""
         self.logger.info(f"Entering engine: {self.__class__.__name__}")
         concurrent_vars_req = self.request_concurrent_vars()
-        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(concurrent_vars_req)
+        concurent_vars = self.execution_mode.primitives.get_concurrent_variables(
+            concurrent_vars_req,
+        )
         self.set_concurrent_vars(concurent_vars)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         """Context manager exit point to clean up execution context."""
         pass
 
@@ -85,7 +88,10 @@ class AbstractEngine(ConcurrentMixin, ABC):
         else:
             raise KeyError("TERMINATE event is required for execution engine")
         if not isinstance(terminate_event, EventLike):
-            raise TypeError(f"Expected EventLike for 'TERMINATE', got {type(terminate_event)}")
+            raise TypeError(
+                f"Expected EventLike for 'TERMINATE', got {type(terminate_event)}",
+            )
+        # Set up terminate event for graceful shutdown
         self.terminate_event = terminate_event
 
         if self.progress_reporter:

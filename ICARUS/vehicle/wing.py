@@ -144,7 +144,10 @@ class Wing(WingSurface):
             self.num_panels += segment.num_panels
 
         # Grid Variables
-        self.grid: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)  # Camber Line
+        self.grid: FloatArray = np.empty(
+            (self.num_grid_points, 3),
+            dtype=float,
+        )  # Camber Line
         self.grid_lower: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)
         self.grid_upper: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)
 
@@ -386,7 +389,9 @@ class Wing(WingSurface):
         surface = self.area
 
         for segment in self.wing_segments:
-            segment.mass = (segment.area / surface) * segment.mass * (new_mass / old_mass)
+            segment.mass = (
+                (segment.area / surface) * segment.mass * (new_mass / old_mass)
+            )
 
     @property
     def CG(self) -> FloatArray:
@@ -443,7 +448,9 @@ class Wing(WingSurface):
         control_dict = {k: control_vector[k] for k in self.control_vars}
         for i in range(len(self.wing_segments)):
             surf_control_vec = {
-                key: val for key, val in control_dict.items() if key in self.wing_segments[i].control_vars
+                key: val
+                for key, val in control_dict.items()
+                if key in self.wing_segments[i].control_vars
             }
             self.wing_segments[i].__control__(surf_control_vec)
         self.define_wing_parameters()

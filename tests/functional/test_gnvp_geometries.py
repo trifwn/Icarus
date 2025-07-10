@@ -3,11 +3,11 @@ import sys
 import numpy as np
 import pytest
 
-from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_3
-from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_7
 from ICARUS.core.types import FloatArray
 from ICARUS.database import angle_to_directory
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.GenuVP.post_process import get_wake_data_3
+from ICARUS.solvers.GenuVP.post_process import get_wake_data_7
 from ICARUS.vehicle import Airplane
 from ICARUS.visualization.gnvp import plot_gnvp3_wake
 from ICARUS.visualization.gnvp import plot_gnvp7_wake
@@ -18,7 +18,12 @@ GNVP_VERSIONS = [3, 7]
 @pytest.mark.integration
 @pytest.mark.parametrize("gnvp_version", GNVP_VERSIONS)
 @pytest.mark.parametrize("plot", [False, True])
-def test_gnvp_geometry_all(benchmark_airplane: Airplane, benchmark_state: State, gnvp_version: int, plot: bool) -> None:
+def test_gnvp_geometry_all(
+    benchmark_airplane: Airplane,
+    benchmark_state: State,
+    gnvp_version: int,
+    plot: bool,
+) -> None:
     """Test GNVP geometry comparison for all versions, optionally with plotting."""
 
     if plot:
@@ -30,7 +35,12 @@ def test_gnvp_geometry_all(benchmark_airplane: Airplane, benchmark_state: State,
     _gnvp_geometry(benchmark_airplane, benchmark_state, gnvp_version, plot)
 
 
-def _gnvp_geometry(benchmark_airplane: Airplane, benchmark_state: State, gnvp_version: int, plot: bool = False) -> None:
+def _gnvp_geometry(
+    benchmark_airplane: Airplane,
+    benchmark_state: State,
+    gnvp_version: int,
+    plot: bool = False,
+) -> None:
     """Internal function to test GNVP geometry.
 
     Args:
@@ -41,7 +51,9 @@ def _gnvp_geometry(benchmark_airplane: Airplane, benchmark_state: State, gnvp_ve
         ValueError: If gnvp_version is not 3 or 7
     """
     if gnvp_version not in [3, 7]:
-        raise ValueError(f"GNVP Version error! Got Version {gnvp_version}. Expected 3 or 7.")
+        raise ValueError(
+            f"GNVP Version error! Got Version {gnvp_version}. Expected 3 or 7.",
+        )
 
     # Get the correct wake data function
     if gnvp_version == 3:
@@ -53,7 +65,11 @@ def _gnvp_geometry(benchmark_airplane: Airplane, benchmark_state: State, gnvp_ve
 
     case: str = angle_to_directory(0.0)
 
-    XP, QP, VP, GP, near_wake, grid_gnvp = get_wake_data(benchmark_airplane, benchmark_state, case)
+    XP, QP, VP, GP, near_wake, grid_gnvp = get_wake_data(
+        benchmark_airplane,
+        benchmark_state,
+        case,
+    )
     mesh_grid_gnvp = np.meshgrid(grid_gnvp)
 
     lgrid_plane: list[FloatArray] = []
@@ -66,7 +82,10 @@ def _gnvp_geometry(benchmark_airplane: Airplane, benchmark_state: State, gnvp_ve
 
     grid_plane: FloatArray = np.array(lgrid_plane)
     shape = grid_plane.shape
-    grid_plane = grid_plane.reshape(shape[0] * shape[1] * shape[2], shape[3]) - benchmark_airplane.CG
+    grid_plane = (
+        grid_plane.reshape(shape[0] * shape[1] * shape[2], shape[3])
+        - benchmark_airplane.CG
+    )
     mesh_grid_plane = np.meshgrid(grid_plane)
 
     if plot:

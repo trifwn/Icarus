@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from ICARUS.computation.core import ProgressEvent
-from ICARUS.computation.core import TaskResult
-from ICARUS.computation.core.protocols import ProgressObserver
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
+from .core import ProgressEvent
+from .core import TaskResult
+from .core.protocols import ProgressObserver
+from .core.utils.concurrency import ConcurrencyFeature
+from .core.utils.concurrency import ConcurrentVariable
 
 
 class ConsoleProgressObserver(ProgressObserver):
@@ -25,7 +25,9 @@ class ConsoleProgressObserver(ProgressObserver):
         """Print progress to console"""
         # Throttle updates
         last = self._last_update.get(progress.task_id, datetime.min)
-        print(f"Task {progress.task_id}: {progress.percentage:.1f}% - {progress.message}")
+        print(
+            f"Task {progress.task_id}: {progress.percentage:.1f}% - {progress.message}",
+        )
         if (datetime.now() - last).total_seconds() < 0.5:
             return
 

@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from threading import Thread
 
 from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressReporter
-from ICARUS.computation.core.types import ExecutionMode
 
 from .base_engine import AbstractEngine
 
@@ -32,7 +33,9 @@ class ThreadingEngine(AbstractEngine):
 
     async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks using thread pool"""
-        self.logger.info(f"Starting threading execution of {len(self.tasks)} tasks with max_workers={self.max_workers}")
+        self.logger.info(
+            f"Starting threading execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
+        )
         # Prepare execution-specific resources (e.g., locks)
         if not self.tasks:
             self.logger.warning("No tasks provided for threading execution")
@@ -48,7 +51,11 @@ class ThreadingEngine(AbstractEngine):
             try:
                 # include exec_ctx into context
                 return loop.run_until_complete(
-                    self._execute_task_with_context(task, self.progress_reporter, self.resource_manager),
+                    self._execute_task_with_context(
+                        task,
+                        self.progress_reporter,
+                        self.resource_manager,
+                    ),
                 )
             finally:
                 loop.close()
@@ -56,7 +63,10 @@ class ThreadingEngine(AbstractEngine):
         # Execute in thread pool
         loop = asyncio.get_event_loop()
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [loop.run_in_executor(executor, sync_execute_task, task) for task in self.tasks]
+            futures = [
+                loop.run_in_executor(executor, sync_execute_task, task)
+                for task in self.tasks
+            ]
             results = await asyncio.gather(*futures, return_exceptions=True)
 
         # Convert exceptions to failed results
@@ -64,7 +74,9 @@ class ThreadingEngine(AbstractEngine):
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 task = self.tasks[i]
-                processed_results.append(TaskResult(task_id=task.id, state=TaskState.FAILED, error=result))
+                processed_results.append(
+                    TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),
+                )
             else:
                 processed_results.append(result)
 
@@ -121,24 +133,13 @@ class ThreadingEngine(AbstractEngine):
                 progress_reporter.report_completion(task_result)
             return task_result
 
-        except asyncio.TimeoutError:
-            error = Exception(f"Task timed out after {task.config.timeout}")
+        except Exception as e:
+            _, _, tb = sys.exc_info()
+            error = e.with_traceback(tb)
             task_result = TaskResult(
                 task_id=task.id,
                 state=TaskState.FAILED,
                 error=error,
-                execution_time=datetime.now() - start_time,
-            )
-            task.state = TaskState.FAILED
-            if progress_reporter:
-                progress_reporter.report_completion(task_result)
-            return task_result
-
-        except Exception as e:
-            task_result = TaskResult(
-                task_id=task.id,
-                state=TaskState.FAILED,
-                error=e,
                 execution_time=datetime.now() - start_time,
             )
             task.state = TaskState.FAILED
@@ -156,7 +157,7 @@ class ThreadingEngine(AbstractEngine):
         # Create a queue for progress events (local & multiproc)
         if self.progress_monitor:
 
-            def monitor_runner():
+            def monitor_runner() -> None:
                 if self.progress_monitor:
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())

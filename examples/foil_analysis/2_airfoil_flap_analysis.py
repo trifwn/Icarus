@@ -1,13 +1,20 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ICARUS.computation.solvers import Solver
-from ICARUS.computation.solvers.Xfoil.xfoil import Xfoil
+# CHANGE THIS TO YOUR DATABASE FOLDER
+from ICARUS import INSTALL_DIR
+from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
+from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
-# CHANGE THIS TO YOUR DATABASE FOLDER
-database_folder = "E:\\Icarus\\Data"
+database_folder = os.path.join(
+    INSTALL_DIR,
+    "Data",
+)
+
 
 # Load the database
 DB = Database(database_folder)
@@ -58,45 +65,43 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
 
     airfoil_flap = airfoil.flap(
         flap_hinge_chord_percentage=0.63,
-        flap_angle=flap_angle,
+        flap_angle=float(flap_angle),
         chord_extension=1.0,
     )
     airfoil_flap.repanel_spl(200)
 
-    xfoil: Solver = Xfoil()
+    xfoil = Xfoil()
 
     # Import Analysis
-    analysis: str = xfoil.get_analyses_names()[1]  # Run
-    xfoil.select_analysis(analysis)
+    analysis: Analysis = xfoil.aseq
 
     # Get Options
-    options = xfoil.get_analysis_options(verbose=False)
-    solver_parameters = xfoil.get_solver_parameters()
+    inputs = analysis.get_analysis_input(verbose=False)
 
     # Set Options
-    options.airfoil = airfoil_flap
-    options.mach = MACH
-    options.reynolds = reynolds
-    options.min_aoa = aoa_min
-    options.max_aoa = aoa_max
-    options.aoa_step = 0.5
+    inputs.airfoil = airfoil_flap
+    inputs.mach = MACH
+    inputs.reynolds = reynolds
+    inputs.min_aoa = aoa_min
+    inputs.max_aoa = aoa_max
+    inputs.aoa_step = 0.5
 
     # Set Solver Options
+    solver_parameters = xfoil.get_solver_parameters()
     solver_parameters.max_iter = 200
     solver_parameters.Ncrit = 9
     solver_parameters.xtr = (0.2, 0.1)
     solver_parameters.print = False
     solver_parameters.repanel_n = 140
 
-    xfoil.define_analysis(options, solver_parameters)
-    xfoil.print_analysis_options()
-
     # RUN
-    xfoil.execute(parallel=False)
+    xfoil.execute(
+        analysis=analysis,
+        inputs=inputs,
+        solver_parameters=solver_parameters,
+    )
     # Get polar
     polar = DB.get_airfoil_polars(airfoil_flap)
-    polar.data
-    print("\n\n\n")
-    # fig = polar.plot()
-    # fig.show()
-    # plt.show(block=True)
+    fig = polar.plot()
+    fig.show()
+    plt.show(block=True)

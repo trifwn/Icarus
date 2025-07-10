@@ -200,6 +200,3 @@ class Engine:
 #     currents_old.append(get_current(row["Airspeed [m/s]"], row["Thrust [N]"]))
 #     currents_new.append(engine.current_model(row["Airspeed [m/s]"], row["Thrust [N]"]))
 #     currents_true.append(row["Current [A]"])
-
-#     print(f"Old: {currents_old[-1]}, New: {currents_new[-1]}, True: {currents_true[-1]}")
-#

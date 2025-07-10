@@ -24,7 +24,15 @@ from .exceptions import SerializationError
 from .exceptions import SimulationFrameworkError
 from .exceptions import TaskExecutionError
 from .exceptions import TaskTimeoutError
-from .utils.concurrency import ConcurrencyPrimitives
+from .utils.concurrency import (
+    ConcurrencyPrimitives,
+    ConcurrencyFeature,
+    ConcurrentVariable,
+    ConcurrencyType,
+    EventLike,
+    QueueLike,
+    LockLike,
+)
 
 __all__ = [
     # Core types
@@ -58,4 +66,10 @@ __all__ = [
     "SerializationError",
     # Concurrency utilities
     "ConcurrencyPrimitives",
+    "ConcurrencyFeature",
+    "ConcurrentVariable",
+    "ConcurrencyType",
+    "EventLike",
+    "QueueLike",
+    "LockLike",
 ]

@@ -23,7 +23,14 @@ def plot_gnvp3_wake(
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    plot_gnvp_wake(gnvp_version=3, state=state, plane=plane, case=case, scale=scale, figsize=figsize)
+    plot_gnvp_wake(
+        gnvp_version=3,
+        state=state,
+        plane=plane,
+        case=case,
+        scale=scale,
+        figsize=figsize,
+    )
 
 
 def plot_gnvp7_wake(
@@ -33,7 +40,14 @@ def plot_gnvp7_wake(
     scale: bool = True,
     figsize: tuple[int, int] = (16, 7),
 ) -> None:
-    plot_gnvp_wake(gnvp_version=7, state=state, plane=plane, case=case, scale=scale, figsize=figsize)
+    plot_gnvp_wake(
+        gnvp_version=7,
+        state=state,
+        plane=plane,
+        case=case,
+        scale=scale,
+        figsize=figsize,
+    )
 
 
 def plot_gnvp_wake(
@@ -61,11 +75,11 @@ def plot_gnvp_wake(
         raise ValueError(f"Case must be a string or a float, got {type(case)}")
 
     if gnvp_version == 3:
-        from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_3
+        from ICARUS.solvers.GenuVP.post_process import get_wake_data_3
 
         get_wake_data = get_wake_data_3
     elif gnvp_version == 7:
-        from ICARUS.computation.solvers.GenuVP.post_process import get_wake_data_7
+        from ICARUS.solvers.GenuVP.post_process import get_wake_data_7
 
         get_wake_data = get_wake_data_7
     else:
@@ -76,7 +90,9 @@ def plot_gnvp_wake(
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
-    ax.set_title(f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}")
+    ax.set_title(
+        f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}",
+    )
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     ax.view_init(30, 150)
@@ -88,26 +104,26 @@ def plot_gnvp_wake(
     p = ax.scatter(
         xs=XP[:, 0],
         ys=XP[:, 1],
-        zs=XP[:, 2],
+        zs=XP[:, 2],  # type: ignore
         c=np.linalg.norm(QP, axis=1),
         s=5,
-    )  # WAKE   # type: ignore
+    )  # WAKE
     fig.colorbar(p, ax=ax)
 
     ax.scatter(
         xs=B1[:, 0],
         ys=B1[:, 1],
-        zs=B1[:, 2],
+        zs=B1[:, 2],  # type: ignore
         color="k",
         s=5,
-    )  # NEARWAKE   # type: ignore
+    )  # NEARWAKE
     ax.scatter(
         xs=C1[:, 0],
         ys=C1[:, 1],
-        zs=C1[:, 2],
+        zs=C1[:, 2],  # type: ignore
         color="g",
         s=5,
-    )  # GRID       # type: ignore
+    )  # GRID
 
     plane.plot(fig, ax, movement=-np.array(plane.CG), show_masses=False)
     if scale:

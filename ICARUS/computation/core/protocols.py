@@ -14,13 +14,12 @@ from typing import Protocol
 from typing import Sequence
 from typing import runtime_checkable
 
-from ICARUS.computation.core.utils.concurrency import ConcurrencyFeature
-from ICARUS.computation.core.utils.concurrency import ConcurrentVariable
-from ICARUS.computation.core.utils.concurrency import EventLike
-from ICARUS.computation.core.utils.concurrency import QueueLike
-
 from .types import TaskInput
 from .types import TaskOutput
+from .utils.concurrency import ConcurrencyFeature
+from .utils.concurrency import ConcurrentVariable
+from .utils.concurrency import EventLike
+from .utils.concurrency import QueueLike
 
 if TYPE_CHECKING:
     from .context import ExecutionContext
@@ -96,7 +95,11 @@ class TaskExecutorProtocol(Protocol, Generic[TaskInput, TaskOutput]):
     to be compatible with the simulation framework.
     """
 
-    async def execute(self, task_input: TaskInput, context: ExecutionContext) -> TaskOutput:
+    async def execute(
+        self,
+        task_input: TaskInput,
+        context: ExecutionContext,
+    ) -> TaskOutput:
         """
         Execute the task with the given input and context.
 
@@ -159,7 +162,7 @@ class ProgressReporter(ConcurrentMixin, Protocol):
         """
         ...
 
-    def report_completion(self, result: TaskResult) -> None:
+    def report_completion(self, result: TaskResult[Any]) -> None:
         """
         Report the completion of a task.
 
@@ -187,7 +190,7 @@ class ProgressObserver(ConcurrentMixin, Protocol):
         """
         ...
 
-    def on_task_completion(self, result: TaskResult) -> None:
+    def on_task_completion(self, result: TaskResult[Any]) -> None:
         """
         Handle task completion event.
 
@@ -206,14 +209,14 @@ class ProgressMonitor(ProgressObserver, Protocol):
     and finalize progress visualization or reporting.
     """
 
-    event_queue: QueueLike
+    event_queue: QueueLike | None
     termination_event: EventLike
 
     def __enter__(self) -> ProgressMonitor:
         """Enter the monitoring context (e.g., initialize bars)."""
         ...
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         """Exit the monitoring context (e.g., clean up bars)."""
         ...
 

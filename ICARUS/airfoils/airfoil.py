@@ -65,9 +65,8 @@ import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
 
+from ICARUS.core.interpolation.scipy import ScipyInterpolator1D
 from ICARUS.core.types import FloatArray
-
-from ._interpolate import Interpolator
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -103,7 +102,7 @@ class Airfoil:
         """
         name = name.replace(" ", "")
         self.name: str = name
-        self.file_name: str = name
+        self.file_name: str = f"{name.lower()}.airfoil"
 
         lower, upper = self.close_airfoil(lower, upper)
 
@@ -116,14 +115,14 @@ class Airfoil:
         self._x_lower = lower[0, :]
         self._y_lower = lower[1, :]
 
-        self._y_upper_interp = Interpolator(
+        self._y_upper_interp = ScipyInterpolator1D(
             self._x_upper,
             self._y_upper,
             kind="linear",
             bounds_error=False,
             fill_value="extrapolate",  # type: ignore[call-arg]
         )
-        self._y_lower_interp = Interpolator(
+        self._y_lower_interp = ScipyInterpolator1D(
             self._x_lower,
             self._y_lower,
             kind="linear",
@@ -625,7 +624,9 @@ class Airfoil:
             Airfoil: Flapped airfoil
 
         """
-        flap_hinge_1 = flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        flap_hinge_1 = (
+            flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        )
         if flap_angle == 0 or flap_hinge_1 == 1.0:
             return self
         theta = np.deg2rad(flap_angle)
@@ -990,7 +991,11 @@ class Airfoil:
             for x, y in zip(x_clean, y_clean):
                 file.write(f"{x:.6f} {y:.6f}\n")
 
-    def save_le(self, directory: str | None = None) -> None:
+    def save_le(
+        self,
+        directory: str | None = None,
+        header: bool = False,
+    ) -> None:
         """Saves the airfoil in the revese selig format.
 
         Args:
@@ -1010,7 +1015,8 @@ class Airfoil:
             file_name = self.file_name
 
         with open(file_name, "w") as file:
-            file.write(f"{self.name}\n\n")
+            if header:
+                file.write(f"{self.name} with {self.n_points}\n")
             for x, y in pts.T:
                 file.write(f" {x:.6f} {y:.6f}\n")
 
@@ -1078,7 +1084,7 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        return f"Airfoil: {self.name}  ({len(self._x_lower)} x {len(self._x_upper)})"
 
     def __str__(self) -> str:
         """Returns the string representation of the airfoil
@@ -1087,7 +1093,7 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        return f"Airfoil({self.name})"
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Sets the state of the airfoil

@@ -24,7 +24,6 @@ A comprehensive simulation framework featuring:
 - Plugin architecture with advanced monitoring
 - Resource management and fault tolerance
 - Comprehensive lifecycle management
-- Visual progress bars with tqdm integration
 
 This package provides a complete solution for running complex simulations
 with professional-grade monitoring, error handling, and progress tracking.
@@ -57,9 +56,19 @@ from .observers import ConsoleProgressObserver
 from .reporters import Reporter
 from .runners import SimulationRunner
 
+from .solver_parameters import (
+    SolverParameters,
+    NoSolverParameters,
+    # Specific parameter types
+    Parameter,
+    IntOrNoneParameter,
+    StrParameter,
+)
 
 from . import analyses
-from . import solvers
+
+from .base_solver import Solver
+
 
 __version__ = "2.0.0"
 __author__ = "Enhanced OOP Framework Team"
@@ -85,7 +94,18 @@ __all__ = [
     "ConsoleProgressObserver",
     # Monitors
     "RichProgressMonitor",
-    # Submodules
+    # Solver Parameters
+    "SolverParameters",
+    "NoSolverParameters",
+    # Specific solver parameter types
+    "Parameter",
+    "BoolParameter",
+    "FloatParameter",
+    "IntParameter",
+    "IntOrNoneParameter",
+    "StrParameter",
+    # Analyses
     "analyses",
-    "solvers",
+    # Base Solver
+    "Solver",
 ]
