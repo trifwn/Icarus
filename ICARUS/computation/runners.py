@@ -25,6 +25,7 @@ class SimulationRunner:
         max_workers: int | None = None,
         resource_manager: ResourceManager | None = None,
         progress_monitor: ProgressMonitor | None = None,
+        simulation_name: str | None = None
     ) -> None:
         self.execution_mode = execution_mode
         self.max_workers = max_workers or min(os.cpu_count() or 4, 8)
@@ -43,6 +44,7 @@ class SimulationRunner:
 
         # State management
         self._results: list[TaskResult] = []
+        self.simulation_name = simulation_name if simulation_name else "Simulation"
 
     def add_task(self, task: Task) -> None:
         """
@@ -85,7 +87,7 @@ class SimulationRunner:
             if monitor:
                 # Add progress monitor as an observer to the reporter
                 reporter.add_observer(monitor)
-                monitor.set_tasks(sorted_tasks)
+                monitor.set_job(self.simulation_name, sorted_tasks)
 
             # Get execution engine
             engine = create_execution_engine(self.execution_mode)

@@ -156,6 +156,7 @@ class Solver(Generic[SolverParametersType]):
         runner = SimulationRunner(
             execution_mode=execution_mode,
             progress_monitor=progress_monitor,
+            simulation_name= f"{self.name}: {analysis.name}"
         )
 
         # Check if there is an event loop running

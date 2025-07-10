@@ -114,11 +114,6 @@ def setup_mp_logging(log_queue: QueueLike) -> QueueListener | None:
             rich_tracebacks=True,
             show_path=False,
         )
-        # rich_handler.setFormatter(
-        #     logging.Formatter(
-        #         "%(name)s - %(message)s",
-        #     )
-        # )
 
         # Start QueueListener with the RichHandler
         listener = QueueListener(log_queue, rich_handler)

@@ -3,10 +3,9 @@ from __future__ import annotations
 import asyncio
 import logging
 from time import sleep
-from typing import Any
+from typing import Any, Sequence
 from typing import Self
 
-from rich.live import Live
 from rich.panel import Panel
 from rich.progress import BarColumn
 from rich.progress import Progress
@@ -15,7 +14,6 @@ from rich.progress import TaskID
 from rich.progress import TextColumn
 from rich.table import Table
 
-from ICARUS import ICARUS_CONSOLE
 from ICARUS.computation.core import ConcurrencyFeature
 from ICARUS.computation.core import ConcurrentVariable
 from ICARUS.computation.core import EventLike
@@ -26,6 +24,7 @@ from ICARUS.computation.core import TaskResult
 from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
 
+from .rich_ui_manager import RichUIManager
 
 class RichProgressMonitor(ProgressMonitor):
     """
@@ -35,8 +34,6 @@ class RichProgressMonitor(ProgressMonitor):
     progress: Progress
     overall_progress: Progress
     overall_task: TaskID
-    live: Live
-    progress_table: Table
 
     def __init__(
         self,
@@ -45,14 +42,16 @@ class RichProgressMonitor(ProgressMonitor):
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.refresh_rate = refresh_rate
-        self.tasks: list[Task] = []
+        self.tasks: Sequence[Task[Any, Any]] = []
+        self.job_name: str = ""
 
         self._event_queue: QueueLike | None = None
         self._termination_event: EventLike | None = None
 
-    def set_tasks(self, tasks: list[Task]) -> None:
+    def set_job(self, job_name: str, tasks: Sequence[Task[Any, Any]]) -> None:
         """Set the tasks to monitor"""
         self.tasks = tasks
+        self.job_name = job_name
         self.task_id_map = {}
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
@@ -60,6 +59,8 @@ class RichProgressMonitor(ProgressMonitor):
         return {
             "TERMINATE": ConcurrencyFeature.EVENT,
             "event_queue": ConcurrencyFeature.QUEUE,
+            # "UI_Queue": ConcurrencyFeature.QUEUE,
+            # "UI_Lock": ConcurrencyFeature.LOCK,
         }
 
     def set_concurrent_vars(self, vars: dict[str, ConcurrentVariable]) -> None:
@@ -78,6 +79,21 @@ class RichProgressMonitor(ProgressMonitor):
 
         self.termination_event = stop_event
         self.event_queue = event_queue
+
+        # ui_queue = vars.get("UI_Queue")
+        # if ui_queue is None:
+        #     raise ValueError("UI_Queue must be provided")
+        # if not isinstance(event_queue, QueueLike):
+        #     raise TypeError("UI_Queue must be a QueueLike type")
+
+        # ui_lock = vars.get("UI_Lock")
+        # if ui_queue is None:
+        #     raise ValueError("UI_Lock must be provided")
+        # if not isinstance(event_queue, QueueLike):
+        #     raise TypeError("UI_Lock must be a QueueLike type")
+
+        # self.ui_queue = ui_queue
+        # self.ui_lock = ui_lock
 
     @property
     def event_queue(self) -> QueueLike | None:
@@ -102,7 +118,7 @@ class RichProgressMonitor(ProgressMonitor):
         self._termination_event = event
 
     def __enter__(self) -> Self:
-        """Context manager entry - create progress bars."""
+        """Context manager entry - create progress bars and register with RichUIManager."""
         self.logger.debug("Entering RichProgressMonitor context")
         self.progress = Progress(
             TextColumn("{task.description}", justify="left", style="cyan"),
@@ -125,15 +141,11 @@ class RichProgressMonitor(ProgressMonitor):
             total += total_steps
         self.overall_task = self.overall_progress.add_task("All Jobs", total=int(total))
 
-        self.progress_table = Table.grid(
-            expand=True,
-            padding=(0, 1),
-        )
-        # Define column widths: 1/3 and 2/3
-        self.progress_table.add_column(ratio=1)  # First column
-        self.progress_table.add_column(ratio=2)  # Second column
-
-        self.progress_table.add_row(
+        # Compose the jobs row (Panel)
+        jobs_table = Table.grid(expand=True, padding=(0, 1))
+        jobs_table.add_column(ratio=1)
+        jobs_table.add_column(ratio=2)
+        jobs_table.add_row(
             Panel(
                 self.overall_progress,
                 title="Overall Progress",
@@ -150,25 +162,10 @@ class RichProgressMonitor(ProgressMonitor):
             ),
         )
 
-        # Check if Live has been initialized
-        if ICARUS_CONSOLE._live is None:
-            self.live = Live(
-                self.progress_table,
-                console=ICARUS_CONSOLE,
-                refresh_per_second=4,
-                screen=False,
-                auto_refresh=True,
-                transient=True,
-            )
-            self.live.__enter__()
-        else:
-            self.live = ICARUS_CONSOLE._live
-            # Add the table to the existing live console
-            self.live.update(
-                self.progress_table,
-                refresh=True,
-            )
-
+        # Register the jobs row with the RichUIManager singleton
+        self._ui_manager = RichUIManager.get_instance()
+        self._ui_manager.add_row(self.job_name, jobs_table)
+        self._ui_manager.__enter__()  # Enter the Live context if not already entered
         return self
 
     def __exit__(
@@ -177,10 +174,12 @@ class RichProgressMonitor(ProgressMonitor):
         exc_val: BaseException | None,
         exc_tb: Any,
     ) -> None:
-        """Context manager exit - cleanup progress bars."""
+        """Context manager exit - cleanup progress bars and unregister from RichUIManager."""
         self.logger.debug("Exiting RichProgressMonitor context")
-        if self.live is not None:
-            self.live.__exit__(exc_type, exc_val, exc_tb)
+        # Remove the jobs row from the UI manager
+        if hasattr(self, "_ui_manager"):
+            self._ui_manager.remove_row("Jobs")
+            self._ui_manager.__exit__(exc_type, exc_val, exc_tb)
         self.termination_event.set()
         sleep(0.1)
         self.progress.stop()
@@ -204,7 +203,7 @@ class RichProgressMonitor(ProgressMonitor):
             self.handle_progress_event(progress)
 
     def handle_progress_event(self, update: ProgressEvent):
-        """Applies a ProgressUpdate to its corresponding progress bar."""
+        """Applies a ProgressUpdate to its corresponding progress bar and updates the UI row."""
         if update.task_id is None:
             return
         # Ensure update.task_id is the correct type (TaskId)

@@ -117,6 +117,7 @@ class FibonacciDemo:
             progress_monitor=RichProgressMonitor(1.0)
             if config.enable_progress_monitoring
             else None,
+            simulation_name="Fibonacci Demo",
         )
 
         # Create tasks

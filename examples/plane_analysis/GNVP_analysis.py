@@ -34,7 +34,7 @@ def main(GNVP_VERSION: int) -> None:
 
     from Planes.hermes import hermes
 
-    name = "hermes"
+    name = "hermes_low_fidelity"
     hermes_3: Airplane = hermes(name=name)
     planes.append(hermes_3)
 
@@ -102,7 +102,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 150
+            solver_parameters.iterations = 5
 
             polars_time: float = time.time()
             gnvp.execute(
@@ -161,7 +161,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 150
+            solver_parameters.iterations = 5
 
             # Run Analysis
             pert_time: float = time.time()
@@ -170,7 +170,7 @@ def main(GNVP_VERSION: int) -> None:
                 analysis=stability_analysis,
                 inputs=inputs,
                 solver_parameters=solver_parameters,
-                execution_mode=ExecutionMode.MULTIPROCESSING,
+                execution_mode=ExecutionMode.THREADING,
                 # progress_monitor= None
             )
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")

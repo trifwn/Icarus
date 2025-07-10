@@ -224,7 +224,7 @@ class ProgressMonitor(ProgressObserver, Protocol):
         """Run the monitoring loop to consume and display updates."""
         ...
 
-    def set_tasks(self, tasks: Sequence[Task[Any, Any]]) -> None:
+    def set_job(self, job_name: str, tasks: Sequence[Task[Any, Any]]) -> None:
         """
         Set the tasks to monitor.
 

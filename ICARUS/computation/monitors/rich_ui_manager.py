@@ -1,0 +1,113 @@
+from __future__ import annotations
+
+import threading
+from typing import Optional
+from rich.live import Live
+from rich.panel import Panel
+from rich.console import Console, RenderableType
+from rich.table import Table
+
+try:
+    from ICARUS import ICARUS_CONSOLE
+
+    _console = ICARUS_CONSOLE
+except ImportError:
+    _console = Console()
+
+
+class RichUIManager:
+    """
+    Singleton class to manage the rich Live context and dynamic table of rows.
+    Allows adding, updating, and removing arbitrary rows (jobs, info, logs, etc.).
+    """
+
+    _instance: Optional[RichUIManager] = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+                cls._instance._initialized = False
+            return cls._instance
+
+    def __init__(
+        self, refresh_per_second: float = 1.0, console: Optional[Console] = None
+    ):
+        if self._initialized:
+            return
+        self._initialized = True
+        self.console = console or _console
+        self.refresh_per_second = refresh_per_second
+        self._rows: dict[str, RenderableType] = {}
+        self._table = Table.grid(expand=True, padding=(0, 1))
+        self._live: Optional[Live] = None
+        self._entered = False
+        self._update_table()
+
+    def _update_table(self):
+        self._table = Table.grid(expand=True, padding=(0, 1))
+        for key, renderable in self._rows.items():
+            # Each row is a Panel with the key as the title
+            self._table.add_row(Panel(renderable, title=key, expand=True))
+
+    def add_row(self, key: str, content: RenderableType):
+        """Add a new row or update an existing one by key."""
+        self._rows[key] = content
+        self._update_table()
+        self.refresh()
+
+    def update_row(self, key: str, content: RenderableType):
+        """Update the content of an existing row."""
+        if key in self._rows:
+            self._rows[key] = content
+            self._update_table()
+            self.refresh()
+        else:
+            raise KeyError(f"Row '{key}' does not exist.")
+
+    def remove_row(self, key: str):
+        """Remove a row by key."""
+        if key in self._rows:
+            del self._rows[key]
+            self._update_table()
+            self.refresh()
+
+    def refresh(self):
+        if self._live:
+            self._live.update(self._table, refresh=True)
+
+    def __enter__(self):
+        if not self._entered:
+            self._live = Live(
+                self._table,
+                console=self.console,
+                refresh_per_second=self.refresh_per_second,
+                screen=False,  # Not fullscreen
+                auto_refresh=True,
+                transient=True,
+                redirect_stderr=False,
+                redirect_stdout=False,
+            )
+            self._live.__enter__()
+            self._entered = True
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._rows = {}
+        if self._entered and self._live:
+            self._live.__exit__(exc_type, exc_val, exc_tb)
+            self._entered = False
+            self._live = None
+
+    @property
+    def table(self):
+        return self._table
+
+    @property
+    def rows(self):
+        return self._rows
+
+    @classmethod
+    def get_instance(cls) -> RichUIManager:
+        return cls()
