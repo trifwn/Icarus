@@ -5,7 +5,7 @@ from jaxtyping import Float
 from ICARUS.core.types import FloatArray
 
 
-class Interpolator_1D(Interpolator1D):
+class JaxInterpolator1D(Interpolator1D):
     def __init__(
         self,
         x: Float,

@@ -41,7 +41,7 @@ def sensitivities_serial(
     if solver_parameters.Split_Symmetric_Bodies:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wings
 
     for i, surface in enumerate(surfaces):
         genu_surf = GenuSurface(surface, i)

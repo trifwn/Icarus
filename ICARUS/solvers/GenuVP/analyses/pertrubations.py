@@ -19,7 +19,7 @@ from ..post_process import forces_to_pertrubation_results
 from ..utils import GenuCaseParams
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
-from ..utils import define_movements
+from ..utils import define_global_movements
 
 if TYPE_CHECKING:
     from ICARUS.environment import Environment
@@ -80,7 +80,7 @@ def gnvp_disturbance_case(
         solver=f"GenuVP{gnvp_version}",
     )
 
-    movements: list[list[GNVP_Movement]] = define_movements(
+    movements: list[list[GNVP_Movement]] = define_global_movements(
         surfaces,
         plane.CG,
         plane.orientation,
@@ -137,7 +137,7 @@ def gnvp_stability(
     if solver_parameters.Split_Symmetric_Bodies:
         surfaces: list[WingSurface] = plane.get_seperate_surfaces()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wings
 
     for i, surface in enumerate(surfaces):
         genu_surf = GenuSurface(surface, i)

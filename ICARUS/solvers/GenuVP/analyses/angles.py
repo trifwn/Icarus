@@ -20,13 +20,12 @@ from ..post_process import log_forces
 from ..utils import GenuCaseParams
 from ..utils import GenuSurface
 from ..utils import GNVP_Movement
-from ..utils import define_movements
+from ..utils import define_global_movements
 
 if TYPE_CHECKING:
     from ICARUS.environment import Environment
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
-    from ICARUS.vehicle import WingSurface
 
 
 class StopRunningThreadError(Exception):
@@ -125,16 +124,17 @@ def gnvp_aseq(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_parameters.Split_Symmetric_Bodies:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        # surfaces: list[WingSurface] = plane.get()
+        pass
     else:
-        surfaces = plane.surfaces
+        wings = plane.wings
 
-    for i, surface in enumerate(surfaces):
-        gen_surf: GenuSurface = GenuSurface(surface, i)
+    for i, wing in enumerate(wings):
+        gen_surf: GenuSurface = GenuSurface(wing, i)
         bodies_dicts.append(gen_surf)
 
-    movements: list[list[GNVP_Movement]] = define_movements(
-        surfaces,
+    movements: list[list[GNVP_Movement]] = define_global_movements(
+        wings,
         plane.CG,
         plane.orientation,
     )

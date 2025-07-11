@@ -67,8 +67,8 @@ import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
 
-from ICARUS.core.interpolation.scipy import ScipyInterpolator1D
 from ICARUS.core.types import FloatArray
+from ICARUS.interpolation import JaxInterpolator1D
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -117,13 +117,13 @@ class Airfoil:
         self._x_lower = lower[0, :]
         self._y_lower = lower[1, :]
 
-        self._y_upper_interp = ScipyInterpolator1D(
+        self._y_upper_interp = JaxInterpolator1D(
             self._x_upper,
             self._y_upper,
             method="linear",
             extrap=True,
         )
-        self._y_lower_interp = ScipyInterpolator1D(
+        self._y_lower_interp = JaxInterpolator1D(
             self._x_lower,
             self._y_lower,
             method="linear",

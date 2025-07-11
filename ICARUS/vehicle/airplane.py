@@ -424,9 +424,9 @@ class Airplane(Optimizable):
             if mass.name == name:
                 self.point_masses[i].inertia = new_inertia
                 return
-        # for i, surf in enumerate(self.surfaces):
+        # for i, surf in enumerate(self.wings):
         #     if surf.name == name:
-        #         self.surfaces[i].inertia = new_inertia
+        #         self.wings[i].inertia = new_inertia
         #         return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 

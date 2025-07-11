@@ -73,7 +73,7 @@ def _gnvp_geometry(
     mesh_grid_gnvp = np.meshgrid(grid_gnvp)
 
     lgrid_plane: list[FloatArray] = []
-    for surface in benchmark_airplane.surfaces:
+    for surface in benchmark_airplane.wings:
         surf_grid = surface.get_grid()
         if isinstance(surf_grid, list):
             lgrid_plane.extend(surf_grid)
