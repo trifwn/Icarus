@@ -30,7 +30,7 @@ class GenuVP3_Aseq(Analysis[GNVPAseqAnalysisInput]):
 
 
 @final
-class GenuVP3_Stability(Analysis[GNVPStabilityAnalysisInput()]):
+class GenuVP3_Stability(Analysis[GNVPStabilityAnalysisInput]):
     __call__ = staticmethod(gnvp_stability)
 
     def __init__(self) -> None:
