@@ -6,7 +6,6 @@ from typing import Any
 from typing import Sequence
 
 import jsonpickle
-import jsonpickle.ext.pandas as jsonpickle_pd
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
@@ -25,8 +24,6 @@ if TYPE_CHECKING:
 
     from . import WingSurface
     from .surface_connections import SurfaceConnection
-
-jsonpickle_pd.register_handlers()
 
 
 class Airplane(Optimizable):
@@ -102,7 +99,9 @@ class Airplane(Optimizable):
         surf_names = list(self.surface_dict.keys())
         for name in surf_names:
             surf = self.surface_dict[name]
-            if surf.is_symmetric_y and any([cont.inverse_symmetric for cont in self.surfaces[0].controls]):
+            if surf.is_symmetric_y and any(
+                [cont.inverse_symmetric for cont in self.surfaces[0].controls],
+            ):
                 # Split the surface into 2 symmetric surfaces
                 self.surface_dict[name] = surf.split_xz_symmetric_wing()
 
@@ -743,10 +742,8 @@ class Airplane(Optimizable):
         if self.__class__ == Airplane.__class__:
             encoded = jsonpickle.encode(self)
         else:
-            # print("Converting to Airplane")
             # Encode the object as only an Airplane object
             other = Airplane.__copy__(self)
-            # print(f"Other is {other}, {type(other)}")
             encoded = jsonpickle.encode(other)
             del other
 
@@ -768,7 +765,11 @@ class Airplane(Optimizable):
         return {
             "name": self.name,
             "main_wing": self.main_wing,
-            "other_surfaces": [surf for surf in self.surface_dict.values() if surf.name != self.main_wing_name],
+            "other_surfaces": [
+                surf
+                for surf in self.surface_dict.values()
+                if surf.name != self.main_wing_name
+            ],
             "orientation": self.orientation,
             "point_masses": self.point_masses,
             "cg_overwrite": self.CG if self.overwrite_mass else None,
@@ -800,7 +801,11 @@ class Airplane(Optimizable):
         return Airplane(
             name=self.name,
             main_wing=self.main_wing,
-            other_surfaces=[surf for surf in self.surface_dict.values() if surf.name != self.main_wing_name],
+            other_surfaces=[
+                surf
+                for surf in self.surface_dict.values()
+                if surf.name != self.main_wing_name
+            ],
             orientation=self.orientation,
             point_masses=self.point_masses,
             cg_overwrite=self.CG if self.overwrite_mass else None,

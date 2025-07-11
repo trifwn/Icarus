@@ -1,73 +1,55 @@
+from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Callable
+from typing import Optional
 
-from . import AirfoilInput
+from ICARUS.airfoils import Airfoil
+from ICARUS.computation.analyses.analysis_input import iter_field
+from ICARUS.core.types import FloatArray
+
 from . import Analysis
-from . import FloatInput
-from . import Input
-from . import ListFloatInput
-
-airfoil_option = AirfoilInput()
-mach_option = FloatInput(name="mach", description="Mach number")
-
-multi_reynolds_option = ListFloatInput(
-    name="reynolds",
-    description="List of Reynold's numbers to run",
-)
-
-reynolds_option = FloatInput(
-    name="reynolds",
-    description="List of Reynold's numbers to run",
-)
-
-angles = ListFloatInput("angles", "List of angles to run polars")
+from . import BaseAnalysisInput
 
 
-class BaseAirfoilPolarAnalysis(Analysis):
-    def __init__(
-        self,
-        solver_name: str,
-        execute_function: Callable[..., Any],
-        parallel_execute_function: Callable[..., Any] | None = None,
-        unhook: Callable[..., Any] | None = None,
-        extra_options: list[Input] = [],
-    ) -> None:
-        super().__init__(
-            analysis_name="Airfoil Polar Analysis For a single Reynolds",
-            solver_name=solver_name,
-            options=[
-                airfoil_option,
-                mach_option,
-                reynolds_option,
-                angles,
-                *extra_options,
-            ],
-            execute_fun=execute_function,
-            parallel_execute_fun=parallel_execute_function,
-            unhook=unhook,
-        )
+@dataclass
+class AirfoilPolarAnalysisInput(BaseAnalysisInput):
+    """Input parameters for analyzing airfoil polar at specific angles."""
+
+    airfoil: Optional[Airfoil | list[Airfoil]] = iter_field(
+        order=2,
+        default=None,
+        metadata={"description": "Airfoil object to be analyzed"},
+    )
+    mach: Optional[float] = field(
+        default=None,
+        metadata={"description": "Mach number for the analysis"},
+    )
+    reynolds: Optional[float | list[float] | FloatArray] = iter_field(
+        order=1,
+        default=None,
+        metadata={"description": "Reynolds number for the analysis"},
+    )
+    angles: Optional[list[float] | FloatArray | float] = iter_field(
+        order=0,
+        default=None,
+        metadata={
+            "description": "List of angles of attack (in degrees) to run polar analysis",
+        },
+    )
 
 
-class BaseAirfoil_MultiReyn_PolarAnalysis(Analysis):
+class BaseAirfoilPolarAnalysis(Analysis[AirfoilPolarAnalysisInput]):
     def __init__(
         self,
         solver_name: str,
         execute_fun: Callable[..., Any],
-        parallel_execute_fun: Callable[..., Any] | None = None,
-        extra_options: list[Input] = [],
-        unhook: Callable[..., Any] | None = None,
+        post_execute_fun: Callable[..., Any] | None = None,
     ) -> None:
         super().__init__(
+            analysis_name="Airfoil Polar Analysis",
             solver_name=solver_name,
-            analysis_name="Airfoil Polar Analysis for Multiple Reynold's Numbers",
-            options=[
-                airfoil_option,
-                mach_option,
-                multi_reynolds_option,
-                angles,
-                *extra_options,
-            ],
             execute_fun=execute_fun,
-            parallel_execute_fun=parallel_execute_fun,
-            unhook=unhook,
+            post_execute_fun=post_execute_fun,
+            input_type=AirfoilPolarAnalysisInput(),
         )

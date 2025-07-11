@@ -3,7 +3,9 @@ from typing import Any
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.airfoils._interpolate import interpolate
+from ICARUS.core.interpolation.cubic_spline import (
+    cubic_spline_interpolate as interpolate,
+)
 from ICARUS.core.types import FloatArray
 
 
@@ -67,7 +69,14 @@ class NACA5(Airfoil):
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Set the state of the object for unpickling"""
-        NACA5.__init__(self, L=state["L"], P=state["P"], Q=state["Q"], XX=state["XX"], n_points=state["n_points"])
+        NACA5.__init__(
+            self,
+            L=state["L"],
+            P=state["P"],
+            Q=state["Q"],
+            XX=state["XX"],
+            n_points=state["n_points"],
+        )
 
 
 def gen_NACA5_airfoil(
@@ -107,7 +116,16 @@ def gen_NACA5_airfoil(
     x = np.linspace(0.0, 1.0, n_points + 1)
 
     yt: list[float] = [
-        5 * t * (a0 * np.sqrt(xx) + a1 * xx + a2 * pow(xx, 2) + a3 * pow(xx, 3) + a4 * pow(xx, 4)) for xx in x
+        5
+        * t
+        * (
+            a0 * np.sqrt(xx)
+            + a1 * xx
+            + a2 * pow(xx, 2)
+            + a3 * pow(xx, 3)
+            + a4 * pow(xx, 4)
+        )
+        for xx in x
     ]
 
     P: list[float] = [0.05, 0.1, 0.15, 0.2, 0.25]
@@ -130,12 +148,20 @@ def gen_NACA5_airfoil(
 
         zc = [0] * len(xc)
     else:
-        yc1 = [k1 / 6.0 * (pow(xx, 3) - 3 * m * pow(xx, 2) + pow(m, 2) * (3 - m) * xx) for xx in xc1]
+        yc1 = [
+            k1 / 6.0 * (pow(xx, 3) - 3 * m * pow(xx, 2) + pow(m, 2) * (3 - m) * xx)
+            for xx in xc1
+        ]
         yc2 = [k1 / 6.0 * pow(m, 3) * (1 - xx) for xx in xc2]
         zc = [cld / 0.3 * xx for xx in yc1 + yc2]
 
         dyc1_dx: list[float] = [
-            cld / 0.3 * (1.0 / 6.0) * k1 * (3 * pow(xx, 2) - 6 * m * xx + pow(m, 2) * (3 - m)) for xx in xc1
+            cld
+            / 0.3
+            * (1.0 / 6.0)
+            * k1
+            * (3 * pow(xx, 2) - 6 * m * xx + pow(m, 2) * (3 - m))
+            for xx in xc1
         ]
         dyc2_dx: list[float] = [cld / 0.3 * -(1.0 / 6.0) * k1 * pow(m, 3)] * len(xc2)
 

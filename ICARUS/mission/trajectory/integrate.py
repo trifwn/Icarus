@@ -83,7 +83,11 @@ def RK4systems(
         x.append(xi + kk)
         v.append(vi + ll)
 
-        if np.isnan(xi).any() or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any()) or np.isinf(vi).any():
+        if (
+            np.isnan(xi).any()
+            or bool(np.isnan(vi).any()) | bool(np.isinf(xi).any())
+            or np.isinf(vi).any()
+        ):
             print(f"Blew UP at step: {i}\tTime {t[i]}")
             print(f"\tMax Distance: {x[-1][0]}")
             success = False

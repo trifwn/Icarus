@@ -4,10 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from numpy import ndarray
-from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.airfoils import AirfoilPolars
+from ICARUS.airfoils import AirfoilPolarMap
 from ICARUS.database import AirfoilNotFoundError
 from ICARUS.database import Database
 from ICARUS.database import PolarsNotFoundError
@@ -71,7 +70,7 @@ def plot_airfoils_at_reynolds(
     for j, airfoil_name in enumerate(airfoil_names):
         for i, solver in enumerate(solvers):
             try:
-                polar: AirfoilPolars = DB.get_airfoil_polars(
+                polar_map: AirfoilPolarMap = DB.get_airfoil_polars(
                     airfoil=airfoil_name,
                     solver=solver,
                 )
@@ -82,20 +81,28 @@ def plot_airfoils_at_reynolds(
                 continue
             try:
                 if reynolds is None:
-                    reyn_idx = int(len(polar.reynolds_nums) // 2)
-                    reyn = polar.reynolds_nums[reyn_idx]
-                    print(f"Reynolds number not provided for {airfoil_name}. Selecting Reynolds number: {reyn:,}")
+                    reyn_idx = int(len(polar_map.reynolds_numbers) // 2)
+                    reyn = polar_map.reynolds_numbers[reyn_idx]
+                    print(
+                        f"Reynolds number not provided for {airfoil_name}. Selecting Reynolds number: {reyn:,}",
+                    )
                 else:
-                    available_reynolds = polar.reynolds_nums
+                    available_reynolds = polar_map.reynolds_numbers
                     # Find the closest reynolds number to the given reynolds
-                    reyn = min(available_reynolds, key=lambda x: abs(float(x) - reynolds))
-                polar_df: DataFrame = polar.get_reynolds_subtable(reyn)
+                    reyn = min(
+                        available_reynolds,
+                        key=lambda x: abs(float(x) - reynolds),
+                    )
+                polar = polar_map.get_polar(reyn)
 
                 # Sort the data by AoA
-                polar_df = polar_df.sort_values(by="AoA")
+                polar_df = polar.df.sort_values(by="AoA")
                 if aoa_bounds is not None:
                     # Get data where AoA is in AoA bounds
-                    polar_df = polar_df.loc[(polar_df["AoA"] >= aoa_bounds[0]) & (polar_df["AoA"] <= aoa_bounds[1])]
+                    polar_df = polar_df.loc[
+                        (polar_df["AoA"] >= aoa_bounds[0])
+                        & (polar_df["AoA"] <= aoa_bounds[1])
+                    ]
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[1] == "CL/CD" or plot[1] == "CL/CD":
                         polar_df["CL/CD"] = polar_df["CL"] / polar_df["CD"]

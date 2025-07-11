@@ -1,0 +1,44 @@
+# Sample configuration for ICARUS Simulation Framework
+# This file demonstrates various configuration options
+
+# Execution settings
+execution_mode: "async"
+max_workers: 8
+task_timeout_seconds: 300.0
+default_task_priority: "NORMAL"
+enable_checkpointing: true
+checkpoint_interval: 100
+
+# Progress monitoring
+enable_progress_monitoring: true
+progress_refresh_rate: 0.2
+progress_bar_width: 30
+show_task_details: true
+
+# Resource management
+max_memory_usage_mb: 2048
+resource_cleanup_timeout: 30.0
+enable_resource_monitoring: true
+
+# Logging configuration
+log_level: "INFO"
+log_to_file: false
+log_file_path: null
+log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Performance tuning
+batch_size: 50
+retry_delay_seconds: 1.0
+max_retry_attempts: 3
+enable_adaptive_scaling: true
+
+# Development settings
+debug_mode: false
+profile_execution: false
+validate_inputs: true
+
+# Custom settings can be added here
+custom_settings:
+  project_name: "ICARUS Aerodynamics"
+  version: "1.0.0"
+  author: "Tryfonas Themas"

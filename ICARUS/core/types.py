@@ -8,10 +8,9 @@ from numpy import dtype
 from numpy import floating
 from numpy import ndarray
 
-from .base_types import Struct
+# npt.NDArray[np.float64]
+# npt.ArrayLike
 
-Numeric = Union[int, float, np.number[Any]]
-DataDict = Union[dict[str, Any], Struct]
 
 FloatArray = ndarray[Any, dtype[floating[Any]]]
 ComplexArray = ndarray[Any, dtype[complexfloating[Any, Any]]]

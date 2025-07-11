@@ -1,6 +1,6 @@
 from typing import Callable
 
-from interpax import CubicSpline as interpax_CubicSpline
+from interpax._ppoly import CubicSpline as interpax_CubicSpline
 from jaxtyping import Array
 from jaxtyping import Float
 

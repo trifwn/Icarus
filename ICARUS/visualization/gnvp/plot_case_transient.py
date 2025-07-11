@@ -3,8 +3,8 @@ import numpy as np
 from matplotlib.figure import Figure
 
 from ICARUS.database import Database
-from ICARUS.database import angle_to_case
-from ICARUS.database import disturbance_to_case
+from ICARUS.database import angle_to_directory
+from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import Disturbance
 from ICARUS.visualization import colors_
 from ICARUS.visualization import markers
@@ -72,10 +72,10 @@ def plot_case_transient(
     i = 0
     for i, case in enumerate(cases):
         if isinstance(case, Disturbance):
-            name = disturbance_to_case(case)
+            name = disturbance_to_directory(case)
             key = f"Dynamics/{name}"
         elif isinstance(case, float):
-            key = angle_to_case(case)
+            key = angle_to_directory(case)
             name = str(case)
         elif isinstance(case, str):
             key = case

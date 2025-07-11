@@ -1,10 +1,17 @@
-from ICARUS.computation.solvers import Solver
+from typing import Any
+
+from ICARUS.computation import Solver
 from ICARUS.mission.mission import Mission
 from ICARUS.vehicle import Airplane
 
 
 class MissionAnalysis:
-    def __init__(self, mission: Mission, solver: Solver, vehicle: Airplane) -> None:
+    def __init__(
+        self,
+        mission: Mission,
+        solver: Solver[Any],
+        vehicle: Airplane,
+    ) -> None:
         self.mission: Mission = mission
         self.solver: Solver = solver
         self.vehicle: Airplane = vehicle

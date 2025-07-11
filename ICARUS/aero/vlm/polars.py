@@ -21,14 +21,14 @@ def lspt_polars(
     state: State,
     solver2D: str,
     angles: FloatArray | list[float],
-    solver_options: dict[str, Any],
+    solver_parameters: dict[str, Any],
 ) -> None:
     """Function to run the wing LLT solver
 
     Args:
         plane (Airplane): Airplane Object
         options (dict[str, Any]): Options
-        solver_options (dict[str, Any]): Solver Options
+        solver_parameters (dict[str, Any]): Solver Options
 
     """
     DB = Database.get_instance()
@@ -89,4 +89,9 @@ def save_results(
     _ = DB.load_vehicle(name=plane.name, file=file_plane)
 
     # Add Forces to Database
-    DB.load_vehicle_solver_data(vehicle=plane, state=state, folder=plane.directory, solver="LSPT")
+    DB.load_vehicle_solver_data(
+        vehicle=plane,
+        state=state,
+        folder=plane.directory,
+        solver="LSPT",
+    )

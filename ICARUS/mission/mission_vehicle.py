@@ -2,7 +2,7 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
-from interpax import Interpolator1D
+from interpax._spline import Interpolator1D
 from jaxtyping import Array
 from jaxtyping import ArrayLike
 from jaxtyping import Float
@@ -66,6 +66,13 @@ class MissionVehicle:
         density = 1.225
         lift = cl * 0.5 * density * velocity**2 * self.airplane.S
         drag = cd * 0.5 * density * velocity**2 * self.airplane.S
-        torque = cm * 0.5 * density * velocity**2 * self.airplane.S * self.airplane.mean_aerodynamic_chord
+        torque = (
+            cm
+            * 0.5
+            * density
+            * velocity**2
+            * self.airplane.S
+            * self.airplane.mean_aerodynamic_chord
+        )
 
         return lift, drag, torque

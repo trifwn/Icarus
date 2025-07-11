@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 import jsonpickle
-import jsonpickle.ext.pandas as jsonpickle_pd
 import pandas as pd
 from pandas import DataFrame
 
@@ -16,8 +15,6 @@ from ICARUS.core.base_types import Struct
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
-
-jsonpickle_pd.register_handlers()
 
 
 class Database_3D:
@@ -32,8 +29,7 @@ class Database_3D:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, APPHOME: str, location: str) -> None:
-        self.HOMEDIR: str = APPHOME
+    def __init__(self, location: str) -> None:
         self.DB3D: str = location
         self.planes: dict[str, Airplane] = {}
         self.states: dict[str, dict[str, State]] = {}
@@ -41,6 +37,8 @@ class Database_3D:
         self.forces: dict[str, DataFrame] = {}
         self.polars: dict[str, DataFrame] = {}
         self.transient_data: dict[str, Struct] = {}
+
+        self.logger = logging.getLogger(self.__class__.__name__)
 
         if not os.path.isdir(self.DB3D):
             os.makedirs(self.DB3D)
@@ -76,7 +74,11 @@ class Database_3D:
         except KeyError:
             raise ValueError(f"No State found for {state}")
 
-    def get_polars(self, vehicle: str | Airplane, solver: str | None = None) -> DataFrame:
+    def get_polars(
+        self,
+        vehicle: str | Airplane,
+        solver: str | None = None,
+    ) -> DataFrame:
         from ICARUS.vehicle import Airplane
 
         if isinstance(vehicle, Airplane):
@@ -94,7 +96,9 @@ class Database_3D:
                 raise ValueError(f"No Polars found for {vehicle}")
 
         if solver is not None:
-            return pol[[col for col in pol.columns if col.startswith(solver) or col == "AoA"]]
+            return pol[
+                [col for col in pol.columns if col.startswith(solver) or col == "AoA"]
+            ]
         return pol
 
     def get_forces(self, vehicle: str | Airplane) -> DataFrame:
@@ -120,7 +124,7 @@ class Database_3D:
         # Try to Load Vehicle object
         file_plane: str = os.path.join(self.DB3D, name, f"{name}.json")
         plane_obj: Airplane | None = self.load_vehicle(name, file_plane)
-        print(f"Loaded Plane {plane_obj}")
+        self.logger.info(f"Loaded Plane {plane_obj}")
         if plane_obj is None:
             raise ValueError(f"No Vehicle Object Found at {file_plane}")
 
@@ -134,7 +138,7 @@ class Database_3D:
         if isinstance(vehicle, Airplane):
             vehicle = vehicle.name
 
-        print(f"Getting States for {vehicle}")
+        self.logger.info(f"Getting States for {vehicle}")
         if vehicle in self.states.keys():
             return self.states[vehicle]
         self.read_plane_data(vehicle)
@@ -145,7 +149,7 @@ class Database_3D:
 
     def read_all_data(self) -> None:
         if not os.path.isdir(self.DB3D):
-            print(f"Creating self.DB3D directory at {self.DB3D}...")
+            self.logger.info(f"Creating self.DB3D directory at {self.DB3D}...")
             os.makedirs(self.DB3D, exist_ok=True)
 
         vehicle_folders: list[str] = next(os.walk(self.DB3D))[1]
@@ -153,11 +157,11 @@ class Database_3D:
             try:
                 self.read_plane_data(vehicle_folder)
             except Exception as error:
-                print(f"Error reading {vehicle_folder}! Got error {error}")
+                self.logger.info(f"Error reading {vehicle_folder}! Got error {error}")
                 raise error
 
     def read_plane_data(self, vehicle_folder: str) -> None:
-        logging.info(f"Adding Vehicle at {vehicle_folder}")
+        self.logger.info(f"Adding Vehicle at {vehicle_folder}")
         # Enter self.DB3D
         vehicle_folder_path = os.path.join(self.DB3D, vehicle_folder)
         # Load Vehicle object
@@ -179,9 +183,15 @@ class Database_3D:
         # Load Vehicle State
         state_folders = next(os.walk(os.path.join(self.DB3D, vehicle_folder)))[1]
         for state_folder in state_folders:
-            solver_folders = next(os.walk(os.path.join(vehicle_folder_path, state_folder)))[1]
+            solver_folders = next(
+                os.walk(os.path.join(vehicle_folder_path, state_folder)),
+            )[1]
             for solver_folder in solver_folders:
-                solver_folder_path = os.path.join(vehicle_folder_path, state_folder, solver_folder)
+                solver_folder_path = os.path.join(
+                    vehicle_folder_path,
+                    state_folder,
+                    solver_folder,
+                )
                 state_obj: State | None = self.load_plane_state(solver_folder_path)
                 if state_obj is None:
                     logging.debug(f"No State Object Found at {solver_folder_path}")
@@ -201,7 +211,13 @@ class Database_3D:
                         solver=solver_folder,
                     )
                 except ValueError:
-                    print(f"Unknown Solver {solver_folder} for {vehicle_name}")
+                    self.logger.info(
+                        f"Unknown Solver {solver_folder} for {vehicle_name}",
+                    )
+                except FileNotFoundError:
+                    self.logger.info(
+                        f"Solver Data not found for {vehicle_name} in {solver_folder_path}",
+                    )
 
     def load_vehicle(self, name: str, file: str) -> Airplane | None:
         """Function to get Plane Object from file and decode it.
@@ -260,7 +276,13 @@ class Database_3D:
                     raise TypeError(f"Expected State object, got {type(obj)}")
         return state
 
-    def load_solver_data(self, vehicle: Airplane, state: State, folder: str, solver: str) -> None:
+    def load_solver_data(
+        self,
+        vehicle: Airplane,
+        state: State,
+        folder: str,
+        solver: str,
+    ) -> None:
         if solver == "GenuVP3":
             self.load_gnvp_data(
                 vehicle=vehicle,
@@ -289,7 +311,7 @@ class Database_3D:
             )
         else:
             raise ValueError(f"Solver {solver} not recognized")
-        logging.info(f"Added Polars for {vehicle.name} {solver}")
+        self.logger.info(f"Added Polars for {vehicle.name} {solver}")
 
     def load_gnvp_data(
         self,
@@ -319,37 +341,35 @@ class Database_3D:
                     prefix=name,
                 )
         except FileNotFoundError:
-            logging.debug(
-                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
+            self.logger.info(
+                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!No polars Created as well",
             )
-            print(
-                f"No forces.gnvp{gnvp_version} file found in {folder} folder at {self.DB3D}!\nNo polars Created as well",
-            )
+
         cases: list[str] = next(os.walk(folder))[1]
         if "Dynamics" in cases:
             cases.remove("Dynamics")
             dynamic_cases = next(os.walk(os.path.join(folder, "Dynamics")))[1]
             cases.extend([f"Dynamics/{case}" for case in dynamic_cases])
-            pertrubations_file = os.path.join(folder, "Dynamics", f"pertrubations.gnvp{gnvp_version}")
+            pertrubations_file = os.path.join(
+                folder,
+                "Dynamics",
+                f"pertrubations.gnvp{gnvp_version}",
+            )
             pertrubations_df = pd.read_csv(pertrubations_file)
             try:
                 state.set_pertrubation_results(pertrubations_df)
                 state.stability_fd()
             except Exception as error:
-                print(f"Error setting pertrubation results {error} for {vehicle_name} GenuVP{gnvp_version}")
-                # raise(error)
-                logging.debug(f"Error setting pertrubation results {error}")
+                self.logger.info(
+                    f"Error setting pertrubation results {error} for {vehicle_name} GenuVP{gnvp_version}",
+                )
                 state.pertrubation_results = pertrubations_df
 
         if gnvp_version == 7:
             return
         for case in cases:
-            from ICARUS.computation.solvers.GenuVP.post_process import (
-                get_error_convergence,
-            )
-            from ICARUS.computation.solvers.GenuVP.post_process import (
-                get_loads_convergence,
-            )
+            from ICARUS.solvers.GenuVP.post_process import get_error_convergence
+            from ICARUS.solvers.GenuVP.post_process import get_loads_convergence
 
             # Loads the convergence data from gnvp.out and LOADS_aer.dat and stores it in the
             # convergence_data dict. If LOADS_aer.dat exists it tries to load it and then load
@@ -364,7 +384,6 @@ class Database_3D:
                 loads_file,
                 gnvp_version,
             )
-            # print(load_convergence)
             convergence: DataFrame = get_error_convergence(
                 log_file,
                 load_convergence,
@@ -385,7 +404,7 @@ class Database_3D:
         try:
             forces_df = pd.read_csv(file_lspt)
             self.add_forces(vehicle_name, forces_df)
-            logging.info(f"Loading Forces from {file_lspt}")
+            self.logger.info(f"Loading Forces from {file_lspt}")
             for name in ["LSPT Potential", "LSPT 2D"]:
                 self.add_polars_from_forces(
                     plane=vehicle,
@@ -409,7 +428,7 @@ class Database_3D:
         try:
             forces_df = pd.read_csv(forces_file)
             self.add_forces(vehicle_name, forces_df)
-            logging.info(f"Loading AVL Forces from {forces_file}")
+            self.logger.info(f"Loading AVL Forces from {forces_file}")
             for name in ["AVL"]:
                 self.add_polars_from_forces(
                     plane=vehicle,
@@ -428,8 +447,9 @@ class Database_3D:
                     state.set_pertrubation_results(pertrubations_df, "AVL")
                     state.stability_fd()
                 except (ValueError, KeyError) as error:
-                    print(f"Error setting pertrubation results {error} for {vehicle_name} AVL")
-                    logging.debug(f"Error setting pertrubation results {error}")
+                    self.logger.info(
+                        f"Error setting pertrubation results {error} for {vehicle_name} AVL",
+                    )
                     state.pertrubation_results = pertrubations_df
 
         except FileNotFoundError:
@@ -445,10 +465,10 @@ class Database_3D:
         prefix: str,
     ) -> None:
         if plane is None:
-            logging.info("Could not Create Polars")
+            self.logger.info("Could not Create Polars")
             return
         if state is None:
-            logging.info("Could not Create Polars")
+            self.logger.info("Could not Create Polars")
             return
 
         Q = state.dynamic_pressure
@@ -478,12 +498,13 @@ class Database_3D:
             self.polars[plane.name].sort_values(by="AoA", inplace=True)
         try:
             if prefix not in state.get_polar_prefixes():
-                print(f"\tAdding Polars for {plane.name} {prefix} to State {state.name}")
+                self.logger.info(
+                    f"\tAdding Polars for {plane.name} {prefix} to State {state.name}",
+                )
                 state.add_polar(
                     polar=forces,
                     polar_prefix=prefix,
                     is_dimensional=True,
-                    verbose=False,
                 )
         except Exception as error:
             logging.debug(f"Error adding polar {error}")

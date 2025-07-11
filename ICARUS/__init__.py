@@ -5,8 +5,12 @@ isort:skip_file
 
 __version__ = "0.3.0"
 
-
-from .settings import (
+from .logging import (
+    ICARUS_CONSOLE,
+    setup_logging,
+    setup_mp_logging,
+)
+from .config import (
     PLATFORM,
     CPU_COUNT,
     CPU_TO_USE,
@@ -16,9 +20,10 @@ from .settings import (
     # Executables
     GenuVP3_exe,
     GenuVP7_exe,
-    F2W_exe,
-    Foil_Section_exe,
+    Foil_exe,
     AVL_exe,
+    MAX_FLOAT,
+    MAX_INT,
 )
 from . import core
 from . import airfoils
@@ -34,18 +39,23 @@ from . import computation
 from . import mission
 
 __all__ = [
-    # Settings
+    # Logging
+    "ICARUS_CONSOLE",
+    "setup_logging",
+    "setup_mp_logging",
+    # Configuration
     "PLATFORM",
     "CPU_COUNT",
     "CPU_TO_USE",
     "HAS_GPU",
     "HAS_JAX",
     "INSTALL_DIR",
+    "MAX_FLOAT",
+    "MAX_INT",
     # Executables
     "GenuVP3_exe",
     "GenuVP7_exe",
-    "F2W_exe",
-    "Foil_Section_exe",
+    "Foil_exe",
     "AVL_exe",
     # Module imports
     "core",

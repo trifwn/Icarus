@@ -1,4 +1,10 @@
 from functools import wraps
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import TypeVar
+from typing import Union
+from typing import cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,9 +14,11 @@ from matplotlib.figure import SubFigure
 
 from .figure_setup import flatten_axes
 
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 def polar_plot(
-    default_title: str | None = None,
+    default_title: Optional[str] = None,
     default_plots: list[list[str]] = [
         ["AoA", "CL"],
         ["AoA", "CD"],
@@ -19,105 +27,111 @@ def polar_plot(
     ],
     figsize: tuple[float, float] = (10.0, 10.0),
     return_axs: bool = True,
-):
+) -> Callable[[F], F]:
     """
-    Decorator to prepare or reuse a matplotlib Figure and Axes array for plotting.
+    Decorator to prepare or reuse a matplotlib Figure and Axes array for polar plotting.
 
-    Parameters:
-    -----------
-    subplots : tuple[int, int]
-        Number of rows and columns for subplots when creating a new figure.
-    title : str | None
-        Suptitle for the figure; falls back to default if None.
-    figsize : tuple[float, float]
-        Size of the figure when creating a new one.
-    return_axs : bool
-        If True, return the Axes and Figure objects.
+    It allows a method to optionally receive pre-created axes (`axs`) and a list of plots.
+    If axes are not provided or are insufficient, a new figure is created automatically.
+    The figure is post-processed to hide excess axes and display a shared legend.
+
+    Parameters
+    ----------
+    default_title : str | None, optional
+        Default title to use as the suptitle if none is provided at runtime.
+    default_plots : list[list[str]], default=[["AoA", "CL"], ...]
+        Default list of plots. Each inner list defines an x/y pair to be plotted.
+    figsize : tuple[float, float], default=(10.0, 10.0)
+        Size of the figure when created.
+    return_axs : bool, default=True
+        If True, return the list of Axes and the Figure/SubFigure after plotting.
+
+    Returns
+    -------
+    Callable
+        The decorated function, optionally returning (axs, fig).
     """
 
-    def decorator(func):
+    def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(
-            self,
-            *args,
-            axs: list[Axes] | None = None,
-            title: str | None = None,
-            plots: list[list[str]] | None = None,
-            **kwargs,
-        ) -> tuple[list[Axes], Figure | SubFigure] | None:
-            # Determine the effective title
+            self: Any,  # 'self' is the instance of the class using this decorator
+            *args: Any,
+            axs: Optional[list[Axes]] = None,
+            title: Optional[str] = None,
+            plots: Optional[list[list[str]]] = None,
+            **kwargs: Any,
+        ) -> Union[tuple[list[Axes], Union[Figure, SubFigure]], None]:
             effective_title = title if title is not None else default_title
             effective_plots = plots if plots is not None else default_plots
 
-            number_of_plots = len(effective_plots) + 1
+            num_plots = len(effective_plots) + 1  # +1 for CL/CD or similar
+            rows = int(np.ceil(np.sqrt(num_plots)))
+            cols = int(np.floor(np.sqrt(num_plots)))
+            subplots_shape = (rows, cols)
 
-            # Divide the plots equally
-            sqrt_num = number_of_plots**0.5
-            i: int = int(np.ceil(sqrt_num))
-            j: int = int(np.floor(sqrt_num))
-            subplots = (i, j)
+            need_recreate = axs is None or len(axs) != rows * cols
 
-            need_recreate = False
-            # If axes are provided, check if their count matches requested subplots
             if axs is not None:
                 flat_axs = axs.flatten() if isinstance(axs, np.ndarray) else axs
-
                 fig = flat_axs[0].figure or plt.figure(figsize=figsize)
-                total_axes = subplots[0] * subplots[1] if subplots else 1
-                # Check if the number of axes matches the number of plots
-                if len(flat_axs) != total_axes:
-                    print(f"Warning: {len(flat_axs)} axes provided, but {total_axes} expected. Creating new figure.")
+                if len(flat_axs) != rows * cols:
+                    print(
+                        f"Warning: {len(flat_axs)} axes provided, but {rows * cols} expected. Creating new figure.",
+                    )
                     need_recreate = True
             else:
                 print("Warning: No axes provided. Creating new figure.")
                 need_recreate = True
 
-            # Create new figure/axes if needed
             if need_recreate:
-                print(f"Creating new figure with size {figsize} and subplots {subplots}.")
+                print(
+                    f"Creating new figure with size {figsize} and subplots {subplots_shape}.",
+                )
                 fig = plt.figure(figsize=figsize)
-                axs_prod = fig.subplots(*subplots)
+                axs_prod = fig.subplots(*subplots_shape)
                 axs_now = flatten_axes(axs_prod)
                 if effective_title is not None:
                     fig.suptitle(effective_title)
             else:
-                # Reuse provided axes
                 if axs is None:
                     raise ValueError("Provided axs is None")
-
+                fig = axs[0].figure
                 axs_now = flatten_axes(axs)
-                # Ensure suptitle exists
-                if getattr(fig, "_suptitle", None) is None and effective_title is not None:
+                if (
+                    getattr(fig, "_suptitle", None) is None
+                    and effective_title is not None
+                ):
                     fig.suptitle(effective_title)
 
-            # Execute plotting
-            func(self, *args, axs=axs_now, **kwargs)
+            # Call the original plotting function
+            func(self, *args, axs=axs_now, plots=effective_plots, **kwargs)
 
-            # Remove empty plots
+            # Hide unused axes
             for ax in axs_now[len(effective_plots) :]:
                 ax.set_visible(False)
 
+            # Configure used axes
             for ax in axs_now[: len(effective_plots)]:
                 ax.grid(True)
 
+            # Shared legend
             handles, labels = axs_now[0].get_legend_handles_labels()
-            # if the figure has a legend, remove it
             if fig.legends:
                 for legend in fig.legends:
                     legend.remove()
             fig.legend(handles, labels, loc="lower right", ncol=2)
 
-            # Adjust the plots
+            # Adjust layout
             fig.subplots_adjust(top=0.9, bottom=0.1)
-            # Display if top-level
             if not isinstance(fig, SubFigure):
                 fig.tight_layout()
                 fig.show()
 
-            # Optionally return objects
             if return_axs:
                 return axs_now, fig
+            return None
 
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator

@@ -34,7 +34,6 @@ class PlaneSurfaceVisualizer(OptimizationCallback):
 
         # Add a plot for the initial plane geometry
         for surface in self.initial_plane.surfaces:
-            print(surface.name)
             if surface.name == self.surface_name:
                 surf = surface
 
@@ -81,7 +80,6 @@ class PlaneSurfaceVisualizer(OptimizationCallback):
         # Update the current plane geometry
         # Add a plot for the initial plane geometry
         for surface in plane.surfaces:
-            print(surface.name)
             if surface.name == self.surface_name:
                 surf = surface
 

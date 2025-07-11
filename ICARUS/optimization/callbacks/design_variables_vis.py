@@ -29,7 +29,9 @@ class DesignVariableVisualizer(OptimizationCallback):
         bounds: dict[str, tuple[float, float]]
             The bounds of each design variable.
         """
-        self.design_variables = {name: plane.get_property(name) for name in design_variables}
+        self.design_variables = {
+            name: plane.get_property(name) for name in design_variables
+        }
         self.bounds = bounds
         self.axes: dict[str, Axes] = {}
         self.lines: dict[str, Line2D] = {}

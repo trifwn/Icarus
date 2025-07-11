@@ -43,16 +43,22 @@ def plot_airplane_polars(
         tuple[ndarray, Figure]: Array of Axes and Figure
 
     """
+    DB = Database.get_instance()
     if not isinstance(airplanes, list):
-        airplanes = [airplanes]
-    assert isinstance(airplanes, list), "Airplanes must be a list of strings or Airplane objects"
+        airplane_list = [airplanes]
+
+    for i, airplane in enumerate(airplane_list):
+        if isinstance(airplane, str):
+            airplane_list[i] = DB.get_vehicle(airplane)
+        elif not isinstance(airplane, Airplane):
+            raise TypeError(f"Expected Airplane or str, got {type(airplane)}")
 
     number_of_plots = len(plots)
-    DB = Database.get_instance()
+
     # Divide the plots equally
     sqrt_num = number_of_plots**0.5
-    i: int = int(np.ceil(sqrt_num))
-    j: int = int(np.floor(sqrt_num))
+    i = int(np.ceil(sqrt_num))
+    j = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
     axs = fig.subplots(i, j)  # type: ignore
@@ -83,14 +89,14 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors_ = distinctipy.get_colors(len(airplanes) * len(prefixes))
-    for i, airplane in enumerate(airplanes):
+    colors_ = distinctipy.get_colors(len(airplane_list) * len(prefixes))
+    for i, airplane in enumerate(airplane_list):
         if isinstance(airplane, Airplane):
             airplane = airplane.name
 
         polar: DataFrame = DB.get_vehicle_polars(airplane)
         for j, prefix in enumerate(prefixes):
-            if len(airplanes) == 1:
+            if len(airplane_list) == 1:
                 c = colors_[j]
                 m = "o"
             else:
@@ -100,9 +106,13 @@ def plot_airplane_polars(
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
-                        polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                        polar[f"{prefix} CL/CD"] = (
+                            polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                        )
                     if plot[0] == "CD/CL" or plot[1] == "CD/CL":
-                        polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                        polar[f"{prefix} CD/CL"] = (
+                            polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                        )
 
                     key0 = f"{prefix} {plot[0]}"
                     key1 = f"{prefix} {plot[1]}"

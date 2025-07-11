@@ -159,7 +159,13 @@ class InertiaTensor:
         return cls(I_xx=I_sphere, I_yy=I_sphere, I_zz=I_sphere)
 
     @classmethod
-    def cylinder(cls, mass: float, radius: float, height: float, axis: str = "z") -> InertiaTensor:
+    def cylinder(
+        cls,
+        mass: float,
+        radius: float,
+        height: float,
+        axis: str = "z",
+    ) -> InertiaTensor:
         """Inertia tensor for solid cylinder."""
         I_perp = mass * (3 * radius**2 + height**2) / 12
         I_axis = 0.5 * mass * radius**2
@@ -174,7 +180,13 @@ class InertiaTensor:
             raise ValueError("Axis must be 'x', 'y', or 'z'")
 
     @classmethod
-    def box(cls, mass: float, length: float, width: float, height: float) -> InertiaTensor:
+    def box(
+        cls,
+        mass: float,
+        length: float,
+        width: float,
+        height: float,
+    ) -> InertiaTensor:
         """Inertia tensor for solid rectangular box."""
         I_xx = mass * (width**2 + height**2) / 12
         I_yy = mass * (length**2 + height**2) / 12
@@ -231,7 +243,9 @@ class PointMass:
             elif inertia.shape == (6,):
                 self._inertia = InertiaTensor(*inertia)
             else:
-                raise ValueError("Array inertia must be (3,3) matrix or 6-element vector")
+                raise ValueError(
+                    "Array inertia must be (3,3) matrix or 6-element vector",
+                )
         else:
             try:
                 inertia_arr = np.asarray(inertia)
@@ -240,7 +254,9 @@ class PointMass:
                 else:
                     raise ValueError("Invalid inertia format")
             except (ValueError, TypeError):
-                raise ValueError("Inertia must be InertiaTensor, 3x3 matrix, or 6-element vector")
+                raise ValueError(
+                    "Inertia must be InertiaTensor, 3x3 matrix, or 6-element vector",
+                )
 
     # Properties with validation
     @property
@@ -416,7 +432,9 @@ class PointMass:
         # opts.update(integration_kwargs)
 
         # More efficient integration using tplquad
-        def compute_moment(moment_func: Callable[[float, float, float], float]) -> float:
+        def compute_moment(
+            moment_func: Callable[[float, float, float], float],
+        ) -> float:
             result = tplquad(
                 lambda z, y, x: distribution(x, y, z) * moment_func(x, y, z),
                 bounds[0][0],
@@ -427,7 +445,7 @@ class PointMass:
                 bounds[2][1],  # z bounds
                 **opts,
             )
-            return result[0] * mass
+            return float(result[0]) * mass
 
         # Compute inertia components
         I_xx = compute_moment(lambda x, y, z: y**2 + z**2)
@@ -457,7 +475,11 @@ class PointMass:
         new_inertia = self._inertia.transform(R)
         return PointMass(self._name, new_pos, self._mass, new_inertia)
 
-    def transform(self, rotation: Matrix3x3 | Rotation, translation: Vector3D) -> PointMass:
+    def transform(
+        self,
+        rotation: Matrix3x3 | Rotation,
+        translation: Vector3D,
+    ) -> PointMass:
         """Apply rotation then translation."""
         return self.rotate_about_origin(rotation).translate(translation)
 
@@ -474,7 +496,12 @@ class PointMass:
         inertia2_com = other.translate(com - other._position).inertia_about_origin
         combined_inertia = inertia1_com + inertia2_com
 
-        return PointMass(f"{self._name}+{other._name}", com, total_mass, combined_inertia)
+        return PointMass(
+            f"{self._name}+{other._name}",
+            com,
+            total_mass,
+            combined_inertia,
+        )
 
     # Utility methods
     def distance_to(self, other: PointMass | Vector3D) -> float:

@@ -27,33 +27,30 @@ The package is divided in the following files:
     ICARUS.database.db
     ICARUS.database.Database_2D
     ICARUS.database.Database_3D
-    ICARUS.database.AnalysesDB
     ICARUS.database.utils
 
 """
 # DATABASES ###
 
-from .analysesDB import AnalysesDB
 from .database2D import AirfoilNotFoundError
 from .database2D import Database_2D
 from .database2D import PolarsNotFoundError
 from .database3D import Database_3D
 from .db import Database
-from .utils import angle_to_case
-from .utils import case_to_angle
-from .utils import case_to_disturbance
-from .utils import disturbance_to_case
+from .utils import angle_to_directory
+from .utils import directory_to_angle
+from .utils import directory_to_disturbance
+from .utils import disturbance_to_directory
 
 __all__ = [
     "Database",
     "Database_2D",
     "Database_3D",
-    "AnalysesDB",
     # Utils
-    "angle_to_case",
-    "case_to_angle",
-    "disturbance_to_case",
-    "case_to_disturbance",
+    "angle_to_directory",
+    "directory_to_angle",
+    "disturbance_to_directory",
+    "directory_to_disturbance",
     # Exceptions
     "PolarsNotFoundError",
     "AirfoilNotFoundError",
