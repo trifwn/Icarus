@@ -1,7 +1,7 @@
 from ICARUS.flight_dynamics import Disturbance
 
 
-def angle_to_case(angle: float) -> str:
+def angle_to_directory(angle: float) -> str:
     """Convert angle to case folder name
 
     Args:
@@ -18,7 +18,7 @@ def angle_to_case(angle: float) -> str:
     return folder
 
 
-def case_to_angle(case: str) -> float:
+def directory_to_angle(case: str) -> float:
     """Convert case folder name to angle
 
     Args:
@@ -35,7 +35,7 @@ def case_to_angle(case: str) -> float:
     return angle
 
 
-def disturbance_to_case(dst: Disturbance) -> str:
+def disturbance_to_directory(dst: Disturbance) -> str:
     """Convert disturbance to case folder name
 
     Args:
@@ -58,7 +58,7 @@ def disturbance_to_case(dst: Disturbance) -> str:
     return folder
 
 
-def case_to_disturbance(case: str) -> Disturbance:
+def directory_to_disturbance(case: str) -> Disturbance:
     """Convert case folder name to disturbance
 
     Args:
@@ -71,7 +71,6 @@ def case_to_disturbance(case: str) -> Disturbance:
     if case == "Trim":
         dst: Disturbance = Disturbance("Trim", 0)
     elif case[0] == "m":
-        print(case, case[8:], float(case[1:7]))
         dst = Disturbance(case[9:], -float(case[1:7]))
     else:
         dst = Disturbance(case[9:], float(case[1:7]))

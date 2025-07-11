@@ -1,10 +1,8 @@
-from ICARUS.core import Struct
-
 from . import LateralStateSpace
 from . import LongitudalStateSpace
 
 
-class StabilityDerivativesDS(Struct):
+class StabilityDerivativesDS:
     """Class to store stability derivatives of Dynamic Analysis."""
 
     def __init__(

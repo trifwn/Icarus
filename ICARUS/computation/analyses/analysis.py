@@ -2,37 +2,85 @@ from __future__ import annotations
 
 import inspect
 import logging
+from dataclasses import asdict
+from functools import partial
 from io import StringIO
-from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import Generic
+from typing import TypeVar
 
 import jsonpickle
-import jsonpickle.ext.numpy as jsonpickle_numpy
-import jsonpickle.ext.pandas as jsonpickle_pd
-from pandas import DataFrame
-from tabulate import tabulate
+from rich.console import Console
+from rich.table import Table
 
-if TYPE_CHECKING:
-    from ICARUS.computation.solvers import Parameter
+from ICARUS.computation import SimulationRunner
+from ICARUS.computation import SolverParameters
+from ICARUS.computation.core import ExecutionContext
+from ICARUS.computation.core import Priority
+from ICARUS.computation.core import Task
+from ICARUS.computation.core import TaskConfiguration
+from ICARUS.computation.core import TaskExecutorProtocol
+from ICARUS.computation.core import TaskResult
+from ICARUS.computation.core import TaskState
 
-from . import Input
+from . import BaseAnalysisInput
 
-jsonpickle_pd.register_handlers()
-jsonpickle_numpy.register_handlers()
+AnalysisInput = TypeVar("AnalysisInput", bound=BaseAnalysisInput)
 
 
-class Analysis:
+class AnalysisExecutor(TaskExecutorProtocol):
+    """
+    A simple task executor for running analysis functions.
+    """
+
+    def __init__(self, execute_fun: Callable[..., Any]) -> None:
+        self.execute_fun = execute_fun
+
+    async def execute(
+        self,
+        task_input: dict[str, Any],
+        context: ExecutionContext,
+    ) -> Any:
+        """
+        Executes the analysis function.
+        Note: This executor runs a synchronous function. The execution engine
+        is responsible for running this in a non-blocking manner (e.g., thread pool).
+        """
+        context.logger.info(f"Executing analysis function: {self.execute_fun.__name__}")
+        try:
+            result = self.execute_fun(**task_input)
+            context.logger.info("Analysis function executed successfully.")
+            return result
+        except Exception as e:
+            context.logger.error(
+                "An error occurred during analysis execution.",
+            )
+            raise e
+
+    async def validate_input(self, task_input: dict[str, Any]) -> bool:
+        # For now, we assume input is validated before task creation.
+        return True
+
+    async def cancel(self) -> None:
+        # Cancellation is not supported in this simple executor.
+        pass
+
+    async def cleanup(self) -> None:
+        pass
+
+
+class Analysis(Generic[AnalysisInput]):
     """Analysis Class. Used to define an analysis and store all the necessary information for it.
-    The analysis can be run by calling the object. The results can be obtained by calling the get_results function.
+    The analysis can be run by calling the object or by creating a task for execution engines.
+    Results can be obtained by calling the get_results function.
 
     Args:
         solver_name (str): Name of the associated solver
         analysis_name (str): Name of the analysis
-        run_function (Callable[..., Any]): Function to run the analysis
-        options (Struct | dict[str, Any]): Analysis options
-        solver_options (Struct | dict[str,Any], optional): Solver Options . Defaults to {}.
-        unhook (Callable[...,Any] | None, optional): Function to run after the analysis Mainly for post processing. Defaults to None.
+        inputs (list[Input]): Analysis options
+        execute_fun (Callable[..., Any]): Function to run the analysis
+        post_execute_fun (Callable[...,Any] | None, optional): Function to run after the analysis for post processing. Defaults to None.
 
     """
 
@@ -40,35 +88,38 @@ class Analysis:
         self,
         solver_name: str,
         analysis_name: str,
-        options: list[Input],
         execute_fun: Callable[..., Any],
-        parallel_execute_fun: Callable[..., Any] | None = None,
-        unhook: Callable[..., Any] | None = None,
+        input_type: AnalysisInput,
+        post_execute_fun: Callable[..., Any] | None = None,
+        monitor_progress_fun: Callable[..., Any] | None = None,
     ) -> None:
         """Initializes an Analysis object
 
         Args:
             solver_name (str): Name of the associated solver
             analysis_name (str): Name of the analysis
-            options (list[Options]): Analysis options
-            run_function (Callable[..., Any]): Function to run the analysis
-            unhook (Callable[...,Any] | None, optional): Function to run after the analysis Mainly for post processing. Defaults to None.
-
+            execute_fun (Callable[..., Any]): Function to run the analysis
+            input_type (type[AnalysisInput]): The dataclass type for analysis inputs.
+            post_execute_fun (Callable[...,Any] | None, optional): Function to run after the analysis Mainly for post processing. Defaults to None.
         """
+
         self.solver_name: str = solver_name
         self.name: str = analysis_name
-        self.options: dict[str, Input] = {option.name: option for option in options}
-        self.execute: Callable[..., Any] = execute_fun
 
-        if callable(parallel_execute_fun):
-            self.parallel_execute: Callable[..., Any] = parallel_execute_fun
+        if not callable(execute_fun):
+            raise TypeError(f"execute_fun must be callable, got {type(execute_fun)}")
+        self._execute_fun = execute_fun
 
-        if callable(unhook):
-            self.unhook: Callable[..., DataFrame | int] = unhook
-        else:
-            if unhook is not None:
-                print("Unhook must be a function! Defaulting to None")
-            self.unhook = lambda: 0
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.input_type: AnalysisInput = input_type
+        self.inputs: list[AnalysisInput] = []
+
+        self.post_execute_fun: Callable[..., Any] | None = post_execute_fun
+        self.monitor_progress_fun: Callable[..., Any] | None = monitor_progress_fun
+
+    # def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+    #     # return self.execute_fun(*args, **kwargs)
 
     def __str__(self) -> str:
         """String representation of the analysis
@@ -77,154 +128,314 @@ class Analysis:
             str: Name and Options of the analysis
 
         """
-        string = StringIO()
-        string.write(f"Available Options of {self.solver_name} for {self.name}: \n\n")
-        table: list[list[str]] = [["VarName", "Value", "Description"]]
-        for opt in self.options.values():
-            if opt.value is None:
-                value: str = "None"
-            elif hasattr(opt.value, "__str__"):
-                if len(str(opt.value)) > 20:
-                    value = "Complex Datatype"
-                    if hasattr(opt.value, "name"):
-                        value += f" ({opt.value.name})"
-                else:
-                    value = str(opt.value)
-            elif hasattr(opt.value, "__len__"):
-                if len(opt.value) > 3:
-                    value = "Multiple Values"
-                    if hasattr(opt.value, "name"):
-                        value += f" ({opt.value.name})"
-                else:
-                    value = opt.value
-            else:
-                value = "N/A"
-            table.append(
-                [opt.name, value, opt.description],
-            )  # TODO ADD __REPR__ INSTEAD OF __STR__
-        string.write(tabulate(table[1:], headers=table[0], tablefmt="github"))
-        string.write(
-            "\n\nIf there are Multiple Values, or complex datatypes, or N/A you should inspect them sepretly by calling the option name\n",
+        str_io = StringIO()
+        console = Console(file=str_io, force_terminal=False, width=120)
+
+        table = Table(
+            title=f"Analysis {self.name} for {self.solver_name}",
+            show_header=True,
+            header_style="bold magenta",
         )
+        table.add_column("VarName", style="cyan", no_wrap=True, width=20)
+        table.add_column("Type", style="yellow")
+        table.add_column("Description", style="green")
 
-        return string.getvalue()
+        for name, f in self.input_type.__dataclass_fields__.items():
+            description = f.metadata.get("description", "")
+            # Get type name
+            if hasattr(f.type, "__name__"):
+                type_name = f.type.__name__  # type: ignore
+            else:
+                type_name = str(f.type).replace("typing.", "")
 
-    def check_if_defined(self) -> bool:
-        """Checks if all options have been set.
+            table.add_row(
+                name,
+                type_name,
+                description,
+            )
+
+        console.print(table)
+        return str_io.getvalue()
+
+    def get_analysis_input(self, verbose: bool = False) -> AnalysisInput:
+        """Get the options of the selected analysis.
+
+        Args:
+            verbose (bool, optional): Displays the option if True. Defaults to False.
+
+        Raises:
+            Exception: If the analysis has not been selected.
 
         Returns:
-            bool: True if all options have been set, False otherwise
-
+            AnalysisInput: The options of the selected analysis.
         """
-        flag: bool = True
-        for option in self.options.values():
-            if option.value is None:
-                print(f"Option {option} not set")
-                flag = False
-        return flag
+        if verbose:
+            print(self)
+        return self.input_type
 
-    def __call__(
+    def set_analysis_input(self, inputs: AnalysisInput | dict[str, Any]) -> None:
+        """Set the inputs of the selected analysis.
+
+        Args:
+            inputs (AnalysisInput | dict[str, Any]): Inputs to set. Can be a Struct or a dictionary.
+        """
+        if isinstance(inputs, BaseAnalysisInput):
+            # If inputs is already an AnalysisInput, convert it to a dict
+            input_dict = asdict(inputs)
+        elif isinstance(inputs, dict):
+            input_dict = inputs
+        else:
+            raise TypeError(
+                f"Inputs must be an AnalysisInput or a dictionary, got {type(inputs)}",
+            )
+
+        # Update the analysis input with the provided inputs
+        self.inputs = [self.input_type.get_input(input_dict)]
+
+    def set_analysis_multiple_inputs(
         self,
-        solver_parameters: list[Parameter] | None,
-        parallel: bool = False,
-    ) -> Any:
-        """Runs the analysis
+        inputs: list[AnalysisInput | dict[str, Any]],
+    ) -> None:
+        """Set multiple inputs for the selected analysis.
+
+        Args:
+            inputs (list[AnalysisInput | dict[str, Any]]): List of inputs to set.
+        """
+        self.inputs = []
+
+        for input_data in inputs:
+            if isinstance(input_data, BaseAnalysisInput):
+                input_dict = asdict(input_data)
+            elif isinstance(input_data, dict):
+                input_dict = input_data
+            else:
+                raise TypeError("Inputs must be an AnalysisInput or a dictionary")
+            self.inputs.append(self.input_type.get_input(input_dict))
+
+    def create_tasks(
+        self,
+        inputs: list[AnalysisInput],
+        solver_parameters: SolverParameters,
+        priority: Priority = Priority.NORMAL,
+        metadata: dict[str, Any] | None = None,
+    ) -> list[Task]:
+        """Create a task definition for this analysis.
+
+        Args:
+            analysis_input: Dataclass with the inputs for the analysis.
+            solver_parameters: Dataclass with the solver parameters.
+            task_id: Optional task ID, generates UUID if None
+            priority: Task priority
+            metadata: Additional metadata for the task
 
         Returns:
-            Any: Analysis Results as set by the unhook function
+            Task: Task definition compatible with execution engines
 
+        Raises:
+            ValueError: If analysis options are not properly defined
         """
-        if self.check_if_defined():
-            kwargs: dict[str, Any] = {option.name: option.value for option in self.options.values()}
-            solver_options: dict[str, Any] = {}
-            if solver_parameters is not None:
-                solver_options = {option.name: option.value for option in solver_parameters}
+        tasks = []
+        for input in inputs:
+            for input_name, sub_input in input.expand_dataclass().items():
+                # Validate analysis input
+                sub_input.validate()
 
-            if not hasattr(self, "parallel_execute"):
-                if parallel:
-                    logging.info("Parallel Execution not supported for this analysis")
-                logging.info("Running Serially")
-                res: Any = self.execute(**kwargs, solver_options=solver_options)
-            elif parallel:
-                logging.info("Running Analysis in Parallel")
-                res = self.parallel_execute(**kwargs, solver_options=solver_options)
-            else:
-                logging.info("Running Analysis in Serial")
-                res = self.execute(**kwargs, solver_options=solver_options)
+                # Prepare execution arguments
+                task_input = asdict(sub_input)
+                task_input["solver_parameters"] = solver_parameters
 
-            print("Analysis Completed")
-            return res
-        print(
-            f"Options not set for {self.name} of {self.solver_name}. Here is what was passed:",
+                # Create Task Configuration
+                config = TaskConfiguration(
+                    priority=priority,
+                    tags=[self.solver_name, self.name],
+                )
+
+                # Instantiate Executor
+                executor = AnalysisExecutor(self._execute_fun)
+
+                # Prepare metadata
+                task_metadata = {
+                    "solver_name": self.solver_name,
+                    "analysis_name": self.name,
+                    "created_by": "Analysis.create_task",
+                    "input_name": input_name,
+                    **(metadata or {}),
+                }
+
+                progress_probe = None
+                if self.monitor_progress_fun:
+                    args_needed = list(
+                        inspect.signature(self.monitor_progress_fun).parameters.keys(),
+                    )
+                    kwargs: dict[str, Any] = {
+                        key: value
+                        for key, value in task_input.items()
+                        if key in args_needed
+                    }
+
+                    progress_probe = partial(
+                        self.monitor_progress_fun,
+                        **kwargs,
+                    )
+
+                # Return task definition
+                task = Task(
+                    name=f"{input_name}" if input_name else self.name,
+                    executor=executor,
+                    task_input=task_input,
+                    config=config,
+                    metadata=task_metadata,
+                    progress_probe=progress_probe,
+                )
+                tasks.append(task)
+
+        return tasks
+
+    async def run_analysis(
+        self: Analysis[AnalysisInput],
+        runner: SimulationRunner,
+        solver_parameters: SolverParameters,
+    ) -> tuple[list[Task], list[TaskResult]]:
+        """
+        Runs a given analysis for a series of inputs using a simulation runner.
+
+        Args:
+            analysis (Analysis): The analysis to run.
+
+        Returns:
+            list[TaskResult]: A list of task results.
+        """
+        if not self.inputs:
+            raise ValueError(
+                "No inputs provided for the analysis. Please set the inputs before running.",
+            )
+
+        if not isinstance(self.inputs, list):
+            raise ValueError("Inputs must be a list of AnalysisInput instances.")
+
+        if not all(
+            isinstance(input_item, type(self.input_type)) for input_item in self.inputs
+        ):
+            raise ValueError(
+                f"All inputs must be of type {self.input_type.__name__}. "
+                f"Received types: {[type(input_item).__name__ for input_item in self.inputs]}",
+            )
+
+        # Validate inputs
+        tasks = self.create_tasks(
+            inputs=self.inputs,
+            solver_parameters=solver_parameters,
         )
-        print(self)
-        return -1
+        results = await runner.run_tasks(tasks)
 
-    def get_results(self) -> DataFrame | int:
+        for result in results:
+            if isinstance(result, Exception):
+                self.logger.error(
+                    f"Task execution failed with exception: {result}",
+                )
+                import traceback
+
+                traceback.print_exc()
+
+            if (
+                isinstance(result, TaskResult)
+                and result.state == TaskState.FAILED
+                and result.error
+            ):
+                self.logger.error(
+                    f"Task {result.task_id} failed with error: {result.error}",
+                )
+        return tasks, results
+
+    def estimate_resource_requirements(self) -> dict[str, Any]:
+        """Estimate resource requirements for this analysis.
+
+        Returns:
+            dict: Resource requirements estimate
+        """
+        # Base requirements - can be overridden by subclasses
+        base_requirements = {
+            "cpu_cores": 1,
+            "memory_mb": 512,
+            "disk_mb": 100,
+            "estimated_time_seconds": 60,
+            "gpu_memory_mb": 0,
+            "network_bandwidth_mbps": 0,
+        }
+
+        # Analyze analysis name for hints
+        analysis_lower = self.name.lower()
+
+        # CPU-intensive indicators
+        if any(
+            keyword in analysis_lower
+            for keyword in ["cfd", "fem", "optimization", "simulation", "polar"]
+        ):
+            base_requirements["cpu_cores"] = 4
+            base_requirements["memory_mb"] = 2048
+            base_requirements["estimated_time_seconds"] = 300
+
+        # I/O intensive indicators
+        if any(
+            keyword in analysis_lower
+            for keyword in ["file", "read", "write", "load", "save", "export"]
+        ):
+            base_requirements["disk_mb"] = 1024
+            base_requirements["network_bandwidth_mbps"] = 10
+
+        # Memory intensive indicators
+        if any(
+            keyword in analysis_lower
+            for keyword in ["mesh", "large", "detailed", "high_res"]
+        ):
+            base_requirements["memory_mb"] = 4096
+
+        return base_requirements
+
+    def post_run_analysis(
+        self,
+        analysis_input: AnalysisInput,
+        analysis_results: Any,
+    ) -> Any:
         """Function to get the results. Calls the unhooks function.
 
         Returns:
             DataFrame | int: Results of the analysis or error code
 
         """
-        # print("Getting Results")
-        args_needed = list(inspect.signature(self.unhook).parameters.keys())
-        kwargs: dict[str, Any] = {
-            option.name: option.value for _, option in self.options.items() if option.name in args_needed
-        }
-        return self.unhook(**kwargs)
+        if self.post_execute_fun is not None:
+            args_needed = list(
+                inspect.signature(self.post_execute_fun).parameters.keys(),
+            )
+            kwargs: dict[str, Any] = {
+                key: value
+                for key, value in asdict(analysis_input).items()
+                if key in args_needed
+            }
+            if "results" in args_needed:
+                kwargs["results"] = analysis_results
+            return self.post_execute_fun(
+                **kwargs,
+            )
+        else:
+            return analysis_results
 
     def encode_json(self) -> str:
         encoded: str = str(jsonpickle.encode(self))
         return encoded
 
-    def __lshift__(self, other: dict[str, Any]) -> Analysis:
-        """Overloading operator <<"""
-        if not isinstance(other, dict):
-            raise TypeError("Can only << a dict")
+    def __getstate__(self) -> dict[str, Any]:
+        return {
+            "solver_name": self.solver_name,
+            "name": self.name,
+            "execute": self._execute_fun,
+            "unhook": getattr(self, "unhook", lambda: 0),
+            "input_type": self.input_type,
+        }
 
-        s: Analysis = self.__copy__()
-        s.__dict__.update(other)
-        return s
-
-    def __copy__(self) -> Analysis:
-        return self.__class__(
-            self.solver_name,
-            self.name,
-            [option for option in self.options.values()],
-            self.execute,
-            self.unhook,
-        )
-
-    def __getstate__(
-        self,
-    ) -> tuple[
-        str,
-        str,
-        list[Input],
-        Callable[..., Any],
-        Callable[..., DataFrame | int],
-    ]:
-        return (
-            self.solver_name,
-            self.name,
-            [option for option in self.options.values()],
-            self.execute,
-            self.unhook,
-        )
-
-    def __setstate__(
-        self,
-        state: tuple[
-            str,
-            str,
-            list[Input],
-            Callable[..., Any],
-            Callable[..., DataFrame | int],
-        ],
-    ) -> None:
-        self.solver_name = state[0]
-        self.name = state[1]
-        self.options = {option.name: option for option in state[2]}
-        self.execute = state[3]
-        self.unhook = state[4]
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.solver_name = state["solver_name"]
+        self.name = state["name"]
+        self._execute_fun = state["execute"]
+        self.post_execute_fun = state["unhook"]
+        self.input_type = state["input_type"]

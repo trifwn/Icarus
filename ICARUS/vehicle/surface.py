@@ -72,7 +72,13 @@ class WingSurface(RigidBody):
         self.structural_mass: float = structural_mass
 
         # Check that the number of points is the same for all parameters if not raise an error
-        if not (len(spanwise_positions) == len(chord_lengths) == len(z_offsets) == len(x_offsets) == len(twist_angles)):
+        if not (
+            len(spanwise_positions)
+            == len(chord_lengths)
+            == len(z_offsets)
+            == len(x_offsets)
+            == len(twist_angles)
+        ):
             raise ValueError("The number of points must be the same for all parameters")
 
         self.is_lifting: bool = is_lifting
@@ -257,7 +263,9 @@ class WingSurface(RigidBody):
             eta = span_discretization_function(i)
             spanwise_positions[i] = eta * span
             chord_lengths[i] = real_chord_fun(eta)
-            z_offsets[i] = np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
+            z_offsets[i] = (
+                np.tan(dihedral_as_a_function_of_span_percentage(eta)) * span * eta
+            )
             x_offsets[i] = x_offset_as_a_function_of_span_percentage(eta)
             twist_angles[i] = twist_as_a_function_of_span_percentage(eta)
 
@@ -467,7 +475,9 @@ class WingSurface(RigidBody):
         area_approx = dspan * mchord
         mean_area = np.mean(dspan * mchord)
         mean_area_pos = np.argmin(np.abs(area_approx - mean_area))
-        heta = (self._span_dist[mean_area_pos] - self._span_dist[0]) / (self._span_dist[-1] - self._span_dist[0])
+        heta = (self._span_dist[mean_area_pos] - self._span_dist[0]) / (
+            self._span_dist[-1] - self._span_dist[0]
+        )
         return Airfoil.morph_new_from_two_foils(
             self.root_airfoil,
             self.tip_airfoil,
@@ -597,15 +607,17 @@ class WingSurface(RigidBody):
                 control_val = self.control_vector[control.control_var]
 
                 if control.coordinate_system == "local":
-                    is_within = (local_span_position >= control.span_position_start) and (
-                        local_span_position <= control.span_position_end
-                    )
+                    is_within = (
+                        local_span_position >= control.span_position_start
+                    ) and (local_span_position <= control.span_position_end)
                 elif control.coordinate_system == "global":
-                    is_within = (global_span_position >= control.span_position_start) and (
-                        global_span_position <= control.span_position_end
-                    )
+                    is_within = (
+                        global_span_position >= control.span_position_start
+                    ) and (global_span_position <= control.span_position_end)
                 else:
-                    raise ValueError(f"Unknown coordinate system {control.coordinate_system}")
+                    raise ValueError(
+                        f"Unknown coordinate system {control.coordinate_system}",
+                    )
 
                 if is_within:
                     if control.constant_chord != 0:
@@ -690,9 +702,15 @@ class WingSurface(RigidBody):
             airf_camber.append(airf_camber_i)
 
             # Normalize the xs according to the norm factor of the airfoil
-            xs_upper[:, j] = (xs_upper[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
-            xs_lower[:, j] = (xs_lower[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
-            xs[:, j] = (xs[:, j] - self._xoffset_dist[j]) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs_upper[:, j] = (
+                xs_upper[:, j] - self._xoffset_dist[j]
+            ) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs_lower[:, j] = (
+                xs_lower[:, j] - self._xoffset_dist[j]
+            ) * airf_j.norm_factor + self._xoffset_dist[j]
+            xs[:, j] = (
+                xs[:, j] - self._xoffset_dist[j]
+            ) * airf_j.norm_factor + self._xoffset_dist[j]
 
         zs_upper = np.array(airf_z_up).T
         zs_lower = np.array(airf_z_low).T
@@ -747,13 +765,16 @@ class WingSurface(RigidBody):
                 ],
             )
             rotated_coordinates[:, :, i] = (
-                np.matmul(R, (coordinates[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
+                np.matmul(R, (coordinates[:, :, i] - c_4[:, i][:, None]))
+                + c_4[:, i][:, None]
             )
             rotated_coordinates_upper[:, :, i] = (
-                np.matmul(R, (coordinates_upper[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
+                np.matmul(R, (coordinates_upper[:, :, i] - c_4[:, i][:, None]))
+                + c_4[:, i][:, None]
             )
             rotated_coordinates_lower[:, :, i] = (
-                np.matmul(R, (coordinates_lower[:, :, i] - c_4[:, i][:, None])) + c_4[:, i][:, None]
+                np.matmul(R, (coordinates_lower[:, :, i] - c_4[:, i][:, None]))
+                + c_4[:, i][:, None]
             )
 
         # Add origin
@@ -843,16 +864,21 @@ class WingSurface(RigidBody):
         """
         # Vectorized calculation for mean_aerodynamic_chord
         num = np.sum(
-            ((self._chord_dist[:-1] + self._chord_dist[1:]) / 2) ** 2 * (self._span_dist[1:] - self._span_dist[:-1]),
+            ((self._chord_dist[:-1] + self._chord_dist[1:]) / 2) ** 2
+            * (self._span_dist[1:] - self._span_dist[:-1]),
         )
         denum = np.sum(
-            (self._chord_dist[:-1] + self._chord_dist[1:]) / 2 * (self._span_dist[1:] - self._span_dist[:-1]),
+            (self._chord_dist[:-1] + self._chord_dist[1:])
+            / 2
+            * (self._span_dist[1:] - self._span_dist[:-1]),
         )
         self.mean_aerodynamic_chord = float(num) / float(denum)
 
         # Vectorized calculation for standard_mean_chord
         num = np.sum(
-            (self._chord_dist[:-1] + self._chord_dist[1:]) / 2 * (self._span_dist[1:] - self._span_dist[:-1]),
+            (self._chord_dist[:-1] + self._chord_dist[1:])
+            / 2
+            * (self._span_dist[1:] - self._span_dist[:-1]),
         )
         denum = np.sum(self._span_dist[1:] - self._span_dist[:-1])
         self.standard_mean_chord = float(num) / float(denum)
@@ -1002,7 +1028,9 @@ class WingSurface(RigidBody):
         zd = ((z_upp + z_low) / 2 - cog[2]) ** 2
 
         if self.is_symmetric_y:
-            yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2 + ((y_upp + y_low) / 2 - cog[1]) ** 2
+            yd = (-(y_upp + y_low) / 2 - cog[1]) ** 2 + (
+                (y_upp + y_low) / 2 - cog[1]
+            ) ** 2
         else:
             yd = ((y_upp + y_low) / 2 - cog[1]) ** 2
 

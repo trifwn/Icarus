@@ -41,7 +41,8 @@ class BackwardEulerIntegrator(Integrator):
             x_old = x_new
             # x_new = jnp.linalg.solve(jnp.eye(x.shape[0]) - self.dt * self.system(t,x_new), x + self.dt * self.system(t,x_new))
             x_new = jnp.linalg.solve(
-                jnp.eye(x.shape[0]) - self.dt * self.system.jacobian(t, x_new) @ (x_new - x),
+                jnp.eye(x.shape[0])
+                - self.dt * self.system.jacobian(t, x_new) @ (x_new - x),
                 x + self.dt * self.system(t, x),
             )
             iteration += 1
@@ -49,7 +50,9 @@ class BackwardEulerIntegrator(Integrator):
 
         def cond(args: tuple[int, jnp.ndarray, jnp.ndarray]) -> jnp.ndarray:
             iteration, x_new, x_old = args
-            return (jnp.max(jnp.abs(x_new - x_old)) >= self.tol) & (iteration < self.max_iter)
+            return (jnp.max(jnp.abs(x_new - x_old)) >= self.tol) & (
+                iteration < self.max_iter
+            )
 
         # Loop until convergence using lax.while_loop
         _, x_new, _ = lax.while_loop(cond, body, (0, x_new, jnp.zeros_like(x_new)))

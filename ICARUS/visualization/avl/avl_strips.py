@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -42,7 +41,7 @@ def plot_avl_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
-    from ICARUS.computation.solvers.AVL import get_strip_data
+    from ICARUS.solvers.AVL import get_strip_data
 
     strip_data = get_strip_data(plane, state, case)
     surface_objects = validate_surface_input(plane, surfaces)
@@ -95,7 +94,9 @@ def plot_avl_strip_data_3D(
                 break
 
             strip_df: DataFrame = strip_data[strip_data["j"] == surface_idx]
-            strip_values: list[float] = [float(item) for item in strip_df[category].values]
+            strip_values: list[float] = [
+                float(item) for item in strip_df[category].values
+            ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
             strip.plot(fig, ax, color=color)
 
@@ -114,7 +115,7 @@ def plot_avl_strip_data_2D(
     """
     Function to plot the 2D strips of a given airplane.
     """
-    from ICARUS.computation.solvers.AVL import get_strip_data
+    from ICARUS.solvers.AVL import get_strip_data
 
     if isinstance(surface_name, str):
         surface = plane.get_surface(surface_name)

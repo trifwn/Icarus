@@ -37,7 +37,7 @@ database_folder = os.path.join(INSTALL_DIR, "Data")
 DB = Database(database_folder)
 
 # #  Load Plane and Engine
-engine_dir = os.path.join(DB.HOMEDIR, "Engine", "Motor_1")
+engine_dir = os.path.join(DB.DB_PATH, "Engine", "Motor_1")
 engine = Engine()
 engine.load_data_from_df(engine_dir)
 # engine.plot_engine_map()

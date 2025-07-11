@@ -1,34 +1,41 @@
+from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Callable
+from typing import Optional
 
-from . import AirplaneInput
+from ICARUS.computation.analyses.analysis_input import BaseAnalysisInput
+from ICARUS.flight_dynamics.state import State
+from ICARUS.vehicle.airplane import Airplane
+
 from . import Analysis
-from . import Input
-from . import StateInput
-from . import StrInput
-
-airplane_option = AirplaneInput()
-state_opion = StateInput()
-solver_2D_option = StrInput(
-    "solver2D",
-    "Name of 2D Solver from which to use computed polars",
-)
 
 
-class BaseDynamicAnalysis(Analysis):
+@dataclass
+class AirplaneStabilityAnalysisInput(BaseAnalysisInput):
+    """Input parameters for a dynamic analysis involving an airplane and its flight state."""
+
+    plane: Optional[Airplane] = field(
+        default=None,
+        metadata={"description": "Airplane object to be analyzed dynamically"},
+    )
+    state: Optional[State] = field(
+        default=None,
+        metadata={"description": "Flight state describing velocity, altitude, etc."},
+    )
+
+
+class BaseStabilityAnalysis(Analysis[AirplaneStabilityAnalysisInput]):
     def __init__(
         self,
         solver_name: str,
         execute_fun: Callable[..., Any],
-        parallel_execute_fun: Callable[..., Any] | None = None,
-        unhook: Callable[..., Any] | None = None,
-        extra_options: list[Input] = [],
+        post_execute_fun: Callable[..., Any] | None = None,
     ) -> None:
         super().__init__(
             analysis_name="Dynamic Analysis",
             solver_name=solver_name,
-            options=[airplane_option, state_opion, solver_2D_option, *extra_options],
             execute_fun=execute_fun,
-            parallel_execute_fun=parallel_execute_fun,
-            unhook=unhook,
+            post_execute_fun=post_execute_fun,
+            input_type=AirplaneStabilityAnalysisInput(),
         )

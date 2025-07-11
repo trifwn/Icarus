@@ -38,7 +38,7 @@ def plot_gnvp_strip_data_3D(
         DataFrame: DataFrame of the strip data
 
     """
-    from ICARUS.computation.solvers.GenuVP.post_process import get_strip_data
+    from ICARUS.solvers.GenuVP.post_process import get_strip_data
 
     all_strip_data, body_data = get_strip_data(plane, state, case, NBs, gnvp_version)
 
@@ -65,7 +65,9 @@ def plot_gnvp_strip_data_3D(
         for j, strip in enumerate(wing.all_strips):
             strip_df: DataFrame = body_data[(body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)]
 
-            strip_values: list[float] = [float(item) for item in strip_df[category].values]
+            strip_values: list[float] = [
+                float(item) for item in strip_df[category].values
+            ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
             strip.plot(fig, ax, color=color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
@@ -103,7 +105,7 @@ def plot_gnvp_strip_data_2D(
     if type(NB) is not int:
         return 0
 
-    from ICARUS.computation.solvers.GenuVP.post_process import get_strip_data
+    from ICARUS.solvers.GenuVP.post_process import get_strip_data
 
     strip_data, data = get_strip_data(plane, state, case, [NB], gnvp_version)
 

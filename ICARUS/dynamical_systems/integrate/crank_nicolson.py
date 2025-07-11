@@ -24,7 +24,11 @@ class CrankNicolsonIntegrator(Integrator):
             k1 = self.system(t, x)
             k2 = self.system(t + self.dt, x1)
             predicted_state = x + 0.5 * self.dt * (k1 + k2)
-            return predicted_state - x - self.dt * self.system(t + 0.5 * self.dt, predicted_state)
+            return (
+                predicted_state
+                - x
+                - self.dt * self.system(t + 0.5 * self.dt, predicted_state)
+            )
 
         def cond_fun(er: jnp.ndarray) -> jnp.ndarray:
             """Loop condition based on error norm."""

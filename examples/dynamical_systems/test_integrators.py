@@ -39,7 +39,6 @@ def test_all_integrators(
 ) -> tuple[dict[str, Array], dict[str, Array]]:
     if isinstance(system, SecondOrderSystem):
         system2: DynamicalSystem = system.convert_to_first_order()
-        newmark = NewmarkIntegrator(dt0, system, gamma=0.5, beta=0.25)
     else:
         system2 = system
 
@@ -60,6 +59,7 @@ def test_all_integrators(
     ]
 
     if isinstance(system, SecondOrderSystem):
+        newmark = NewmarkIntegrator(dt0, system, gamma=0.5, beta=0.25)
         integrators.append(newmark)
 
     # Simulate the system using all the integrators

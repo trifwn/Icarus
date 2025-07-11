@@ -440,7 +440,9 @@ class Wing(RigidBody):
         control_dict = {k: control_vector[k] for k in self.control_vars}
         for i in range(len(self.wing_segments)):
             surf_control_vec = {
-                key: val for key, val in control_dict.items() if key in self.wing_segments[i].control_vars
+                key: val
+                for key, val in control_dict.items()
+                if key in self.wing_segments[i].control_vars
             }
             self.wing_segments[i].__control__(surf_control_vec)
         self.define()

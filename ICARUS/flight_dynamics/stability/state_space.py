@@ -248,7 +248,9 @@ class LongitudalStateSpace:
             # The complex eigenvalue is the phugoid
             phugoid = max(eigen_values, key=lambda x: x.imag)
             # The two real eigenvalues are the short period modes
-            short_period_modes = [eigen_val for eigen_val in eigen_values if eigen_val.imag == 0]
+            short_period_modes = [
+                eigen_val for eigen_val in eigen_values if eigen_val.imag == 0
+            ]
 
             self.phugoid = phugoid
             self.short_period = np.nan

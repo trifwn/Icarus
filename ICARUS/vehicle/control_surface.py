@@ -97,7 +97,10 @@ class ControlSurface:
             name=self.name,
             control_vector_var=self.control_var,
             span_positions=(self.span_position_start, self.span_position_end),
-            hinge_chord_percentages=(self.chord_percentage_start, self.chord_percentage_end),
+            hinge_chord_percentages=(
+                self.chord_percentage_start,
+                self.chord_percentage_end,
+            ),
             chord_extension=self.chord_extension,
             local_rotation_axis=self.local_rotation_axis,
             chord_function=self.chord_function,
@@ -117,7 +120,10 @@ class ControlSurface:
                 name=self.name,
                 control_vector_var=self.control_var,
                 span_positions=(self.span_position_start, self.span_position_end),
-                hinge_chord_percentages=(self.chord_percentage_start, self.chord_percentage_end),
+                hinge_chord_percentages=(
+                    self.chord_percentage_start,
+                    self.chord_percentage_end,
+                ),
                 chord_extension=self.chord_extension,
                 local_rotation_axis=self.local_rotation_axis,
                 chord_function=copy(self.inverse_chord_function),
@@ -141,7 +147,9 @@ class ControlSurface:
             "chord_extension": self.chord_extension,
             "local_rotation_axis": self.local_rotation_axis,
             "chord_function": (
-                serialize_function(self.chord_function) if not self._is_chord_function_default else None
+                serialize_function(self.chord_function)
+                if not self._is_chord_function_default
+                else None
             ),
             "inverse_symmetric": self.inverse_symmetric,
             "constant_chord": self.constant_chord,
@@ -157,7 +165,10 @@ class ControlSurface:
             name=state["name"],
             control_vector_var=state["control_var"],
             span_positions=(state["span_position_start"], state["span_position_end"]),
-            hinge_chord_percentages=(state["chord_percentage_start"], state["chord_percentage_end"]),
+            hinge_chord_percentages=(
+                state["chord_percentage_start"],
+                state["chord_percentage_end"],
+            ),
             chord_extension=state["chord_extension"],
             local_rotation_axis=state["local_rotation_axis"],
             chord_function=chord_function,

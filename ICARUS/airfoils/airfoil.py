@@ -67,8 +67,8 @@ import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
 
+from ICARUS.core.interpolation.scipy import ScipyInterpolator1D
 from ICARUS.core.types import FloatArray
-from ICARUS.interpolation import Interpolator_1D
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -114,13 +114,13 @@ class Airfoil:
         self._x_lower = lower[0, :]
         self._y_lower = lower[1, :]
 
-        self._y_upper_interp = Interpolator_1D(
+        self._y_upper_interp = ScipyInterpolator1D(
             self._x_upper,
             self._y_upper,
             method="linear",
             extrap=True,
         )
-        self._y_lower_interp = Interpolator_1D(
+        self._y_lower_interp = ScipyInterpolator1D(
             self._x_lower,
             self._y_lower,
             method="linear",
@@ -733,7 +733,9 @@ class Airfoil:
             Airfoil: Flapped airfoil
 
         """
-        flap_hinge_1 = flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        flap_hinge_1 = (
+            flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
+        )
         if flap_angle == 0 or flap_hinge_1 == 1.0:
             return self
         theta = np.deg2rad(flap_angle)
@@ -936,17 +938,63 @@ class Airfoil:
         )
         return flapped
 
-    def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:
+    def camber_line(self, points: float | list[float] | FloatArray) -> FloatArray:
         """Returns the camber line for a given set of x coordinates
 
         Args:
-            x (float | list[float] | FloatArray): X coordinates
+            points (float | list[float] | FloatArray): X coordinates
 
         Returns:
             FloatArray: Camber line
 
         """
         return np.array((self.y_upper(x) + self.y_lower(x)) / 2, dtype=float)
+
+    def to_selig(self) -> FloatArray:
+        """Returns the airfoil in the selig format.
+        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
+        back to the trailing edge in either direction:
+        """
+        # Identify the upper and lower surface leading and trailing edges
+        if self._x_upper[0] < self._x_upper[-1]:
+            y_up = self._y_upper[::-1]
+            x_up = self._x_upper[::-1]
+        else:
+            x_up = self._x_upper
+            y_up = self._y_upper
+
+        if self._x_lower[0] > self._x_lower[-1]:
+            x_lo = self._x_lower[::-1]
+            y_lo = self._y_lower[::-1]
+        else:
+            x_lo = self._x_lower
+            y_lo = self._y_lower
+
+        # Remove NaN values
+        idx_nan = np.isnan(x_up) | np.isnan(y_up)
+        x_up = x_up[~idx_nan]
+        y_up = y_up[~idx_nan]
+
+        idx_nan = np.isnan(x_lo) | np.isnan(y_lo)
+        x_lo = x_lo[~idx_nan]
+        y_lo = y_lo[~idx_nan]
+
+        upper = np.array([x_up, y_up], dtype=float)
+        lower = np.array([x_lo, y_lo], dtype=float)
+
+        # Remove duplicates
+
+        lower, upper = self.close_airfoil(lower, upper)
+
+        x_up = upper[0]
+        y_up = upper[1]
+
+        x_lo = lower[0]
+        y_lo = lower[1]
+
+        x_points: FloatArray = np.hstack((x_up, x_lo)).T
+        y_points: FloatArray = np.hstack((y_up, y_lo)).T
+        return np.vstack((x_points, y_points))
 
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:
@@ -1053,7 +1101,11 @@ class Airfoil:
             for x, y in zip(x_clean, y_clean):
                 file.write(f"{x:.6f} {y:.6f}\n")
 
-    def save_le(self, directory: str | None = None) -> None:
+    def save_le(
+        self,
+        directory: str | None = None,
+        header: bool = False,
+    ) -> None:
         """Saves the airfoil in the revese selig format.
 
         Args:
@@ -1073,7 +1125,8 @@ class Airfoil:
             file_name = self.file_name
 
         with open(file_name, "w") as file:
-            file.write(f"{self.name}\n\n")
+            if header:
+                file.write(f"{self.name} with {self.n_points}\n")
             for x, y in pts.T:
                 file.write(f" {x:.6f} {y:.6f}\n")
 

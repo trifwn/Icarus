@@ -78,7 +78,9 @@ class Mass:
             elif inertia.shape == (6,):
                 self._inertia = InertiaTensor(*inertia)
             else:
-                raise ValueError("Array inertia must be (3,3) matrix or 6-element vector")
+                raise ValueError(
+                    "Array inertia must be (3,3) matrix or 6-element vector",
+                )
         else:
             try:
                 inertia_arr = np.asarray(inertia)
@@ -87,7 +89,9 @@ class Mass:
                 else:
                     raise ValueError("Invalid inertia format")
             except (ValueError, TypeError):
-                raise ValueError("Inertia must be InertiaTensor, 3x3 matrix, or 6-element vector")
+                raise ValueError(
+                    "Inertia must be InertiaTensor, 3x3 matrix, or 6-element vector",
+                )
 
     # Properties with validation
     @property
@@ -263,7 +267,9 @@ class Mass:
         # opts.update(integration_kwargs)
 
         # More efficient integration using tplquad
-        def compute_moment(moment_func: Callable[[float, float, float], float]) -> float:
+        def compute_moment(
+            moment_func: Callable[[float, float, float], float],
+        ) -> float:
             result = tplquad(
                 lambda z, y, x: distribution(x, y, z) * moment_func(x, y, z),
                 bounds[0][0],
@@ -274,7 +280,7 @@ class Mass:
                 bounds[2][1],  # z bounds
                 **opts,
             )
-            return result[0] * mass
+            return float(result[0]) * mass
 
         # Compute inertia components
         I_xx = compute_moment(lambda x, y, z: y**2 + z**2)

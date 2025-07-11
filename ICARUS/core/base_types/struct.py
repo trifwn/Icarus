@@ -163,7 +163,9 @@ class Struct:
                     new_dict[k] = v
 
             if depth == 0:
-                new_dict = {k: _invert_nested_dict(v, depth + 1) for k, v in new_dict.items()}
+                new_dict = {
+                    k: _invert_nested_dict(v, depth + 1) for k, v in new_dict.items()
+                }
             return new_dict
 
         inverted: dict[Any, Any] = _invert_nested_dict(self._data, self._depth)

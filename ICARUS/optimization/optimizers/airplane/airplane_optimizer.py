@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
+from ICARUS import MAX_FLOAT
+from ICARUS import MAX_INT
 from ICARUS.core.types import FloatArray
-from ICARUS.optimization import MAX_FLOAT
-from ICARUS.optimization import MAX_INT
 from ICARUS.optimization.callbacks import OptimizationCallback
 
 from .. import General_SOO_Optimizer
@@ -28,7 +28,9 @@ class Airplane_Optimizer(General_SOO_Optimizer):
         f: Callable[..., float],
         jac: Callable[..., float] | None = None,
         linear_constraints: list[dict[str, FloatArray | str | float]] = [],
-        non_linear_constraints: list[dict[str, Callable[..., float] | str | float]] = [],
+        non_linear_constraints: list[
+            dict[str, Callable[..., float] | str | float]
+        ] = [],
         # Stop Parameters
         maxtime_sec: float = MAX_FLOAT,
         max_iter: int = MAX_INT,

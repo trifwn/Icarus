@@ -476,7 +476,10 @@ class MissionTrajectory:
         # Axes 1 is the Velocity
         all_axs[1].plot(self.times, self.velocities["x"], label="Vx")
         all_axs[1].plot(self.times, self.velocities["y"], label="Vy")
-        velocity_mag = [((vx**2 + vy**2) ** 0.5) for vx, vy in zip(self.velocities["x"], self.velocities["y"])]
+        velocity_mag = [
+            ((vx**2 + vy**2) ** 0.5)
+            for vx, vy in zip(self.velocities["x"], self.velocities["y"])
+        ]
         all_axs[1].plot(self.times, velocity_mag, label="V")
         all_axs[1].set_title("Velocity")
         all_axs[1].set_xlabel("Time")

@@ -42,14 +42,12 @@ from .utils import (
 from . import airfoil
 from . import airplane
 from . import avl
-from . import f2w
 from . import gnvp
 
 __all__ = [
     "airfoil",
     "airplane",
     "gnvp",
-    "f2w",
     "avl",
     "flatten_axes",
     "create_subplots",

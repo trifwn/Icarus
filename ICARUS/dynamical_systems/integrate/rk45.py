@@ -28,11 +28,18 @@ class RK45Integrator(Integrator):
         k3 = self.system(t + (3 / 8) * dt, x + (3 / 32) * dt * k1 + (9 / 32) * dt * k2)
         k4 = self.system(
             t + (12 / 13) * dt,
-            x + (1932 / 2197) * dt * k1 - (7200 / 2197) * dt * k2 + (7296 / 2197) * dt * k3,
+            x
+            + (1932 / 2197) * dt * k1
+            - (7200 / 2197) * dt * k2
+            + (7296 / 2197) * dt * k3,
         )
         k5 = self.system(
             t + dt,
-            x + (439 / 216) * dt * k1 - 8 * dt * k2 + (3680 / 513) * dt * k3 - (845 / 4104) * dt * k4,
+            x
+            + (439 / 216) * dt * k1
+            - 8 * dt * k2
+            + (3680 / 513) * dt * k3
+            - (845 / 4104) * dt * k4,
         )
         k6 = self.system(
             t + (1 / 2) * dt,
@@ -45,7 +52,13 @@ class RK45Integrator(Integrator):
         )
 
         # Compute the 4th and 5th order estimates
-        x_4 = x + (25 / 216) * dt * k1 + (1408 / 2565) * dt * k3 + (2197 / 4104) * dt * k4 - (1 / 5) * dt * k5
+        x_4 = (
+            x
+            + (25 / 216) * dt * k1
+            + (1408 / 2565) * dt * k3
+            + (2197 / 4104) * dt * k4
+            - (1 / 5) * dt * k5
+        )
         x_5 = (
             x
             + (16 / 135) * dt * k1

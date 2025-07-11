@@ -47,11 +47,11 @@ def plot_airplane_polars(
     airplanes_objs: list[Airplane] = validate_airplane_input(airplanes)
 
     number_of_plots = len(plots)
-    DB = Database.get_instance()
+
     # Divide the plots equally
     sqrt_num = number_of_plots**0.5
-    i: int = int(np.ceil(sqrt_num))
-    j: int = int(np.floor(sqrt_num))
+    i = int(np.ceil(sqrt_num))
+    j = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
     axs = fig.subplots(i, j)  # type: ignore
@@ -95,9 +95,13 @@ def plot_airplane_polars(
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):
                     if plot[0] == "CL/CD" or plot[1] == "CL/CD":
-                        polar[f"{prefix} CL/CD"] = polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                        polar[f"{prefix} CL/CD"] = (
+                            polar[f"{prefix} CL"] / polar[f"{prefix} CD"]
+                        )
                     if plot[0] == "CD/CL" or plot[1] == "CD/CL":
-                        polar[f"{prefix} CD/CL"] = polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                        polar[f"{prefix} CD/CL"] = (
+                            polar[f"{prefix} CD"] / polar[f"{prefix} CL"]
+                        )
 
                     key0 = f"{prefix} {plot[0]}"
                     key1 = f"{prefix} {plot[1]}"

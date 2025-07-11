@@ -63,7 +63,12 @@ def equal_spacing_function(Ni: int, N: int, stretching: float) -> float:
     return (Ni / (N - 1)) * stretching
 
 
-def cosine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 0.2) -> float:
+def cosine_spacing_function(
+    Ni: int,
+    N: int,
+    stretching: float,
+    factor: float = 0.2,
+) -> float:
     """Returns a cosine spaced array of length N."""
     cosine = 0.5 * (1 - np.cos(np.pi * Ni / (N - 1)))
     linear = Ni / (N - 1)
@@ -71,7 +76,12 @@ def cosine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 
     return y * stretching
 
 
-def sine_spacing_function(Ni: int, N: int, stretching: float, factor: float = 0) -> float:
+def sine_spacing_function(
+    Ni: int,
+    N: int,
+    stretching: float,
+    factor: float = 0,
+) -> float:
     """Returns a sine spaced array of length N."""
     if N < 0:
         N = -N

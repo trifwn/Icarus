@@ -24,4 +24,8 @@ class Controlller:
 
     @property
     def trim_variables(self) -> dict[str, str | float]:
-        return {k: v for k, v in self.control_vector.items() if isinstance(v, str) and v == "TRIM_VARIABLE"}
+        return {
+            k: v
+            for k, v in self.control_vector.items()
+            if isinstance(v, str) and v == "TRIM_VARIABLE"
+        }

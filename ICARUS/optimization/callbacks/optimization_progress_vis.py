@@ -134,7 +134,6 @@ class OptimizationProgress(OptimizationCallback):
         try:
             # Get the data of the line
             xdata, ydata = line.get_data()
-            print(xdata, ydata)
             if result.fun > 1e10:
                 return
             # Append the new data
