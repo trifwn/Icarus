@@ -21,7 +21,9 @@ colors_ = distinctipy.get_colors(36)
 def get_distinct_markers(n: int) -> list[MarkerStyle]:
     """Get a list of distinct markers."""
     if n > len(markers):
-        raise ValueError(f"Requested {n} markers, but only {len(markers)} are available.")
+        raise ValueError(
+            f"Requested {n} markers, but only {len(markers)} are available.",
+        )
     return markers[:n]
 
 
@@ -73,7 +75,9 @@ def validate_airplane(
     elif isinstance(airplane, Airplane):
         return airplane
     else:
-        raise TypeError(f"Invalid type for airplane: {type(airplane)}. Expected str or Airplane.")
+        raise TypeError(
+            f"Invalid type for airplane: {type(airplane)}. Expected str or Airplane.",
+        )
 
 
 def validate_surface_input(
@@ -94,7 +98,9 @@ def validate_surface_input(
             elif isinstance(item, WingSurface) or isinstance(item, Wing):
                 surface_objects.append(item)
             else:
-                raise ValueError("surfaces must be a string, WingSurface, or Wing object")
+                raise ValueError(
+                    "surfaces must be a string, WingSurface, or Wing object",
+                )
     return surface_objects
 
 

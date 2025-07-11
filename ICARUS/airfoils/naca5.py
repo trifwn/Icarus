@@ -3,9 +3,6 @@ from typing import Any
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.interpolation.cubic_spline import (
-    cubic_spline_interpolate as interpolate,
-)
 from ICARUS.core.types import FloatArray
 from ICARUS.interpolation import interpolate_1D
 

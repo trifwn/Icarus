@@ -63,7 +63,9 @@ def plot_gnvp_strip_data_3D(
         if i + 1 not in NBs:
             continue
         for j, strip in enumerate(wing.all_strips):
-            strip_df: DataFrame = body_data[(body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)]
+            strip_df: DataFrame = body_data[
+                (body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)
+            ]
 
             strip_values: list[float] = [
                 float(item) for item in strip_df[category].values

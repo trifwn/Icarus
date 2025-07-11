@@ -106,7 +106,10 @@ class Airfoil:
             self._name = "Airfoil"
 
         lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
-        lower, upper = self.order_points(lower, upper)  # order points according to LE/TE
+        lower, upper = self.order_points(
+            lower,
+            upper,
+        )  # order points according to LE/TE
         lower, upper = self.close_airfoil(lower, upper)  # close airfoil
         # Unpack coordinates
         self._x_upper = upper[0, :]
@@ -374,7 +377,11 @@ class Airfoil:
         upper_extended = upper_extended.at[:, upper_start_idx:upper_end_idx].set(upper)
 
         # Conditionally add leading edge
-        upper_extended = jnp.where(add_lower_le_to_upper, upper_extended.at[:, 0:1].set(lower_le), upper_extended)
+        upper_extended = jnp.where(
+            add_lower_le_to_upper,
+            upper_extended.at[:, 0:1].set(lower_le),
+            upper_extended,
+        )
 
         # Conditionally add trailing edge
         upper_extended = jnp.where(
@@ -391,7 +398,11 @@ class Airfoil:
         lower_extended = lower_extended.at[:, lower_start_idx:lower_end_idx].set(lower)
 
         # Conditionally add leading edge
-        lower_extended = jnp.where(add_upper_le_to_lower, lower_extended.at[:, 0:1].set(upper_le), lower_extended)
+        lower_extended = jnp.where(
+            add_upper_le_to_lower,
+            lower_extended.at[:, 0:1].set(upper_le),
+            lower_extended,
+        )
 
         # Conditionally add trailing edge
         lower_extended = jnp.where(
@@ -402,10 +413,14 @@ class Airfoil:
 
         # Calculate actual sizes
         upper_actual_size = (
-            upper.shape[1] + jnp.where(add_lower_le_to_upper, 1, 0) + jnp.where(add_lower_te_to_upper, 1, 0)
+            upper.shape[1]
+            + jnp.where(add_lower_le_to_upper, 1, 0)
+            + jnp.where(add_lower_te_to_upper, 1, 0)
         )
         lower_actual_size = (
-            lower.shape[1] + jnp.where(add_upper_le_to_lower, 1, 0) + jnp.where(add_upper_te_to_lower, 1, 0)
+            lower.shape[1]
+            + jnp.where(add_upper_le_to_lower, 1, 0)
+            + jnp.where(add_upper_te_to_lower, 1, 0)
         )
 
         # Trim to actual sizes

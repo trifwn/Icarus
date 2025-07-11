@@ -68,7 +68,12 @@ class WingSurface(RigidBody):
           - The airfoil at that point. The airfoil is interpolated between the root and tip airfoil.
         """
         # Initialize the base RigidBody with mass distribution
-        super().__init__(name=name, origin=origin, orientation=orientation, masses=other_masses)
+        super().__init__(
+            name=name,
+            origin=origin,
+            orientation=orientation,
+            masses=other_masses,
+        )
         self.structural_mass: float = structural_mass
 
         # Check that the number of points is the same for all parameters if not raise an error
@@ -151,11 +156,17 @@ class WingSurface(RigidBody):
 
         ###### Variable Initialization ########
         # Initialize Grid Variables
-        self.grid: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)  # Camber Line
+        self.grid: FloatArray = np.empty(
+            (self.num_grid_points, 3),
+            dtype=float,
+        )  # Camber Line
         self.grid_upper: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)
         self.grid_lower: FloatArray = np.empty((self.num_grid_points, 3), dtype=float)
         # Initialize Panel Variables
-        self.panels: FloatArray = np.empty((self.num_panels, 4, 3), dtype=float)  # Camber Line
+        self.panels: FloatArray = np.empty(
+            (self.num_panels, 4, 3),
+            dtype=float,
+        )  # Camber Line
         self.panels_upper: FloatArray = np.empty((self.num_panels, 4, 3), dtype=float)
         self.panels_lower: FloatArray = np.empty((self.num_panels, 4, 3), dtype=float)
 
@@ -171,7 +182,10 @@ class WingSurface(RigidBody):
         self.area: float = 0.0
 
         # Initialize Volumes
-        self.structural_volume_distribution: FloatArray = np.empty(self.num_panels, dtype=float)
+        self.structural_volume_distribution: FloatArray = np.empty(
+            self.num_panels,
+            dtype=float,
+        )
         self.structural_volume: float = 0.0
 
         ####### Calculate Wing Parameters #######
@@ -351,7 +365,11 @@ class WingSurface(RigidBody):
     def strip_pitches(self) -> FloatArray:
         return self.twist_angles + self.pitch_degrees
 
-    def _on_orientation_changed(self, old_orientation: FloatArray, new_orientation: FloatArray) -> None:
+    def _on_orientation_changed(
+        self,
+        old_orientation: FloatArray,
+        new_orientation: FloatArray,
+    ) -> None:
         """Rotate the Wing by a given rotation matrix."""
         old_pitch, old_roll, old_yaw = old_orientation
         new_pitch, new_roll, new_yaw = new_orientation
@@ -421,7 +439,10 @@ class WingSurface(RigidBody):
     def structural_mass_inertia(self) -> FloatArray:
         if self.structural_mass == 0.0:
             return np.zeros((3, 3), dtype=float)
-        return self.calculate_geometric_center_inertia(self.structural_mass, self.sructural_mass_CG)
+        return self.calculate_geometric_center_inertia(
+            self.structural_mass,
+            self.sructural_mass_CG,
+        )
 
     @property
     def leading_edge(self) -> FloatArray:
@@ -535,7 +556,11 @@ class WingSurface(RigidBody):
                     dtype=float,
                 ),
                 orientation=self.orientation_degrees,
-                symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+                symmetries=[
+                    symmetry
+                    for symmetry in self.symmetries
+                    if symmetry != SymmetryAxes.Y
+                ],
                 spanwise_positions=-self._span_dist[::-1],
                 chord_lengths=self._chord_dist[::-1],
                 z_offsets=self._zoffset_dist[::-1],
@@ -554,7 +579,11 @@ class WingSurface(RigidBody):
                 root_airfoil=copy(self.root_airfoil),
                 origin=self._origin,
                 orientation=self.orientation_degrees,
-                symmetries=[symmetry for symmetry in self.symmetries if symmetry != SymmetryAxes.Y],
+                symmetries=[
+                    symmetry
+                    for symmetry in self.symmetries
+                    if symmetry != SymmetryAxes.Y
+                ],
                 chord_lengths=self._chord_dist,
                 spanwise_positions=self._span_dist,
                 x_offsets=self._xoffset_dist,
@@ -665,7 +694,9 @@ class WingSurface(RigidBody):
     @property
     def all_strips(self) -> list[Strip]:
         if self.is_symmetric_y:
-            symmetric_strips = [strip.return_symmetric(axis=SymmetryAxes.Y) for strip in self.strips]
+            symmetric_strips = [
+                strip.return_symmetric(axis=SymmetryAxes.Y) for strip in self.strips
+            ]
             return [*symmetric_strips[::-1], *self.strips]
         return self.strips
 
@@ -960,7 +991,9 @@ class WingSurface(RigidBody):
         dx4 = g_low[1:, 1:, 0] - g_low[1:, :-1, 0]
         dx = (dx1 + dx2 + dx3 + dx4) / 4
 
-        self.structural_volume_distribution[:] = (0.5 * (area_front + area_back) * dx).flatten()
+        self.structural_volume_distribution[:] = (
+            0.5 * (area_front + area_back) * dx
+        ).flatten()
 
         self.structural_volume = float(np.sum(self.structural_volume_distribution))
         if self.is_symmetric_y:
@@ -991,20 +1024,34 @@ class WingSurface(RigidBody):
 
         if self.is_symmetric_y:
             x_cm = np.sum(
-                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * x,
+                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+                * 2
+                * x,
             )
             y_cm = 0
             z_cm = np.sum(
-                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * 2 * z,
+                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+                * 2
+                * z,
             )
         else:
-            x_cm = np.sum(self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * x)
-            y_cm = np.sum(self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * y)
-            z_cm = np.sum(self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * z)
+            x_cm = np.sum(
+                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * x,
+            )
+            y_cm = np.sum(
+                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * y,
+            )
+            z_cm = np.sum(
+                self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * z,
+            )
 
         return np.array((x_cm, y_cm, z_cm)) / self.structural_volume
 
-    def calculate_geometric_center_inertia(self, mass: float, cog: FloatArray) -> FloatArray:
+    def calculate_geometric_center_inertia(
+        self,
+        mass: float,
+        cog: FloatArray,
+    ) -> FloatArray:
         """Calculates the inertia of the wing about the center of gravity.
 
         Args:
@@ -1035,13 +1082,16 @@ class WingSurface(RigidBody):
             yd = ((y_upp + y_low) / 2 - cog[1]) ** 2
 
         I_xx = np.sum(
-            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * (yd + zd),
+            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+            * (yd + zd),
         )
         I_yy = np.sum(
-            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + zd),
+            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+            * (xd + zd),
         )
         I_zz = np.sum(
-            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * (xd + yd),
+            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+            * (xd + yd),
         )
 
         xd = (x_upp + x_low) / 2 - cog[0]
@@ -1053,16 +1103,21 @@ class WingSurface(RigidBody):
             yd = (y_upp + y_low) / 2 - cog[1]
 
         I_xz = np.sum(
-            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * zd),
+            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+            * (xd * zd),
         )
         I_xy = np.sum(
-            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * (xd * yd),
+            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+            * (xd * yd),
         )
         I_yz = np.sum(
-            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1) * (yd * zd),
+            self.structural_volume_distribution.reshape(self.N - 1, self.M - 1)
+            * (yd * zd),
         )
 
-        return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (mass / self.structural_volume)
+        return np.array((I_xx, I_yy, I_zz, I_xz, I_xy, I_yz)) * (
+            mass / self.structural_volume
+        )
 
     def get_grid(self, which: str = "camber") -> FloatArray | list[FloatArray]:
         """Returns the Grid of the Wing.
@@ -1160,7 +1215,9 @@ class WingSurface(RigidBody):
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         func_dict = state.get("chord_discretization_function")
-        chord_discretization_function = deserialize_function(func_dict) if func_dict else None
+        chord_discretization_function = (
+            deserialize_function(func_dict) if func_dict else None
+        )
         WingSurface.__init__(
             self,
             name=state["name"],

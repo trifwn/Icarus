@@ -67,7 +67,9 @@ class TestUtilityFunctions:
         print(f"Vectorized test ({len(surface_panels)} panels):")
         print(f"  Max error: {max_error}")
         print(f"  Mean error: {mean_error}")
-        print(f"  All within tolerance: {jnp.allclose(computed_cps, precomputed_cps, atol=tolerance)}")
+        print(
+            f"  All within tolerance: {jnp.allclose(computed_cps, precomputed_cps, atol=tolerance)}",
+        )
 
         assert jnp.allclose(
             computed_cps,
@@ -103,8 +105,16 @@ class TestUtilityFunctions:
         print(f"  Expected magnitude: {jnp.linalg.norm(expected_normal)}")
 
         # Check that both are unit vectors
-        assert jnp.allclose(jnp.linalg.norm(computed_normal), 1.0, atol=1e-6), "Computed normal is not a unit vector"
-        assert jnp.allclose(jnp.linalg.norm(expected_normal), 1.0, atol=1e-6), "Expected normal is not a unit vector"
+        assert jnp.allclose(
+            jnp.linalg.norm(computed_normal),
+            1.0,
+            atol=1e-6,
+        ), "Computed normal is not a unit vector"
+        assert jnp.allclose(
+            jnp.linalg.norm(expected_normal),
+            1.0,
+            atol=1e-6,
+        ), "Expected normal is not a unit vector"
 
         # Tolerance for floating point comparison
         tolerance = 1e-6
@@ -120,16 +130,26 @@ class TestUtilityFunctions:
 
         # Verify all computed normals are unit vectors
         computed_magnitudes = jnp.linalg.norm(computed_normals, axis=1)
-        assert jnp.allclose(computed_magnitudes, 1.0, atol=1e-6), "Not all computed normals are unit vectors"
+        assert jnp.allclose(
+            computed_magnitudes,
+            1.0,
+            atol=1e-6,
+        ), "Not all computed normals are unit vectors"
 
         # Compare all normals
-        max_error = jnp.max(jnp.linalg.norm(computed_normals - precomputed_normals, axis=1))
-        mean_error = jnp.mean(jnp.linalg.norm(computed_normals - precomputed_normals, axis=1))
+        max_error = jnp.max(
+            jnp.linalg.norm(computed_normals - precomputed_normals, axis=1),
+        )
+        mean_error = jnp.mean(
+            jnp.linalg.norm(computed_normals - precomputed_normals, axis=1),
+        )
 
         print(f"Vectorized test ({len(surface_panels)} panels):")
         print(f"  Max error: {max_error}")
         print(f"  Mean error: {mean_error}")
-        print(f"  All within tolerance: {jnp.allclose(computed_normals, precomputed_normals, atol=tolerance)}")
+        print(
+            f"  All within tolerance: {jnp.allclose(computed_normals, precomputed_normals, atol=tolerance)}",
+        )
 
         assert jnp.allclose(
             computed_normals,
@@ -274,7 +294,11 @@ class TestUtilityFunctions:
         vectorized_panel_nj = vmap(panel_cp_normal)
         computed_normals = vectorized_panel_nj(near_wake_panels)
 
-        normal_match = jnp.allclose(computed_normals, precomputed_normals, atol=tolerance)
+        normal_match = jnp.allclose(
+            computed_normals,
+            precomputed_normals,
+            atol=tolerance,
+        )
 
         print(f"  Near wake panels tested: {len(near_wake_panels)}")
         print(f"  Control points match: {cp_match}")
@@ -405,7 +429,9 @@ if __name__ == "__main__":
     # airplane = DB.load_vehicle("your_airplane_name")
     # run_validation_with_airplane(airplane)
 
-    print("To run validation, provide an Airplane object to run_validation_with_airplane()")
+    print(
+        "To run validation, provide an Airplane object to run_validation_with_airplane()",
+    )
     print("Example:")
     print("  from ICARUS.database import Database")
     print("  DB = Database.get_instance()")

@@ -1,14 +1,10 @@
 import numpy as np
-<<<<<<<< HEAD:ICARUS/interpolation/interpolate_1D.py
-from interpax import Interpolator1D
+from interpax._spline import Interpolator1D
 from jaxtyping import Float
-========
->>>>>>>> main:ICARUS/core/interpolation/cubic_spline.py
 
 from ICARUS.core.types import FloatArray
 
 
-<<<<<<<< HEAD:ICARUS/interpolation/interpolate_1D.py
 class Interpolator_1D(Interpolator1D):
     def __init__(
         self,
@@ -60,10 +56,7 @@ class Interpolator_1D(Interpolator1D):
         )
 
 
-def interpolate_1D(
-========
 def cubic_spline_interpolate(
->>>>>>>> main:ICARUS/core/interpolation/cubic_spline.py
     xa: FloatArray | list[float],
     ya: FloatArray | list[float],
     queryPoints: FloatArray | list[float],

@@ -111,7 +111,10 @@ class AerodynamicLoads:
         total_mz = 0.0
 
         for strip in self.strips:
-            mx, my, mz = strip.get_total_moments(reference_point=self.reference_point, calculation=calculation)
+            mx, my, mz = strip.get_total_moments(
+                reference_point=self.reference_point,
+                calculation=calculation,
+            )
             total_mx += float(mx)
             total_my += float(my)
             total_mz += float(mz)
@@ -350,7 +353,12 @@ class AerodynamicLoads:
 
         # Add colorbar
         for strip in self.strips:
-            strip.plot_surface(ax=ax, data=strip.gammas, scalar_map=scalar_mappable, colorbar=cbar)
+            strip.plot_surface(
+                ax=ax,
+                data=strip.gammas,
+                scalar_map=scalar_mappable,
+                colorbar=cbar,
+            )
 
     def plot_xy(
         self,
@@ -367,7 +375,12 @@ class AerodynamicLoads:
 
         # Add colorbar
         for strip in self.strips:
-            strip.plot_xy(ax=ax, data=strip.gammas, scalar_map=scalar_mappable, colorbar=cbar)
+            strip.plot_xy(
+                ax=ax,
+                data=strip.gammas,
+                scalar_map=scalar_mappable,
+                colorbar=cbar,
+            )
 
     # def plot_strips(
     #     self,

@@ -101,7 +101,10 @@ class Wing(RigidBody):
         num_grid_points = self.num_grid_points
         num_panels = self.num_panels
 
-        self.grid: FloatArray = np.empty((num_grid_points, 3), dtype=float)  # Camber Line
+        self.grid: FloatArray = np.empty(
+            (num_grid_points, 3),
+            dtype=float,
+        )  # Camber Line
         self.grid_lower: FloatArray = np.empty((num_grid_points, 3), dtype=float)
         self.grid_upper: FloatArray = np.empty((num_grid_points, 3), dtype=float)
 
@@ -121,9 +124,15 @@ class Wing(RigidBody):
         ####### Calculate Wing Parameters ########
 
     ########## Rigid Body Properties ##########
-    def _on_orientation_changed(self, old_orientation: FloatArray, new_orientation: FloatArray) -> None:
+    def _on_orientation_changed(
+        self,
+        old_orientation: FloatArray,
+        new_orientation: FloatArray,
+    ) -> None:
         for segment in self.wing_segments:
-            segment.orientation_degrees = segment.orientation_degrees + (new_orientation - old_orientation)
+            segment.orientation_degrees = segment.orientation_degrees + (
+                new_orientation - old_orientation
+            )
 
     def _on_origin_changed(self, movement: FloatArray) -> None:
         """Updates the origin of the wing segments when the origin of the wing changes"""

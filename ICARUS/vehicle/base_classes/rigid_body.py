@@ -40,7 +40,9 @@ class RigidBody(ABC):
         # Define Coordinate System
         self._origin: Float = jnp.array(origin, dtype=float)
         # Convert orientation from degrees to radians
-        self._orientation_rad: Float = jnp.array(orientation, dtype=float) * jnp.pi / 180
+        self._orientation_rad: Float = (
+            jnp.array(orientation, dtype=float) * jnp.pi / 180
+        )
 
         # Define Orientation angles
         pitch, roll, yaw = self._orientation_rad
@@ -404,7 +406,11 @@ class RigidBody(ABC):
         pass
 
     @abstractmethod
-    def _on_orientation_changed(self, old_orientation: Float, new_orientation: Float) -> None:
+    def _on_orientation_changed(
+        self,
+        old_orientation: Float,
+        new_orientation: Float,
+    ) -> None:
         """Called when orientation changes. Subclasses should update their geometry."""
         pass
 

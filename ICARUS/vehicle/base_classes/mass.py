@@ -361,9 +361,7 @@ class Mass:
 
     # String representation
     def __repr__(self) -> str:
-        return (
-            f"Mass(name='{self._name}', position={self._position.tolist()}, mass={self._mass}, inertia={self._inertia})"
-        )
+        return f"Mass(name='{self._name}', position={self._position.tolist()}, mass={self._mass}, inertia={self._inertia})"
 
     def __str__(self) -> str:
         return f"{self._name}: {self._mass:.2f}kg at {self._position}"

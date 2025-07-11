@@ -137,7 +137,13 @@ class InertiaTensor:
         return cls(I_xx=I_sphere, I_yy=I_sphere, I_zz=I_sphere)
 
     @classmethod
-    def cylinder(cls, mass: float, radius: float, height: float, axis: str = "z") -> InertiaTensor:
+    def cylinder(
+        cls,
+        mass: float,
+        radius: float,
+        height: float,
+        axis: str = "z",
+    ) -> InertiaTensor:
         """Inertia tensor for solid cylinder."""
         I_perp = mass * (3 * radius**2 + height**2) / 12
         I_axis = 0.5 * mass * radius**2
@@ -152,7 +158,13 @@ class InertiaTensor:
             raise ValueError("Axis must be 'x', 'y', or 'z'")
 
     @classmethod
-    def box(cls, mass: float, length: float, width: float, height: float) -> InertiaTensor:
+    def box(
+        cls,
+        mass: float,
+        length: float,
+        width: float,
+        height: float,
+    ) -> InertiaTensor:
         """Inertia tensor for solid rectangular box."""
         I_xx = mass * (width**2 + height**2) / 12
         I_yy = mass * (length**2 + height**2) / 12

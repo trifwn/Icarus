@@ -45,9 +45,15 @@ def panel_cp(panel: Array) -> Array:
     trailing_edge_mid = (panel[2] + panel[3]) / 2
 
     # Control point at quarter chord (3/4 from leading edge to trailing edge)
-    control_point_x = leading_edge_mid[0] + 3 / 4 * (trailing_edge_mid[0] - leading_edge_mid[0])
-    control_point_y = leading_edge_mid[1] + 1 / 2 * (trailing_edge_mid[1] - leading_edge_mid[1])
-    control_point_z = leading_edge_mid[2] + 1 / 2 * (trailing_edge_mid[2] - leading_edge_mid[2])
+    control_point_x = leading_edge_mid[0] + 3 / 4 * (
+        trailing_edge_mid[0] - leading_edge_mid[0]
+    )
+    control_point_y = leading_edge_mid[1] + 1 / 2 * (
+        trailing_edge_mid[1] - leading_edge_mid[1]
+    )
+    control_point_z = leading_edge_mid[2] + 1 / 2 * (
+        trailing_edge_mid[2] - leading_edge_mid[2]
+    )
 
     control_point = jnp.array([control_point_x, control_point_y, control_point_z])
     return control_point

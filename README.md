@@ -5,7 +5,7 @@ Version v1.0
 </p>
 
 ## Working Effort.
-Platform model, analyze and optimize the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name). 
+Platform model, analyze and optimize the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name).
 
 ## Current Goals
 

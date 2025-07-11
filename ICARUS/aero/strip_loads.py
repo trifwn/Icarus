@@ -42,7 +42,9 @@ class StripLoads:
         self.airfoil_pitch = airfoil_pitch
         self.airfoil = airfoil
 
-        assert len(panels) == len(panel_idxs), "Panels and panel_idxs must have the same length."
+        assert len(panels) == len(
+            panel_idxs,
+        ), "Panels and panel_idxs must have the same length."
         self.panels = panels
         self.panel_idxs = panel_idxs
         self.num_panels = len(panel_idxs)
@@ -122,7 +124,9 @@ class StripLoads:
         """
         w_induced = self.mean_w_induced
         # Get the effective angle of attack
-        effective_aoa = jnp.arctan(w_induced / velocity) * 180 / jnp.pi + self.airfoil_pitch
+        effective_aoa = (
+            jnp.arctan(w_induced / velocity) * 180 / jnp.pi + self.airfoil_pitch
+        )
 
         # Get the reynolds number of each strip
         effective_velocity = jnp.sqrt(w_induced**2 + velocity**2)
@@ -160,7 +164,9 @@ class StripLoads:
 
             DB = Database.get_instance()
         except Exception as e:
-            raise RuntimeError("Database instance could not be retrieved. Ensure the database is initialized.") from e
+            raise RuntimeError(
+                "Database instance could not be retrieved. Ensure the database is initialized.",
+            ) from e
 
         try:
             CL, CD, Cm = DB.foils_db.interpolate_polars(
@@ -227,8 +233,14 @@ class StripLoads:
         panel_lift = self.panel_L
         panel_drag = self.panel_D
 
-        M_lift = jnp.sum(panel_lift[:, None] * jnp.cross(lever_arms, panel_normals), axis=0)
-        M_drag = jnp.sum(panel_drag[:, None] * jnp.cross(lever_arms, panel_normals), axis=0)
+        M_lift = jnp.sum(
+            panel_lift[:, None] * jnp.cross(lever_arms, panel_normals),
+            axis=0,
+        )
+        M_drag = jnp.sum(
+            panel_drag[:, None] * jnp.cross(lever_arms, panel_normals),
+            axis=0,
+        )
 
         M = M_lift + M_drag
         Mx = M[0]
@@ -275,17 +287,25 @@ class StripLoads:
         My_2D_at_quarter_chord = Cm * dynamic_pressure * surface * self.chord
 
         # Calculate the moment contributions from the 2D lift and drag
-        Mx_2D = L_2D * (reference_point[1] - self.z_ref) - D_2D * (reference_point[1] - self.z_ref)
-
-        My_2D = My_2D_at_quarter_chord + (
-            L_2D * (reference_point[0] - self.x_ref) - D_2D * (reference_point[0] - self.x_ref)
+        Mx_2D = L_2D * (reference_point[1] - self.z_ref) - D_2D * (
+            reference_point[1] - self.z_ref
         )
 
-        Mz_2D = L_2D * (reference_point[0] - self.x_ref) + D_2D * (reference_point[0] - self.x_ref)
+        My_2D = My_2D_at_quarter_chord + (
+            L_2D * (reference_point[0] - self.x_ref)
+            - D_2D * (reference_point[0] - self.x_ref)
+        )
+
+        Mz_2D = L_2D * (reference_point[0] - self.x_ref) + D_2D * (
+            reference_point[0] - self.x_ref
+        )
 
         return Mx_2D, My_2D, Mz_2D
 
-    def get_total_lift(self, calculation: Literal["potential", "viscous"] = "potential") -> float:
+    def get_total_lift(
+        self,
+        calculation: Literal["potential", "viscous"] = "potential",
+    ) -> float:
         """Get total lift for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_L))
@@ -294,7 +314,10 @@ class StripLoads:
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 
-    def get_total_drag(self, calculation: Literal["potential", "viscous"] = "potential") -> float:
+    def get_total_drag(
+        self,
+        calculation: Literal["potential", "viscous"] = "potential",
+    ) -> float:
         """Get total drag for this strip."""
         if calculation == "potential":
             return float(jnp.sum(self.panel_D))
@@ -364,7 +387,15 @@ class StripLoads:
             zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
             # ax_.plot_wireframe(xs, ys, zs, linewidth=1.5)
 
-            ax_.plot_surface(xs, ys, zs, color="lightgray", alpha=0.5, edgecolor="k", linewidth=0.5)
+            ax_.plot_surface(
+                xs,
+                ys,
+                zs,
+                color="lightgray",
+                alpha=0.5,
+                edgecolor="k",
+                linewidth=0.5,
+            )
 
         # If data is provided, plot it as a surface
         if data is not None:
@@ -375,10 +406,14 @@ class StripLoads:
                 norm = Normalize(vmin=scalar_map[0], vmax=scalar_map[1])
                 scalar_map = ScalarMappable(norm=norm, cmap="viridis")
             elif not isinstance(scalar_map, ScalarMappable):
-                raise TypeError("scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).")
+                raise TypeError(
+                    "scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).",
+                )
 
             if data.shape[0] != self.panels.shape[0]:
-                raise ValueError("Data must have the same length as the number of panels.")
+                raise ValueError(
+                    "Data must have the same length as the number of panels.",
+                )
 
             # Plot each panel with the corresponding data value
             for i in np.arange(0, self.panels.shape[0]):
@@ -388,7 +423,15 @@ class StripLoads:
                 zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
 
                 val = np.array(data[i])
-                ax_.plot_surface(xs, ys, zs, color=scalar_map.to_rgba(val), alpha=0.5, edgecolor="k", linewidth=0.5)
+                ax_.plot_surface(
+                    xs,
+                    ys,
+                    zs,
+                    color=scalar_map.to_rgba(val),
+                    alpha=0.5,
+                    edgecolor="k",
+                    linewidth=0.5,
+                )
 
             if colorbar is None:
                 colorbar = fig.colorbar(
@@ -435,10 +478,14 @@ class StripLoads:
                 norm = Normalize(vmin=scalar_map[0], vmax=scalar_map[1])
                 scalar_map = ScalarMappable(norm=norm, cmap="viridis")
             elif not isinstance(scalar_map, ScalarMappable):
-                raise TypeError("scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).")
+                raise TypeError(
+                    "scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).",
+                )
 
             if data.shape[0] != self.panels.shape[0]:
-                raise ValueError("Data must have the same length as the number of panels.")
+                raise ValueError(
+                    "Data must have the same length as the number of panels.",
+                )
 
             # Plot each panel with the corresponding data value
             for i in np.arange(0, self.panels.shape[0]):

@@ -76,7 +76,11 @@ class AerodynamicResults:
         self.states.append(state)
         self.loads.append(loads)
 
-    def add_results_from_vlm_analysis(self, states: list[AerodynamicState], loads_list: list[AerodynamicLoads]) -> None:
+    def add_results_from_vlm_analysis(
+        self,
+        states: list[AerodynamicState],
+        loads_list: list[AerodynamicLoads],
+    ) -> None:
         """
         Add multiple results from VLM analysis.
 
@@ -100,7 +104,10 @@ class AerodynamicResults:
         """Number of stored results."""
         return len(self.states)
 
-    def get_forces_and_moments(self, calculation: str = "potential") -> tuple[FloatArray, FloatArray]:
+    def get_forces_and_moments(
+        self,
+        calculation: str = "potential",
+    ) -> tuple[FloatArray, FloatArray]:
         """
         Extract forces and moments from all results.
 
@@ -124,7 +131,10 @@ class AerodynamicResults:
 
         return forces, moments
 
-    def calculate_coefficients(self, calculation: str = "potential") -> dict[str, FloatArray]:
+    def calculate_coefficients(
+        self,
+        calculation: str = "potential",
+    ) -> dict[str, FloatArray]:
         """
         Calculate aerodynamic coefficients.
 
@@ -140,19 +150,29 @@ class AerodynamicResults:
         dynamic_pressures = np.array([state.dynamic_pressure for state in self.states])
 
         # Force coefficients
-        CX = forces[:, 0] / (dynamic_pressures * self.reference_area)  # Drag coefficient
-        CY = forces[:, 1] / (dynamic_pressures * self.reference_area)  # Side force coefficient
-        CZ = forces[:, 2] / (dynamic_pressures * self.reference_area)  # Negative lift coefficient
+        CX = forces[:, 0] / (
+            dynamic_pressures * self.reference_area
+        )  # Drag coefficient
+        CY = forces[:, 1] / (
+            dynamic_pressures * self.reference_area
+        )  # Side force coefficient
+        CZ = forces[:, 2] / (
+            dynamic_pressures * self.reference_area
+        )  # Negative lift coefficient
 
         # Moment coefficients
         Cl = (
-            moments[:, 0] / (dynamic_pressures * self.reference_area * self.reference_span)
+            moments[:, 0]
+            / (dynamic_pressures * self.reference_area * self.reference_span)
             if self.reference_span
             else np.zeros_like(CX)
         )
-        Cm = moments[:, 1] / (dynamic_pressures * self.reference_area * self.reference_chord)
+        Cm = moments[:, 1] / (
+            dynamic_pressures * self.reference_area * self.reference_chord
+        )
         Cn = (
-            moments[:, 2] / (dynamic_pressures * self.reference_area * self.reference_span)
+            moments[:, 2]
+            / (dynamic_pressures * self.reference_area * self.reference_span)
             if self.reference_span
             else np.zeros_like(CX)
         )
@@ -263,7 +283,9 @@ class AerodynamicResults:
             if viscous_col in df_viscous.columns:
                 merged_data[viscous_col] = df_viscous[viscous_col]
             else:
-                merged_data[viscous_col] = 0.0  # Default to zero if viscous not calculated
+                merged_data[viscous_col] = (
+                    0.0  # Default to zero if viscous not calculated
+                )
         return merged_data
 
     def plot_polar(
@@ -353,6 +375,4 @@ class AerodynamicResults:
 
     def __repr__(self) -> str:
         """String representation."""
-        return (
-            f"AerodynamicResults(plane={self.plane_name}, num_results={self.num_results}, S_ref={self.reference_area})"
-        )
+        return f"AerodynamicResults(plane={self.plane_name}, num_results={self.num_results}, S_ref={self.reference_area})"

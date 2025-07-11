@@ -85,20 +85,28 @@ def run_vlm_polar_analysis(
         RHS = get_RHS(lspt_plane, Q)
 
         if jnp.any(jnp.isnan(RHS)):
-            raise ValueError("NaN values found in RHS. Check aerodynamic state or plane geometry.")
+            raise ValueError(
+                "NaN values found in RHS. Check aerodynamic state or plane geometry.",
+            )
 
         if jnp.any(jnp.isnan(A_star)):
-            raise ValueError("NaN values found in A_star. Check factorization of VLM matrices.")
+            raise ValueError(
+                "NaN values found in A_star. Check factorization of VLM matrices.",
+            )
 
         if jnp.any(jnp.isnan(A_LU)):
-            raise ValueError("NaN values found in A_LU. Check factorization of VLM matrices.")
+            raise ValueError(
+                "NaN values found in A_LU. Check factorization of VLM matrices.",
+            )
 
         # Step 3: Solve for circulations using factorized system
         gammas = jax.scipy.linalg.lu_solve((A_LU, A_piv), RHS)
         w_induced = jnp.matmul(A_star, gammas)
 
         if jnp.any(jnp.isnan(gammas)):
-            raise ValueError("NaN values found in gammas. Check factorization or RHS calculation.")
+            raise ValueError(
+                "NaN values found in gammas. Check factorization or RHS calculation.",
+            )
 
         # Step 4: Create AerodynamicLoads
         loads = AerodynamicLoads(plane=lspt_plane)

@@ -180,7 +180,9 @@ class LSPTSurface:
         # Vectorized computation for all strips
         compute_strip_vmap = vmap(compute_strip_partial, in_axes=(0,))
 
-        flat_wake_panels, flat_wake_control_points, flat_wake_control_nj = compute_strip_vmap(near_wake_panels)
+        flat_wake_panels, flat_wake_control_points, flat_wake_control_nj = (
+            compute_strip_vmap(near_wake_panels)
+        )
 
         self.flat_wake_panels = flat_wake_panels.reshape(-1, 4, 3)
         self.flat_wake_panel_cps = flat_wake_control_points.reshape(-1, 3)
@@ -295,7 +297,9 @@ class LSPTSurface:
     @property
     def global_near_wake_panel_indices(self) -> jnp.ndarray:
         if not hasattr(self, "_global_near_wake_panel_indices"):
-            raise ValueError("Global near wake panel indices not set. Call add_near_wake_panels() first.")
+            raise ValueError(
+                "Global near wake panel indices not set. Call add_near_wake_panels() first.",
+            )
         return self._global_near_wake_panel_indices
 
     @global_near_wake_panel_indices.setter
@@ -309,7 +313,9 @@ class LSPTSurface:
     @property
     def global_flat_wake_panel_indices(self) -> jnp.ndarray:
         if not hasattr(self, "_global_flat_wake_panel_indices"):
-            raise ValueError("Global flat wake panel indices not set. Call add_flat_wake_panels() first.")
+            raise ValueError(
+                "Global flat wake panel indices not set. Call add_flat_wake_panels() first.",
+            )
         return self._global_flat_wake_panel_indices
 
     @global_flat_wake_panel_indices.setter
@@ -378,7 +384,9 @@ def compute_near_wake_panel(panel: Array, nj: Array) -> Array:
     near_wake_dir = near_wake_dir / jnp.linalg.norm(near_wake_dir)
 
     # Panel length (vectorized computation)
-    panel_length = jnp.linalg.norm((panel[1] + panel[0]) * 0.5 - (panel[2] + panel[3]) * 0.5)
+    panel_length = jnp.linalg.norm(
+        (panel[1] + panel[0]) * 0.5 - (panel[2] + panel[3]) * 0.5,
+    )
 
     # Create near wake panel (vectorized)
     near_wake_panel = jnp.array(

@@ -72,7 +72,9 @@ class Airplane(Optimizable):
                 )
                 self._wings[wing.name] = wing
             else:
-                raise TypeError(f"Invalid type for wing: {type(wing)}. Must be Wing or WingSurface.")
+                raise TypeError(
+                    f"Invalid type for wing: {type(wing)}. Must be Wing or WingSurface.",
+                )
 
         self.airfoils: list[str] = self.get_all_airfoils()
         self.point_masses: list[Mass] = []
@@ -106,7 +108,9 @@ class Airplane(Optimizable):
         surf_names = list(self._wings.keys())
         for name in surf_names:
             wing = self._wings[name]
-            if wing.is_symmetric_y and any([cont.inverse_symmetric for cont in self.wings[0].controls]):
+            if wing.is_symmetric_y and any(
+                [cont.inverse_symmetric for cont in self.wings[0].controls],
+            ):
                 # Split the surface into 2 symmetric surfaces
                 self._wings[name] = wing.split_xz_symmetric_wing()
 
@@ -775,7 +779,9 @@ class Airplane(Optimizable):
         return {
             "name": self.name,
             "main_wing": self.main_wing,
-            "other_surfaces": [wing for wing in self.wings if wing.name != self.main_wing_name],
+            "other_surfaces": [
+                wing for wing in self.wings if wing.name != self.main_wing_name
+            ],
             "orientation": self.orientation,
             "point_masses": self.point_masses,
             "cg_overwrite": self.CG if self.overwrite_mass else None,
@@ -807,7 +813,9 @@ class Airplane(Optimizable):
         return Airplane(
             name=self.name,
             main_wing=self.main_wing,
-            other_wings=[wing for wing in self.wings if wing.name != self.main_wing_name],
+            other_wings=[
+                wing for wing in self.wings if wing.name != self.main_wing_name
+            ],
             orientation=self.orientation,
             point_masses=self.point_masses,
             cg_overwrite=self.CG if self.overwrite_mass else None,

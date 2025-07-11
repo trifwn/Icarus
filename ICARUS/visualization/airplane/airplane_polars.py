@@ -10,7 +10,6 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
-from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
 from ICARUS.visualization.utils import get_distinct_colors
 from ICARUS.visualization.utils import get_distinct_markers

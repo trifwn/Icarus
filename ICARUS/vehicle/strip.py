@@ -56,7 +56,9 @@ class Strip(RigidBody):
             roll=roll * np.pi / 180,
             yaw=yaw * np.pi / 180,
         )
-        base_direction = jnp.array([1.0, 0.0, 0.0])  # Assuming the base direction is along the x-axis
+        base_direction = jnp.array(
+            [1.0, 0.0, 0.0],
+        )  # Assuming the base direction is along the x-axis
         direction = jnp.dot(rotation, base_direction)
 
         super().__init__(
@@ -65,7 +67,9 @@ class Strip(RigidBody):
             orientation=jnp.array([pitch, roll, yaw]),
         )
 
-        leading_edge = jnp.array([self.x_c4, self.y_c4, self.z_c4]) - 0.25 * self.chord * direction
+        leading_edge = (
+            jnp.array([self.x_c4, self.y_c4, self.z_c4]) - 0.25 * self.chord * direction
+        )
 
         self.leading_edge: tuple[Float, Float, Float] = (
             leading_edge[0],
@@ -104,11 +108,16 @@ class Strip(RigidBody):
             roll=roll * np.pi / 180,
             yaw=yaw * np.pi / 180,
         )
-        base_direction = jnp.array([1.0, 0.0, 0.0])  # Assuming the base direction is along the x-axis
+        base_direction = jnp.array(
+            [1.0, 0.0, 0.0],
+        )  # Assuming the base direction is along the x-axis
 
         direction = jnp.dot(rotation, base_direction)
 
-        quarter_chord = jnp.array([leading_edge_x, leading_edge_y, leading_edge_z]) + 0.25 * chord * direction
+        quarter_chord = (
+            jnp.array([leading_edge_x, leading_edge_y, leading_edge_z])
+            + 0.25 * chord * direction
+        )
 
         x_c4, y_c4, z_c4 = quarter_chord
 
@@ -150,7 +159,11 @@ class Strip(RigidBody):
             airfoil=self.airfoil,
         )
 
-    def rotate_around_point(self, point: tuple[float, float, float], rotation: tuple[float, float, float]) -> Strip:
+    def rotate_around_point(
+        self,
+        point: tuple[float, float, float],
+        rotation: tuple[float, float, float],
+    ) -> Strip:
         """Rotate the strip around a specified point by given rotation angles."""
         dx = self.x_c4 - point[0]
         dy = self.y_c4 - point[1]
@@ -236,7 +249,11 @@ class Strip(RigidBody):
         y = np.zeros_like(x)
 
         # 3x3 rotation matrix for yaw, pitch, and roll
-        rotation_mat = RigidBody._compute_rotation_matrix(pitch=self.pitch_rad, roll=self.roll_rad, yaw=self.yaw_rad)
+        rotation_mat = RigidBody._compute_rotation_matrix(
+            pitch=self.pitch_rad,
+            roll=self.roll_rad,
+            yaw=self.yaw_rad,
+        )
 
         # Rotate points based on orientation angles
         coords = jnp.array([x, y, z])
@@ -275,7 +292,11 @@ class Strip(RigidBody):
         y = np.zeros_like(x)
 
         # 3x3 rotation matrix for yaw, pitch, and roll
-        rotation_mat = RigidBody._compute_rotation_matrix(pitch=self.pitch_rad, roll=self.roll_rad, yaw=self.yaw_rad)
+        rotation_mat = RigidBody._compute_rotation_matrix(
+            pitch=self.pitch_rad,
+            roll=self.roll_rad,
+            yaw=self.yaw_rad,
+        )
 
         # Rotate points based on orientation angles
         coords = np.array([x, y, z])

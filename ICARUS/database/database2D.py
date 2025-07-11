@@ -12,7 +12,6 @@ from typing import Literal
 import jsonpickle
 import numpy as np
 
-from ICARUS import INSTALL_DIR
 from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils import AirfoilData
 from ICARUS.airfoils import AirfoilPolarMap

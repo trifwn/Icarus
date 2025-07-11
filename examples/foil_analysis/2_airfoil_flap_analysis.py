@@ -7,7 +7,6 @@ import numpy as np
 from ICARUS import INSTALL_DIR
 from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
-from ICARUS.database import Database
 from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
 database_folder = os.path.join(
