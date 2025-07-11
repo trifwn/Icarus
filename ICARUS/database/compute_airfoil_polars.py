@@ -52,6 +52,7 @@ def compute_airfoil_polars(
             analysis=xf_analysis,
             inputs=xf_inputs,
             solver_parameters=xf_solver_parameters,
+            progress_monitor= None
         )
     elif solver_name == "Foil2Wake":
         from ICARUS.solvers.Foil2Wake import Foil2Wake
@@ -76,6 +77,7 @@ def compute_airfoil_polars(
             analysis=f2w_analysis,
             inputs=f2w_inputs,
             solver_parameters=f2w_solver_parameters,
+            progress_monitor= None
         )
     elif solver_name == "OpenFoam":
         from ICARUS.solvers.OpenFoam.open_foam import OpenFoam
@@ -104,6 +106,7 @@ def compute_airfoil_polars(
             analysis=of_analysis,
             inputs=of_inputs,
             solver_parameters=solver_parameters,
+            progress_monitor= None
         )
     else:
         raise ValueError("Solver not recognized")

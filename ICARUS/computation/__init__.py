@@ -99,9 +99,6 @@ __all__ = [
     "NoSolverParameters",
     # Specific solver parameter types
     "Parameter",
-    "BoolParameter",
-    "FloatParameter",
-    "IntParameter",
     "IntOrNoneParameter",
     "StrParameter",
     # Analyses
