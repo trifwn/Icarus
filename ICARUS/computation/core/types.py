@@ -15,7 +15,6 @@ from multiprocessing.managers import SyncManager
 from typing import Any
 from typing import List
 from typing import Optional
-from typing import Self
 from typing import TypeVar
 
 from .utils.concurrency import ConcurrencyPrimitives
@@ -157,15 +156,7 @@ class ExecutionMode(Enum):
     ASYNC = "async"
     ADAPTIVE = "adaptive"
 
-    def __new__(cls, value) -> Self:
-        """
-        Custom __new__ method to initialize concurrency primitives.
-        """
-        obj = object.__new__(cls)
-        obj._value_ = value
-        return obj
-
-    def __init__(self, value) -> None:
+    def __init__(self, value: str) -> None:
         """
         Initialize the enum member with concurrency primitives.
         """

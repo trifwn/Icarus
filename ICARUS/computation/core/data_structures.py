@@ -7,7 +7,6 @@ for progress tracking, task results, and other core data representations.
 
 from __future__ import annotations
 
-import traceback
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
@@ -17,7 +16,6 @@ from enum import auto
 from typing import Any
 from typing import Generic
 
-from .protocols import SerializableMixin
 from .types import T
 from .types import TaskId
 from .types import TaskState
@@ -31,7 +29,7 @@ class ProgressEventType(Enum):
 
 
 @dataclass
-class ProgressEvent(SerializableMixin):
+class ProgressEvent:
     """
     Represents a progress update for a task.
 
@@ -69,47 +67,6 @@ class ProgressEvent(SerializableMixin):
             (self.current_step / self.total_steps * 100) if self.total_steps > 0 else 0
         )
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert progress update to a serializable dictionary."""
-        error_info = None
-        if self.error:
-            error_info = {
-                "type": type(self.error).__name__,
-                "message": str(self.error),
-                "traceback": traceback.format_exc(),
-            }
-
-        return {
-            "task_id": str(self.task_id),
-            "name": self.name,
-            "current_step": self.current_step,
-            "total_steps": self.total_steps,
-            "message": self.message,
-            "percentage": self.percentage,
-            "timestamp": self.timestamp.isoformat(),
-            "metadata": self.metadata,
-            "completed": self.completed,
-            "error": error_info,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ProgressEvent:
-        """Create a ProgressUpdate instance from a dictionary."""
-        error = None
-        if data.get("error"):
-            error = Exception(f"{data['error']['type']}: {data['error']['message']}")
-
-        return cls(
-            task_id=TaskId(data["task_id"]),
-            name=data["name"],
-            current_step=data["current_step"],
-            total_steps=data["total_steps"],
-            message=data.get("message", ""),
-            metadata=data.get("metadata", {}),
-            completed=data.get("completed", False),
-            error=error,
-        )
-
     @classmethod
     def step_completed(
         cls,
@@ -130,7 +87,7 @@ class ProgressEvent(SerializableMixin):
 
 
 @dataclass
-class TaskResult(SerializableMixin, Generic[T]):
+class TaskResult(Generic[T]):
     """
     Represents the final result of a task's execution.
 
@@ -148,7 +105,7 @@ class TaskResult(SerializableMixin, Generic[T]):
     task_id: TaskId
     state: TaskState
     output: T | None = None
-    error: Exception | None = None
+    error: Exception | BaseException | None = None
     execution_time: timedelta | None = None
     retry_count: int = 0
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -158,61 +115,3 @@ class TaskResult(SerializableMixin, Generic[T]):
     def success(self) -> bool:
         """Check if the task completed successfully."""
         return self.state == TaskState.COMPLETED and self.error is None
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert task result to a serializable dictionary."""
-        serialized_output = None
-        if self.output is not None:
-            if isinstance(self.output, SerializableMixin):
-                serialized_output = self.output.to_dict()
-            else:
-                # Fallback for non-serializable objects.
-                # Consider logging a warning here.
-                serialized_output = str(self.output)
-
-        error_info = None
-        if self.error:
-            error_info = {
-                "type": type(self.error).__name__,
-                "message": str(self.error),
-                "args": self.error.args,
-                "traceback": traceback.format_exception(
-                    type(self.error),
-                    self.error,
-                    self.error.__traceback__,
-                ),
-            }
-
-        return {
-            "task_id": str(self.task_id),
-            "state": self.state.name,
-            "output": serialized_output,
-            "error": error_info,
-            "execution_time": self.execution_time.total_seconds()
-            if self.execution_time
-            else None,
-            "retry_count": self.retry_count,
-            "metadata": self.metadata,
-            "timestamp": self.timestamp.isoformat(),
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> TaskResult[T]:
-        """Create a TaskResult instance from a dictionary."""
-        error = None
-        if data.get("error"):
-            error = Exception(f"<{data['error']['type']}> {data['error']['message']}")
-
-        execution_time = None
-        if data.get("execution_time") is not None:
-            execution_time = timedelta(seconds=data["execution_time"])
-
-        return cls(
-            task_id=TaskId(data["task_id"]),
-            state=TaskState[data["state"]],
-            output=data.get("output"),
-            error=error,
-            execution_time=execution_time,
-            retry_count=data.get("retry_count", 0),
-            metadata=data.get("metadata", {}),
-        )

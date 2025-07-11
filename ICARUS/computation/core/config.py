@@ -6,7 +6,6 @@ environment variable support, and configuration file loading.
 """
 
 import json
-import os
 from dataclasses import dataclass
 from dataclasses import field
 from enum import Enum
@@ -84,7 +83,6 @@ class SimulationConfig:
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""
         self._validate_config()
-        self._apply_environment_overrides()
         if isinstance(self.log_file_path, str):
             self.log_file_path = Path(self.log_file_path)
 
@@ -104,24 +102,6 @@ class SimulationConfig:
 
         if self.max_retry_attempts < 0:
             raise ConfigurationError("max_retry_attempts must be non-negative")
-
-    def _apply_environment_overrides(self) -> None:
-        """Apply configuration overrides from environment variables."""
-        env_mappings = {
-            "ICARUS_SIM_MAX_WORKERS": ("max_workers", int),
-            "ICARUS_SIM_TIMEOUT": ("task_timeout_seconds", float),
-            "ICARUS_SIM_LOG_LEVEL": ("log_level", lambda x: LogLevel(x.upper())),
-            "ICARUS_SIM_DEBUG": ("debug_mode", lambda x: x.lower() == "true"),
-            "ICARUS_SIM_BATCH_SIZE": ("batch_size", int),
-        }
-
-        for env_var, (attr_name, converter) in env_mappings.items():
-            if env_var in os.environ:
-                try:
-                    value = converter(os.environ[env_var])
-                    setattr(self, attr_name, value)
-                except (ValueError, TypeError) as e:
-                    raise ConfigurationError(f"Invalid value for {env_var}: {e}")
 
     @classmethod
     def from_file(cls, config_path: Union[str, Path]) -> "SimulationConfig":

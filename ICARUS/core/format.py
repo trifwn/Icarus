@@ -13,12 +13,12 @@ def _(val: float) -> str:
 
 
 @short_format.register
-def _(val: list) -> str:
+def _(val: list) -> str:  # type: ignore[type-arg]
     return f"[{len(val)} items]"
 
 
 @short_format.register
-def _(val: dict) -> str:
+def _(val: dict) -> str:  # type: ignore[type-arg]
     return f"{{{len(val)} items}}"
 
 

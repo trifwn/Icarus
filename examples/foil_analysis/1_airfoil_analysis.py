@@ -106,10 +106,10 @@ def main() -> None:
 
             f2w_s: Foil2Wake = Foil2Wake()
 
-            analysis = f2w_s.aseq
+            fw_analysis = f2w_s.aseq
 
             # Set Inputs
-            f2w_inputs = analysis.get_analysis_input()
+            f2w_inputs = fw_analysis.get_analysis_input()
             f2w_inputs.airfoil = airfoil
             f2w_inputs.reynolds = reynolds
             f2w_inputs.mach = MACH
@@ -123,7 +123,7 @@ def main() -> None:
             f2w_solver_parameters.timestep = 0.1
 
             _ = f2w_s.execute(
-                analysis=analysis,
+                analysis=fw_analysis,
                 inputs=f2w_inputs,
                 solver_parameters=f2w_solver_parameters,
             )
@@ -142,10 +142,10 @@ def main() -> None:
             # Import Analysis
             # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
             # 1) Sequential Angle run for multiple reynolds
-            analysis = xfoil.aseq  # Run
+            xf_analysis = xfoil.aseq  # Run
 
             # Get Options
-            xfoil_inputs = analysis.get_analysis_input()
+            xfoil_inputs = xf_analysis.get_analysis_input()
 
             # Set Options
             xfoil_inputs.airfoil = airfoil
@@ -169,7 +169,7 @@ def main() -> None:
 
             # RUN and SAVE
             xfoil.execute(
-                analysis=analysis,
+                analysis=xf_analysis,
                 inputs=xfoil_inputs,
                 solver_parameters=xfoil_solver_parameters,
             )
@@ -187,10 +187,10 @@ def main() -> None:
                 open_foam = OpenFoam()
 
                 # Import Analysis
-                analysis = open_foam.get_analyses()[0]  # Run
+                of_analysis = open_foam.get_analyses()[0]  # Run
 
                 # Get Options
-                of_inputs = analysis.get_analysis_input()
+                of_inputs = of_analysis.get_analysis_input()
 
                 # Set Options
                 of_inputs.airfoil = airfoil
@@ -207,7 +207,7 @@ def main() -> None:
 
                 # RUN
                 open_foam.execute(
-                    analysis=analysis,
+                    analysis=of_analysis,
                     inputs=of_inputs,
                     solver_parameters=of_solver_parameters,
                 )

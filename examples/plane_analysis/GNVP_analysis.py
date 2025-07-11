@@ -152,10 +152,10 @@ def main(GNVP_VERSION: int) -> None:
             print("Selecting Analysis:")
             print(stability_analysis)
 
-            inputs = stability_analysis.get_analysis_input(verbose=False)
-            inputs.plane = plane
-            inputs.state = unstick
-            inputs.disturbances = copy.copy(unstick.disturbances)
+            stability_inputs = stability_analysis.get_analysis_input(verbose=False)
+            stability_inputs.plane = plane
+            stability_inputs.state = unstick
+            stability_inputs.disturbances = copy.copy(unstick.disturbances)
 
             solver_parameters = gnvp.get_solver_parameters(verbose=False)
             solver_parameters.Use_Grid = True
@@ -168,7 +168,7 @@ def main(GNVP_VERSION: int) -> None:
             print("Running Pertrubations")
             _ = gnvp.execute(
                 analysis=stability_analysis,
-                inputs=inputs,
+                inputs=stability_inputs,
                 solver_parameters=solver_parameters,
                 execution_mode=ExecutionMode.THREADING,
                 # progress_monitor= None

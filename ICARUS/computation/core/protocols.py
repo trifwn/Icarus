@@ -29,36 +29,6 @@ if TYPE_CHECKING:
 
 
 @runtime_checkable
-class SerializableMixin(Protocol):
-    """
-    Mixin class for objects that can be serialized.
-
-    Provides a standard interface for converting objects to and from
-    dictionary representations. For robust serialization, implementations
-    should handle nested serializable objects and complex data types.
-    """
-
-    def to_dict(self) -> dict[str, Any]:
-        """
-        Convert the object to a serializable dictionary.
-
-        Returns:
-            A dictionary containing the object's data.
-        """
-        ...
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> SerializableMixin:
-        """
-        Create an object instance from a dictionary representation.
-
-        Args:
-            data: A dictionary containing the object's data.
-        """
-        ...
-
-
-@runtime_checkable
 class ConcurrentMixin(Protocol):
     """
     Mixin class for concurrent objects.
@@ -145,7 +115,7 @@ class TaskExecutorProtocol(Protocol, Generic[TaskInput, TaskOutput]):
 
 @runtime_checkable
 class ProgressReporter(ConcurrentMixin, Protocol):
-    event_queue: QueueLike
+    event_queue: QueueLike | None
     """
     Protocol for progress reporting.
 
@@ -153,12 +123,12 @@ class ProgressReporter(ConcurrentMixin, Protocol):
     progress updates from running tasks.
     """
 
-    def report_progress(self, progress: ProgressEvent) -> None:
+    def report_progress(self, event: ProgressEvent) -> None:
         """
         Report a progress update for a task.
 
         Args:
-            progress: A ProgressUpdate object with the current status.
+            event: A ProgressEvent object with the current status.
         """
         ...
 

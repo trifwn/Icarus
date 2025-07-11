@@ -55,7 +55,7 @@ def polar_plot(
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(
-            self,
+            self: Any,  # 'self' is the instance of the class using this decorator
             *args: Any,
             axs: Optional[list[Axes]] = None,
             title: Optional[str] = None,

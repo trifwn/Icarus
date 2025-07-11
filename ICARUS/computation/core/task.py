@@ -55,7 +55,8 @@ class Task(Generic[TaskInput, TaskOutput]):
         task_input: TaskInput,
         config: TaskConfiguration | None = None,
         task_id: TaskId | None = None,
-        progress_probe: Callable[[Task], ProgressEvent] | None = None,
+        progress_probe: Callable[[Task[TaskInput, TaskOutput]], ProgressEvent]
+        | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """
@@ -153,7 +154,7 @@ class Task(Generic[TaskInput, TaskOutput]):
         """String representation of the task."""
         return f"Task(id={self.id}, name='{self.name}', state={self.state.name})"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check for equality with another task based on ID."""
         return isinstance(other, Task) and self.id == other.id
 

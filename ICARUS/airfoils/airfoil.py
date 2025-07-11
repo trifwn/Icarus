@@ -829,17 +829,17 @@ class Airfoil:
         )
         return flapped
 
-    def camber_line(self, x: float | list[float] | FloatArray) -> FloatArray:
+    def camber_line(self, points: float | list[float] | FloatArray) -> FloatArray:
         """Returns the camber line for a given set of x coordinates
 
         Args:
-            x (float | list[float] | FloatArray): X coordinates
+            points (float | list[float] | FloatArray): X coordinates
 
         Returns:
             FloatArray: Camber line
 
         """
-        return np.array((self.y_upper(x) + self.y_lower(x)) / 2, dtype=float)
+        return np.array((self.y_upper(points) + self.y_lower(points)) / 2, dtype=float)
 
     def to_selig(self) -> FloatArray:
         """Returns the airfoil in the selig format.

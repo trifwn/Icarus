@@ -49,7 +49,7 @@ def pre_existing_figure(
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(
-            self,
+            self: Any,
             *args: Any,
             axs: Optional[list[Axes]] = None,
             title: Optional[str] = None,

@@ -168,11 +168,11 @@ class BaseAnalysisInput(ABC):
         return expanded_dict
 
     @classmethod
-    def get_iter_fields(cls) -> list:
+    def get_iter_fields(cls) -> list[str]:
         """Return list of (field_name, order) sorted by order."""
-        iter_fields = []
+        iter_fields: list[tuple[str, int]] = []
         for f in fields(cls):
-            order = f.metadata.get("iter_order")
+            order: int | None = f.metadata.get("iter_order")
             if order is not None:
                 iter_fields.append((f.name, order))
         return [name for name, _ in sorted(iter_fields, key=lambda x: x[1])]

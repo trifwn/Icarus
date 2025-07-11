@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from .core import ConcurrencyFeature
 from .core import ConcurrentVariable
@@ -13,7 +14,7 @@ from .core.protocols import ProgressReporter
 class Reporter(ProgressReporter):
     """Simple console progress reporter"""
 
-    def __init__(self, tasks: list[Task] = []):
+    def __init__(self, tasks: list[Task[Any, Any]] = []) -> None:
         self._observers: set[ProgressObserver] = set()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.tasks = tasks
@@ -62,8 +63,6 @@ class Reporter(ProgressReporter):
                 self.logger.error(f"Error notifying observer: {e}")
 
     def report_completion(self, result: TaskResult) -> None:
-        # task = next((t for t in self.tasks if t.id == result.task_id), None)
-
         # Notify observers
         for observer in self._observers:
             try:

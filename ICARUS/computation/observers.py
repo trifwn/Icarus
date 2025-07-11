@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from .core import ProgressEvent
+from .core import TaskId
 from .core import TaskResult
 from .core.protocols import ProgressObserver
 from .core.utils.concurrency import ConcurrencyFeature
@@ -11,7 +12,7 @@ class ConsoleProgressObserver(ProgressObserver):
     """Simple console progress reporter"""
 
     def __init__(self) -> None:
-        self._last_update = {}
+        self._last_update: dict[TaskId, datetime] = {}
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
         """Request concurrent variables for this observer"""

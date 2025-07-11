@@ -7,6 +7,8 @@ import sys
 from logging.handlers import QueueHandler
 from logging.handlers import QueueListener
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Literal
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -73,7 +75,13 @@ def setup_logging() -> None:
 
 
 # Create a custom print function that sends to the logging queue
-def queue_print(*args, sep=" ", end="\n", file=None, flush=False) -> None:
+def queue_print(
+    *args: object,
+    sep: str = " ",
+    end: str = "\n",
+    file: Any | None = None,
+    flush: Literal[False] = False,
+) -> None:
     # Only intercept stdout prints (file=None or file=sys.stdout)
     import sys
 

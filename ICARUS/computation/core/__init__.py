@@ -12,7 +12,6 @@ from .types import TaskId
 from .types import TaskState
 from .protocols import ProgressReporter
 from .protocols import ResourceManager
-from .protocols import SerializableMixin
 from .protocols import TaskExecutorProtocol
 from .context import ExecutionContext
 from .data_structures import ProgressEvent
@@ -49,7 +48,6 @@ __all__ = [
     "ProgressReporter",
     "ProgressReporter",
     "ResourceManager",
-    "SerializableMixin",
     # Core components
     "ExecutionContext",
     "Task",
