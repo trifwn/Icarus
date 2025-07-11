@@ -3,8 +3,9 @@ from __future__ import annotations
 import asyncio
 import logging
 from time import sleep
-from typing import Any, Sequence
+from typing import Any
 from typing import Self
+from typing import Sequence
 
 from rich.panel import Panel
 from rich.progress import BarColumn
@@ -25,6 +26,7 @@ from ICARUS.computation.core import TaskState
 from ICARUS.computation.core.protocols import ProgressMonitor
 
 from .rich_ui_manager import RichUIManager
+
 
 class RichProgressMonitor(ProgressMonitor):
     """
@@ -202,7 +204,7 @@ class RichProgressMonitor(ProgressMonitor):
             )
             self.handle_progress_event(progress)
 
-    def handle_progress_event(self, update: ProgressEvent):
+    def handle_progress_event(self, update: ProgressEvent) -> None:
         """Applies a ProgressUpdate to its corresponding progress bar and updates the UI row."""
         if update.task_id is None:
             return
@@ -287,7 +289,7 @@ class RichProgressMonitor(ProgressMonitor):
             await asyncio.sleep(self.refresh_rate)
         self.logger.debug("Progress monitor loop stopped")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation of the progress monitor."""
         return f"<RichProgressMonitor tasks={len(self.tasks)} refresh_rate={self.refresh_rate}>"
 

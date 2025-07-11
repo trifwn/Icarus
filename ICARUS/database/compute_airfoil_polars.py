@@ -23,76 +23,76 @@ def compute_airfoil_polars(
     if solver_name == "Xfoil":
         from ICARUS.solvers.Xfoil.xfoil import Xfoil
 
-        solver = Xfoil()
+        xfoil = Xfoil()
 
         # Import Analysis
-        analysis = solver.aseq  # Run
+        xf_analysis = xfoil.aseq  # Run
 
         # Get Options
-        inputs = analysis.get_analysis_input(verbose=False)
+        xf_inputs = xf_analysis.get_analysis_input(verbose=False)
 
         # Set Options
-        inputs.airfoil = airfoil
-        inputs.mach = mach
-        inputs.reynolds = reynolds_numbers
-        inputs.min_aoa = float(np.min(aoas))
-        inputs.max_aoa = float(np.max(aoas))
-        inputs.aoa_step = aoas[1] - aoas[0]
+        xf_inputs.airfoil = airfoil
+        xf_inputs.mach = mach
+        xf_inputs.reynolds = reynolds_numbers
+        xf_inputs.min_aoa = float(np.min(aoas))
+        xf_inputs.max_aoa = float(np.max(aoas))
+        xf_inputs.aoa_step = aoas[1] - aoas[0]
 
         # Set Solver Options
-        solver_parameters = solver.get_solver_parameters()
-        solver_parameters.max_iter = 200
-        solver_parameters.Ncrit = 9
-        solver_parameters.xtr = (trips[0], trips[1])
-        solver_parameters.print = False
-        solver_parameters.repanel_n = repanel
+        xf_solver_parameters = xfoil.get_solver_parameters()
+        xf_solver_parameters.max_iter = 200
+        xf_solver_parameters.Ncrit = 9
+        xf_solver_parameters.xtr = (trips[0], trips[1])
+        xf_solver_parameters.print = False
+        xf_solver_parameters.repanel_n = repanel
 
         # RUN
-        solver.execute(
-            analysis=analysis,
-            inputs=inputs,
-            solver_parameters=solver_parameters,
+        xfoil.execute(
+            analysis=xf_analysis,
+            inputs=xf_inputs,
+            solver_parameters=xf_solver_parameters,
         )
     elif solver_name == "Foil2Wake":
         from ICARUS.solvers.Foil2Wake import Foil2Wake
 
-        solver = Foil2Wake()
+        foil2w = Foil2Wake()
         # Get Options
-        analysis = solver.aseq
-        inputs = analysis.get_analysis_input(verbose=False)
+        f2w_analysis = foil2w.aseq
+        f2w_inputs = f2w_analysis.get_analysis_input(verbose=False)
 
         # Set Options
-        inputs.airfoil = airfoil
-        inputs.reynolds = reynolds_numbers
-        inputs.mach = mach
-        inputs.angles = aoas
+        f2w_inputs.airfoil = airfoil
+        f2w_inputs.reynolds = reynolds_numbers
+        f2w_inputs.mach = mach
+        f2w_inputs.angles = aoas
 
-        solver_parameters = solver.get_solver_parameters()
-        solver_parameters.f_trip_upper = trips[0]
-        solver_parameters.f_trip_low = trips[1]
-        
+        f2w_solver_parameters = foil2w.get_solver_parameters()
+        f2w_solver_parameters.f_trip_upper = trips[0]
+        f2w_solver_parameters.f_trip_low = trips[1]
+
         # RUN
-        solver.execute(
-            analysis=analysis,
-            inputs=inputs,
-            solver_parameters=solver_parameters,
+        foil2w.execute(
+            analysis=f2w_analysis,
+            inputs=f2w_inputs,
+            solver_parameters=f2w_solver_parameters,
         )
     elif solver_name == "OpenFoam":
         from ICARUS.solvers.OpenFoam.open_foam import OpenFoam
 
-        solver = OpenFoam()
+        ofoam = OpenFoam()
         # Import Analysis
-        analysis = solver.get_analyses()[1]  # Run
+        of_analysis = ofoam.get_analyses()[1]  # Run
 
         # Set Inputs
-        inputs = analysis.get_analysis_input(verbose=False)
-        inputs.airfoil = airfoil
-        inputs.angles = aoas
-        inputs.reynolds = reynolds_numbers
-        inputs.mach = mach
+        of_inputs = of_analysis.get_analysis_input(verbose=False)
+        of_inputs.airfoil = airfoil
+        of_inputs.angles = aoas
+        of_inputs.reynolds = reynolds_numbers
+        of_inputs.mach = mach
 
         # Get Solver Parameters
-        solver_parameters = solver.get_solver_parameters()
+        solver_parameters = ofoam.get_solver_parameters()
         from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
 
         solver_parameters.mesh_type = MeshType.structAirfoilMesher
@@ -100,9 +100,9 @@ def compute_airfoil_polars(
         solver_parameters.silent = False
 
         # RUN
-        solver.execute(
-            analysis=analysis,
-            inputs=inputs,
+        ofoam.execute(
+            analysis=of_analysis,
+            inputs=of_inputs,
             solver_parameters=solver_parameters,
         )
     else:

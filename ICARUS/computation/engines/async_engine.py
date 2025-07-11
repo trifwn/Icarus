@@ -19,14 +19,6 @@ class AsyncEngine(AbstractEngine):
     execution_mode: ExecutionMode = ExecutionMode.ASYNC
     """Async-based execution engine with progress integration"""
 
-    def __enter__(self) -> AbstractEngine:
-        """Context manager entry point to prepare execution context."""
-        return super().__enter__()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Context manager exit point to clean up execution context."""
-        ...
-
     async def execute_tasks(
         self,
     ) -> list[TaskResult]:

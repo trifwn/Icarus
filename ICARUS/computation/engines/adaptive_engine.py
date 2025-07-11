@@ -16,15 +16,7 @@ class AdaptiveEngine(AbstractEngine):
     Adaptive execution engine that chooses the best strategy based on task characteristics
     """
 
-    def __enter__(self) -> AbstractEngine:
-        """Context manager entry point to prepare execution context."""
-        ...
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Context manager exit point to clean up execution context."""
-        ...
-
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.current_execution_mode: ExecutionMode | None = None
         self.engines: dict[ExecutionMode, AbstractEngine] = {

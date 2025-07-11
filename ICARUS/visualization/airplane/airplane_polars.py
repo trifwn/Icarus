@@ -57,8 +57,8 @@ def plot_airplane_polars(
 
     # Divide the plots equally
     sqrt_num = number_of_plots**0.5
-    i: int = int(np.ceil(sqrt_num))
-    j: int = int(np.floor(sqrt_num))
+    i = int(np.ceil(sqrt_num))
+    j = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
     axs = fig.subplots(i, j)  # type: ignore

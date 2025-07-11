@@ -23,14 +23,6 @@ class ThreadingEngine(AbstractEngine):
 
     execution_mode: ExecutionMode = ExecutionMode.THREADING
 
-    def __enter__(self) -> AbstractEngine:
-        """Context manager entry point to prepare execution context."""
-        return super().__enter__()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Context manager exit point to clean up execution context."""
-        ...
-
     async def execute_tasks(self) -> list[TaskResult]:
         """Execute tasks using thread pool"""
         self.logger.info(

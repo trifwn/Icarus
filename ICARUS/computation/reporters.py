@@ -71,5 +71,5 @@ class Reporter(ProgressReporter):
             except Exception as e:
                 self.logger.error(f"Error notifying observer: {e}")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<Reporter with observers={(self._observers)}>"

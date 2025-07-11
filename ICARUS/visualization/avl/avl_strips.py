@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -49,7 +48,7 @@ def plot_avl_strip_data_3D(
         # If surface_names is not a list, convert it to a list
         _surface_list = [surface_names]
 
-    surface_list: Sequence[WingSurface] = []
+    surface_list: list[WingSurface] = []
     for item in _surface_list:
         if isinstance(item, str):
             # If item is a string, get the surface by name

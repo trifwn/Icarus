@@ -25,7 +25,7 @@ class SimulationRunner:
         max_workers: int | None = None,
         resource_manager: ResourceManager | None = None,
         progress_monitor: ProgressMonitor | None = None,
-        simulation_name: str | None = None
+        simulation_name: str | None = None,
     ) -> None:
         self.execution_mode = execution_mode
         self.max_workers = max_workers or min(os.cpu_count() or 4, 8)
@@ -34,6 +34,7 @@ class SimulationRunner:
 
         # Task management
         self._tasks: list[Task] = []
+        self._results: list[TaskResult] = []
         self._task_graph: dict[TaskId, list[TaskId]] = {}
 
         # Progress monitoring
@@ -43,7 +44,6 @@ class SimulationRunner:
         )
 
         # State management
-        self._results: list[TaskResult] = []
         self.simulation_name = simulation_name if simulation_name else "Simulation"
 
     def add_task(self, task: Task) -> None:

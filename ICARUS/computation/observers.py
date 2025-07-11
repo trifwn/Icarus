@@ -10,7 +10,7 @@ from .core.utils.concurrency import ConcurrentVariable
 class ConsoleProgressObserver(ProgressObserver):
     """Simple console progress reporter"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._last_update = {}
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:

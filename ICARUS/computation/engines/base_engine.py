@@ -4,6 +4,7 @@ import logging
 import signal
 from abc import ABC
 from abc import abstractmethod
+from types import TracebackType
 from typing import Any
 
 from ICARUS.computation.core import ConcurrencyFeature
@@ -49,7 +50,12 @@ class AbstractEngine(ConcurrentMixin, ABC):
         self.set_concurrent_vars(concurent_vars)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
         """Context manager exit point to clean up execution context."""
         pass
 
