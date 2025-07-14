@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Iterator
+from typing import Literal
 
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -77,7 +78,10 @@ class AerodynamicLoads:
         """
         pass
 
-    def calc_total_lift(self, calculation="potential") -> float:
+    def calc_total_lift(
+        self,
+        calculation: Literal["potential", "viscous"] = "potential",
+    ) -> float:
         """Calculate total lift across all strips.
         Args:
             calculation: Type of lift calculation ('potential' or 'viscous')
@@ -89,7 +93,10 @@ class AerodynamicLoads:
             total_lift += strip.get_total_lift(calculation=calculation)
         return total_lift
 
-    def calc_total_drag(self, calculation="potential") -> float:
+    def calc_total_drag(
+        self,
+        calculation: Literal["potential", "viscous"] = "potential",
+    ) -> float:
         """Calculate total drag across all strips.
 
         Returns:
@@ -100,7 +107,10 @@ class AerodynamicLoads:
             total_drag += strip.get_total_drag(calculation=calculation)
         return total_drag
 
-    def calc_total_moments(self, calculation="potential") -> tuple[float, float, float]:
+    def calc_total_moments(
+        self,
+        calculation: Literal["potential", "viscous"] = "potential",
+    ) -> tuple[float, float, float]:
         """Calculate total moments across all strips.
 
         Returns:
@@ -339,7 +349,7 @@ class AerodynamicLoads:
     #### Plotting methods ####
     def plot_surfaces(
         self,
-    ):
+    ) -> None:
         gammas = self.gammas
         norm = Normalize(vmin=float(gammas.min()), vmax=float(gammas.max()))
         scalar_mappable = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")
@@ -362,7 +372,7 @@ class AerodynamicLoads:
 
     def plot_xy(
         self,
-    ):
+    ) -> None:
         gammas = self.gammas
         norm = Normalize(vmin=float(gammas.min()), vmax=float(gammas.max()))
         scalar_mappable = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")

@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.control_surface import ControlSurface
 
 from . import SymmetryAxes
 from . import WingSurface
@@ -113,7 +114,7 @@ class Wing(RigidBody):
         self.panels_upper: FloatArray = np.empty((num_panels, 4, 3), dtype=float)
 
         self.control_vars = set()
-        self.controls = []
+        self.controls: list[ControlSurface] = []
         for segment in self.wing_segments:
             self.control_vars.update(segment.control_vars)
             self.controls.extend(segment.controls)

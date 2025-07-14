@@ -41,8 +41,8 @@ class LSPT_Plane:
         # Get the wing segments
         panel_index = 0
         grid_index = 0
-        for i, surf in enumerate(plane.wings):
-            for segment in surf.wing_segments:
+        for i, wing in enumerate(plane.wings):
+            for segment in wing.wing_segments:
                 lspt_surface = LSPTSurface(
                     surface=segment,
                     wing_id=i,
@@ -87,14 +87,14 @@ class LSPT_Plane:
         all_surf_panel_indices = []
         all_near_wake_indices = []
         all_flat_wake_indices = []
-        for surf in self.surfaces:
+        for surface in self.surfaces:
             # Indices for the current surface
-            surf_panel_indices = surf_panel_index + jnp.arange(surf.num_panels)
+            surf_panel_indices = surf_panel_index + jnp.arange(surface.num_panels)
             near_wake_indices = (
-                surf_panel_indices[-1] + jnp.arange(surf.num_near_wake_panels) + 1
+                surf_panel_indices[-1] + jnp.arange(surface.num_near_wake_panels) + 1
             )
             flat_wake_indices = (
-                near_wake_indices[-1] + jnp.arange(surf.num_flat_wake_panels) + 1
+                near_wake_indices[-1] + jnp.arange(surface.num_flat_wake_panels) + 1
             )
 
             # print(f"Surface {surf.name}:")
@@ -102,7 +102,7 @@ class LSPT_Plane:
             # print(f"\tNear Wake Indices from {near_wake_indices[0]} to {near_wake_indices[-1]}")
             # print(f"\tFlat Wake Indices from {flat_wake_indices[0]} to {flat_wake_indices[-1]}")
             wake_shedding_panel_indices = (
-                surf_panel_index + surf.wake_shedding_panel_indices
+                surf_panel_index + surface.wake_shedding_panel_indices
             )
 
             # Bookkeeping the indices for near wake and flat wake panels
@@ -112,39 +112,41 @@ class LSPT_Plane:
             all_wake_shedding_panel_indices.extend(wake_shedding_panel_indices.tolist())
 
             # Set Panels
-            self.panels = self.panels.at[surf_panel_indices, :, :].set(surf.panels)
+            self.panels = self.panels.at[surf_panel_indices, :, :].set(surface.panels)
             self.panels = self.panels.at[near_wake_indices, :, :].set(
-                surf.near_wake_panels,
+                surface.near_wake_panels,
             )
             # self.panels = self.panels.at[flat_wake_indices, :, :].set(surf.flat_wake_panels)
 
             # Set Control Points
             self.panel_cps = self.panel_cps.at[surf_panel_indices, :].set(
-                surf.panel_cps,
+                surface.panel_cps,
             )
             self.panel_cps = self.panel_cps.at[near_wake_indices, :].set(
-                surf.near_wake_panel_cps,
+                surface.near_wake_panel_cps,
             )
             # self.panel_cps = self.panel_cps.at[flat_wake_indices, :].set(surf.flat_wake_panel_cps)
 
             # Set Control Normals
             self.panel_normals = self.panel_normals.at[surf_panel_indices, :].set(
-                surf.panel_normals,
+                surface.panel_normals,
             )
             self.panel_normals = self.panel_normals.at[near_wake_indices, :].set(
-                surf.near_wake_panel_normals,
+                surface.near_wake_panel_normals,
             )
             # self.panel_normals = self.panel_normals.at[flat_wake_indices, :].set(surf.flat_wake_panel_normals)
 
             # Set Grid Points
-            grid_indices = surf_grid_index + jnp.arange(surf.num_grid_points)
-            self.grid = self.grid.at[grid_indices, :].set(surf.grid)
+            grid_indices = surf_grid_index + jnp.arange(surface.num_grid_points)
+            self.grid = self.grid.at[grid_indices, :].set(surface.grid)
 
             # Update indices for next surface
             surf_panel_index += (
-                surf.num_panels + surf.num_near_wake_panels + surf.num_flat_wake_panels
+                surface.num_panels
+                + surface.num_near_wake_panels
+                + surface.num_flat_wake_panels
             )
-            surf_grid_index += surf.num_grid_points
+            surf_grid_index += surface.num_grid_points
 
         # Store the indices for near wake and flat wake panels
         self.panel_indices = jnp.array(all_surf_panel_indices)

@@ -18,13 +18,12 @@ if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
 
-from .run_vlm import run_vlm_polar_analysis
+from ICARUS.aero.vlm import run_vlm_polar_analysis
 
 
 def lspt_polars(
     plane: Airplane,
     state: State,
-    solver2D: str,
     angles: FloatArray | list[float],
     solver_parameters: dict[str, Any],
 ) -> None:
@@ -46,17 +45,16 @@ def lspt_polars(
     os.makedirs(LSPTDIR, exist_ok=True)
     # Generate the wing LLT solver
 
-    wing = LSPT_Plane(
+    lspt_plane = LSPT_Plane(
         plane=plane,
     )
 
     # Run the solver
-
     if not isinstance(angles, ndarray):
         angles = np.array(angles)
 
     results: AerodynamicResults = run_vlm_polar_analysis(
-        plane=wing,
+        plane=lspt_plane,
         state=state,
         angles=angles,
     )

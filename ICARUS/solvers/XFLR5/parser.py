@@ -233,7 +233,7 @@ def parse_xfl_project(filename: str) -> Airplane:
     airplane: Airplane = Airplane(
         name=plane_name,
         main_wing=lifting_surfaces["wing"],
-        other_surfaces=[
+        other_wings=[
             lifting_surface
             for name, lifting_surface in lifting_surfaces.items()
             if name != "wing"

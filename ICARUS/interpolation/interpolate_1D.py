@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 from interpax._spline import Interpolator1D
 from jaxtyping import Float
@@ -24,7 +26,7 @@ class JaxInterpolator1D(Interpolator1D):
         """
         super().__init__(x=x, f=f, method=method, extrap=extrap)
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         """
         This method defines the state to be pickled for interp1d objects.
 
@@ -41,7 +43,7 @@ class JaxInterpolator1D(Interpolator1D):
             "extrap": self.extrap,
         }
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         """
         This method reconstructs the interp1d object from the pickled state.
 

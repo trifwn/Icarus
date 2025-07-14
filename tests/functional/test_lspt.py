@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
@@ -29,7 +28,7 @@ def test_lspt_run(
     lspt: LSPT = LSPT()
 
     # Set Analysis
-    analysis: Analysis = lspt.get_analyses()[0]
+    analysis = lspt.aseq
 
     # Set Options
     inputs = analysis.get_analysis_input(verbose=True)
@@ -40,10 +39,10 @@ def test_lspt_run(
 
     inputs.plane = benchmark_airplane
     inputs.state = benchmark_state
-    inputs.solver2D = "Xfoil"
     inputs.angles = angles
 
     solver_parameters = lspt.get_solver_parameters()
+    solver_parameters.solver2D = "Xfoil"
     solver_parameters.Ground_Effect = True
     solver_parameters.Wake_Geom_Type = "TE-Geometrical"
 

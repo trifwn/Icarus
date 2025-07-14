@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.computation.core.types import ExecutionMode
 
 if TYPE_CHECKING:
@@ -27,7 +26,7 @@ def test_gnvp7_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
     run_parallel: bool,
-):
+) -> None:
     """Test GNVP7 solver execution in parallel and serial modes."""
     print(f"Testing GNVP7 Running ({'Parallel' if run_parallel else 'Serial'})...")
 
@@ -36,8 +35,7 @@ def test_gnvp7_run(
 
     gnvp7 = GenuVP7()
 
-    # Set Analysis
-    analysis: Analysis = gnvp7.get_analyses()[0]
+    analysis = gnvp7.aseq
 
     # Set Options
     inputs = analysis.get_analysis_input(verbose=True)
@@ -46,17 +44,17 @@ def test_gnvp7_run(
     AoAmax = 5
     NoAoA = (AoAmax - AoAmin) + 1
     angles = np.linspace(AoAmin, AoAmax, NoAoA)
-    maxiter = 30
+    iterations = 30
     timestep = 0.004
 
     inputs.plane = benchmark_airplane
     inputs.state = benchmark_state
-    inputs.solver2D = "Xfoil"
-    inputs.maxiter = maxiter
-    inputs.timestep = timestep
     inputs.angles = angles
 
     solver_parameters = gnvp7.get_solver_parameters()
+    solver_parameters.solver2D = "Xfoil"
+    solver_parameters.iterations = iterations
+    solver_parameters.timestep = timestep
     solver_parameters.Split_Symmetric_Bodies = False
     solver_parameters.Use_Grid = True
 

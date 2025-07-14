@@ -10,6 +10,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from pandas import Series
 
+from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
 from ICARUS.visualization.utils import get_distinct_colors
 from ICARUS.visualization.utils import get_distinct_markers
@@ -83,6 +84,7 @@ def plot_airplane_polars(
 
     colors = get_distinct_colors(len(airplanes_objs))
 
+    DB = Database.get_instance()
     for i, airplane in enumerate(airplanes_objs):
         polar: DataFrame = DB.get_vehicle_polars(airplane)
 

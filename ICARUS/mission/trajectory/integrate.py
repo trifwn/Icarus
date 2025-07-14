@@ -110,7 +110,7 @@ def RK4systems(
             break
     if success:
         print(
-            f"Simulation Completed Successfully at time {t[-1]}\tTime {t[i]}Max Distance: {x[-1][0]}",
+            f"Simulation Completed Successfully at time {t[-1]}\tMax Distance: {x[-1][0]}",
         )
     else:
         # Return the last valid state

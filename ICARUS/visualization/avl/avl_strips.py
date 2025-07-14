@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -98,7 +99,7 @@ def plot_avl_strip_data_3D(
                 float(item) for item in strip_df[category].values
             ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
-            strip.plot(fig, ax, color=color)
+            strip.plot(ax, color=color)
 
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()

@@ -35,7 +35,6 @@ def gnvp_disturbance_case(
     u_freestream: float,
     angle: float,
     environment: Environment,
-    surfaces: Sequence[WingSurface],
     bodies_dicts: list[GenuSurface],
     dst: Disturbance,
     analysis: str,
@@ -80,12 +79,12 @@ def gnvp_disturbance_case(
         solver=f"GenuVP{gnvp_version}",
     )
 
-    movements: list[list[GNVP_Movement]] = define_global_movements(
-        surfaces,
+    global_movements: list[GNVP_Movement] = define_global_movements(
         plane.CG,
         plane.orientation,
         [dst],
     )
+    movements: list[list[GNVP_Movement]] = [global_movements for _ in bodies_dicts]
 
     folder: str = disturbance_to_directory(dst)
     CASEDIR: str = os.path.join(PLANEDIR, analysis, folder)
@@ -132,14 +131,15 @@ def gnvp_stability(
         solver_parameters (GenuVP3Parameters | GenuVP7Parameters): Solver Parameters
 
     """
+
     DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_parameters.Split_Symmetric_Bodies:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.wings
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
@@ -156,7 +156,6 @@ def gnvp_stability(
             u_freestream=state.trim["U"],
             angle=state.trim["AoA"],
             environment=state.environment,
-            surfaces=surfaces,
             bodies_dicts=bodies_dicts,
             dst=dst,
             analysis="Dynamics",

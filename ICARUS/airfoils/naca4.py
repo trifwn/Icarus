@@ -42,7 +42,16 @@ class NACA4(Airfoil):
         """
         Name of the airfoil in the format NACAXXXX
         """
-        return f"NACA{self.M:01d}{self.P:01d}{self.XX:02d}"
+        if not hasattr(self, "_name") or self._name is None:
+            self._name = f"NACA{self.M:01d}{self.P:01d}{self.XX:02d}"
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        """Sets the name of the airfoil"""
+        if not isinstance(value, str):
+            raise TypeError("Name must be a string")
+        self._name = value.replace(" ", "")
 
     @classmethod
     def from_name(cls, name: str) -> "NACA4":

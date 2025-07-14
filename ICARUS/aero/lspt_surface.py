@@ -31,7 +31,7 @@ class LSPTSurface:
         self,
         surface: WingSurface,
         wing_id: int = 0,
-    ):
+    ) -> None:
         """
         Initialize the LSPTSurface with a name and a list of points.
 
@@ -139,7 +139,7 @@ class LSPTSurface:
         farfield_distance: float = 5,
         alpha: float = 0.0,
         beta: float = 0.0,
-    ):
+    ) -> None:
         """
         Add flat wake panels after the near wake panels.
 
@@ -188,7 +188,7 @@ class LSPTSurface:
         self.flat_wake_panel_cps = flat_wake_control_points.reshape(-1, 3)
         self.flat_wake_panel_normals = flat_wake_control_nj.reshape(-1, 3)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"LSPTSurface(name={self.name}, N={self.N}, M={self.M}, num_panels={self.num_panels})"
 
     def plot_panels(
@@ -346,7 +346,7 @@ def compute_flat_wake_panels_for_strip(
     base_lengths = farfield_distance * MAC / (wake_x_inflation**i_vals)
     panel_lengths = wake_x_inflation**i_vals * base_lengths
 
-    def create_single_flat_panel(length, prev_panel):
+    def create_single_flat_panel(length, prev_panel) -> Array:
         flat_panel = jnp.array(
             [
                 prev_panel[3],
@@ -358,7 +358,7 @@ def compute_flat_wake_panels_for_strip(
         return flat_panel
 
     # Use scan for efficient sequential computation
-    def scan_fn(prev_panel, length):
+    def scan_fn(prev_panel, length) -> tuple[Array, Array]:
         new_panel = create_single_flat_panel(length, prev_panel)
         return new_panel, new_panel
 

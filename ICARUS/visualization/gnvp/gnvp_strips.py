@@ -71,7 +71,7 @@ def plot_gnvp_strip_data_3D(
                 float(item) for item in strip_df[category].values
             ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
-            strip.plot(fig, ax, color=color)
+            strip.plot(ax, color=color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()
     return all_strip_data

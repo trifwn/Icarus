@@ -11,7 +11,7 @@ from ICARUS.vehicle import SymmetryAxes
 from ICARUS.vehicle import WingSegment
 
 
-def get_box_wing(name: str, AR: float = 9, naca: str = "0012") -> Airplane:
+def get_box_wing(name: str, AR: float = 9, airfoil: str = "NACA0012") -> Airplane:
     DB: Database = Database("./Data")
     read_XFLR5_airfoil_polars(os.path.join(DB.EXTERNAL_DB, "2D"))
     origin: FloatArray = np.array([0.0, 0.0, 0.0], dtype=float)

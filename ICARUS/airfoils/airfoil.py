@@ -101,9 +101,9 @@ class Airfoil:
         """
         if name is not None:
             name = name.replace(" ", "")
-            self._name: str = name
+            self._name: str | None  = name
         else:
-            self._name = "Airfoil"
+            self._name = None
 
         lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
         lower, upper = self.order_points(
@@ -144,6 +144,8 @@ class Airfoil:
     @property
     def name(self) -> str:
         """Returns the name of the airfoil"""
+        if not hasattr(self, "_name") or self._name is None:
+            return "Airfoil"
         return self._name
 
     @name.setter
@@ -620,17 +622,16 @@ class Airfoil:
         airfoil_parents = {x for x in airfoil_parents if x is not None}
         if len(airfoil_parents) <= 2:
             # If the airfoils are coming from the same morphing
-            if airfoil1_eta is not None and airfoil2_eta is not None:
-                new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
-
-            if airfoil1_eta is None and airfoil2_eta is None:
-                new_eta = eta
-
-            if airfoil1_eta is not None and airfoil2_eta is None:
-                new_eta = airfoil1_eta * (1 - eta)
-
-            if airfoil1_eta is None and airfoil2_eta is not None:
-                new_eta = (airfoil2_eta) * (eta)
+            if airfoil1_eta is not None:
+                if airfoil2_eta is not None:
+                    new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
+                else:  # airfoil2_eta is None:
+                    new_eta = airfoil1_eta * (1 - eta)
+            else:
+                if airfoil2_eta is None:
+                    new_eta = eta
+                else:  # airfoil2_eta is not None:
+                    new_eta = (airfoil2_eta) * (eta)
 
             # ROUND TO 2 DECIMALS
             new_eta = int(100 * new_eta)
@@ -963,53 +964,7 @@ class Airfoil:
             FloatArray: Camber line
 
         """
-        return np.array((self.y_upper(x) + self.y_lower(x)) / 2, dtype=float)
-
-    def to_selig(self) -> FloatArray:
-        """Returns the airfoil in the selig format.
-        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
-        back to the trailing edge in either direction:
-        """
-        # Identify the upper and lower surface leading and trailing edges
-        if self._x_upper[0] < self._x_upper[-1]:
-            y_up = self._y_upper[::-1]
-            x_up = self._x_upper[::-1]
-        else:
-            x_up = self._x_upper
-            y_up = self._y_upper
-
-        if self._x_lower[0] > self._x_lower[-1]:
-            x_lo = self._x_lower[::-1]
-            y_lo = self._y_lower[::-1]
-        else:
-            x_lo = self._x_lower
-            y_lo = self._y_lower
-
-        # Remove NaN values
-        idx_nan = np.isnan(x_up) | np.isnan(y_up)
-        x_up = x_up[~idx_nan]
-        y_up = y_up[~idx_nan]
-
-        idx_nan = np.isnan(x_lo) | np.isnan(y_lo)
-        x_lo = x_lo[~idx_nan]
-        y_lo = y_lo[~idx_nan]
-
-        upper = np.array([x_up, y_up], dtype=float)
-        lower = np.array([x_lo, y_lo], dtype=float)
-
-        # Remove duplicates
-
-        lower, upper = self.close_airfoil(lower, upper)
-
-        x_up = upper[0]
-        y_up = upper[1]
-
-        x_lo = lower[0]
-        y_lo = lower[1]
-
-        x_points: FloatArray = np.hstack((x_up, x_lo)).T
-        y_points: FloatArray = np.hstack((y_up, y_lo)).T
-        return np.vstack((x_points, y_points))
+        return np.array((self.y_upper(points) + self.y_lower(points)) / 2, dtype=float)
 
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:

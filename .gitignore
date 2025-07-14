@@ -8,6 +8,7 @@ setup.cfg
 *__pycache__
 3d_Party/
 typings/
+*.DS_Store
 
 # PACKAGING
 *.egg

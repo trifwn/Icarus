@@ -235,7 +235,6 @@ class FibonacciDemo:
                 ExecutionMode.ASYNC,
                 ExecutionMode.THREADING,
                 ExecutionMode.MULTIPROCESSING,
-                ExecutionMode.ADAPTIVE,
             ]
 
         all_results = {}
@@ -293,7 +292,6 @@ async def main() -> None:
             "async",
             "threading",
             "multiprocessing",
-            "adaptive",
             "all",
         ],
         default="all",
@@ -312,7 +310,6 @@ async def main() -> None:
             ExecutionMode.ASYNC,
             ExecutionMode.THREADING,
             ExecutionMode.MULTIPROCESSING,
-            ExecutionMode.ADAPTIVE,
         ]
     else:
         mode_map = {
@@ -320,7 +317,6 @@ async def main() -> None:
             "async": ExecutionMode.ASYNC,
             "threading": ExecutionMode.THREADING,
             "multiprocessing": ExecutionMode.MULTIPROCESSING,
-            "adaptive": ExecutionMode.ADAPTIVE,
         }
         modes = [mode_map[args.mode]]
 

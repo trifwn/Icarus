@@ -15,6 +15,7 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import Colorbar
 from matplotlib.colors import Normalize
 from matplotlib.figure import Figure
+from matplotlib.figure import SubFigure
 from matplotlib.patches import Polygon
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -368,7 +369,7 @@ class StripLoads:
         colorbar: Colorbar | None = None,
     ) -> None:
         if ax is None:
-            fig: Figure | None = plt.figure()
+            fig: Figure | SubFigure | None = plt.figure()
             ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
             show_plot = True
         else:
@@ -459,7 +460,7 @@ class StripLoads:
         colorbar: Colorbar | None = None,
     ) -> None:
         if ax is None:
-            fig: Figure | None = plt.figure()
+            fig: Figure | SubFigure | None = plt.figure()
             ax_ = fig.add_subplot()  # type: ignore
             show_plot = True
         else:

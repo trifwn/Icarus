@@ -11,6 +11,7 @@ from pandas import DataFrame
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.database import angle_to_directory
+from ICARUS.vehicle.surface import WingSurface
 
 from .. import GenuVP3Parameters
 from .. import GenuVP7Parameters
@@ -124,20 +125,20 @@ def gnvp_aseq(
     """
     bodies_dicts: list[GenuSurface] = []
     if solver_parameters.Split_Symmetric_Bodies:
-        # surfaces: list[WingSurface] = plane.get()
-        pass
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        wings = plane.wings
+        surfaces = plane.wing_segments
 
-    for i, wing in enumerate(wings):
-        gen_surf: GenuSurface = GenuSurface(wing, i)
+    for i, surface in surfaces:
+        gen_surf: GenuSurface = GenuSurface(surface, i)
         bodies_dicts.append(gen_surf)
 
-    movements: list[list[GNVP_Movement]] = define_global_movements(
-        wings,
+    global_movements: list[GNVP_Movement] = define_global_movements(
         plane.CG,
         plane.orientation,
     )
+    movements: list[list[GNVP_Movement]] = [global_movements for _ in bodies_dicts]
+
     DB = Database.get_instance()
 
     if isinstance(angles, float):

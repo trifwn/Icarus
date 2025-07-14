@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Self
+
 import jax
 import numpy as np
 from jax import numpy as jnp
@@ -87,7 +89,11 @@ class Strip(RigidBody):
     def _on_origin_changed(self, movement: FloatArray) -> None:
         pass
 
-    def _on_orientation_changed(self, orientation: FloatArray) -> None:
+    def _on_orientation_changed(
+        self,
+        old_orientation: FloatArray,
+        new_orientation: FloatArray,
+    ) -> None:
         pass
 
     @classmethod
@@ -239,6 +245,7 @@ class Strip(RigidBody):
     def plot(
         self,
         ax: Axes | None = None,
+        color: str | None = None,
     ) -> None:
         """Plot the strip."""
         from ICARUS.visualization import parse_Axes
@@ -357,5 +364,5 @@ class Strip(RigidBody):
         ), None
 
     @classmethod
-    def tree_unflatten(cls, aux_data, children):
+    def tree_unflatten(cls, aux_data, children) -> Self:
         return cls(*children)

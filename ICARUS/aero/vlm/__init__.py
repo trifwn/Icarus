@@ -6,8 +6,6 @@ from .biot_savart import voring
 from .biot_savart import vortexL
 from .matrices import get_LHS
 from .matrices import get_RHS
-from .polars import lspt_polars
-from .polars import save_results
 from .run_vlm import run_vlm_polar_analysis
 
 # from .wake_model import
@@ -20,8 +18,6 @@ __all__ = [
     "hshoeSL2",
     "symm_wing_panels",
     "ground_effect",
-    "lspt_polars",
-    "save_results",
     "get_LHS",
     "run_vlm_polar_analysis",
 ]

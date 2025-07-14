@@ -33,7 +33,7 @@ def xfoil_aseq(
     xf.Re = reynolds
     xf.M = mach
 
-    pts = airfoil.selig
+    pts = airfoil.to_selig()
     xpts = pts[0]
     ypts = pts[1]
     xf_airf_obj = XFAirfoil(x=xpts, y=ypts)
@@ -80,7 +80,7 @@ def xfoil_aseq_reset_bl(
     xf.Re = reynolds
     xf.M = 0.0
 
-    xpts, ypts = airfoil.selig
+    xpts, ypts = airfoil.to_selig()
     airfoil_obj = XFAirfoil(x=xpts, y=ypts)
     xf.airfoil = airfoil_obj
 

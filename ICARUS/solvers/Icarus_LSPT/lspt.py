@@ -1,12 +1,15 @@
-from ICARUS.aero.vlm import lspt_polars
 from ICARUS.computation.analyses import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
 from ICARUS.computation.solver_parameters import IntOrNoneParameter
 from ICARUS.computation.solver_parameters import Parameter
 from ICARUS.computation.solver_parameters import StrParameter
 
+from .analyses.polars import lspt_polars
+
 
 class LSPT_PolarAnalysis(BaseAirplaneAseq):
+    __call__ = staticmethod(lspt_polars)
+
     def __init__(self) -> None:
         super().__init__(
             solver_name="LSPT",
@@ -31,6 +34,7 @@ solver_parameters: list[Parameter] = [
 
 class LSPT(Solver):
     analyses = [LSPT_PolarAnalysis()]
+    aseq = LSPT_PolarAnalysis()
 
     def __init__(self) -> None:
         super().__init__(

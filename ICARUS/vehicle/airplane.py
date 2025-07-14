@@ -109,7 +109,7 @@ class Airplane(Optimizable):
         for name in surf_names:
             wing = self._wings[name]
             if wing.is_symmetric_y and any(
-                [cont.inverse_symmetric for cont in self.wings[0].controls],
+                [cont.inverse_symmetric for cont in wing.controls],
             ):
                 # Split the surface into 2 symmetric surfaces
                 self._wings[name] = wing.split_xz_symmetric_wing()
@@ -768,7 +768,7 @@ class Airplane(Optimizable):
             self,
             name=state["name"],
             main_wing=state["main_wing"],
-            other_wings=state["other_surfaces"],
+            other_wings=state["other_wings"],
             orientation=state["orientation"],
             point_masses=state["point_masses"],
             cg_overwrite=state["cg_overwrite"],
@@ -779,7 +779,7 @@ class Airplane(Optimizable):
         return {
             "name": self.name,
             "main_wing": self.main_wing,
-            "other_surfaces": [
+            "other_wings": [
                 wing for wing in self.wings if wing.name != self.main_wing_name
             ],
             "orientation": self.orientation,

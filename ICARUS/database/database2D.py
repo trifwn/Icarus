@@ -644,6 +644,7 @@ class Database_2D:
             tuple[float, float, float]: CL, CD, Cm
 
         """
+        airfoil_name = airfoil.name.upper()  # Ensure airfoil name is uppercase
         if airfoil_name not in self.polars.keys():
             if f"NACA{airfoil_name}" in self.polars.keys():
                 airfoil_name = f"NACA{airfoil_name}"

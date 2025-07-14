@@ -90,17 +90,6 @@ def plot_gnvp_wake(
     fig: Figure = plt.figure(figsize=figsize)
     ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
 
-    ax.set_title(
-        f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}",
-    )
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-    ax.view_init(30, 150)
-    ax.axis("scaled")
-    ax.set_xlim(-plane.span / 2, plane.span / 2)
-    ax.set_ylim(-plane.span / 2, plane.span / 2)
-    ax.set_zlim(-1, 1)
-
     p = ax.scatter(
         xs=XP[:, 0],
         ys=XP[:, 1],
@@ -126,8 +115,20 @@ def plot_gnvp_wake(
     )  # GRID
 
     plane.plot(ax, movement=-np.array(plane.CG), show_masses=False)
+
     if scale:
         ax.set_aspect("equal", "box")
+    ax.set_title(
+        f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}",
+    )
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    ax.view_init(30, 150)
+    ax.axis("scaled")
+    ax.set_xlim(-plane.span / 2, plane.span / 2)
+    ax.set_ylim(-plane.span / 2, plane.span / 2)
+    ax.set_zlim(-1, 1)
+
     plt.show()
 
 

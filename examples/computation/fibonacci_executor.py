@@ -22,7 +22,7 @@ class FibonacciExecutor(TaskExecutorProtocol[int, tuple[int, int]]):
     - Validates input parameters
     """
 
-    def __init__(self, delay_per_step: float = 0.01, max_number: int = 10000):
+    def __init__(self, delay_per_step: float = 0.01, max_number: int = 10000) -> None:
         self.delay_per_step = delay_per_step
         self.max_number = max_number
 
