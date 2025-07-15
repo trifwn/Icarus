@@ -200,7 +200,7 @@ class LSPTSurface:
     ) -> None:
         if ax is None:
             fig: Figure | SubFigure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_: Axes3D = fig.add_subplot(projection="3d")  # noqa
             show_plot = True
         else:
             ax_ = ax

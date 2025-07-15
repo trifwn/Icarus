@@ -370,7 +370,7 @@ class StripLoads:
     ) -> None:
         if ax is None:
             fig: Figure | SubFigure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_: Axes3D = fig.add_subplot(projection="3d")  # noqa
             show_plot = True
         else:
             ax_ = ax
@@ -462,7 +462,7 @@ class StripLoads:
     ) -> None:
         if ax is None:
             fig: Figure | SubFigure | None = plt.figure()
-            ax_ = fig.add_subplot()  # type: ignore
+            ax_ = fig.add_subplot()  # noqa
             show_plot = True
         else:
             ax_ = ax

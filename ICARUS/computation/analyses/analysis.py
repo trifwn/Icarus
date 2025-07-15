@@ -27,21 +27,22 @@ from ICARUS.computation.core import TaskState
 from . import BaseAnalysisInput
 
 AnalysisInput = TypeVar("AnalysisInput", bound=BaseAnalysisInput)
+AnalysisOutput = TypeVar("AnalysisOutput", bound=BaseAnalysisInput)
 
 
-class AnalysisExecutor(TaskExecutorProtocol):
+class AnalysisExecutor(TaskExecutorProtocol[AnalysisInput, AnalysisOutput]):
     """
     A simple task executor for running analysis functions.
     """
 
-    def __init__(self, execute_fun: Callable[..., Any]) -> None:
+    def __init__(self, execute_fun: Callable[..., AnalysisOutput]) -> None:
         self.execute_fun = execute_fun
 
     async def execute(
         self,
-        task_input: dict[str, Any],
+        task_input: AnalysisInput,
         context: ExecutionContext,
-    ) -> Any:
+    ) -> AnalysisOutput:
         """
         Executes the analysis function.
         Note: This executor runs a synchronous function. The execution engine
@@ -58,7 +59,7 @@ class AnalysisExecutor(TaskExecutorProtocol):
             )
             raise e
 
-    async def validate_input(self, task_input: dict[str, Any]) -> bool:
+    async def validate_input(self, task_input: AnalysisInput) -> bool:
         # For now, we assume input is validated before task creation.
         return True
 
@@ -118,9 +119,6 @@ class Analysis(Generic[AnalysisInput]):
         self.post_execute_fun: Callable[..., Any] | None = post_execute_fun
         self.monitor_progress_fun: Callable[..., Any] | None = monitor_progress_fun
 
-    # def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
-    #     # return self.execute_fun(*args, **kwargs)
-
     def __str__(self) -> str:
         """String representation of the analysis
 
@@ -144,7 +142,7 @@ class Analysis(Generic[AnalysisInput]):
             description = f.metadata.get("description", "")
             # Get type name
             if hasattr(f.type, "__name__"):
-                type_name = f.type.__name__  # type: ignore
+                type_name = f.type.__name__  # noqa
             else:
                 type_name = str(f.type).replace("typing.", "")
 

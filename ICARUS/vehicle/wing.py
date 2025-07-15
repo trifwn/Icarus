@@ -426,7 +426,7 @@ class Wing(RigidBody):
             show_plot = False
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
+            ax = fig.add_subplot(projection="3d")  # noqa
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")

@@ -43,7 +43,7 @@ def plot_gnvp_strip_data_3D(
     all_strip_data, body_data = get_strip_data(plane, state, case, NBs, gnvp_version)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+    ax: Axes3D = fig.add_subplot(projection="3d")  # noqa
     ax.set_title(f"{plane.name} {category} Data")
     ax.set_ylabel("y")
     ax.set_zlabel("z")

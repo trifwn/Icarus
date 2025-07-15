@@ -26,7 +26,7 @@ def lspt_polars(
     state: State,
     angles: FloatArray | list[float],
     solver_parameters: dict[str, Any],
-) -> None:
+) -> pd.DataFrame:
     """Function to run the wing LLT solver
 
     Args:
@@ -64,6 +64,7 @@ def lspt_polars(
 
     # Save the results
     save_results(plane, state, df)
+    return df
 
 
 def save_results(

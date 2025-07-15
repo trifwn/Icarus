@@ -54,7 +54,7 @@ def plot_airplane_polars(
     j = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs = fig.subplots(i, j)  # type: ignore
+    axs = fig.subplots(i, j)  # noqa
     fig.suptitle(f"{title}", fontsize=16)
 
     if isinstance(axs, Axes):

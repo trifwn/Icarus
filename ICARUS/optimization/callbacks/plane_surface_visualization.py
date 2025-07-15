@@ -28,7 +28,7 @@ class PlaneSurfaceVisualizer(OptimizationCallback):
     def setup(self) -> None:
         """Create a 3D plot to visualize the plane geometry."""
         self.fig = plt.figure(figsize=(10, 10))
-        ax: Axes = self.fig.subplots(1)  # type: ignore
+        ax: Axes = self.fig.subplots(1)  # noqa
         self.ax = ax
         self.fig.show()
 

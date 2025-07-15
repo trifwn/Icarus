@@ -62,7 +62,7 @@ def plot_avl_strip_data_3D(
     strip_data = strip_data[strip_data.index.isin(_surface_names)]
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+    ax: Axes3D = fig.add_subplot(projection="3d")  # noqa
     ax.set_title(f"{plane.name} {category} Data")
     ax.set_ylabel("y")
     ax.set_zlabel("z")

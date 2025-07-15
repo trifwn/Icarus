@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Iterator
 from typing import Literal
 
@@ -317,7 +318,7 @@ class AerodynamicLoads:
             index=list(loads.keys()),
         )
 
-    def get_summary(self) -> dict:
+    def get_summary(self) -> dict[str, Any]:
         """Get a summary of the aerodynamic loads.
 
         Returns:
@@ -356,7 +357,7 @@ class AerodynamicLoads:
 
         # Create 3D plot of the induced velocities
         fig = plt.figure(figsize=(10, 6))
-        ax: Axes3D = fig.add_subplot(111, projection="3d")  # type: ignore
+        ax: Axes3D = fig.add_subplot(111, projection="3d")  # noqa
 
         cbar = plt.colorbar(scalar_mappable, ax=ax)
         cbar.set_label("Gamma Magnitude")

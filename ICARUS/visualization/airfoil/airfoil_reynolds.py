@@ -48,7 +48,7 @@ def plot_airfoils_at_reynolds(
     j: int = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)  # type: ignore
+    axs: ndarray = fig.subplots(2, 2)  # noqa
 
     fig.suptitle(f"{title}", fontsize=16)
 

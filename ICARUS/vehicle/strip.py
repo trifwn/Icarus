@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from typing import Self
 
 import jax
@@ -245,7 +246,7 @@ class Strip(RigidBody):
     def plot(
         self,
         ax: Axes | None = None,
-        color: str | None = None,
+        color: str | tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
     ) -> None:
         """Plot the strip."""
         from ICARUS.visualization import parse_Axes

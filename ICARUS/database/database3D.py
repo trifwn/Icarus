@@ -235,7 +235,7 @@ class Database_3D:
             with open(file, encoding="UTF-8") as f:
                 json_obj: str = f.read()
                 try:
-                    plane: Airplane | None = jsonpickle.decode(json_obj)  # type: ignore
+                    plane: Airplane | None = jsonpickle.decode(json_obj)  # noqa
                     if plane is not None:
                         self.planes[plane.name] = plane
                     else:

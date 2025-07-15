@@ -32,7 +32,7 @@ class ForwardEulerIntegrator(Integrator):
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
         trajectory = trajectory.at[0].set(x0)
 
-        times = jnp.linspace(t0, tf, num_steps + 1, endpoint=True)  # type: ignore
+        times = jnp.linspace(t0, tf, num_steps + 1, endpoint=True)  # noqa
         times, trajectory = self._simulate(trajectory, times, num_steps)
 
         return times, trajectory

@@ -22,7 +22,7 @@ class PlaneGeometryVisualizer(OptimizationCallback):
         self.fig.show()
 
         # Add a subplot to show the value of the objective function
-        ax: Axes3D = self.fig.add_subplot(1, 1, 1, projection="3d")  # type: ignore
+        ax: Axes3D = self.fig.add_subplot(1, 1, 1, projection="3d")  # noqa
         ax.set_title("Initial Plane Geometry")
         ax.set_xlabel("x (m)")
         ax.set_ylabel("y (m)")
@@ -38,7 +38,7 @@ class PlaneGeometryVisualizer(OptimizationCallback):
         ax.legend()
 
         # Add a subplot to show the current plane geometry
-        ax: Axes3D = self.fig.add_subplot(2, 1, 1, projection="3d")  # type: ignore
+        ax = self.fig.add_subplot(2, 1, 1, projection="3d")  # noqa
         ax.set_title("Current Plane Geometry")
         ax.set_xlabel("x (m)")
         ax.set_ylabel("y (m)")

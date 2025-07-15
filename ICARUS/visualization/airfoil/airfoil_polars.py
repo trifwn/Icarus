@@ -42,7 +42,7 @@ def plot_airfoil_polars(
     j: int = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(j, i)  # type: ignore
+    axs: ndarray = fig.subplots(j, i)  # noqa
 
     fig.suptitle(f"{title}", fontsize=16)
 

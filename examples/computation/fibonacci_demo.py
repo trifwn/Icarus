@@ -44,7 +44,11 @@ from ICARUS.computation.core import TaskState
 class FibonacciDemo:
     """Demo class that orchestrates Fibonacci calculations across different execution modes."""
 
-    def __init__(self, numbers: list[int] | None = None, delay_per_step: float = 0.2):
+    def __init__(
+        self,
+        numbers: list[int] | None = None,
+        delay_per_step: float = 0.2,
+    ) -> None:
         """Initialize the demo."""
         self.numbers = numbers or list(
             range(8, 23),

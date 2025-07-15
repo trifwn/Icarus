@@ -196,7 +196,7 @@ class LSPT_Plane:
     ) -> None:
         if ax is None:
             fig: Figure | SubFigure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_: Axes3D = fig.add_subplot(projection="3d")  # noqa
         else:
             ax_ = ax
             fig = ax_.get_figure()
@@ -212,11 +212,11 @@ class LSPT_Plane:
             )
 
         if plot_wake:
-            ax_.scatter([], [], [], color="orange", label="Flat Wake Panels")
-            ax_.scatter([], [], [], color="g", label="Near Wake Panels")
-        ax_.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")
-        ax_.scatter([], [], [], color="r", marker="o", label="Control Points")
-        ax_.scatter([], [], [], color="k", marker="x", label="Grid Points")
+            ax_.scatter([], [], [], color="orange", label="Flat Wake Panels")  # noqa
+            ax_.scatter([], [], [], color="g", label="Near Wake Panels")  # noqa
+        ax_.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")  # noqa
+        ax_.scatter([], [], [], color="r", marker="o", label="Control Points")  # noqa
+        ax_.scatter([], [], [], color="k", marker="x", label="Grid Points")  # noqa
 
         ax_.set_title("Grid")
         ax_.set_xlabel("x")

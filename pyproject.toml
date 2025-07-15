@@ -58,10 +58,9 @@ version = { attr = "ICARUS.__version__" }
 
 [tool.mypy]
 strict = true
-python_version = "3.11"
+python_version = "3.13"
 show_error_codes = true
 warn_unused_configs = true
-plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.ruff.lint]
 select = ["F", "E4", "E7", "E9"]

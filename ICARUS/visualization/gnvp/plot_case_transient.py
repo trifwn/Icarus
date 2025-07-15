@@ -30,7 +30,7 @@ def plot_case_transient(
     """
     # Define 3 subplots that will be filled with Fx Fz and My vs Iterations
     fig: Figure = plt.figure(figsize=size)
-    axs: np.ndarray = fig.subplots(3, 3)  # type: ignore
+    axs: np.ndarray = fig.subplots(3, 3)  # noqa
     fig.suptitle(f"{plane}", fontsize=16)
 
     axs[0, 0].set_title("Fx vs Iterations")

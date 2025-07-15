@@ -170,7 +170,7 @@ def main(GNVP_VERSION: int) -> None:
                 analysis=stability_analysis,
                 inputs=stability_inputs,
                 solver_parameters=solver_parameters,
-                execution_mode=ExecutionMode.THREADING,
+                execution_mode=ExecutionMode.MULTIPROCESSING,
                 # progress_monitor= None
             )
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")
