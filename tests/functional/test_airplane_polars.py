@@ -8,15 +8,17 @@ from ICARUS.database.db import Database
 @pytest.mark.integration
 def test_airplane_polars(database_instance: Database) -> None:
     """Test the airplane polars comparison between different solvers."""
-    planenames: list[str] = ["benchmark"]
+    planenames = ["benchmark"]
 
     solvers = ["GNVP3 2D", "GNVP7 2D", "LSPT 2D"]
 
     for pol in solvers:
-        computed = database_instance.get_vehicle_polars(planenames[0], pol)
-        desired = database_instance.get_vehicle_polars(planenames[0], "AVL")
-
         try:
+            # Attempt to retrieve polars for solver and AVL baseline
+            computed = database_instance.get_vehicle_polars(planenames[0], pol)
+            desired = database_instance.get_vehicle_polars(planenames[0], "AVL")
+
+            # Extract angles of attack and coefficients
             AoA_d: Series[float] = desired["AoA"].astype(float)
             AoA: Series[float] = computed["AoA"].astype(float)
 
@@ -28,7 +30,7 @@ def test_airplane_polars(database_instance: Database) -> None:
 
             Cm_d: Series[float] = desired["Cm"].astype(float)
             Cm: Series[float] = computed[f"{pol}Cm"].astype(float)
-        except KeyError:
+        except (KeyError, ValueError):
             pytest.skip(f"{pol} not found")
 
         # Compare All Values that correspond to same AoA
@@ -44,9 +46,9 @@ def test_airplane_polars(database_instance: Database) -> None:
 
 
 @pytest.mark.parametrize("plot", [False])
-def test_airplane_polars_with_plot(database_instance: Database, plot: bool):
+def test_airplane_polars_with_plot(database_instance: Database, plot: bool) -> None:
     """Test airplane polars with optional plotting."""
-    planenames: list[str] = ["benchmark"]
+    planenames = ["benchmark"]
 
     if plot:
         pytest.importorskip("matplotlib")

@@ -42,9 +42,9 @@ def test_lspt_run(
     inputs.angles = angles
 
     solver_parameters = lspt.get_solver_parameters()
-    solver_parameters.solver2D = "Xfoil"
-    solver_parameters.Ground_Effect = True
-    solver_parameters.Wake_Geom_Type = "TE-Geometrical"
+    # solver_parameters.solver2D = "Xfoil"
+    # solver_parameters.Ground_Effect = True
+    # solver_parameters.Wake_Geom_Type = "TE-Geometrical"
 
     start_time: float = time.perf_counter()
     results = lspt.execute(

@@ -44,6 +44,10 @@ def save_polar_results(
     )
 
     for j, airfoil in enumerate(all_airfoils):
+        airfoil_dir, _, _ = Database.generate_airfoil_directories(
+            airfoil=airfoil,
+        )
+
         for i, reyn in enumerate(reynolds):
             if results.shape[1] <= j:
                 raise ValueError(

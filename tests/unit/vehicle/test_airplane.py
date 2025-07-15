@@ -22,8 +22,10 @@ def test_wing_segment_properties(benchmark_airplane: Airplane) -> None:
 
     # Test wing properties that we know exist
     assert wing.span == 10.0, "Wing should have correct span"
-    assert wing.N == 15, "Wing should have correct N panels"
-    assert wing.M == 15, "Wing should have correct M panels"
+    assert wing.num_grid_points == 225, "Wing should have correct number of grid points"
+    assert wing.num_panels == 196, "Wing should have correct number of panels"
+    assert wing.S == 10.0, "Wing should have correct area"
+    assert wing.mean_aerodynamic_chord == 1.0, "Wing should have correct MAC"
     assert hasattr(wing, "root_airfoil"), "Wing should have root airfoil"
 
 

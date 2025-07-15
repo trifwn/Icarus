@@ -9,6 +9,7 @@ from dataclasses import replace
 from types import UnionType
 from typing import Any
 from typing import List
+from typing import Self
 from typing import Union
 from typing import get_args
 from typing import get_origin
@@ -128,7 +129,7 @@ class BaseAnalysisInput(ABC):
             raise ValueError(f"Failed to cast {value} to {expected_type}: {e}")
 
     @classmethod
-    def get_input(cls, data: dict[str, Any]) -> BaseAnalysisInput:
+    def get_input(cls, data: dict[str, Any]) -> Self:
         """
         Set data from a dictionary to the fields of the dataclass.
         """

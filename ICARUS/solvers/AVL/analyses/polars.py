@@ -6,14 +6,14 @@ from pandas import DataFrame
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.flight_dynamics import State
-from ICARUS.solvers.AVL import AVLParameters
-from ICARUS.solvers.AVL import collect_avl_polar_forces
 from ICARUS.vehicle import Airplane
 
+from .. import AVLParameters
 from ..files.input import make_input_files
 from ..files.polars import case_run
 from ..files.polars import case_setup
 from ..files.polars import run_file
+from ..post_process import collect_avl_polar_forces
 
 AVL_LOGGER = logging.getLogger("ICARUS.solvers.GenuVP")
 

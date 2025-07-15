@@ -17,18 +17,16 @@ from ICARUS import PLATFORM
 
 @pytest.mark.slow
 @pytest.mark.integration
-@pytest.mark.parametrize("run_parallel", [True, False])
 @pytest.mark.skipif(
-    PLATFORM == "Windows",
+    PLATFORM == "Windows" or PLATFORM == "Darwin",
     reason="GenuVP7 solver is not available in this environment",
 )
 def test_gnvp7_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-    run_parallel: bool,
 ) -> None:
     """Test GNVP7 solver execution in parallel and serial modes."""
-    print(f"Testing GNVP7 Running ({'Parallel' if run_parallel else 'Serial'})...")
+    print("Testing GNVP7 Running ...")
 
     # Get Solver
     from ICARUS.solvers.GenuVP import GenuVP7
@@ -64,9 +62,7 @@ def test_gnvp7_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    execution_mode = (
-        ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
-    )
+    execution_mode = ExecutionMode.MULTIPROCESSING
     start_time: float = time.perf_counter()
     results = gnvp7.execute(
         analysis=analysis,

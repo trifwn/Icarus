@@ -10,6 +10,7 @@ import numpy as np
 from jax import vmap
 from jaxtyping import Array
 from matplotlib.figure import Figure
+from matplotlib.figure import SubFigure
 from mpl_toolkits.mplot3d import Axes3D
 
 if TYPE_CHECKING:
@@ -198,7 +199,7 @@ class LSPTSurface:
         legend: bool = True,
     ) -> None:
         if ax is None:
-            fig: Figure | None = plt.figure()
+            fig: Figure | SubFigure | None = plt.figure()
             ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
             show_plot = True
         else:
@@ -276,7 +277,8 @@ class LSPTSurface:
             ax_.view_init(30, 150)
 
             ax_.legend()
-            fig.show()
+            if isinstance(fig, Figure):
+                fig.show()
 
     @property
     def global_panel_indices(self) -> jnp.ndarray:

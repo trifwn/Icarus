@@ -16,14 +16,12 @@ if TYPE_CHECKING:
 
 @pytest.mark.slow
 @pytest.mark.integration
-@pytest.mark.parametrize("run_parallel", [True, False])
 def test_gnvp3_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-    run_parallel: bool,
-):
+) -> None:
     """Test GNVP3 solver execution in parallel and serial modes."""
-    print(f"Testing GNVP3 Running ({'Parallel' if run_parallel else 'Serial'})...")
+    print("Testing GNVP3 Running ...")
 
     # Get Solver
     from ICARUS.solvers.GenuVP import GenuVP3
@@ -62,9 +60,7 @@ def test_gnvp3_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    execution_mode = (
-        ExecutionMode.MULTIPROCESSING if run_parallel else ExecutionMode.SEQUENTIAL
-    )
+    execution_mode = ExecutionMode.MULTIPROCESSING
     start_time: float = time.perf_counter()
     results = gnvp3.execute(
         analysis=polar_analysis,

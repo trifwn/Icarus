@@ -15,7 +15,7 @@ from pandas import Index
 
 from ICARUS.airfoils.metrics.aerodynamic_dataclasses import AirfoilOperatingPointMetrics
 from ICARUS.core.interpolation.pandas_series import get_linear_series
-from ICARUS.core.interpolation.pandas_series import interpolate_series
+from ICARUS.core.interpolation.pandas_series import interpolate_from_series
 from ICARUS.core.interpolation.pandas_series import interpolate_series_index
 from ICARUS.core.interpolation.pandas_series import interpolate_series_value
 
@@ -68,7 +68,7 @@ class AirfoilPolar:
         return cls(reynolds, df)
 
     def __init__(self, reynolds: float, df: DataFrame) -> None:
-        self.reynolds = reynolds
+        self.reynolds = float(reynolds)
 
         self.df = df.rename(
             columns={
@@ -306,36 +306,43 @@ class AirfoilPolar:
         """Interpolate between two polars at a given Reynolds number."""
         if polar1.reynolds == polar2.reynolds:
             raise ReynoldsNotIncluded(
-                "Reynolds numbers must be different for interpolation.",
+                f"Reynolds numbers must be different for interpolation. Got reynolds: {polar1.reynolds} and {polar2.reynolds}",
             )
 
         # Interpolate angles
         angles = np.unique(np.concatenate((polar1.angles, polar2.angles)))
 
-        cl_curve1 = interpolate_series(angles, polar1.cl_curve)
-        cd_curve1 = interpolate_series(angles, polar1.cd_curve)
-        cm_curve1 = interpolate_series(angles, polar1.cm_curve)
+        cl_curve1 = interpolate_from_series(angles, polar1.cl_curve).to_numpy()
+        cd_curve1 = interpolate_from_series(angles, polar1.cd_curve).to_numpy()
+        cm_curve1 = interpolate_from_series(angles, polar1.cm_curve).to_numpy()
 
-        cl_curve2 = interpolate_series(angles, polar2.cl_curve)
-        cd_curve2 = interpolate_series(angles, polar2.cd_curve)
-        cm_curve2 = interpolate_series(angles, polar2.cm_curve)
+        cl_curve2 = interpolate_from_series(angles, polar2.cl_curve).to_numpy()
+        cd_curve2 = interpolate_from_series(angles, polar2.cd_curve).to_numpy()
+        cm_curve2 = interpolate_from_series(angles, polar2.cm_curve).to_numpy()
 
-        # Interpolate coefficients
-        cl_curve = np.interp(
-            reynolds,
-            [polar1.reynolds, polar2.reynolds],
-            [cl_curve1, cl_curve2],
-        )
-        cd_curve = np.interp(
-            reynolds,
-            [polar1.reynolds, polar2.reynolds],
-            [cd_curve1, cd_curve2],
-        )
-        cm_curve = np.interp(
-            reynolds,
-            [polar1.reynolds, polar2.reynolds],
-            [cm_curve1, cm_curve2],
-        )
+        # Interpolate coefficients at the given Reynolds number
+        # Print all the shapes of the curves
+        if not (
+            cl_curve1.shape == cl_curve2.shape
+            and cd_curve1.shape == cd_curve2.shape
+            and cm_curve1.shape == cm_curve2.shape
+        ):
+            raise PolarNotAccurate(
+                "Polar curves are not compatible for interpolation. "
+                f"Shapes: CL: {cl_curve1.shape}, {cl_curve2.shape}, "
+                f"CD: {cd_curve1.shape}, {cd_curve2.shape}, "
+                f"Cm: {cm_curve1.shape}, {cm_curve2.shape}",
+            )
+
+        cl_curve = cl_curve1 + (reynolds - polar1.reynolds) / (
+            polar2.reynolds - polar1.reynolds
+        ) * (cl_curve2 - cl_curve1)
+        cd_curve = cd_curve1 + (reynolds - polar1.reynolds) / (
+            polar2.reynolds - polar1.reynolds
+        ) * (cd_curve2 - cd_curve1)
+        cm_curve = cm_curve1 + (reynolds - polar1.reynolds) / (
+            polar2.reynolds - polar1.reynolds
+        ) * (cm_curve2 - cm_curve1)
 
         df = DataFrame(
             {

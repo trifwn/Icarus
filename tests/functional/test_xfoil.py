@@ -1,10 +1,12 @@
 import os
 import time
+from typing import Any
 
 import numpy as np
 import pytest
 
 from ICARUS.airfoils import Airfoil
+from ICARUS.computation.core import ExecutionMode
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
@@ -28,7 +30,7 @@ def test_airfoils(database_instance: Database) -> list[Airfoil]:
 
 
 @pytest.fixture
-def xfoil_parameters():
+def xfoil_parameters() -> dict[str, Any]:
     """Fixture that provides common Xfoil parameters."""
     # PARAMETERS FOR ESTIMATION
     chord_max: float = 0.16
@@ -108,6 +110,7 @@ def test_xfoil_single_airfoil(
         analysis=analysis,
         inputs=xfoil_inputs,
         solver_parameters=xfoil_solver_parameters,
+        execution_mode=ExecutionMode.THREADING,
     )
 
     end_time: float = time.time()
@@ -143,24 +146,3 @@ def test_xfoil_single_airfoil(
         assert polar is not None, "Polar data should be generated"
     except Exception as e:
         pytest.skip(f"Could not retrieve polar data: {e}")
-
-
-# Backward compatibility function
-def xfoil_run() -> None:
-    """Legacy function for backward compatibility."""
-    database_folder = ".\\Data"
-    DB = Database(database_folder)
-    DB.load_all_data()
-
-    # Run a simple test with one airfoil
-    test_xfoil_single_airfoil(
-        DB,
-        {
-            "reynolds": np.linspace(50000, 200000, 3),
-            "mach": 0.085,
-            "aoa_min": -5,
-            "aoa_max": 5,
-            "Ncrit": 9,
-        },
-        "NACA0012",
-    )

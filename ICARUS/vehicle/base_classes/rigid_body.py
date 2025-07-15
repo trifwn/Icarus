@@ -239,11 +239,6 @@ class RigidBody(ABC):
     def orientation_rad(self) -> Float:
         return self._orientation_rad
 
-    @property
-    def orientation_degrees(self) -> Float:
-        """Get orientation in degrees."""
-        return self._orientation_rad * 180 / jnp.pi
-
     @orientation_rad.setter
     def orientation_rad(self, value: Float) -> None:
         old_orientation = self._orientation_rad.copy()
@@ -261,68 +256,76 @@ class RigidBody(ABC):
 
         self._on_orientation_changed(old_orientation, new_orientation)
 
+    @property
+    def orientation_degrees(self) -> Float:
+        """Get orientation in degrees."""
+        return self._orientation_rad * 180 / jnp.pi
+
     @orientation_degrees.setter
     def orientation_degrees(self, value: Float) -> None:
         """Set orientation in degrees."""
         orientation_rad = jnp.array(value, dtype=float) * jnp.pi / 180
         self.orientation_rad = orientation_rad
 
+    # Pitch
     @property
     def pitch_rad(self) -> float:
         return self._pitch
-
-    @property
-    def pitch_degrees(self) -> float:
-        """Get pitch in degrees."""
-        return self._pitch * 180 / jnp.pi
 
     @pitch_rad.setter
     def pitch_rad(self, value: float) -> None:
         self._pitch = value
         self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
 
+    @property
+    def pitch_degrees(self) -> float:
+        """Get pitch in degrees."""
+        return self._pitch * 180 / jnp.pi
+
     @pitch_degrees.setter
     def pitch_degrees(self, value: float) -> None:
         """Set pitch in degrees."""
         self.pitch_rad = value * jnp.pi / 180
 
+    # Yaw
     @property
     def yaw_rad(self) -> float:
         return self._yaw
-
-    @property
-    def yaw_degrees(self) -> float:
-        """Get yaw in degrees."""
-        return self._yaw * 180 / jnp.pi
 
     @yaw_rad.setter
     def yaw_rad(self, value: float) -> None:
         self._yaw = value
         self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
 
+    @property
+    def yaw_degrees(self) -> float:
+        """Get yaw in degrees."""
+        return self._yaw * 180 / jnp.pi
+
     @yaw_degrees.setter
     def yaw_degrees(self, value: float) -> None:
         """Set yaw in degrees."""
-        self.yaw_degrees = value * jnp.pi / 180
+        self.yaw_rad = value * jnp.pi / 180
 
-    @property
-    def roll_rad(self) -> float:
-        return self._roll
-
+    # Roll
     @property
     def roll_degrees(self) -> float:
         """Get roll in degrees."""
         return self._roll * 180 / jnp.pi
 
-    @roll_rad.setter
-    def roll_rad(self, value: float) -> None:
-        self._roll = value
-        self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
-
     @roll_degrees.setter
     def roll_degrees(self, value: float) -> None:
         """Set roll in degrees."""
         self.roll_rad = value * jnp.pi / 180
+
+    @property
+    def roll_rad(self) -> float:
+        return self._roll
+
+    @roll_rad.setter
+    def roll_rad(self, value: float) -> None:
+        self._roll = value
+        self.orientation_rad = jnp.array([self._pitch, self._roll, self._yaw])
 
     # Physical properties
     @property

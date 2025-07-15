@@ -265,8 +265,8 @@ def avl_geo(
 
             if viscous:
                 # Calculate average reynolds number
-                reynolds = (
-                    strip.mean_chord * u_inf / environment.air_kinematic_viscosity
+                reynolds = float(
+                    strip.chord * u_inf / environment.air_kinematic_viscosity,
                 )
                 # Get the airfoil polar
 

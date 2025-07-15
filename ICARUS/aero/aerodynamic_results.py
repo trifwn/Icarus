@@ -106,7 +106,7 @@ class AerodynamicResults:
 
     def get_forces_and_moments(
         self,
-        calculation: str = "potential",
+        calculation: Literal["potential", "viscous"] = "potential",
     ) -> tuple[FloatArray, FloatArray]:
         """
         Extract forces and moments from all results.
@@ -133,7 +133,7 @@ class AerodynamicResults:
 
     def calculate_coefficients(
         self,
-        calculation: str = "potential",
+        calculation: Literal["potential", "viscous"] = "potential",
     ) -> dict[str, FloatArray]:
         """
         Calculate aerodynamic coefficients.
@@ -221,7 +221,10 @@ class AerodynamicResults:
             derivatives[f"{coeff_name}_{variable}"] = grad
         return derivatives
 
-    def to_dataframe(self, calculation: str = "potential") -> pd.DataFrame:
+    def to_dataframe(
+        self,
+        calculation: Literal["potential", "viscous"] = "potential",
+    ) -> pd.DataFrame:
         """
         Convert results to a pandas DataFrame compatible with polars interface.
 

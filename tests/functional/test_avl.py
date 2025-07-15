@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 def test_avl_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-):
+) -> None:
     """Test AVL solver execution."""
     print("Testing AVL Running ...")
     # Get Solver

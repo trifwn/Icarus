@@ -101,7 +101,7 @@ class Airfoil:
         """
         if name is not None:
             name = name.replace(" ", "")
-            self._name: str | None  = name
+            self._name: str | None = name
         else:
             self._name = None
 

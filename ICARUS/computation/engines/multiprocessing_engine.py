@@ -183,9 +183,10 @@ class MultiprocessingEngine(AbstractEngine):
         This function needs to be at module level for multiprocessing to work.
         """
         # Create new event loop for this process
+        start_time = datetime.now()
+
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-
         try:
             context = ExecutionContext(
                 task_id=task.id,
@@ -196,7 +197,6 @@ class MultiprocessingEngine(AbstractEngine):
                 logger=logging.getLogger(f"task.{task.name}"),
             )
 
-            start_time = datetime.now()
             task.state = TaskState.RUNNING
 
             async def execute() -> TaskResult[Any]:

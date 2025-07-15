@@ -97,28 +97,6 @@ class RichProgressMonitor(ProgressMonitor):
         # self.ui_queue = ui_queue
         # self.ui_lock = ui_lock
 
-    @property
-    def event_queue(self) -> QueueLike | None:
-        """Get the event queue used for inter-process communication."""
-        return self._event_queue
-
-    @event_queue.setter
-    def event_queue(self, queue: QueueLike) -> None:
-        """Set the event queue for inter-process communication."""
-        self._event_queue = queue
-
-    @property
-    def termination_event(self) -> EventLike:
-        """Get the event used for stopping the monitor."""
-        if self._termination_event is None:
-            raise ValueError("Termination event has not been set")
-        return self._termination_event
-
-    @termination_event.setter
-    def termination_event(self, event: EventLike) -> None:
-        """Set the event used for stopping the monitor."""
-        self._termination_event = event
-
     def __enter__(self) -> Self:
         """Context manager entry - create progress bars and register with RichUIManager."""
         self.logger.debug("Entering RichProgressMonitor context")

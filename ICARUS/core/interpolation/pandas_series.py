@@ -37,7 +37,7 @@ def interpolate_series_value(xval: float, series: Series[float]) -> float:
     return float(np.interp(xval, series.index.to_numpy(), series.to_numpy()))
 
 
-def interpolate_series(
+def interpolate_from_series(
     xs: list[float] | FloatArray,
     series: Series[float],
 ) -> Series[float]:
@@ -57,7 +57,6 @@ def interpolate_series(
     return Series(
         np.interp(xs_sorted, series.index.to_numpy(), series.to_numpy()),
         index=xs_sorted,
-        dtype=float,
     )
 
 

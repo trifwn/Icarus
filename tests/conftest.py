@@ -11,6 +11,7 @@ from typing import Generator
 import numpy as np
 import pytest
 
+from ICARUS.aero import LSPT_Plane
 from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
@@ -107,3 +108,13 @@ def benchmark_state(benchmark_airplane: Airplane) -> State:
         u_freestream=100,  # Example freestream velocity
         environment=EARTH_ISA,
     )
+
+
+@pytest.fixture
+def test_plane(benchmark_airplane: Airplane) -> LSPT_Plane:
+    """
+    Fixture providing an LSPT_Plane for panel_utils tests.
+    """
+    from ICARUS.aero import LSPT_Plane
+
+    return LSPT_Plane(benchmark_airplane)

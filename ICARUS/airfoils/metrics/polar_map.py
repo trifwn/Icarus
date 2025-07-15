@@ -66,11 +66,10 @@ class AirfoilPolarMap:
                 # Find the closest Reynolds numbers
                 mask = np.array(self.reynolds_numbers) >= reynolds
                 prev_idx = int(np.sum(~mask)) - 1
-                next_idx = int(np.sum(mask))
+                next_idx = len(mask) - int(np.sum(mask))
 
                 prev_polar = self.polars[self.reynolds_numbers[prev_idx]]
                 next_polar = self.polars[self.reynolds_numbers[next_idx]]
-
                 polar = AirfoilPolar.interpolate_polar(
                     polar1=prev_polar,
                     polar2=next_polar,

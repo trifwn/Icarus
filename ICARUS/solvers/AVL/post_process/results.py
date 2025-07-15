@@ -8,23 +8,12 @@ from ICARUS.database import Database
 from ICARUS.database import angle_to_directory
 from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import State
+from ICARUS.solvers.AVL.post_process import AVLOutputParser
 from ICARUS.vehicle import Airplane
 
 
 class AVLPostReadError(Exception):
     pass
-
-
-def csplit(input_file: str, pattern: str) -> list[str]:
-    with open(input_file) as file:
-        content = file.read()
-
-    import re
-
-    sections = re.split(pattern, content)
-    sections = [section.strip() for section in sections if section.strip()]
-
-    return sections
 
 
 def collect_avl_polar_forces(
@@ -45,43 +34,27 @@ def collect_avl_polar_forces(
         FloatArray: Array with the following order of vectors: AOA,CL,CD,CM
 
     """
-    AoAs = []
-    CLs = []
-    CDs = []
-    Cms = []
 
+    # Empty dataframe to store the polar data
+    all_forces = []
     for angle in angles:
-        result_file = os.path.join(directory, f"{angle_to_directory(angle)}.txt")
+        file_path = os.path.join(directory, f"{angle_to_directory(angle)}.txt")
+        parser = AVLOutputParser(file_path)
 
-        with open(result_file, encoding="utf-8") as f:
-            con = f.readlines()
+        forces = parser.parse_forces()
+        all_forces.append(forces)
 
-        CL = con[23]
-        CD = con[24]
-        Cm = con[20]
+    flat_forces = [force for sublist in all_forces for force in sublist]
+    polar_df: DataFrame = AVLOutputParser.to_dataframe(flat_forces)
 
-        AoAs.append(angle)
-        try:
-            if CL[11] == "-":
-                CLs.append(float(CL[11:19]))
-            else:
-                CLs.append(float(CL[12:19]))
-            if CD[11] == "-":
-                CDs.append(float(CD[11:19]))
-            else:
-                CDs.append(float(CD[12:19]))
-            if Cm[33] == "-":
-                Cms.append(float(Cm[33:41]))
-            else:
-                Cms.append(float(Cm[34:41]))
-        except ValueError:
-            raise AVLPostReadError(f"Error reading file {result_file}")
-    Fz = np.array(CLs) * plane.S * state.dynamic_pressure
-    Fx = np.array(CDs) * plane.S * state.dynamic_pressure
-    My = np.array(Cms) * plane.S * state.dynamic_pressure * plane.mean_aerodynamic_chord
+    Fz = polar_df["CL"] * plane.S * state.dynamic_pressure
+    Fx = polar_df["CD"] * plane.S * state.dynamic_pressure
+    My = (
+        polar_df["Cm"] * plane.S * state.dynamic_pressure * plane.mean_aerodynamic_chord
+    )
 
-    polar_df: DataFrame = DataFrame(
-        np.array([AoAs, Fz, Fx, My]).T,
+    polar_df = DataFrame(
+        np.array([polar_df["Alpha"], Fz, Fx, My]).T,
         columns=["AoA", "AVL Fz", "AVL Fx", "AVL My"],
     )
     polar_df = polar_df.sort_values("AoA").reset_index(drop=True)
@@ -198,49 +171,19 @@ def implicit_dynamics_post(
         case="Dynamics",
     )
     log = os.path.join(DYNAMICS_DIR, "eig_log.txt")
-    sections = csplit(log, "1:")
-    sec_2_use = sections[-1].splitlines()
-    sec_2_use[0] = "  mode 1:  " + sec_2_use[0]
+    parser = AVLOutputParser(log)
 
-    def get_matrix(
-        index: int,
-        lines: list[str],
-    ) -> tuple[FloatArray, FloatArray, complex]:
-        """Extracts the EigenVector and EgienValue from AVL Output
-
-        Args:
-            index (int): Index in Reading File
-            lines (list[str]): AVL output
-
-        Returns:
-            tuple[FloatArray, FloatArray, FloatArray]: Longitudal EigenVector, Lateral EigenVector, Mode
-
-        """
-        mode = complex(float(lines[index][10:22]), float(lines[index][24:36]))
-        long_vecs = np.zeros((4), dtype=complex)
-        lat_vecs = np.zeros((4), dtype=complex)
-        for i in range(4):
-            long_vecs[i] = complex(
-                float(lines[index + i + 1][8:18]),
-                float(lines[index + i + 1][19:28]),
-            )
-
-            lat_vecs[i] = complex(
-                float(lines[index + i + 1][40:50]),
-                float(lines[index + i + 1][51:60]),
-            )
-
-        return long_vecs, lat_vecs, mode
+    eigenmodes = parser.parse_eigenmodes()
+    if not eigenmodes:
+        raise AVLPostReadError("No eigenmodes found in the log file.")
 
     longitudal_matrix = []
     lateral_matrix = []
-    indexes = np.arange(0, 8, 1) * 6
-    for i in indexes:
-        long_vec, lat_vec, mode = get_matrix(int(i), sec_2_use)
-        if float(np.mean(np.abs(long_vec))) < float(np.mean(np.abs(lat_vec))):
-            lateral_matrix.append(mode)
-        else:
+    for mode in eigenmodes:
+        if mode.mode_number <= 4:
             longitudal_matrix.append(mode)
+        else:
+            lateral_matrix.append(mode)
 
     return longitudal_matrix, lateral_matrix
 

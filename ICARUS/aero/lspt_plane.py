@@ -6,6 +6,7 @@ from typing import Sequence
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.figure import SubFigure
 from mpl_toolkits.mplot3d import Axes3D
 
 if TYPE_CHECKING:
@@ -194,7 +195,7 @@ class LSPT_Plane:
         plot_wake: bool = False,
     ) -> None:
         if ax is None:
-            fig: Figure | None = plt.figure()
+            fig: Figure | SubFigure | None = plt.figure()
             ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
         else:
             ax_ = ax
@@ -225,4 +226,5 @@ class LSPT_Plane:
         ax_.view_init(30, 150)
 
         ax_.legend()
-        fig.show()
+        if isinstance(fig, Figure):
+            fig.show()

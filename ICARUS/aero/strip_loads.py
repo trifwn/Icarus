@@ -450,7 +450,8 @@ class StripLoads:
             ax_.view_init(30, 150)
 
             ax_.legend()
-            fig.show()
+            if isinstance(fig, Figure):
+                fig.show()
 
     def plot_xy(
         self,
@@ -528,5 +529,5 @@ class StripLoads:
             ax_.set_xlabel("x")
             ax_.set_ylabel("y")
             ax_.axis("equal")
-
-            fig.show()
+            if isinstance(fig, Figure):
+                fig.show()
