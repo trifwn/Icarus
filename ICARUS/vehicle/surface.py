@@ -273,7 +273,7 @@ class WingSurface(RigidBody):
             span = span / 2
 
         # Create the arrays that will be passed to the constructor
-        for i in np.arange(0, N):
+        for i in range(N):
             eta = span_discretization_function(i)
             spanwise_positions[i] = eta * span
             chord_lengths[i] = real_chord_fun(eta)

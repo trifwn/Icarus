@@ -12,6 +12,7 @@ from typing import Literal
 
 from rich.console import Console
 from rich.logging import RichHandler
+from rich.theme import Theme
 from rich.traceback import install
 
 if TYPE_CHECKING:
@@ -28,14 +29,37 @@ try:
 except ImportError:
     IN_JUPYTER = False
 
-ICARUS_THEME = "solarized-dark"
+
+ICARUS_THEME = Theme(
+    {
+        # Logging levels
+        "logging.level.debug": "dim cyan",
+        "logging.level.info": "bold cyan",
+        "logging.level.warning": "bold yellow",
+        "logging.level.error": "bold red",
+        "logging.level.critical": "bold white on red",
+        # Custom ICARUS styles
+        "title": "bold blue underline",
+        "section": "bold white on rgb(30,30,30)",
+        "dimmed": "dim",
+        "value": "bold green",
+        "gradient": "italic magenta",
+        "airfoil": "bold cyan",
+        "warning_dim": "yellow dim",
+        "opt": "bold magenta",
+        "success": "bold green",
+        "failure": "bold red",
+        "highlight": "bold yellow underline",
+        "unit": "italic white",
+    },
+)
 
 # If running in Jupyter, set the console to use Rich's Jupyter console
 if IN_JUPYTER:
     ICARUS_CONSOLE = Console(
         file=sys.stdout,
         force_jupyter=True,
-        # theme ="solarized-dark",
+        theme=ICARUS_THEME,
         # soft_wrap=True,
     )
 
@@ -44,7 +68,7 @@ else:
     ICARUS_CONSOLE = Console(
         file=sys.stdout,
         force_terminal=True,
-        # theme = "solarized-dark",
+        theme=ICARUS_THEME,
         # soft_wrap=True,
         # highlight=False,  # Disable syntax highlighting for better performance in large outputs
     )
@@ -71,7 +95,7 @@ def setup_logging() -> None:
         force=True,
     )
     logging.getLogger("asyncio").setLevel(logging.WARNING)
-    builtins.print = ICARUS_CONSOLE.print
+    # builtins.print = ICARUS_CONSOLE.print
 
 
 # Create a custom print function that sends to the logging queue
@@ -149,4 +173,4 @@ def setup_mp_logging(log_queue: QueueLike) -> QueueListener | None:
 setup_logging()
 # Nice Traceback
 # install(show_locals=True)
-install()
+install(console=ICARUS_CONSOLE)

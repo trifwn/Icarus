@@ -88,8 +88,8 @@ def main() -> None:
         inputs.state = state
         inputs.angles = angles
 
-        # solver_parameters.Ground_Effect = True
-        # solver_parameters.Wake_Geom_Type = "TE-Geometrical"
+        solver_parameters.ground_effect = True
+        solver_parameters.wake_type = "TE-Geometrical"
 
         polars_time: float = time.time()
         lspt.execute(

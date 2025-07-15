@@ -19,7 +19,7 @@ from jaxtyping import Float
 
 from ICARUS import INSTALL_DIR
 from ICARUS.database import Database
-from ICARUS.interpolation.cubic_splines import cubic_spline_factory
+from ICARUS.interpolation.factories import cubic_spline_factory
 from ICARUS.mission.mission_vehicle import MissionVehicle
 from ICARUS.mission.trajectory.integrate import RK4systems
 from ICARUS.mission.trajectory.trajectory import MissionTrajectory

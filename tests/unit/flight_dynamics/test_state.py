@@ -5,7 +5,7 @@ from ICARUS.vehicle import Airplane
 
 
 @pytest.mark.unit
-def test_state_creation(benchmark_airplane: Airplane, benchmark_state: State):
+def test_state_creation(benchmark_airplane: Airplane, benchmark_state: State) -> None:
     """Test the creation of a State instance with a benchmark airplane."""
     # Test state properties
     assert benchmark_state is not None, "State should be created"

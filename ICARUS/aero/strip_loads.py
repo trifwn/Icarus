@@ -36,7 +36,7 @@ class StripLoads:
         width: Float,
         airfoil_pitch: Float = 0.0,
         airfoil: Airfoil | None = None,
-    ):
+    ) -> None:
         self.chord = chord
         self.width = width
         self.surface_area_proj = self.chord * self.width

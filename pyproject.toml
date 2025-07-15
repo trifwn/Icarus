@@ -30,12 +30,11 @@ dependencies = [
     "pre-commit",
     "rich",
     "xmltodict",
-    "pyfiglet",
     "xfoil @git+https://github.com/trifwn/xfoil-python-prebuilt.git",
     'jax',
     'jaxlib',
     'jaxtyping',
-    'interpax',                                                      # Maybe Deprecate
+    'interpax',
     "diffrax",
     "optimistix",
     'jaxopt',

@@ -1,3 +1,9 @@
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Literal
+from typing import Optional
+
+from ICARUS.computation import SolverParameters
 from ICARUS.computation.analyses import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
 from ICARUS.computation.solver_parameters import IntOrNoneParameter
@@ -32,14 +38,30 @@ solver_parameters: list[Parameter] = [
 ]
 
 
-class LSPT(Solver):
+@dataclass
+class LSPT_Parameters(SolverParameters):
+    """Solver parameters with wake and ground effect options."""
+
+    solver2D: Literal["Xfoil", "Foil2Wake", "OpenFoam"] | str = "Xfoil"
+
+    ground_effect: Optional[int] = field(
+        default=None,
+        metadata={"description": "Distance From Ground (m). None for no ground effect"},
+    )
+    wake_type: str = field(
+        default="TE-Geometrical",
+        metadata={
+            "description": (
+                "Type of wake geometry. "
+                "The options are: -TE-Geometrical -Inflow-Uniform -Inflow-TE"
+            ),
+        },
+    )
+
+
+class LSPT(Solver[LSPT_Parameters]):
     analyses = [LSPT_PolarAnalysis()]
     aseq = LSPT_PolarAnalysis()
 
     def __init__(self) -> None:
-        super().__init__(
-            "LSPT",
-            "3D VLM",
-            1,
-            solver_parameters=solver_parameters,
-        )
+        super().__init__("LSPT", "3D VLM", 1, solver_parameters=LSPT_Parameters())

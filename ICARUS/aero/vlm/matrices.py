@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from ICARUS.aero import LSPT_Plane
 
 
-@jax.jit
 def get_panel_contribution(
     panel: Float[Array, ...],
     control_point: Float[Array, 3],
@@ -28,6 +27,9 @@ def get_panel_contribution(
         panel,
     )
     return U, Ustar
+
+
+get_panel_contribution = jax.jit(get_panel_contribution)
 
 
 def compute_row(
@@ -48,6 +50,9 @@ def compute_row(
 
     a_row, b_row = vmap(compute_contributions)(panels)
     return a_row, b_row
+
+
+compute_row = jax.jit(compute_row)
 
 
 def get_LHS(

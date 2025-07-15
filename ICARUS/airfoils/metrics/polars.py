@@ -14,10 +14,10 @@ from pandas import DataFrame
 from pandas import Index
 
 from ICARUS.airfoils.metrics.aerodynamic_dataclasses import AirfoilOperatingPointMetrics
-from ICARUS.core.interpolation.pandas_series import get_linear_series
-from ICARUS.core.interpolation.pandas_series import interpolate_from_series
-from ICARUS.core.interpolation.pandas_series import interpolate_series_index
-from ICARUS.core.interpolation.pandas_series import interpolate_series_value
+from ICARUS.interpolation.pandas_series import get_linear_series
+from ICARUS.interpolation.pandas_series import interpolate_from_series
+from ICARUS.interpolation.pandas_series import interpolate_series_index
+from ICARUS.interpolation.pandas_series import interpolate_series_value
 
 
 class PolarNotAccurate(Exception):

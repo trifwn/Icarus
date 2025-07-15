@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Self
 
 import jax
 import numpy as np
@@ -235,7 +236,7 @@ class NACA4(Airfoil):
         return ((M, P, XX), (num_points,))
 
     @classmethod
-    def tree_unflatten(cls, aux_data, children):
+    def tree_unflatten(cls, aux_data, children) -> Self:
         return cls(
             M=children[0],
             P=children[1],

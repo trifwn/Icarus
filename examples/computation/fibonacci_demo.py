@@ -122,6 +122,7 @@ class FibonacciDemo:
 
         # Create tasks
         tasks = self.create_tasks()
+        results = []
 
         print(f"📊 Executing {len(tasks)} Fibonacci tasks...")
         print(f"🔢 Numbers to calculate: {self.numbers}")

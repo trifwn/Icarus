@@ -50,7 +50,8 @@ class JaxInterpolator1D(Interpolator1D):
         Args:
             state (dict): The pickled state of the object.
         """
-        self.__init__(
+        JaxInterpolator1D.__init__(
+            self,
             x=state["x"],
             f=state["f"],
             method=state["method"],

@@ -4,6 +4,7 @@ import logging
 import signal
 from abc import ABC
 from abc import abstractmethod
+from types import FrameType
 from types import TracebackType
 from typing import Any
 
@@ -110,7 +111,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
     def _setup_signal_handlers(self) -> None:
         """Set up signal handlers for graceful shutdown."""
 
-        def signal_handler(signum, frame):
+        def signal_handler(signum: int, frame: FrameType | None) -> None:
             self.logger.warning("\nShutdown signal received. Cleaning up...")
             self.terminate_event.set()
 
