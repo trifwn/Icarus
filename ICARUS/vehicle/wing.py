@@ -11,7 +11,6 @@ from typing import Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.airfoils import Airfoil
@@ -154,7 +153,7 @@ class Wing(RigidBody):
             segment_mass = Mass(
                 name=segment.name,
                 mass=segment.mass,
-                position=segment.origin,
+                position=segment.CG,
                 inertia=segment.inertia,
             )
             self.remove_mass_point(segment_mass.name)
@@ -414,36 +413,31 @@ class Wing(RigidBody):
     def plot(
         self,
         thin: bool = False,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        prev_movement: FloatArray | None = None,
+        ax: Axes3D | None = None,
+        movement: FloatArray = np.zeros(3, dtype=float),
     ) -> None:
         """Plots the wing"""
 
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-            show_plot = False
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # noqa
+        from ICARUS.visualization import parse_Axes3D
+
+        _, ax, created_plot = parse_Axes3D(ax)
+
+        if created_plot:
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
             ax.set_zlabel("z")
             ax.axis("scaled")
             ax.view_init(30, 150)
-            show_plot = True
 
         for segment in self.wing_segments:
             segment.plot(
                 thin=thin,
-                prev_fig=fig,
-                prev_ax=ax,
-                prev_movement=prev_movement,
+                ax=ax,
+                movement=movement,
             )
 
-        if show_plot:
+        if created_plot:
             plt.show()
 
     def __control__(self, control_vector: dict[str, float]) -> None:

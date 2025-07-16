@@ -7,7 +7,6 @@ from typing import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.airfoils import Airfoil
@@ -217,7 +216,7 @@ class WingSurface(RigidBody):
         twist_as_a_function_of_span_percentage: Callable[[float], float],
         N: int,
         M: int,
-        mass: float = 1.0,
+        structural_mass: float = 1.0,
         # Optional Parameters
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
         controls: list[ControlSurface] = [NoControl],
@@ -297,7 +296,7 @@ class WingSurface(RigidBody):
             N=N,
             M=M,
             chord_discretization_function=chord_discretization_function,
-            structural_mass=mass,
+            structural_mass=structural_mass,
             symmetries=symmetries,
             controls=controls,
             is_lifting=is_lifting,
@@ -430,7 +429,7 @@ class WingSurface(RigidBody):
         self.define_strips()
 
     @property
-    def sructural_mass_CG(self) -> FloatArray:
+    def structural_mass_CG(self) -> FloatArray:
         if self.structural_mass == 0.0:
             return np.zeros(3, dtype=float)
         return self.calculate_geometric_center()
@@ -441,7 +440,7 @@ class WingSurface(RigidBody):
             return np.zeros((3, 3), dtype=float)
         return self.calculate_geometric_center_inertia(
             self.structural_mass,
-            self.sructural_mass_CG,
+            self.structural_mass_CG,
         )
 
     @property
@@ -529,7 +528,7 @@ class WingSurface(RigidBody):
         structural_mass = Mass(
             name=f"{self.name}_structural_mass",
             mass=self.structural_mass,
-            position=self.sructural_mass_CG,
+            position=self.structural_mass_CG,
             inertia=self.structural_mass_inertia,
         )
         self.remove_mass_point(structural_mass.name)
@@ -1154,31 +1153,22 @@ class WingSurface(RigidBody):
     def plot(
         self,
         thin: bool = False,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        prev_movement: FloatArray | None = None,
+        ax: Axes3D | None = None,
+        movement: FloatArray = np.zeros(3),
     ) -> None:
         """Plot Wing in 3D"""
-        show_plot: bool = False
 
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # noqa
+        from ICARUS.visualization import parse_Axes3D
+
+        _, ax, created_plot = parse_Axes3D(ax)
+
+        if created_plot:
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
             ax.set_zlabel("z")
             ax.axis("scaled")
             ax.view_init(30, 150)
-            show_plot = True
-
-        if prev_movement is None:
-            movement: FloatArray = np.zeros(3)
-        else:
-            movement = prev_movement
 
         # for strip in self.all_strips:
         #     strip.plot(fig, ax, movement)
@@ -1201,7 +1191,7 @@ class WingSurface(RigidBody):
                 if self.is_symmetric_y:
                     ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
 
-        if show_plot:
+        if created_plot:
             plt.show()
 
     def __control__(self, control_vector: dict[str, float]) -> None:

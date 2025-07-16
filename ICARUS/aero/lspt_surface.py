@@ -5,12 +5,9 @@ from typing import TYPE_CHECKING
 
 import jax
 import jax.numpy as jnp
-import matplotlib.pyplot as plt
 import numpy as np
 from jax import vmap
 from jaxtyping import Array
-from matplotlib.figure import Figure
-from matplotlib.figure import SubFigure
 from mpl_toolkits.mplot3d import Axes3D
 
 if TYPE_CHECKING:
@@ -198,17 +195,16 @@ class LSPTSurface:
         plot_wake: bool = False,
         legend: bool = True,
     ) -> None:
-        if ax is None:
-            fig: Figure | SubFigure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # noqa
-            show_plot = True
-        else:
-            ax_ = ax
-            fig = ax_.get_figure()
-            show_plot = False
+        """
+        Plot the surface panels in 3D.
+        Args:
+            ax: Optional Axes3D object to plot on. If None, a new figure is created.
+            plot_wake: Whether to plot the near and flat wake panels.
+            legend: Whether to show the legend.
+        """
+        from ICARUS.visualization import parse_Axes3D
 
-        if fig is None:
-            raise ValueError("Axes must be part of a figure")
+        fig, ax, created_plot = parse_Axes3D(ax=ax)
 
         # Add the grid panel wireframes
         for i in np.arange(0, self.panels.shape[0]):
@@ -216,7 +212,7 @@ class LSPTSurface:
             xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
             ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
             zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-            ax_.plot_wireframe(xs, ys, zs, linewidth=1.5)
+            ax.plot_wireframe(xs, ys, zs, linewidth=1.5)
 
         if plot_wake:
             # Add the near wake panels in green
@@ -225,7 +221,7 @@ class LSPTSurface:
                 xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
                 ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
                 zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-                ax_.plot_wireframe(xs, ys, zs, color="g", linewidth=1.5)
+                ax.plot_wireframe(xs, ys, zs, color="g", linewidth=1.5)
 
             # Add the flat wake panels in orange
             for i in np.arange(0, self.flat_wake_panels.shape[0]):
@@ -233,18 +229,18 @@ class LSPTSurface:
                 xs = np.reshape(np.array([p1[0], p2[0], p3[0], p4[0]]), (2, 2))
                 ys = np.reshape(np.array([p1[1], p2[1], p3[1], p4[1]]), (2, 2))
                 zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
-                ax_.plot_wireframe(xs, ys, zs, color="orange", linewidth=1.5)
+                ax.plot_wireframe(xs, ys, zs, color="orange", linewidth=1.5)
 
         # scatter the control points and grid points that are not part of the wake
         surf_control_points = self.panel_cps[: self.num_panels, :]
-        ax_.scatter(
+        ax.scatter(
             *surf_control_points.T,
             color="r",
             marker="o",
             s=20,
         )
         surf_grid_points = self.grid[: self.num_grid_points, :]
-        ax_.scatter(
+        ax.scatter(
             *surf_grid_points.T,
             color="k",
             marker="x",
@@ -253,7 +249,7 @@ class LSPTSurface:
 
         # Add the wake shedding points in blue
         wake_shedding_indices = self.wake_shedding_panel_indices
-        ax_.scatter(
+        ax.scatter(
             *self.panel_cps[wake_shedding_indices, :].T,
             color="b",
             marker="x",
@@ -262,23 +258,22 @@ class LSPTSurface:
 
         if legend:
             if plot_wake:
-                ax_.scatter([], [], [], color="orange", label="Flat Wake Panels")
-                ax_.scatter([], [], [], color="g", label="Near Wake Panels")
-            ax_.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")
-            ax_.scatter([], [], [], color="r", marker="o", label="Control Points")
-            ax_.scatter([], [], [], color="k", marker="x", label="Grid Points")
+                ax.scatter([], [], [], color="orange", label="Flat Wake Panels")
+                ax.scatter([], [], [], color="g", label="Near Wake Panels")
+            ax.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")
+            ax.scatter([], [], [], color="r", marker="o", label="Control Points")
+            ax.scatter([], [], [], color="k", marker="x", label="Grid Points")
 
-        if show_plot:
-            ax_.set_title("Grid")
-            ax_.set_xlabel("x")
-            ax_.set_ylabel("y")
-            ax_.set_zlabel("z")
-            ax_.axis("equal")
-            ax_.view_init(30, 150)
+        if created_plot:
+            ax.set_title("Grid")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+            ax.axis("equal")
+            ax.view_init(30, 150)
 
-            ax_.legend()
-            if isinstance(fig, Figure):
-                fig.show()
+            ax.legend()
+            fig.show()
 
     @property
     def global_panel_indices(self) -> jnp.ndarray:

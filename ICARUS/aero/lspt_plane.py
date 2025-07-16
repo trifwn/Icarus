@@ -4,9 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Sequence
 
 import jax.numpy as jnp
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.figure import SubFigure
 from mpl_toolkits.mplot3d import Axes3D
 
 if TYPE_CHECKING:
@@ -194,37 +191,31 @@ class LSPT_Plane:
         ax: Axes3D | None = None,
         plot_wake: bool = False,
     ) -> None:
-        if ax is None:
-            fig: Figure | SubFigure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # noqa
-        else:
-            ax_ = ax
-            fig = ax_.get_figure()
+        """Plot the panels of the LSPT plane."""
+        from ICARUS.visualization import parse_Axes3D
 
-        if fig is None:
-            raise ValueError("Axes must be part of a figure")
+        fig, ax, created_plot = parse_Axes3D(ax=ax)
 
         for surf in self.surfaces:
             surf.plot_panels(
-                ax=ax_,
+                ax=ax,
                 plot_wake=plot_wake,
                 legend=False,
             )
 
         if plot_wake:
-            ax_.scatter([], [], [], color="orange", label="Flat Wake Panels")  # noqa
-            ax_.scatter([], [], [], color="g", label="Near Wake Panels")  # noqa
-        ax_.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")  # noqa
-        ax_.scatter([], [], [], color="r", marker="o", label="Control Points")  # noqa
-        ax_.scatter([], [], [], color="k", marker="x", label="Grid Points")  # noqa
+            ax.scatter([], [], [], color="orange", label="Flat Wake Panels")  # noqa
+            ax.scatter([], [], [], color="g", label="Near Wake Panels")  # noqa
+        ax.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")  # noqa
+        ax.scatter([], [], [], color="r", marker="o", label="Control Points")  # noqa
+        ax.scatter([], [], [], color="k", marker="x", label="Grid Points")  # noqa
 
-        ax_.set_title("Grid")
-        ax_.set_xlabel("x")
-        ax_.set_ylabel("y")
-        ax_.set_zlabel("z")
-        ax_.axis("equal")
-        ax_.view_init(30, 150)
-
-        ax_.legend()
-        if isinstance(fig, Figure):
+        if created_plot:
+            ax.set_title("Grid")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+            ax.axis("equal")
+            ax.view_init(30, 150)
+            ax.legend()
             fig.show()

@@ -52,7 +52,7 @@ class WingSegment(WingSurface):
         mass: float = 1.0,
         controls: list[ControlSurface] = [NoControl],
         is_lifting: bool = True,
-    ):
+    ) -> None:
         """Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
         is discretized into a number of panels in the spanwise and chordwise directions. The wing segment
         is basically a constructor of a Lifting_Surface.
@@ -301,7 +301,7 @@ class WingSegment(WingSurface):
             twist_as_a_function_of_span_percentage=twist_fun,
             N=self.N,
             M=self.M,
-            mass=self._mass,
+            structural_mass=self._mass,
             controls=self.controls,
             is_lifting=self.is_lifting,
         )
@@ -514,8 +514,6 @@ class WingSegment(WingSurface):
         )
 
     def __getstate__(self) -> dict[str, Any]:
-        assert isinstance(self.root_airfoil, Airfoil)
-        assert isinstance(self.tip_airfoil, Airfoil)
         return {
             "name": self.name,
             "origin": self.origin,

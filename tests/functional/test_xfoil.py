@@ -13,15 +13,15 @@ from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
 
 
 @pytest.fixture(scope="module")
-def test_airfoils(database_instance: Database) -> list[Airfoil]:
+def test_airfoils(DB: Database) -> list[Airfoil]:
     """Fixture that provides test airfoils."""
     airfoils_to_compute: list[Airfoil] = []
-    airfoils_to_compute.append(database_instance.get_airfoil("NACA4415"))
-    airfoils_to_compute.append(database_instance.get_airfoil("NACA4412"))
-    airfoils_to_compute.append(database_instance.get_airfoil("NACA0008"))
-    airfoils_to_compute.append(database_instance.get_airfoil("NACA0012"))
-    airfoils_to_compute.append(database_instance.get_airfoil("NACA0015"))
-    airfoils_to_compute.append(database_instance.get_airfoil("NACA2412"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA4415"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA4412"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA0008"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA0012"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA0015"))
+    airfoils_to_compute.append(DB.get_airfoil("NACA2412"))
 
     for airfoil in airfoils_to_compute:
         airfoil.repanel_spl(160)
@@ -70,13 +70,13 @@ def xfoil_parameters() -> dict[str, Any]:
 @pytest.mark.integration
 @pytest.mark.parametrize("airfoil_name", ["NACA4415", "NACA0012"])
 def test_xfoil_single_airfoil(
-    database_instance: Database,
+    DB: Database,
     xfoil_parameters: dict[str, float | np.ndarray],
     airfoil_name: str,
-    plot: bool = True,
+    save_plot: bool = True,
 ) -> None:
     """Test Xfoil computation for a single airfoil."""
-    airfoil = database_instance.get_airfoil(airfoil_name)
+    airfoil = DB.get_airfoil(airfoil_name)
     airfoil.repanel_spl(200)
 
     print(f"\nRunning airfoil {airfoil.name}\n")
@@ -117,12 +117,12 @@ def test_xfoil_single_airfoil(
     execution_time = end_time - start_time
     print(f"Airfoil {airfoil.name} completed in {execution_time:.2f} seconds")
 
-    if plot:
+    if save_plot:
         try:
             import matplotlib.pyplot as plt
 
-            polar = database_instance.get_airfoil_polars(airfoil)
-            airfoil_folder = os.path.join(database_instance.DB_PATH, "images")
+            polar = DB.get_airfoil_polars(airfoil)
+            airfoil_folder = os.path.join(DB.DB_PATH, "images")
             os.makedirs(airfoil_folder, exist_ok=True)
             polar.plot()
             polar.save_polar_plot_img(airfoil_folder)
@@ -142,7 +142,7 @@ def test_xfoil_single_airfoil(
         f"Xfoil took too long: {execution_time:.2f}s"
     )  # Try to get polar data to verify computation succeeded
     try:
-        polar = database_instance.get_airfoil_polars(airfoil)
+        polar = DB.get_airfoil_polars(airfoil)
         assert polar is not None, "Polar data should be generated"
     except Exception as e:
-        pytest.skip(f"Could not retrieve polar data: {e}")
+        pytest.fail(f"Failed to retrieve polar data: {e}")

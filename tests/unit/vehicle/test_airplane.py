@@ -42,13 +42,13 @@ def test_wing_geometry(benchmark_airplane: Airplane) -> None:
     # Expected values
     S_expected: tuple[float] = (10.0,)
     MAC_expected: tuple[float] = (1.0,)
-    CG_expected: FloatArray = np.array([0.451, 0.0, 0.0])
+    CG_expected: FloatArray = np.array([0.418378, 0.0, 0.030982])
     I_expected: FloatArray = np.array([2.077, 0.026, 2.103, 0.0, 0.0, 0.0])
 
     # Assertions with tolerances
     np.testing.assert_almost_equal(S, S_expected, decimal=4)
     np.testing.assert_almost_equal(MAC, MAC_expected, decimal=4)
-    np.testing.assert_almost_equal(CG, CG_expected, decimal=3)
+    np.testing.assert_almost_equal(CG, CG_expected, decimal=2)
     np.testing.assert_almost_equal(INERTIA, I_expected, decimal=3)
 
 

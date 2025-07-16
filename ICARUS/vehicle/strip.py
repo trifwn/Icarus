@@ -251,7 +251,7 @@ class Strip(RigidBody):
         """Plot the strip."""
         from ICARUS.visualization import parse_Axes
 
-        fig, ax = parse_Axes(ax)
+        fig, ax, created_plot = parse_Axes(ax)
 
         x, z = self.airfoil.to_selig() * self.chord
         y = np.zeros_like(x)
@@ -286,15 +286,18 @@ class Strip(RigidBody):
         ax.plot(chord_x, chord_z, "k--", label="Chord")
 
         ax.plot(x, z)
-        # Relim axis
-        ax.set_aspect("equal")
-        fig.show()
+        if created_plot:
+            ax.set_title("2D Strip Projection")
+            ax.set_xlabel("X")
+            ax.set_ylabel("Z")
+            ax.axis("equal")
+            fig.show()
 
     def plot_3D(self, ax: Axes3D | None = None) -> None:
         """Plot the strip in 3D."""
         from ICARUS.visualization import parse_Axes3D
 
-        fig, ax = parse_Axes3D(ax)
+        fig, ax, created_plot = parse_Axes3D(ax)
 
         x, z = self.airfoil.to_selig() * self.chord
         y = np.zeros_like(x)
@@ -330,11 +333,12 @@ class Strip(RigidBody):
         chord_z = np.array([le[2], te[2]])
         ax.plot(chord_x, chord_y, chord_z, "k--", label="Chord")
 
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
-        ax.set_box_aspect([1, 1, 1])
-        fig.show()
+        if created_plot:
+            ax.set_xlabel("X")
+            ax.set_ylabel("Y")
+            ax.set_zlabel("Z")
+            ax.set_box_aspect([1, 1, 1])
+            fig.show()
 
     def __repr__(self) -> str:
         """String representation of the Strip object."""

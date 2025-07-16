@@ -101,16 +101,22 @@ def validate_surface_input(
                 raise ValueError(
                     "surfaces must be a string, WingSurface, or Wing object",
                 )
+    else:
+        raise TypeError(
+            f"Invalid type for surfaces: {type(surfaces)}. Expected str, WingSurface, Wing, or list of these.",
+        )
     return surface_objects
 
 
-def parse_Axes3D(ax: Axes3D | None) -> tuple[Figure, Axes3D]:
+def parse_Axes3D(ax: Axes3D | None) -> tuple[Figure, Axes3D, bool]:
     if ax is None:
         _fig = plt.figure()
         _ax = _fig.add_subplot(111, projection="3d")
+        created_plot = True
     else:
         _ax = ax
         _fig = _ax.get_figure()
+        created_plot = False
 
     if not isinstance(_ax, Axes3D):
         raise ValueError("Got weird axes")
@@ -120,16 +126,18 @@ def parse_Axes3D(ax: Axes3D | None) -> tuple[Figure, Axes3D]:
 
     ax = _ax
     fig = _fig
-    return fig, ax
+    return fig, ax, created_plot
 
 
-def parse_Axes(ax: Axes | None) -> tuple[Figure, Axes]:
+def parse_Axes(ax: Axes | None) -> tuple[Figure, Axes, bool]:
     if ax is None:
         _fig = plt.figure()
         _ax = _fig.add_subplot(111)
+        created_plot = True
     else:
         _ax = ax
         _fig = _ax.get_figure()
+        created_plot = False
 
     if not isinstance(_ax, Axes):
         raise ValueError("Got weird axes")
@@ -139,4 +147,4 @@ def parse_Axes(ax: Axes | None) -> tuple[Figure, Axes]:
 
     ax = _ax
     fig = _fig
-    return fig, ax
+    return fig, ax, created_plot

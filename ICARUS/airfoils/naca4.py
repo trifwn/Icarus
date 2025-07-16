@@ -70,20 +70,7 @@ class NACA4(Airfoil):
 
         # Keep only the digits
         name = "".join(filter(str.isdigit, name))
-        if len(name) != 4:
-            raise ValueError("Name must be 4 digits")
-        if not name.isdigit():
-            raise ValueError("Name must be 4 digits")
-        M = int(name[0]) / 100.0
-        P = int(name[1]) / 10.0
-        XX = int(name[2:4]) / 100.0
-        if M < 0 or M > 9:
-            raise ValueError("M must be between 0 and 9")
-        if P < 0 or P > 9:
-            raise ValueError("P must be between 0 and 9")
-        if XX < 0 or XX > 99:
-            raise ValueError("XX must be between 0 and 99")
-        return cls(M, P, XX)
+        return cls.from_digits(name)
 
     @classmethod
     def from_digits(cls, digits: str) -> "NACA4":
@@ -96,9 +83,20 @@ class NACA4(Airfoil):
         Returns:
             NACA4: NACA 4 digit airfoil object
         """
+        if len(digits) != 4:
+            raise ValueError("Digits must be 4 characters long")
+        if not digits.isdigit():
+            raise ValueError("Digits must be numeric")
         M = int(digits[0]) / 100.0
         P = int(digits[1]) / 10.0
         XX = int(digits[2:4]) / 100.0
+
+        if M < 0 or M > 9:
+            raise ValueError("M must be between 0 and 9")
+        if P < 0 or P > 9:
+            raise ValueError("P must be between 0 and 9")
+        if XX < 0 or XX > 99:
+            raise ValueError("XX must be between 0 and 99")
         return cls(M, P, XX)
 
     def _camber_line(self, xsi) -> tuple[Any, Any]:

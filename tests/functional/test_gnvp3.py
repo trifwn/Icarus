@@ -60,7 +60,7 @@ def test_gnvp3_run(
     solver_parameters.Vortex_Cutoff_Length_f = 1e-1  # EPSVR
     solver_parameters.Vortex_Cutoff_Length_i = 1e-1  # EPSO
 
-    execution_mode = ExecutionMode.MULTIPROCESSING
+    execution_mode = ExecutionMode.THREADING
     start_time: float = time.perf_counter()
     results = gnvp3.execute(
         analysis=polar_analysis,

@@ -350,14 +350,15 @@ class AerodynamicLoads:
     #### Plotting methods ####
     def plot_surfaces(
         self,
+        ax: Axes3D | None = None,
     ) -> None:
         gammas = self.gammas
         norm = Normalize(vmin=float(gammas.min()), vmax=float(gammas.max()))
         scalar_mappable = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")
 
-        # Create 3D plot of the induced velocities
-        fig = plt.figure(figsize=(10, 6))
-        ax: Axes3D = fig.add_subplot(111, projection="3d")  # noqa
+        from ICARUS.visualization import parse_Axes3D
+
+        fig, ax, created_plot = parse_Axes3D(ax=ax)
 
         cbar = plt.colorbar(scalar_mappable, ax=ax)
         cbar.set_label("Gamma Magnitude")

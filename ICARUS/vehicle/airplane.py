@@ -6,7 +6,6 @@ from typing import Any
 from typing import Sequence
 
 import jsonpickle
-import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
@@ -657,11 +656,11 @@ class Airplane(Optimizable):
     def plot(
         self,
         ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
         thin: bool = False,
         annotate: bool = False,
         show_masses: bool = True,
         show_strips: bool = False,
+        movement: FloatArray | None = None,
     ) -> None:
         """Visualize the plane
 
@@ -671,16 +670,18 @@ class Airplane(Optimizable):
             movement (FloatArray | None, optional): Plane Movement from origin. Defaults to None.
 
         """
+
         from ICARUS.visualization import parse_Axes3D
 
-        fig, ax = parse_Axes3D(ax)
+        fig, ax, created_plot = parse_Axes3D(ax)
 
-        ax.set_title(self.name)
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_zlabel("z")
-        ax.view_init(30, 150)
-        ax.axis("scaled")
+        if created_plot:
+            ax.set_title(self.name)
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+            ax.view_init(30, 150)
+            ax.axis("scaled")
 
         if isinstance(movement, ndarray):
             mov = movement
@@ -694,7 +695,7 @@ class Airplane(Optimizable):
                 mov = np.zeros(3)
 
         for wing in self.wings:
-            wing.plot(thin, fig, ax, mov)
+            wing.plot(thin, ax, mov)
         # Add plot for masses
         if show_masses:
             for p_mass in self.masses:
@@ -743,7 +744,9 @@ class Airplane(Optimizable):
                 zorder=1,
                 color="k",
             )
-        plt.show()
+
+        if created_plot:
+            fig.show()
 
     def to_json(self) -> str:
         """Pickle the plane object to a json string

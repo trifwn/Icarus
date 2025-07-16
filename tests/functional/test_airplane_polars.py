@@ -6,7 +6,7 @@ from ICARUS.database.db import Database
 
 
 @pytest.mark.integration
-def test_airplane_polars(database_instance: Database) -> None:
+def test_airplane_polars(DB: Database) -> None:
     """Test the airplane polars comparison between different solvers."""
     planenames = ["benchmark"]
 
@@ -15,8 +15,8 @@ def test_airplane_polars(database_instance: Database) -> None:
     for pol in solvers:
         try:
             # Attempt to retrieve polars for solver and AVL baseline
-            computed = database_instance.get_vehicle_polars(planenames[0], pol)
-            desired = database_instance.get_vehicle_polars(planenames[0], "AVL")
+            computed = DB.get_vehicle_polars(planenames[0], pol)
+            desired = DB.get_vehicle_polars(planenames[0], "AVL")
 
             # Extract angles of attack and coefficients
             AoA_d: Series[float] = desired["AoA"].astype(float)
@@ -46,7 +46,7 @@ def test_airplane_polars(database_instance: Database) -> None:
 
 
 @pytest.mark.parametrize("plot", [False])
-def test_airplane_polars_with_plot(database_instance: Database, plot: bool) -> None:
+def test_airplane_polars_with_plot(DB: Database, plot: bool) -> None:
     """Test airplane polars with optional plotting."""
     planenames = ["benchmark"]
 
@@ -70,7 +70,7 @@ def test_airplane_polars_with_plot(database_instance: Database, plot: bool) -> N
         )
 
     # Run the main test logic
-    test_airplane_polars(database_instance)
+    test_airplane_polars(DB)
 
 
 # Backward compatibility function

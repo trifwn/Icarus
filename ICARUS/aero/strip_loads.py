@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Literal
 
 import jax.numpy as jnp
-import matplotlib.pyplot as plt
 import numpy as np
 from jax import vmap
 from jaxtyping import Array
@@ -15,7 +14,6 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import Colorbar
 from matplotlib.colors import Normalize
 from matplotlib.figure import Figure
-from matplotlib.figure import SubFigure
 from matplotlib.patches import Polygon
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -360,7 +358,7 @@ class StripLoads:
         """String representation of the StripLoads object."""
         return self.__str__()
 
-    #### Plotting methods (if needed) can be added here ####
+    #### Plotting methods ####
     def plot_surface(
         self,
         ax: Axes3D | None = None,
@@ -368,17 +366,22 @@ class StripLoads:
         scalar_map: ScalarMappable | tuple[float, float] | None = None,
         colorbar: Colorbar | None = None,
     ) -> None:
-        if ax is None:
-            fig: Figure | SubFigure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # noqa
-            show_plot = True
-        else:
-            ax_ = ax
-            fig = ax_.get_figure()
-            show_plot = False
+        """Plot the surface panels in 3D.
 
-        if fig is None:
-            raise ValueError("Axes must be part of a figure")
+        Args:
+            ax (Axes3D | None, optional): Axes to plot on. If None, a new figure is created. Defaults to None.
+            data (Float[Array, ...] | None, optional): Data to plot on the surface. If provided, it must have the same length as the number of panels. Defaults to None.
+            scalar_map (ScalarMappable | tuple[float, float] | None, optional): Scalar map for color mapping. If None, a default ScalarMappable is created based on the data range. Defaults to None.
+            colorbar (Colorbar | None, optional): Colorbar to add to the plot. If None, a new colorbar is created based on the scalar_map. Defaults to None.
+
+        Raises:
+            ValueError: If the data length does not match the number of panels.
+            TypeError: If the scalar_map is not a ScalarMappable or a tuple.
+            ValueError: If the data length does not match the number of panels.
+        """
+        from ICARUS.visualization import parse_Axes3D
+
+        fig, ax, created_plot = parse_Axes3D(ax=ax)
 
         # Add the grid panel wireframes
         for i in np.arange(0, self.panels.shape[0]):
@@ -388,7 +391,7 @@ class StripLoads:
             zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
             # ax_.plot_wireframe(xs, ys, zs, linewidth=1.5)
 
-            ax_.plot_surface(
+            ax.plot_surface(
                 xs,
                 ys,
                 zs,
@@ -424,7 +427,7 @@ class StripLoads:
                 zs = np.reshape(np.array([p1[2], p2[2], p3[2], p4[2]]), (2, 2))
 
                 val = np.array(data[i])
-                ax_.plot_surface(
+                ax.plot_surface(
                     xs,
                     ys,
                     zs,
@@ -437,19 +440,19 @@ class StripLoads:
             if colorbar is None:
                 colorbar = fig.colorbar(
                     scalar_map,
-                    ax=ax_,
+                    ax=ax,
                     orientation="vertical",
                 )
 
-        if show_plot:
-            ax_.set_title("Grid")
-            ax_.set_xlabel("x")
-            ax_.set_ylabel("y")
-            ax_.set_zlabel("z")
-            ax_.axis("equal")
-            ax_.view_init(30, 150)
+        if created_plot:
+            ax.set_title("Grid")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+            ax.axis("equal")
+            ax.view_init(30, 150)
 
-            ax_.legend()
+            ax.legend()
             if isinstance(fig, Figure):
                 fig.show()
 
@@ -460,17 +463,21 @@ class StripLoads:
         scalar_map: ScalarMappable | tuple[float, float] | None = None,
         colorbar: Colorbar | None = None,
     ) -> None:
-        if ax is None:
-            fig: Figure | SubFigure | None = plt.figure()
-            ax_ = fig.add_subplot()  # noqa
-            show_plot = True
-        else:
-            ax_ = ax
-            fig = ax_.get_figure()
-            show_plot = False
+        """Plot the 2D projection of the surface panels.
 
-        if fig is None:
-            raise ValueError("Axes must be part of a figure")
+        Args:
+            ax (Axes | None, optional): The axes to plot on. Defaults to None.
+            data (Float[Array, ...] | None, optional): The data to plot. Defaults to None.
+            scalar_map (ScalarMappable | tuple[float, float] | None, optional): The scalar map for coloring. Defaults to None.
+            colorbar (Colorbar | None, optional): The colorbar to use. Defaults to None.
+
+        Raises:
+            TypeError: If the scalar_map is not a ScalarMappable or a tuple.
+            ValueError: If the data does not match the number of panels.
+        """
+        from ICARUS.visualization import parse_Axes
+
+        fig, ax, created_plot = parse_Axes(ax=ax)
 
         if data is not None:
             if scalar_map is None:
@@ -503,12 +510,12 @@ class StripLoads:
                     linewidth=0.5,
                     facecolor=scalar_map.to_rgba(val, alpha=0.5),
                 )
-                ax_.add_patch(poly)
+                ax.add_patch(poly)
 
             if colorbar is None:
                 colorbar = fig.colorbar(
                     scalar_map,
-                    ax=ax_,
+                    ax=ax,
                     orientation="vertical",
                 )
         else:
@@ -522,12 +529,11 @@ class StripLoads:
                     edgecolor="k",
                     linewidth=0.5,
                 )
-                ax_.add_patch(poly)
+                ax.add_patch(poly)
 
-        if show_plot:
-            ax_.set_title("Flat Surface")
-            ax_.set_xlabel("x")
-            ax_.set_ylabel("y")
-            ax_.axis("equal")
-            if isinstance(fig, Figure):
-                fig.show()
+        if created_plot:
+            ax.set_title("Flat Surface")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.axis("equal")
+            fig.show()
