@@ -3,6 +3,7 @@ from typing import Callable
 from typing import TypeVar
 from typing import Union
 
+import jax.numpy as jnp
 import numpy as np
 from numpy import complexfloating
 from numpy import dtype
@@ -14,6 +15,7 @@ from numpy import ndarray
 
 
 FloatArray = ndarray[Any, dtype[floating[Any]]]
+JaxArray = jnp.ndarray
 ComplexArray = ndarray[Any, dtype[complexfloating[Any, Any]]]
 FloatOrListArray = Union[FloatArray, list[float]]
 AnyFloat = Union[float, int, np.number[Any], FloatArray, list[float]]

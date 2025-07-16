@@ -61,8 +61,8 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
@@ -105,7 +105,6 @@ class Airfoil:
         else:
             self._name = None
 
-        lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
         lower, upper = self.order_points(
             lower,
             upper,
@@ -221,7 +220,6 @@ class Airfoil:
         x_new = np.interp(tnew, s, x)
 
         lower, upper = self.split_sides(x_new, y_new)
-        lower, upper = self.remove_nan_points(lower, upper)  # remove nan points
         lower, upper = self.order_points(lower, upper)
         lower, upper = self.close_airfoil(lower, upper)
 
@@ -299,6 +297,9 @@ class Airfoil:
             tuple[FloatArray, FloatArray]: Ordered lower and upper surface coordinates
 
         """
+        upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
+        lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
+
         x_lower: Float = lower[0, :]
         y_lower: Float = lower[1, :]
         x_upper: Float = upper[0, :]
@@ -431,12 +432,6 @@ class Airfoil:
 
         return lower_final, upper_final
 
-    @staticmethod
-    def remove_nan_points(lower: Float, upper: Float) -> tuple[Float, Float]:
-        """Removes nan points from the airfoil"""
-        upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
-        lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
-        return lower, upper
 
     def thickness(self, ksi: Float) -> Float:
         """Returns the thickness of the airfoil at the given x coordinates
@@ -451,6 +446,7 @@ class Airfoil:
         thickness: Float = self.y_upper(ksi) - self.y_lower(ksi)
         # Remove Nan
         thickness = thickness[~jnp.isnan(thickness)]
+        ksi = ksi[~jnp.isnan(thickness)]
 
         # Set 0 thickness for values after x_max
         thickness = thickness.at[ksi > self.max_x].set(0.0)

@@ -2,13 +2,12 @@ from typing import Any
 from typing import Self
 
 import jax
-import numpy as np
 from jax import numpy as jnp
 from jaxtyping import Float
 from jaxtyping import Int
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.types import FloatArray
+from ICARUS.core.types import FloatArray, JaxArray
 
 
 @jax.tree_util.register_pytree_node_class
@@ -99,30 +98,53 @@ class NACA4(Airfoil):
             raise ValueError("XX must be between 0 and 99")
         return cls(M, P, XX)
 
-    def _camber_line(self, xsi) -> tuple[Any, Any]:
-        """
-        Calculate the camber line and its derivative for a NACA 4 digit airfoil.
-        Args:
-            xsi (FloatArray): Non-dimensional x-coordinates (0 to 1)
-        Returns:
-            yc (FloatArray): Camber line y-coordinates
-            dyc (FloatArray): Derivative of the camber line
-        """
-        p = self.p + 1e-19
+    def camber_line(self, points: Float) -> Float:
+        p = self.p + 1e-19  # Avoid division by zero
         m = self.m
+        c = 1.0
+
+        xsi = jnp.asarray(points, dtype=float) / c  # Normalize points to [0, 1]
 
         # Camber line and its derivative using vectorized conditionals
-        yc = jnp.where(
-            xsi < p,
-            (m / p**2) * (2 * p * xsi - xsi**2),
-            (m / (1 - p) ** 2) * (1 - 2 * p + 2 * p * xsi - xsi**2),
+        yc = jnp.select(
+            [xsi <= 0, xsi < p],
+            [
+                0.0,  # xsi <= 0
+                (m / p**2) * (2 * p * xsi - xsi**2),  # xsi < p
+            ],
+            default=(m / (1 - p) ** 2) * (1 - 2 * p + 2 * p * xsi - xsi**2),  # xsi >= p
         )
-        dyc = jnp.where(
-            xsi < p,
-            (2 * m / p**2) * (p - xsi),
-            (2 * m / (1 - p) ** 2) * (p - xsi),
+        return yc
+
+    def camber_line_derivative(
+        self, points: float | list[float] | FloatArray | JaxArray
+    ) -> JaxArray:
+        p = self.p + 1e-19  # Avoid division by zero
+        m = self.m
+        c = 1.0  # Chord length is normalized to 1
+
+        xsi = jnp.asarray(points, dtype=float) / c  # Normalize points to [0, 1]
+        dyc = jnp.select(
+            [xsi <= 0, xsi < p],
+            [0.0, (2 * m / p**2) * (p - xsi)],
+            default=(2 * m / (1 - p) ** 2) * (p - xsi),
         )
-        return yc, dyc
+        return dyc
+
+    def y_upper(self, ksi: Float) -> Float:
+        # x-coordinate is between [0, 1]
+        # x must be set between [min(x_upper), max(x_upper)]
+        theta = jnp.arctan(self.camber_line_derivative(ksi))
+        camber = self.camber_line(ksi)
+        yt = self.thickness_distribution(ksi)
+        return camber + yt * jnp.cos(theta)
+
+    def y_lower(self, ksi: Float) -> Float:
+        # x-coordinate is between [0, 1]
+        # x must be set between [min(x_lower), max(x_lower)]
+        theta = jnp.arctan(self.camber_line_derivative(ksi))
+        yt = self.thickness_distribution(ksi)
+        return self.camber_line(ksi) - yt * jnp.cos(theta)
 
     def thickness_distribution(self, xsi: Float) -> Float:
         xx = self.xx
@@ -137,63 +159,6 @@ class NACA4(Airfoil):
             xx
             / 0.2
             * (a0 * jnp.sqrt(xsi) + a1 * xsi + a2 * xsi**2 + a3 * xsi**3 + a4 * xsi**4)
-        )
-
-    def camber_line(
-        self,
-        points: float | FloatArray | list[float],
-    ) -> FloatArray:
-        """Function to generate the camber line for a NACA 4 digit airfoil.
-        Returns the camber line for a given set of x coordinates.
-
-        Args:
-            points (FloatArray): X coordinates for which we need the camber line
-
-        Returns:
-            FloatArray: X,Y coordinates of the camber line
-
-        """
-        p: float = self.p
-        m: float = self.m
-
-        if isinstance(points, float):
-            x: float = float(points)
-            if x < p:
-                result: float = m / p**2 * (2 * p * x - x**2)
-            else:
-                result = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * x - x**2)
-            return np.array(result)
-
-        if isinstance(points, list):
-            points = np.array(points, dtype=float)
-        if isinstance(points, int):
-            points = np.array(float(points))
-
-        results: FloatArray = np.zeros_like(points)
-        for i, xi in enumerate(points.tolist()):
-            if xi < p:
-                results[i] = m / p**2 * (2 * p * xi - xi**2)
-            else:
-                results[i] = m / (1 - p) ** 2 * ((1 - 2 * p) + 2 * p * xi - xi**2)
-        return results
-
-    def __getstate__(self) -> dict[str, Any]:
-        """Get the state of the object for pickling"""
-        state = dict()
-        state["m"] = self.m
-        state["p"] = self.p
-        state["xx"] = self.xx
-        state["n_points"] = len(self._x_lower) * 2
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        """Set the state of the object for unpickling"""
-        NACA4.__init__(
-            self,
-            M=state["m"],
-            P=state["p"],
-            XX=state["xx"],
-            n_points=state["n_points"],
         )
 
     def gen_NACA4_points(self, n_points: int) -> tuple[Float, Float]:
@@ -214,7 +179,8 @@ class NACA4(Airfoil):
         xsi = 0.5 * (1 - jnp.cos(beta))  # cosine spacing
 
         yt = self.thickness_distribution(xsi)
-        yc, dyc = self._camber_line(xsi)
+        yc = self.camber_line(xsi)
+        dyc = self.camber_line_derivative(xsi)
         theta = jnp.arctan(dyc)
 
         x_upper = xsi - yt * jnp.sin(theta)
@@ -225,6 +191,25 @@ class NACA4(Airfoil):
         upper = jnp.stack([x_upper, y_upper])
         lower = jnp.stack([x_lower, y_lower])
         return upper, lower
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Get the state of the object for pickling"""
+        state = dict()
+        state["m"] = self.m
+        state["p"] = self.p
+        state["xx"] = self.xx
+        state["n_points"] = len(self._x_lower) * 2
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Set the state of the object for unpickling"""
+        NACA4.__init__(
+            self,
+            M=state["m"],
+            P=state["p"],
+            XX=state["xx"],
+            n_points=state["n_points"],
+        )
 
     def tree_flatten(self):
         M = jnp.asarray(self.M, dtype=jnp.int64).astype("float")
