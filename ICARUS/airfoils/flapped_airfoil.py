@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+from jaxtyping import Float
+
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.types import FloatArray
 
 
 class FlappedAirfoil(Airfoil):
     def __init__(
         self,
-        upper: FloatArray,
-        lower: FloatArray,
+        upper: Float,
+        lower: Float,
         parent: Airfoil,
         name: str | None = None,
-    ):
+    ) -> None:
         if name is None:
             name = parent.name + "_flapped"
 
