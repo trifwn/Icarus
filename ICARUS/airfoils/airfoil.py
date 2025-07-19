@@ -56,8 +56,9 @@ from __future__ import annotations
 import logging
 import os
 import re
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import Self
 
 import jax
 import jax.numpy as jnp
