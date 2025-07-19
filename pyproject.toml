@@ -10,6 +10,7 @@ include = ["ICARUS*", "bin*"]
 
 [tool.setuptools.package-data]
 bin = ["Linux/*", "Windows/*", "macOS/*"]
+ICARUS = ["py.typed"]
 
 [project]
 name = "ICARUS"
