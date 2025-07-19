@@ -25,11 +25,11 @@ from jaxtyping import Bool
 from jaxtyping import Float
 from matplotlib.axes import Axes
 
-from .buffer_manager import AirfoilBufferManager
+from .buffer_management import AirfoilBufferManager
 from .coordinate_processor import CoordinateProcessor
 from .error_handling import AirfoilErrorHandler
 from .error_handling import AirfoilValidationError
-from .jax_airfoil_ops import JaxAirfoilOps
+from .operations import JaxAirfoilOps
 
 
 @jax.tree_util.register_pytree_node_class
@@ -1979,7 +1979,7 @@ class JaxAirfoil:
         Returns:
             Tuple of (batch_coords, batch_validity_masks, upper_split_indices, n_valid_points)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         if not airfoils:
             raise ValueError("Cannot create batch from empty list of airfoils")
@@ -2085,7 +2085,7 @@ class JaxAirfoil:
         Returns:
             Tuple of (batch_coords, batch_validity_masks, upper_split_indices, n_valid_points)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         if not digits_list:
             raise ValueError("Cannot create batch from empty list of NACA digits")
@@ -2181,7 +2181,7 @@ class JaxAirfoil:
         Returns:
             Thickness values for each airfoil at query points (batch_size, n_query)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         # Convert query_x to JAX array if needed
         if isinstance(query_x, (float, int)):
@@ -2260,7 +2260,7 @@ class JaxAirfoil:
         Returns:
             Morphed airfoil coordinates (batch_size, 2, buffer_size)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         # Convert eta to array if it's a scalar
         if isinstance(eta, (float, int)):
@@ -2303,7 +2303,7 @@ class JaxAirfoil:
         Returns:
             Batch of airfoils with flaps applied (batch_size, 2, buffer_size)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         batch_size = batch_coords.shape[0]
 
@@ -2429,7 +2429,7 @@ class JaxAirfoil:
         Returns:
             Upper surface y-coordinates for each airfoil at query points (batch_size, n_query)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         # Convert query_x to JAX array if needed
         if isinstance(query_x, (float, int)):
@@ -2487,7 +2487,7 @@ class JaxAirfoil:
         Returns:
             Lower surface y-coordinates for each airfoil at query points (batch_size, n_query)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         # Convert query_x to JAX array if needed
         if isinstance(query_x, (float, int)):
@@ -2549,7 +2549,7 @@ class JaxAirfoil:
         Returns:
             Camber line values for each airfoil at query points (batch_size, n_query)
         """
-        from .batch_operations import BatchAirfoilOps
+        from .batch_processing import BatchAirfoilOps
 
         # Convert query_x to JAX array if needed
         if isinstance(query_x, (float, int)):

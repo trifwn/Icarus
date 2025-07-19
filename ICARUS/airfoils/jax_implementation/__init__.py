@@ -1,17 +1,27 @@
 # JAX-compatible airfoil implementations
 
-from .buffer_manager import AirfoilBufferManager
+from .batch_processing import BatchAirfoilOps
+from .buffer_management import AirfoilBufferManager
 from .coordinate_processor import CoordinateProcessor
-from .interpolation_engine import JaxInterpolationEngine
+from .error_handling import AirfoilErrorHandler
+from .error_handling import AirfoilValidationError
+from .error_handling import BufferOverflowError
+from .error_handling import GeometryError
+from .interpolation import JaxInterpolationEngine
 from .jax_airfoil import JaxAirfoil
-from .jax_airfoil_ops import JaxAirfoilOps
-from .plotting_utils import AirfoilPlotter
+from .operations import JaxAirfoilOps
+from .plotting import AirfoilPlotter
 
 __all__ = [
     "JaxAirfoil",
     "JaxAirfoilOps",
-    "AirfoilBufferManager",
-    "CoordinateProcessor",
     "JaxInterpolationEngine",
     "AirfoilPlotter",
+    "BatchAirfoilOps",
+    "AirfoilBufferManager",
+    "CoordinateProcessor",
+    "AirfoilErrorHandler",
+    "AirfoilValidationError",
+    "BufferOverflowError",
+    "GeometryError",
 ]

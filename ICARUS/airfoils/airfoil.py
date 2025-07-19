@@ -61,8 +61,8 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
@@ -431,7 +431,6 @@ class Airfoil:
         lower_final = lower_extended[:, :lower_actual_size]
 
         return lower_final, upper_final
-
 
     def thickness(self, ksi: Float) -> Float:
         """Returns the thickness of the airfoil at the given x coordinates

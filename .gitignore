@@ -9,6 +9,7 @@ setup.cfg
 3d_Party/
 typings/
 *.DS_Store
+.hypothesis
 
 # PACKAGING
 *.egg

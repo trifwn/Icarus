@@ -9,12 +9,12 @@ coordinate validation, ordering, closure, and selig format conversion utilities.
 from typing import Optional
 from typing import Tuple
 
-import jax
 import jax.numpy as jnp
+from jaxtyping import Array
 from jaxtyping import Bool
 from jaxtyping import Float
 
-from .buffer_manager import AirfoilBufferManager
+from .buffer_management import AirfoilBufferManager
 from .error_handling import AirfoilErrorHandler
 from .error_handling import AirfoilValidationError
 
@@ -33,8 +33,8 @@ class CoordinateProcessor:
 
     @staticmethod
     def filter_nan_coordinates(
-        coords: Float[jax.Array, "2 n_points"],
-    ) -> Float[jax.Array, "2 n_valid"]:
+        coords: Float[Array, "2 n_points"],
+    ) -> Float[Array, "2 n_valid"]:
         """
         Remove NaN values from coordinate arrays.
 
@@ -71,7 +71,7 @@ class CoordinateProcessor:
         return filtered_coords
 
     @staticmethod
-    def validate_coordinates(coords: Float[jax.Array, "2 n_points"]) -> None:
+    def validate_coordinates(coords: Float[Array, "2 n_points"]) -> None:
         """
         Validate coordinate arrays for common issues.
 
@@ -88,8 +88,8 @@ class CoordinateProcessor:
 
     @staticmethod
     def order_surface_points(
-        coords: Float[jax.Array, "2 n_points"],
-    ) -> Float[jax.Array, "2 n_points"]:
+        coords: Float[Array, "2 n_points"],
+    ) -> Float[Array, "2 n_points"]:
         """
         Order surface points from leading edge to trailing edge.
 
@@ -118,11 +118,11 @@ class CoordinateProcessor:
 
     @staticmethod
     def close_airfoil_surfaces(
-        upper: Float[jax.Array, "2 n_upper"],
-        lower: Float[jax.Array, "2 n_lower"],
+        upper: Float[Array, "2 n_upper"],
+        lower: Float[Array, "2 n_lower"],
     ) -> Tuple[
-        Float[jax.Array, "2 n_upper_closed"],
-        Float[jax.Array, "2 n_lower_closed"],
+        Float[Array, "2 n_upper_closed"],
+        Float[Array, "2 n_lower_closed"],
     ]:
         """
         Close airfoil by ensuring proper leading/trailing edge connections.
@@ -182,9 +182,9 @@ class CoordinateProcessor:
 
     @staticmethod
     def to_selig_format(
-        upper: Float[jax.Array, "2 n_upper"],
-        lower: Float[jax.Array, "2 n_lower"],
-    ) -> Float[jax.Array, "2 n_total"]:
+        upper: Float[Array, "2 n_upper"],
+        lower: Float[Array, "2 n_lower"],
+    ) -> Float[Array, "2 n_total"]:
         """
         Convert upper and lower surface coordinates to selig format.
 
@@ -208,9 +208,9 @@ class CoordinateProcessor:
 
     @staticmethod
     def split_selig_format(
-        selig_coords: Float[jax.Array, "2 n_total"],
-        validity_mask: Optional[Bool[jax.Array, "n_total"]] = None,
-    ) -> Tuple[Float[jax.Array, "2 n_upper"], Float[jax.Array, "2 n_lower"], int]:
+        selig_coords: Float[Array, "2 n_total"],
+        validity_mask: Optional[Bool[Array, "n_total"]] = None,
+    ) -> Tuple[Float[Array, "2 n_upper"], Float[Array, "2 n_lower"], int]:
         """
         Split selig format coordinates into upper and lower surfaces.
 
@@ -260,8 +260,8 @@ class CoordinateProcessor:
 
     @staticmethod
     def remove_duplicate_points(
-        coords: Float[jax.Array, "2 n_points"],
-    ) -> Float[jax.Array, "2 n_unique"]:
+        coords: Float[Array, "2 n_points"],
+    ) -> Float[Array, "2 n_unique"]:
         """
         Remove duplicate consecutive points from coordinate array.
 
@@ -297,11 +297,11 @@ class CoordinateProcessor:
 
     @staticmethod
     def preprocess_coordinates(
-        upper: Float[jax.Array, "2 n_upper"],
-        lower: Float[jax.Array, "2 n_lower"],
+        upper: Float[Array, "2 n_upper"],
+        lower: Float[Array, "2 n_lower"],
         remove_duplicates: bool = True,
         validate: bool = True,
-    ) -> Tuple[Float[jax.Array, "2 n_upper_proc"], Float[jax.Array, "2 n_lower_proc"]]:
+    ) -> Tuple[Float[Array, "2 n_upper_proc"], Float[Array, "2 n_lower_proc"]]:
         """
         Complete preprocessing pipeline for airfoil coordinates.
 
@@ -351,10 +351,10 @@ class CoordinateProcessor:
 
     @staticmethod
     def preprocess_selig_coordinates(
-        selig_coords: Float[jax.Array, "2 n_total"],
+        selig_coords: Float[Array, "2 n_total"],
         remove_duplicates: bool = True,
         validate: bool = True,
-    ) -> Tuple[Float[jax.Array, "2 n_upper"], Float[jax.Array, "2 n_lower"]]:
+    ) -> Tuple[Float[Array, "2 n_upper"], Float[Array, "2 n_lower"]]:
         """
         Preprocessing pipeline for coordinates already in selig format.
 
@@ -392,12 +392,12 @@ class CoordinateProcessor:
 
     @staticmethod
     def prepare_for_jit(
-        upper: Float[jax.Array, "2 n_upper"],
-        lower: Float[jax.Array, "2 n_lower"],
+        upper: Float[Array, "2 n_upper"],
+        lower: Float[Array, "2 n_lower"],
         target_buffer_size: Optional[int] = None,
     ) -> Tuple[
-        Float[jax.Array, "2 buffer_size"],
-        Bool[jax.Array, "buffer_size"],
+        Float[Array, "2 buffer_size"],
+        Bool[Array, "buffer_size"],
         int,
         int,
         int,

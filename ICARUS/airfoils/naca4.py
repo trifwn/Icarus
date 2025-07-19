@@ -7,7 +7,8 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.types import FloatArray, JaxArray
+from ICARUS.core.types import FloatArray
+from ICARUS.core.types import JaxArray
 
 
 @jax.tree_util.register_pytree_node_class
@@ -117,7 +118,8 @@ class NACA4(Airfoil):
         return yc
 
     def camber_line_derivative(
-        self, points: float | list[float] | FloatArray | JaxArray
+        self,
+        points: float | list[float] | FloatArray | JaxArray,
     ) -> JaxArray:
         p = self.p + 1e-19  # Avoid division by zero
         m = self.m

@@ -14,9 +14,9 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-import jax
 import jax.numpy as jnp
 import numpy as np
+from jaxtyping import Array
 from jaxtyping import Float
 
 
@@ -61,7 +61,7 @@ class AirfoilErrorHandler:
 
     @staticmethod
     def validate_coordinate_shape(
-        coords: Union[jax.Array, np.ndarray],
+        coords: Union[jnp.ndarray, np.ndarray],
         name: str = "coordinates",
     ) -> None:
         """
@@ -93,7 +93,7 @@ class AirfoilErrorHandler:
 
     @staticmethod
     def validate_coordinate_values(
-        coords: Union[jax.Array, np.ndarray],
+        coords: Union[jnp.ndarray, np.ndarray],
         name: str = "coordinates",
     ) -> None:
         """
@@ -140,8 +140,8 @@ class AirfoilErrorHandler:
 
     @staticmethod
     def validate_airfoil_geometry(
-        upper: Float[jax.Array, "2 n_upper"],
-        lower: Float[jax.Array, "2 n_lower"],
+        upper: Float[Array, "2 n_upper"],
+        lower: Float[Array, "2 n_lower"],
         name: str = "airfoil",
     ) -> None:
         """
@@ -203,7 +203,7 @@ class AirfoilErrorHandler:
 
     @staticmethod
     def validate_surface_ordering(
-        coords: Float[jax.Array, "2 n_points"],
+        coords: Float[Array, "2 n_points"],
         surface_name: str = "surface",
     ) -> None:
         """
@@ -549,6 +549,8 @@ class AirfoilErrorHandler:
         """
         # In JIT context, we can't raise exceptions, so we use conditional logic
         # The actual error handling should happen in eager preprocessing
+        import jax
+
         return jax.lax.cond(error_condition, lambda: fallback_value, lambda: None)
 
     @staticmethod
