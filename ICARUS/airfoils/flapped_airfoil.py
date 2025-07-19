@@ -11,7 +11,7 @@ class FlappedAirfoil(Airfoil):
         lower: FloatArray,
         parent: Airfoil,
         name: str | None = None,
-    ):
+    ) -> None:
         if name is None:
             name = parent.name + "_flapped"
 

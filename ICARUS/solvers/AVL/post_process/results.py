@@ -9,6 +9,7 @@ from ICARUS.database import angle_to_directory
 from ICARUS.database import disturbance_to_directory
 from ICARUS.flight_dynamics import State
 from ICARUS.solvers.AVL.post_process import AVLOutputParser
+from ICARUS.solvers.AVL.post_process.output_parser import AVLEigenmode
 from ICARUS.vehicle import Airplane
 
 
@@ -177,8 +178,8 @@ def implicit_dynamics_post(
     if not eigenmodes:
         raise AVLPostReadError("No eigenmodes found in the log file.")
 
-    longitudal_matrix = []
-    lateral_matrix = []
+    longitudal_matrix: list[AVLEigenmode] = []
+    lateral_matrix: list[AVLEigenmode] = []
     for mode in eigenmodes:
         if mode.mode_number <= 4:
             longitudal_matrix.append(mode)

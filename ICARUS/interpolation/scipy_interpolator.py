@@ -278,7 +278,8 @@ class ScipyInterpolator:
             )
 
         assert self.interpolator is not None
-        return self.interpolator(x_new)
+        res = self.interpolator(x_new)
+        return np.asarray(res)
 
     def __call__(self, x_new: ArrayLike) -> np.ndarray:
         """Makes the instance callable, equivalent to `predict`."""

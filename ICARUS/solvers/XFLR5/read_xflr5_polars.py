@@ -7,6 +7,8 @@ import pandas as pd
 from pandas import DataFrame
 
 from ICARUS.airfoils import AirfoilData
+from ICARUS.airfoils import AirfoilPolar
+from ICARUS.airfoils import AirfoilPolarMap
 from ICARUS.database import Database
 
 XFLR5_LOGGER = logging.getLogger("XFLR5")
@@ -39,7 +41,7 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
         return
 
     files: list[str] = next(os.walk(directory))[2]
-    reynolds_data = {}
+    reynolds_data: dict[str, dict[str, DataFrame]] = {}
     for file in files:
         airfoil_name: str = parse_airfoil_name(file)
         file_name = os.path.join(directory, file)
@@ -94,16 +96,26 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
         reynolds_data[airfoil_name][reyn_str] = xflr_df
 
     for airfoil_name in reynolds_data.keys():
+        polar_map = AirfoilPolarMap(
+            airfoil_name=airfoil_name,
+            solver="XFLR5",
+        )
+        for reynolds, data in reynolds_data[airfoil_name].items():
+            polar = AirfoilPolar(
+                reynolds=float(reynolds),
+                df=data,
+            )
+            polar_map.add_polar(polar)
         # Add to the database
         if airfoil_name not in DB.foils_db.polars.keys():
             DB.foils_db.polars[airfoil_name] = AirfoilData(
                 airfoil_name=airfoil_name,
-                polar_maps={"XFLR": reynolds_data[airfoil_name]},
+                polar_maps={"XFLR": polar_map},
             )
         else:
             DB.foils_db.polars[airfoil_name].add_polar_map(
                 "XFLR",
-                reynolds_data[airfoil_name],
+                polar_map,
             )
 
 

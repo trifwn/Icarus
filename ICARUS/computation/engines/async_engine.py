@@ -42,9 +42,9 @@ class AsyncEngine(AbstractEngine):
         )
 
         # Convert exceptions to failed results
-        processed_results = []
+        processed_results: list[TaskResult] = []
         for i, result in enumerate(results):
-            if isinstance(result, Exception):
+            if isinstance(result, Exception) or isinstance(result, BaseException):
                 task = self.tasks[i]
                 processed_results.append(
                     TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),

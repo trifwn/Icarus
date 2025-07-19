@@ -61,7 +61,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
     # Enter Arguments
     def __call__(
         self,
-        tasks: list[Task],
+        tasks: list[Task[Any, Any]],
         progress_reporter: ProgressReporter | None,
         progress_monitor: ProgressMonitor | None = None,
         resource_manager: ResourceManager | None = None,

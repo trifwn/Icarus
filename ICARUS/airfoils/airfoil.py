@@ -721,7 +721,9 @@ class Airfoil:
         lower, upper = cls.split_sides(x_arr, y_arr)
         try:
             self: Airfoil = cls(
-                upper, lower, os.path.split(filename)[-1].replace(".airfoil", "")
+                upper,
+                lower,
+                os.path.split(filename)[-1].replace(".airfoil", ""),
             )
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")

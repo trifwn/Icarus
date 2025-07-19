@@ -249,7 +249,7 @@ class Analysis(Generic[AnalysisInput]):
                 )
 
                 # Instantiate Executor
-                executor = AnalysisExecutor(self._execute_fun)
+                executor: AnalysisExecutor = AnalysisExecutor(self._execute_fun)
 
                 # Prepare metadata
                 task_metadata = {

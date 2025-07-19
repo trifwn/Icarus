@@ -448,7 +448,7 @@ class AVLOutputParser:
 
     def parse_eigenmodes(self) -> list[AVLEigenmode]:
         """Parse eigenmode results from AVL output, robust to format variations and all eigenvector components"""
-        eigenmodes = []
+        eigenmodes: list[AVLEigenmode] = []
 
         # Find all eigenmode section headers (case-insensitive, allow for whitespace)
         mode_lines = []

@@ -6,7 +6,6 @@ from typing import Union
 import jax.numpy as jnp
 import numpy as np
 from jaxtyping import Array
-from jaxtyping import ArrayLike
 from jaxtyping import Float
 from numpy import complexfloating
 from numpy import dtype
@@ -37,5 +36,8 @@ ArrayType = Union[
 
 # Type definitions
 Vector3D = FloatArray  # Shape (3,)
-Matrix3x3 = Float[ArrayLike, "3 3"]  # Shape (3, 3)
+Matrix3x3 = Float[ArrayType, "3 3"]  # Shape (3, 3)
+Array2D = Float[ArrayType, "N M"]  # Shape (N, M)
+Array3D = Float[ArrayType, "N M P"]  # Shape (N, M, P)
+
 DistributionFunc = Callable[[float, float, float], float]

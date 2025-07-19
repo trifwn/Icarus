@@ -499,8 +499,7 @@ class Database_2D:
             airfoil_name.upper(),
             f"{airfoil_name.lower()}.airfoil",
         )
-        
-        print(airfoil_path)
+
         if os.path.exists(airfoil_path):
             try:
                 self.airfoils[airfoil_name] = Airfoil.from_file(airfoil_path)
