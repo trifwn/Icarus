@@ -87,8 +87,8 @@ class Analysis(Generic[AnalysisInput]):
 
     def __init__(
         self,
-        solver_name: str,
         analysis_name: str,
+        solver_name: str,
         execute_fun: Callable[..., Any],
         input_type: AnalysisInput,
         post_execute_fun: Callable[..., Any] | None = None,

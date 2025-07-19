@@ -61,8 +61,8 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
@@ -432,7 +432,6 @@ class Airfoil:
 
         return lower_final, upper_final
 
-
     def thickness(self, ksi: Float) -> Float:
         """Returns the thickness of the airfoil at the given x coordinates
 
@@ -478,7 +477,7 @@ class Airfoil:
     def file_name(self) -> str:
         """Returns the file name of the airfoil"""
         if self.name is not None:
-            return self.name
+            return f"{self.name}.airfoil"
         return "Airfoil.dat"
 
     @staticmethod
@@ -721,7 +720,9 @@ class Airfoil:
         y_arr = np.array(y)
         lower, upper = cls.split_sides(x_arr, y_arr)
         try:
-            self: Airfoil = cls(upper, lower, os.path.split(filename)[-1])
+            self: Airfoil = cls(
+                upper, lower, os.path.split(filename)[-1].replace(".airfoil", "")
+            )
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))

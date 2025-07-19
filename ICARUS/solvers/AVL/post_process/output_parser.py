@@ -269,7 +269,7 @@ class AVLOutputParser:
 
     def parse_forces(self) -> list[AVLForceResults]:
         """Parse force and moment results from AVL output, robust to format variations"""
-        force_results = []
+        force_results: list[AVLForceResults] = []
 
         # Find all force output sections (case-insensitive, allow for extra dashes/whitespace)
         force_sections = []

@@ -31,9 +31,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
-    async def execute_tasks(self) -> list[TaskResult[Any]]:
-        """Execute tasks and return results"""
-        ...
+    async def execute_tasks(self) -> list[TaskResult[Any]]: ...
 
     @abstractmethod
     async def _start_progress_monitoring(self) -> None: ...

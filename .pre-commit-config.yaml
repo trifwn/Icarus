@@ -45,12 +45,13 @@ repos:
       - id: add-trailing-comma
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.0
+    rev: v1.17.0
     hooks:
       - id: mypy
         args: [--strict, --install-types, --explicit-package-bases,--ignore-missing-imports]
         additional_dependencies:
           - "numpy"
+          - "pytest"
           - "pandas-stubs"
           - "jsonpickle"
           - "types-attrs"
@@ -60,6 +61,7 @@ repos:
           - "types-xmltodict"
           - "types-openpyxl"
           - "types-PyYAML"
+          - "types-python-dateutil"
 
   - repo: local
     hooks:

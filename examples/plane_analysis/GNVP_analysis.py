@@ -102,7 +102,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 100
+            solver_parameters.iterations = 40
 
             polars_time: float = time.time()
             gnvp.execute(
@@ -161,7 +161,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 100
+            solver_parameters.iterations = 40
 
             # Run Analysis
             pert_time: float = time.time()

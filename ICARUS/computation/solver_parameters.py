@@ -25,7 +25,7 @@ class Parameter:
         default_value: Any,
         description: str,
         value_type: Any = None,
-    ):
+    ) -> None:
         self.name = name
         self.default_value = default_value
         self.description = description

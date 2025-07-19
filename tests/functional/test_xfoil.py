@@ -9,7 +9,7 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
-from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+from ICARUS.solvers.Xfoil import XfoilSolverParameters
 
 
 @pytest.fixture(scope="module")
@@ -82,7 +82,7 @@ def test_xfoil_single_airfoil(
     print(f"\nRunning airfoil {airfoil.name}\n")
     start_time: float = time.time()
 
-    from ICARUS.solvers.Xfoil.xfoil import Xfoil
+    from ICARUS.solvers.Xfoil import Xfoil
 
     xfoil: Xfoil = Xfoil()
 

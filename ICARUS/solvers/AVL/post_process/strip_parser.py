@@ -117,7 +117,7 @@ class AVLStripDataParser:
         current_surface = None
         current_number = None
         columns = None
-        rows = []
+        rows: List[List[float | str]] = []
         in_table = False
 
         for line_num, line in enumerate(lines, 1):
