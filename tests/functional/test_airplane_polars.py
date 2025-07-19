@@ -48,14 +48,13 @@ def test_airplane_polars(DB: Database) -> None:
 @pytest.mark.parametrize("plot", [False])
 def test_airplane_polars_with_plot(DB: Database, plot: bool) -> None:
     """Test airplane polars with optional plotting."""
-    planenames = ["benchmark"]
 
     if plot:
         pytest.importorskip("matplotlib")
         from ICARUS.visualization.airplane import plot_airplane_polars
 
         plot_airplane_polars(
-            airplanes=planenames,
+            airplanes="benchmark",
             prefixes=[
                 "GenuVP3 Potential",
                 "GenuVP3 2D",

@@ -56,7 +56,7 @@ from __future__ import annotations
 import logging
 import os
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 from typing import Any
 
 import jax
@@ -1219,7 +1219,7 @@ class Airfoil:
         return ((x_lower, y_lower, x_upper, y_upper), (name))
 
     @classmethod
-    def tree_unflatten(cls, aux_data, children):
+    def tree_unflatten(cls, aux_data, children) -> Self:
         return cls(
             lower=jnp.array(children[:2], dtype=float),
             upper=jnp.array(children[2:4], dtype=float),

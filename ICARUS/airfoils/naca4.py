@@ -44,7 +44,7 @@ class NACA4(Airfoil):
         Name of the airfoil in the format NACAXXXX
         """
         if not hasattr(self, "_name") or self._name is None:
-            self._name = f"NACA{self.M:01d}{self.P:01d}{self.XX:02d}"
+            self._name = f"naca{self.M:01d}{self.P:01d}{self.XX:02d}"
         return self._name
 
     @name.setter
