@@ -24,7 +24,7 @@ class LateralStateSpace:
         Y: dict[str, float],
         L: dict[str, float],
         N: dict[str, float],
-    ):
+    ) -> None:
         self.name = "Lateral"
         self.Y = Y
         self.L = L
@@ -167,7 +167,7 @@ class LongitudalStateSpace:
         X: dict[str, float],
         Z: dict[str, float],
         M: dict[str, float],
-    ):
+    ) -> None:
         self.name = "Longitudal"
         self.X: dict[str, float] = X
         self.Z: dict[str, float] = Z
@@ -285,6 +285,6 @@ class StateSpace:
         self,
         longitudal_state_space: LongitudalStateSpace,
         lateral_state_space: LateralStateSpace,
-    ):
+    ) -> None:
         self.longitudal = longitudal_state_space
         self.lateral = lateral_state_space

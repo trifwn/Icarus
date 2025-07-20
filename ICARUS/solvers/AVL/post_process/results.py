@@ -163,7 +163,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
 def implicit_dynamics_post(
     plane: Airplane,
     state: State,
-) -> tuple[list[complex], list[complex]]:
+) -> tuple[list[AVLEigenmode], list[AVLEigenmode]]:
     DB = Database.get_instance()
     DYNAMICS_DIR = DB.get_vehicle_case_directory(
         airplane=plane,

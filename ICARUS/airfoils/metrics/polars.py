@@ -261,7 +261,7 @@ class AirfoilPolar:
         ax.axhline(0.0, color="k", linestyle="--")
 
     def __getstate__(self) -> dict[str, Any]:
-        state = {}
+        state: dict[str, Any] = {}
         state["reynolds"] = self.reynolds
         state["df"] = self.df.copy()
         return state

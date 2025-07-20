@@ -91,4 +91,7 @@ def process_avl_dynamics_implicit(
     from ICARUS.solvers.AVL.post_process import implicit_dynamics_post
 
     impl_long, impl_late = implicit_dynamics_post(plane, state)
-    return impl_long, impl_late
+
+    longitudal_modes = [mode.eigenvalue for mode in impl_long]
+    lateral_modes = [mode.eigenvalue for mode in impl_late]
+    return longitudal_modes, lateral_modes

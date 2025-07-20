@@ -272,12 +272,12 @@ class ConceptAirplane:
                 FAR_LANDING_DISTANCE=self.FAR_LANDING_DIST,  # type: ignore[arg-type]  # noqa
                 NO_OF_ENGINES=self.NO_OF_ENGINES,  # type: ignore[arg-type]  # noqa
                 THRUST=self.THRUST,  # type: ignore[arg-type]  # noqa
-                CD_0=self.CD_0,  # type: ignore[arg-type]  # noqa
+                CD_0=self.CD_0,
                 CD_LANDING=self.CD_LANDING,  # type: ignore[arg-type]  # noqa
                 CD_CLIMB=self.CD_CLIMB,  # type: ignore[arg-type]  # noqa
-                OSWALD_LANDING=self.OSWALD_LANDING,  # type: ignore[arg-type]  # noqa
-                OSWALD_CLIMB=self.OSWALD_CLIMB,  # type: ignore[arg-type]  # noqa
-                OSWALD_CRUISE=self.OSWALD_CRUISE,  # type: ignore[arg-type]  # noqa
+                OSWALD_LANDING=self.OSWALD_LANDING,
+                OSWALD_CLIMB=self.OSWALD_CLIMB,
+                OSWALD_CRUISE=self.OSWALD_CRUISE,
                 CL_APP=self.CL_APP,  # type: ignore[arg-type]  # noqa
                 CL_CRUISE=self.CL_CRUISE,  # type: ignore[arg-type]  # noqa
                 CL_TAKEOFF=self.CL_TAKEOFF,  # type: ignore[arg-type]  # noqa

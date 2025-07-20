@@ -34,10 +34,19 @@ ArrayType = Union[
     np.ndarray,  # NumPy array type
 ]
 
-# Type definitions
+# Array definitions
 Vector3D = FloatArray  # Shape (3,)
 Matrix3x3 = Float[ArrayType, "3 3"]  # Shape (3, 3)
 Array2D = Float[ArrayType, "N M"]  # Shape (N, M)
 Array3D = Float[ArrayType, "N M P"]  # Shape (N, M, P)
+
+# Panel definitions
+Panel3D = Float[ArrayType, "4 3"]  # Shape (4, 3)
+PanelArray3D = Float[ArrayType, "N 4 3"]  # Shape (N, 4, 3)
+PanelGrid3D = Float[ArrayType, "N M 4 3"]  # Shape (N, M, 4, 3)
+
+# Grid definitions
+Grid3D = Float[ArrayType, "N M 3"]  # Shape (N, M, 3)
+PointArray3D = Float[ArrayType, "N 3"]  # Shape (N, 3)
 
 DistributionFunc = Callable[[float, float, float], float]
