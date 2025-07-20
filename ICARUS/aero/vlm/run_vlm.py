@@ -57,10 +57,10 @@ def run_vlm_polar_analysis(
     # load_data: list[AerodynamicLoads] = []
 
     aerodynamic_state = AerodynamicState(
-        airspeed=state.u_freestream,
+        airspeed=state.airspeed,
         altitude=state.environment.altitude,
         density=state.environment.air_density,
-        viscosity=state.environment.air_dynamic_viscosity,
+        viscosity=state.environment.air_kinematic_viscosity,
         mach=0.0,  # Assuming incompressible flow
         # Positional State
         alpha=0.0,

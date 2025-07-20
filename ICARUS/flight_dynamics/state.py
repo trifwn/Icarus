@@ -16,6 +16,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from ICARUS.aero import AerodynamicState
 from ICARUS.core import Struct
 from ICARUS.core.types import FloatArray
 from ICARUS.environment import Environment
@@ -23,6 +24,7 @@ from ICARUS.visualization import polar_plot
 from ICARUS.visualization import pre_existing_figure
 from ICARUS.visualization.utils import get_distinct_markers
 
+from .control_state import ControlState
 from .disturbances import Disturbance
 from .perturbations import lateral_pertrubations
 from .perturbations import longitudal_pertrubations
@@ -37,56 +39,6 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import Airplane
 
 
-class ControlState:
-    def __init__(
-        self,
-        airplane: Airplane,
-    ) -> None:
-        # Get the airplane control variables
-        self.control_vars: set[str] = airplane.control_vars
-        self.num_control_vars: int = len(self.control_vars)
-        self.control_vector_dict: dict[str, float] = airplane.control_vector
-        self.hash_dict: dict[str, int] = {}
-
-    def update(self, control_vector_dict: dict[str, float]) -> None:
-        self.control_vector_dict = control_vector_dict
-
-    @property
-    def control_vector(self) -> FloatArray:
-        return np.array(
-            [self.control_vector_dict[key] for key in self.control_vars],
-        )
-
-    def __str__(self) -> str:
-        string = "Control State: "
-        for key in self.control_vars:
-            string += f"{key}: {self.control_vector_dict[key]:.3f} "
-        return string
-
-    def __hash__(self) -> int:
-        """Unique hash for the control state. This is used to generate a unique name for the state.
-        It depends on the control variables and their values.
-
-
-        Raises:
-            ValueError: _description_
-
-        Returns:
-            int: _description_
-
-        """
-        hash_val = hash(frozenset(self.control_vector_dict.items()))
-        # Add to the hash dictionary if not already present
-        if str(hash_val) not in list(self.hash_dict.keys()):
-            self.hash_dict[str(hash_val)] = len(self.hash_dict)
-
-        return hash_val
-
-    def identifier(self) -> int:
-        num = self.__hash__()
-        return self.hash_dict[str(num)]
-
-
 class State:
     """Class for the state of a vehicle."""
 
@@ -95,12 +47,18 @@ class State:
         name: str,
         airplane: Airplane,
         environment: Environment,
-        u_freestream: float,
+        airspeed: float,
     ) -> None:
         # Set Basic State Variables
         self._name: str = name
         self.environment: Environment = environment
-        self._u_freestream = u_freestream
+
+        # Aerodynamic State
+        self.aero_state = AerodynamicState(
+            airspeed=airspeed,
+            density=environment.air_density,
+            viscosity=environment.air_kinematic_viscosity,
+        )
 
         # Store reference to the airplane
         self.airplane: Airplane = airplane
@@ -132,58 +90,20 @@ class State:
             name += f"_{identifier}"
         return name
 
+    ##################### Aerodynamic State Properties ####################
     @name.setter
     def name(self, value: str) -> None:
         self._name = value
 
     @property
-    def u_freestream(self) -> float:
-        return self._u_freestream
-
-    @u_freestream.setter
-    def u_freestream(self, value: float) -> None:
-        self._u_freestream = value
+    def airspeed(self) -> float:
+        return self.aero_state.airspeed
 
     @property
     def dynamic_pressure(self) -> float:
-        Q = 0.5 * self.environment.air_density * self.u_freestream**2
-        return Q
+        return self.aero_state.dynamic_pressure
 
-    ##################### Airplane Properties ############################
-
-    @property
-    def CG(self) -> FloatArray:
-        return self.airplane.CG
-
-    @property
-    def mean_aerodynamic_chord(self) -> float:
-        return self.airplane.mean_aerodynamic_chord
-
-    @property
-    def S(self) -> float:
-        return self.airplane.S
-
-    @property
-    def span(self) -> float:
-        return self.airplane.span
-
-    @property
-    def inertia(self) -> tuple[float, float, float, float, float, float]:
-        Ix = float(self.airplane.inertia[0])
-        Iy = float(self.airplane.inertia[1])
-        Iz = float(self.airplane.inertia[2])
-        Ixz = float(self.airplane.inertia[3])
-        Ixy = float(self.airplane.inertia[4])
-        Iyz = float(self.airplane.inertia[5])
-        return Ix, Iy, Iz, Ixz, Ixy, Iyz
-
-    @property
-    def mass(self) -> float:
-        return self.airplane.M
-
-    ##################### END Airplane Properties ############################
-
-    ########################### CONTROL  ################################
+    ########################### Control State Properties ####################
 
     @property
     def control_vars(self) -> set[str]:
@@ -216,27 +136,13 @@ class State:
         self.control_state.update(control_vector_dict)
         self.airplane.__control__(control_vector_dict)
 
-    ########################### END CONTROL  ################################
-
+    ############################ Other Properties ############################
     def ground_effect(self) -> bool:
         if self.environment.altitude == 0:
             return False
-        if self.environment.altitude > 2 * self.span:
+        if self.environment.altitude > 2 * self.airplane.span:
             return False
         return True
-
-    def update_plane(self, airplane: Airplane) -> None:
-        self.airplane = airplane
-
-        # Reset Trim
-        self.trim = {}
-        self.trim_dynamic_pressure = 0
-
-        # Reset Disturbances For Dynamic Analysis and Sensitivity Analysis
-        self.polar = DataFrame()
-        self.disturbances = []
-        self.pertrubation_results = DataFrame()
-        self.sensitivities = Struct()
 
     def add_polar(
         self,
@@ -278,7 +184,7 @@ class State:
 
         # GET TRIM STATE
         try:
-            self.trim = trim_state(self)
+            self.trim = trim_state(self, self.airplane)
             self.trim_dynamic_pressure = (
                 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
             )
@@ -312,7 +218,7 @@ class State:
         self.polar["CD"] = self.polar[f"{polar_prefix} CD"]
         self.polar["Cm"] = self.polar[f"{polar_prefix} Cm"]
         try:
-            self.trim = trim_state(self)
+            self.trim = trim_state(self, self.airplane)
             self.trim_dynamic_pressure = (
                 0.5 * self.environment.air_density * self.trim["U"] ** 2.0
             )
@@ -344,8 +250,8 @@ class State:
 
     def make_aero_coefficients(self, forces: DataFrame) -> DataFrame:
         data: DataFrame = DataFrame()
-        S: float = self.S
-        MAC: float = self.mean_aerodynamic_chord
+        S: float = self.airplane.S
+        MAC: float = self.airplane.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
 
         for key in forces.columns:
@@ -438,8 +344,11 @@ class State:
         self.stability_fd()
 
     def stability_fd(self) -> None:
-        longitudal_state_space = longitudal_stability_finite_differences(self)
-        lateral_state_space = lateral_stability_finite_differences(self)
+        longitudal_state_space = longitudal_stability_finite_differences(
+            self,
+            self.airplane,
+        )
+        lateral_state_space = lateral_stability_finite_differences(self, self.airplane)
         self.state_space = StateSpace(longitudal_state_space, lateral_state_space)
 
     @pre_existing_figure(subplots=(1, 2), default_title="AVL Eigenvalues")
@@ -559,8 +468,8 @@ class State:
             ]
 
         polar: DataFrame = self.polar.copy()
-        S: float = self.S
-        MAC: float = self.mean_aerodynamic_chord
+        S: float = self.airplane.S
+        MAC: float = self.airplane.mean_aerodynamic_chord
         dynamic_pressure: float = self.dynamic_pressure
 
         markers = get_distinct_markers(len(prefixes_to_plot))
@@ -728,3 +637,19 @@ class State:
     @astar_lat.setter
     def astar_lat(self, value: FloatArray) -> None:
         self.state_space.lateral.A_DS = value
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self.airplane.__control__(self.control_state.control_vector_dict)
+        # Reinitialize the control state
+        self.control_state = ControlState(self.airplane)
+        # Reinitialize the aerodynamic state
+        self.aero_state = AerodynamicState(
+            airspeed=self.aero_state.airspeed,
+            density=self.environment.air_density,
+            viscosity=self.environment.air_kinematic_viscosity,
+        )

@@ -158,6 +158,16 @@ class Airplane(Optimizable):
         return self.main_wing.S
 
     @property
+    def mass(self) -> float:
+        """Get the mass of the plane
+
+        Returns:
+            float: Mass of the plane
+
+        """
+        return self.M
+
+    @property
     def mean_aerodynamic_chord(self) -> float:
         """Get the mean aerodynamic chord of the plane
 

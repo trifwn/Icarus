@@ -6,6 +6,7 @@ import numpy as np
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def eigenvalue_analysis(
@@ -21,6 +22,7 @@ class LateralStateSpace:
     def __init__(
         self,
         state: State,
+        airplane: Airplane,
         Y: dict[str, float],
         L: dict[str, float],
         N: dict[str, float],
@@ -30,14 +32,14 @@ class LateralStateSpace:
         self.L = L
         self.N = N
 
-        mass: float = state.mass
+        mass: float = airplane.mass
         U: float = state.trim["U"]
         theta: float = state.trim["AoA"] * np.pi / 180
         u_e: float = U * np.cos(theta)
         w_e: float = U * np.sin(theta)
         G: float = state.environment.GRAVITY
 
-        Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
+        Ix, Iy, Iz, Ixz, Ixy, Iyz = airplane.inertia
 
         yv: float = Y["v"] / mass
         yp: float = (Y["p"] + mass * w_e) / mass
@@ -164,6 +166,7 @@ class LongitudalStateSpace:
     def __init__(
         self,
         state: State,
+        airplane: Airplane,
         X: dict[str, float],
         Z: dict[str, float],
         M: dict[str, float],
@@ -173,14 +176,14 @@ class LongitudalStateSpace:
         self.Z: dict[str, float] = Z
         self.M: dict[str, float] = M
 
-        m: float = state.mass
+        m: float = airplane.mass
         trim_velocity: float = state.trim["U"]
         theta: float = state.trim["AoA"] * np.pi / 180
         u_e: float = trim_velocity * np.cos(theta)
         w_e: float = trim_velocity * np.sin(theta)
 
         G: float = 9.81
-        Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
+        Ix, Iy, Iz, Ixz, Ixy, Iyz = airplane.inertia
 
         xu = X["u"] / m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
         xw = X["w"] / m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))

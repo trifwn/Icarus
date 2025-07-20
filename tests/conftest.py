@@ -105,7 +105,7 @@ def benchmark_state(benchmark_airplane: Airplane) -> State:
     return State(
         name="Unstick",
         airplane=benchmark_airplane,
-        u_freestream=100,  # Example freestream velocity
+        airspeed=100,  # Example freestream velocity
         environment=EARTH_ISA,
     )
 

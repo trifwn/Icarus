@@ -8,10 +8,12 @@ from . import LateralStateSpace
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def lateral_stability_finite_differences(
     state: State,
+    airplane: Airplane,
 ) -> LateralStateSpace:
     """This Function Requires the results from perturbation analysis"""
     pert: DataFrame = state.pertrubation_results.sort_values(
@@ -60,6 +62,6 @@ def lateral_stability_finite_differences(
         Nb = float(back["Mz"].to_numpy())
         N[var] = (Nf - Nb) / de
 
-    lateral_state_space = LateralStateSpace(state, Y, L, N)
+    lateral_state_space = LateralStateSpace(state, airplane, Y, L, N)
 
     return lateral_state_space

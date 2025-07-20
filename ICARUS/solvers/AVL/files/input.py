@@ -29,7 +29,7 @@ def make_input_files(
 ) -> None:
     control_vector_dict = state.control_vector_dict
     avl_mass(directory, plane, state.environment)
-    avl_geo(directory, plane, state, state.u_freestream, solver_parameters)
+    avl_geo(directory, plane, state, state.airspeed, solver_parameters)
     state.set_control(control_vector_dict)
 
 

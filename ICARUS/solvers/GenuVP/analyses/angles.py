@@ -157,7 +157,7 @@ def gnvp_aseq(
             DB=DB,
             plane=plane,
             state=state,
-            u_freestream=state.u_freestream,
+            u_freestream=state.airspeed,
             angle=float(angle),
             environment=state.environment,
             movements=movements,

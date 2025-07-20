@@ -72,7 +72,7 @@ def main(GNVP_VERSION: int) -> None:
             name="Unstick",
             airplane=plane,
             environment=EARTH_ISA,
-            u_freestream=UINF[plane.name],
+            airspeed=UINF[plane.name],
         )
         print(EARTH_ISA)
         state.save(os.path.join(DB.DB3D, plane.directory))

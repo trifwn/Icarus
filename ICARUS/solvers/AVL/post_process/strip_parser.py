@@ -2,8 +2,6 @@ import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
-from typing import List
 from typing import Optional
 from typing import Union
 
@@ -38,10 +36,10 @@ class AVLStripDataParser:
     SURFACE_PATTERN = re.compile(r"Surface #\s*(\d+)\s+(\S.*?)(?:\s*\|.*)?$")
     HEADER_PATTERN = re.compile(r"^\s*j\s+Xle\s+Yle\s+Zle")
 
-    def __init__(self, strict_mode: bool = False):
+    def __init__(self, strict_mode: bool = False) -> None:
         self.strict_mode = strict_mode
-        self.surfaces: Dict[str, SurfaceData] = {}
-        self._surface_counts: Dict[str, int] = {}
+        self.surfaces: dict[str, SurfaceData] = {}
+        self._surface_counts: dict[str, int] = {}
 
     def _clean_surface_name(self, raw_name: str) -> str:
         """Clean and ensure unique surface names"""
@@ -75,8 +73,8 @@ class AVLStripDataParser:
     def _process_data_row(
         self,
         line: str,
-        columns: List[str],
-    ) -> Optional[List[Union[str, float]]]:
+        columns: list[str],
+    ) -> Optional[list[Union[str, float]]]:
         """Process a data row, returning None if invalid"""
         tokens = line.split()
         if not tokens:
@@ -95,7 +93,7 @@ class AVLStripDataParser:
 
         return row
 
-    def parse_file(self, filepath: Union[str, Path]) -> Dict[str, SurfaceData]:
+    def parse_file(self, filepath: Union[str, Path]) -> dict[str, SurfaceData]:
         """Parse AVL strip data file"""
         filepath = Path(filepath)
 
@@ -117,7 +115,7 @@ class AVLStripDataParser:
         current_surface = None
         current_number = None
         columns = None
-        rows: List[List[float | str]] = []
+        rows: list[list[float | str]] = []
         in_table = False
 
         for line_num, line in enumerate(lines, 1):
@@ -184,8 +182,8 @@ class AVLStripDataParser:
         self,
         name: str,
         number: int,
-        columns: List[str],
-        rows: List[List],
+        columns: list[str],
+        rows: list[list[float | str]],
     ) -> None:
         """Save surface data to internal storage"""
         try:

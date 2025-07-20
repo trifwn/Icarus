@@ -23,7 +23,7 @@ plane = hermes("hermes")
 
 env = EARTH_ISA
 UINF = 20
-state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestream=UINF)
+state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, airspeed=UINF)
 
 angles = np.linspace(-10, 10, 11)
 

@@ -63,7 +63,7 @@ def main() -> None:
             name="Unstick",
             airplane=airplane,
             environment=EARTH_ISA,
-            u_freestream=UINF[airplane.name],
+            airspeed=UINF[airplane.name],
         )
         # # Get Solver
         lspt = LSPT()
