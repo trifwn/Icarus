@@ -611,9 +611,6 @@ class WingSurface(RigidBody):
             span = self._span_dist[-1] - self._span_dist[0]
             eta = (self._span_dist[j] - self._span_dist[0]) / (span)
 
-            local_span_position = self._span_dist[j] - self._span_dist[0]
-            global_span_position = self._span_dist[j] + self.origin[1]
-
             if self.root_airfoil == self.tip_airfoil:
                 airfoil_j = self.root_airfoil
             else:
@@ -624,7 +621,6 @@ class WingSurface(RigidBody):
                     eta,
                     self.root_airfoil.n_points,
                 )
-
             # Apply the control vector to the airfoil
             for control in self.controls:
                 if control.type != ControlType.AIRFOIL:
@@ -634,20 +630,9 @@ class WingSurface(RigidBody):
                     continue
                 control_val = self.control_vector[control.control_var]
 
-                if control.coordinate_system == "local":
-                    is_within = (
-                        local_span_position >= control.span_position_start
-                    ) and (local_span_position <= control.span_position_end)
-                elif control.coordinate_system == "global":
-                    is_within = (
-                        global_span_position >= control.span_position_start
-                    ) and (global_span_position <= control.span_position_end)
-                else:
-                    raise ValueError(
-                        f"Unknown coordinate system {control.coordinate_system}",
-                    )
-
-                if is_within:
+                if (eta >= control.span_percentage_start) and (
+                    eta <= control.span_percentage_end
+                ):
                     if control.constant_chord != 0:
                         flap_hinge = 1 - control.constant_chord / self._chord_dist[j]
                     else:
@@ -658,6 +643,7 @@ class WingSurface(RigidBody):
                         chord_extension=control.chord_extension,
                         flap_angle=control_val * control.gain,
                     )
+
             self.airfoils.append(airfoil_j)
 
     def define_strips(self) -> None:
@@ -726,6 +712,19 @@ class WingSurface(RigidBody):
             airf_z_up_i = airf_j.y_upper(chord_eta) * chord + z_0
             airf_z_low_i = airf_j.y_lower(chord_eta) * chord + z_0
             airf_camber_i = airf_j.camber_line(chord_eta) * chord + z_0
+
+            if np.any(
+                [
+                    np.isnan(airf_z_up_i).any(),
+                    np.isnan(airf_z_low_i).any(),
+                    np.isnan(airf_camber_i).any(),
+                ],
+            ):
+                print(airf_z_up_i)
+                airf_j.plot()
+                raise ValueError(
+                    f"Airfoil {airf_j.name} has NaN values in its geometry at strip {j}.",
+                )
 
             airf_z_up.append(airf_z_up_i)
             airf_z_low.append(airf_z_low_i)
@@ -1155,6 +1154,7 @@ class WingSurface(RigidBody):
         thin: bool = False,
         ax: Axes3D | None = None,
         movement: FloatArray = np.zeros(3),
+        show_strips: bool = False,
     ) -> None:
         """Plot Wing in 3D"""
 
@@ -1173,23 +1173,32 @@ class WingSurface(RigidBody):
         # for strip in self.all_strips:
         #     strip.plot(fig, ax, movement)
 
-        for i in np.arange(0, self.num_panels):
-            if thin:
-                items = [self.panels]
-            else:
-                items = [self.panels_lower, self.panels_upper]
-            for item in items:
-                p1, p3, p4, p2 = item[i, :, :]
-                xs = np.reshape([p1[0], p2[0], p3[0], p4[0]], (2, 2)) + movement[0]
+        if thin:
+            items = self.panels
+        else:
+            items = np.vstack(
+                [
+                    self.panels_upper[:, :, :],
+                    self.panels_lower[:, :, :],
+                ],
+            )
 
-                ys = np.reshape([p1[1], p2[1], p3[1], p4[1]], (2, 2)) + movement[1]
+        for item in items:
+            p1, p3, p4, p2 = item
+            xs = np.reshape([p1[0], p2[0], p3[0], p4[0]], (2, 2)) + movement[0]
 
-                zs = np.reshape([p1[2], p2[2], p3[2], p4[2]], (2, 2)) + movement[2]
+            ys = np.reshape([p1[1], p2[1], p3[1], p4[1]], (2, 2)) + movement[1]
 
-                ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
+            zs = np.reshape([p1[2], p2[2], p3[2], p4[2]], (2, 2)) + movement[2]
 
-                if self.is_symmetric_y:
-                    ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
+            ax.plot_wireframe(xs, ys, zs, linewidth=0.5)
+
+            if self.is_symmetric_y:
+                ax.plot_wireframe(xs, -ys, zs, linewidth=0.5)
+
+        if show_strips:
+            for strip in self.all_strips:
+                strip.plot_3D(ax=ax)
 
         if created_plot:
             plt.show()

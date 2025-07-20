@@ -31,7 +31,8 @@ def test_airplane_polars(DB: Database) -> None:
             Cm_d: Series[float] = desired["Cm"].astype(float)
             Cm: Series[float] = computed[f"{pol}Cm"].astype(float)
         except (KeyError, ValueError):
-            pytest.skip(f"{pol} not found")
+            # pytest.skip(f"{pol} not found")
+            continue
 
         # Compare All Values that correspond to same AoA
         # to x decimal places (except AoA)
@@ -45,7 +46,7 @@ def test_airplane_polars(DB: Database) -> None:
                 )
 
 
-@pytest.mark.parametrize("plot", [False])
+@pytest.mark.parametrize("plot", [True])
 def test_airplane_polars_with_plot(DB: Database, plot: bool) -> None:
     """Test airplane polars with optional plotting."""
 
@@ -93,3 +94,10 @@ def airplane_polars(plot: bool = False) -> None:
         test_airplane_polars_with_plot(db, plot)
     else:
         test_airplane_polars(db)
+
+
+if __name__ == "__main__":
+    # Run airplane_polars(plot=True) with pytest
+    import pytest
+
+    pytest.main(["-s", __file__])

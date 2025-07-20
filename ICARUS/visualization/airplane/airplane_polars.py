@@ -82,16 +82,16 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors = get_distinct_colors(len(airplanes_objs))
+    colors = get_distinct_colors(len(prefixes))
+    markers = get_distinct_markers(len(airplanes_objs))
 
     DB = Database.get_instance()
     for i, airplane in enumerate(airplanes_objs):
         polar: DataFrame = DB.get_vehicle_polars(airplane)
 
-        markers = get_distinct_markers(len(prefixes))
         for j, prefix in enumerate(prefixes):
-            c = colors[i]
-            m = markers[j].get_marker()
+            c = colors[j]
+            m = markers[i].get_marker()
 
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):

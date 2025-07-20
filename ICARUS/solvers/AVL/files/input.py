@@ -243,8 +243,8 @@ def avl_geo(
             span = surf.span
             if use_avl_control:
                 for control_surf in surf.controls:
-                    if (strip_span >= control_surf.span_position_start * span) and (
-                        strip_span <= control_surf.span_position_end * span
+                    if (strip_span >= control_surf.span_percentage_start * span) and (
+                        strip_span <= control_surf.span_percentage_end * span
                     ):
                         f_io.write("CONTROL \n")
                         f_io.write("#Cname   Cgain  Xhinge  HingeVec  SgnDup\n")
