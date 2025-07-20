@@ -10,6 +10,7 @@ from .strip_parser import get_strip_data
 from .results import collect_avl_polar_forces
 from .results import finite_difs_post
 from .results import implicit_dynamics_post
+from .results import AVLPostReadError
 
 __all__ = [
     "AVLOutputParser",
@@ -20,4 +21,5 @@ __all__ = [
     "finite_difs_post",
     "implicit_dynamics_post",
     "AVLStripDataParser",
+    "AVLPostReadError",
 ]

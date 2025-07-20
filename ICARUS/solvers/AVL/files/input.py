@@ -209,6 +209,7 @@ def avl_geo(
         f_io.write("\n")
         f_io.write("\n")
 
+        os.makedirs(os.path.join(directory, "airfoils"), exist_ok=True)
         for j, strip in enumerate(surf.strips):
             x, y, z = strip.leading_edge
 
@@ -234,7 +235,7 @@ def avl_geo(
             #     f_io.write(f"{strip_airfoil.file_name[4:]}\n")
             # else:
             f_io.write("AFILE \n")
-            f_io.write(f"{strip_airfoil.file_name}\n")
+            f_io.write(f"{os.path.join('airfoils', strip_airfoil.file_name)}\n")
             f_io.write("\n")
             f_io.write("\n")
 
@@ -261,7 +262,7 @@ def avl_geo(
 
             # Save Airfoil file
             strip_airfoil.repanel_spl(180)
-            strip_airfoil.save_selig(directory)
+            strip_airfoil.save_selig(os.path.join(directory, "airfoils"))
 
             if viscous:
                 # Calculate average reynolds number
