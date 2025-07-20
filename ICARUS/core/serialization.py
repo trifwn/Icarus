@@ -1,6 +1,7 @@
 import types
 from typing import Any
 from typing import Callable
+from typing import cast
 
 
 def serialize_function(func: Callable[[Any], Any]) -> dict[str, Any] | None:
@@ -15,8 +16,8 @@ def serialize_function(func: Callable[[Any], Any]) -> dict[str, Any] | None:
 
 
 def deserialize_function(
-    func_dict: dict[str, Any] | None,
-) -> Callable[[Any], Any] | None:
+    func_dict: dict[str, Any],
+) -> Callable[[Any], Any]:
     if func_dict:
         func_type, func_info = list(func_dict.items())[0]
         if func_type == "py/method":
@@ -33,4 +34,6 @@ def deserialize_function(
 
     if not callable(function):
         raise TypeError("Deserialized object is not callable")
+    # Type cast to Callable
+    function = cast(Callable[[Any], Any], function)
     return function

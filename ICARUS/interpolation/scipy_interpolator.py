@@ -270,12 +270,13 @@ class ScipyInterpolator:
             )
             # Use method from kwargs for griddata, e.g. 'cubic', 'nearest'
             griddata_method = self.kwargs.get("method", "linear")
-            return interpolate.griddata(
+            res = interpolate.griddata(
                 points,
                 self.y_data,
                 x_new,
                 method=griddata_method,
             )
+            return np.asarray(res)
 
         assert self.interpolator is not None
         res = self.interpolator(x_new)

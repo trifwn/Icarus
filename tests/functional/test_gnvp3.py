@@ -78,6 +78,6 @@ def test_gnvp3_run(
     assert results is not None, "GNVP3 should return results"
 
     # Assert execution time is reasonable (less than 300 seconds)
-    assert (
-        execution_time < 300.0
-    ), f"GNVP3 execution took too long: {execution_time:.3f}s"
+    assert execution_time < 300.0, (
+        f"GNVP3 execution took too long: {execution_time:.3f}s"
+    )

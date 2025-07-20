@@ -101,9 +101,9 @@ class WingSegment(WingSurface):
 
         # Set the airfoils of the wing segment
         assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
-        assert (
-            isinstance(tip_airfoil, Airfoil) or tip_airfoil is None
-        ), "Tip Airfoil must be an Airfoil or None"
+        assert isinstance(tip_airfoil, Airfoil) or tip_airfoil is None, (
+            "Tip Airfoil must be an Airfoil or None"
+        )
 
         self._root_airfoil = root_airfoil
         if tip_airfoil is None:

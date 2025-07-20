@@ -136,9 +136,7 @@ def test_xfoil_single_airfoil(
             pytest.skip(f"Could not create polar plot: {e}")
 
     # Assert that execution completed in reasonable time
-    assert (
-        execution_time < 600.0
-    ), (
+    assert execution_time < 600.0, (
         f"Xfoil took too long: {execution_time:.2f}s"
     )  # Try to get polar data to verify computation succeeded
     try:

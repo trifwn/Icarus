@@ -316,7 +316,7 @@ class Analysis(Generic[AnalysisInput]):
         ):
             raise ValueError(
                 f"All inputs must be of type {self.input_type.__name__}. "
-                f"Received types: {[type(input_item).__name__ for input_item in self.inputs]}",
+                f"Received types: {[type(input_item) for input_item in self.inputs]}",
             )
 
         # Validate inputs

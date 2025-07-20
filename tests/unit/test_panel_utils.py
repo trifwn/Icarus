@@ -122,7 +122,9 @@ class TestUtilityFunctions:
             computed_normal,
             expected_normal,
             atol=tolerance,
-        ), f"Single panel normal mismatch: {jnp.linalg.norm(computed_normal - expected_normal)}"
+        ), (
+            f"Single panel normal mismatch: {jnp.linalg.norm(computed_normal - expected_normal)}"
+        )
 
         # Test vectorized computation for all panels
         vectorized_panel_nj = vmap(panel_cp_normal)
@@ -244,7 +246,9 @@ class TestUtilityFunctions:
             computed_center,
             manual_center,
             atol=tolerance,
-        ), f"Single panel center mismatch: {jnp.linalg.norm(computed_center - manual_center)}"
+        ), (
+            f"Single panel center mismatch: {jnp.linalg.norm(computed_center - manual_center)}"
+        )
 
         # Test vectorized computation
         vectorized_panel_center = vmap(panel_center)

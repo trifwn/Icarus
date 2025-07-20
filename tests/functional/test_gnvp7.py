@@ -80,9 +80,9 @@ def test_gnvp7_run(
     assert results is not None, "GNVP7 should return results"
 
     # Assert execution time is reasonable (less than 300 seconds)
-    assert (
-        execution_time < 300.0
-    ), f"GNVP7 execution took too long: {execution_time:.3f}s"
+    assert execution_time < 300.0, (
+        f"GNVP7 execution took too long: {execution_time:.3f}s"
+    )
 
 
 if __name__ == "__main__":
