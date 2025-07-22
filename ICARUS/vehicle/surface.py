@@ -4,6 +4,7 @@ from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,7 +52,7 @@ class WingSurface(RigidBody):
         chord_discretization_function: Callable[[int], float] | None = None,
         tip_airfoil: Airfoil | None = None,
         is_lifting: bool = True,
-        controls: list[ControlSurface] = [NoControl],
+        controls: Sequence[ControlSurface] = [NoControl],
     ) -> None:
         """
         Constructor for the Lifting Surface Class
@@ -219,7 +220,7 @@ class WingSurface(RigidBody):
         structural_mass: float = 1.0,
         # Optional Parameters
         symmetries: list[SymmetryAxes] | SymmetryAxes = SymmetryAxes.NONE,
-        controls: list[ControlSurface] = [NoControl],
+        controls: Sequence[ControlSurface] = [NoControl],
         is_lifting: bool = True,
     ) -> WingSurface:
         # Define the Lifting Surface from a set of functions instead of a set of points. We must Specify 3 kind of inputs

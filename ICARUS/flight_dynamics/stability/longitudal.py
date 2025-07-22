@@ -41,6 +41,13 @@ def longitudal_stability_finite_differences(
 
     trim_state: DataFrame = pert[pert["Type"] == "Trim"]
     for var in ["u", "q", "w", "theta"]:
+        # If the variable is theta and it is not set then set derivatives to 0
+        if var == "theta" and pert[pert["Type"] == "theta"].empty:
+            X[var] = 0.0
+            Z[var] = 0.0
+            M[var] = 0.0
+            continue
+
         if state.scheme is None:
             state.scheme = "Central"
         if state.scheme == "Central":

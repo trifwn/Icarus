@@ -52,7 +52,6 @@ class ControlSurface:
             chord_function (Callable[[float], float] | None, optional): Function to calculate the chord length. Defaults to None.
             inverse_symmetric (bool, optional): If True, the control surface is inverted. Defaults to False.
             constant_chord (float, optional): If not 0, the chord length is constant. Defaults to 0.
-            coordinate_system (Literal["local", "global"], optional): Coordinate system of the control surface. Defaults to "local".
         """
         self.name = name
         self.type = ControlType.AIRFOIL

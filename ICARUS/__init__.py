@@ -36,6 +36,7 @@ from . import database
 from . import visualization
 from . import aero
 from . import computation
+from . import solvers
 from . import mission
 
 __all__ = [
@@ -63,6 +64,7 @@ __all__ = [
     "aero",
     "airfoils",
     "computation",
+    "solvers",
     "conceptual",
     "database",
     "environment",

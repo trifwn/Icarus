@@ -3,14 +3,14 @@ import os
 import numpy as np
 from pandas import DataFrame
 
-from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.database import angle_to_directory
-from ICARUS.database import disturbance_to_directory
+from ICARUS.database import directory_to_disturbance
 from ICARUS.flight_dynamics import State
 from ICARUS.solvers.AVL.post_process import AVLOutputParser
 from ICARUS.solvers.AVL.post_process.output_parser import AVLEigenmode
 from ICARUS.vehicle import Airplane
+
+from ..files.cases import AVLRunSetup
 
 
 class AVLPostReadError(Exception):
@@ -21,7 +21,7 @@ def collect_avl_polar_forces(
     directory: str,
     plane: Airplane,
     state: State,
-    angles: FloatArray | list[float],
+    avl_run: AVLRunSetup,
 ) -> DataFrame:
     """POST-PROCESSING OF POLAR RUNS - RETURNS AN ARRAY WITH THE FOLLOWING ORDER OF VECTORS: AOA,CL,CD,CM
 
@@ -37,16 +37,13 @@ def collect_avl_polar_forces(
     """
 
     # Empty dataframe to store the polar data
-    all_forces = []
-    for angle in angles:
-        file_path = os.path.join(directory, f"{angle_to_directory(angle)}.txt")
-        parser = AVLOutputParser(file_path)
+    forces_file = avl_run.forces_file
+    # strip_forces_file = "strip_forces.avl"
+    file_path = os.path.join(directory, forces_file)
+    parser = AVLOutputParser(file_path)
+    all_forces = parser.parse_forces()
 
-        forces = parser.parse_forces()
-        all_forces.append(forces)
-
-    flat_forces = [force for sublist in all_forces for force in sublist]
-    polar_df: DataFrame = AVLOutputParser.to_dataframe(flat_forces)
+    polar_df: DataFrame = AVLOutputParser.to_dataframe(all_forces)
 
     Fz = polar_df["CL"] * plane.S * state.dynamic_pressure
     Fx = polar_df["CD"] * plane.S * state.dynamic_pressure
@@ -62,100 +59,94 @@ def collect_avl_polar_forces(
     return polar_df
 
 
-def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
+def finite_difs_post(
+    plane: Airplane,
+    state: State,
+    run_setup: AVLRunSetup,
+) -> DataFrame:
     DB = Database.get_instance()
-    DYNDIR = DB.get_vehicle_case_directory(
+    directory = DB.get_vehicle_case_directory(
         airplane=plane,
         state=state,
         solver="AVL",
         case="Dynamics",
     )
+    forces_file = run_setup.forces_file
+    # strip_forces_file = "strip_forces.avl"
+    file_path = os.path.join(directory, forces_file)
+    parser = AVLOutputParser(file_path)
+    all_forces = parser.parse_forces()
+
+    polar_df: DataFrame = AVLOutputParser.to_dataframe(all_forces)
 
     aoa = state.trim["AoA"] * np.pi / 180
     results = []
-    for dst in state.disturbances:
-        casefile = os.path.join(DYNDIR, disturbance_to_directory(dst))
-        if dst.var == "phi" or dst.var == "theta":
-            Fx = 0.0
-            Fy = 0.0
-            Fz = 0.0
-            M = 0.0
-            N = 0.0
-            L = 0.0
-        else:
-            with open(casefile, encoding="utf-8") as f:
-                lines = f.readlines()
+    for index, row in polar_df.iterrows():
+        dst = directory_to_disturbance(row["name"])
 
-            x_axis = lines[19]
-            y_axis = lines[20]
-            z_axis = lines[21]
+        CX = float(row["CX"])
+        CY = float(row["CY"])
+        CZ = float(row["CZ"])
 
-            try:
-                CX = float(x_axis[11:19])
-                CY = float(y_axis[11:19])
-                CZ = float(z_axis[11:19])
+        Cl = float(row["Cl"])
+        Cm = float(row["Cm"])
+        Cn = float(row["Cn"])
 
-                Cl = float(x_axis[33:41])
-                Cm = float(y_axis[33:41])
-                Cn = float(z_axis[33:41])
-
-                # # Rotate the forces to the body frame
-                # CX = CX * np.cos(aoa) - CZ * np.sin(aoa)
-                # CY = CY
-                # CZ = CX * np.sin(aoa) + CZ * np.cos(aoa)
-
-                # Cl = Cl * np.cos(aoa) - Cn * np.sin(aoa)
-                # Cm = Cm
-                # Cn = Cl * np.sin(aoa) + Cn * np.cos(aoa)
-            except ValueError:
-                raise AVLPostReadError(f"Error reading file {casefile}")
-
-            if dst.var == "u":
-                dyn_pressure = float(
-                    0.5
-                    * state.environment.air_density
-                    * float(
-                        np.linalg.norm(
-                            [
-                                state.trim["U"] * np.cos(aoa) + dst.amplitude,
-                                state.trim["U"] * np.sin(aoa),
-                            ],
-                        ),
-                    )
-                    ** 2.0,
+        if dst.var == "u":
+            dyn_pressure = float(
+                0.5
+                * state.aero_state.density
+                * float(
+                    np.linalg.norm(
+                        [
+                            state.trim["U"] * np.cos(aoa) + dst.amplitude,
+                            state.trim["U"] * np.sin(aoa),
+                        ],
+                    ),
                 )
-            elif dst.var == "w":
-                dyn_pressure = float(
-                    0.5
-                    * state.environment.air_density
-                    * float(
-                        np.linalg.norm(
-                            [
-                                state.trim["U"] * np.cos(aoa),
-                                state.trim["U"] * np.sin(aoa) + dst.amplitude,
-                            ],
-                        ),
-                    )
-                    ** 2.0,
+                ** 2.0,
+            )
+        elif dst.var == "w":
+            dyn_pressure = float(
+                0.5
+                * state.aero_state.density
+                * float(
+                    np.linalg.norm(
+                        [
+                            state.trim["U"] * np.cos(aoa),
+                            state.trim["U"] * np.sin(aoa) + dst.amplitude,
+                        ],
+                    ),
                 )
-            else:
-                dyn_pressure = state.trim_dynamic_pressure
-
-            Fx = CX * dyn_pressure * plane.S
-            Fy = CY * dyn_pressure * plane.S
-            Fz = CZ * dyn_pressure * plane.S
-            M = Cm * dyn_pressure * plane.S * plane.mean_aerodynamic_chord
-            N = Cn * dyn_pressure * plane.S * plane.span
-            L = Cl * dyn_pressure * plane.S * plane.span
-        if dst.amplitude is None:
-            ampl = 0.0
+                ** 2.0,
+            )
         else:
-            ampl = float(dst.amplitude)
+            dyn_pressure = state.trim_dynamic_pressure
+
+        Fx = CX * dyn_pressure * plane.S
+        Fy = CY * dyn_pressure * plane.S
+        Fz = CZ * dyn_pressure * plane.S
+        M = Cm * dyn_pressure * plane.S * plane.mean_aerodynamic_chord
+        N = Cn * dyn_pressure * plane.S * plane.span
+        L = Cl * dyn_pressure * plane.S * plane.span
+
+        ampl = float(dst.amplitude or 0.0)
         results.append(np.array([ampl, dst.var, Fx, Fy, Fz, L, M, N]))
+
+    # if dst.var == "phi" or dst.var == "theta":
+    # Fx = 0.0
+    # Fy = 0.0
+    # Fz = 0.0
+    # M = 0.0
+    # N = 0.0
+    # L = 0.0
+    # results.append(np.array([-1, dst.var, Fx, Fy, Fz, L, M, N]))
+    # results.append(np.array([1, dst.var, Fx, Fy, Fz, L, M, N]))§
+
     df = DataFrame(results, columns=cols)
     df = df.sort_values("Type").reset_index(drop=True)
     df["Epsilon"] = df["Epsilon"].astype(float)
-    perturbation_file: str = os.path.join(DYNDIR, "pertrubations.avl")
+    perturbation_file: str = os.path.join(directory, "pertrubations.avl")
     df.to_csv(perturbation_file, index=False)
     return df
 
@@ -163,7 +154,7 @@ def finite_difs_post(plane: Airplane, state: State) -> DataFrame:
 def implicit_dynamics_post(
     plane: Airplane,
     state: State,
-) -> tuple[list[AVLEigenmode], list[AVLEigenmode]]:
+) -> list[AVLEigenmode]:
     DB = Database.get_instance()
     DYNAMICS_DIR = DB.get_vehicle_case_directory(
         airplane=plane,
@@ -178,15 +169,7 @@ def implicit_dynamics_post(
     if not eigenmodes:
         raise AVLPostReadError("No eigenmodes found in the log file.")
 
-    longitudal_matrix: list[AVLEigenmode] = []
-    lateral_matrix: list[AVLEigenmode] = []
-    for mode in eigenmodes:
-        if mode.mode_number <= 4:
-            longitudal_matrix.append(mode)
-        else:
-            lateral_matrix.append(mode)
-
-    return longitudal_matrix, lateral_matrix
+    return eigenmodes
 
 
 cols: list[str] = [

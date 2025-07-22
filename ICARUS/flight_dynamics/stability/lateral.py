@@ -26,6 +26,13 @@ def lateral_stability_finite_differences(
     N: dict[str, float] = {}
     trimState: DataFrame = pert[pert["Type"] == "Trim"]
     for var in ["v", "p", "r", "phi"]:
+        # If the variable is phi and it is not set then set derivatives to 0
+        if var == "phi" and pert[pert["Type"] == "phi"].empty:
+            Y[var] = 0.0
+            L[var] = 0.0
+            N[var] = 0.0
+            continue
+
         if state.scheme == "Central":
             back: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] < 0)]
             front: DataFrame = pert[(pert["Type"] == var) & (pert["Epsilon"] > 0)]

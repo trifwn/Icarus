@@ -8,6 +8,7 @@ from ICARUS.vehicle import Airplane
 from ICARUS.vehicle import Mass
 from ICARUS.vehicle import SymmetryAxes
 from ICARUS.vehicle import WingSegment
+from ICARUS.vehicle.control_surface import Elevator
 
 
 def hermes(name: str) -> Airplane:
@@ -28,7 +29,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
     wing_orientation: FloatArray = np.array(
-        [0.0, 0.0, 0.0],
+        [2.8, 0.0, 0.0],
         dtype=float,
     )
 
@@ -52,7 +53,7 @@ def hermes(name: str) -> Airplane:
         dtype=float,
     )
     elevator_orientantion: FloatArray = np.array(
-        [-4.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
         dtype=float,
     )
 
@@ -70,6 +71,12 @@ def hermes(name: str) -> Airplane:
         N=15,
         M=10,
         mass=0.06,
+        controls=[
+            Elevator(
+                local_span_percentages=(0.0, 1.0),
+                hinge_chord_percentages=(0.0, 0.0),
+            ),
+        ],
     )
 
     rudder_position: FloatArray = np.array(
@@ -126,5 +133,8 @@ def hermes(name: str) -> Airplane:
 
 
 if __name__ == "__main__":
-    pln = hermes("hermes")
-    pln.save()
+    plane = hermes("hermes")
+    plane.plot()
+    import matplotlib.pyplot as plt
+
+    plt.show(block=True)

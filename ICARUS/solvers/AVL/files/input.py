@@ -227,7 +227,7 @@ def avl_geo(
             f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
             f_io.write("SECTION\n")
             f_io.write(
-                f"   {x:.6f}    {y:.6f}    {z:.6f}    {chord:.6f}   {twist * 180 / np.pi:6f}   {N}    {span_spacing}   \n",
+                f"   {x:.6f}    {y:.6f}    {z:.6f}    {chord:.6f}   {twist:6f}   {N}    {span_spacing}   \n",
             )
             f_io.write("\n")
             # if strip_airfoil.file_name.upper().startswith("NACA"):
@@ -253,11 +253,13 @@ def avl_geo(
                         if control_surf.constant_chord != 0.0:
                             x_hinge = 1 - control_surf.constant_chord / strip.chord
                         else:
-                            x_hinge = control_surf.chord_function(strip_span / span)
+                            x_hinge = control_surf.chord_function(
+                                float(strip_span / span),
+                            )
                         # hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
                         sgndup = -1 if control_surf.inverse_symmetric else 1
                         f_io.write(
-                            f"{cname} {-cgain}  {x_hinge} {0.0} {0.0} {0.0} {sgndup} \n",
+                            f"{cname} {-cgain:.6f} {x_hinge:.6f} {0.0:.6f} {0.0:.6f} {0.0:.6f} {sgndup} \n",
                         )
 
             # Save Airfoil file

@@ -49,6 +49,7 @@ class AVLConfiguration:
 class AVLForceResults:
     """Data class for AVL force and moment results"""
 
+    name: str
     alpha: float
     beta: float
     mach: float
@@ -74,7 +75,7 @@ class AVLEigenmode:
 
     mode_number: int
     eigenvalue: complex
-    eigenvector: dict[str, complex]
+    matrix_values: dict[str, complex]
 
 
 class AVLOutputParser:
@@ -267,8 +268,18 @@ class AVLOutputParser:
             zref=zref or 0.0,
         )
 
+    def _parse_float_line(self, line: str) -> list[float]:
+        """Helper to parse a line of space-separated floats from the non-human-readable format."""
+        try:
+            # Take the part before a potential comment marker '|'
+            data_part = line.split("|", 1)[0]
+            return [float(val) for val in data_part.strip().split()]
+        except (ValueError, IndexError):
+            # Return empty list on failure, caller should handle it
+            return []
+
     def parse_forces(self) -> list[AVLForceResults]:
-        """Parse force and moment results from AVL output, robust to format variations"""
+        """Parse force and moment results from AVL output, handling both human-readable and non-human-readable formats."""
         force_results: list[AVLForceResults] = []
 
         # Find all force output sections (case-insensitive, allow for extra dashes/whitespace)
@@ -290,160 +301,247 @@ class AVLOutputParser:
 
         for section_start in force_sections:
             try:
-                # Find run case line (allow for whitespace)
+                # Determine format by looking for "Run case:" which is unique to the human-readable format.
                 run_case_line = self._find_section(r"Run case\s*:", section_start)
-                if run_case_line is None:
-                    logger.warning(
-                        f"No 'Run case:' found after force section at line {section_start}",
+
+                # Check if run_case_line is within a reasonable distance (e.g. 15 lines) to confirm format
+                if run_case_line is not None and (run_case_line - section_start) < 15:
+                    # --- PARSE HUMAN-READABLE FORMAT (Original Logic) ---
+                    case_name_match = re.search(
+                        r"Run case:\s*\*(?P<content>[^\*]+)\*",
+                        self.lines[run_case_line],
                     )
-                    continue
+                    # Extract flight conditions
+                    alpha = beta = mach = pb_2v = qc_2v = rb_2v = 0.0
+                    for i in range(
+                        run_case_line + 1,
+                        min(len(self.lines), run_case_line + 15),
+                    ):
+                        line = self.lines[i]
+                        if re.search(r"Alpha", line, re.IGNORECASE):
+                            alpha = (
+                                self._extract_float(line, r"Alpha\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                        if re.search(r"Beta", line, re.IGNORECASE):
+                            beta = (
+                                self._extract_float(line, r"Beta\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                        if re.search(r"Mach", line, re.IGNORECASE):
+                            mach = (
+                                self._extract_float(line, r"Mach\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                        if re.search(r"pb/2V", line, re.IGNORECASE):
+                            pb_2v = (
+                                self._extract_float(line, r"pb/2V\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                        if re.search(r"qc/2V", line, re.IGNORECASE):
+                            qc_2v = (
+                                self._extract_float(line, r"qc/2V\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                        if re.search(r"rb/2V", line, re.IGNORECASE):
+                            rb_2v = (
+                                self._extract_float(line, r"rb/2V\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
 
-                # Extract flight conditions
-                alpha = beta = mach = pb_2v = qc_2v = rb_2v = 0.0
+                    # Extract force and moment coefficients
+                    cxtot = cytot = cztot = cltot = cmtot = cntot = 0.0
+                    cltotal = cdtot = cdvis = cdind = efficiency = 0.0
+                    found_any = False
+                    for i in range(
+                        run_case_line + 1,
+                        min(len(self.lines), run_case_line + 30),
+                    ):
+                        line = self.lines[i]
+                        if re.search(r"CXtot", line, re.IGNORECASE):
+                            cxtot = (
+                                self._extract_float(line, r"CXtot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"CYtot", line, re.IGNORECASE):
+                            cytot = (
+                                self._extract_float(line, r"CYtot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"CZtot", line, re.IGNORECASE):
+                            cztot = (
+                                self._extract_float(line, r"CZtot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"Cltot", line, re.IGNORECASE):
+                            cltot = (
+                                self._extract_float(line, r"Cltot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"Cmtot", line, re.IGNORECASE):
+                            cmtot = (
+                                self._extract_float(line, r"Cmtot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"Cntot", line, re.IGNORECASE):
+                            cntot = (
+                                self._extract_float(line, r"Cntot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"CLtot", line, re.IGNORECASE):
+                            cltotal = (
+                                self._extract_float(line, r"CLtot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"CDtot", line, re.IGNORECASE):
+                            cdtot = (
+                                self._extract_float(line, r"CDtot\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"CDvis", line, re.IGNORECASE):
+                            cdvis = (
+                                self._extract_float(line, r"CDvis\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"CDind", line, re.IGNORECASE):
+                            cdind = (
+                                self._extract_float(line, r"CDind\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
+                        if re.search(r"e\s*=", line, re.IGNORECASE):
+                            efficiency = (
+                                self._extract_float(line, r"e\s*=\s*([\d.eE+-]+)")
+                                or 0.0
+                            )
+                            found_any = True
 
-                # Look for flight condition lines (robust to order and whitespace)
-                for i in range(
-                    run_case_line + 1,
-                    min(len(self.lines), run_case_line + 15),
-                ):
-                    line = self.lines[i]
-                    if re.search(r"Alpha", line, re.IGNORECASE):
-                        alpha = (
-                            self._extract_float(line, r"Alpha\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                    if re.search(r"Beta", line, re.IGNORECASE):
-                        beta = (
-                            self._extract_float(line, r"Beta\s*=\s*([\d.eE+-]+)") or 0.0
-                        )
-                    if re.search(r"Mach", line, re.IGNORECASE):
-                        mach = (
-                            self._extract_float(line, r"Mach\s*=\s*([\d.eE+-]+)") or 0.0
-                        )
-                    if re.search(r"pb/2V", line, re.IGNORECASE):
-                        pb_2v = (
-                            self._extract_float(line, r"pb/2V\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                    if re.search(r"qc/2V", line, re.IGNORECASE):
-                        qc_2v = (
-                            self._extract_float(line, r"qc/2V\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                    if re.search(r"rb/2V", line, re.IGNORECASE):
-                        rb_2v = (
-                            self._extract_float(line, r"rb/2V\s*=\s*([\d.eE+-]+)")
-                            or 0.0
+                    if not found_any:
+                        logger.warning(
+                            f"No force/moment coefficients found after run case at line {run_case_line}",
                         )
 
-                # Extract force and moment coefficients (robust to order and whitespace)
-                cxtot = cytot = cztot = cltot = cmtot = cntot = 0.0
-                cltotal = cdtot = cdvis = cdind = efficiency = 0.0
-                found_any = False
-                for i in range(
-                    run_case_line + 1,
-                    min(len(self.lines), run_case_line + 30),
-                ):
-                    line = self.lines[i]
-                    if re.search(r"CXtot", line, re.IGNORECASE):
-                        cxtot = (
-                            self._extract_float(line, r"CXtot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"CYtot", line, re.IGNORECASE):
-                        cytot = (
-                            self._extract_float(line, r"CYtot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"CZtot", line, re.IGNORECASE):
-                        cztot = (
-                            self._extract_float(line, r"CZtot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"Cltot", line, re.IGNORECASE):
-                        cltot = (
-                            self._extract_float(line, r"Cltot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"Cmtot", line, re.IGNORECASE):
-                        cmtot = (
-                            self._extract_float(line, r"Cmtot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"Cntot", line, re.IGNORECASE):
-                        cntot = (
-                            self._extract_float(line, r"Cntot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"CLtot", line, re.IGNORECASE):
-                        cltotal = (
-                            self._extract_float(line, r"CLtot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"CDtot", line, re.IGNORECASE):
-                        cdtot = (
-                            self._extract_float(line, r"CDtot\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"CDvis", line, re.IGNORECASE):
-                        cdvis = (
-                            self._extract_float(line, r"CDvis\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"CDind", line, re.IGNORECASE):
-                        cdind = (
-                            self._extract_float(line, r"CDind\s*=\s*([\d.eE+-]+)")
-                            or 0.0
-                        )
-                        found_any = True
-                    if re.search(r"e\s*=", line, re.IGNORECASE):
-                        efficiency = (
-                            self._extract_float(line, r"e\s*=\s*([\d.eE+-]+)") or 0.0
-                        )
-                        found_any = True
-
-                if not found_any:
-                    logger.warning(
-                        f"No force/moment coefficients found after run case at line {run_case_line}",
+                    force_results.append(
+                        AVLForceResults(
+                            name=case_name_match.group(1).strip()
+                            if case_name_match
+                            else "Unknown",
+                            alpha=alpha,
+                            beta=beta,
+                            mach=mach,
+                            pb_2v=pb_2v,
+                            qc_2v=qc_2v,
+                            rb_2v=rb_2v,
+                            cxtot=cxtot,
+                            cytot=cytot,
+                            cztot=cztot,
+                            cltot=cltot,
+                            cmtot=cmtot,
+                            cntot=cntot,
+                            cltotal=cltotal,
+                            cdtot=cdtot,
+                            cdvis=cdvis,
+                            cdind=cdind,
+                            efficiency=efficiency,
+                        ),
                     )
 
-                force_results.append(
-                    AVLForceResults(
-                        alpha=alpha,
-                        beta=beta,
-                        mach=mach,
-                        pb_2v=pb_2v,
-                        qc_2v=qc_2v,
-                        rb_2v=rb_2v,
-                        cxtot=cxtot,
-                        cytot=cytot,
-                        cztot=cztot,
-                        cltot=cltot,
-                        cmtot=cmtot,
-                        cntot=cntot,
-                        cltotal=cltotal,
-                        cdtot=cdtot,
-                        cdvis=cdvis,
-                        cdind=cdind,
-                        efficiency=efficiency,
-                    ),
-                )
+                else:
+                    # --- PARSE NON-HUMAN-READABLE FORMAT ---
+                    # Search for the case name line with asterisks
+                    data_block_start = -1
+                    case_name_str = "Unknown"
+                    search_end = min(len(self.lines), section_start + 15)
+                    for i in range(section_start, search_end):
+                        match = re.search(r"\*([^\*]+)\*", self.lines[i])
+                        if match:
+                            data_block_start = i
+                            case_name_str = match.group(1).strip()
+                            break
+
+                    if data_block_start == -1:
+                        logger.warning(
+                            f"Could not find case name '*...*' in non-human-readable section at line {section_start}",
+                        )
+                        continue
+
+                    try:
+                        # Parse using fixed offsets from the case name line
+                        line1 = self._parse_float_line(self.lines[data_block_start + 1])
+                        alpha, pb_2v = line1[0], line1[1]
+
+                        line2 = self._parse_float_line(self.lines[data_block_start + 2])
+                        beta, qc_2v = line2[0], line2[1]
+
+                        line3 = self._parse_float_line(self.lines[data_block_start + 3])
+                        mach, rb_2v = line3[0], line3[1]
+
+                        line4 = self._parse_float_line(self.lines[data_block_start + 4])
+                        cxtot, cltot = line4[0], line4[1]
+
+                        line5 = self._parse_float_line(self.lines[data_block_start + 5])
+                        cytot, cmtot = line5[0], line5[1]
+
+                        line6 = self._parse_float_line(self.lines[data_block_start + 6])
+                        cztot, cntot = line6[0], line6[1]
+
+                        cltotal = self._parse_float_line(
+                            self.lines[data_block_start + 7],
+                        )[0]
+                        cdtot = self._parse_float_line(
+                            self.lines[data_block_start + 8],
+                        )[0]
+
+                        line9 = self._parse_float_line(self.lines[data_block_start + 9])
+                        cdvis, cdind = line9[0], line9[1]
+
+                        line10 = self._parse_float_line(
+                            self.lines[data_block_start + 10],
+                        )
+                        efficiency = line10[3]  # Oswald efficiency 'e' is the 4th value
+
+                        force_results.append(
+                            AVLForceResults(
+                                name=case_name_str,
+                                alpha=alpha,
+                                beta=beta,
+                                mach=mach,
+                                pb_2v=pb_2v,
+                                qc_2v=qc_2v,
+                                rb_2v=rb_2v,
+                                cxtot=cxtot,
+                                cytot=cytot,
+                                cztot=cztot,
+                                cltot=cltot,
+                                cmtot=cmtot,
+                                cntot=cntot,
+                                cltotal=cltotal,
+                                cdtot=cdtot,
+                                cdvis=cdvis,
+                                cdind=cdind,
+                                efficiency=efficiency,
+                            ),
+                        )
+                    except (IndexError, ValueError) as e:
+                        logger.warning(
+                            f"Error parsing non-human-readable data block near line {data_block_start}: {e}",
+                        )
+                        continue
 
             except Exception as e:
                 logger.warning(
                     f"Error parsing force section starting at line {section_start}: {e}",
                 )
                 continue
-
         return force_results
 
     def parse_eigenmodes(self) -> list[AVLEigenmode]:
@@ -478,7 +576,7 @@ class AVLOutputParser:
                 eigenvalue = complex(real_part, imag_part)
 
                 # Dynamically parse all eigenvector components after the mode line
-                eigenvector = {}
+                matrices = {}
                 j = 1
                 while (mode_line + j) < len(self.lines):
                     var_line = self.lines[mode_line + j].strip()
@@ -492,7 +590,7 @@ class AVLOutputParser:
                             try:
                                 real_val = float(real_str)
                                 imag_val = float(imag_str)
-                                eigenvector[var] = complex(real_val, imag_val)
+                                matrices[var] = complex(real_val, imag_val)
                             except Exception as e:
                                 logger.debug(
                                     f"Could not parse eigenvector component '{var}' in line: {var_line} ({e})",
@@ -505,7 +603,7 @@ class AVLOutputParser:
                     AVLEigenmode(
                         mode_number=mode_num,
                         eigenvalue=eigenvalue,
-                        eigenvector=eigenvector,
+                        matrix_values=matrices,
                     ),
                 )
             else:
@@ -547,6 +645,7 @@ class AVLOutputParser:
                     "CDvis": result.cdvis,
                     "CDind": result.cdind,
                     "e": result.efficiency,
+                    "name": result.name,
                 },
             )
 
@@ -623,7 +722,7 @@ if __name__ == "__main__":
             print(f"Found {len(valid_modes)} eigenmodes")
             for mode in valid_modes:
                 print(f"Mode {mode.mode_number}: {mode.eigenvalue}")
-                for eigenvar, value in mode.eigenvector.items():
+                for eigenvar, value in mode.matrix_values.items():
                     print(f"  {eigenvar}: {value}")
         else:
             print("No eigenmodes found or wrong type.")
