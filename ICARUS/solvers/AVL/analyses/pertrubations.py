@@ -121,4 +121,5 @@ def process_avl_dynamics_implicit(
     late = [e for e in eigen_modes if e.matrix_values["u"] != 0]
     longitudal_eigenvals = [mode.eigenvalue for mode in long]
     lateral_eigenvals = [mode.eigenvalue for mode in late]
+    plane.save()
     return longitudal_eigenvals, lateral_eigenvals

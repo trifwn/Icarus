@@ -133,16 +133,6 @@ def finite_difs_post(
         ampl = float(dst.amplitude or 0.0)
         results.append(np.array([ampl, dst.var, Fx, Fy, Fz, L, M, N]))
 
-    # if dst.var == "phi" or dst.var == "theta":
-    # Fx = 0.0
-    # Fy = 0.0
-    # Fz = 0.0
-    # M = 0.0
-    # N = 0.0
-    # L = 0.0
-    # results.append(np.array([-1, dst.var, Fx, Fy, Fz, L, M, N]))
-    # results.append(np.array([1, dst.var, Fx, Fy, Fz, L, M, N]))§
-
     df = DataFrame(results, columns=cols)
     df = df.sort_values("Type").reset_index(drop=True)
     df["Epsilon"] = df["Epsilon"].astype(float)
