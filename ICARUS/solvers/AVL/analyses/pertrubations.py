@@ -115,11 +115,23 @@ def process_avl_dynamics_implicit(
 ) -> tuple[list[complex], list[complex]]:
     from ICARUS.solvers.AVL.post_process import implicit_dynamics_post
 
+    DB = Database.get_instance()
+    CASEDIR = DB.get_vehicle_case_directory(
+        airplane=plane,
+        state=state,
+        solver="AVL",
+    )
+    # Save the state
+    plane.save()
+    state.save(CASEDIR)
+    if plane.name not in DB.vehicles_db.states:
+        DB.vehicles_db.states[plane.name] = {}
+    DB.vehicles_db.states[plane.name][state.name] = state
+
     eigen_modes = implicit_dynamics_post(plane, state)
     # return impl_long, impl_late
     long = [e for e in eigen_modes if e.matrix_values["u"] == 0]
     late = [e for e in eigen_modes if e.matrix_values["u"] != 0]
     longitudal_eigenvals = [mode.eigenvalue for mode in long]
     lateral_eigenvals = [mode.eigenvalue for mode in late]
-    plane.save()
     return longitudal_eigenvals, lateral_eigenvals
