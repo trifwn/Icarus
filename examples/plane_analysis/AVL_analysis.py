@@ -9,6 +9,7 @@ from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
 from ICARUS.flight_dynamics import State
 from ICARUS.solvers.AVL import AVL
+from ICARUS.solvers.AVL import AVLParameters
 from ICARUS.solvers.AVL import process_avl_dynamics_implicit
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
@@ -23,18 +24,24 @@ plane = hermes("hermes")
 
 env = EARTH_ISA
 UINF = 20
-state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, u_freestream=UINF)
+state = State(name="Unstick", airplane=plane, environment=EARTH_ISA, airspeed=UINF)
 
 angles = np.linspace(-10, 10, 11)
 
 avl = AVL()
+avl_parameters = AVLParameters()
 
-avl.aseq(plane, state, angles)
+avl_parameters.run_invscid = True
+avl_parameters.use_avl_control = True
+
+try:
+    avl.aseq(plane, state, angles, solver_parameters=avl_parameters)
+except Exception as e:
+    print(f"Error during AVL analysis: {e}")
 # state.plot_polars()
 
-avl.stability_implicit(plane=plane, state=state)
+avl.stability_implicit(plane=plane, state=state, solver_parameters=avl_parameters)
 impl_long, impl_late = process_avl_dynamics_implicit(plane, state)
-
 
 ### Pertrubations
 epsilons = {
@@ -52,7 +59,7 @@ epsilons = {
 state.add_all_pertrubations("Central", epsilons)
 state.print_pertrubations()
 
-avl.stability(plane, state)
+avl.stability(plane, state, solver_parameters=avl_parameters)
 
 fig = plt.figure(figsize=(12, 6))
 axs = fig.subplots(1, 2)
@@ -60,7 +67,28 @@ axs = axs.flatten()
 
 state.plot_eigenvalues(axs=axs)
 
-axs[0].set_title("Lateral")
-axs[1].set_title("Longitudinal")
+real_late = [eigen.real for eigen in impl_late]
+real_long = [eigen.real for eigen in impl_long]
+imag_late = [eigen.imag for eigen in impl_late]
+imag_long = [eigen.imag for eigen in impl_long]
+# Add the implicit eigenvalues to the plot
+axs[0].scatter(
+    real_late,
+    imag_late,
+    color="black",
+    label="Implicit Lateral",
+    marker="x",
+)
+axs[1].scatter(
+    real_long,
+    imag_long,
+    color="black",
+    label="Implicit Longitudinal",
+    marker="x",
+)
+axs[0].legend()
 axs[1].legend()
 plt.show()
+
+state.state_space.lateral.print_matrices()
+state.state_space.longitudal.print_matrices()

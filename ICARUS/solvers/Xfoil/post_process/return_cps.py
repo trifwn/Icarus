@@ -5,7 +5,8 @@ from xfoil import XFoil
 from xfoil.model import Airfoil as XFAirfoil
 
 from ICARUS.core.types import FloatArray
-from ICARUS.solvers.Xfoil.utils import separate_angles
+
+from ..utils import separate_angles
 
 
 def return_cps(

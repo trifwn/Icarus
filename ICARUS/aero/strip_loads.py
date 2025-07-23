@@ -363,7 +363,7 @@ class StripLoads:
         self,
         ax: Axes3D | None = None,
         data: Float[Array, ...] | None = None,
-        scalar_map: ScalarMappable | tuple[float, float] | None = None,
+        scalar_mappable: ScalarMappable | tuple[float, float] | None = None,
         colorbar: Colorbar | None = None,
     ) -> None:
         """Plot the surface panels in 3D.
@@ -403,15 +403,17 @@ class StripLoads:
 
         # If data is provided, plot it as a surface
         if data is not None:
-            if scalar_map is None:
+            if scalar_mappable is None:
                 norm = Normalize(vmin=np.min(data), vmax=np.max(data))
                 scalar_map = ScalarMappable(norm=norm, cmap="viridis")
-            elif isinstance(scalar_map, tuple):
-                norm = Normalize(vmin=scalar_map[0], vmax=scalar_map[1])
+            elif isinstance(scalar_mappable, tuple):
+                norm = Normalize(vmin=scalar_mappable[0], vmax=scalar_mappable[1])
                 scalar_map = ScalarMappable(norm=norm, cmap="viridis")
-            elif not isinstance(scalar_map, ScalarMappable):
+            elif isinstance(scalar_mappable, ScalarMappable):
+                scalar_map = scalar_mappable
+            else:
                 raise TypeError(
-                    "scalar_map must be a ScalarMappable or a tuple of (vmin, vmax).",
+                    "scalar_mappable must be a ScalarMappable or a tuple of (vmin, vmax).",
                 )
 
             if data.shape[0] != self.panels.shape[0]:

@@ -6,8 +6,11 @@ build-backend = "setuptools.build_meta"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["ICARUS*"]
-exclude = ["Data*", "tests*"]
+include = ["ICARUS*", "bin*"]
+
+[tool.setuptools.package-data]
+bin = ["Linux/*", "Windows/*", "macOS/*"]
+ICARUS = ["py.typed"]
 
 [project]
 name = "ICARUS"
@@ -49,9 +52,6 @@ dynamic = ["version"]
 
 [project.scripts]
 icarus-cli = "cli:cli_home"
-
-[tool.setuptools.package-data]
-ICARUS = ["bin/*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "ICARUS.__version__" }

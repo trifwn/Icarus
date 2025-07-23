@@ -69,9 +69,9 @@ def directory_to_disturbance(case: str) -> Disturbance:
 
     """
     if case == "Trim":
-        dst: Disturbance = Disturbance("Trim", 0)
+        dst: Disturbance = Disturbance(None, 0)
     elif case[0] == "m":
-        dst = Disturbance(case[9:], -float(case[1:7]))
+        dst = Disturbance(case[11:], -float(case[1:10]))
     else:
-        dst = Disturbance(case[9:], float(case[1:7]))
+        dst = Disturbance(case[11:], float(case[1:10]))
     return dst

@@ -58,6 +58,7 @@ import os
 import re
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Self
 
 import jax
 import jax.numpy as jnp
@@ -444,8 +445,8 @@ class Airfoil:
         """
         thickness: Float = self.y_upper(ksi) - self.y_lower(ksi)
         # Remove Nan
-        thickness = thickness[~jnp.isnan(thickness)]
         ksi = ksi[~jnp.isnan(thickness)]
+        thickness = thickness[~jnp.isnan(thickness)]
 
         # Set 0 thickness for values after x_max
         thickness = thickness.at[ksi > self.max_x].set(0.0)
@@ -477,7 +478,7 @@ class Airfoil:
     def file_name(self) -> str:
         """Returns the file name of the airfoil"""
         if self.name is not None:
-            return self.name
+            return f"{self.name}.airfoil"
         return "Airfoil.dat"
 
     @staticmethod
@@ -720,7 +721,11 @@ class Airfoil:
         y_arr = np.array(y)
         lower, upper = cls.split_sides(x_arr, y_arr)
         try:
-            self: Airfoil = cls(upper, lower, os.path.split(filename)[-1])
+            self: Airfoil = cls(
+                upper,
+                lower,
+                os.path.split(filename)[-1].replace(".airfoil", ""),
+            )
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
@@ -744,20 +749,18 @@ class Airfoil:
             Airfoil: Flapped airfoil
 
         """
-        flap_hinge_1 = (
-            flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
-        )
+        flap_hinge_1 = flap_hinge_chord_percentage
         if flap_angle == 0 or flap_hinge_1 == 1.0:
             return self
         theta = np.deg2rad(flap_angle)
 
-        x = np.linspace(self.min_x, flap_hinge_1, self.n_points)
+        x = np.linspace(0, flap_hinge_1, self.n_points)
         y_upper = self.y_upper(x)
         x_upper = x
         x_lower = x
         y_lower = self.y_lower(x)
 
-        x_after_flap = np.linspace(flap_hinge_1, self.max_x, self.n_points)
+        x_after_flap = np.linspace(flap_hinge_1, 1, self.n_points)
         x_lower_after_flap = x_after_flap
         x_upper_after_flap = x_after_flap
         y_lower_after_flap = self.y_lower(x_after_flap)
@@ -831,31 +834,30 @@ class Airfoil:
 
     def flap_camber_line(
         self,
-        flap_hinge: float,
+        flap_hinge_chord_percentage: float,
         flap_angle: float,
         chord_extension: float = 1,
-        # plot_flap: bool = False
     ) -> Airfoil:
-        if flap_angle == 0 or flap_hinge == 1.0:
+        if flap_angle == 0 or flap_hinge_chord_percentage == 1.0:
             return self
         flap_angle = np.deg2rad(flap_angle)
 
         n = self.n_points
-        eta = (flap_hinge - self.min_x) / (self.max_x - self.min_x)
+        eta = flap_hinge_chord_percentage
         n1 = int(n * eta)
         n2 = n - n1
 
-        x_after = np.linspace(flap_hinge, self.max_x, n2)
-        x_before = np.linspace(self.min_x, flap_hinge, n1)
+        x_after = np.linspace(flap_hinge_chord_percentage, 1, n2)
+        x_before = np.linspace(0, flap_hinge_chord_percentage, n1)
 
-        y_hinge = self.camber_line(flap_hinge)
+        y_hinge = self.camber_line(flap_hinge_chord_percentage)
         y_after = self.camber_line(x_after)
 
         y = y_after - y_hinge
-        x = x_after - flap_hinge
+        x = x_after - flap_hinge_chord_percentage
         xnew = x * np.cos(flap_angle) - y * np.sin(flap_angle)
         ynew = x * np.sin(flap_angle) + y * np.cos(flap_angle)
-        xnew += flap_hinge
+        xnew += flap_hinge_chord_percentage
         ynew += y_hinge
 
         # We need to take the xnew,ynew line and add thickness to both sides in the direction
@@ -866,11 +868,11 @@ class Airfoil:
         thickess = self.thickness(x_after)
         spacing = np.hstack((0, np.diff(y_after)))
         angle = np.arctan(np.gradient(x_after, spacing, edge_order=1))
-        lower_y = ynew - np.sin(angle + flap_angle) * thickess / 2
-        lower_x = xnew - np.cos(angle + flap_angle) * thickess / 2
+        lower_y = ynew + np.sin(angle + flap_angle) * thickess / 2
+        lower_x = xnew + np.cos(angle + flap_angle) * thickess / 2
 
-        upper_y = ynew + np.sin(angle + flap_angle) * thickess / 2
-        upper_x = xnew + np.cos(angle + flap_angle) * thickess / 2
+        upper_y = ynew - np.sin(angle + flap_angle) * thickess / 2
+        upper_x = xnew - np.cos(angle + flap_angle) * thickess / 2
 
         # Identiffy the problematic regions
         # Problematic are the regions of the first point of both the upper and lower surface
@@ -878,11 +880,11 @@ class Airfoil:
         # the gap that arises on the other side
 
         # Remove the points where x < x_hinge
-        problematic_indices = np.where(upper_x < flap_hinge)
+        problematic_indices = np.where(upper_x < flap_hinge_chord_percentage)
         upper_x = np.delete(upper_x, problematic_indices)
         upper_y = np.delete(upper_y, problematic_indices)
 
-        problematic_indices = np.where(lower_x < flap_hinge)
+        problematic_indices = np.where(lower_x < flap_hinge_chord_percentage)
         lower_x = np.delete(lower_x, problematic_indices)
         lower_y = np.delete(lower_y, problematic_indices)
 
@@ -944,7 +946,7 @@ class Airfoil:
         flapped = FlappedAirfoil(
             upper,
             lower,
-            name=f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
+            name=f"{self.name}_flapped_hinge_{flap_hinge_chord_percentage:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
             parent=self,
         )
         return flapped
@@ -1215,7 +1217,7 @@ class Airfoil:
         return ((x_lower, y_lower, x_upper, y_upper), (name))
 
     @classmethod
-    def tree_unflatten(cls, aux_data, children):
+    def tree_unflatten(cls, aux_data, children) -> Self:
         return cls(
             lower=jnp.array(children[:2], dtype=float),
             upper=jnp.array(children[2:4], dtype=float),

@@ -87,8 +87,8 @@ class Analysis(Generic[AnalysisInput]):
 
     def __init__(
         self,
-        solver_name: str,
         analysis_name: str,
+        solver_name: str,
         execute_fun: Callable[..., Any],
         input_type: AnalysisInput,
         post_execute_fun: Callable[..., Any] | None = None,
@@ -249,7 +249,7 @@ class Analysis(Generic[AnalysisInput]):
                 )
 
                 # Instantiate Executor
-                executor = AnalysisExecutor(self._execute_fun)
+                executor: AnalysisExecutor = AnalysisExecutor(self._execute_fun)
 
                 # Prepare metadata
                 task_metadata = {
@@ -316,7 +316,7 @@ class Analysis(Generic[AnalysisInput]):
         ):
             raise ValueError(
                 f"All inputs must be of type {self.input_type.__name__}. "
-                f"Received types: {[type(input_item).__name__ for input_item in self.inputs]}",
+                f"Received types: {[type(input_item) for input_item in self.inputs]}",
             )
 
         # Validate inputs

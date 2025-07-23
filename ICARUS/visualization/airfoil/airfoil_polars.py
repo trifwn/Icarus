@@ -77,7 +77,7 @@ def plot_airfoil_polars(
 
     for i, solver in enumerate(solvers):
         polar_obj = airfoil_data.get_polars(solver)
-        reynolds_list = polar_obj.reynolds_nums
+        reynolds_list = polar_obj.reynolds_numbers
 
         num_reynolds = len(reynolds_list)
         markers = get_distinct_markers(num_reynolds)

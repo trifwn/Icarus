@@ -13,12 +13,12 @@ def _(val: float) -> str:
 
 
 @short_format.register
-def _(val: list) -> str:  # noqa[type-arg]
+def _(val: list) -> str:  # noqa[type-arg] # type: ignore[type-arg]
     return f"[{len(val)} items]"
 
 
 @short_format.register
-def _(val: dict) -> str:  # noqa[type-arg]
+def _(val: dict) -> str:  # noqa[type-arg] # type: ignore[type-arg]
     return f"{{{len(val)} items}}"
 
 

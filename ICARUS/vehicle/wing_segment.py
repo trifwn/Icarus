@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 from typing import Any
 from typing import Callable
+from typing import Sequence
 
 import numpy as np
 
@@ -50,7 +51,7 @@ class WingSegment(WingSurface):
         N: int = 15,
         M: int = 5,
         mass: float = 1.0,
-        controls: list[ControlSurface] = [NoControl],
+        controls: Sequence[ControlSurface] = [NoControl],
         is_lifting: bool = True,
     ) -> None:
         """Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
@@ -101,9 +102,9 @@ class WingSegment(WingSurface):
 
         # Set the airfoils of the wing segment
         assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
-        assert (
-            isinstance(tip_airfoil, Airfoil) or tip_airfoil is None
-        ), "Tip Airfoil must be an Airfoil or None"
+        assert isinstance(tip_airfoil, Airfoil) or tip_airfoil is None, (
+            "Tip Airfoil must be an Airfoil or None"
+        )
 
         self._root_airfoil = root_airfoil
         if tip_airfoil is None:

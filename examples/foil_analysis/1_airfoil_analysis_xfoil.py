@@ -9,7 +9,7 @@ from ICARUS.computation.core.types import ExecutionMode
 from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
-from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+from ICARUS.solvers.Xfoil import XfoilSolverParameters
 
 
 def main() -> None:
@@ -24,7 +24,7 @@ def main() -> None:
 
     # Load the database
     DB = Database(database_folder)
-    DB.load_all_data()
+    # DB.load_all_data()
 
     # RUN SETUP
     airfoil_names: list[str] = ["0015", "0008", "0012", "2412", "4415"]
@@ -33,6 +33,8 @@ def main() -> None:
         airfoil = DB.get_airfoil(f"NACA{airfoil_name}")
         airfoil.repanel_spl(160)
         airfoils_to_compute.append(airfoil)
+
+    airfoils_to_compute.append(DB.get_airfoil("e1210"))
 
     print(f"Computing: {len(airfoils_to_compute)}")
 
@@ -56,24 +58,23 @@ def main() -> None:
     reynolds: FloatArray = np.linspace(
         start=reynolds_min,
         stop=reynolds_max,
-        num=12,
+        num=20,
     )
 
     # ANGLE OF ATTACK SETUP
     aoa_min: float = -8.0
     aoa_max: float = 14.0
-    aoa_step: float = 1.0
+    aoa_step: float = 0.5
 
     # Transition to turbulent Boundary Layer
     # ftrip_up: dict[str, float] = {"pos": 0.1, "neg": 1.0}
     # ftrip_low: dict[str, float] = {"pos": 0.1, "neg": 1.0}
     Ncrit = 9
 
-    from ICARUS.solvers.Xfoil.xfoil import Xfoil
+    from ICARUS.solvers.Xfoil import Xfoil
 
     xfoil = Xfoil()
     print(xfoil)
-
     # Import Analysis
     # 0) Sequential Angle run for multiple reynolds with zeroing of the boundary layer between angles,
     # 1) Sequential Angle run for multiple reynolds
@@ -81,6 +82,7 @@ def main() -> None:
 
     # Set Options
     xfoil_inputs = analysis.get_analysis_input()
+
     xfoil_inputs.airfoil = airfoils_to_compute
     xfoil_inputs.reynolds = reynolds
     xfoil_inputs.mach = MACH
@@ -94,7 +96,7 @@ def main() -> None:
     xfoil_solver_parameters.Ncrit = Ncrit
     xfoil_solver_parameters.xtr = (0.1, 0.2)
     xfoil_solver_parameters.print = False
-    # xfoil.print_solver_parameters()
+    xfoil.print_solver_parameters()
 
     # RUN and SAVE
     xfoil.execute(

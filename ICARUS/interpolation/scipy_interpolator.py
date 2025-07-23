@@ -270,15 +270,17 @@ class ScipyInterpolator:
             )
             # Use method from kwargs for griddata, e.g. 'cubic', 'nearest'
             griddata_method = self.kwargs.get("method", "linear")
-            return interpolate.griddata(
+            res = interpolate.griddata(
                 points,
                 self.y_data,
                 x_new,
                 method=griddata_method,
             )
+            return np.asarray(res)
 
         assert self.interpolator is not None
-        return self.interpolator(x_new)
+        res = self.interpolator(x_new)
+        return np.asarray(res)
 
     def __call__(self, x_new: ArrayLike) -> np.ndarray:
         """Makes the instance callable, equivalent to `predict`."""

@@ -52,7 +52,7 @@ def sensitivities(
             DB,
             plane,
             state,
-            state.u_freestream,
+            state.airspeed,
             angle,
             state.environment,
             bodies_dicts,

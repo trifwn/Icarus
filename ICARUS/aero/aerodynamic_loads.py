@@ -358,7 +358,7 @@ class AerodynamicLoads:
 
         from ICARUS.visualization import parse_Axes3D
 
-        fig, ax, created_plot = parse_Axes3D(ax=ax)
+        _, ax, _ = parse_Axes3D(ax=ax)
 
         cbar = plt.colorbar(scalar_mappable, ax=ax)
         cbar.set_label("Gamma Magnitude")
@@ -368,7 +368,7 @@ class AerodynamicLoads:
             strip.plot_surface(
                 ax=ax,
                 data=strip.gammas,
-                scalar_map=scalar_mappable,
+                scalar_mappable=scalar_mappable,
                 colorbar=cbar,
             )
 

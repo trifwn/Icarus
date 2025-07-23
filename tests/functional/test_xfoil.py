@@ -9,7 +9,7 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
-from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+from ICARUS.solvers.Xfoil import XfoilSolverParameters
 
 
 @pytest.fixture(scope="module")
@@ -82,7 +82,7 @@ def test_xfoil_single_airfoil(
     print(f"\nRunning airfoil {airfoil.name}\n")
     start_time: float = time.time()
 
-    from ICARUS.solvers.Xfoil.xfoil import Xfoil
+    from ICARUS.solvers.Xfoil import Xfoil
 
     xfoil: Xfoil = Xfoil()
 
@@ -136,9 +136,7 @@ def test_xfoil_single_airfoil(
             pytest.skip(f"Could not create polar plot: {e}")
 
     # Assert that execution completed in reasonable time
-    assert (
-        execution_time < 600.0
-    ), (
+    assert execution_time < 600.0, (
         f"Xfoil took too long: {execution_time:.2f}s"
     )  # Try to get polar data to verify computation succeeded
     try:

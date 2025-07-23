@@ -112,7 +112,7 @@ class UnsupportedConcurrencyTypeError(Exception):
     Exception raised when an unsupported concurrency type is encountered.
     """
 
-    def __init__(self, type: ConcurrencyType):
+    def __init__(self, type: ConcurrencyType) -> None:
         super().__init__(f"Unsupported concurrency type: {type.value}")
         self.type = type
 

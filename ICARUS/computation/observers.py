@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from .core import ProgressEvent
 from .core import TaskId
@@ -34,7 +35,7 @@ class ConsoleProgressObserver(ProgressObserver):
 
         self._last_update[progress.task_id] = datetime.now()
 
-    def on_task_completion(self, result: TaskResult) -> None:
+    def on_task_completion(self, result: TaskResult[Any]) -> None:
         """Print completion status"""
         status = "✓" if result.success else "✗"
         print(f"{status} Task {result.task_id} completed in {result.execution_time}")

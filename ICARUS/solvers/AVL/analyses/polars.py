@@ -9,10 +9,9 @@ from ICARUS.flight_dynamics import State
 from ICARUS.vehicle import Airplane
 
 from .. import AVLParameters
+from ..files.cases import AVLRunSetup
+from ..files.cases import avl_run_cases
 from ..files.input import make_input_files
-from ..files.polars import case_run
-from ..files.polars import case_setup
-from ..files.polars import run_file
 from ..post_process import collect_avl_polar_forces
 
 AVL_LOGGER = logging.getLogger("ICARUS.solvers.GenuVP")
@@ -31,18 +30,21 @@ def avl_polars(
         solver="AVL",
     )
 
-    run_file(case_directory, plane, state, angles)
     make_input_files(case_directory, plane, state, solver_parameters)
-    case_setup(case_directory, plane, state)
-    case_run(case_directory, plane, angles)
-    polar_df = process_avl_polars(plane, state, angles)
+    run_setup = AVLRunSetup.aseq(
+        name=f"{plane.name}_polars.run",
+        state=state,
+        angles=angles,
+    )
+    avl_run_cases(case_directory, plane, run_setup)
+    polar_df = process_avl_polars(plane, state, run_setup)
     state.add_polar(polar_df, polar_prefix="AVL", is_dimensional=True)
 
 
 def process_avl_polars(
     plane: Airplane,
     state: State,
-    angles: FloatArray | list[float],
+    avl_run: AVLRunSetup,
 ) -> DataFrame:
     """Procces the results of the GNVP3 AoA Analysis and
     return the forces calculated in a DataFrame
@@ -68,7 +70,7 @@ def process_avl_polars(
         directory=case_directory,
         plane=plane,
         state=state,
-        angles=angles,
+        avl_run=avl_run,
     )
     filename = os.path.join(case_directory, "forces.avl")
     forces.to_csv(filename, index=False, float_format="%.10f")

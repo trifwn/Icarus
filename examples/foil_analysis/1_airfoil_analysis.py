@@ -10,7 +10,7 @@ from ICARUS.core.types import FloatArray
 from ICARUS.core.units import calc_reynolds
 from ICARUS.database import Database
 from ICARUS.solvers.OpenFoam.files.setup_case import MeshType
-from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+from ICARUS.solvers.Xfoil import XfoilSolverParameters
 
 
 def main() -> None:
@@ -136,7 +136,7 @@ def main() -> None:
         # XFoil
         if calcXFoil:
             xfoil_stime: float = time.time()
-            from ICARUS.solvers.Xfoil.xfoil import Xfoil
+            from ICARUS.solvers.Xfoil import Xfoil
 
             xfoil = Xfoil()
 

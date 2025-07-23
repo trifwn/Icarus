@@ -14,7 +14,7 @@ from ICARUS.airfoils.metrics.polars import AirfoilPolar
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
-    from ICARUS.solvers.Xfoil.xfoil import XfoilSolverParameters
+    from ICARUS.solvers.Xfoil import XfoilSolverParameters
 
 
 def xfoil_aseq(

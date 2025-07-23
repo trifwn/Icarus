@@ -32,12 +32,11 @@ def save_polar_results(
             f"Results must be a 2D array with at least 4 columns, got shape {results.shape}",
         )
 
-    assert (
-        results.shape[1]
-        == len(
-            all_airfoils,
-        )
-    ), f"Results shape {results.shape[0]} does not match number of airfoils {len(all_airfoils)}"
+    assert results.shape[1] == len(
+        all_airfoils,
+    ), (
+        f"Results shape {results.shape[0]} does not match number of airfoils {len(all_airfoils)}"
+    )
 
     assert results.shape[0] >= len(reynolds), (
         f"Results shape {results.shape[1]} does not match number of Reynolds {len(reynolds)}",

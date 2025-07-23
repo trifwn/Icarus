@@ -1,7 +1,7 @@
 from typing import Any
 
 import numpy as np
-from interpax._spline import Interpolator1D
+from interpax import Interpolator1D
 from jaxtyping import Float
 
 from ICARUS.core.types import FloatArray

@@ -5,6 +5,7 @@ from abc import abstractmethod
 from typing import Any
 
 import jax.numpy as jnp
+from jaxtyping import Array
 from jaxtyping import Float
 
 from ICARUS.core.types import Matrix3x3
@@ -98,7 +99,7 @@ class RigidBody(ABC):
         Returns:
             Matrix3x3: 3x3 rotation matrix
         """
-        R_PITCH: Float = jnp.array(
+        R_PITCH: Float[Array, (3, 3)] = jnp.array(
             [
                 [jnp.cos(pitch), 0, jnp.sin(pitch)],
                 [0, 1, 0],
@@ -107,7 +108,7 @@ class RigidBody(ABC):
             dtype=float,
         )
 
-        R_YAW: Float = jnp.array(
+        R_YAW: Float[Array, (3, 3)] = jnp.array(
             [
                 [jnp.cos(yaw), -jnp.sin(yaw), 0],
                 [jnp.sin(yaw), jnp.cos(yaw), 0],
@@ -116,7 +117,7 @@ class RigidBody(ABC):
             dtype=float,
         )
 
-        R_ROLL: Float = jnp.array(
+        R_ROLL: Float[Array, (3, 3)] = jnp.array(
             [
                 [1, 0, 0],
                 [0, jnp.cos(roll), -jnp.sin(roll)],

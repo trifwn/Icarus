@@ -21,7 +21,7 @@ def compute_airfoil_polars(
     plot_polars: bool = False,
 ) -> None:
     if solver_name == "Xfoil":
-        from ICARUS.solvers.Xfoil.xfoil import Xfoil
+        from ICARUS.solvers.Xfoil import Xfoil
 
         xfoil = Xfoil()
 

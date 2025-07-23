@@ -57,6 +57,7 @@ def interpolate_from_series(
     return Series(
         np.interp(xs_sorted, series.index.to_numpy(), series.to_numpy()),
         index=xs_sorted,
+        dtype=float,
     )
 
 

@@ -122,7 +122,9 @@ class TestUtilityFunctions:
             computed_normal,
             expected_normal,
             atol=tolerance,
-        ), f"Single panel normal mismatch: {jnp.linalg.norm(computed_normal - expected_normal)}"
+        ), (
+            f"Single panel normal mismatch: {jnp.linalg.norm(computed_normal - expected_normal)}"
+        )
 
         # Test vectorized computation for all panels
         vectorized_panel_nj = vmap(panel_cp_normal)
@@ -244,7 +246,9 @@ class TestUtilityFunctions:
             computed_center,
             manual_center,
             atol=tolerance,
-        ), f"Single panel center mismatch: {jnp.linalg.norm(computed_center - manual_center)}"
+        ), (
+            f"Single panel center mismatch: {jnp.linalg.norm(computed_center - manual_center)}"
+        )
 
         # Test vectorized computation
         vectorized_panel_center = vmap(panel_center)
@@ -378,7 +382,7 @@ def run_performance_comparison(airplane: Airplane, num_iterations: int = 1000) -
     jax_time = time.time() - start_time
 
     # Time manual calculation (converted to JAX for fair comparison)
-    def manual_cp(panel):
+    def manual_cp(panel: jnp.ndarray) -> jnp.ndarray:
         leading_edge_mid = (panel[0] + panel[1]) / 2
         trailing_edge_mid = (panel[2] + panel[3]) / 2
         return leading_edge_mid + 3 / 4 * (trailing_edge_mid - leading_edge_mid)
