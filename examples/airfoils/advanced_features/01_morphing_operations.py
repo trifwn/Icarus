@@ -190,7 +190,7 @@ def dynamic_morphing_sequence():
         return morphed
 
     # Create morphing sequence
-    time_points = jnp.linspace(0, 3, 13)  # 13 time points
+    time_points = jnp.linspace(0, 3, 130)  # 13 time points
     morphed_sequence = []
 
     print("Creating dynamic morphing sequence...")
@@ -273,7 +273,7 @@ def gradient_based_shape_optimization():
 
     optimization_history = []
 
-    for iteration in range(15):
+    for iteration in range(100):
         obj_value = aerodynamic_objective(params)
         gradients = grad_objective(params)
 

@@ -297,8 +297,8 @@ class Airfoil:
             tuple[FloatArray, FloatArray]: Ordered lower and upper surface coordinates
 
         """
-        upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
-        lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
+        # upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
+        # lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
 
         x_lower: Float = lower[0, :]
         y_lower: Float = lower[1, :]

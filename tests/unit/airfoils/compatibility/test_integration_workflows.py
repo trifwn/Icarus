@@ -21,9 +21,6 @@ class TestAerodynamicAnalysisIntegration:
         # Create airfoil for analysis
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
-        # Simulate typical polar analysis workflow
-        alpha_range = jnp.linspace(-10, 15, 26)  # Angle of attack range
-
         # Extract geometric properties needed for analysis
         x_coords = jnp.linspace(0, 1, 50)
         y_upper = naca2412.y_upper(x_coords)

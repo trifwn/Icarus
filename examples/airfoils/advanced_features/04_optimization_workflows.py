@@ -82,7 +82,7 @@ def multi_objective_optimization():
         learning_rate = 0.05
 
         # Simple gradient descent
-        for iteration in range(50):
+        for iteration in range(250):
             gradients = grad_func(params)
             params = params - learning_rate * gradients
 
