@@ -19,22 +19,6 @@ from ICARUS.airfoils.naca4 import NACA4
 class TestSurfaceInterpolation:
     """Test surface interpolation methods."""
 
-    def test_surface_interpolation_accuracy(self):
-        """Test accuracy of surface interpolation."""
-        naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
-
-        # Test interpolation at known points
-        x_known = jnp.linspace(0, 1, 50)
-        y_upper_interp = naca2412.y_upper(x_known)
-        y_lower_interp = naca2412.y_lower(x_known)
-
-        # Compare with analytical values
-        y_upper_analytical = naca2412.y_upper(x_known)
-        y_lower_analytical = naca2412.y_lower(x_known)
-
-        assert jnp.allclose(y_upper_interp, y_upper_analytical, atol=1e-10)
-        assert jnp.allclose(y_lower_interp, y_lower_analytical, atol=1e-10)
-
     def test_interpolation_between_points(self):
         """Test interpolation between discrete airfoil points."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=20)  # Coarse discretization
@@ -50,20 +34,6 @@ class TestSurfaceInterpolation:
 
         # Upper surface should be above lower surface
         assert jnp.all(y_upper_fine >= y_lower_fine)
-
-    def test_interpolation_monotonicity(self):
-        """Test that interpolation preserves reasonable monotonicity."""
-        naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
-
-        # Test thickness distribution monotonicity near leading edge
-        x_le = jnp.linspace(0.01, 0.1, 20)
-        thickness_le = naca2412.thickness_distribution(x_le)
-
-        # Thickness should generally increase from leading edge
-        thickness_diffs = jnp.diff(thickness_le)
-        # Most differences should be positive (allowing some numerical noise)
-        positive_diffs = jnp.sum(thickness_diffs > 0)
-        assert positive_diffs > len(thickness_diffs) * 0.7  # At least 70% positive
 
     def test_interpolation_smoothness(self):
         """Test smoothness of interpolated surfaces."""

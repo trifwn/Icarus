@@ -61,7 +61,7 @@ class JaxAirfoil:
         name: str = "JaxAirfoil",
         buffer_size: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """
         Initialize a JaxAirfoil instance with the given coordinates.
 
