@@ -245,7 +245,7 @@ def full_factorial_study(design_space, analysis_conditions, metrics):
                     remaining = (total_combinations - combination_count) * avg_time
                     print(
                         f"  Progress: {combination_count}/{total_combinations} "
-                        f"({100*combination_count/total_combinations:.1f}%) "
+                        f"({100 * combination_count / total_combinations:.1f}%) "
                         f"- ETA: {remaining:.1f}s",
                     )
 
@@ -736,11 +736,11 @@ def main():
     print("\nPerformance Summary:")
     print(
         f"Full factorial: {factorial_designs} designs in {total_factorial_time:.2f}s "
-        f"({total_factorial_time/factorial_designs:.4f}s per design)",
+        f"({total_factorial_time / factorial_designs:.4f}s per design)",
     )
     print(
         f"DOE study: {doe_designs} designs in {total_doe_time:.2f}s "
-        f"({total_doe_time/doe_designs:.4f}s per design)",
+        f"({total_doe_time / doe_designs:.4f}s per design)",
     )
     print("JAX batch processing enables efficient parametric exploration")
 

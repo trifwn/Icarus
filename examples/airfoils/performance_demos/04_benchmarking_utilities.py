@@ -192,11 +192,11 @@ class PerformanceBenchmarker:
 
             print(f"Benchmarked {name}:")
             print(
-                f"  Time: {result.mean_time*1000:.2f} ± {result.std_time*1000:.2f} ms",
+                f"  Time: {result.mean_time * 1000:.2f} ± {result.std_time * 1000:.2f} ms",
             )
             print(f"  Memory: {result.memory_usage:.2f} MB")
             if result.compilation_time:
-                print(f"  Compilation: {result.compilation_time*1000:.2f} ms")
+                print(f"  Compilation: {result.compilation_time * 1000:.2f} ms")
             if result.accuracy_error is not None:
                 print(f"  Accuracy: {result.accuracy_error:.2e}")
             print()
@@ -510,7 +510,7 @@ def create_benchmark_report(
     <body>
         <div class="header">
             <h1>JAX Airfoil Performance Benchmark Report</h1>
-            <p>Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Generated on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
         </div>
     """
 
@@ -531,15 +531,15 @@ def create_benchmark_report(
 
         for name, result in results["basic_operations"].items():
             compilation_time = (
-                f"{result.compilation_time*1000:.2f}"
+                f"{result.compilation_time * 1000:.2f}"
                 if result.compilation_time
                 else "N/A"
             )
             html_content += f"""
                 <tr>
                     <td>{name}</td>
-                    <td>{result.mean_time*1000:.2f}</td>
-                    <td>{result.std_time*1000:.2f}</td>
+                    <td>{result.mean_time * 1000:.2f}</td>
+                    <td>{result.std_time * 1000:.2f}</td>
                     <td>{result.memory_usage:.2f}</td>
                     <td>{compilation_time}</td>
                 </tr>

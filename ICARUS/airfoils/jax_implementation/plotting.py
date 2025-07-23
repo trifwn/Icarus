@@ -12,8 +12,8 @@ from typing import Tuple
 
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.axes import Axes
+from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class AirfoilPlotter:
     def plot_batch(
         airfoils: List["JaxAirfoil"],
         names: Optional[List[str]] = None,
-        colors: Optional[List[str]] = None,
+        cmap: Optional[Colormap] = None,
         ax: Optional[Axes] = None,
         scatter: bool = False,
         alpha: float = 0.7,
@@ -70,9 +70,9 @@ class AirfoilPlotter:
             raise ValueError(
                 f"Length of names ({len(names)}) must match number of airfoils ({n_airfoils})",
             )
-        if colors is not None and len(colors) != n_airfoils:
+        if cmap is not None and not isinstance(cmap, Colormap):
             raise ValueError(
-                f"Length of colors ({len(colors)}) must match number of airfoils ({n_airfoils})",
+                f"Length of colors ({len(cmap)}) must match number of airfoils ({n_airfoils})",
             )
 
         # Create axes if not provided
@@ -80,8 +80,8 @@ class AirfoilPlotter:
             fig, ax = plt.subplots(figsize=(10, 6))
 
         # Default colors if not provided
-        if colors is None:
-            colors = plt.cm.tab10(np.linspace(0, 1, n_airfoils))
+        if cmap is None:
+            cmap = plt.get_cmap("tab10", n_airfoils)
 
         # Default names if not provided
         if names is None:
@@ -92,7 +92,7 @@ class AirfoilPlotter:
             pts = airfoil.to_selig()
             x, y = pts
 
-            color = colors[i]
+            color = cmap(i / n_airfoils)
             name = names[i]
 
             if scatter:
@@ -152,7 +152,7 @@ class AirfoilPlotter:
     def plot_camber_comparison(
         airfoils: List["JaxAirfoil"],
         names: Optional[List[str]] = None,
-        colors: Optional[List[str]] = None,
+        cmap: Optional[Colormap] = None,
         ax: Optional[Axes] = None,
         n_points: int = 100,
         legend: bool = True,
@@ -180,8 +180,8 @@ class AirfoilPlotter:
 
         # Default colors and names
         n_airfoils = len(airfoils)
-        if colors is None:
-            colors = plt.cm.tab10(np.linspace(0, 1, n_airfoils))
+        if cmap is None:
+            cmap = plt.get_cmap("tab10", n_airfoils)  # Use a colormap
         if names is None:
             names = [airfoil.name for airfoil in airfoils]
 
@@ -197,7 +197,13 @@ class AirfoilPlotter:
             y_camber = airfoil.camber_line(x_camber)
 
             # Plot camber line
-            ax.plot(x_camber, y_camber, color=colors[i], linewidth=2, label=names[i])
+            ax.plot(
+                x_camber,
+                y_camber,
+                color=cmap(i / n_airfoils),
+                linewidth=2,
+                label=names[i],
+            )
 
         # Configure plot
         ax.grid(True, alpha=0.3)
@@ -214,7 +220,7 @@ class AirfoilPlotter:
     def plot_thickness_comparison(
         airfoils: List["JaxAirfoil"],
         names: Optional[List[str]] = None,
-        colors: Optional[List[str]] = None,
+        cmap: Optional[Colormap] = None,
         ax: Optional[Axes] = None,
         n_points: int = 100,
         legend: bool = True,
@@ -242,8 +248,8 @@ class AirfoilPlotter:
 
         # Default colors and names
         n_airfoils = len(airfoils)
-        if colors is None:
-            colors = plt.cm.tab10(np.linspace(0, 1, n_airfoils))
+        if cmap is None:
+            cmap = plt.get_cmap("tab10", n_airfoils)
         if names is None:
             names = [airfoil.name for airfoil in airfoils]
 
@@ -259,7 +265,13 @@ class AirfoilPlotter:
             thickness = airfoil.thickness(x_thick)
 
             # Plot thickness distribution
-            ax.plot(x_thick, thickness, color=colors[i], linewidth=2, label=names[i])
+            ax.plot(
+                x_thick,
+                thickness,
+                color=cmap(i / n_airfoils),
+                linewidth=2,
+                label=names[i],
+            )
 
         # Configure plot
         ax.grid(True, alpha=0.3)
@@ -319,12 +331,15 @@ class AirfoilPlotter:
             ax.plot(x_max_camber, y_camber, "go", markersize=8, label="Max Camber")
             ax.text(
                 x_max_camber,
-                y_camber + 0.02,
+                float(y_camber + 0.02),
                 f"Max Camber: {max_camber:.3f}\nat x = {x_max_camber:.3f}",
                 ha="center",
                 va="bottom",
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.7),
             )
+
+        # Add legend
+        lines1, labels1 = ax.get_legend_handles_labels()
 
         # Add thickness distribution plot if requested
         if show_thickness:
@@ -352,9 +367,6 @@ class AirfoilPlotter:
             ax2.set_ylabel("Thickness", color="g")
             ax2.tick_params(axis="y", labelcolor="g")
 
-        # Add legend
-        lines1, labels1 = ax.get_legend_handles_labels()
-        if show_thickness:
             lines2, labels2 = ax2.get_legend_handles_labels()
             ax.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
         else:
@@ -458,7 +470,7 @@ class AirfoilPlotter:
 
         # Generate morphing parameters
         eta_values = jnp.linspace(0, 1, n_steps)
-        colors = plt.cm.viridis(eta_values)
+        colors = plt.get_cmap("viridis", n_steps)
 
         # Plot morphed airfoils
         for i, eta in enumerate(eta_values):
@@ -479,7 +491,7 @@ class AirfoilPlotter:
             ax.plot(
                 x[: morphed._upper_split_idx],
                 y[: morphed._upper_split_idx],
-                color=colors[i],
+                color=colors(i / n_steps),
                 alpha=alpha,
                 linewidth=2,
                 label=f"η = {eta:.2f}",
@@ -487,7 +499,7 @@ class AirfoilPlotter:
             ax.plot(
                 x[morphed._upper_split_idx :],
                 y[morphed._upper_split_idx :],
-                color=colors[i],
+                color=colors(i / n_steps),
                 alpha=alpha,
                 linewidth=2,
                 linestyle="--",

@@ -124,12 +124,12 @@ def demonstrate_jit_compilation_overhead():
 
     # Display results
     print("\nRESULTS:")
-    print(f"First JIT call (with compilation): {first_jit_time*1000:.2f} ms")
+    print(f"First JIT call (with compilation): {first_jit_time * 1000:.2f} ms")
     print(
-        f"Regular function mean time:        {regular_stats['mean_time']*1000:.2f} ± {regular_stats['std_time']*1000:.2f} ms",
+        f"Regular function mean time:        {regular_stats['mean_time'] * 1000:.2f} ± {regular_stats['std_time'] * 1000:.2f} ms",
     )
     print(
-        f"JIT function mean time:           {jit_stats['mean_time']*1000:.2f} ± {jit_stats['std_time']*1000:.2f} ms",
+        f"JIT function mean time:           {jit_stats['mean_time'] * 1000:.2f} ± {jit_stats['std_time'] * 1000:.2f} ms",
     )
     print(f"Maximum numerical error:          {max_error:.2e}")
 
@@ -201,8 +201,8 @@ def demonstrate_jit_with_different_operations():
             "max_error": float(max_error),
         }
 
-        print(f"  Regular: {regular_stats['mean_time']*1000:.2f} ms")
-        print(f"  JIT:     {jit_stats['mean_time']*1000:.2f} ms")
+        print(f"  Regular: {regular_stats['mean_time'] * 1000:.2f} ms")
+        print(f"  JIT:     {jit_stats['mean_time'] * 1000:.2f} ms")
         print(f"  Speedup: {speedup:.2f}x")
         print(f"  Error:   {max_error:.2e}")
 
@@ -215,8 +215,8 @@ def demonstrate_jit_with_different_operations():
 
     for op_name, stats in results.items():
         print(
-            f"{op_name:<20} {stats['regular_time']*1000:<12.2f} "
-            f"{stats['jit_time']*1000:<10.2f} {stats['speedup']:<8.2f} "
+            f"{op_name:<20} {stats['regular_time'] * 1000:<12.2f} "
+            f"{stats['jit_time'] * 1000:<10.2f} {stats['speedup']:<8.2f} "
             f"{stats['max_error']:<10.2e}",
         )
 
@@ -271,9 +271,9 @@ def demonstrate_jit_compilation_caching():
         compilation_times[shape_name] = first_call_time
         execution_times[shape_name] = avg_time
 
-        print(f"  First call: {first_call_time*1000:.2f} ms")
-        print(f"  Avg subsequent: {avg_time*1000:.2f} ms")
-        print(f"  Compilation overhead: {first_call_time/avg_time:.1f}x")
+        print(f"  First call: {first_call_time * 1000:.2f} ms")
+        print(f"  Avg subsequent: {avg_time * 1000:.2f} ms")
+        print(f"  Compilation overhead: {first_call_time / avg_time:.1f}x")
         print(f"  Result shape: {result.shape}")
         print()
 
@@ -324,19 +324,19 @@ def demonstrate_gradient_computation_performance():
 
     print("RESULTS:")
     print(
-        f"Function evaluation:     {func_stats['mean_time']*1000:.2f} ± {func_stats['std_time']*1000:.2f} ms",
+        f"Function evaluation:     {func_stats['mean_time'] * 1000:.2f} ± {func_stats['std_time'] * 1000:.2f} ms",
     )
     print(
-        f"Regular gradient:        {grad_stats['mean_time']*1000:.2f} ± {grad_stats['std_time']*1000:.2f} ms",
+        f"Regular gradient:        {grad_stats['mean_time'] * 1000:.2f} ± {grad_stats['std_time'] * 1000:.2f} ms",
     )
     print(
-        f"JIT gradient:           {jit_grad_stats['mean_time']*1000:.2f} ± {jit_grad_stats['std_time']*1000:.2f} ms",
+        f"JIT gradient:           {jit_grad_stats['mean_time'] * 1000:.2f} ± {jit_grad_stats['std_time'] * 1000:.2f} ms",
     )
     print(
-        f"Gradient overhead:       {grad_stats['mean_time']/func_stats['mean_time']:.2f}x",
+        f"Gradient overhead:       {grad_stats['mean_time'] / func_stats['mean_time']:.2f}x",
     )
     print(
-        f"JIT gradient speedup:    {grad_stats['mean_time']/jit_grad_stats['mean_time']:.2f}x",
+        f"JIT gradient speedup:    {grad_stats['mean_time'] / jit_grad_stats['mean_time']:.2f}x",
     )
     print(f"Gradient accuracy:       {grad_error:.2e}")
 

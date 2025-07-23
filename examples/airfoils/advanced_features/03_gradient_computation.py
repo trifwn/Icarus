@@ -60,7 +60,7 @@ def basic_gradient_computation():
     location_grads = grad_location(test_params)
 
     print(
-        f"Test airfoil: NACA {int(test_params[0]*100):01d}{int(test_params[1]*10):01d}{int(test_params[2]*100):02d}",
+        f"Test airfoil: NACA {int(test_params[0] * 100):01d}{int(test_params[1] * 10):01d}{int(test_params[2] * 100):02d}",
     )
     print(f"Maximum thickness: {thickness_value:.5f}")
     print(f"Thickness gradients [∂t/∂M, ∂t/∂P, ∂t/∂XX]: {thickness_grads}")
@@ -377,9 +377,7 @@ def optimization_with_gradients():
 
     # Final results
     final_naca = NACA4(M=params[0], P=params[1], XX=params[2], n_points=100)
-    final_name = (
-        f"NACA {int(params[0]*100):01d}{int(params[1]*10):01d}{int(params[2]*100):02d}"
-    )
+    final_name = f"NACA {int(params[0] * 100):01d}{int(params[1] * 10):01d}{int(params[2] * 100):02d}"
 
     print("\nOptimization Results:")
     print(f"Final airfoil: {final_name}")

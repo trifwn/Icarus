@@ -237,13 +237,13 @@ def demonstrate_basic_operation_comparison():
 
         # Display results
         print(
-            f"  NumPy:     {numpy_stats['mean_time']*1000:.2f} ± {numpy_stats['std_time']*1000:.2f} ms",
+            f"  NumPy:     {numpy_stats['mean_time'] * 1000:.2f} ± {numpy_stats['std_time'] * 1000:.2f} ms",
         )
         print(
-            f"  JAX:       {jax_stats['mean_time']*1000:.2f} ± {jax_stats['std_time']*1000:.2f} ms",
+            f"  JAX:       {jax_stats['mean_time'] * 1000:.2f} ± {jax_stats['std_time'] * 1000:.2f} ms",
         )
         print(
-            f"  JAX+JIT:   {jax_jit_stats['mean_time']*1000:.2f} ± {jax_jit_stats['std_time']*1000:.2f} ms",
+            f"  JAX+JIT:   {jax_jit_stats['mean_time'] * 1000:.2f} ± {jax_jit_stats['std_time'] * 1000:.2f} ms",
         )
         print(f"  JAX Error: {max_error_jax:.2e}")
         print(f"  JIT Error: {max_error_jit:.2e}")
@@ -349,13 +349,13 @@ def demonstrate_batch_processing_comparison():
 
         # Display results
         print(
-            f"  NumPy:     {numpy_stats['mean_time']*1000:.1f} ms (mem: {numpy_stats['mean_memory']:.1f} MB)",
+            f"  NumPy:     {numpy_stats['mean_time'] * 1000:.1f} ms (mem: {numpy_stats['mean_memory']:.1f} MB)",
         )
         print(
-            f"  JAX:       {jax_stats['mean_time']*1000:.1f} ms (mem: {jax_stats['mean_memory']:.1f} MB)",
+            f"  JAX:       {jax_stats['mean_time'] * 1000:.1f} ms (mem: {jax_stats['mean_memory']:.1f} MB)",
         )
         print(
-            f"  JAX+JIT:   {jax_jit_stats['mean_time']*1000:.1f} ms (mem: {jax_jit_stats['mean_memory']:.1f} MB)",
+            f"  JAX+JIT:   {jax_jit_stats['mean_time'] * 1000:.1f} ms (mem: {jax_jit_stats['mean_memory']:.1f} MB)",
         )
 
         jax_speedup = numpy_stats["mean_time"] / jax_stats["mean_time"]
@@ -451,22 +451,22 @@ def demonstrate_gradient_computation_comparison():
     # Display results
     print("FUNCTION EVALUATION:")
     print(
-        f"  JAX:   {func_jax_stats['mean_time']*1000:.2f} ± {func_jax_stats['std_time']*1000:.2f} ms",
+        f"  JAX:   {func_jax_stats['mean_time'] * 1000:.2f} ± {func_jax_stats['std_time'] * 1000:.2f} ms",
     )
     print(
-        f"  NumPy: {func_numpy_stats['mean_time']*1000:.2f} ± {func_numpy_stats['std_time']*1000:.2f} ms",
+        f"  NumPy: {func_numpy_stats['mean_time'] * 1000:.2f} ± {func_numpy_stats['std_time'] * 1000:.2f} ms",
     )
     print()
 
     print("GRADIENT COMPUTATION:")
     print(
-        f"  JAX AD:        {grad_jax_stats['mean_time']*1000:.1f} ± {grad_jax_stats['std_time']*1000:.1f} ms",
+        f"  JAX AD:        {grad_jax_stats['mean_time'] * 1000:.1f} ± {grad_jax_stats['std_time'] * 1000:.1f} ms",
     )
     print(
-        f"  JAX AD + JIT:  {grad_jax_jit_stats['mean_time']*1000:.1f} ± {grad_jax_jit_stats['std_time']*1000:.1f} ms",
+        f"  JAX AD + JIT:  {grad_jax_jit_stats['mean_time'] * 1000:.1f} ± {grad_jax_jit_stats['std_time'] * 1000:.1f} ms",
     )
     print(
-        f"  NumPy FD:      {grad_numpy_stats['mean_time']*1000:.1f} ± {grad_numpy_stats['std_time']*1000:.1f} ms",
+        f"  NumPy FD:      {grad_numpy_stats['mean_time'] * 1000:.1f} ± {grad_numpy_stats['std_time'] * 1000:.1f} ms",
     )
     print()
 
@@ -541,13 +541,13 @@ def demonstrate_memory_efficiency():
 
         # Display results
         print(
-            f"  NumPy:   {numpy_stats['mean_time']*1000:.1f} ms, {numpy_stats['mean_memory']:.2f} MB",
+            f"  NumPy:   {numpy_stats['mean_time'] * 1000:.1f} ms, {numpy_stats['mean_memory']:.2f} MB",
         )
         print(
-            f"  JAX:     {jax_stats['mean_time']*1000:.1f} ms, {jax_stats['mean_memory']:.2f} MB",
+            f"  JAX:     {jax_stats['mean_time'] * 1000:.1f} ms, {jax_stats['mean_memory']:.2f} MB",
         )
         print(
-            f"  JAX+JIT: {jax_jit_stats['mean_time']*1000:.1f} ms, {jax_jit_stats['mean_memory']:.2f} MB",
+            f"  JAX+JIT: {jax_jit_stats['mean_time'] * 1000:.1f} ms, {jax_jit_stats['mean_memory']:.2f} MB",
         )
 
         time_efficiency = numpy_stats["mean_time"] / jax_jit_stats["mean_time"]
@@ -859,7 +859,7 @@ def create_comprehensive_visualization(results: Dict):
     return fig
 
 
-def main():
+def main() -> None:
     """Main demonstration function."""
     print("JAX vs NUMPY AIRFOIL PERFORMANCE COMPARISON")
     print("=" * 70)

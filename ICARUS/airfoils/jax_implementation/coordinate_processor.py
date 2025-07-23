@@ -71,7 +71,7 @@ class CoordinateProcessor:
         return filtered_coords
 
     @staticmethod
-    def validate_coordinates(coords: Float[Array, "2 n_points"]) -> None:
+    def validate_coordinates(coords: Float[Array, "2 {n_points}"]) -> None:
         """
         Validate coordinate arrays for common issues.
 

@@ -1042,58 +1042,6 @@ class JaxAirfoil:
             metadata=self._metadata.copy(),
         )
 
-    def repanel(
-        self,
-        n_points: int = 200,
-        distribution: str = "cosine",
-    ) -> "JaxAirfoil":
-        """
-        Repanel the airfoil with a new point distribution.
-
-        Args:
-            n_points: Number of points for the repaneled airfoil
-            distribution: Point distribution type ("cosine", "uniform", or "arc_length")
-
-        Returns:
-            New JaxAirfoil instance with repaneled coordinates
-
-        Raises:
-            ValueError: If distribution type is not supported
-        """
-        # Get upper and lower surface coordinates
-        upper_coords = self._coordinates[:, : self._upper_split_idx]
-        lower_coords = self._coordinates[
-            :,
-            self._upper_split_idx : self._n_valid_points,
-        ]
-
-        # Pad lower coordinates to match buffer size for JIT compatibility
-        lower_padded = jnp.concatenate(
-            [
-                lower_coords,
-                jnp.full((2, self._max_buffer_size - lower_coords.shape[1]), jnp.nan),
-            ],
-            axis=1,
-        )
-
-        # Apply repaneling
-        new_upper_coords, new_lower_coords = JaxAirfoilOps.repanel_airfoil(
-            upper_coords,
-            lower_padded,
-            self._upper_split_idx,
-            self._n_valid_points - self._upper_split_idx,
-            n_points,
-            distribution,
-        )
-
-        # Create new airfoil instance
-        return JaxAirfoil.from_upper_lower(
-            new_upper_coords,
-            new_lower_coords,
-            name=self.name,
-            metadata=self._metadata.copy(),
-        )
-
     # ============================================================================
     # API COMPATIBILITY LAYER
     # ============================================================================
@@ -1732,11 +1680,6 @@ class JaxAirfoil:
         # Return axes if we created them
         return ax if return_ax else None
 
-    # String representation methods
-    def __repr__(self) -> str:
-        """Returns the string representation of the airfoil."""
-        return f"JaxAirfoil: {self.name} with {self.n_points} points (buffer: {self.buffer_size})"
-
     def __str__(self) -> str:
         """Returns the string representation of the airfoil."""
         return f"JaxAirfoil: {self.name} with {self.n_points} points (buffer: {self.buffer_size})"
@@ -1818,47 +1761,6 @@ class JaxAirfoil:
                 "parent1": airfoil1.name,
                 "parent2": airfoil2.name,
             },
-        )
-        lower_valid = jax.lax.dynamic_slice(
-            new_lower_coords,
-            (0, 0),
-            (2, new_n_lower_valid),
-        )
-
-        # Combine into selig format (upper reversed + lower)
-        selig_coords = jnp.concatenate([upper_valid[:, ::-1], lower_valid], axis=1)
-
-        # Create new airfoil name (handle traced values safely)
-        try:
-            # Try to format normally (works when not in JAX transformation)
-            new_name = f"{self.name}_flapped_hinge_{flap_hinge_chord_percentage:.2f}_deflection_{flap_angle:.2f}"
-        except (TypeError, AttributeError):
-            # Fallback for JAX transformations
-            new_name = self.name + "_flapped"
-
-        # Create new metadata (handle traced values safely)
-        new_metadata = self._metadata.copy()
-        new_metadata["name"] = new_name
-        try:
-            # Try to store parameters (works when not in JAX transformation)
-            new_metadata["flap_hinge_chord_percentage"] = float(
-                flap_hinge_chord_percentage,
-            )
-            new_metadata["flap_angle"] = float(flap_angle)
-            new_metadata["flap_hinge_thickness_percentage"] = float(
-                flap_hinge_thickness_percentage,
-            )
-            new_metadata["chord_extension"] = float(chord_extension)
-        except (TypeError, AttributeError):
-            # Skip metadata updates during JAX transformations
-            pass
-
-        # Create new JaxAirfoil instance
-        return JaxAirfoil(
-            coordinates=selig_coords,
-            name=new_name,
-            buffer_size=self._max_buffer_size,
-            metadata=new_metadata,
         )
 
     def repanel(

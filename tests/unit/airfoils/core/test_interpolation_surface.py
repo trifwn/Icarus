@@ -702,9 +702,9 @@ class TestComprehensiveInterpolationAccuracy:
             ), f"{method_name} produced non-finite values"
 
             # Results should have correct shape
-            assert (
-                result.shape == x_test.shape
-            ), f"{method_name} has incorrect output shape"
+            assert result.shape == x_test.shape, (
+                f"{method_name} has incorrect output shape"
+            )
 
             # Results should be differentiable
             grad_fn = grad(lambda x: jnp.sum(method(x)))
@@ -774,7 +774,7 @@ class TestAdvancedEdgeCases:
             assert test_derivative(naca2412.y_lower)
             assert test_derivative(naca2412.thickness_distribution)
 
-    def test_discontinuity_handling_robustness(self):
+    def test_discontinuity_handling_robustness(self) -> None:
         """Test robust handling of potential discontinuities."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -797,7 +797,7 @@ class TestAdvancedEdgeCases:
             camber_deriv = naca2412.camber_line_derivative(x_around_p)
             assert jnp.all(jnp.isfinite(camber_deriv))
 
-    def test_numerical_stability_edge_cases(self):
+    def test_numerical_stability_edge_cases(self) ->  None:
         """Test numerical stability in edge cases."""
         # Test with extreme airfoil parameters
         extreme_cases = [
@@ -818,7 +818,7 @@ class TestAdvancedEdgeCases:
             assert jnp.all(jnp.isfinite(y_lower))
             assert jnp.all(y_upper >= y_lower)
 
-    def test_interpolation_monotonicity_preservation(self):
+    def test_interpolation_monotonicity_preservation(self) -> None:
         """Test that interpolation preserves monotonicity where expected."""
         naca0012 = NACA4(M=0.0, P=0.0, XX=0.12, n_points=100)
 
@@ -895,10 +895,10 @@ class TestGradientPreservationComprehensive:
         )
         assert jnp.all(relative_error < 1e-3)
 
-    def test_gradient_through_complex_interpolation(self):
+    def test_gradient_through_complex_interpolation(self) -> None:
         """Test gradients through complex interpolation operations."""
 
-        def complex_surface_operation(params):
+        def complex_surface_operation(params) -> jnp.ndarray:
             """Complex operation involving multiple interpolations."""
             m, p, xx = params
             naca = NACA4(M=m, P=p, XX=xx, n_points=100)
@@ -952,10 +952,10 @@ class TestGradientPreservationComprehensive:
         )
         assert jnp.all(relative_error < 1e-3)
 
-    def test_higher_order_derivatives_stability(self):
+    def test_higher_order_derivatives_stability(self) -> None:
         """Test stability of higher-order derivatives."""
 
-        def surface_curvature_integral(params):
+        def surface_curvature_integral(params) -> jnp.ndarray:
             """Integral of surface curvature."""
             m, p, xx = params
             naca = NACA4(M=m, P=p, XX=xx, n_points=100)
@@ -990,7 +990,7 @@ class TestGradientPreservationComprehensive:
             # Higher-order derivatives might not always be available
             print(f"Higher-order derivatives not available: {e}")
 
-    def test_gradient_preservation_under_jit(self):
+    def test_gradient_preservation_under_jit(self) -> None:
         """Test that gradients are preserved under JIT compilation."""
         # Create airfoil outside of gradient computation to avoid JAX issues
         naca = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
@@ -1018,7 +1018,7 @@ class TestGradientPreservationComprehensive:
         assert jnp.isfinite(gradient_normal)
         assert jnp.isfinite(gradient_jit)
 
-    def test_gradient_batch_consistency(self):
+    def test_gradient_batch_consistency(self) -> None:
         """Test gradient consistency in batch operations."""
         # Create airfoils outside of gradient computation to avoid JAX issues
         naca_list = [

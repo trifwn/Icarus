@@ -242,7 +242,7 @@ def single_objective_optimization(design_bounds, operating_conditions, constrain
     print(f"Improvement: {final_performance - initial_performance:.3f}")
     print(f"Optimized parameters: M={x[0]:.4f}, P={x[1]:.3f}, XX={x[2]:.4f}")
     print(
-        f"Optimized airfoil name: NACA{int(x[0]*100):01d}{int(x[1]*10):01d}{int(x[2]*100):02d}",
+        f"Optimized airfoil name: NACA{int(x[0] * 100):01d}{int(x[1] * 10):01d}{int(x[2] * 100):02d}",
     )
 
     return {
@@ -637,7 +637,7 @@ def robust_optimization_under_uncertainty(
     print(f"Std L/D:  {final_std:.3f}")
     print(f"Min L/D:  {final_min:.3f}")
     print(f"Robust parameters: M={x[0]:.4f}, P={x[1]:.3f}, XX={x[2]:.4f}")
-    print(f"Coefficient of variation: {final_std/final_mean:.3f}")
+    print(f"Coefficient of variation: {final_std / final_mean:.3f}")
 
     return {
         "optimized_params": x,

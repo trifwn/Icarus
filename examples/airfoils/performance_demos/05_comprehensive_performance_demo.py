@@ -34,11 +34,10 @@ from jax import jit
 from jax import pmap
 from jax import vmap
 
-# Import our performance utilities
-from .benchmarking_utilities import (
-    PerformanceBenchmarker,
-)
 from ICARUS.airfoils.naca4 import NACA4
+
+# Import our performance utilities
+from .benchmarking_utilities import PerformanceBenchmarker
 
 
 class ComprehensivePerformanceDemo:
@@ -137,7 +136,7 @@ class ComprehensivePerformanceDemo:
             }
 
             print(
-                f"  {op_name}: {np.mean(times)*1000:.2f} ± {np.std(times)*1000:.2f} ms",
+                f"  {op_name}: {np.mean(times) * 1000:.2f} ± {np.std(times) * 1000:.2f} ms",
             )
 
         return {
@@ -194,8 +193,8 @@ class ComprehensivePerformanceDemo:
                 jit_times[op_name]["speedup"] = speedup
 
                 print(
-                    f"  {op_name}: {np.mean(times)*1000:.2f} ms "
-                    f"(compilation: {compilation_times[op_name]*1000:.1f} ms, "
+                    f"  {op_name}: {np.mean(times) * 1000:.2f} ms "
+                    f"(compilation: {compilation_times[op_name] * 1000:.1f} ms, "
                     f"speedup: {speedup:.2f}x)",
                 )
 
@@ -401,8 +400,8 @@ class ComprehensivePerformanceDemo:
                 "speedup": speedup,
             }
 
-            print(f"    Sequential: {sequential_time*1000:.1f} ms")
-            print(f"    Vectorized: {vectorized_time*1000:.1f} ms")
+            print(f"    Sequential: {sequential_time * 1000:.1f} ms")
+            print(f"    Vectorized: {vectorized_time * 1000:.1f} ms")
             print(f"    Speedup: {speedup:.2f}x")
 
         return batch_results
@@ -465,8 +464,8 @@ class ComprehensivePerformanceDemo:
             "gradient_speedup": grad_speedup,
         }
 
-        print(f"    Regular gradient: {grad_time*1000:.2f} ms")
-        print(f"    JIT gradient: {grad_jit_time*1000:.2f} ms")
+        print(f"    Regular gradient: {grad_time * 1000:.2f} ms")
+        print(f"    JIT gradient: {grad_jit_time * 1000:.2f} ms")
         print(f"    Speedup: {grad_speedup:.2f}x")
 
         # Technique 2: Parallel processing (if multiple devices available)
@@ -523,7 +522,7 @@ class ComprehensivePerformanceDemo:
             }
 
             print(
-                f"    Parallel processing: {parallel_time*1000:.2f} ms ({n_devices} devices)",
+                f"    Parallel processing: {parallel_time * 1000:.2f} ms ({n_devices} devices)",
             )
         else:
             print("    Single device detected, skipping parallel processing test")
@@ -611,7 +610,7 @@ class ComprehensivePerformanceDemo:
         }
 
         print(
-            f"    Production time: {production_time*1000:.2f} ± {np.std(times_production)*1000:.2f} ms",
+            f"    Production time: {production_time * 1000:.2f} ± {np.std(times_production) * 1000:.2f} ms",
         )
         print(f"    Throughput: {throughput:.1f} airfoils/second")
 
@@ -1065,8 +1064,8 @@ class ComprehensivePerformanceDemo:
             <div class="container">
                 <div class="header">
                     <h1>Comprehensive JAX Airfoil Performance Report</h1>
-                    <p>Generated on: {report['summary']['timestamp']}</p>
-                    <p>JAX Version: {report['summary']['jax_version']}</p>
+                    <p>Generated on: {report["summary"]["timestamp"]}</p>
+                    <p>JAX Version: {report["summary"]["jax_version"]}</p>
                 </div>
         """
 

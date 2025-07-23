@@ -15,12 +15,12 @@ making it ideal for parametric studies and large-scale analysis.
 
 import time
 
+import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import grad
 from jax import jit
 from jax import vmap
-import jax
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils.naca4 import NACA4
@@ -173,7 +173,7 @@ def vectorized_morphing_operations():
 
     total_airfoils = len(source_airfoils) * len(eta_values)
     print(f"Generated {total_airfoils} morphed airfoils in {morph_time:.4f} seconds")
-    print(f"Average time per airfoil: {morph_time/total_airfoils:.6f} seconds")
+    print(f"Average time per airfoil: {morph_time / total_airfoils:.6f} seconds")
 
     # Analyze morphing results
     thickness_evolution = []
@@ -233,7 +233,7 @@ def parallel_parameter_sweep():
     sweep_time = time.time() - start_time
 
     print(f"Parameter sweep completed in {sweep_time:.4f} seconds")
-    print(f"Average time per configuration: {sweep_time/n_combinations:.6f} seconds")
+    print(f"Average time per configuration: {sweep_time / n_combinations:.6f} seconds")
 
     # Reshape results back to grid
     drag_grid = drag_coeffs.reshape(camber_grid.shape)
@@ -315,16 +315,18 @@ def vectorized_gradient_computation():
     grad_time = time.time() - start_time
 
     print(f"Gradient computation completed in {grad_time:.4f} seconds")
-    print(f"Average time per gradient: {grad_time/n_airfoils:.6f} seconds")
+    print(f"Average time per gradient: {grad_time / n_airfoils:.6f} seconds")
 
     print("\nObjectives and gradients:")
     print("Airfoil    Objective    Grad_M      Grad_P      Grad_XX")
     print("-" * 60)
 
-    for i, (params, obj, gradient) in enumerate(zip(test_params, objectives, gradients)):
+    for i, (params, obj, gradient) in enumerate(
+        zip(test_params, objectives, gradients),
+    ):
         m, p, xx = params
         grad_m, grad_p, grad_xx = gradient
-        naca_name = f"NACA {int(m*100):01d}{int(p*10):01d}{int(xx*100):02d}"
+        naca_name = f"NACA {int(m * 100):01d}{int(p * 10):01d}{int(xx * 100):02d}"
         print(
             f"{naca_name:<10} {obj:8.5f}    {grad_m:8.5f}   {grad_p:8.5f}   {grad_xx:8.5f}",
         )
@@ -389,7 +391,7 @@ def memory_efficient_batch_operations():
     processing_time = time.time() - start_time
 
     print(f"Batch processing completed in {processing_time:.4f} seconds")
-    print(f"Average time per airfoil: {processing_time/n_large_batch:.6f} seconds")
+    print(f"Average time per airfoil: {processing_time / n_large_batch:.6f} seconds")
     print(f"Results shape: {all_results.shape}")
 
     # Compute batch statistics
@@ -440,7 +442,7 @@ def plot_batch_processing_results():
     # Plot 2: Batch surface evaluation
     ax2 = axes[0, 1]
     for i, thickness_dist in enumerate(thickness_dists):
-        ax2.plot(x_eval, thickness_dist, linewidth=2, label=f"Airfoil {i+1}")
+        ax2.plot(x_eval, thickness_dist, linewidth=2, label=f"Airfoil {i + 1}")
     ax2.set_xlabel("x/c")
     ax2.set_ylabel("Thickness")
     ax2.set_title("Batch Thickness Distributions")
@@ -450,7 +452,13 @@ def plot_batch_processing_results():
     # Plot 3: Morphing evolution
     ax3 = axes[0, 2]
     for i, thickness_seq in enumerate(thickness_evolution):
-        ax3.plot(eta_vals, thickness_seq, linewidth=2, marker="o", label=f"Pair {i+1}")
+        ax3.plot(
+            eta_vals,
+            thickness_seq,
+            linewidth=2,
+            marker="o",
+            label=f"Pair {i + 1}",
+        )
     ax3.set_xlabel("Morphing Parameter η")
     ax3.set_ylabel("Max Thickness")
     ax3.set_title("Vectorized Morphing Evolution")

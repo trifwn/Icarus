@@ -21,7 +21,7 @@ from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils.naca4 import NACA4
 
 
-def basic_airfoil_plotting():
+def basic_airfoil_plotting() -> None:
     """Demonstrate basic airfoil plotting techniques."""
     print("=== Basic Airfoil Plotting ===")
 
@@ -257,7 +257,7 @@ def multi_airfoil_comparison():
     plt.show()
 
 
-def thickness_camber_analysis_plots():
+def thickness_camber_analysis_plots()-> None:
     """Create detailed thickness and camber analysis plots."""
     print("\n=== Thickness and Camber Analysis Plots ===")
 
@@ -499,7 +499,7 @@ def morphing_animation():
     return anim
 
 
-def advanced_visualization_concepts():
+def advanced_visualization_concepts() -> None:
     """Demonstrate advanced visualization concepts."""
     print("\n=== Advanced Visualization Concepts ===")
 
@@ -679,7 +679,7 @@ def advanced_visualization_concepts():
             upper[1],
             color=colors[i],
             linewidth=2,
-            label=f"NACA 24{int(thickness*100):02d}",
+            label=f"NACA 24{int(thickness * 100):02d}",
         )
         plt.plot(lower[0], lower[1], color=colors[i], linewidth=2, linestyle="--")
 

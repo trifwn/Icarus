@@ -15,7 +15,6 @@ operations, making it ideal for gradient-based optimization workflows.
 
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-import numpy as np
 from jax import grad
 from jax import jit
 

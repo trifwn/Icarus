@@ -109,7 +109,7 @@ def multi_objective_optimization():
     for i, sol in enumerate(pareto_solutions[::4]):  # Show every 4th solution
         obj = sol["objectives"]
         print(
-            f"{i*4:2d}         {obj[0]:.5f}   {obj[1]:.5f}   {obj[2]:.5f}   {sol['params'][2]:.3f}",
+            f"{i * 4:2d}         {obj[0]:.5f}   {obj[1]:.5f}   {obj[2]:.5f}   {sol['params'][2]:.3f}",
         )
 
     return pareto_solutions, weight_combinations

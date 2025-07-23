@@ -217,5 +217,3 @@ Small numerical errors (< 1e-12) are allowed in thickness calculations at traili
 - Gradient computation: 1.01x speedup with perfect accuracy
 - Memory validation: 20 airfoils × 200 points processed without issues
 - Performance regression: 0.0067s (well below 1.0s threshold)
-
-

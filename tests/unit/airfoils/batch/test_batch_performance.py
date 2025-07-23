@@ -691,9 +691,9 @@ class TestBatchOperationRobustness:
         print(f"   Average time per run: {avg_time:.4f}s")
         print(f"   Threshold: {max_acceptable_time:.4f}s")
 
-        assert (
-            avg_time < max_acceptable_time
-        ), f"Performance regression: {avg_time:.4f}s > {max_acceptable_time:.4f}s"
+        assert avg_time < max_acceptable_time, (
+            f"Performance regression: {avg_time:.4f}s > {max_acceptable_time:.4f}s"
+        )
 
         print("✓ Performance regression test passed")
 

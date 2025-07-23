@@ -240,11 +240,11 @@ class ProductionReadinessChecker:
                     "Optimize batch processing implementation and vectorization",
                 )
                 print(
-                    f"❌ Batch efficiency: {batch_time:.4f}s > {individual_time*2:.4f}s",
+                    f"❌ Batch efficiency: {batch_time:.4f}s > {individual_time * 2:.4f}s",
                 )
             else:
                 print(
-                    f"✅ Batch efficiency: {batch_time:.4f}s < {individual_time*2:.4f}s",
+                    f"✅ Batch efficiency: {batch_time:.4f}s < {individual_time * 2:.4f}s",
                 )
 
         except Exception as e:
