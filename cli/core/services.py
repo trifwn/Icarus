@@ -4,18 +4,22 @@ This module provides validation, export/import, and other core services
 for the enhanced CLI functionality.
 """
 
-import json
 import csv
-import yaml
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Callable
-from dataclasses import dataclass, asdict
+import json
 import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
+import yaml
 from rich.console import Console
 from rich.table import Table
 
-from .ui import theme_manager, notification_system
+from .ui import notification_system
+from .ui import theme_manager
 
 console = Console()
 
@@ -95,13 +99,27 @@ class ValidationService:
             ValidationRule(
                 field="name",
                 rule_type="choice",
-                parameters={"choices": ["xfoil", "foil2wake", "openfoam", "avl", "gnvp3", "gnvp7", "lspt"]},
+                parameters={
+                    "choices": [
+                        "xfoil",
+                        "foil2wake",
+                        "openfoam",
+                        "avl",
+                        "gnvp3",
+                        "gnvp7",
+                        "lspt",
+                    ],
+                },
                 message="Invalid solver name",
                 required=True,
-            )
+            ),
         ]
 
-    def validate_data(self, data: Dict[str, Any], data_type: str) -> Dict[str, List[str]]:
+    def validate_data(
+        self,
+        data: Dict[str, Any],
+        data_type: str,
+    ) -> Dict[str, List[str]]:
         """Validate data against rules for a specific type."""
         errors = {}
 
@@ -186,7 +204,12 @@ class ValidationService:
             min_angle = params.get("min", -90)
             max_angle = params.get("max", 90)
 
-            return min_angle <= start <= max_angle and min_angle <= end <= max_angle and start < end and steps > 0
+            return (
+                min_angle <= start <= max_angle
+                and min_angle <= end <= max_angle
+                and start < end
+                and steps > 0
+            )
         except (ValueError, TypeError):
             return False
 
@@ -330,23 +353,23 @@ class ExportService:
 
     def _import_json(self, filepath: str) -> Any:
         """Import data from JSON file."""
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             return json.load(f)
 
     def _import_csv(self, filepath: str) -> List[Dict[str, Any]]:
         """Import data from CSV file."""
-        with open(filepath, "r", newline="") as f:
+        with open(filepath, newline="") as f:
             reader = csv.DictReader(f)
             return list(reader)
 
     def _import_yaml(self, filepath: str) -> Any:
         """Import data from YAML file."""
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             return yaml.safe_load(f)
 
     def _import_txt(self, filepath: str) -> str:
         """Import data from text file."""
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             return f.read()
 
     def create_report(self, data: Dict[str, Any], report_type: str = "summary") -> str:

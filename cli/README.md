@@ -32,14 +32,14 @@ A modern, interactive Command Line Interface for ICARUS Aerodynamics, featuring 
 pip install -r requirements.txt
 
 # Run the CLI
-python main.py
+python -m cli
 ```
 
 ### Basic Usage
 
 1. **Launch the TUI**:
    ```bash
-   python main.py --tui
+   python -m cli
    ```
 
 2. **Use the REPL**:
@@ -60,19 +60,26 @@ python main.py
 
 ```
 cli/
-├── main.py                 # Main entry point
-├── tui/                    # Textual TUI application
-│   ├── app.py             # Main TUI app
-│   ├── styles.css         # TUI styling
-│   ├── widgets/           # Custom TUI widgets
-│   └── utils/             # TUI utilities
-├── core/                  # Core functionality
-│   ├── state.py          # Session and state management
-│   ├── workflow.py       # Workflow automation
-│   ├── services.py       # Validation and export services
-│   └── tui_integration.py # TUI integration layer
-├── legacy/               # Legacy CLI (deprecated)
-└── examples/             # Usage examples
+├── __main__.py             # Main entry point
+├── icarus.py               # CLI entry point with Typer
+├── tui_app.py              # Textual TUI application
+├── tui_styles.css          # TUI styling
+├── app/                    # Main application components
+│   ├── main_app.py         # Main TUI app
+│   ├── event_system.py     # Event handling system
+│   ├── screen_manager.py   # Screen management
+│   └── state_manager.py    # State management
+├── core/                   # Core functionality
+│   ├── config.py           # Configuration management
+│   ├── services/           # Core services
+│   ├── state/              # State management
+│   ├── ui/                 # UI components
+│   └── workflow/           # Workflow engine
+├── api/                    # API layer for web migration
+├── commands/               # CLI commands
+├── integration/            # ICARUS integration
+├── workflows/              # Workflow definitions
+└── visualization/          # Visualization components
 ```
 
 ### Key Components
@@ -186,24 +193,24 @@ python -m pytest tests/
 python -m pytest tests/test_tui.py
 ```
 
-## Migration from Legacy CLI
+## Web Migration Readiness
 
-The legacy CLI is still available but deprecated:
+The CLI architecture is designed to support future migration to a web application:
 
-```bash
-python main.py --legacy
-```
+### Key Features for Web Migration
 
-### Key Differences
+- **API-First Design**: Core functionality exposed through REST APIs
+- **UI Abstraction**: Separation of business logic from presentation
+- **Data Serialization**: Standard JSON-based data exchange
+- **Authentication**: Support for both local and web authentication
+- **WebSocket Support**: Real-time features implemented with WebSocket
 
-| Feature | Legacy CLI | Modern TUI |
-|---------|------------|------------|
-| Interface | Command-line | Interactive TUI |
-| REPL | Basic | Full-featured with namespace |
-| Navigation | Menu-based | Tabbed interface |
-| Object Management | Limited | Full namespace browser |
-| Progress Tracking | Basic | Real-time with progress bars |
-| Error Handling | Basic | Comprehensive with debugging |
+### Migration Path
+
+1. **API Development**: REST API layer alongside TUI
+2. **Frontend Framework Selection**: Evaluate modern web frameworks
+3. **Feature Parity**: Migrate TUI features to web interface
+4. **Deployment Options**: Support both TUI and web interfaces
 
 ## Troubleshooting
 
@@ -218,7 +225,7 @@ python main.py --legacy
 
 ```bash
 # Run with debug output
-python main.py --tui --debug
+python -m cli --verbose
 ```
 
 ## Contributing
@@ -237,4 +244,4 @@ This CLI is part of the ICARUS project and follows the same license terms.
 For issues and questions:
 - Check the troubleshooting section
 - Review the examples in `examples/`
-- Open an issue on the ICARUS repository 
+- Open an issue on the ICARUS repository

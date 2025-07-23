@@ -3,13 +3,15 @@
 This widget provides analysis forms and validation using the core services.
 """
 
-from textual.containers import Container
-from textual.widgets import Input, Select, Button, Label
-from textual.reactive import reactive
-from typing import Dict, Any, List
-
 from core.services import validation_service
-from core.tui_integration import TUIEvent, TUIEventType
+from core.tui_integration import TUIEvent
+from core.tui_integration import TUIEventType
+from textual.containers import Container
+from textual.reactive import reactive
+from textual.widgets import Button
+from textual.widgets import Input
+from textual.widgets import Label
+from textual.widgets import Select
 
 
 class AnalysisWidget(Container):
@@ -30,7 +32,9 @@ class AnalysisWidget(Container):
         # Analysis type selector
         yield Label("Analysis Type:")
         yield Select(
-            [("Airfoil Analysis", "airfoil"), ("Airplane Analysis", "airplane")], value="airfoil", id="analysis_type"
+            [("Airfoil Analysis", "airfoil"), ("Airplane Analysis", "airplane")],
+            value="airfoil",
+            id="analysis_type",
         )
 
         # Airfoil analysis fields
@@ -39,7 +43,9 @@ class AnalysisWidget(Container):
 
         yield Label("Solver:", id="solver_label")
         yield Select(
-            [("XFOIL", "xfoil"), ("Foil2Wake", "foil2wake"), ("OpenFOAM", "openfoam")], value="xfoil", id="solver"
+            [("XFOIL", "xfoil"), ("Foil2Wake", "foil2wake"), ("OpenFOAM", "openfoam")],
+            value="xfoil",
+            id="solver",
         )
 
         yield Label("Angle Range:", id="angles_label")
@@ -108,7 +114,10 @@ class AnalysisWidget(Container):
     def validate_config(self) -> None:
         """Validate the current configuration."""
         try:
-            errors = validation_service.validate_data(self.analysis_config, self.analysis_type)
+            errors = validation_service.validate_data(
+                self.analysis_config,
+                self.analysis_type,
+            )
             self.validation_errors = errors
             self.is_valid = len(errors) == 0
 
@@ -137,7 +146,7 @@ class AnalysisWidget(Container):
                         data=self.analysis_config,
                         timestamp=0.0,  # Will be set by event manager
                         source="analysis_widget",
-                    )
+                    ),
                 )
 
             self.notify("Analysis started!", severity="information")

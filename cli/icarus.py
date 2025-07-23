@@ -9,18 +9,17 @@ This is the main entry point for the ICARUS CLI that provides:
 """
 
 import sys
-import os
 from pathlib import Path
-from typing import Optional, Dict, Any
-from datetime import datetime
+from typing import Optional
 
 import typer
+from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
-from rich.text import Text
+from rich.prompt import Confirm
+from rich.prompt import Prompt
 from rich.table import Table
-from rich.prompt import Prompt, Confirm
-from rich.align import Align
+from rich.text import Text
 
 # Add cli directory to path for imports
 cli_dir = Path(__file__).parent
@@ -28,10 +27,16 @@ sys.path.insert(0, str(cli_dir))
 
 # Import core modules
 try:
-    from core.state import session_manager, config_manager, history_manager
-    from core.ui import theme_manager, notification_system, ui_components
-    from core.workflow import workflow_engine, template_manager
-    from core.services import validation_service, export_service
+    from core.services import export_service
+    from core.services import validation_service
+    from core.state import config_manager
+    from core.state import history_manager
+    from core.state import session_manager
+    from core.ui import notification_system
+    from core.ui import theme_manager
+    from core.ui import ui_components
+    from core.workflow import template_manager
+    from core.workflow import workflow_engine
 except ImportError as e:
     print(f"Error importing core modules: {e}")
     print("Please ensure all dependencies are installed:")
@@ -104,8 +109,14 @@ class ICARUSCLI:
 
     def show_banner(self):
         """Display the enhanced ICARUS banner."""
-        banner_text = Text("ICARUS AERODYNAMICS", style=f"bold {theme_manager.get_color('primary')}")
-        subtitle = Text("Advanced Aircraft Design & Analysis Platform", style=theme_manager.get_color("secondary"))
+        banner_text = Text(
+            "ICARUS AERODYNAMICS",
+            style=f"bold {theme_manager.get_color('primary')}",
+        )
+        subtitle = Text(
+            "Advanced Aircraft Design & Analysis Platform",
+            style=theme_manager.get_color("secondary"),
+        )
         version_text = Text(f"v{__version__}", style=theme_manager.get_color("muted"))
 
         banner = Panel(
@@ -113,7 +124,7 @@ class ICARUSCLI:
             border_style=theme_manager.get_color("primary"),
             padding=(2, 4),
             title="[bold white]Next Generation Aircraft Design[/bold white]",
-            subtitle=f"[dim]Powered by Advanced Computational Methods[/dim]",
+            subtitle="[dim]Powered by Advanced Computational Methods[/dim]",
         )
         console.print(banner)
 
@@ -130,7 +141,9 @@ class ICARUSCLI:
                 info_table.add_row(key.replace("_", " ").title(), str(value))
 
             info_panel = Panel(
-                str(info_table), title="Session Information", border_style=theme_manager.get_color("secondary")
+                str(info_table),
+                title="Session Information",
+                border_style=theme_manager.get_color("secondary"),
             )
             console.print(info_panel)
         except Exception as e:
@@ -139,22 +152,49 @@ class ICARUSCLI:
     def show_main_menu(self):
         """Display the enhanced main menu."""
         menu_options = [
-            {"label": "🚁 2D Airfoil Analysis", "description": "Analyze airfoils with multiple solvers"},
-            {"label": "✈️ 3D Airplane Analysis", "description": "Perform 3D aerodynamic analysis"},
-            {"label": "📊 Visualization", "description": "Visualize results and create plots"},
-            {"label": "⚙️ Workflow Management", "description": "Manage and execute workflows"},
+            {
+                "label": "🚁 2D Airfoil Analysis",
+                "description": "Analyze airfoils with multiple solvers",
+            },
+            {
+                "label": "✈️ 3D Airplane Analysis",
+                "description": "Perform 3D aerodynamic analysis",
+            },
+            {
+                "label": "📊 Visualization",
+                "description": "Visualize results and create plots",
+            },
+            {
+                "label": "⚙️ Workflow Management",
+                "description": "Manage and execute workflows",
+            },
             {"label": "🔧 Settings", "description": "Configure CLI preferences"},
-            {"label": "📚 Help & Documentation", "description": "Access help and examples"},
-            {"label": "🖥️ Launch TUI Mode", "description": "Switch to interactive Textual UI"},
-            {"label": "🐍 IPython Shell", "description": "Drop into interactive Python shell"},
+            {
+                "label": "📚 Help & Documentation",
+                "description": "Access help and examples",
+            },
+            {
+                "label": "🖥️ Launch TUI Mode",
+                "description": "Switch to interactive Textual UI",
+            },
+            {
+                "label": "🐍 IPython Shell",
+                "description": "Drop into interactive Python shell",
+            },
             {"label": "🚪 Exit", "description": "Exit the application"},
         ]
 
         # Create menu table
         menu_table = Table(
-            title="Main Menu", show_header=True, header_style=f"bold {theme_manager.get_color('primary')}"
+            title="Main Menu",
+            show_header=True,
+            header_style=f"bold {theme_manager.get_color('primary')}",
         )
-        menu_table.add_column("Option", style=theme_manager.get_color("text"), no_wrap=True)
+        menu_table.add_column(
+            "Option",
+            style=theme_manager.get_color("text"),
+            no_wrap=True,
+        )
         menu_table.add_column("Description", style=theme_manager.get_color("muted"))
 
         for i, option in enumerate(menu_options, 1):
@@ -163,7 +203,11 @@ class ICARUSCLI:
         console.print(menu_table)
 
         # Get user choice
-        choice = Prompt.ask("Select an option", choices=[str(i) for i in range(1, len(menu_options) + 1)], default="9")
+        choice = Prompt.ask(
+            "Select an option",
+            choices=[str(i) for i in range(1, len(menu_options) + 1)],
+            default="9",
+        )
 
         return int(choice)
 
@@ -191,10 +235,10 @@ class ICARUSCLI:
     def launch_tui_mode(self):
         """Launch the Textual TUI application."""
         console.print(
-            f"\n[{theme_manager.get_color('info')}]Launching ICARUS TUI Mode...[/{theme_manager.get_color('info')}]"
+            f"\n[{theme_manager.get_color('info')}]Launching ICARUS TUI Mode...[/{theme_manager.get_color('info')}]",
         )
         console.print(
-            f"[{theme_manager.get_color('muted')}]Press Ctrl+C to return to CLI mode[/{theme_manager.get_color('muted')}]\n"
+            f"[{theme_manager.get_color('muted')}]Press Ctrl+C to return to CLI mode[/{theme_manager.get_color('muted')}]\n",
         )
 
         try:
@@ -207,22 +251,22 @@ class ICARUSCLI:
 
             # When TUI exits, return to CLI
             console.print(
-                f"\n[{theme_manager.get_color('success')}]Returned to CLI mode[/{theme_manager.get_color('success')}]"
+                f"\n[{theme_manager.get_color('success')}]Returned to CLI mode[/{theme_manager.get_color('success')}]",
             )
 
         except ImportError as e:
             notification_system.error(f"Failed to launch TUI: {e}")
             console.print(
-                f"[{theme_manager.get_color('error')}]TUI mode not available. Install textual: pip install textual[/{theme_manager.get_color('error')}]"
+                f"[{theme_manager.get_color('error')}]TUI mode not available. Install textual: pip install textual[/{theme_manager.get_color('error')}]",
             )
         except KeyboardInterrupt:
             console.print(
-                f"\n[{theme_manager.get_color('info')}]TUI mode interrupted, returning to CLI[/{theme_manager.get_color('info')}]"
+                f"\n[{theme_manager.get_color('info')}]TUI mode interrupted, returning to CLI[/{theme_manager.get_color('info')}]",
             )
         except Exception as e:
             notification_system.error(f"TUI mode failed: {e}")
             console.print(
-                f"[{theme_manager.get_color('error')}]TUI mode encountered an error: {e}[/{theme_manager.get_color('error')}]"
+                f"[{theme_manager.get_color('error')}]TUI mode encountered an error: {e}[/{theme_manager.get_color('error')}]",
             )
 
     def launch_ipython_shell(self):
@@ -241,11 +285,15 @@ class ICARUSCLI:
                 "export_service": export_service,
             }
 
-            notification_system.info("Launching IPython shell. Type 'exit' or Ctrl-D to return.")
+            notification_system.info(
+                "Launching IPython shell. Type 'exit' or Ctrl-D to return.",
+            )
             embed(user_ns=namespace)
 
         except ImportError:
-            notification_system.error("IPython is not installed. Install with 'pip install ipython'")
+            notification_system.error(
+                "IPython is not installed. Install with 'pip install ipython'",
+            )
 
     def exit_cli(self):
         """Exit the CLI with confirmation."""
@@ -286,19 +334,27 @@ class ICARUSCLI:
     # Menu implementations (simplified for brevity)
     def show_airfoil_menu(self):
         """Display the enhanced airfoil analysis menu."""
-        notification_system.info("Airfoil analysis menu - use 'icarus airfoil' commands")
+        notification_system.info(
+            "Airfoil analysis menu - use 'icarus airfoil' commands",
+        )
 
     def show_airplane_menu(self):
         """Display the enhanced airplane analysis menu."""
-        notification_system.info("Airplane analysis menu - use 'icarus airplane' commands")
+        notification_system.info(
+            "Airplane analysis menu - use 'icarus airplane' commands",
+        )
 
     def show_visualization_menu(self):
         """Display the enhanced visualization menu."""
-        notification_system.info("Visualization menu - use 'icarus visualization' commands")
+        notification_system.info(
+            "Visualization menu - use 'icarus visualization' commands",
+        )
 
     def show_workflow_menu(self):
         """Display the workflow management menu."""
-        notification_system.info("Workflow management menu - use 'icarus workflow' commands")
+        notification_system.info(
+            "Workflow management menu - use 'icarus workflow' commands",
+        )
 
     def show_settings_menu(self):
         """Display the settings menu."""
@@ -315,14 +371,29 @@ cli = ICARUSCLI()
 
 @app.callback()
 def main(
-    version: Optional[bool] = typer.Option(None, "--version", "-v", help="Show version and exit"),
-    database_path: str = typer.Option(None, "--database", "-d", help="Path to ICARUS database"),
-    theme: str = typer.Option(None, "--theme", "-t", help="CLI theme (default, dark, light, aerospace, scientific)"),
+    version: Optional[bool] = typer.Option(
+        None,
+        "--version",
+        "-v",
+        help="Show version and exit",
+    ),
+    database_path: str = typer.Option(
+        None,
+        "--database",
+        "-d",
+        help="Path to ICARUS database",
+    ),
+    theme: str = typer.Option(
+        None,
+        "--theme",
+        "-t",
+        help="CLI theme (default, dark, light, aerospace, scientific)",
+    ),
 ):
     """ICARUS Aerodynamics v2.0 - Unified CLI with state management and workflow automation."""
     if version:
         console.print(
-            f"[bold {theme_manager.get_color('primary')}]ICARUS[/bold {theme_manager.get_color('primary')}] version [green]{__version__}[/green]"
+            f"[bold {theme_manager.get_color('primary')}]ICARUS[/bold {theme_manager.get_color('primary')}] version [green]{__version__}[/green]",
         )
         raise typer.Exit()
 
@@ -351,7 +422,12 @@ def tui():
 def analyze(
     airfoil: str = typer.Argument(..., help="Airfoil name or file path"),
     solver: str = typer.Option("xfoil", "--solver", "-s", help="Solver to use"),
-    angles: str = typer.Option("0:15:16", "--angles", "-a", help="Angle of attack range"),
+    angles: str = typer.Option(
+        "0:15:16",
+        "--angles",
+        "-a",
+        help="Angle of attack range",
+    ),
     reynolds: float = typer.Option(1e6, "--reynolds", "-r", help="Reynolds number"),
 ):
     """Analyze an airfoil using the specified solver."""
@@ -397,7 +473,9 @@ def list():
             return
 
         workflow_table = Table(
-            title="Available Workflows", show_header=True, header_style=f"bold {theme_manager.get_color('primary')}"
+            title="Available Workflows",
+            show_header=True,
+            header_style=f"bold {theme_manager.get_color('primary')}",
         )
         workflow_table.add_column("Name", style=theme_manager.get_color("text"))
         workflow_table.add_column("Type", style=theme_manager.get_color("secondary"))

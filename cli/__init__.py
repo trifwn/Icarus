@@ -1,15 +1,13 @@
 """ICARUS CLI Module
 
 This module provides a modern command-line interface for ICARUS Aerodynamics
-using Rich and Typer for enhanced user experience.
+with essential analysis workflows and demonstration capabilities.
 """
 
-# Import new CLI functions
-from .main import app, interactive
-
+# Import main CLI function
+from .__main__ import run_app
 
 __all__ = [
-    # New CLI functions
-    "app",
-    "interactive",
+    # Main application
+    "run_app",
 ]

@@ -3,13 +3,12 @@
 This widget displays progress information using the core progress management system.
 """
 
+from core.tui_integration import TUIEvent
+from core.tui_integration import TUIEventType
 from textual.containers import Container
-from textual.widgets import ProgressBar, Label
 from textual.reactive import reactive
-from typing import Dict, Any
-
-from core.ui import progress_manager
-from core.tui_integration import TUIEvent, TUIEventType
+from textual.widgets import Label
+from textual.widgets import ProgressBar
 
 
 class ProgressWidget(Container):
@@ -44,7 +43,9 @@ class ProgressWidget(Container):
     def _on_workflow_started(self, event: TUIEvent) -> None:
         """Handle workflow started events."""
         if event.type == TUIEventType.WORKFLOW_STARTED:
-            self.current_status = f"Workflow started: {event.data.get('workflow', 'Unknown')}"
+            self.current_status = (
+                f"Workflow started: {event.data.get('workflow', 'Unknown')}"
+            )
             self.current_progress = 0.0
             self.is_active = True
             self.update_display()
@@ -67,7 +68,9 @@ class ProgressWidget(Container):
         if self.is_active:
             progress_bar.styles.background = "blue"
         else:
-            progress_bar.styles.background = "green" if self.current_progress >= 100.0 else "gray"
+            progress_bar.styles.background = (
+                "green" if self.current_progress >= 100.0 else "gray"
+            )
 
     def start_task(self, task_id: str, description: str) -> None:
         """Start a new task."""
@@ -76,7 +79,12 @@ class ProgressWidget(Container):
         self.is_active = True
         self.update_display()
 
-    def update_task(self, task_id: str, progress: float, description: str = None) -> None:
+    def update_task(
+        self,
+        task_id: str,
+        progress: float,
+        description: str = None,
+    ) -> None:
         """Update a task's progress."""
         if task_id in self.active_tasks:
             self.active_tasks[task_id]["progress"] = progress
@@ -85,7 +93,9 @@ class ProgressWidget(Container):
 
         # Calculate overall progress
         if self.active_tasks:
-            total_progress = sum(task["progress"] for task in self.active_tasks.values())
+            total_progress = sum(
+                task["progress"] for task in self.active_tasks.values()
+            )
             self.current_progress = total_progress / len(self.active_tasks)
 
             # Use the most recent task description

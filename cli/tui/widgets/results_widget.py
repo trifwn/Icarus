@@ -3,12 +3,14 @@
 This widget displays and manages analysis results using the core export services.
 """
 
-from textual.widgets import DataTable
-from textual.reactive import reactive
-from typing import Dict, Any, List
+from typing import Any
+from typing import Dict
 
 from core.services import export_service
-from core.tui_integration import TUIEvent, TUIEventType
+from core.tui_integration import TUIEvent
+from core.tui_integration import TUIEventType
+from textual.reactive import reactive
+from textual.widgets import DataTable
 
 
 class ResultsWidget(DataTable):
@@ -78,7 +80,11 @@ class ResultsWidget(DataTable):
             filename = f"icarus_results_{timestamp}.{format_type}"
 
             # Export using core service
-            success = export_service.export_data(self.current_results, filename, format_type)
+            success = export_service.export_data(
+                self.current_results,
+                filename,
+                format_type,
+            )
 
             if success:
                 self.add_row("Export", f"Saved to {filename}", "")

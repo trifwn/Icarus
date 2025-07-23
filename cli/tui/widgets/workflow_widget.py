@@ -3,12 +3,21 @@
 This widget displays and manages workflows using the core workflow engine.
 """
 
-from textual.widget import Tree
-from textual.reactive import reactive
-from typing import Dict, Any, List
+from typing import Any
+from typing import Dict
 
-from core.workflow import workflow_engine
-from core.tui_integration import TUIEvent, TUIEventType
+from textual.reactive import reactive
+from textual.widgets import Tree
+
+try:
+    from core.tui_integration import TUIEvent
+    from core.tui_integration import TUIEventType
+    from core.workflow import workflow_engine
+except ImportError:
+    # Fallback for testing
+    workflow_engine = None
+    TUIEvent = None
+    TUIEventType = None
 
 
 class WorkflowWidget(Tree):

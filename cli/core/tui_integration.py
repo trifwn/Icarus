@@ -5,19 +5,22 @@ including event handling, data binding, and real-time updates.
 """
 
 import asyncio
-from typing import Any, Callable, Dict, List, Optional, Union
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from textual.app import App
-from textual.widget import Widget
-from textual.reactive import reactive
 from textual import work
+from textual.app import App
 
-from .state import session_manager, config_manager, history_manager
-from .ui import theme_manager, notification_system
-from .workflow import workflow_engine, template_manager
-from .services import validation_service, export_service
+from .services import export_service
+from .services import validation_service
+from .state import config_manager
+from .state import session_manager
+from .workflow import workflow_engine
 
 
 class TUIEventType(Enum):
@@ -97,7 +100,10 @@ class TUISessionManager:
     def _setup_callbacks(self) -> None:
         """Setup callbacks for session changes."""
         # Monitor session changes
-        self.event_manager.subscribe(TUIEventType.SESSION_UPDATED, self._on_session_updated)
+        self.event_manager.subscribe(
+            TUIEventType.SESSION_UPDATED,
+            self._on_session_updated,
+        )
 
     def _on_session_updated(self, event: TUIEvent) -> None:
         """Handle session update events."""
@@ -215,7 +221,12 @@ class TUIWorkflowManager:
         """Get available workflows for TUI display."""
         workflows = workflow_engine.get_workflows()
         return [
-            {"name": w.name, "type": w.type.value, "description": w.description, "steps": len(w.steps)}
+            {
+                "name": w.name,
+                "type": w.type.value,
+                "description": w.description,
+                "steps": len(w.steps),
+            }
             for w in workflows
         ]
 
@@ -269,7 +280,12 @@ class TUIAnalysisManager:
             "solver": analysis_config.get("solver", "xfoil"),
             "reynolds": analysis_config.get("reynolds", 1e6),
             "angles": analysis_config.get("angles", "0:15:16"),
-            "results": {"cl_max": 1.2, "cd_min": 0.005, "alpha_stall": 15.5, "efficiency": 0.85},
+            "results": {
+                "cl_max": 1.2,
+                "cd_min": 0.005,
+                "alpha_stall": 15.5,
+                "efficiency": 0.85,
+            },
         }
 
         for step_name, progress in steps:
@@ -306,7 +322,9 @@ class TUIAnalysisManager:
         return {
             "valid": len(errors) == 0,
             "errors": errors,
-            "summary": validation_service.get_validation_summary(errors) if errors else "Validation passed",
+            "summary": validation_service.get_validation_summary(errors)
+            if errors
+            else "Validation passed",
         }
 
 
@@ -335,14 +353,22 @@ class TUIExportManager:
 
         return success
 
-    def generate_report(self, data: Dict[str, Any], report_type: str = "summary") -> str:
+    def generate_report(
+        self,
+        data: Dict[str, Any],
+        report_type: str = "summary",
+    ) -> str:
         """Generate report and emit event."""
         try:
             report = export_service.create_report(data, report_type)
 
             event = TUIEvent(
                 type=TUIEventType.EXPORT_COMPLETED,
-                data={"success": True, "report_type": report_type, "report_length": len(report)},
+                data={
+                    "success": True,
+                    "report_type": report_type,
+                    "report_length": len(report),
+                },
                 timestamp=asyncio.get_event_loop().time(),
                 source="export_manager",
             )

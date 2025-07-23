@@ -3,12 +3,14 @@
 This module provides utilities for working with data and the core state/export services.
 """
 
-from typing import Dict, Any, List, Optional
-from pathlib import Path
-import json
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from core.state import session_manager, config_manager
 from core.services import export_service
+from core.state import config_manager
+from core.state import session_manager
 
 
 class DataHelper:
@@ -24,7 +26,9 @@ class DataHelper:
         try:
             return {
                 "session_info": self.session.get_session_info(),
-                "current_session": self.session.current_session.__dict__ if self.session.current_session else {},
+                "current_session": self.session.current_session.__dict__
+                if self.session.current_session
+                else {},
                 "config": self.config.config,
             }
         except Exception:
@@ -47,7 +51,11 @@ class DataHelper:
         except Exception:
             return False
 
-    def import_session_data(self, filepath: str, format_type: str = "json") -> Optional[Dict[str, Any]]:
+    def import_session_data(
+        self,
+        filepath: str,
+        format_type: str = "json",
+    ) -> Optional[Dict[str, Any]]:
         """Import session data from a file."""
         try:
             return self.export.import_data(filepath, format_type)
@@ -59,7 +67,11 @@ class DataHelper:
         if analysis_id:
             return self.session.get_result(analysis_id, {})
         else:
-            return self.session.current_session.last_results if self.session.current_session else {}
+            return (
+                self.session.current_session.last_results
+                if self.session.current_session
+                else {}
+            )
 
     def save_analysis_results(self, analysis_id: str, results: Dict[str, Any]) -> bool:
         """Save analysis results to session."""
@@ -71,11 +83,19 @@ class DataHelper:
 
     def get_airfoil_list(self) -> List[str]:
         """Get list of airfoils from session."""
-        return self.session.current_session.airfoils if self.session.current_session else []
+        return (
+            self.session.current_session.airfoils
+            if self.session.current_session
+            else []
+        )
 
     def get_airplane_list(self) -> List[str]:
         """Get list of airplanes from session."""
-        return self.session.current_session.airplanes if self.session.current_session else []
+        return (
+            self.session.current_session.airplanes
+            if self.session.current_session
+            else []
+        )
 
     def add_airfoil(self, airfoil_name: str) -> bool:
         """Add airfoil to session."""
@@ -93,7 +113,11 @@ class DataHelper:
         except Exception:
             return False
 
-    def generate_report(self, data: Dict[str, Any], report_type: str = "summary") -> str:
+    def generate_report(
+        self,
+        data: Dict[str, Any],
+        report_type: str = "summary",
+    ) -> str:
         """Generate a report from data."""
         try:
             return self.export.create_report(data, report_type)
@@ -104,7 +128,9 @@ class DataHelper:
         """Get a summary of all data."""
         return {
             "session": {
-                "id": self.session.current_session.session_id if self.session.current_session else "None",
+                "id": self.session.current_session.session_id
+                if self.session.current_session
+                else "None",
                 "duration": self.session.get_session_info().get("duration", "Unknown"),
                 "airfoils": len(self.get_airfoil_list()),
                 "airplanes": len(self.get_airplane_list()),

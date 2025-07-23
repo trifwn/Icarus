@@ -1,0 +1,442 @@
+/* Visual Workflow Builder Styles */
+
+/* Main screen layout */
+.workflow-builder-screen {
+    layout: vertical;
+    height: 100%;
+}
+
+.toolbar {
+    layout: horizontal;
+    height: 3;
+    dock: top;
+    background: $surface;
+    border-bottom: solid $primary;
+    padding: 0 1;
+}
+
+.toolbar Button {
+    margin-right: 1;
+}
+
+.status-bar {
+    layout: horizontal;
+    height: 1;
+    dock: bottom;
+    background: $surface-darken-1;
+    padding: 0 1;
+}
+
+.status-text {
+    width: 1fr;
+}
+
+.status-info {
+    width: auto;
+    margin-left: 2;
+    color: $text-muted;
+}
+
+.status-success {
+    color: $success;
+}
+
+.status-error {
+    color: $error;
+}
+
+.status-warning {
+    color: $warning;
+}
+
+/* Main builder layout */
+.main-builder {
+    height: 1fr;
+}
+
+.left-panel {
+    width: 25%;
+    background: $surface;
+    border-right: solid $primary;
+}
+
+.right-panel {
+    width: 25%;
+    background: $surface;
+    border-left: solid $primary;
+}
+
+/* Node palette styles */
+.node-palette {
+    height: 50%;
+    border-bottom: solid $primary;
+    padding: 1;
+}
+
+.palette-title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+.palette-item {
+    layout: vertical;
+    margin-bottom: 1;
+    padding: 1;
+    border: solid $surface-lighten-1;
+    border-radius: 1;
+}
+
+.palette-button {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.palette-description {
+    color: $text-muted;
+    text-style: italic;
+}
+
+/* Properties panel styles */
+.properties-panel {
+    height: 50%;
+    padding: 1;
+}
+
+.properties-form {
+    layout: vertical;
+    height: 100%;
+}
+
+.form-label {
+    margin-top: 1;
+    margin-bottom: 1;
+    text-style: bold;
+}
+
+.form-actions {
+    layout: horizontal;
+    margin-top: 1;
+}
+
+.form-actions Button {
+    margin-right: 1;
+}
+
+.parameters-editor {
+    height: 8;
+    border: solid $primary;
+}
+
+.status-label {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+/* Validation panel styles */
+.validation-panel {
+    layout: vertical;
+    height: 100%;
+}
+
+.panel-title {
+    text-style: bold;
+    color: $primary;
+    margin: 1 0;
+}
+
+.validation-results, .test-results {
+    layout: vertical;
+    height: auto;
+    margin: 1 0;
+    padding: 1;
+    border: solid $surface-lighten-1;
+    border-radius: 1;
+}
+
+.error-item {
+    color: $error;
+    margin-left: 1;
+}
+
+/* Workflow canvas styles */
+.workflow-canvas {
+    width: 50%;
+    background: $surface-darken-1;
+    position: relative;
+}
+
+.canvas-background {
+    width: 100%;
+    height: 100%;
+    background: $surface-darken-1;
+}
+
+.canvas-nodes {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.canvas-connections {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Workflow node styles */
+.workflow-node-start {
+    width: 12;
+    height: 6;
+    background: $success;
+    border: solid $success-darken-1;
+    border-radius: 2;
+    padding: 1;
+}
+
+.workflow-node-end {
+    width: 12;
+    height: 6;
+    background: $error;
+    border: solid $error-darken-1;
+    border-radius: 2;
+    padding: 1;
+}
+
+.workflow-node-analysis {
+    width: 15;
+    height: 8;
+    background: $primary;
+    border: solid $primary-darken-1;
+    border-radius: 1;
+    padding: 1;
+}
+
+.workflow-node-condition {
+    width: 12;
+    height: 8;
+    background: $warning;
+    border: solid $warning-darken-1;
+    border-radius: 1;
+    padding: 1;
+}
+
+.workflow-node-parallel {
+    width: 12;
+    height: 6;
+    background: $primary-lighten-1;
+    border: solid $primary;
+    border-radius: 1;
+    padding: 1;
+}
+
+.workflow-node-merge {
+    width: 12;
+    height: 6;
+    background: $primary-lighten-1;
+    border: solid $primary;
+    border-radius: 1;
+    padding: 1;
+}
+
+.workflow-node-custom {
+    width: 12;
+    height: 6;
+    background: $surface-lighten-2;
+    border: solid $surface-lighten-1;
+    border-radius: 1;
+    padding: 1;
+}
+
+.workflow-node-start.selected,
+.workflow-node-end.selected,
+.workflow-node-analysis.selected,
+.workflow-node-condition.selected,
+.workflow-node-parallel.selected,
+.workflow-node-merge.selected,
+.workflow-node-custom.selected {
+    border: solid $accent 2;
+    box-shadow: 0 0 4 $accent;
+}
+
+.node-title {
+    text-style: bold;
+    text-align: center;
+    color: $text;
+}
+
+.node-details {
+    text-align: center;
+    color: $text-muted;
+    text-style: italic;
+}
+
+/* Port styles */
+.input-ports, .output-ports {
+    layout: horizontal;
+    height: 1;
+    align: center middle;
+}
+
+.port {
+    width: 3;
+    height: 1;
+    margin: 0 1;
+}
+
+.input-port {
+    background: $success;
+    color: $success-darken-2;
+}
+
+.output-port {
+    background: $error;
+    color: $error-darken-2;
+}
+
+/* Connection styles */
+.workflow-connection {
+    color: $primary;
+    text-style: bold;
+}
+
+/* Workflow manager styles */
+.workflow-manager {
+    height: 50%;
+    padding: 1;
+    border-bottom: solid $primary;
+}
+
+.template-actions, .sharing-actions {
+    layout: horizontal;
+    margin-top: 1;
+}
+
+.template-actions Button,
+.sharing-actions Button {
+    margin-right: 1;
+}
+
+/* Notification panel styles */
+.notification-panel {
+    height: 50%;
+    padding: 1;
+}
+
+.notification-log {
+    height: 1fr;
+    border: solid $surface-lighten-1;
+    border-radius: 1;
+    padding: 1;
+}
+
+/* Button variants */
+.btn-primary {
+    background: $primary;
+    color: $text;
+}
+
+.btn-secondary {
+    background: $surface-lighten-1;
+    color: $text;
+}
+
+.btn-success {
+    background: $success;
+    color: $text;
+}
+
+.btn-warning {
+    background: $warning;
+    color: $text;
+}
+
+.btn-error {
+    background: $error;
+    color: $text;
+}
+
+.btn-info {
+    background: $primary-lighten-1;
+    color: $text;
+}
+
+.btn-outline {
+    background: transparent;
+    border: solid $primary;
+    color: $primary;
+}
+
+.btn-outline:hover {
+    background: $primary;
+    color: $text;
+}
+
+/* Status indicator styles */
+.status-success {
+    color: $success;
+}
+
+.status-warning {
+    color: $warning;
+}
+
+.status-error {
+    color: $error;
+}
+
+.status-info {
+    color: $primary-lighten-1;
+}
+
+.status-loading {
+    color: $primary;
+}
+
+.status-idle {
+    color: $text-muted;
+}
+
+/* Input validation styles */
+.validated-input {
+    border: solid $surface-lighten-1;
+}
+
+.validated-input:focus {
+    border: solid $primary;
+}
+
+.error-message {
+    color: $error;
+    display: none;
+}
+
+.error-visible {
+    display: block;
+}
+
+/* Tree styles for templates */
+Tree {
+    background: $surface;
+    color: $text;
+}
+
+Tree:focus {
+    border: solid $primary;
+}
+
+/* Tab styles */
+Tabs {
+    background: $surface;
+}
+
+TabPane {
+    background: $surface;
+    padding: 1;
+}
+
+/* Responsive adjustments - handled programmatically */

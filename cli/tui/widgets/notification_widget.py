@@ -3,12 +3,14 @@
 This widget displays notifications using the core notification system.
 """
 
-from textual.widgets import Log
-from textual.reactive import reactive
-from typing import Dict, Any, List
+from typing import Any
+from typing import Dict
+from typing import List
 
-from core.ui import notification_system
-from core.tui_integration import TUIEvent, TUIEventType
+from core.tui_integration import TUIEvent
+from core.tui_integration import TUIEventType
+from textual.reactive import reactive
+from textual.widgets import Log
 
 
 class NotificationWidget(Log):
@@ -28,7 +30,10 @@ class NotificationWidget(Log):
     def _on_notification(self, event: TUIEvent) -> None:
         """Handle notification events."""
         if event.type == TUIEventType.NOTIFICATION:
-            self.add_notification(event.data.get("message", "Unknown notification"), event.data.get("level", "info"))
+            self.add_notification(
+                event.data.get("message", "Unknown notification"),
+                event.data.get("level", "info"),
+            )
 
     def add_notification(self, message: str, level: str = "info") -> None:
         """Add a notification to the log."""
@@ -39,11 +44,15 @@ class NotificationWidget(Log):
         self.notification_count += 1
 
         # Keep notification history
-        self.notification_history.append({"timestamp": timestamp, "level": level, "message": message})
+        self.notification_history.append(
+            {"timestamp": timestamp, "level": level, "message": message},
+        )
 
         # Limit history size
         if len(self.notification_history) > self.max_notifications:
-            self.notification_history = self.notification_history[-self.max_notifications :]
+            self.notification_history = self.notification_history[
+                -self.max_notifications :
+            ]
 
     def _get_timestamp(self) -> str:
         """Get current timestamp string."""

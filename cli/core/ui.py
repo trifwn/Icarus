@@ -5,22 +5,25 @@ progress tracking, and notification systems for a polished user experience.
 """
 
 import time
-from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+from typing import Dict
+from typing import List
 
-from rich.console import Console, Group
-from rich.panel import Panel
-from rich.text import Text
-from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.console import Console
 from rich.layout import Layout
-from rich.live import Live
-from rich.align import Align
-from rich.columns import Columns
-from rich.rule import Rule
-from rich.prompt import Prompt, Confirm, IntPrompt, FloatPrompt
-from rich.syntax import Syntax
+from rich.panel import Panel
+from rich.progress import BarColumn
+from rich.progress import Progress
+from rich.progress import SpinnerColumn
+from rich.progress import TextColumn
+from rich.progress import TimeElapsedColumn
+from rich.prompt import Confirm
+from rich.prompt import FloatPrompt
+from rich.prompt import IntPrompt
+from rich.prompt import Prompt
+from rich.table import Table
 
 console = Console()
 
@@ -144,7 +147,12 @@ class ThemeManager:
         color = self.get_color(style)
         return f"[{color}]{text}[/{color}]"
 
-    def create_panel(self, content: str, title: str = None, border_style: str = None) -> Panel:
+    def create_panel(
+        self,
+        content: str,
+        title: str = None,
+        border_style: str = None,
+    ) -> Panel:
         """Create a themed panel."""
         if border_style is None:
             border_style = self.get_color("primary")
@@ -158,8 +166,15 @@ class LayoutManager:
     def __init__(self, theme_manager: ThemeManager):
         self.theme = theme_manager
         self.layout = Layout()
-        self.layout.split_column(Layout(name="header", size=3), Layout(name="main"), Layout(name="footer", size=3))
-        self.layout["main"].split_row(Layout(name="sidebar", size=30), Layout(name="content"))
+        self.layout.split_column(
+            Layout(name="header", size=3),
+            Layout(name="main"),
+            Layout(name="footer", size=3),
+        )
+        self.layout["main"].split_row(
+            Layout(name="sidebar", size=30),
+            Layout(name="content"),
+        )
 
     def create_header(self, title: str, subtitle: str = None) -> Panel:
         """Create a themed header."""
@@ -167,7 +182,10 @@ class LayoutManager:
         if subtitle:
             header_content += f"\n[{self.theme.get_color('muted')}]{subtitle}[/{self.theme.get_color('muted')}]"
 
-        return self.theme.create_panel(header_content, border_style=self.theme.get_color("primary"))
+        return self.theme.create_panel(
+            header_content,
+            border_style=self.theme.get_color("primary"),
+        )
 
     def create_sidebar(self, items: List[Dict[str, str]]) -> Panel:
         """Create a navigation sidebar."""
@@ -179,19 +197,32 @@ class LayoutManager:
             label = item.get("label", "")
             table.add_row(f"{icon} {label}")
 
-        return self.theme.create_panel(table, title="Navigation", border_style=self.theme.get_color("secondary"))
+        return self.theme.create_panel(
+            table,
+            title="Navigation",
+            border_style=self.theme.get_color("secondary"),
+        )
 
     def create_content_area(self, content: str) -> Panel:
         """Create the main content area."""
-        return self.theme.create_panel(content, title="Content", border_style=self.theme.get_color("accent"))
+        return self.theme.create_panel(
+            content,
+            title="Content",
+            border_style=self.theme.get_color("accent"),
+        )
 
     def create_footer(self, status: str = None) -> Panel:
         """Create a status footer."""
-        footer_content = f"[{self.theme.get_color('muted')}]Ready[/{self.theme.get_color('muted')}]"
+        footer_content = (
+            f"[{self.theme.get_color('muted')}]Ready[/{self.theme.get_color('muted')}]"
+        )
         if status:
             footer_content = status
 
-        return self.theme.create_panel(footer_content, border_style=self.theme.get_color("muted"))
+        return self.theme.create_panel(
+            footer_content,
+            border_style=self.theme.get_color("muted"),
+        )
 
 
 class ProgressManager:
@@ -250,26 +281,41 @@ class NotificationSystem:
     def success(self, message: str, title: str = "Success"):
         """Show a success notification."""
         self._add_notification(message, title, "success")
-        console.print(f"[{self.theme.get_color('success')}]✓ {message}[/{self.theme.get_color('success')}]")
+        console.print(
+            f"[{self.theme.get_color('success')}]✓ {message}[/{self.theme.get_color('success')}]",
+        )
 
     def warning(self, message: str, title: str = "Warning"):
         """Show a warning notification."""
         self._add_notification(message, title, "warning")
-        console.print(f"[{self.theme.get_color('warning')}]⚠ {message}[/{self.theme.get_color('warning')}]")
+        console.print(
+            f"[{self.theme.get_color('warning')}]⚠ {message}[/{self.theme.get_color('warning')}]",
+        )
 
     def error(self, message: str, title: str = "Error"):
         """Show an error notification."""
         self._add_notification(message, title, "error")
-        console.print(f"[{self.theme.get_color('error')}]✗ {message}[/{self.theme.get_color('error')}]")
+        console.print(
+            f"[{self.theme.get_color('error')}]✗ {message}[/{self.theme.get_color('error')}]",
+        )
 
     def info(self, message: str, title: str = "Info"):
         """Show an info notification."""
         self._add_notification(message, title, "info")
-        console.print(f"[{self.theme.get_color('info')}]ℹ {message}[/{self.theme.get_color('info')}]")
+        console.print(
+            f"[{self.theme.get_color('info')}]ℹ {message}[/{self.theme.get_color('info')}]",
+        )
 
     def _add_notification(self, message: str, title: str, type_: str):
         """Add notification to history."""
-        self.notifications.append({"timestamp": time.time(), "title": title, "message": message, "type": type_})
+        self.notifications.append(
+            {
+                "timestamp": time.time(),
+                "title": title,
+                "message": message,
+                "type": type_,
+            },
+        )
 
     def get_recent_notifications(self, count: int = 5) -> List[Dict[str, Any]]:
         """Get recent notifications."""
@@ -286,9 +332,18 @@ class UIComponents:
     def __init__(self, theme_manager: ThemeManager):
         self.theme = theme_manager
 
-    def create_menu(self, title: str, options: List[Dict[str, str]], default: str = None) -> str:
+    def create_menu(
+        self,
+        title: str,
+        options: List[Dict[str, str]],
+        default: str = None,
+    ) -> str:
         """Create an interactive menu."""
-        table = Table(title=title, show_header=True, header_style=f"bold {self.theme.get_color('primary')}")
+        table = Table(
+            title=title,
+            show_header=True,
+            header_style=f"bold {self.theme.get_color('primary')}",
+        )
         table.add_column("Option", style=self.theme.get_color("text"))
         table.add_column("Description", style=self.theme.get_color("muted"))
 
@@ -301,7 +356,11 @@ class UIComponents:
 
         console.print(table)
 
-        return Prompt.ask("Select an option", choices=choices, default=default or choices[0] if choices else None)
+        return Prompt.ask(
+            "Select an option",
+            choices=choices,
+            default=default or choices[0] if choices else None,
+        )
 
     def create_form(self, fields: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Create an interactive form."""
@@ -330,12 +389,12 @@ class UIComponents:
                         break
                     else:
                         console.print(
-                            f"[{self.theme.get_color('warning')}]This field is required[/{self.theme.get_color('warning')}]"
+                            f"[{self.theme.get_color('warning')}]This field is required[/{self.theme.get_color('warning')}]",
                         )
 
                 except ValueError as e:
                     console.print(
-                        f"[{self.theme.get_color('error')}]Invalid input: {e}[/{self.theme.get_color('error')}]"
+                        f"[{self.theme.get_color('error')}]Invalid input: {e}[/{self.theme.get_color('error')}]",
                     )
 
         return results

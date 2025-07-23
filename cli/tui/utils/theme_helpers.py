@@ -3,10 +3,12 @@
 This module provides utilities for working with themes and the core UI system.
 """
 
-from typing import Dict, Any, Optional
-from textual.app import App
+from typing import Any
+from typing import Dict
 
-from core.ui import theme_manager, Theme
+from core.ui import Theme
+from core.ui import theme_manager
+from textual.app import App
 
 
 class ThemeHelper:
@@ -60,7 +62,7 @@ class ThemeHelper:
             # Update app styles
             self.app.styles.update(css_vars)
 
-        except Exception as e:
+        except Exception:
             # Fallback to default styles
             pass
 
@@ -101,19 +103,19 @@ class ThemeHelper:
                 {
                     "background": theme_manager.get_color("primary"),
                     "color": "white",
-                }
+                },
             )
         elif component_type == "input":
             base_styles.update(
                 {
                     "border": f"solid {theme_manager.get_color('secondary')}",
-                }
+                },
             )
         elif component_type == "panel":
             base_styles.update(
                 {
                     "border": f"solid {theme_manager.get_color('accent')}",
-                }
+                },
             )
 
         return base_styles

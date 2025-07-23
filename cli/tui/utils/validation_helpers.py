@@ -3,8 +3,10 @@
 This module provides utilities for working with validation and the core validation service.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass
+from typing import Any
+from typing import Dict
+from typing import List
 
 from core.services import validation_service
 
@@ -30,9 +32,17 @@ class ValidationHelper:
             errors = self.validation_service.validate_data(data, "airfoil")
             warnings = self._check_airfoil_warnings(data)
 
-            return ValidationResult(is_valid=len(errors) == 0, errors=errors, warnings=warnings)
+            return ValidationResult(
+                is_valid=len(errors) == 0,
+                errors=errors,
+                warnings=warnings,
+            )
         except Exception as e:
-            return ValidationResult(is_valid=False, errors={"validation": [f"Validation error: {e}"]}, warnings=[])
+            return ValidationResult(
+                is_valid=False,
+                errors={"validation": [f"Validation error: {e}"]},
+                warnings=[],
+            )
 
     def validate_airplane_data(self, data: Dict[str, Any]) -> ValidationResult:
         """Validate airplane analysis data."""
@@ -40,11 +50,23 @@ class ValidationHelper:
             errors = self.validation_service.validate_data(data, "airplane")
             warnings = self._check_airplane_warnings(data)
 
-            return ValidationResult(is_valid=len(errors) == 0, errors=errors, warnings=warnings)
+            return ValidationResult(
+                is_valid=len(errors) == 0,
+                errors=errors,
+                warnings=warnings,
+            )
         except Exception as e:
-            return ValidationResult(is_valid=False, errors={"validation": [f"Validation error: {e}"]}, warnings=[])
+            return ValidationResult(
+                is_valid=False,
+                errors={"validation": [f"Validation error: {e}"]},
+                warnings=[],
+            )
 
-    def validate_solver_config(self, solver_name: str, config: Dict[str, Any]) -> ValidationResult:
+    def validate_solver_config(
+        self,
+        solver_name: str,
+        config: Dict[str, Any],
+    ) -> ValidationResult:
         """Validate solver configuration."""
         try:
             # Validate solver name
@@ -57,9 +79,17 @@ class ValidationHelper:
 
             warnings = self._check_solver_warnings(solver_name, config)
 
-            return ValidationResult(is_valid=len(errors) == 0, errors=errors, warnings=warnings)
+            return ValidationResult(
+                is_valid=len(errors) == 0,
+                errors=errors,
+                warnings=warnings,
+            )
         except Exception as e:
-            return ValidationResult(is_valid=False, errors={"validation": [f"Validation error: {e}"]}, warnings=[])
+            return ValidationResult(
+                is_valid=False,
+                errors={"validation": [f"Validation error: {e}"]},
+                warnings=[],
+            )
 
     def _check_airfoil_warnings(self, data: Dict[str, Any]) -> List[str]:
         """Check for airfoil-specific warnings."""
@@ -71,9 +101,13 @@ class ValidationHelper:
             try:
                 reynolds_num = float(reynolds)
                 if reynolds_num < 1e4:
-                    warnings.append("Very low Reynolds number - results may be unreliable")
+                    warnings.append(
+                        "Very low Reynolds number - results may be unreliable",
+                    )
                 elif reynolds_num > 1e7:
-                    warnings.append("Very high Reynolds number - consider compressibility effects")
+                    warnings.append(
+                        "Very high Reynolds number - consider compressibility effects",
+                    )
             except (ValueError, TypeError):
                 pass
 
@@ -113,13 +147,19 @@ class ValidationHelper:
             try:
                 mach_num = float(mach)
                 if mach_num > 0.8:
-                    warnings.append("High Mach number - consider compressibility effects")
+                    warnings.append(
+                        "High Mach number - consider compressibility effects",
+                    )
             except (ValueError, TypeError):
                 pass
 
         return warnings
 
-    def _validate_solver_specific_config(self, solver_name: str, config: Dict[str, Any]) -> Dict[str, List[str]]:
+    def _validate_solver_specific_config(
+        self,
+        solver_name: str,
+        config: Dict[str, Any],
+    ) -> Dict[str, List[str]]:
         """Validate solver-specific configuration."""
         errors = {}
 
@@ -129,7 +169,9 @@ class ValidationHelper:
                 try:
                     iterations = int(config["iterations"])
                     if iterations < 10 or iterations > 1000:
-                        errors["iterations"] = ["XFOIL iterations must be between 10 and 1000"]
+                        errors["iterations"] = [
+                            "XFOIL iterations must be between 10 and 1000",
+                        ]
                 except (ValueError, TypeError):
                     errors["iterations"] = ["Invalid iterations value"]
 
@@ -139,19 +181,27 @@ class ValidationHelper:
                 try:
                     quality = float(config["mesh_quality"])
                     if quality < 0.1 or quality > 1.0:
-                        errors["mesh_quality"] = ["Mesh quality must be between 0.1 and 1.0"]
+                        errors["mesh_quality"] = [
+                            "Mesh quality must be between 0.1 and 1.0",
+                        ]
                 except (ValueError, TypeError):
                     errors["mesh_quality"] = ["Invalid mesh quality value"]
 
         return errors
 
-    def _check_solver_warnings(self, solver_name: str, config: Dict[str, Any]) -> List[str]:
+    def _check_solver_warnings(
+        self,
+        solver_name: str,
+        config: Dict[str, Any],
+    ) -> List[str]:
         """Check for solver-specific warnings."""
         warnings = []
 
         if solver_name == "xfoil":
             if config.get("iterations", 100) > 500:
-                warnings.append("High iteration count - XFOIL may take longer to converge")
+                warnings.append(
+                    "High iteration count - XFOIL may take longer to converge",
+                )
 
         elif solver_name == "openfoam":
             if config.get("mesh_quality", 0.5) < 0.3:

@@ -3,12 +3,11 @@
 This widget displays and manages session information using the core state management system.
 """
 
-from textual.widget import Widget
-from textual.reactive import reactive
-from typing import Dict, Any
-
 from core.state import session_manager
-from core.tui_integration import TUIEvent, TUIEventType
+from core.tui_integration import TUIEvent
+from core.tui_integration import TUIEventType
+from textual.reactive import reactive
+from textual.widget import Widget
 
 
 class SessionWidget(Widget):
@@ -39,7 +38,7 @@ class SessionWidget(Widget):
             self.airfoils_count = session_info.get("airfoils", 0)
             self.airplanes_count = session_info.get("airplanes", 0)
             self.results_count = session_info.get("results", 0)
-        except Exception as e:
+        except Exception:
             self.session_id = "Error"
             self.duration = "Error"
             self.workflow = "Error"
