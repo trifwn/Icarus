@@ -313,7 +313,7 @@ def plot_morphing_results():
     # Plot 1: Basic morphing sequence
     ax1 = axes[0, 0]
     eta_values = [0.0, 0.25, 0.5, 0.75, 1.0]
-    colors = plt.cm.viridis(np.linspace(0, 1, len(eta_values)))
+    cmap = plt.get_cmap("viridis", len(eta_values))
 
     for i, eta in enumerate(eta_values):
         morphed = Airfoil.morph_new_from_two_foils(source, target, eta=eta, n_points=50)
@@ -321,7 +321,7 @@ def plot_morphing_results():
         ax1.plot(
             upper[0],
             upper[1],
-            color=colors[i],
+            color=cmap(i / len(eta_values)),
             linewidth=2,
             label=f"η = {eta:.2f}",
         )
@@ -369,14 +369,14 @@ def plot_morphing_results():
 
     # Plot 3: Dynamic morphing sequence
     ax3 = axes[0, 2]
-    colors = plt.cm.plasma(np.linspace(0, 1, len(morphed_sequence)))
+    cmap = plt.get_cmap("plasma", len(morphed_sequence))
 
     for i, (morphed, t) in enumerate(zip(morphed_sequence[::3], time_points[::3])):
         upper = morphed.upper_surface
         ax3.plot(
             upper[0],
             upper[1],
-            color=colors[i * 3],
+            color=cmap(i * 3 / len(morphed_sequence)),
             linewidth=2,
             label=f"t = {t:.1f}",
         )

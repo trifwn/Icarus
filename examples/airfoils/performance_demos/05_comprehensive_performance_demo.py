@@ -35,7 +35,7 @@ from jax import pmap
 from jax import vmap
 
 # Import our performance utilities
-from examples.jax_airfoils.performance_demos.benchmarking_utilities import (
+from .benchmarking_utilities import (
     PerformanceBenchmarker,
 )
 from ICARUS.airfoils.naca4 import NACA4

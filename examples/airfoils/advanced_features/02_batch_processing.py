@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from jax import grad
 from jax import jit
 from jax import vmap
+import jax
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils.naca4 import NACA4
@@ -320,9 +321,9 @@ def vectorized_gradient_computation():
     print("Airfoil    Objective    Grad_M      Grad_P      Grad_XX")
     print("-" * 60)
 
-    for i, (params, obj, grad) in enumerate(zip(test_params, objectives, gradients)):
+    for i, (params, obj, gradient) in enumerate(zip(test_params, objectives, gradients)):
         m, p, xx = params
-        grad_m, grad_p, grad_xx = grad
+        grad_m, grad_p, grad_xx = gradient
         naca_name = f"NACA {int(m*100):01d}{int(p*10):01d}{int(xx*100):02d}"
         print(
             f"{naca_name:<10} {obj:8.5f}    {grad_m:8.5f}   {grad_p:8.5f}   {grad_xx:8.5f}",

@@ -23,6 +23,7 @@ import numpy as np
 from jax import grad
 from jax import jit
 from jax import vmap
+from jax.scipy.integrate import trapezoid
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.airfoils.naca4 import NACA4
@@ -113,7 +114,7 @@ def simplified_aerodynamic_analysis(upper_surface, lower_surface, reynolds, angl
     # This is a very simplified model for demonstration
     camber_slope = jnp.gradient(camber, x_coords)
     cl_alpha = 2 * jnp.pi  # 2D lift curve slope
-    cl_camber = 2 * jnp.pi * jnp.trapz(camber_slope, x_coords)
+    cl_camber = 2 * jnp.pi * trapezoid(camber_slope, x_coords)
     cl = cl_alpha * angle_rad + cl_camber
 
     # Simplified drag coefficient (form drag approximation)
@@ -311,6 +312,7 @@ def performance_comparison_study():
 
     # Performance summary
     speedup = numpy_time / jax_time
+
     print("\nPerformance Results:")
     print(f"JAX time:   {jax_time:.4f} seconds")
     print(f"NumPy time: {numpy_time:.4f} seconds (simulated)")
@@ -392,7 +394,7 @@ def plot_analysis_results(analysis_results: Dict, sensitivity_results: Dict):
 
     # Plot 1: Lift coefficient comparison
     ax1 = axes[0, 0]
-    colors = plt.cm.tab10(np.linspace(0, 1, len(analysis_results)))
+    colors = plt.get_cmap("tab10", len(analysis_results))
 
     for i, (name, data) in enumerate(analysis_results.items()):
         # Plot for middle Reynolds number
@@ -400,8 +402,8 @@ def plot_analysis_results(analysis_results: Dict, sensitivity_results: Dict):
         cl_curve = data["cl"][mid_re_idx, :]
         ax1.plot(
             data["angles"],
-            cl_curve,
-            color=colors[i],
+            cl_curve.flatten(),
+            color=colors(i / len(analysis_results)),
             linewidth=2,
             label=f"{name} (Re={data['reynolds'][mid_re_idx]:.0f})",
         )
@@ -421,7 +423,7 @@ def plot_analysis_results(analysis_results: Dict, sensitivity_results: Dict):
         ax2.plot(
             cd_curve,
             cl_curve,
-            color=colors[i],
+            color=colors(i / len(analysis_results)),
             linewidth=2,
             marker="o",
             markersize=3,
@@ -441,7 +443,13 @@ def plot_analysis_results(analysis_results: Dict, sensitivity_results: Dict):
         cl_curve = data["cl"][mid_re_idx, :]
         cd_curve = data["cd"][mid_re_idx, :]
         ld_ratio = cl_curve / (cd_curve + 1e-6)
-        ax3.plot(data["angles"], ld_ratio, color=colors[i], linewidth=2, label=name)
+        ax3.plot(
+            data["angles"],
+            ld_ratio.flatten(),
+            color=colors(i / len(analysis_results)),
+            linewidth=2,
+            label=name,
+        )
 
     ax3.set_xlabel("Angle of Attack (degrees)")
     ax3.set_ylabel("L/D Ratio")
@@ -455,13 +463,13 @@ def plot_analysis_results(analysis_results: Dict, sensitivity_results: Dict):
     sample_airfoil = list(analysis_results.keys())[1]  # Second airfoil
     data = analysis_results[sample_airfoil]
 
-    re_colors = plt.cm.viridis(np.linspace(0, 1, len(data["reynolds"])))
+    re_colors = plt.get_cmap("viridis", len(data["reynolds"]))
     for i, re in enumerate(data["reynolds"]):
         cl_curve = data["cl"][i, :]
         ax4.plot(
             data["angles"],
-            cl_curve,
-            color=re_colors[i],
+            cl_curve.flatten(),
+            color=re_colors(i / len(data["reynolds"])),
             linewidth=2,
             label=f"Re={re:.0f}",
         )
