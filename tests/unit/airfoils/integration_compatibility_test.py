@@ -140,7 +140,7 @@ class TestIcarusModuleIntegration:
         assert jnp.all(jnp.isfinite(dy_upper_dx))
         assert jnp.all(jnp.isfinite(dy_lower_dx))
 
-    def test_optimization_module_integration(self):
+    def test_optimization_module_integration(self) -> None:
         """Test integration with ICARUS optimization workflows."""
 
         def airfoil_design_objective(params):

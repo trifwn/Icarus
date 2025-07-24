@@ -40,8 +40,8 @@ class JaxAirfoilOps:
         lower_coords: Float[Array, "2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-        query_x: Float[Array, "n_query"],
-    ) -> Float[Array, "n_query"]:
+        query_x: Float[Array, " n_query"],
+    ) -> Float[Array, " n_query"]:
         """
         Compute airfoil thickness distribution at query points with masking.
 
@@ -86,8 +86,8 @@ class JaxAirfoilOps:
         lower_coords: Float[Array, "2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-        query_x: Float[Array, "n_query"],
-    ) -> Float[Array, "n_query"]:
+        query_x: Float[Array, " n_query"],
+    ) -> Float[Array, " n_query"]:
         """
         Compute airfoil camber line at query points with masking.
 
@@ -132,8 +132,8 @@ class JaxAirfoilOps:
     def y_upper(
         upper_coords: Float[Array, "2 n_buffer"],
         n_valid: int,
-        query_x: Float[Array, "n_query"],
-    ) -> Float[Array, "n_query"]:
+        query_x: Float[Array, " n_query"],
+    ) -> Float[Array, " n_query"]:
         """
         Query upper surface y-coordinates at given x-coordinates.
 
@@ -163,8 +163,8 @@ class JaxAirfoilOps:
     def y_lower(
         lower_coords: Float[Array, "2 n_buffer"],
         n_valid: int,
-        query_x: Float[Array, "n_query"],
-    ) -> Float[Array, "n_query"]:
+        query_x: Float[Array, " n_query"],
+    ) -> Float[Array, " n_query"]:
         """
         Query lower surface y-coordinates at given x-coordinates.
 
@@ -295,7 +295,7 @@ class JaxAirfoilOps:
         lower_coords: Float[Array, "2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-    ) -> float:
+    ) -> Float[Array, ""]:
         """
         Compute the chord length of the airfoil.
 
@@ -314,8 +314,8 @@ class JaxAirfoilOps:
 
         # Find leading and trailing edge x-coordinates
         all_x = jnp.concatenate([upper_x_valid, lower_x_valid])
-        x_min = jnp.min(all_x)  # Leading edge
-        x_max = jnp.max(all_x)  # Trailing edge
+        x_min: Float[Array, ""] = jnp.min(all_x)  # Leading edge
+        x_max: Float[Array, ""] = jnp.max(all_x)  # Trailing edge
 
         # Chord length is the difference
         chord_length = x_max - x_min
@@ -571,7 +571,7 @@ class JaxAirfoilOps:
 
     @staticmethod
     @partial(jax.jit, static_argnums=(0,))
-    def generate_cosine_spacing(n_points: int) -> Float[Array, "n_points"]:
+    def generate_cosine_spacing(n_points: int) -> Float[Array, " n_points"]:
         """
         Generate cosine-spaced points from 0 to 1.
 
@@ -591,9 +591,9 @@ class JaxAirfoilOps:
     @staticmethod
     @jax.jit
     def naca4_thickness_distribution(
-        x: Float[Array, "n_points"],
+        x: Float[Array, " n_points"],
         thickness: float,
-    ) -> Float[Array, "n_points"]:
+    ) -> Float[Array, " n_points"]:
         """
         Compute NACA 4-digit thickness distribution.
 
@@ -621,10 +621,10 @@ class JaxAirfoilOps:
     @staticmethod
     @jax.jit
     def naca4_camber_line(
-        x: Float[Array, "n_points"],
+        x: Float[Array, " n_points"],
         max_camber: float,
         camber_position: float,
-    ) -> Tuple[Float[Array, "n_points"], Float[Array, "n_points"]]:
+    ) -> Tuple[Float[Array, " n_points"], Float[Array, " n_points"]]:
         """
         Compute NACA 4-digit camber line and its derivative.
 
@@ -707,10 +707,10 @@ class JaxAirfoilOps:
     @staticmethod
     @jax.jit
     def naca5_camber_line_standard(
-        x: Float[Array, "n_points"],
+        x: Float[Array, " n_points"],
         design_cl: float,
         max_camber_pos: float,
-    ) -> Tuple[Float[Array, "n_points"], Float[Array, "n_points"]]:
+    ) -> Tuple[Float[Array, " n_points"], Float[Array, " n_points"]]:
         """
         Compute NACA 5-digit standard camber line and its derivative.
 
@@ -814,7 +814,7 @@ class JaxAirfoilOps:
 
     @staticmethod
     @partial(jax.jit, static_argnums=(0,))
-    def generate_cosine_distribution(n_points: int) -> Float[Array, "n_points"]:
+    def generate_cosine_distribution(n_points: int) -> Float[Array, " n_points"]:
         """
         Generate cosine-spaced distribution of points from 0 to 1.
 
@@ -837,7 +837,7 @@ class JaxAirfoilOps:
 
     @staticmethod
     @partial(jax.jit, static_argnums=(0,))
-    def generate_uniform_distribution(n_points: int) -> Float[Array, "n_points"]:
+    def generate_uniform_distribution(n_points: int) -> Float[Array, " n_points"]:
         """
         Generate uniformly spaced distribution of points from 0 to 1.
 
@@ -856,7 +856,7 @@ class JaxAirfoilOps:
         lower_coords: Float[Array, "2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-    ) -> Tuple[Float[Array, "n_buffer"], Float[Array, "n_buffer"]]:
+    ) -> Tuple[Float[Array, " n_buffer"], Float[Array, " n_buffer"]]:
         """
         Compute arc length parametrization for upper and lower surfaces.
 
@@ -917,7 +917,7 @@ class JaxAirfoilOps:
     @partial(jax.jit, static_argnums=(2, 3, 4))
     def repanel_surface_uniform(
         coords: Float[Array, "2 n_buffer"],
-        arc_lengths: Float[Array, "n_buffer"],
+        arc_lengths: Float[Array, " n_buffer"],
         n_valid: int,
         n_new_points: int,
         distribution_type: str = "uniform",
@@ -959,7 +959,7 @@ class JaxAirfoilOps:
     @partial(jax.jit, static_argnums=(2, 3, 4))
     def repanel_surface_arc_length(
         coords: Float[Array, "2 n_buffer"],
-        arc_lengths: Float[Array, "n_buffer"],
+        arc_lengths: Float[Array, " n_buffer"],
         n_valid: int,
         n_new_points: int,
         distribution_type: str = "uniform",
@@ -1108,7 +1108,7 @@ class JaxAirfoilOps:
         coords: Float[Array, "2 n_points"],
         n_valid: int,
         n_new_points: int,
-    ) -> Float[Array, "n_new_points"]:
+    ) -> Float[Array, " n_new_points"]:
         """
         Generate x-coordinates based on arc-length parametrization.
 
@@ -1153,8 +1153,8 @@ class JaxAirfoilOps:
     def batch_resample_surfaces(
         upper_coords_batch: Float[Array, "batch_size 2 n_buffer"],
         lower_coords_batch: Float[Array, "batch_size 2 n_buffer"],
-        n_upper_valid_batch: Float[Array, "batch_size"],
-        n_lower_valid_batch: Float[Array, "batch_size"],
+        n_upper_valid_batch: Float[Array, " batch_size"],
+        n_lower_valid_batch: Float[Array, " batch_size"],
         n_new_points: int,
         distribution: str = "cosine",
     ) -> Tuple[

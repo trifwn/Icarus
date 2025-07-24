@@ -16,12 +16,12 @@ from ICARUS.airfoils.naca4 import NACA4
 class TestBoundaryConditions:
     """Test boundary conditions and edge cases."""
 
-    def test_zero_thickness_airfoil(self):
+    def test_zero_thickness_airfoil(self) -> None:
         """Test airfoil with zero thickness."""
         naca0000 = NACA4(M=0.0, P=0.0, XX=0.0, n_points=100)
 
         # Should create valid airfoil
-        assert naca0000.name == "NACA0000"
+        assert naca0000.name == "naca0000"
         assert naca0000.max_thickness == 0.0
 
         # Surface evaluation should work
@@ -33,12 +33,12 @@ class TestBoundaryConditions:
         assert jnp.allclose(y_upper, y_lower, atol=1e-10)
         assert jnp.allclose(y_upper, 0.0, atol=1e-10)
 
-    def test_maximum_thickness_airfoil(self):
+    def test_maximum_thickness_airfoil(self) -> None:
         """Test airfoil with maximum reasonable thickness."""
         naca0030 = NACA4(M=0.0, P=0.0, XX=0.30, n_points=100)
 
         # Should create valid airfoil
-        assert naca0030.name == "NACA0030"
+        assert naca0030.name == "naca0030"
         assert naca0030.max_thickness > 0.25  # Should be close to 0.30
 
         # Surface evaluation should work
@@ -51,12 +51,12 @@ class TestBoundaryConditions:
         # Allow for small numerical errors at trailing edge
         assert jnp.all(y_upper >= y_lower - 1e-10)
 
-    def test_maximum_camber_airfoil(self):
+    def test_maximum_camber_airfoil(self) -> None:
         """Test airfoil with maximum reasonable camber."""
         naca9912 = NACA4(M=0.09, P=0.9, XX=0.12, n_points=100)
 
         # Should create valid airfoil
-        assert naca9912.name == "NACA9912"
+        assert naca9912.name == "naca9912"
 
         # Surface evaluation should work
         x_test = jnp.linspace(0, 1, 50)
@@ -72,7 +72,7 @@ class TestBoundaryConditions:
         max_camber = jnp.max(camber)
         assert max_camber > 0.05
 
-    def test_extreme_camber_position(self):
+    def test_extreme_camber_position(self) -> None:
         """Test airfoil with extreme camber positions."""
         # Camber very close to leading edge
         naca1112 = NACA4(M=0.01, P=0.1, XX=0.12, n_points=100)
@@ -782,7 +782,7 @@ class TestAdvancedErrorHandling:
 class TestRobustnessValidation:
     """Test overall robustness and production readiness."""
 
-    def test_stress_testing(self):
+    def test_stress_testing(self) -> None:
         """Stress test the implementation with intensive operations."""
         # Create multiple airfoils
         airfoils = []
@@ -809,7 +809,7 @@ class TestRobustnessValidation:
             # Allow for small numerical errors at trailing edge
             assert jnp.all(thickness >= -1e-15)
 
-    def test_long_running_stability(self):
+    def test_long_running_stability(self) -> None:
         """Test stability over many repeated operations."""
         naca = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -825,7 +825,7 @@ class TestRobustnessValidation:
         for result in results[1:]:
             assert jnp.allclose(results[0], result, rtol=1e-15)
 
-    def test_edge_case_combinations(self):
+    def test_edge_case_combinations(self) -> None:
         """Test combinations of edge cases."""
         # Combine multiple edge conditions
         edge_cases = [
@@ -856,13 +856,13 @@ class TestRobustnessValidation:
                 # Some extreme combinations might be invalid
                 pass
 
-    def test_production_readiness_checklist(self):
+    def test_production_readiness_checklist(self) -> None:
         """Comprehensive production readiness validation."""
         # Test typical production use case
         naca = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
 
         # 1. Basic functionality
-        assert naca.name == "NACA2412"
+        assert naca.name == "naca2412"
         assert hasattr(naca, "max_thickness")
 
         # 2. Numerical stability
@@ -874,7 +874,7 @@ class TestRobustnessValidation:
         assert jnp.all(jnp.isfinite(y_lower))
 
         # 3. Gradient computation
-        def objective(params):
+        def objective(params) -> float:
             m, p, xx = params
             test_naca = NACA4(M=m, P=p, XX=xx, n_points=20)  # Use smaller n_points
             return test_naca.max_thickness

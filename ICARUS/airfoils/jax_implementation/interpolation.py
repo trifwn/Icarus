@@ -10,10 +10,13 @@ from functools import partial
 from typing import Literal
 from typing import Optional
 from typing import Tuple
+from typing import cast
 
 import jax
 import jax.numpy as jnp
 from jaxtyping import Array
+from jaxtyping import Bool
+from jaxtyping import Float
 
 
 class JaxInterpolationEngine:
@@ -31,11 +34,11 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(2,))
     def linear_interpolate_1d(
-        x_coords: Array,
-        y_coords: Array,
+        x_coords: Float[Array, " n"],
+        y_coords: Float[Array, " n"],
         n_valid: int,
-        query_x: Array,
-    ) -> Array:
+        query_x: Float[Array, " m"],
+    ) -> Float[Array, " m"]:
         """
         Linear interpolation with masking for invalid points.
 
@@ -57,7 +60,7 @@ class JaxInterpolationEngine:
         valid_y = jnp.where(mask, y_coords, 0.0)
 
         # Perform vectorized interpolation for all query points
-        def interpolate_single_point(x_query):
+        def interpolate_single_point(x_query: Float[Array, ""]) -> Float[Array, ""]:
             return JaxInterpolationEngine._linear_interp_single(
                 valid_x,
                 valid_y,
@@ -70,11 +73,11 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(2,))
     def _linear_interp_single(
-        x_coords: Array,
-        y_coords: Array,
+        x_coords: Float[Array, " n"],
+        y_coords: Float[Array, " n"],
         n_valid: int,
-        x_query: float,
-    ) -> float:
+        x_query: Float[Array, ""],
+    ) -> Float[Array, ""]:
         """
         Linear interpolation for a single query point.
 
@@ -134,12 +137,12 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(4,))
     def interpolate_surface_masked(
-        coords: Array,
-        mask: Array,
-        query_points: Array,
+        coords: Float[Array, "2 n"],
+        mask: Bool[Array, " n"],
+        query_points: Float[Array, " m"],
         extrapolate: bool = True,
         n_valid: Optional[int] = None,
-    ) -> Array:
+    ) -> Float[Array, " m"]:
         """
         Interpolate airfoil surface with masking support.
 
@@ -157,7 +160,8 @@ class JaxInterpolationEngine:
         y_coords = coords[1, :]
 
         if n_valid is None:
-            n_valid = jnp.sum(mask).astype(int)
+            n_valid = jnp.sum(mask).astype(int).item()
+        n_valid = cast(int, n_valid)
 
         # Apply mask to coordinates
         valid_x = jnp.where(mask, x_coords, jnp.inf)
@@ -184,12 +188,12 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(2, 3))
     def query_airfoil_surface(
-        upper_coords: Array,
-        lower_coords: Array,
+        upper_coords: Float[Array, "2 n"],
+        lower_coords: Float[Array, "2 n"],
         n_upper_valid: int,
         n_lower_valid: int,
-        query_x: Array,
-    ) -> Tuple[Array, Array]:
+        query_x: Float[Array, " m"],
+    ) -> Tuple[Float[Array, " m"], Float[Array, " m"]]:
         """
         Query both upper and lower airfoil surfaces.
 
@@ -227,12 +231,12 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(4,))
     def handle_extrapolation(
-        x_coords: Array,
-        y_coords: Array,
-        query_x: float,
+        x_coords: Float[Array, " n"],
+        y_coords: Float[Array, " n"],
+        query_x: Float[Array, " m"],
         n_valid: int,
         extrap_mode: Literal["linear", "constant", "zero"] = "linear",
-    ) -> float:
+    ) -> Float[Array, " m"]:
         """
         Handle extrapolation beyond the data range.
 
@@ -252,35 +256,31 @@ class JaxInterpolationEngine:
         # Determine if we need extrapolation
         needs_extrap = (query_x < x_min) | (query_x > x_max)
 
-        if not needs_extrap:
-            # Should not be called for interpolation, but handle gracefully
-            return 0.0
-
         # Linear extrapolation using end points
-        def linear_extrap():
+        def linear_extrap() -> Float[Array, " m"]:
             # If query_x is before all points, use first two points
-            def extrap_left():
+            def extrap_left() -> Float[Array, " m"]:
                 x1, x2 = x_coords[0], x_coords[1]
                 y1, y2 = y_coords[0], y_coords[1]
-                slope = (y2 - y1) / (x2 - x1)
+                slope = (y2 - y1) / (x2 - x1 + 1e-12)  # Add small epsilon
                 return y1 + slope * (query_x - x1)
 
             # If query_x is after all points, use last two points
-            def extrap_right():
+            def extrap_right() -> Float[Array, " m"]:
                 x1, x2 = x_coords[n_valid - 2], x_coords[n_valid - 1]
                 y1, y2 = y_coords[n_valid - 2], y_coords[n_valid - 1]
-                slope = (y2 - y1) / (x2 - x1)
+                slope = (y2 - y1) / (x2 - x1 + 1e-12)  # Add small epsilon
                 return y2 + slope * (query_x - x2)
 
             return jnp.where(query_x < x_min, extrap_left(), extrap_right())
 
         # Constant extrapolation using end values
-        def constant_extrap():
+        def constant_extrap() -> Float[Array, " m"]:
             return jnp.where(query_x < x_min, y_coords[0], y_coords[n_valid - 1])
 
         # Zero extrapolation
-        def zero_extrap():
-            return 0.0
+        def zero_extrap() -> Float[Array, " m"]:
+            return jnp.zeros_like(query_x)
 
         # Select extrapolation method (JAX doesn't support string comparisons in JIT)
         # We'll use the linear method by default since extrap_mode is static
@@ -289,11 +289,11 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(2,))
     def compute_thickness_distribution(
-        upper_coords: Array,
-        lower_coords: Array,
+        upper_coords: Float[Array, "2 n"],
+        lower_coords: Float[Array, "2 n"],
         n_points_valid: int,
-        query_x: Array,
-    ) -> Array:
+        query_x: Float[Array, " m"],
+    ) -> Float[Array, " m"]:
         """
         Compute airfoil thickness distribution at query points.
 
@@ -319,11 +319,11 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(2,))
     def cubic_spline_interpolate_1d(
-        x_coords: Array,
-        y_coords: Array,
+        x_coords: Float[Array, " n"],
+        y_coords: Float[Array, " n"],
         n_valid: int,
-        query_x: Array,
-    ) -> Array:
+        query_x: Float[Array, " m"],
+    ) -> Float[Array, " m"]:
         """
         Cubic spline interpolation with masking for invalid points.
 
@@ -369,8 +369,8 @@ class JaxInterpolationEngine:
             d = d.at[i].set(
                 6.0
                 * (
-                    (valid_y[i + 1] - valid_y[i]) / h[i]
-                    - (valid_y[i] - valid_y[i - 1]) / h[i - 1]
+                    (valid_y[i + 1] - valid_y[i]) / (h[i] + 1e-12)
+                    - (valid_y[i] - valid_y[i - 1]) / (h[i - 1] + 1e-12)
                 ),
             )
 
@@ -378,7 +378,7 @@ class JaxInterpolationEngine:
         y2 = JaxInterpolationEngine._solve_tridiagonal(a, b, c, d, n)
 
         # Perform cubic spline interpolation for each query point
-        def cubic_interp_single(x_query):
+        def cubic_interp_single(x_query: Float[Array, ""]) -> Float[Array, ""]:
             return JaxInterpolationEngine._cubic_spline_single(
                 valid_x,
                 valid_y,
@@ -390,8 +390,14 @@ class JaxInterpolationEngine:
         return jax.vmap(cubic_interp_single)(query_x)
 
     @staticmethod
-    @jax.jit
-    def _solve_tridiagonal(a: Array, b: Array, c: Array, d: Array, n: int) -> Array:
+    @partial(jax.jit, static_argnums=(4,))
+    def _solve_tridiagonal(
+        a: Float[Array, " n"],
+        b: Float[Array, " n"],
+        c: Float[Array, " n"],
+        d: Float[Array, " n"],
+        n: int,
+    ) -> Float[Array, " n"]:
         """
         Solve tridiagonal system using Thomas algorithm.
 
@@ -409,11 +415,11 @@ class JaxInterpolationEngine:
         c_prime = jnp.zeros(n)
         d_prime = jnp.zeros(n)
 
-        c_prime = c_prime.at[0].set(c[0] / b[0])
-        d_prime = d_prime.at[0].set(d[0] / b[0])
+        c_prime = c_prime.at[0].set(c[0] / (b[0] + 1e-12))
+        d_prime = d_prime.at[0].set(d[0] / (b[0] + 1e-12))
 
         for i in range(1, n):
-            denom = b[i] - a[i] * c_prime[i - 1]
+            denom = b[i] - a[i] * c_prime[i - 1] + 1e-12
             c_prime = c_prime.at[i].set(c[i] / denom)
             d_prime = d_prime.at[i].set((d[i] - a[i] * d_prime[i - 1]) / denom)
 
@@ -427,14 +433,14 @@ class JaxInterpolationEngine:
         return x
 
     @staticmethod
-    @jax.jit
+    @partial(jax.jit, static_argnums=(3,))
     def _cubic_spline_single(
-        x_coords: Array,
-        y_coords: Array,
-        y2: Array,
+        x_coords: Float[Array, " n"],
+        y_coords: Float[Array, " n"],
+        y2: Float[Array, " n"],
         n_valid: int,
-        x_query: float,
-    ) -> float:
+        x_query: Float[Array, ""],
+    ) -> Float[Array, ""]:
         """
         Cubic spline interpolation for a single query point.
 
@@ -471,7 +477,7 @@ class JaxInterpolationEngine:
         y2_2 = y2[interval_idx + 1]
 
         # Compute cubic spline interpolation
-        h = x2 - x1
+        h = x2 - x1 + 1e-12  # Add small epsilon to avoid division by zero
         a = (x2 - x_query) / h
         b = (x_query - x1) / h
 
@@ -484,12 +490,12 @@ class JaxInterpolationEngine:
     @staticmethod
     @partial(jax.jit, static_argnums=(2, 4))
     def interpolate_with_method(
-        x_coords: Array,
-        y_coords: Array,
+        x_coords: Float[Array, " n"],
+        y_coords: Float[Array, " n"],
         n_valid: int,
-        query_x: Array,
+        query_x: Float[Array, " m"],
         method: Literal["linear", "cubic"] = "linear",
-    ) -> Array:
+    ) -> Float[Array, " m"]:
         """
         Interpolate using specified method.
 

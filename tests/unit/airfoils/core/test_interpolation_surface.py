@@ -88,7 +88,7 @@ class TestSurfaceInterpolation:
                 jnp.sum(reasonable_thickness) >= len(thickness_extrap) * 0.5
             )  # At least 50% reasonable
 
-    def test_interpolation_consistency(self):
+    def test_interpolation_consistency(self) -> None:
         """Test consistency of interpolation across different resolutions."""
         # Create same airfoil with different resolutions
         naca_coarse = NACA4(M=0.02, P=0.4, XX=0.12, n_points=50)
@@ -111,7 +111,7 @@ class TestSurfaceInterpolation:
 class TestSurfaceQueries:
     """Test various surface query methods."""
 
-    def test_thickness_queries(self):
+    def test_thickness_queries(self) -> None:
         """Test thickness computation at various points."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -152,7 +152,7 @@ class TestSurfaceQueries:
         max_camber_location = x_test[max_camber_idx]
         assert jnp.abs(max_camber_location - 0.4) < 0.1
 
-    def test_thickness_distribution_queries(self):
+    def test_thickness_distribution_queries(self) -> None:
         """Test thickness distribution computation."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -171,7 +171,7 @@ class TestSurfaceQueries:
         max_thickness_dist = jnp.max(thickness_dist)
         assert jnp.abs(max_thickness_dist - 0.012) < 0.001
 
-    def test_surface_normal_computation(self):
+    def test_surface_normal_computation(self) -> None:
         """Test computation of surface normals."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -205,7 +205,7 @@ class TestSurfaceQueries:
         assert jnp.allclose(normal_upper_mag, 1.0, atol=1e-6)
         assert jnp.allclose(normal_lower_mag, 1.0, atol=1e-6)
 
-    def test_curvature_computation(self):
+    def test_curvature_computation(self) -> None:
         """Test computation of surface curvature."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -242,7 +242,7 @@ class TestSurfaceQueries:
 class TestGradientPreservation:
     """Test gradient preservation through interpolation operations."""
 
-    def test_gradient_through_surface_evaluation(self):
+    def test_gradient_through_surface_evaluation(self) -> None:
         """Test gradient computation through surface evaluation."""
 
         def surface_objective(params, x_points):
@@ -262,7 +262,7 @@ class TestGradientPreservation:
         assert gradient.shape == (3,)
         assert jnp.all(jnp.isfinite(gradient))
 
-    def test_gradient_accuracy_surface_interpolation(self):
+    def test_gradient_accuracy_surface_interpolation(self) -> None:
         """Test accuracy of gradients through surface interpolation."""
 
         def thickness_at_point(params, x_point):
@@ -297,7 +297,7 @@ class TestGradientPreservation:
         )
         assert jnp.all(relative_error < 1e-4)
 
-    def test_gradient_through_interpolation_points(self):
+    def test_gradient_through_interpolation_points(self) -> None:
         """Test gradients with respect to interpolation points."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -314,7 +314,7 @@ class TestGradientPreservation:
         assert gradient.shape == x_points.shape
         assert jnp.all(jnp.isfinite(gradient))
 
-    def test_higher_order_gradients_interpolation(self):
+    def test_higher_order_gradients_interpolation(self) -> None:
         """Test higher-order gradients through interpolation."""
 
         def surface_integral(params):
@@ -342,10 +342,10 @@ class TestGradientPreservation:
             # Higher-order derivatives might not always be available
             pass
 
-    def test_gradient_consistency_across_resolutions(self):
+    def test_gradient_consistency_across_resolutions(self) -> None:
         """Test gradient consistency across different airfoil resolutions."""
 
-        def thickness_objective(params, n_points):
+        def thickness_objective(params, n_points) -> float:
             """Objective function with variable resolution."""
             m, p, xx = params
             naca = NACA4(M=m, P=p, XX=xx, n_points=n_points)
@@ -374,7 +374,7 @@ class TestGradientPreservation:
 class TestBoundaryConditionHandling:
     """Test handling of boundary conditions in interpolation."""
 
-    def test_leading_edge_behavior(self):
+    def test_leading_edge_behavior(self) -> None:
         """Test interpolation behavior at leading edge."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -394,7 +394,7 @@ class TestBoundaryConditionHandling:
         assert thickness_le[0] < 1e-6
         assert thickness_le[1] < thickness_le[2]  # Should increase away from LE
 
-    def test_trailing_edge_behavior(self):
+    def test_trailing_edge_behavior(self) -> None:
         """Test interpolation behavior at trailing edge."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -414,7 +414,7 @@ class TestBoundaryConditionHandling:
         assert thickness_te[0] < 1e-6
         assert thickness_te[1] < thickness_te[3]  # Should increase away from TE
 
-    def test_camber_discontinuity_handling(self):
+    def test_camber_discontinuity_handling(self) -> None:
         """Test handling of camber line discontinuity at p."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -431,7 +431,7 @@ class TestBoundaryConditionHandling:
         # Derivative might have discontinuity but should be finite
         assert jnp.all(jnp.isfinite(camber_deriv))
 
-    def test_interpolation_near_boundaries(self):
+    def test_interpolation_near_boundaries(self) -> None:
         """Test interpolation very close to domain boundaries."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -448,7 +448,7 @@ class TestBoundaryConditionHandling:
         # Ordering should be preserved
         assert jnp.all(y_upper >= y_lower)
 
-    def test_periodic_boundary_conditions(self):
+    def test_periodic_boundary_conditions(self) -> None:
         """Test behavior with periodic-like boundary conditions."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -471,7 +471,7 @@ class TestBoundaryConditionHandling:
 class TestInterpolationPerformance:
     """Test performance characteristics of interpolation."""
 
-    def test_interpolation_scaling(self):
+    def test_interpolation_scaling(self) -> None:
         """Test interpolation performance scaling."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
 
@@ -494,7 +494,7 @@ class TestInterpolationPerformance:
         # Performance should scale reasonably
         assert all(t > 0 for t in times)
 
-    def test_jit_interpolation_performance(self):
+    def test_jit_interpolation_performance(self) -> None:
         """Test JIT compilation performance for interpolation."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
 
@@ -527,7 +527,7 @@ class TestInterpolationPerformance:
         if jit_time < normal_time:
             print(f"JIT speedup: {normal_time / jit_time:.2f}x")
 
-    def test_batch_interpolation_efficiency(self):
+    def test_batch_interpolation_efficiency(self) -> None:
         """Test efficiency of batch interpolation operations."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
 
@@ -571,7 +571,7 @@ class TestInterpolationPerformance:
 class TestComprehensiveInterpolationAccuracy:
     """Comprehensive accuracy tests comparing with analytical solutions."""
 
-    def test_analytical_comparison_naca_symmetric(self):
+    def test_analytical_comparison_naca_symmetric(self) -> None:
         """Test interpolation accuracy against analytical NACA symmetric airfoil."""
         # NACA 0012 - symmetric airfoil
         naca0012 = NACA4(M=0.0, P=0.0, XX=0.12, n_points=200)
@@ -606,7 +606,7 @@ class TestComprehensiveInterpolationAccuracy:
         assert jnp.all(ratio > 1.8)  # Should be close to 2
         assert jnp.all(ratio < 2.2)
 
-    def test_analytical_comparison_naca_cambered(self):
+    def test_analytical_comparison_naca_cambered(self) -> None:
         """Test interpolation accuracy against analytical NACA cambered airfoil."""
         # NACA 2412 - cambered airfoil
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
@@ -636,7 +636,7 @@ class TestComprehensiveInterpolationAccuracy:
         camber_deriv_computed = naca2412.camber_line_derivative(x_test)
         assert jnp.allclose(camber_deriv_computed, camber_deriv_analytical, atol=1e-10)
 
-    def test_thickness_distribution_analytical(self):
+    def test_thickness_distribution_analytical(self) -> None:
         """Test thickness distribution against analytical NACA formula."""
         naca0012 = NACA4(M=0.0, P=0.0, XX=0.12, n_points=200)
 
@@ -655,7 +655,7 @@ class TestComprehensiveInterpolationAccuracy:
         thickness_computed = naca0012.thickness_distribution(x_test)
         assert jnp.allclose(thickness_computed, thickness_analytical, atol=1e-12)
 
-    def test_interpolation_convergence_rate(self):
+    def test_interpolation_convergence_rate(self) -> None:
         """Test convergence rate of interpolation with increasing resolution."""
         # Test different resolutions
         resolutions = [50, 100, 200, 400]
@@ -679,7 +679,7 @@ class TestComprehensiveInterpolationAccuracy:
         # Should achieve reasonable accuracy
         assert errors[-1] < 1e-6
 
-    def test_surface_coordinate_completeness(self):
+    def test_surface_coordinate_completeness(self) -> None:
         """Test that all surface coordinate queries are covered."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
         x_test = jnp.linspace(0.1, 0.9, 20)
@@ -717,7 +717,7 @@ class TestComprehensiveInterpolationAccuracy:
 class TestAdvancedEdgeCases:
     """Advanced edge case testing for extrapolation and boundary conditions."""
 
-    def test_extreme_extrapolation_behavior(self):
+    def test_extreme_extrapolation_behavior(self) -> None:
         """Test behavior with extreme extrapolation."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
@@ -749,7 +749,7 @@ class TestAdvancedEdgeCases:
                     jnp.sum(reasonable_thickness) >= len(thickness_extrap) * 0.5
                 )  # At least 50% reasonable
 
-    def test_boundary_condition_derivatives(self):
+    def test_boundary_condition_derivatives(self) -> None:
         """Test derivative behavior at boundaries."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
 
@@ -797,7 +797,7 @@ class TestAdvancedEdgeCases:
             camber_deriv = naca2412.camber_line_derivative(x_around_p)
             assert jnp.all(jnp.isfinite(camber_deriv))
 
-    def test_numerical_stability_edge_cases(self) ->  None:
+    def test_numerical_stability_edge_cases(self) -> None:
         """Test numerical stability in edge cases."""
         # Test with extreme airfoil parameters
         extreme_cases = [
@@ -842,7 +842,7 @@ class TestAdvancedEdgeCases:
 class TestGradientPreservationComprehensive:
     """Comprehensive tests for gradient preservation through interpolation."""
 
-    def test_gradient_accuracy_multiple_parameters(self):
+    def test_gradient_accuracy_multiple_parameters(self) -> None:
         """Test gradient accuracy for multiple airfoil parameters simultaneously."""
         # Create airfoil outside of gradient computation to avoid JAX issues
         naca = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)

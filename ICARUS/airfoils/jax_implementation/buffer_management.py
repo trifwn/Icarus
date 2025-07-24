@@ -145,7 +145,7 @@ class AirfoilBufferManager:
     def create_validity_mask(
         n_valid: int,
         buffer_size: int,
-    ) -> Bool[Array, "buffer_size"]:
+    ) -> Bool[Array, " buffer_size"]:
         """
         Create boolean mask indicating which points in the buffer are valid.
 
@@ -178,7 +178,7 @@ class AirfoilBufferManager:
     def pad_and_mask(
         coords: Float[Array, "2 n_points"],
         target_size: int,
-    ) -> Tuple[Float[Array, "2 target_size"], Bool[Array, "target_size"], int]:
+    ) -> Tuple[Float[Array, "2 target_size"], Bool[Array, " target_size"], int]:
         """
         Convenience function to pad coordinates and create validity mask in one call.
 
@@ -234,7 +234,7 @@ class AirfoilBufferManager:
     @staticmethod
     def extract_valid_data(
         padded_coords: Float[Array, "2 buffer_size"],
-        validity_mask: Bool[Array, "buffer_size"],
+        validity_mask: Bool[Array, " buffer_size"],
     ) -> Float[Array, "2 n_valid"]:
         """
         Extract only the valid (non-padded) data from a padded coordinate array.

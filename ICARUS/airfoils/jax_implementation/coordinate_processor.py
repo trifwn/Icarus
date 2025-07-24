@@ -11,8 +11,10 @@ from typing import Tuple
 
 import jax.numpy as jnp
 from jaxtyping import Array
+from jaxtyping import ArrayLike
 from jaxtyping import Bool
 from jaxtyping import Float
+from jaxtyping import Int
 
 from .buffer_management import AirfoilBufferManager
 from .error_handling import AirfoilErrorHandler
@@ -209,8 +211,12 @@ class CoordinateProcessor:
     @staticmethod
     def split_selig_format(
         selig_coords: Float[Array, "2 n_total"],
-        validity_mask: Optional[Bool[Array, "n_total"]] = None,
-    ) -> Tuple[Float[Array, "2 n_upper"], Float[Array, "2 n_lower"], int]:
+        validity_mask: Optional[Bool[Array, " n_total"]] = None,
+    ) -> Tuple[
+        Float[Array, "2 n_upper"],
+        Float[Array, "2 n_lower"],
+        Int[ArrayLike, ""],
+    ]:
         """
         Split selig format coordinates into upper and lower surfaces.
 
@@ -237,9 +243,6 @@ class CoordinateProcessor:
             n_valid = jnp.sum(validity_mask).astype(jnp.int32)
         else:
             n_valid = selig_coords.shape[1]
-
-        # If no valid points, return empty arrays
-        empty_array = jnp.empty((2, 0))
 
         # Approximate the split point as half the valid points
         # This is a simplification that works for most airfoils
@@ -397,7 +400,7 @@ class CoordinateProcessor:
         target_buffer_size: Optional[int] = None,
     ) -> Tuple[
         Float[Array, "2 buffer_size"],
-        Bool[Array, "buffer_size"],
+        Bool[Array, " buffer_size"],
         int,
         int,
         int,

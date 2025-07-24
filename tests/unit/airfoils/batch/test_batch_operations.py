@@ -18,7 +18,7 @@ from ICARUS.airfoils.naca4 import NACA4
 class TestBatchAirfoilCreation:
     """Test batch creation of airfoils."""
 
-    def test_batch_naca4_creation(self):
+    def test_batch_naca4_creation(self) -> None:
         """Test creating multiple NACA4 airfoils in batch."""
         # Create multiple NACA airfoils with different parameters
         m_values = [0.0, 0.02, 0.04]

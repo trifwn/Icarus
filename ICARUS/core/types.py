@@ -5,6 +5,7 @@ from typing import Union
 
 import jax.numpy as jnp
 import numpy as np
+from jax.typing import ArrayLike
 from jaxtyping import Array
 from jaxtyping import Float
 from numpy import complexfloating
@@ -35,10 +36,16 @@ ArrayType = Union[
 ]
 
 # Array definitions
-Vector3D = FloatArray  # Shape (3,)
+Scalar = Float[ArrayLike, "1"]
+
+Vector2D = Float[ArrayType, "2"]
+Vector3D = Float[ArrayType, "3"]
+
+Array1D = Float[ArrayType, "N"]
+Array2D = Float[ArrayType, "N M"]
+Array3D = Float[ArrayType, "N M P"]
+
 Matrix3x3 = Float[ArrayType, "3 3"]  # Shape (3, 3)
-Array2D = Float[ArrayType, "N M"]  # Shape (N, M)
-Array3D = Float[ArrayType, "N M P"]  # Shape (N, M, P)
 
 # Panel definitions
 Panel3D = Float[ArrayType, "4 3"]  # Shape (4, 3)

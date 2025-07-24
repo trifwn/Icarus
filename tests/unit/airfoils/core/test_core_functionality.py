@@ -41,7 +41,7 @@ class TestAirfoilCreation:
         """Test basic NACA 4-digit airfoil creation."""
         naca = NACA4(M=0.02, P=0.4, XX=0.12, n_points=100)
 
-        assert naca.name == "NACA2412"
+        assert naca.name == "naca2412"
         assert jnp.isclose(naca.m, 0.02)
         assert jnp.isclose(naca.p, 0.4)
         assert jnp.isclose(naca.xx, 0.12)
@@ -51,18 +51,18 @@ class TestAirfoilCreation:
         """Test symmetric NACA 4-digit airfoil creation."""
         naca = NACA4(M=0.0, P=0.0, XX=0.12, n_points=100)
 
-        assert naca.name == "NACA0012"
+        assert naca.name == "naca0012"
         assert jnp.isclose(naca.m, 0.0)
         assert jnp.isclose(naca.p, 0.0)
         assert jnp.isclose(naca.xx, 0.12)
 
     def test_naca4_from_string_methods(self):
         """Test NACA 4-digit creation from string methods."""
-        naca1 = NACA4.from_name("NACA2412")
+        naca1 = NACA4.from_name("naca2412")
         naca2 = NACA4.from_digits("2412")
 
-        assert naca1.name == "NACA2412"
-        assert naca2.name == "NACA2412"
+        assert naca1.name == "naca2412"
+        assert naca2.name == "naca2412"
         assert jnp.allclose(naca1.m, naca2.m)
         assert jnp.allclose(naca1.p, naca2.p)
         assert jnp.allclose(naca1.xx, naca2.xx)

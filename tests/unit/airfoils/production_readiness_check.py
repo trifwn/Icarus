@@ -226,7 +226,7 @@ class ProductionReadinessChecker:
             _ = batch_eval(x)
 
             start_time = time.time()
-            batch_result = batch_eval(x)
+            _ = batch_eval(x)
             batch_time = time.time() - start_time
 
             if (
@@ -396,10 +396,10 @@ class ProductionReadinessChecker:
         print("=" * 80)
 
         # Run all checks
-        numerical_ok = self.check_critical_numerical_accuracy()
-        performance_ok = self.check_performance_issues()
-        gradient_ok = self.check_gradient_stability()
-        test_ok = self.check_test_suite_stability()
+        _ = self.check_critical_numerical_accuracy()
+        _ = self.check_performance_issues()
+        _ = self.check_gradient_stability()
+        _ = self.check_test_suite_stability()
 
         # Categorize issues by severity
         high_issues = [issue for issue in self.issues if issue["severity"] == "HIGH"]

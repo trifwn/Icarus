@@ -64,6 +64,8 @@ warn_unused_configs = true
 
 [tool.ruff.lint]
 select = ["F", "E4", "E7", "E9"]
+# Disable specific rules that are not applicable or too strict
+ignore = ["F722"]
 fixable = ["ALL"]
 
 [tool.ruff.format]

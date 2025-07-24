@@ -243,17 +243,17 @@ class TestDatabaseIntegration:
 
         for code, data in database.items():
             assert isinstance(data["airfoil"], NACA4)
-            assert data["name"] == f"NACA{code}"
+            assert data["name"] == f"naca{code}"
             assert 0 < data["max_thickness"] < 0.3
             assert 0 <= data["max_thickness_location"] <= 1
 
-    def test_database_query_workflow(self):
+    def test_database_query_workflow(self) -> None:
         """Test workflow for querying airfoil databases."""
         # Create sample database
         airfoils = {
-            "NACA0012": NACA4(M=0.0, P=0.0, XX=0.12, n_points=100),
-            "NACA2412": NACA4(M=0.02, P=0.4, XX=0.12, n_points=100),
-            "NACA4415": NACA4(M=0.04, P=0.4, XX=0.15, n_points=100),
+            "naca0012": NACA4(M=0.0, P=0.0, XX=0.12, n_points=100),
+            "naca2412": NACA4(M=0.02, P=0.4, XX=0.12, n_points=100),
+            "naca4415": NACA4(M=0.04, P=0.4, XX=0.15, n_points=100),
         }
 
         # Test various query operations

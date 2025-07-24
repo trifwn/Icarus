@@ -603,7 +603,7 @@ class TestWorkflowMigration:
 
         for i, result in enumerate(batch_results):
             assert result["code"] == naca_codes[i]
-            assert result["name"] == f"NACA{naca_codes[i]}"
+            assert result["name"] == f"naca{naca_codes[i]}"
             assert 0 < result["max_thickness"] < 0.5
             assert 0 <= result["max_thickness_location"] <= 1
             assert result["max_camber"] >= 0

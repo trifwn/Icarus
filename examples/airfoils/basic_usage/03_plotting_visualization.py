@@ -257,7 +257,7 @@ def multi_airfoil_comparison():
     plt.show()
 
 
-def thickness_camber_analysis_plots()-> None:
+def thickness_camber_analysis_plots() -> None:
     """Create detailed thickness and camber analysis plots."""
     print("\n=== Thickness and Camber Analysis Plots ===")
 

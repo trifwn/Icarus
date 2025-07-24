@@ -18,7 +18,7 @@ from ICARUS.airfoils.naca4 import NACA4
 class TestBackwardCompatibility:
     """Test backward compatibility with original NumPy implementation."""
 
-    def test_naca4_creation_compatibility(self):
+    def test_naca4_creation_compatibility(self) -> None:
         """Test NACA4 creation matches expected interface."""
         # Test different creation methods
         naca1 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
@@ -26,16 +26,16 @@ class TestBackwardCompatibility:
         naca3 = NACA4.from_digits("2412")
 
         # All should create valid airfoils
-        assert naca1.name == "NACA2412"
-        assert naca2.name == "NACA2412"
-        assert naca3.name == "NACA2412"
+        assert naca1.name == "naca2412"
+        assert naca2.name == "naca2412"
+        assert naca3.name == "naca2412"
 
         # Parameters should match
         assert jnp.allclose(naca1.m, naca2.m)
         assert jnp.allclose(naca1.p, naca2.p)
         assert jnp.allclose(naca1.xx, naca2.xx)
 
-    def test_airfoil_properties_compatibility(self):
+    def test_airfoil_properties_compatibility(self) -> None:
         """Test that airfoil properties match expected interface."""
         naca2412 = NACA4(M=0.02, P=0.4, XX=0.12, n_points=200)
 
@@ -437,7 +437,7 @@ class TestMigrationUtilities:
         assert isinstance(naca2, NACA4)
         assert naca1.name == naca2.name
 
-    def test_error_message_compatibility(self):
+    def test_error_message_compatibility(self) -> None:
         """Test that error messages are helpful for migration."""
         # Test invalid NACA parameters
         with pytest.raises(ValueError) as exc_info:

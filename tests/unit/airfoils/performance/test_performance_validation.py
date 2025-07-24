@@ -279,7 +279,7 @@ class TestPerformanceBenchmarks:
         # Time function evaluation
         start_time = time.time()
         for _ in range(100):
-            value = airfoil_objective(params)
+            _ = airfoil_objective(params)
         function_time = time.time() - start_time
 
         # Time gradient computation

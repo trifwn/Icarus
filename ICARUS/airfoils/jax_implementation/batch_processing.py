@@ -106,7 +106,7 @@ class BatchAirfoilOps:
         batch_lower_coords: Float[Array, "batch_size 2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-        query_x: Float[Array, "n_query"],
+        query_x: Float[Array, " n_query"],
     ) -> Float[Array, "batch_size n_query"]:
         """
         Compute thickness distribution for a batch of airfoils.
@@ -149,7 +149,7 @@ class BatchAirfoilOps:
         batch_lower_coords: Float[Array, "batch_size 2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-        query_x: Float[Array, "n_query"],
+        query_x: Float[Array, " n_query"],
     ) -> Float[Array, "batch_size n_query"]:
         """
         Compute camber line for a batch of airfoils.
@@ -190,7 +190,7 @@ class BatchAirfoilOps:
     def batch_y_upper(
         batch_upper_coords: Float[Array, "batch_size 2 n_buffer"],
         n_valid: int,
-        query_x: Float[Array, "n_query"],
+        query_x: Float[Array, " n_query"],
     ) -> Float[Array, "batch_size n_query"]:
         """
         Query upper surface y-coordinates for a batch of airfoils.
@@ -217,7 +217,7 @@ class BatchAirfoilOps:
     def batch_y_lower(
         batch_lower_coords: Float[Array, "batch_size 2 n_buffer"],
         n_valid: int,
-        query_x: Float[Array, "n_query"],
+        query_x: Float[Array, " n_query"],
     ) -> Float[Array, "batch_size n_query"]:
         """
         Query lower surface y-coordinates for a batch of airfoils.
@@ -246,7 +246,7 @@ class BatchAirfoilOps:
         batch_coords2: Float[Array, "batch_size 2 n_buffer"],
         batch_validity_masks1: Bool[Array, "batch_size n_buffer"],
         batch_validity_masks2: Bool[Array, "batch_size n_buffer"],
-        eta: Float[Array, "batch_size"],
+        eta: Float[Array, " batch_size"],
     ) -> Float[Array, "batch_size 2 n_buffer"]:
         """
         Morph between pairs of airfoils in batch mode.
@@ -286,7 +286,7 @@ class BatchAirfoilOps:
     @jax.jit
     def batch_rotate_coordinates(
         batch_coords: Float[Array, "batch_size 2 n_buffer"],
-        batch_angles: Float[Array, "batch_size"],
+        batch_angles: Float[Array, " batch_size"],
         center_x: float = 0.0,
         center_y: float = 0.0,
     ) -> Float[Array, "batch_size 2 n_buffer"]:
@@ -320,8 +320,8 @@ class BatchAirfoilOps:
     @jax.jit
     def batch_scale_coordinates(
         batch_coords: Float[Array, "batch_size 2 n_buffer"],
-        batch_scale_x: Float[Array, "batch_size"],
-        batch_scale_y: Float[Array, "batch_size"],
+        batch_scale_x: Float[Array, " batch_size"],
+        batch_scale_y: Float[Array, " batch_size"],
         center_x: float = 0.0,
         center_y: float = 0.0,
     ) -> Float[Array, "batch_size 2 n_buffer"]:
@@ -366,15 +366,15 @@ class BatchAirfoilOps:
         batch_lower_coords: Float[Array, "batch_size 2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-        batch_flap_hinge_x: Float[Array, "batch_size"],
-        batch_flap_angles: Float[Array, "batch_size"],
+        batch_flap_hinge_x: Float[Array, " batch_size"],
+        batch_flap_angles: Float[Array, " batch_size"],
         flap_hinge_thickness_percentage: float = 0.5,
         chord_extension: float = 1.0,
     ) -> Tuple[
         Float[Array, "batch_size 2 n_buffer"],
         Float[Array, "batch_size 2 n_buffer"],
-        Int[Array, "batch_size"],
-        Int[Array, "batch_size"],
+        Int[Array, " batch_size"],
+        Int[Array, " batch_size"],
     ]:
         """
         Apply flap transformation to a batch of airfoils.
@@ -418,9 +418,9 @@ class BatchAirfoilOps:
     @staticmethod
     @partial(jax.jit, static_argnums=(3,))
     def batch_generate_naca4_coordinates(
-        batch_max_camber: Float[Array, "batch_size"],
-        batch_camber_position: Float[Array, "batch_size"],
-        batch_thickness: Float[Array, "batch_size"],
+        batch_max_camber: Float[Array, " batch_size"],
+        batch_camber_position: Float[Array, " batch_size"],
+        batch_thickness: Float[Array, " batch_size"],
         n_points: int,
     ) -> Tuple[
         Float[Array, "batch_size 2 n_points"],
@@ -456,10 +456,10 @@ class BatchAirfoilOps:
     @staticmethod
     @partial(jax.jit, static_argnums=(4,))
     def batch_generate_naca5_coordinates(
-        batch_design_cl: Float[Array, "batch_size"],
-        batch_max_camber_pos: Float[Array, "batch_size"],
-        batch_reflex: Bool[Array, "batch_size"],
-        batch_thickness: Float[Array, "batch_size"],
+        batch_design_cl: Float[Array, " batch_size"],
+        batch_max_camber_pos: Float[Array, " batch_size"],
+        batch_reflex: Bool[Array, " batch_size"],
+        batch_thickness: Float[Array, " batch_size"],
         n_points: int,
     ) -> Tuple[
         Float[Array, "batch_size 2 n_points"],
@@ -502,7 +502,7 @@ class BatchAirfoilOps:
         n_upper_valid: int,
         n_lower_valid: int,
         n_sample_points: int = 100,
-    ) -> Tuple[Float[Array, "batch_size"], Float[Array, "batch_size"]]:
+    ) -> Tuple[Float[Array, " batch_size"], Float[Array, " batch_size"]]:
         """
         Compute maximum thickness and location for a batch of airfoils.
 
@@ -539,7 +539,7 @@ class BatchAirfoilOps:
         n_upper_valid: int,
         n_lower_valid: int,
         n_sample_points: int = 100,
-    ) -> Tuple[Float[Array, "batch_size"], Float[Array, "batch_size"]]:
+    ) -> Tuple[Float[Array, " batch_size"], Float[Array, " batch_size"]]:
         """
         Compute maximum camber and location for a batch of airfoils.
 
@@ -575,7 +575,7 @@ class BatchAirfoilOps:
         batch_lower_coords: Float[Array, "batch_size 2 n_buffer"],
         n_upper_valid: int,
         n_lower_valid: int,
-    ) -> Float[Array, "batch_size"]:
+    ) -> Float[Array, " batch_size"]:
         """
         Compute chord length for a batch of airfoils.
 
