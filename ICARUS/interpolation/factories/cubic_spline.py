@@ -5,7 +5,7 @@ from jaxtyping import Array
 from jaxtyping import Float
 
 
-def CubicSpline_factory(
+def cubic_spline_factory(
     x: Float[Array, "..."],
     y: Float[Array, "..."],
 ) -> Callable[[Float[Array, "..."]], Float[Array, "..."]]:

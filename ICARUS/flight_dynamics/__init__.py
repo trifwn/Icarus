@@ -55,6 +55,7 @@ from .stability import StabilityDerivativesDS
 from .stability import StateSpace
 from .stability import lateral_stability_finite_differences
 from .stability import longitudal_stability_finite_differences
+from .control_state import ControlState
 from .state import State
 from .trim import Trim
 from .trim import TrimNotPossible
@@ -75,5 +76,6 @@ __all__ = [
     "Trim",
     "TrimNotPossible",
     "TrimOutsidePolars",
+    "ControlState",
     "State",
 ]

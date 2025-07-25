@@ -9,10 +9,12 @@ from . import LongitudalStateSpace
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def longitudal_stability_finite_differences(
     state: State,
+    airplane: Airplane,
 ) -> LongitudalStateSpace:
     """This Function Requires the results from perturbation analysis
     For the Longitudinal Motion, in addition to the state space variables
@@ -39,6 +41,13 @@ def longitudal_stability_finite_differences(
 
     trim_state: DataFrame = pert[pert["Type"] == "Trim"]
     for var in ["u", "q", "w", "theta"]:
+        # If the variable is theta and it is not set then set derivatives to 0
+        if var == "theta" and pert[pert["Type"] == "theta"].empty:
+            X[var] = 0.0
+            Z[var] = 0.0
+            M[var] = 0.0
+            continue
+
         if state.scheme is None:
             state.scheme = "Central"
         if state.scheme == "Central":
@@ -90,5 +99,5 @@ def longitudal_stability_finite_differences(
     Z["w_dot"] = 0
     M["w_dot"] = 0
 
-    longitudal_state_space = LongitudalStateSpace(state, X, Z, M)
+    longitudal_state_space = LongitudalStateSpace(state, airplane, X, Z, M)
     return longitudal_state_space

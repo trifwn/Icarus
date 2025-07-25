@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 
 if TYPE_CHECKING:
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 def test_lspt_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-):
+) -> None:
     """Test LSPT solver execution."""
     print("Testing LSPT Running...")
 
@@ -29,7 +28,7 @@ def test_lspt_run(
     lspt: LSPT = LSPT()
 
     # Set Analysis
-    analysis: Analysis = lspt.get_analyses()[0]
+    analysis = lspt.aseq
 
     # Set Options
     inputs = analysis.get_analysis_input(verbose=True)
@@ -40,12 +39,12 @@ def test_lspt_run(
 
     inputs.plane = benchmark_airplane
     inputs.state = benchmark_state
-    inputs.solver2D = "Xfoil"
     inputs.angles = angles
 
     solver_parameters = lspt.get_solver_parameters()
-    solver_parameters.Ground_Effect = True
-    solver_parameters.Wake_Geom_Type = "TE-Geometrical"
+    solver_parameters.solver2D = "Xfoil"
+    solver_parameters.ground_effect = True
+    solver_parameters.wake_type = "TE-Geometrical"
 
     start_time: float = time.perf_counter()
     results = lspt.execute(
@@ -63,6 +62,6 @@ def test_lspt_run(
     assert results is not None, "LSPT should return results"
 
     # Assert execution time is reasonable (less than 180 seconds)
-    assert (
-        execution_time < 180.0
-    ), f"LSPT execution took too long: {execution_time:.3f}s"
+    assert execution_time < 180.0, (
+        f"LSPT execution took too long: {execution_time:.3f}s"
+    )

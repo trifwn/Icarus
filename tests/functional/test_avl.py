@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from ICARUS.computation.analyses.analysis import Analysis
-
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
     from ICARUS.vehicle import Airplane
@@ -18,14 +16,14 @@ if TYPE_CHECKING:
 def test_avl_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-):
+) -> None:
     """Test AVL solver execution."""
     print("Testing AVL Running ...")
     # Get Solver
     from ICARUS.solvers.AVL import AVL
 
     avl = AVL()
-    analysis: Analysis = avl.get_analyses()[0]
+    analysis = avl.aseq
 
     # Set Options
     options = analysis.get_analysis_input(verbose=True)
@@ -37,11 +35,11 @@ def test_avl_run(
 
     options.plane = benchmark_airplane
     options.state = benchmark_state
-    options.solver2D = "Xfoil"
     options.angles = angles
 
     solver_parameters = avl.get_solver_parameters(verbose=True)
     solver_parameters.use_avl_control = False
+    solver_parameters.solver2D = "Xfoil"
 
     start_time: float = time.perf_counter()
     results = avl.execute(

@@ -5,19 +5,18 @@ import numpy as np
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
 from ICARUS import INSTALL_DIR
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
-from ICARUS.solvers.Xfoil.xfoil import Xfoil
+from ICARUS.solvers.Xfoil import Xfoil
+from ICARUS.solvers.Xfoil import XfoilAseq
 
 database_folder = os.path.join(
     INSTALL_DIR,
     "Data",
 )
-
+DB = Database(database_folder)
 
 # Load the database
-DB = Database(database_folder)
 airfoil = DB.get_airfoil("NACA0009")
 
 # PARAMETERS FOR ESTIMATION
@@ -73,7 +72,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     xfoil = Xfoil()
 
     # Import Analysis
-    analysis: Analysis = xfoil.aseq
+    analysis: XfoilAseq = xfoil.aseq
 
     # Get Options
     inputs = analysis.get_analysis_input(verbose=False)

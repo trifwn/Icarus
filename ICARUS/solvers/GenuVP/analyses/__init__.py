@@ -13,7 +13,7 @@ from .pertrubations import process_gnvp7_dynamics
 from .pertrubations import process_gnvp_dynamics
 from .progress import get_aseq_progress
 from .progress import get_stability_progress
-from .sensitivities import sensitivities_serial
+from .sensitivities import sensitivities
 
 __all__ = [
     "serial_monitor",
@@ -32,7 +32,7 @@ __all__ = [
     "process_gnvp3_dynamics",
     "process_gnvp7_dynamics",
     # Sensitivities
-    "sensitivities_serial",
+    "sensitivities",
     # Progress
     "get_aseq_progress",
     "get_stability_progress",

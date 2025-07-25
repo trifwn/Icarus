@@ -14,7 +14,6 @@ from Planes.hermes import hermes
 
 # CHANGE THIS TO YOUR DATABASE FOLDER
 from ICARUS import INSTALL_DIR
-from ICARUS.computation.analyses.analysis import Analysis
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
 from ICARUS.environment import EARTH_ISA
@@ -64,7 +63,7 @@ def main() -> None:
             name="Unstick",
             airplane=airplane,
             environment=EARTH_ISA,
-            u_freestream=UINF[airplane.name],
+            airspeed=UINF[airplane.name],
         )
         # # Get Solver
         lspt = LSPT()
@@ -72,7 +71,7 @@ def main() -> None:
         # ## AoA Run
         # 0: Angles Sequential
 
-        analysis: Analysis = lspt.get_analyses()[0]
+        analysis = lspt.aseq
         inputs = analysis.get_analysis_input(verbose=False)
         solver_parameters = lspt.get_solver_parameters()
 
@@ -87,11 +86,10 @@ def main() -> None:
 
         inputs.plane = airplane
         inputs.state = state
-        inputs.solver2D = "Xfoil"
         inputs.angles = angles
 
-        solver_parameters.Ground_Effect = True
-        solver_parameters.Wake_Geom_Type = "TE-Geometrical"
+        solver_parameters.ground_effect = True
+        solver_parameters.wake_type = "TE-Geometrical"
 
         polars_time: float = time.time()
         lspt.execute(

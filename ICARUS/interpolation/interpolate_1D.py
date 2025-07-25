@@ -1,6 +1,62 @@
+from typing import Any
+
 import numpy as np
+from interpax import Interpolator1D
+from jaxtyping import Float
 
 from ICARUS.core.types import FloatArray
+
+
+class JaxInterpolator1D(Interpolator1D):
+    def __init__(
+        self,
+        x: Float,
+        f: Float,
+        method: str = "cubic",
+        extrap: bool = False,
+    ) -> None:
+        """
+        Initialize the Interpolator class.
+
+        Args:
+            x (FloatArray | list[float]): X coordinates of the points.
+            f (FloatArray | list[float]): Y coordinates of the points.
+            method (str, optional): Interpolation method. Defaults to "cubic".
+            extrap (bool, optional): Whether to allow extrapolation. Defaults to False.
+        """
+        super().__init__(x=x, f=f, method=method, extrap=extrap)
+
+    def __getstate__(self) -> dict[str, Any]:
+        """
+        This method defines the state to be pickled for interp1d objects.
+
+        We exclude the private member '_InterpolatorBase__spline' as it's
+        recreated during object initialization.
+
+        Returns:
+            dict: A dictionary containing the picklable state of the object.
+        """
+        return {
+            "x": self.x.copy(),
+            "f": self.f.copy(),
+            "method": self.method,
+            "extrap": self.extrap,
+        }
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """
+        This method reconstructs the interp1d object from the pickled state.
+
+        Args:
+            state (dict): The pickled state of the object.
+        """
+        JaxInterpolator1D.__init__(
+            self,
+            x=state["x"],
+            f=state["f"],
+            method=state["method"],
+            extrap=state["extrap"],
+        )
 
 
 def cubic_spline_interpolate(

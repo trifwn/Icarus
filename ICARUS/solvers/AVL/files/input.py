@@ -29,7 +29,7 @@ def make_input_files(
 ) -> None:
     control_vector_dict = state.control_vector_dict
     avl_mass(directory, plane, state.environment)
-    avl_geo(directory, plane, state, state.u_freestream, solver_parameters)
+    avl_geo(directory, plane, state, state.airspeed, solver_parameters)
     state.set_control(control_vector_dict)
 
 
@@ -83,9 +83,9 @@ def avl_mass(
     f_io.write("#  mass   x     y     z       Ixx   Iyy   Izz    Ixy  Ixz  Iyz\n")
     f_io.write("#\n")
 
-    for surf in plane.surfaces:
+    for wing in plane.wings:
         f_io.write(
-            f"   {surf.mass:.4e}  {surf.CG[0]:.4e}  {surf.CG[1]:.4e}  {surf.CG[2]:.4e}  {surf.Ixx:.4e}  {surf.Iyy:.4e}  {surf.Izz:.4e}  {surf.Ixy:.4e}  {surf.Ixz:.4e}  {surf.Iyz:.4e} ! {surf.name}       \n",
+            f"   {wing.mass:.4e}  {wing.CG[0]:.4e}  {wing.CG[1]:.4e}  {wing.CG[2]:.4e}  {wing.Ixx:.4e}  {wing.Iyy:.4e}  {wing.Izz:.4e}  {wing.Ixy:.4e}  {wing.Ixz:.4e}  {wing.Iyz:.4e} ! {wing.name}       \n",
         )
 
     for mass in plane.point_masses:
@@ -205,31 +205,20 @@ def avl_geo(
         f_io.write("TRANSLATE\n")
         f_io.write("0.0  0.0  0.0\n")
         f_io.write("ANGLE\n")
-        f_io.write(f" {surf.orientation[0]}                         | dAinc\n")
+        f_io.write(f" {surf.orientation_degrees[0]}                         | dAinc\n")
         f_io.write("\n")
         f_io.write("\n")
 
+        os.makedirs(os.path.join(directory, "airfoils"), exist_ok=True)
         for j, strip in enumerate(surf.strips):
-            if j == 0:
-                x, y, z = strip.x0, strip.y0, strip.z0
-                chord = strip.chords[0]
-                twist = strip.twists[0]
-                N = 1
-                strip_airfoil = strip.airfoil_start
-            elif j == len(surf.strips) - 1:
-                x, y, z = strip.x1, strip.y1, strip.z1
-                chord = strip.chords[1]
-                twist = strip.twists[1]
-                N = 1
-                strip_airfoil = strip.airfoil_end
-            else:
-                x = (strip.x0 + strip.x1) / 2
-                y = (strip.y0 + strip.y1) / 2
-                z = (strip.z0 + strip.z1) / 2
-                chord = strip.mean_chord
-                twist = strip.mean_twist
-                N = 1
-                strip_airfoil = strip.airfoil_end
+            x, y, z = strip.leading_edge
+
+            chord = strip.chord
+            twist = strip.pitch_degrees
+            strip_airfoil = strip.airfoil
+
+            N = 1
+
             strip_r = np.array([x, y, z])
 
             f_io.write(
@@ -238,7 +227,7 @@ def avl_geo(
             f_io.write("#| Xle      Yle         Zle   Chord Ainc   [ Nspan Sspace ]\n")
             f_io.write("SECTION\n")
             f_io.write(
-                f"   {x:.6f}    {y:.6f}    {z:.6f}    {chord:.6f}   {twist * 180 / np.pi:6f}   {N}    {span_spacing}   \n",
+                f"   {x:.6f}    {y:.6f}    {z:.6f}    {chord:.6f}   {twist:6f}   {N}    {span_spacing}   \n",
             )
             f_io.write("\n")
             # if strip_airfoil.file_name.upper().startswith("NACA"):
@@ -246,7 +235,7 @@ def avl_geo(
             #     f_io.write(f"{strip_airfoil.file_name[4:]}\n")
             # else:
             f_io.write("AFILE \n")
-            f_io.write(f"{strip_airfoil.file_name}\n")
+            f_io.write(f"{os.path.join('airfoils', strip_airfoil.file_name)}\n")
             f_io.write("\n")
             f_io.write("\n")
 
@@ -254,31 +243,33 @@ def avl_geo(
             span = surf.span
             if use_avl_control:
                 for control_surf in surf.controls:
-                    if (strip_span >= control_surf.span_position_start * span) and (
-                        strip_span <= control_surf.span_position_end * span
+                    if (strip_span >= control_surf.span_percentage_start * span) and (
+                        strip_span <= control_surf.span_percentage_end * span
                     ):
                         f_io.write("CONTROL \n")
                         f_io.write("#Cname   Cgain  Xhinge  HingeVec  SgnDup\n")
                         cname = control_surf.control_var
                         cgain = 1.0
                         if control_surf.constant_chord != 0.0:
-                            x_hinge = 1 - control_surf.constant_chord / strip.mean_chord
+                            x_hinge = 1 - control_surf.constant_chord / strip.chord
                         else:
-                            x_hinge = control_surf.chord_function(strip_span / span)
+                            x_hinge = control_surf.chord_function(
+                                float(strip_span / span),
+                            )
                         # hinge_vec = surf.R_MAT.T @ control_surf.local_rotation_axis
                         sgndup = -1 if control_surf.inverse_symmetric else 1
                         f_io.write(
-                            f"{cname} {-cgain}  {x_hinge} {0.0} {0.0} {0.0} {sgndup} \n",
+                            f"{cname} {-cgain:.6f} {x_hinge:.6f} {0.0:.6f} {0.0:.6f} {0.0:.6f} {sgndup} \n",
                         )
 
             # Save Airfoil file
-            strip_airfoil.repanel_spl(180, 1e-7)
-            strip_airfoil.save_selig(directory)
+            strip_airfoil.repanel_spl(180)
+            strip_airfoil.save_selig(os.path.join(directory, "airfoils"))
 
             if viscous:
                 # Calculate average reynolds number
-                reynolds = (
-                    strip.mean_chord * u_inf / environment.air_kinematic_viscosity
+                reynolds = float(
+                    strip.chord * u_inf / environment.air_kinematic_viscosity,
                 )
                 # Get the airfoil polar
 

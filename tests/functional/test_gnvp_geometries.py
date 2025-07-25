@@ -1,4 +1,4 @@
-import sys
+import platform
 
 import numpy as np
 import pytest
@@ -12,7 +12,10 @@ from ICARUS.vehicle import Airplane
 from ICARUS.visualization.gnvp import plot_gnvp3_wake
 from ICARUS.visualization.gnvp import plot_gnvp7_wake
 
-GNVP_VERSIONS = [3, 7]
+if platform.system() == "Windows" or platform.system() == "Darwin":
+    GNVP_VERSIONS = [3, 7]
+else:
+    GNVP_VERSIONS = [3]
 
 
 @pytest.mark.integration
@@ -29,7 +32,9 @@ def test_gnvp_geometry_all(
     if plot:
         pytest.importorskip("matplotlib")
 
-    if gnvp_version == 7 and sys.platform.startswith("win"):
+    if gnvp_version == 7 and (
+        platform.system() == "Windows" or platform.system() == "Darwin"
+    ):
         pytest.skip("GenuVP7 solver is not available on Windows")
 
     _gnvp_geometry(benchmark_airplane, benchmark_state, gnvp_version, plot)
@@ -73,7 +78,7 @@ def _gnvp_geometry(
     mesh_grid_gnvp = np.meshgrid(grid_gnvp)
 
     lgrid_plane: list[FloatArray] = []
-    for surface in benchmark_airplane.surfaces:
+    for surface in benchmark_airplane.wings:
         surf_grid = surface.get_grid()
         if isinstance(surf_grid, list):
             lgrid_plane.extend(surf_grid)

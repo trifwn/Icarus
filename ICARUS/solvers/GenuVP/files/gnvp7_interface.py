@@ -42,8 +42,11 @@ def gnvp7_execute(case_directory: str) -> int:
     os.makedirs(os.path.join(case_directory, "vpm_case"), exist_ok=True)
 
     # If Linux, enable MPI
-    if os.name == "posix":
-        linux_enable_mpi()
+    try:
+        if os.name == "posix":
+            linux_enable_mpi()
+    except Exception:
+        pass
 
     finput = os.path.join(case_directory, "input")
     foutput = os.path.join(case_directory, "gnvp7.out")

@@ -88,8 +88,36 @@ def plot_gnvp_wake(
     XP, QP, VP, GP, B1, C1 = get_wake_data(plane, state, case_str)
 
     fig: Figure = plt.figure(figsize=figsize)
-    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+    ax: Axes3D = fig.add_subplot(projection="3d")  # noqa
 
+    p = ax.scatter(
+        xs=XP[:, 0],
+        ys=XP[:, 1],
+        zs=XP[:, 2],  # noqa
+        c=np.linalg.norm(QP, axis=1),
+        s=5,
+    )  # WAKE
+    fig.colorbar(p, ax=ax)
+
+    ax.scatter(
+        xs=B1[:, 0],
+        ys=B1[:, 1],
+        zs=B1[:, 2],  # noqa
+        color="k",
+        s=5,
+    )  # NEARWAKE
+    ax.scatter(
+        xs=C1[:, 0],
+        ys=C1[:, 1],
+        zs=C1[:, 2],  # noqa
+        color="g",
+        s=5,
+    )  # GRID
+
+    plane.plot(ax, movement=-np.array(plane.CG), show_masses=False)
+
+    if scale:
+        ax.set_aspect("equal", "box")
     ax.set_title(
         f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}",
     )
@@ -101,33 +129,6 @@ def plot_gnvp_wake(
     ax.set_ylim(-plane.span / 2, plane.span / 2)
     ax.set_zlim(-1, 1)
 
-    p = ax.scatter(
-        xs=XP[:, 0],
-        ys=XP[:, 1],
-        zs=XP[:, 2],  # type: ignore
-        c=np.linalg.norm(QP, axis=1),
-        s=5,
-    )  # WAKE
-    fig.colorbar(p, ax=ax)
-
-    ax.scatter(
-        xs=B1[:, 0],
-        ys=B1[:, 1],
-        zs=B1[:, 2],  # type: ignore
-        color="k",
-        s=5,
-    )  # NEARWAKE
-    ax.scatter(
-        xs=C1[:, 0],
-        ys=C1[:, 1],
-        zs=C1[:, 2],  # type: ignore
-        color="g",
-        s=5,
-    )  # GRID
-
-    plane.plot(fig, ax, movement=-np.array(plane.CG), show_masses=False)
-    if scale:
-        ax.set_aspect("equal", "box")
     plt.show()
 
 

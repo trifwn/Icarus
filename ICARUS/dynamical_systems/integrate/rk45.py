@@ -74,7 +74,7 @@ class RK45Integrator(Integrator):
         # Adjust step size based on error
         delta = 0.84 * (tol / jnp.max(error)) ** 0.25
         delta = jnp.clip(delta, 0.1, 1.1)
-        dt = dt * delta  # type: ignore
+        dt = dt * delta  # noqa
         return x_4, dt
 
     def simulate(

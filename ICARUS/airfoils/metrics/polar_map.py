@@ -66,11 +66,10 @@ class AirfoilPolarMap:
                 # Find the closest Reynolds numbers
                 mask = np.array(self.reynolds_numbers) >= reynolds
                 prev_idx = int(np.sum(~mask)) - 1
-                next_idx = int(np.sum(mask))
+                next_idx = len(mask) - int(np.sum(mask))
 
                 prev_polar = self.polars[self.reynolds_numbers[prev_idx]]
                 next_polar = self.polars[self.reynolds_numbers[next_idx]]
-
                 polar = AirfoilPolar.interpolate_polar(
                     polar1=prev_polar,
                     polar2=next_polar,
@@ -166,42 +165,7 @@ class AirfoilPolarMap:
         CDCL is specified).
         """
         # Interpolate Reynolds From Values Stored in the Class
-        if reynolds not in self.reynolds_numbers:
-            reynolds_max = max(self.reynolds_numbers)
-            reynolds_min = min(self.reynolds_numbers)
-            if reynolds_min == reynolds_max:
-                reynolds = reynolds_min
-                curve = self.get_polar(reynolds)
-            else:
-                for reyn in self.reynolds_numbers:
-                    if reyn > reynolds:
-                        reynolds_max = reyn
-                        break
-
-                for reyn in self.reynolds_numbers[::-1]:
-                    if reyn < reynolds:
-                        reynolds_min = reyn
-                        break
-
-                diff_reynolds = reynolds_max - reyn
-                diff_reynolds_max = reyn - reynolds_min
-                if diff_reynolds < diff_reynolds_max:
-                    curve = self.get_polar(reynolds_max)
-                else:
-                    curve = self.get_polar(reynolds_min)
-
-                # Get CL and CD for the two Reynolds Numbers
-                # curve_1 = self.get_reynolds_subtable(reynolds_min)
-                # curve_2 = self.get_reynolds_subtable(reynolds_max)
-                # Interpolate curve based on relative distance between Reynolds Numbers
-                # (Linear Interpolation)
-
-                # curve = curve_1 + (curve_2 - curve_1) * (reynolds - reynolds_min) / (
-                #     reynolds_max - reynolds_min
-                # )
-
-        else:
-            curve = self.get_polar(reynolds)
+        curve = self.get_polar(reynolds)
 
         try:
             # pos_stall_idx = self.get_positive_stall_idx(curve["CL"] / curve["CD"])

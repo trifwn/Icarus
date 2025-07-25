@@ -68,9 +68,7 @@ if PLATFORM == "Windows":
     GenuVP3_exe: str = os.path.join(EXE_DIR, "gnvp3.exe")
     Foil_exe: str = os.path.join(EXE_DIR, "foil2w.exe")
     AVL_exe: str = os.path.join(EXE_DIR, "avl.exe")
-
     GenuVP7_exe: str = os.path.join(EXE_DIR, "gnvp7.exe")
-
 elif PLATFORM == "Linux":
     EXE_DIR = os.path.join(INSTALL_DIR, "bin", PLATFORM)
 
@@ -78,16 +76,15 @@ elif PLATFORM == "Linux":
     AVL_exe = os.path.join(EXE_DIR, "avl")
     GenuVP3_exe = os.path.join(EXE_DIR, "gnvp3")
     GenuVP7_exe = os.path.join(EXE_DIR, "gnvp7")
-
-
 elif PLATFORM == "Darwin":
     EXE_DIR = os.path.join(INSTALL_DIR, "bin", "MacOS")
 
     AVL_exe = os.path.join(EXE_DIR, "avl")
     GenuVP3_exe = os.path.join(EXE_DIR, "gnvp3")
     Foil_exe = os.path.join(EXE_DIR, "foil2w-aarch64")
-
     GenuVP7_exe = os.path.join(EXE_DIR, "gnvp7")
+else:
+    raise RuntimeError(f"Unsupported platform: {PLATFORM}")
 
 # Check if the files have execution permission
 if not os.access(GenuVP3_exe, os.X_OK):

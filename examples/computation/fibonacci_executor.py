@@ -22,11 +22,15 @@ class FibonacciExecutor(TaskExecutorProtocol[int, tuple[int, int]]):
     - Validates input parameters
     """
 
-    def __init__(self, delay_per_step: float = 0.01, max_number: int = 10000):
+    def __init__(self, delay_per_step: float = 0.01, max_number: int = 10000) -> None:
         self.delay_per_step = delay_per_step
         self.max_number = max_number
 
-    async def execute(self, n: int, context: ExecutionContext) -> tuple[int, int]:
+    async def execute(
+        self,
+        task_input: int,
+        context: ExecutionContext,
+    ) -> tuple[int, int]:
         """
         Calculate the nth Fibonacci number with progress reporting.
 
@@ -41,6 +45,7 @@ class FibonacciExecutor(TaskExecutorProtocol[int, tuple[int, int]]):
             asyncio.CancelledError: If task is cancelled during execution
             ValueError: If n is invalid
         """
+        n = task_input
         if not await self.validate_input(n):
             raise ValueError(f"Invalid Fibonacci input: {n}")
 
@@ -87,16 +92,17 @@ class FibonacciExecutor(TaskExecutorProtocol[int, tuple[int, int]]):
 
         return (n, b)
 
-    async def validate_input(self, n: int) -> bool:
+    async def validate_input(self, task_input: int) -> bool:
         """
         Validate that the input is a valid Fibonacci sequence position.
 
         Args:
-            n: Position to validate
+            task_input: Position to validate
 
         Returns:
             True if input is valid, False otherwise
         """
+        n = task_input
         if not isinstance(n, int):
             return False
 

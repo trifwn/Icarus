@@ -44,7 +44,11 @@ from ICARUS.computation.core import TaskState
 class FibonacciDemo:
     """Demo class that orchestrates Fibonacci calculations across different execution modes."""
 
-    def __init__(self, numbers: list[int] | None = None, delay_per_step: float = 0.2):
+    def __init__(
+        self,
+        numbers: list[int] | None = None,
+        delay_per_step: float = 0.2,
+    ) -> None:
         """Initialize the demo."""
         self.numbers = numbers or list(
             range(8, 23),
@@ -122,6 +126,7 @@ class FibonacciDemo:
 
         # Create tasks
         tasks = self.create_tasks()
+        results = []
 
         print(f"📊 Executing {len(tasks)} Fibonacci tasks...")
         print(f"🔢 Numbers to calculate: {self.numbers}")
@@ -235,7 +240,6 @@ class FibonacciDemo:
                 ExecutionMode.ASYNC,
                 ExecutionMode.THREADING,
                 ExecutionMode.MULTIPROCESSING,
-                ExecutionMode.ADAPTIVE,
             ]
 
         all_results = {}
@@ -293,7 +297,6 @@ async def main() -> None:
             "async",
             "threading",
             "multiprocessing",
-            "adaptive",
             "all",
         ],
         default="all",
@@ -312,7 +315,6 @@ async def main() -> None:
             ExecutionMode.ASYNC,
             ExecutionMode.THREADING,
             ExecutionMode.MULTIPROCESSING,
-            ExecutionMode.ADAPTIVE,
         ]
     else:
         mode_map = {
@@ -320,7 +322,6 @@ async def main() -> None:
             "async": ExecutionMode.ASYNC,
             "threading": ExecutionMode.THREADING,
             "multiprocessing": ExecutionMode.MULTIPROCESSING,
-            "adaptive": ExecutionMode.ADAPTIVE,
         }
         modes = [mode_map[args.mode]]
 

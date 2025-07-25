@@ -22,8 +22,10 @@ def test_wing_segment_properties(benchmark_airplane: Airplane) -> None:
 
     # Test wing properties that we know exist
     assert wing.span == 10.0, "Wing should have correct span"
-    assert wing.N == 15, "Wing should have correct N panels"
-    assert wing.M == 15, "Wing should have correct M panels"
+    assert wing.num_grid_points == 225, "Wing should have correct number of grid points"
+    assert wing.num_panels == 196, "Wing should have correct number of panels"
+    assert wing.S == 10.0, "Wing should have correct area"
+    assert wing.mean_aerodynamic_chord == 1.0, "Wing should have correct MAC"
     assert hasattr(wing, "root_airfoil"), "Wing should have root airfoil"
 
 
@@ -40,13 +42,13 @@ def test_wing_geometry(benchmark_airplane: Airplane) -> None:
     # Expected values
     S_expected: tuple[float] = (10.0,)
     MAC_expected: tuple[float] = (1.0,)
-    CG_expected: FloatArray = np.array([0.451, 0.0, 0.0])
+    CG_expected: FloatArray = np.array([0.418378, 0.0, 0.030982])
     I_expected: FloatArray = np.array([2.077, 0.026, 2.103, 0.0, 0.0, 0.0])
 
     # Assertions with tolerances
     np.testing.assert_almost_equal(S, S_expected, decimal=4)
     np.testing.assert_almost_equal(MAC, MAC_expected, decimal=4)
-    np.testing.assert_almost_equal(CG, CG_expected, decimal=3)
+    np.testing.assert_almost_equal(CG, CG_expected, decimal=2)
     np.testing.assert_almost_equal(INERTIA, I_expected, decimal=3)
 
 

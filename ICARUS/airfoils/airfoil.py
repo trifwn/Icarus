@@ -58,15 +58,18 @@ import os
 import re
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Self
 
+import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
 from jaxtyping import Float
 from matplotlib.axes import Axes
 
-from ICARUS.core.interpolation.scipy import ScipyInterpolator1D
 from ICARUS.core.types import FloatArray
+from ICARUS.interpolation import JaxInterpolator1D
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -78,20 +81,17 @@ class NACADefintionError(Exception):
     pass
 
 
+@jax.tree_util.register_pytree_node_class
 class Airfoil:
     """Class to represent an airfoil. Inherits from airfoil class from the airfoils module.
     Stores the airfoil data in the selig format.
-
-    Args:
-        af : Airfoil class from the airfoils module
-
     """
 
     def __init__(
         self,
         upper: Float,
         lower: Float,
-        name: str,
+        name: str | None = None,
     ) -> None:
         """Initialize the Airfoil class
 
@@ -100,34 +100,34 @@ class Airfoil:
             lower (FloatArray): Lower surface coordinates
             naca (str): NACA 4 digit identifier (e.g. 0012)
         """
-        name = name.replace(" ", "")
-        self.name: str = name
-        self.file_name: str = f"{name.lower()}.airfoil"
+        if name is not None:
+            name = name.replace(" ", "")
+            self._name: str | None = name
+        else:
+            self._name = None
 
-        lower, upper = self.close_airfoil(lower, upper)
-
-        self.upper = np.array(upper, dtype=float)
-        self.lower = np.array(lower, dtype=float)
-
+        lower, upper = self.order_points(
+            lower,
+            upper,
+        )  # order points according to LE/TE
+        lower, upper = self.close_airfoil(lower, upper)  # close airfoil
         # Unpack coordinates
         self._x_upper = upper[0, :]
         self._y_upper = upper[1, :]
         self._x_lower = lower[0, :]
         self._y_lower = lower[1, :]
 
-        self._y_upper_interp = ScipyInterpolator1D(
+        self._y_upper_interp = JaxInterpolator1D(
             self._x_upper,
             self._y_upper,
-            kind="linear",
-            bounds_error=False,
-            fill_value="extrapolate",  # type: ignore[call-arg]
+            method="linear",
+            extrap=True,
         )
-        self._y_lower_interp = ScipyInterpolator1D(
+        self._y_lower_interp = JaxInterpolator1D(
             self._x_lower,
             self._y_lower,
-            kind="linear",
-            bounds_error=False,
-            fill_value="extrapolate",  # type: ignore[call-arg]
+            method="linear",
+            extrap=True,
         )
 
         self.min_x = np.min(self._x_upper)
@@ -139,24 +139,46 @@ class Airfoil:
         self.n_points: int = upper.shape[1]
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
+        self.selig_original = self.to_selig()
 
-        self.selig = self.to_selig()
-        self.selig_original = self.selig
+    @property
+    def name(self) -> str:
+        """Returns the name of the airfoil"""
+        if not hasattr(self, "_name") or self._name is None:
+            return "Airfoil"
+        return self._name
 
-    def y_upper(self, x: Float) -> Float:
+    @name.setter
+    def name(self, value: str) -> None:
+        """Sets the name of the airfoil"""
+        if not isinstance(value, str):
+            raise TypeError("Name must be a string")
+        self._name = value.replace(" ", "")
+
+    @property
+    def upper_surface(self) -> Float:
+        """Returns the upper surface coordinates of the airfoil"""
+        return jnp.array([self._x_upper, self._y_upper], dtype=float)
+
+    @property
+    def lower_surface(self) -> Float:
+        """Returns the lower surface coordinates of the airfoil"""
+        return jnp.array([self._x_lower, self._y_lower], dtype=float)
+
+    def y_upper(self, ksi: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_upper), max(x_upper)]
-        x = self.min_x + x * (self.max_x - self.min_x)
+        x = self.min_x + ksi * (self.max_x - self.min_x)
         return self._y_upper_interp(x)
 
-    def y_lower(self, x: Float) -> Float:
+    def y_lower(self, ksi: Float) -> Float:
         # x-coordinate is between [0, 1]
         # x must be set between [min(x_lower), max(x_lower)]
 
-        x = self.min_x + x * (self.max_x - self.min_x)
+        x = self.min_x + ksi * (self.max_x - self.min_x)
         return self._y_lower_interp(x)
 
-    def repanel_spl(self, n_points: int = 200, smoothing: float = 0.0) -> None:
+    def repanel_spl(self, n_points: int = 200) -> None:
         pts = self.selig_original
         x = pts[0, :]
         y = pts[1, :]
@@ -167,10 +189,7 @@ class Airfoil:
         # Use the unique indices to get the unique x and y coordinates
         x = x[unique_indices]
         y = y[unique_indices]
-        # x = np.hstack((x, x[0]))
-        # y = np.hstack((y, y[0]))
 
-        # tck, _ = splprep([x, y], s=smoothing)
         from scipy.interpolate import CubicSpline
 
         # Airfoils 0 and 1 are defined by their cubic splines,
@@ -181,6 +200,11 @@ class Airfoil:
         s = np.zeros(x.shape)
         for i in range(1, x.shape[0]):
             s[i] = s[i - 1] + np.sqrt((x[i] - x[i - 1]) ** 2 + (y[i] - y[i - 1]) ** 2)
+        unique_s_indices = np.sort(np.unique(s, return_index=True)[1])
+        # Use the unique indices to get the unique arc length coordinates
+        s = s[unique_s_indices]
+        x = x[unique_s_indices]
+        y = y[unique_s_indices]
 
         # Normalize the arc length
         s /= s[-1]
@@ -197,6 +221,7 @@ class Airfoil:
         x_new = np.interp(tnew, s, x)
 
         lower, upper = self.split_sides(x_new, y_new)
+        lower, upper = self.order_points(lower, upper)
         lower, upper = self.close_airfoil(lower, upper)
 
         self._x_upper = upper[0]
@@ -207,7 +232,6 @@ class Airfoil:
         self.n_points = n_points
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
-        self.selig = self.to_selig()
 
     def repanel_from_internal(
         self,
@@ -229,10 +253,9 @@ class Airfoil:
             xsi = (xsi - np.min(xsi)) / (np.max(xsi) - np.min(xsi))
         else:
             xsi = np.linspace(0, 1, int(n_points // 2))
-        xsi = self.min_x + (self.max_x - self.min_x) * xsi
 
-        _x_upper = xsi
-        _x_lower = xsi
+        _x_upper = self.min_x + (self.max_x - self.min_x) * xsi
+        _x_lower = self.min_x + (self.max_x - self.min_x) * xsi
         _y_upper = self.y_upper(xsi)
         _y_lower = self.y_lower(xsi)
 
@@ -249,91 +272,184 @@ class Airfoil:
         self.n_points = n_points
         self.n_upper = self._x_upper.shape[0]
         self.n_lower = self._x_lower.shape[0]
-        self.selig = self.to_selig()
-        self.selig_original = self.selig
 
-    def close_airfoil(
-        self,
-        lower: FloatArray,
-        upper: FloatArray,
-    ) -> tuple[FloatArray, FloatArray]:
-        # Check if the airfoil is closed or not. Meaning that the upper and lower surface meet at the trailing edge and leading edge
-        # If the airfoil is not closed, then it will be closed by adding a point at the trailing edge
-        # Identify the upper surface trailing edge and leading edge
-        f_upper = upper[0, 0]
-        l_upper = upper[0, -1]
-        if f_upper < l_upper:
-            leading_upper = f_upper
-            le_idx_upper = 0
-            trailing_upper = l_upper
-            te_idx_upper = -1
-        else:
-            leading_upper = l_upper
-            le_idx_upper = -1
-            trailing_upper = f_upper
-            te_idx_upper = 0
+    def to_selig(self) -> Float:
+        """Returns the airfoil in the selig format.
+        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
+        back to the trailing edge in either direction:
+        """
+        x_points = jnp.hstack((self._x_upper[::-1], self._x_lower))
+        y_points = jnp.hstack((self._y_upper[::-1], self._y_lower))
+        return jnp.vstack((x_points, y_points))
 
-        # Identify the lower surface trailing edge and leading edge
-        f_lower = lower[0, 0]
-        l_lower = lower[0, -1]
-        if f_lower < l_lower:
-            leading_lower = f_lower
-            le_idx_lower = 0
-            trailing_lower = l_lower
-            te_idx_lower = -1
-        else:
-            leading_lower = l_lower
-            le_idx_lower = -1
-            trailing_lower = f_lower
-            te_idx_lower = 0
+    @staticmethod
+    def order_points(
+        lower: Float,
+        upper: Float,
+    ) -> tuple[Float, Float]:
+        """Orders the points of the airfoil so that the upper surface is on top and the lower surface is on the bottom.
+        The points are ordered from leading edge to trailing edge.
 
-        # Fix the trailing edge
-        # Leading upper is the leftmost point. We need to add it to the surface with the rightmost point
-        if leading_upper == leading_lower:
-            pass
-        elif leading_upper < leading_lower:
-            if le_idx_lower == 0:
-                lower = np.hstack((upper[:, le_idx_upper].reshape(2, 1), lower))
-            elif le_idx_lower == -1:
-                lower = np.hstack((lower, upper[:, le_idx_upper].reshape(2, 1)))
-        elif leading_upper > leading_lower:
-            if le_idx_upper == 0:
-                upper = np.hstack((lower[:, le_idx_lower].reshape(2, 1), upper))
-            elif le_idx_upper == -1:
-                upper = np.hstack((upper, lower[:, le_idx_lower].reshape(2, 1)))
+        Args:
+            lower (FloatArray): Lower surface coordinates
+            upper (FloatArray): Upper surface coordinates
 
-        # Fix the leading edge
-        # Trailing upper is the rightmost point. We need to add it to the surface with the leftmost point
-        if trailing_upper == trailing_lower:
-            pass
-        elif trailing_upper > trailing_lower:
-            if te_idx_lower == -1:
-                lower = np.hstack((lower, upper[:, te_idx_upper].reshape(2, 1)))
-            elif te_idx_lower == 0:
-                lower = np.hstack((upper[:, te_idx_upper].reshape(2, 1), lower))
-        elif trailing_upper < trailing_lower:
-            if te_idx_upper == -1:
-                upper = np.hstack((upper, lower[:, te_idx_lower].reshape(2, 1)))
-            elif te_idx_upper == 0:
-                upper = np.hstack((lower[:, te_idx_lower].reshape(2, 1), upper))
+        Returns:
+            tuple[FloatArray, FloatArray]: Ordered lower and upper surface coordinates
+
+        """
+        upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
+        lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
+
+        x_lower: Float = lower[0, :]
+        y_lower: Float = lower[1, :]
+        x_upper: Float = upper[0, :]
+        y_upper: Float = upper[1, :]
+
+        # Identify the upper and lower surface leading and trailing edges
+        order_low = x_lower[0] > x_lower[-1]
+        order_up = x_upper[0] > x_upper[-1]
+
+        # Reorder the points so that the leading edge is at the beginning and the trailing edge is at the end
+        x_upper = jnp.where(
+            order_up,
+            x_upper[::-1],
+            x_upper,
+        )
+
+        y_upper = jnp.where(
+            order_up,
+            y_upper[::-1],
+            y_upper,
+        )
+
+        x_lower = jnp.where(
+            order_low,
+            x_lower[::-1],
+            x_lower,
+        )
+
+        y_lower = jnp.where(
+            order_low,
+            y_lower[::-1],
+            y_lower,
+        )
+
+        lower = jnp.array([x_lower, y_lower], dtype=float)
+        upper = jnp.array([x_upper, y_upper], dtype=float)
         return lower, upper
 
-    def thickness(self, x: FloatArray) -> FloatArray:
+    @staticmethod
+    def close_airfoil(
+        lower: Float,
+        upper: Float,
+    ) -> tuple[Float, Float]:
+        """
+        Close airfoil by adding points at leading/trailing edges if needed.
+        Simpler approach using pre-allocated arrays and conditional filling.
+        """
+        # Extract edge points
+        upper_le = upper[:, 0:1]
+        upper_te = upper[:, -1:]
+        lower_le = lower[:, 0:1]
+        lower_te = lower[:, -1:]
+
+        upper_le_x = upper[0, 0]
+        lower_le_x = lower[0, 0]
+        upper_te_x = upper[0, -1]
+        lower_te_x = lower[0, -1]
+
+        # Determine what needs to be added
+        add_lower_le_to_upper = lower_le_x < upper_le_x
+        add_upper_le_to_lower = upper_le_x < lower_le_x
+        add_lower_te_to_upper = upper_te_x < lower_te_x
+        add_upper_te_to_lower = lower_te_x < upper_te_x
+
+        # Create arrays with maximum possible size
+        max_upper_cols = upper.shape[1] + 2  # original + potential LE + potential TE
+        max_lower_cols = lower.shape[1] + 2
+
+        # Initialize with NaN (or use zeros if you prefer)
+        upper_extended = jnp.full((2, max_upper_cols), jnp.nan)
+        lower_extended = jnp.full((2, max_lower_cols), jnp.nan)
+
+        # Build upper surface
+        upper_start_idx = jnp.where(add_lower_le_to_upper, 1, 0)
+        upper_end_idx = upper_start_idx + upper.shape[1]
+
+        # Place original upper surface
+        upper_extended = upper_extended.at[:, upper_start_idx:upper_end_idx].set(upper)
+
+        # Conditionally add leading edge
+        upper_extended = jnp.where(
+            add_lower_le_to_upper,
+            upper_extended.at[:, 0:1].set(lower_le),
+            upper_extended,
+        )
+
+        # Conditionally add trailing edge
+        upper_extended = jnp.where(
+            add_lower_te_to_upper,
+            upper_extended.at[:, upper_end_idx : upper_end_idx + 1].set(lower_te),
+            upper_extended,
+        )
+
+        # Build lower surface
+        lower_start_idx = jnp.where(add_upper_le_to_lower, 1, 0)
+        lower_end_idx = lower_start_idx + lower.shape[1]
+
+        # Place original lower surface
+        lower_extended = lower_extended.at[:, lower_start_idx:lower_end_idx].set(lower)
+
+        # Conditionally add leading edge
+        lower_extended = jnp.where(
+            add_upper_le_to_lower,
+            lower_extended.at[:, 0:1].set(upper_le),
+            lower_extended,
+        )
+
+        # Conditionally add trailing edge
+        lower_extended = jnp.where(
+            add_upper_te_to_lower,
+            lower_extended.at[:, lower_end_idx : lower_end_idx + 1].set(upper_te),
+            lower_extended,
+        )
+
+        # Calculate actual sizes
+        upper_actual_size = (
+            upper.shape[1]
+            + jnp.where(add_lower_le_to_upper, 1, 0)
+            + jnp.where(add_lower_te_to_upper, 1, 0)
+        )
+        lower_actual_size = (
+            lower.shape[1]
+            + jnp.where(add_upper_le_to_lower, 1, 0)
+            + jnp.where(add_upper_te_to_lower, 1, 0)
+        )
+
+        # Trim to actual sizes
+        upper_final = upper_extended[:, :upper_actual_size]
+        lower_final = lower_extended[:, :lower_actual_size]
+
+        return lower_final, upper_final
+
+    def thickness(self, ksi: Float) -> Float:
         """Returns the thickness of the airfoil at the given x coordinates
 
         Args:
-            x (FloatArray): X coordinates
+            Ksi (Float): Normalized x coordinates in the range [0, 1]
 
         Returns:
-            FloatArray: _description_
+            Float: Thickness of the airfoil at the given ksi coordinates
 
         """
-        thickness: FloatArray = self.y_upper(x) - self.y_lower(x)
+        thickness: Float = self.y_upper(ksi) - self.y_lower(ksi)
         # Remove Nan
-        thickness = thickness[~np.isnan(thickness)]
+        ksi = ksi[~jnp.isnan(thickness)]
+        thickness = thickness[~jnp.isnan(thickness)]
 
         # Set 0 thickness for values after x_max
-        thickness[x > self.max_x] = 0
+        thickness = thickness.at[ksi > self.max_x].set(0.0)
         return thickness
 
     @property
@@ -345,7 +461,7 @@ class Airfoil:
 
         """
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
-        return float(np.max(thickness))
+        return np.max(thickness).astype(float)
 
     @property
     def max_thickness_location(self) -> float:
@@ -357,6 +473,13 @@ class Airfoil:
         """
         thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
         return float(np.argmax(thickness) / self.n_points)
+
+    @property
+    def file_name(self) -> str:
+        """Returns the file name of the airfoil"""
+        if self.name is not None:
+            return f"{self.name}.airfoil"
+        return "Airfoil.dat"
 
     @staticmethod
     def split_sides(x: FloatArray, y: FloatArray) -> tuple[FloatArray, FloatArray]:
@@ -375,7 +498,6 @@ class Airfoil:
         x_clean = x_arr[unique_indices]
         y_clean = y_arr[unique_indices]
         # Locate the trailing edge
-
         # Find Where x_arr = 0
         idxs = np.where(x_arr == 0)[0].flatten()
         if len(idxs) == 0:
@@ -496,17 +618,16 @@ class Airfoil:
         airfoil_parents = {x for x in airfoil_parents if x is not None}
         if len(airfoil_parents) <= 2:
             # If the airfoils are coming from the same morphing
-            if airfoil1_eta is not None and airfoil2_eta is not None:
-                new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
-
-            if airfoil1_eta is None and airfoil2_eta is None:
-                new_eta = eta
-
-            if airfoil1_eta is not None and airfoil2_eta is None:
-                new_eta = airfoil1_eta * (1 - eta)
-
-            if airfoil1_eta is None and airfoil2_eta is not None:
-                new_eta = (airfoil2_eta) * (eta)
+            if airfoil1_eta is not None:
+                if airfoil2_eta is not None:
+                    new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
+                else:  # airfoil2_eta is None:
+                    new_eta = airfoil1_eta * (1 - eta)
+            else:
+                if airfoil2_eta is None:
+                    new_eta = eta
+                else:  # airfoil2_eta is not None:
+                    new_eta = (airfoil2_eta) * (eta)
 
             # ROUND TO 2 DECIMALS
             new_eta = int(100 * new_eta)
@@ -600,7 +721,11 @@ class Airfoil:
         y_arr = np.array(y)
         lower, upper = cls.split_sides(x_arr, y_arr)
         try:
-            self: Airfoil = cls(upper, lower, os.path.split(filename)[-1])
+            self: Airfoil = cls(
+                upper,
+                lower,
+                os.path.split(filename)[-1].replace(".airfoil", ""),
+            )
         except ValueError as e:
             print(f"Error loading airfoil from {filename}")
             raise (ValueError(e))
@@ -624,20 +749,18 @@ class Airfoil:
             Airfoil: Flapped airfoil
 
         """
-        flap_hinge_1 = (
-            flap_hinge_chord_percentage * (self.max_x - self.min_x) + self.min_x
-        )
+        flap_hinge_1 = flap_hinge_chord_percentage
         if flap_angle == 0 or flap_hinge_1 == 1.0:
             return self
         theta = np.deg2rad(flap_angle)
 
-        x = np.linspace(self.min_x, flap_hinge_1, self.n_points)
+        x = np.linspace(0, flap_hinge_1, self.n_points)
         y_upper = self.y_upper(x)
         x_upper = x
         x_lower = x
         y_lower = self.y_lower(x)
 
-        x_after_flap = np.linspace(flap_hinge_1, self.max_x, self.n_points)
+        x_after_flap = np.linspace(flap_hinge_1, 1, self.n_points)
         x_lower_after_flap = x_after_flap
         x_upper_after_flap = x_after_flap
         y_lower_after_flap = self.y_lower(x_after_flap)
@@ -711,31 +834,30 @@ class Airfoil:
 
     def flap_camber_line(
         self,
-        flap_hinge: float,
+        flap_hinge_chord_percentage: float,
         flap_angle: float,
         chord_extension: float = 1,
-        # plot_flap: bool = False
     ) -> Airfoil:
-        if flap_angle == 0 or flap_hinge == 1.0:
+        if flap_angle == 0 or flap_hinge_chord_percentage == 1.0:
             return self
         flap_angle = np.deg2rad(flap_angle)
 
         n = self.n_points
-        eta = (flap_hinge - self.min_x) / (self.max_x - self.min_x)
+        eta = flap_hinge_chord_percentage
         n1 = int(n * eta)
         n2 = n - n1
 
-        x_after = np.linspace(flap_hinge, self.max_x, n2)
-        x_before = np.linspace(self.min_x, flap_hinge, n1)
+        x_after = np.linspace(flap_hinge_chord_percentage, 1, n2)
+        x_before = np.linspace(0, flap_hinge_chord_percentage, n1)
 
-        y_hinge = self.camber_line(flap_hinge)
+        y_hinge = self.camber_line(flap_hinge_chord_percentage)
         y_after = self.camber_line(x_after)
 
         y = y_after - y_hinge
-        x = x_after - flap_hinge
+        x = x_after - flap_hinge_chord_percentage
         xnew = x * np.cos(flap_angle) - y * np.sin(flap_angle)
         ynew = x * np.sin(flap_angle) + y * np.cos(flap_angle)
-        xnew += flap_hinge
+        xnew += flap_hinge_chord_percentage
         ynew += y_hinge
 
         # We need to take the xnew,ynew line and add thickness to both sides in the direction
@@ -746,11 +868,11 @@ class Airfoil:
         thickess = self.thickness(x_after)
         spacing = np.hstack((0, np.diff(y_after)))
         angle = np.arctan(np.gradient(x_after, spacing, edge_order=1))
-        lower_y = ynew - np.sin(angle + flap_angle) * thickess / 2
-        lower_x = xnew - np.cos(angle + flap_angle) * thickess / 2
+        lower_y = ynew + np.sin(angle + flap_angle) * thickess / 2
+        lower_x = xnew + np.cos(angle + flap_angle) * thickess / 2
 
-        upper_y = ynew + np.sin(angle + flap_angle) * thickess / 2
-        upper_x = xnew + np.cos(angle + flap_angle) * thickess / 2
+        upper_y = ynew - np.sin(angle + flap_angle) * thickess / 2
+        upper_x = xnew - np.cos(angle + flap_angle) * thickess / 2
 
         # Identiffy the problematic regions
         # Problematic are the regions of the first point of both the upper and lower surface
@@ -758,11 +880,11 @@ class Airfoil:
         # the gap that arises on the other side
 
         # Remove the points where x < x_hinge
-        problematic_indices = np.where(upper_x < flap_hinge)
+        problematic_indices = np.where(upper_x < flap_hinge_chord_percentage)
         upper_x = np.delete(upper_x, problematic_indices)
         upper_y = np.delete(upper_y, problematic_indices)
 
-        problematic_indices = np.where(lower_x < flap_hinge)
+        problematic_indices = np.where(lower_x < flap_hinge_chord_percentage)
         lower_x = np.delete(lower_x, problematic_indices)
         lower_y = np.delete(lower_y, problematic_indices)
 
@@ -824,7 +946,7 @@ class Airfoil:
         flapped = FlappedAirfoil(
             upper,
             lower,
-            name=f"{self.name}_flapped_hinge_{flap_hinge:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
+            name=f"{self.name}_flapped_hinge_{flap_hinge_chord_percentage:.2f}_deflection_{np.rad2deg(flap_angle):.2f}",
             parent=self,
         )
         return flapped
@@ -840,52 +962,6 @@ class Airfoil:
 
         """
         return np.array((self.y_upper(points) + self.y_lower(points)) / 2, dtype=float)
-
-    def to_selig(self) -> FloatArray:
-        """Returns the airfoil in the selig format.
-        Meaning that the airfoil runs run from the trailing edge, round the leading edge,
-        back to the trailing edge in either direction:
-        """
-        # Identify the upper and lower surface leading and trailing edges
-        if self._x_upper[0] < self._x_upper[-1]:
-            y_up = self._y_upper[::-1]
-            x_up = self._x_upper[::-1]
-        else:
-            x_up = self._x_upper
-            y_up = self._y_upper
-
-        if self._x_lower[0] > self._x_lower[-1]:
-            x_lo = self._x_lower[::-1]
-            y_lo = self._y_lower[::-1]
-        else:
-            x_lo = self._x_lower
-            y_lo = self._y_lower
-
-        # Remove NaN values
-        idx_nan = np.isnan(x_up) | np.isnan(y_up)
-        x_up = x_up[~idx_nan]
-        y_up = y_up[~idx_nan]
-
-        idx_nan = np.isnan(x_lo) | np.isnan(y_lo)
-        x_lo = x_lo[~idx_nan]
-        y_lo = y_lo[~idx_nan]
-
-        upper = np.array([x_up, y_up], dtype=float)
-        lower = np.array([x_lo, y_lo], dtype=float)
-
-        # Remove duplicates
-
-        lower, upper = self.close_airfoil(lower, upper)
-
-        x_up = upper[0]
-        y_up = upper[1]
-
-        x_lo = lower[0]
-        y_lo = lower[1]
-
-        x_points: FloatArray = np.hstack((x_up, x_lo)).T
-        y_points: FloatArray = np.hstack((y_up, y_lo)).T
-        return np.vstack((x_points, y_points))
 
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:
@@ -961,12 +1037,13 @@ class Airfoil:
         with open(file_name, "w") as file:
             if header:
                 file.write(f"{self.name} with {self.n_points}\n")
+
+            pts = self.to_selig()
             if inverse:
-                pts = self.selig.T[::-1]
-            else:
-                pts = self.selig.T
-            x = pts[:, 0]
-            y = pts[:, 1]
+                pts = pts[:, ::-1]
+
+            x = pts[0, :]
+            y = pts[1, :]
             # Remove NaN values and duplicates
             x_arr = np.array(x)
             y_arr = np.array(y)
@@ -1036,7 +1113,7 @@ class Airfoil:
             max_thickness (bool, optional): Whether to plot the max thickness. Defaults to False.
 
         """
-        pts = self.selig
+        pts = self.to_selig()
         x, y = pts
 
         if ax is None:
@@ -1084,7 +1161,7 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil: {self.name}  ({len(self._x_lower)} x {len(self._x_upper)})"
+        return self.__str__()
 
     def __str__(self) -> str:
         """Returns the string representation of the airfoil
@@ -1093,7 +1170,9 @@ class Airfoil:
             str: String representation of the airfoil
 
         """
-        return f"Airfoil({self.name})"
+        if not hasattr(self, "name") or self.name is None:
+            return f"Airfoil with ({len(self._x_lower)} x {len(self._x_upper)}) points"
+        return f"Airfoil: {self.name} with ({len(self._x_lower)} x {len(self._x_upper)}) points"
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Sets the state of the airfoil
@@ -1127,3 +1206,20 @@ class Airfoil:
             "upper": np.vstack((self._x_upper, self._y_upper), dtype=float).tolist(),
             "lower": np.vstack((self._x_lower, self._y_lower), dtype=float).tolist(),
         }
+
+    def tree_flatten(self):
+        x_upper = jnp.array(self._x_upper, dtype=float)
+        y_upper = jnp.array(self._y_upper, dtype=float)
+        x_lower = jnp.array(self._x_lower, dtype=float)
+        y_lower = jnp.array(self._y_lower, dtype=float)
+        name = self.name
+
+        return ((x_lower, y_lower, x_upper, y_upper), (name))
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children) -> Self:
+        return cls(
+            lower=jnp.array(children[:2], dtype=float),
+            upper=jnp.array(children[2:4], dtype=float),
+            name=aux_data[0] if aux_data else None,
+        )

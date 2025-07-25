@@ -1,0 +1,221 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import Sequence
+
+import jax.numpy as jnp
+from mpl_toolkits.mplot3d import Axes3D
+
+if TYPE_CHECKING:
+    from ICARUS.vehicle import Airplane
+
+from ICARUS.core.types import FloatArray
+
+from .lspt_surface import LSPTSurface
+
+
+class LSPT_Plane:
+    """Wing Model using the Lifting Surface Potential Theory. The wing
+    is divided into panels and the potential flow is solved using
+    the no penetration condition. Also, the Trefftz plane is used to
+    calculate the induced drag. To calculate forces and moments db polars,
+    can also be used.
+    """
+
+    def __init__(
+        self,
+        plane: Airplane,
+    ) -> None:
+        # Store the wing segments
+        self.name = plane.name
+        self.surfaces: Sequence[LSPTSurface] = []
+
+        # Plane properties
+        self.S: float = plane.S
+        self.CG: FloatArray = plane.CG
+        self.MAC: float = plane.mean_aerodynamic_chord
+        self.span: float = plane.span
+
+        # Get the wing segments
+        panel_index = 0
+        grid_index = 0
+        for i, wing in enumerate(plane.wings):
+            for segment in wing.wing_segments:
+                lspt_surface = LSPTSurface(
+                    surface=segment,
+                    wing_id=i,
+                )
+                self.surfaces.append(lspt_surface)
+
+                panel_index += lspt_surface.num_panels
+                grid_index += lspt_surface.num_grid_points
+
+        for surface in self.surfaces:
+            # Add the near wake panels
+            surface.add_near_wake_panels()
+            # Add the flat wake panels
+            surface.add_flat_wake_panels(
+                num_of_wake_panels=5,
+                wake_x_inflation=1.1,
+                farfield_distance=5,
+                alpha=0.0,
+                beta=0.0,
+            )
+
+        num_panels = (
+            self.num_panels + self.num_near_wake_panels + self.num_flat_wake_panels
+        )
+        num_grid_points = self.num_grid_points
+
+        # Flattened Grid
+        self.grid = jnp.zeros((num_grid_points, 3))
+        # Panels are defined by 4 points in 3D space
+        self.panels = jnp.zeros((num_panels, 4, 3))
+        # Control points are the Quarter Chord of the panels
+        self.panel_cps = jnp.zeros((num_panels, 3))
+        # Normal vector at the control points
+        self.panel_normals = jnp.zeros((num_panels, 3))
+        # Each panel has a circulation gamma
+        self.gammas = jnp.zeros(num_panels)
+
+        surf_panel_index = 0
+        surf_grid_index = 0
+
+        all_wake_shedding_panel_indices = []
+        all_surf_panel_indices = []
+        all_near_wake_indices = []
+        all_flat_wake_indices = []
+        for surface in self.surfaces:
+            # Indices for the current surface
+            surf_panel_indices = surf_panel_index + jnp.arange(surface.num_panels)
+            near_wake_indices = (
+                surf_panel_indices[-1] + jnp.arange(surface.num_near_wake_panels) + 1
+            )
+            flat_wake_indices = (
+                near_wake_indices[-1] + jnp.arange(surface.num_flat_wake_panels) + 1
+            )
+
+            # print(f"Surface {surf.name}:")
+            # print(f"\tPanel Indices from {surf_panel_indices[0] } to {surf_panel_indices[-1]}")
+            # print(f"\tNear Wake Indices from {near_wake_indices[0]} to {near_wake_indices[-1]}")
+            # print(f"\tFlat Wake Indices from {flat_wake_indices[0]} to {flat_wake_indices[-1]}")
+            wake_shedding_panel_indices = (
+                surf_panel_index + surface.wake_shedding_panel_indices
+            )
+
+            # Bookkeeping the indices for near wake and flat wake panels
+            all_surf_panel_indices.extend(surf_panel_indices.tolist())
+            all_near_wake_indices.extend(near_wake_indices.tolist())
+            all_flat_wake_indices.extend(flat_wake_indices.tolist())
+            all_wake_shedding_panel_indices.extend(wake_shedding_panel_indices.tolist())
+
+            # Set Panels
+            self.panels = self.panels.at[surf_panel_indices, :, :].set(surface.panels)
+            self.panels = self.panels.at[near_wake_indices, :, :].set(
+                surface.near_wake_panels,
+            )
+            # self.panels = self.panels.at[flat_wake_indices, :, :].set(surf.flat_wake_panels)
+
+            # Set Control Points
+            self.panel_cps = self.panel_cps.at[surf_panel_indices, :].set(
+                surface.panel_cps,
+            )
+            self.panel_cps = self.panel_cps.at[near_wake_indices, :].set(
+                surface.near_wake_panel_cps,
+            )
+            # self.panel_cps = self.panel_cps.at[flat_wake_indices, :].set(surf.flat_wake_panel_cps)
+
+            # Set Control Normals
+            self.panel_normals = self.panel_normals.at[surf_panel_indices, :].set(
+                surface.panel_normals,
+            )
+            self.panel_normals = self.panel_normals.at[near_wake_indices, :].set(
+                surface.near_wake_panel_normals,
+            )
+            # self.panel_normals = self.panel_normals.at[flat_wake_indices, :].set(surf.flat_wake_panel_normals)
+
+            # Set Grid Points
+            grid_indices = surf_grid_index + jnp.arange(surface.num_grid_points)
+            self.grid = self.grid.at[grid_indices, :].set(surface.grid)
+
+            # Update indices for next surface
+            surf_panel_index += (
+                surface.num_panels
+                + surface.num_near_wake_panels
+                + surface.num_flat_wake_panels
+            )
+            surf_grid_index += surface.num_grid_points
+
+        # Store the indices for near wake and flat wake panels
+        self.panel_indices = jnp.array(all_surf_panel_indices)
+        self.near_wake_indices = jnp.array(all_near_wake_indices)
+        self.wake_shedding_panel_indices = jnp.array(all_wake_shedding_panel_indices)
+        self.flat_wake_indices = jnp.array(all_flat_wake_indices)
+
+        # Influence matrices
+        self.A = jnp.zeros((num_panels, num_panels))
+        self.A_star = jnp.zeros((num_panels, num_panels))
+
+    @property
+    def num_panels(self) -> int:
+        """Total number of panels in the LSPT plane."""
+        return sum(surface.num_panels for surface in self.surfaces)
+
+    @property
+    def num_near_wake_panels(self) -> int:
+        """Total number of near wake panels in the LSPT plane."""
+        return sum(surface.num_near_wake_panels for surface in self.surfaces)
+
+    @property
+    def num_flat_wake_panels(self) -> int:
+        """Total number of flat wake panels in the LSPT plane."""
+        return sum(surface.num_flat_wake_panels for surface in self.surfaces)
+
+    @property
+    def num_grid_points(self) -> int:
+        """Total number of grid points in the LSPT plane."""
+        return sum(surface.num_grid_points for surface in self.surfaces)
+
+    @property
+    def num_strips(self) -> int:
+        """Total number of strips in the LSPT plane."""
+        return sum(surface.num_strips for surface in self.surfaces)
+
+    @property
+    def lifting_surfaces(self) -> list[LSPTSurface]:
+        """List of lifting surfaces in the LSPT plane."""
+        return [surface for surface in self.surfaces if surface.is_lifting]
+
+    def plot_panels(
+        self,
+        ax: Axes3D | None = None,
+        plot_wake: bool = False,
+    ) -> None:
+        """Plot the panels of the LSPT plane."""
+        from ICARUS.visualization import parse_Axes3D
+
+        fig, ax, created_plot = parse_Axes3D(ax=ax)
+
+        for surf in self.surfaces:
+            surf.plot_panels(
+                ax=ax,
+                plot_wake=plot_wake,
+                legend=False,
+            )
+
+        if plot_wake:
+            ax.scatter([], [], [], color="orange", label="Flat Wake Panels")  # noqa
+            ax.scatter([], [], [], color="g", label="Near Wake Panels")  # noqa
+        ax.scatter([], [], [], color="b", marker="x", label="Wake Shedding Panels")  # noqa
+        ax.scatter([], [], [], color="r", marker="o", label="Control Points")  # noqa
+        ax.scatter([], [], [], color="k", marker="x", label="Grid Points")  # noqa
+
+        if created_plot:
+            ax.set_title("Grid")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+            ax.axis("equal")
+            ax.view_init(30, 150)
+            ax.legend()
+            fig.show()

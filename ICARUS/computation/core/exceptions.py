@@ -24,7 +24,7 @@ class TaskExecutionError(SimulationFrameworkError):
         task_id: TaskId,
         message: str,
         original_error: Optional[Exception] = None,
-    ):
+    ) -> None:
         self.task_id = task_id
         self.original_error = original_error
         super().__init__(f"Task {task_id} failed: {message}")

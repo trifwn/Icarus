@@ -499,6 +499,7 @@ class Database_2D:
             airfoil_name.upper(),
             f"{airfoil_name.lower()}.airfoil",
         )
+
         if os.path.exists(airfoil_path):
             try:
                 self.airfoils[airfoil_name] = Airfoil.from_file(airfoil_path)
@@ -628,7 +629,7 @@ class Database_2D:
     def interpolate_polars(
         self,
         reynolds: float,
-        airfoil_name: str,
+        airfoil: Airfoil,
         aoa: float,
         solver: str,
     ) -> tuple[float, float, float]:
@@ -644,6 +645,7 @@ class Database_2D:
             tuple[float, float, float]: CL, CD, Cm
 
         """
+        airfoil_name = airfoil.name.upper()  # Ensure airfoil name is uppercase
         if airfoil_name not in self.polars.keys():
             if f"NACA{airfoil_name}" in self.polars.keys():
                 airfoil_name = f"NACA{airfoil_name}"
@@ -658,12 +660,12 @@ class Database_2D:
 
         if reynolds > max_reynolds_stored:
             raise ValueError(
-                f"Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}",
+                f"Airfoil: {airfoil.name} Reynolds {reynolds} not in database! Max Reynolds is {max_reynolds_stored}.",
             )
 
         if reynolds < min_reynolds_stored:
             raise ValueError(
-                f"Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
+                f"Airfoil: {airfoil.name} Reynolds {reynolds} not in database! Min Reynolds is {min_reynolds_stored}",
             )
 
         reynolds_stored.sort()

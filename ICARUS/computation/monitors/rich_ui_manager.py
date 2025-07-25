@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import TracebackType
 from typing import Self
 
 from rich.console import Console
@@ -85,7 +86,12 @@ class RichUIManager:
             self._entered = True
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         self._rows = {}
         if self._entered and self._live:
             self._live.__exit__(exc_type, exc_val, exc_tb)

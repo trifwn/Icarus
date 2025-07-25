@@ -6,23 +6,21 @@ from typing import Any
 from typing import Sequence
 
 import jsonpickle
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy import ndarray
 
-from ICARUS.core.base_types import Optimizable
+from ICARUS.core import Optimizable
 
-from . import PointMass
+from . import Mass
 from . import Wing
+from . import WingSurface
 
 if TYPE_CHECKING:
     from ICARUS.core.types import FloatArray
     from ICARUS.core.types import FloatOrListArray
     from ICARUS.flight_dynamics import State
 
-    from . import WingSurface
     from .surface_connections import SurfaceConnection
 
 
@@ -30,10 +28,10 @@ class Airplane(Optimizable):
     def __init__(
         self,
         name: str,
-        main_wing: WingSurface,
-        other_surfaces: Sequence[WingSurface] | None = None,
+        main_wing: WingSurface | Wing,
+        other_wings: Sequence[WingSurface | Wing] | None = None,
         orientation: FloatOrListArray | None = None,
-        point_masses: list[PointMass] | None = None,
+        point_masses: list[Mass] | None = None,
         cg_overwrite: FloatArray | None = None,
         inertia_overwrite: FloatArray | None = None,
     ) -> None:
@@ -42,9 +40,9 @@ class Airplane(Optimizable):
         Args:
             name (str): Name of the plane
             main_wing (WingSurface): Main wing of the plane
-            other_surfaces (Sequence[WingSurface]): Other surfaces of the plane
+            other_wings (Sequence[WingSurface]): Other surfaces of the plane
             orientation (FloatOrListArray | None, optional): Orientation of the plane. Defaults to None.
-            point_masses (list[PointMass] | None, optional): Point masses of the plane. Defaults to None.
+            point_masses (list[Mass] | None, optional): Point masses of the plane. Defaults to None.
             cg_overwrite (FloatArray | None, optional): Center of gravity of the plane. Defaults to None.
             inertia_overwrite (FloatArray | None, optional): Inertia of the plane. Defaults to None.
         """
@@ -60,22 +58,32 @@ class Airplane(Optimizable):
 
         self.main_wing_name: str = main_wing.name
 
-        self.surface_dict: dict[str, WingSurface] = {}
-        self.surface_dict[main_wing.name] = main_wing
+        all_wings = [main_wing, *other_wings] if other_wings else [main_wing]
+        self._wings: dict[str, Wing] = {}
 
-        if other_surfaces is not None:
-            for surface in other_surfaces:
-                self.surface_dict[surface.name] = surface
+        for wing in all_wings:
+            if isinstance(wing, Wing):
+                self._wings[wing.name] = wing
+            elif isinstance(wing, WingSurface):
+                wing = Wing(
+                    name=wing.name,
+                    wing_segments=[wing],
+                )
+                self._wings[wing.name] = wing
+            else:
+                raise TypeError(
+                    f"Invalid type for wing: {type(wing)}. Must be Wing or WingSurface.",
+                )
 
         self.airfoils: list[str] = self.get_all_airfoils()
-        self.point_masses: list[PointMass] = []
+        self.point_masses: list[Mass] = []
         self.moments: list[FloatArray] = []
 
         self.M: float = 0
-        for surface in self.surfaces:
-            mom = surface.inertia
+        for wing in self.wings:
+            mom = wing.inertia
 
-            self.M += surface.mass
+            self.M += wing.mass
             self.moments.append(mom)
 
         if point_masses is not None:
@@ -90,20 +98,20 @@ class Airplane(Optimizable):
 
         # Get the control vector:
         control_vars: set[str] = set()
-        for surf in self.surfaces:
-            control_vars.update(surf.control_vars)
+        for wing in self.wings:
+            control_vars.update(wing.control_vars)
         self.control_vars: set[str] = control_vars
         self.num_control_variables = len(control_vars)
         self.control_vector: dict[str, float] = {k: 0.0 for k in control_vars}
 
-        surf_names = list(self.surface_dict.keys())
+        surf_names = list(self._wings.keys())
         for name in surf_names:
-            surf = self.surface_dict[name]
-            if surf.is_symmetric_y and any(
-                [cont.inverse_symmetric for cont in self.surfaces[0].controls],
+            wing = self._wings[name]
+            if wing.is_symmetric_y and any(
+                [cont.inverse_symmetric for cont in wing.controls],
             ):
                 # Split the surface into 2 symmetric surfaces
-                self.surface_dict[name] = surf.split_xz_symmetric_wing()
+                self._wings[name] = wing.split_xz_symmetric_wing()
 
         if cg_overwrite is not None:
             self.overwrite_mass = True
@@ -121,23 +129,23 @@ class Airplane(Optimizable):
 
     def __control__(self, control_vector: dict[str, float]) -> None:
         # control_dict = {k: control_vector[k] for k in self.control_vars}
-        for surf in self.surfaces:
+        for wing in self.wings:
             surf_control_vec = {}
             for name, value in control_vector.items():
-                if name in surf.control_vars:
+                if name in wing.control_vars:
                     surf_control_vec[name] = value
                     self.control_vector[name] = value
-            surf.__control__(surf_control_vec)
+            wing.__control__(surf_control_vec)
 
     @property
-    def main_wing(self) -> WingSurface:
+    def main_wing(self) -> WingSurface | Wing:
         """Get the main wing of the plane
 
         Returns:
             WingSurface: Main wing of the plane
 
         """
-        return self.surface_dict[self.main_wing_name]
+        return self._wings[self.main_wing_name]
 
     @property
     def S(self) -> float:
@@ -150,7 +158,27 @@ class Airplane(Optimizable):
         return self.main_wing.S
 
     @property
+    def mass(self) -> float:
+        """Get the mass of the plane
+
+        Returns:
+            float: Mass of the plane
+
+        """
+        return self.M
+
+    @property
     def mean_aerodynamic_chord(self) -> float:
+        """Get the mean aerodynamic chord of the plane
+
+        Returns:
+            float: Mean aerodynamic chord of the plane
+
+        """
+        return self.main_wing.mean_aerodynamic_chord
+
+    @property
+    def MAC(self) -> float:
         """Get the mean aerodynamic chord of the plane
 
         Returns:
@@ -190,8 +218,8 @@ class Airplane(Optimizable):
         return self.main_wing.span
 
     @property
-    def surfaces(self) -> list[WingSurface]:
-        return list(self.surface_dict.values())
+    def wings(self) -> list[Wing]:
+        return list(self._wings.values())
 
     @property
     def wing_segments(self) -> list[tuple[int, WingSurface]]:
@@ -201,16 +229,20 @@ class Airplane(Optimizable):
             list[tuple[int ,WingSurface]]: List of (index, WingSurface) tuples
 
         """
-        surfaces: list[tuple[int, WingSurface]] = []
-        i = 0
-        for _, surface in self.surface_dict.items():
-            if isinstance(surface, Wing):
-                for s in surface.get_separate_segments():
-                    surfaces.append((i, s))
-            else:
-                surfaces.append((i, surface))
-            i += 1
-        return surfaces
+        wing_segments: list[tuple[int, WingSurface]] = []
+        for i, wing in enumerate(self.wings):
+            for s in wing.get_separate_segments():
+                wing_segments.append((i, s))
+        return wing_segments
+
+    def split_wing_segments(self) -> list[tuple[int, WingSurface]]:
+        wing_segments: list[tuple[int, WingSurface]] = []
+        for i, wing in enumerate(self.wings):
+            if wing.is_symmetric_y:
+                wing = wing.split_xz_symmetric_wing()
+            for s in wing.get_separate_segments():
+                wing_segments.append((i, s))
+        return wing_segments
 
     def get_position(self, name: str, axis: str) -> float | FloatArray:
         """Return the x position of the point mass
@@ -240,16 +272,16 @@ class Airplane(Optimizable):
                     f"Plane doesn't contain attribute {axis}",
                 )
 
-        for surf in self.surfaces:
-            if surf.name == name:
+        for wing in self.wings:
+            if wing.name == name:
                 if axis == "x":
-                    return float(surf.origin[0])
+                    return float(wing.origin[0])
                 if axis == "y":
-                    return float(surf.origin[1])
+                    return float(wing.origin[1])
                 if axis == "z":
-                    return float(surf.origin[2])
+                    return float(wing.origin[2])
                 if axis == "xyz":
-                    return surf.origin
+                    return wing.origin
                 raise PlaneDoesntContainAttr(
                     f"Plane doesn't contain attribute {axis}",
                 )
@@ -297,26 +329,26 @@ class Airplane(Optimizable):
                 self.point_masses[i] = mass
                 return
 
-        for surf in self.surfaces:
-            if surf.name == name:
+        for wing in self.wings:
+            if wing.name == name:
                 if axis == "x":
                     if isinstance(value, float):
-                        surf.x_origin = value
+                        wing.x_origin = value
                     else:
                         raise ValueError("Value must be a float")
                 elif axis == "y":
                     if isinstance(value, float):
-                        surf.y_origin = value
+                        wing.y_origin = value
                     else:
                         raise ValueError("Value must be a float")
                 elif axis == "z":
                     if isinstance(value, float):
-                        surf.z_origin = value
+                        wing.z_origin = value
                     else:
                         raise ValueError("Value must be a float")
                 elif axis == "xyz":
                     if isinstance(value, ndarray):
-                        surf.origin = value
+                        wing.origin = value
                     else:
                         raise ValueError("Value must be a ndarray")
                 else:
@@ -343,9 +375,9 @@ class Airplane(Optimizable):
             if mass.name == name:
                 return mass.mass
 
-        for surf in self.surfaces:
-            if surf.name == name:
-                return surf.mass
+        for wing in self.wings:
+            if wing.name == name:
+                return wing.mass
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     def get_inertia(self, name: str) -> FloatArray:
@@ -365,9 +397,9 @@ class Airplane(Optimizable):
             if mass.name == name:
                 return np.array(mass.inertia.to_list, dtype=float)
 
-        for surf in self.surfaces:
-            if surf.name == name:
-                return surf.inertia
+        for wing in self.wings:
+            if wing.name == name:
+                return wing.inertia
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     def change_mass(self, name: str, new_mass: float) -> None:
@@ -383,9 +415,9 @@ class Airplane(Optimizable):
                 self.point_masses[i].mass = new_mass
                 return
 
-        for i, surf in enumerate(self.surfaces):
+        for i, surf in enumerate(self.wings):
             if surf.name == name:
-                self.surfaces[i].mass = new_mass
+                self.wings[i].mass = new_mass
                 return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
@@ -401,9 +433,9 @@ class Airplane(Optimizable):
             if mass.name == name:
                 self.point_masses[i].inertia = new_inertia
                 return
-        # for i, surf in enumerate(self.surfaces):
+        # for i, surf in enumerate(self.wings):
         #     if surf.name == name:
-        #         self.surfaces[i].inertia = new_inertia
+        #         self.wings[i].inertia = new_inertia
         #         return
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
@@ -427,10 +459,10 @@ class Airplane(Optimizable):
                 name = name.replace("_mass", "")
                 return self.get_mass(name)
             # How to handle infinite recursion?
-            for surface in self.surfaces:
-                if name.startswith(f"{surface.name}_"):
-                    return surface.__getattribute__(
-                        name.replace(surface.name, ""),
+            for wing in self.wings:
+                if name.startswith(f"{wing.name}_"):
+                    return wing.__getattribute__(
+                        name.replace(wing.name, ""),
                     )
             raise AttributeError(f"Plane doesn't contain attribute {name}")
 
@@ -455,9 +487,9 @@ class Airplane(Optimizable):
             self.change_inertia(name, new_inertia=value)
         else:
             if hasattr(self, "surfaces"):
-                for surface in self.surfaces:
-                    if name.startswith(f"{surface.name}_"):
-                        surface.__setattr__(name.replace(f"{surface.name}_", ""), value)
+                for wing in self.wings:
+                    if name.startswith(f"{wing.name}_"):
+                        wing.__setattr__(name.replace(f"{wing.name}_", ""), value)
                         return
             object.__setattr__(self, name, value)
 
@@ -491,14 +523,14 @@ class Airplane(Optimizable):
         self.overwrite_inertia = True
 
     @property
-    def masses(self) -> list[PointMass]:
+    def masses(self) -> list[Mass]:
         ret = []
-        for surface in self.surfaces:
-            mass = PointMass(
-                name=surface.name,
-                position=surface.CG,
-                mass=surface.mass,
-                inertia=surface.inertia,
+        for wing in self.wings:
+            mass = Mass(
+                name=wing.name,
+                position=wing.CG,
+                mass=wing.mass,
+                inertia=wing.inertia,
             )
             ret.append(mass)
 
@@ -506,16 +538,6 @@ class Airplane(Optimizable):
             ret.append(point_mass)
 
         return ret
-
-    def get_seperate_surfaces(self) -> list[WingSurface]:
-        surfaces: list[WingSurface] = []
-        for surface in self.surfaces:
-            if surface.is_symmetric_y:
-                split_surface = surface.split_xz_symmetric_wing()
-                surfaces.append(split_surface)
-            else:
-                surfaces.append(surface)
-        return surfaces
 
     def register_connections(self) -> None:
         """For each surface, detect if it is connected to another surface and register the connection
@@ -528,37 +550,37 @@ class Airplane(Optimizable):
         # To do this, we check if the tip of one surface is the same as the root of another surface
         # If it is, then we register the connection
         return
-        for surface in self.surfaces:
-            for other_surface in self.surfaces:
-                if surface is not other_surface:
-                    if np.allclose(surface.tip, other_surface.root):
-                        if surface.name not in self.connections.keys():
-                            self.connections[surface.name] = SurfaceConnection()
+        for wing in self.wings:
+            for other_surface in self.wings:
+                if wing is not other_surface:
+                    if np.allclose(wing.tip, other_surface.root):
+                        if wing.name not in self.connections.keys():
+                            self.connections[wing.name] = SurfaceConnection()
                             self.connections[other_surface.name] = SurfaceConnection()
 
         # Detect if surfaces are connected chordwise
         # To do this, we check if the trailing edge of one surface is the same as the leading edge of another surface
         # If it is, then we register the connection
-        for surface in self.surfaces:
-            for other_surface in self.surfaces:
-                if surface is not other_surface:
-                    if np.allclose(surface.trailing_edge, other_surface.leading_edge):
-                        if surface.name not in self.connections.keys():
-                            self.connections[surface.name] = SurfaceConnection()
+        for wing in self.wings:
+            for other_surface in self.wings:
+                if wing is not other_surface:
+                    if np.allclose(wing.trailing_edge, other_surface.leading_edge):
+                        if wing.name not in self.connections.keys():
+                            self.connections[wing.name] = SurfaceConnection()
                             self.connections[other_surface.name] = SurfaceConnection()
 
-    def get_surface(self, name: str) -> WingSurface:
-        for surface in self.surfaces:
-            if surface.name == name.replace(" ", "_"):
-                return surface
-        for _, surface in self.wing_segments:
-            if surface.name == name.replace(" ", "_"):
-                return surface
+    def get_surface(self, name: str) -> WingSurface | Wing:
+        for wing in self.wings:
+            if wing.name == name.replace(" ", "_"):
+                return wing
+        for _, wing in self.wing_segments:
+            if wing.name == name.replace(" ", "_"):
+                return wing
         raise PlaneDoesntContainAttr(f"Plane doesn't contain attribute {name}")
 
     def add_point_masses(
         self,
-        masses: list[PointMass] | PointMass,
+        masses: list[Mass] | Mass,
     ) -> None:
         """Add point masses to the plane. The point masses are defined by a tuple of the mass and the position of the mass.
 
@@ -566,7 +588,7 @@ class Airplane(Optimizable):
             masses (tuple[float, NDArray[Shape[&#39;3,&#39;], Float]]): (mass, position) eg (3, np.array([0,0,0])
 
         """
-        if isinstance(masses, PointMass):
+        if isinstance(masses, Mass):
             masses = [masses]
 
         for mass in masses:
@@ -635,20 +657,20 @@ class Airplane(Optimizable):
 
         """
         airfoils: list[str] = []
-        for surface in self.surfaces:
-            for airfoil in surface.airfoils:
+        for wing in self.wings:
+            for airfoil in wing.airfoils:
                 if f"{airfoil.name}" not in airfoils:
                     airfoils.append(f"{airfoil.name}")
         return airfoils
 
     def plot(
         self,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
+        ax: Axes3D | None = None,
         thin: bool = False,
         annotate: bool = False,
         show_masses: bool = True,
+        show_strips: bool = False,
+        movement: FloatArray | None = None,
     ) -> None:
         """Visualize the plane
 
@@ -658,21 +680,18 @@ class Airplane(Optimizable):
             movement (FloatArray | None, optional): Plane Movement from origin. Defaults to None.
 
         """
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
+
+        from ICARUS.visualization import parse_Axes3D
+
+        fig, ax, created_plot = parse_Axes3D(ax)
+
+        if created_plot:
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
             ax.set_zlabel("z")
             ax.view_init(30, 150)
             ax.axis("scaled")
-            ax.set_xlim(-1, 1)
-            ax.set_ylim(-1, 1)
-            ax.set_zlim(-1, 1)
 
         if isinstance(movement, ndarray):
             mov = movement
@@ -685,8 +704,8 @@ class Airplane(Optimizable):
                 print("Movement must be a 3 element array")
                 mov = np.zeros(3)
 
-        for surface in self.surfaces:
-            surface.plot(thin, fig, ax, mov)
+        for wing in self.wings:
+            wing.plot(thin, ax, mov)
         # Add plot for masses
         if show_masses:
             for p_mass in self.masses:
@@ -719,6 +738,12 @@ class Airplane(Optimizable):
             s=50,
             color="b",
         )
+
+        if show_strips:
+            for wing in self.wings:
+                for strip in wing.all_strips:
+                    strip.plot_3D(ax=ax)
+
         if annotate:
             ax.text(
                 self.CG[0] + mov[0],
@@ -729,7 +754,9 @@ class Airplane(Optimizable):
                 zorder=1,
                 color="k",
             )
-        plt.show()
+
+        if created_plot:
+            fig.show()
 
     def to_json(self) -> str:
         """Pickle the plane object to a json string
@@ -754,7 +781,7 @@ class Airplane(Optimizable):
             self,
             name=state["name"],
             main_wing=state["main_wing"],
-            other_surfaces=state["other_surfaces"],
+            other_wings=state["other_wings"],
             orientation=state["orientation"],
             point_masses=state["point_masses"],
             cg_overwrite=state["cg_overwrite"],
@@ -765,10 +792,8 @@ class Airplane(Optimizable):
         return {
             "name": self.name,
             "main_wing": self.main_wing,
-            "other_surfaces": [
-                surf
-                for surf in self.surface_dict.values()
-                if surf.name != self.main_wing_name
+            "other_wings": [
+                wing for wing in self.wings if wing.name != self.main_wing_name
             ],
             "orientation": self.orientation,
             "point_masses": self.point_masses,
@@ -801,10 +826,8 @@ class Airplane(Optimizable):
         return Airplane(
             name=self.name,
             main_wing=self.main_wing,
-            other_surfaces=[
-                surf
-                for surf in self.surface_dict.values()
-                if surf.name != self.main_wing_name
+            other_wings=[
+                wing for wing in self.wings if wing.name != self.main_wing_name
             ],
             orientation=self.orientation,
             point_masses=self.point_masses,

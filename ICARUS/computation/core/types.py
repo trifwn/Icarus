@@ -154,7 +154,7 @@ class ExecutionMode(Enum):
     THREADING = "threading"
     MULTIPROCESSING = "multiprocessing"
     ASYNC = "async"
-    ADAPTIVE = "adaptive"
+    # ADAPTIVE = "adaptive"
 
     def __init__(self, value: str) -> None:
         """

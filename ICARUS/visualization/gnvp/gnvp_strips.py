@@ -43,7 +43,7 @@ def plot_gnvp_strip_data_3D(
     all_strip_data, body_data = get_strip_data(plane, state, case, NBs, gnvp_version)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+    ax: Axes3D = fig.add_subplot(projection="3d")  # noqa
     ax.set_title(f"{plane.name} {category} Data")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
@@ -58,11 +58,11 @@ def plot_gnvp_strip_data_3D(
     norm = Normalize(vmin=min_value, vmax=max_value)
     cmap: Colormap = cm.get_cmap("viridis", 12)
 
-    for i, wg in enumerate(plane.surfaces):
-        print(f"Plotting Body {i + 1}, Name: {wg.name}, NBs: {NBs}")
+    for i, wing in enumerate(plane.wings):
+        print(f"Plotting Body {i + 1}, Name: {wing.name}, NBs: {NBs}")
         if i + 1 not in NBs:
             continue
-        for j, surf in enumerate(wg.all_strips):
+        for j, strip in enumerate(wing.all_strips):
             strip_df: DataFrame = body_data[
                 (body_data["Body"] == i + 1) & (body_data["Strip"] == j + 1)
             ]
@@ -71,7 +71,7 @@ def plot_gnvp_strip_data_3D(
                 float(item) for item in strip_df[category].values
             ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
-            surf.plot(fig, ax, color=color)
+            strip.plot(ax, color=color)
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()
     return all_strip_data
@@ -115,7 +115,7 @@ def plot_gnvp_strip_data_2D(
         fig: Figure = plt.figure()
         ax = fig.add_subplot()
 
-    ax.set_title(f"{plane.name} {plane.surfaces[NB - 1].name} {category} Data")
+    ax.set_title(f"{plane.name} {plane.wings[NB - 1].name} {category} Data")
     ax.set_xlabel("Spanwise")
     # ax.set_ylim(0, 1.1)
     ax.set_ylabel(category)

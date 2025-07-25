@@ -11,6 +11,7 @@ from typing import Generator
 import numpy as np
 import pytest
 
+from ICARUS.aero import LSPT_Plane
 from ICARUS.airfoils import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.database import Database
@@ -22,7 +23,7 @@ from ICARUS.vehicle import WingSegment
 
 
 @pytest.fixture(scope="session")
-def database_instance() -> Generator[Database, None, None]:
+def DB() -> Generator[Database]:
     """
     Session-scoped fixture that provides a properly initialized Database instance.
 
@@ -58,7 +59,7 @@ def database_instance() -> Generator[Database, None, None]:
 
 
 @pytest.fixture(scope="module")
-@pytest.mark.usefixtures("database_instance")
+@pytest.mark.usefixtures("DB")
 def benchmark_airplane() -> Airplane:
     """Fixture that provides a benchmark airplane configuration.
 
@@ -80,7 +81,7 @@ def benchmark_airplane() -> Airplane:
 
     Simplewing = WingSegment(
         name="benchmark",
-        root_airfoil=NACA4(M=0.04, P=0.4, XX=0.15),  # "NACA4415",
+        root_airfoil=NACA4.from_digits("4415"),
         origin=origin + wing_position,
         orientation=wing_orientation,
         symmetries=SymmetryAxes.Y,
@@ -104,6 +105,16 @@ def benchmark_state(benchmark_airplane: Airplane) -> State:
     return State(
         name="Unstick",
         airplane=benchmark_airplane,
-        u_freestream=100,  # Example freestream velocity
+        airspeed=100,  # Example freestream velocity
         environment=EARTH_ISA,
     )
+
+
+@pytest.fixture
+def test_plane(benchmark_airplane: Airplane) -> LSPT_Plane:
+    """
+    Fixture providing an LSPT_Plane for panel_utils tests.
+    """
+    from ICARUS.aero import LSPT_Plane
+
+    return LSPT_Plane(benchmark_airplane)

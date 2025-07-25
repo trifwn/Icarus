@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import distinctipy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -13,11 +12,13 @@ from pandas import Series
 
 from ICARUS.database import Database
 from ICARUS.vehicle import Airplane
-from ICARUS.visualization import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
+from ICARUS.visualization.utils import validate_airplane_input
 
 
 def plot_airplane_polars(
-    airplanes: list[str] | list[Airplane] | str | Airplane,
+    airplanes: list[str | Airplane] | str | Airplane,
     prefixes: list[str] = ["All"],
     plots: list[list[str]] = [
         ["AoA", "CL"],
@@ -43,15 +44,7 @@ def plot_airplane_polars(
         tuple[ndarray, Figure]: Array of Axes and Figure
 
     """
-    DB = Database.get_instance()
-    if not isinstance(airplanes, list):
-        airplane_list = [airplanes]
-
-    for i, airplane in enumerate(airplane_list):
-        if isinstance(airplane, str):
-            airplane_list[i] = DB.get_vehicle(airplane)
-        elif not isinstance(airplane, Airplane):
-            raise TypeError(f"Expected Airplane or str, got {type(airplane)}")
+    airplanes_objs: list[Airplane] = validate_airplane_input(airplanes)
 
     number_of_plots = len(plots)
 
@@ -61,7 +54,7 @@ def plot_airplane_polars(
     j = int(np.floor(sqrt_num))
 
     fig: Figure = plt.figure(figsize=size)
-    axs = fig.subplots(i, j)  # type: ignore
+    axs = fig.subplots(i, j)  # noqa
     fig.suptitle(f"{title}", fontsize=16)
 
     if isinstance(axs, Axes):
@@ -89,19 +82,16 @@ def plot_airplane_polars(
             "AVL",
         ]
 
-    colors_ = distinctipy.get_colors(len(airplane_list) * len(prefixes))
-    for i, airplane in enumerate(airplane_list):
-        if isinstance(airplane, Airplane):
-            airplane = airplane.name
+    colors = get_distinct_colors(len(prefixes))
+    markers = get_distinct_markers(len(airplanes_objs))
 
+    DB = Database.get_instance()
+    for i, airplane in enumerate(airplanes_objs):
         polar: DataFrame = DB.get_vehicle_polars(airplane)
+
         for j, prefix in enumerate(prefixes):
-            if len(airplane_list) == 1:
-                c = colors_[j]
-                m = "o"
-            else:
-                c = colors_[i]
-                m = markers[j].get_marker()
+            c = colors[j]
+            m = markers[i].get_marker()
 
             try:
                 for plot, ax in zip(plots, axs.flatten()[: len(plots)]):

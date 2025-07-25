@@ -47,7 +47,6 @@ from .engines import (
     MultiprocessingEngine,
     SequentialExecutionEngine,
     ThreadingEngine,
-    AdaptiveEngine,
 )
 
 from .resources.manager import SimpleResourceManager
@@ -82,7 +81,6 @@ __all__ = [
     "MultiprocessingEngine",
     "SequentialExecutionEngine",
     "ThreadingEngine",
-    "AdaptiveEngine",
     "create_execution_engine",
     # Resource management
     "SimpleResourceManager",

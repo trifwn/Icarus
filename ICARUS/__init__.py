@@ -3,7 +3,7 @@ ICARUS: A Python package for the analysis, modelling and design of aircraft.
 isort:skip_file
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .logging import (
     ICARUS_CONSOLE,
@@ -36,6 +36,7 @@ from . import database
 from . import visualization
 from . import aero
 from . import computation
+from . import solvers
 from . import mission
 
 __all__ = [
@@ -63,6 +64,7 @@ __all__ = [
     "aero",
     "airfoils",
     "computation",
+    "solvers",
     "conceptual",
     "database",
     "environment",

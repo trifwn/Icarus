@@ -20,7 +20,7 @@ class PlaneSurfaceVisualizer(OptimizationCallback):
         self,
         plane: Airplane,
         surface_name: str,
-    ):
+    ) -> None:
         """Initialize the class."""
         self.initial_plane = plane
         self.surface_name = surface_name
@@ -28,14 +28,20 @@ class PlaneSurfaceVisualizer(OptimizationCallback):
     def setup(self) -> None:
         """Create a 3D plot to visualize the plane geometry."""
         self.fig = plt.figure(figsize=(10, 10))
-        ax: Axes = self.fig.subplots(1)  # type: ignore
+        ax: Axes = self.fig.subplots(1)  # noqa
         self.ax = ax
         self.fig.show()
 
         # Add a plot for the initial plane geometry
-        for surface in self.initial_plane.surfaces:
-            if surface.name == self.surface_name:
-                surf = surface
+        surf = None
+        for wing in self.initial_plane.wings:
+            if wing.name == self.surface_name:
+                surf = wing
+
+        if surf is None:
+            raise ValueError(
+                f"Surface with name {self.surface_name} not found in the plane.",
+            )
 
         chords = surf._chord_dist
         spans = surf._span_dist
@@ -79,9 +85,15 @@ class PlaneSurfaceVisualizer(OptimizationCallback):
         """Update the visualization."""
         # Update the current plane geometry
         # Add a plot for the initial plane geometry
-        for surface in plane.surfaces:
+        surf = None
+        for surface in plane.wings:
+            print(surface.name)
             if surface.name == self.surface_name:
                 surf = surface
+        if surf is None:
+            raise ValueError(
+                f"Surface with name {self.surface_name} not found in the plane.",
+            )
 
         chords = surf._chord_dist
         spans = surf._span_dist

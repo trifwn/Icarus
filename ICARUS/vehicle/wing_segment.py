@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 from typing import Any
 from typing import Callable
+from typing import Sequence
 
 import numpy as np
 
@@ -50,9 +51,9 @@ class WingSegment(WingSurface):
         N: int = 15,
         M: int = 5,
         mass: float = 1.0,
-        controls: list[ControlSurface] = [NoControl],
+        controls: Sequence[ControlSurface] = [NoControl],
         is_lifting: bool = True,
-    ):
+    ) -> None:
         """Creates a wing segment. A wing segment is a lifting surface with a finite span. The wing segment
         is discretized into a number of panels in the spanwise and chordwise directions. The wing segment
         is basically a constructor of a Lifting_Surface.
@@ -101,9 +102,9 @@ class WingSegment(WingSurface):
 
         # Set the airfoils of the wing segment
         assert isinstance(root_airfoil, Airfoil), "Root Airfoil must be an Airfoil"
-        assert (
-            isinstance(tip_airfoil, Airfoil) or tip_airfoil is None
-        ), "Tip Airfoil must be an Airfoil or None"
+        assert isinstance(tip_airfoil, Airfoil) or tip_airfoil is None, (
+            "Tip Airfoil must be an Airfoil or None"
+        )
 
         self._root_airfoil = root_airfoil
         if tip_airfoil is None:
@@ -147,7 +148,7 @@ class WingSegment(WingSurface):
 
         # Set the origin and orientation
         self._origin = origin
-        self._orientation = orientation
+        self._orientation_rad = orientation * np.pi / 180
 
         # Set the mass
         self._mass = mass
@@ -286,7 +287,7 @@ class WingSegment(WingSurface):
         instance = super().from_span_percentage_functions(
             name=self.name,
             origin=self._origin,
-            orientation=self._orientation,
+            orientation=self.orientation_degrees,
             symmetries=self.symmetries,
             root_airfoil=self.root_airfoil,
             tip_airfoil=self.tip_airfoil,
@@ -301,7 +302,7 @@ class WingSegment(WingSurface):
             twist_as_a_function_of_span_percentage=twist_fun,
             N=self.N,
             M=self.M,
-            mass=self._mass,
+            structural_mass=self._mass,
             controls=self.controls,
             is_lifting=self.is_lifting,
         )
@@ -514,12 +515,10 @@ class WingSegment(WingSurface):
         )
 
     def __getstate__(self) -> dict[str, Any]:
-        assert isinstance(self.root_airfoil, Airfoil)
-        assert isinstance(self.tip_airfoil, Airfoil)
         return {
             "name": self.name,
             "origin": self.origin,
-            "orientation": self.orientation,
+            "orientation": self.orientation_degrees,
             "span": self.span,
             "tip_chord": self.tip_chord,
             "root_chord": self.root_chord,

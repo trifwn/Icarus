@@ -9,6 +9,7 @@ import numpy as np
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 class TrimNotPossible(Exception):
@@ -19,7 +20,7 @@ class TrimOutsidePolars(Exception):
     """Raise when Trim can't be computed due to Cm not crossing zero at the imported polars"""
 
 
-def trim_state(state: State) -> dict[str, float]:
+def trim_state(state: State, airplane: Airplane) -> dict[str, float]:
     """This function returns the trim conditions of the airplane
     It is assumed that the airplane is trimmed at a constant altitude
     The trim conditions are:
@@ -97,9 +98,9 @@ def trim_state(state: State) -> dict[str, float]:
     if cl_trim <= 0:
         raise TrimNotPossible
     # Find the trim velocity
-    S: float = state.S
+    S: float = airplane.S
     dens: float = state.environment.air_density
-    W: float = state.mass * 9.81
+    W: float = airplane.mass * 9.81
     U_CRUISE: float = np.sqrt(W / (0.5 * dens * cl_trim * S))
     CL_OVER_CD = cl_trim / cd_trim
     CM0: float = float(state.polar[state.polar["AoA"] == 0.0]["Cm"].to_list()[0])
@@ -108,8 +109,8 @@ def trim_state(state: State) -> dict[str, float]:
     aoas = state.polar["AoA"].to_numpy(dtype=float)
     cls = state.polar["CL"].to_numpy(dtype=float)
     cms = state.polar["Cm"].to_numpy(dtype=float)
-    mac = state.mean_aerodynamic_chord
-    x_cg: float = state.CG[0]
+    mac = airplane.mean_aerodynamic_chord
+    x_cg: float = airplane.CG[0]
 
     def movement(new_cg: float) -> float:
         new_CM = cms + (new_cg - x_cg) * (cls) / mac

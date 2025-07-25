@@ -72,7 +72,7 @@ def main(GNVP_VERSION: int) -> None:
             name="Unstick",
             airplane=plane,
             environment=EARTH_ISA,
-            u_freestream=UINF[plane.name],
+            airspeed=UINF[plane.name],
         )
         print(EARTH_ISA)
         state.save(os.path.join(DB.DB3D, plane.directory))
@@ -102,7 +102,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 5
+            solver_parameters.iterations = 40
 
             polars_time: float = time.time()
             gnvp.execute(
@@ -161,7 +161,7 @@ def main(GNVP_VERSION: int) -> None:
             solver_parameters.Use_Grid = True
             solver_parameters.Split_Symmetric_Bodies = False
             solver_parameters.timestep = 0.1
-            solver_parameters.iterations = 5
+            solver_parameters.iterations = 40
 
             # Run Analysis
             pert_time: float = time.time()
@@ -170,7 +170,7 @@ def main(GNVP_VERSION: int) -> None:
                 analysis=stability_analysis,
                 inputs=stability_inputs,
                 solver_parameters=solver_parameters,
-                execution_mode=ExecutionMode.THREADING,
+                execution_mode=ExecutionMode.MULTIPROCESSING,
                 # progress_monitor= None
             )
             print(f"Pertrubations took : --- {time.time() - pert_time} seconds ---")

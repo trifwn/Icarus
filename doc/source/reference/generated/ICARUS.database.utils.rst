@@ -13,5 +13,5 @@
 
    .. autosummary::
 
-      angle_to_case
+      angle_to_directory
       disturbance_to_case

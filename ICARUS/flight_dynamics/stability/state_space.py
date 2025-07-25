@@ -3,9 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
+from rich.align import Align
+from rich.table import Table
+
+from ICARUS import ICARUS_CONSOLE
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
+    from ICARUS.vehicle import Airplane
 
 
 def eigenvalue_analysis(
@@ -21,23 +26,24 @@ class LateralStateSpace:
     def __init__(
         self,
         state: State,
+        airplane: Airplane,
         Y: dict[str, float],
         L: dict[str, float],
         N: dict[str, float],
-    ):
+    ) -> None:
         self.name = "Lateral"
         self.Y = Y
         self.L = L
         self.N = N
 
-        mass: float = state.mass
+        mass: float = airplane.mass
         U: float = state.trim["U"]
         theta: float = state.trim["AoA"] * np.pi / 180
         u_e: float = U * np.cos(theta)
         w_e: float = U * np.sin(theta)
         G: float = state.environment.GRAVITY
 
-        Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
+        Ix, Iy, Iz, Ixz, Ixy, Iyz = airplane.inertia
 
         yv: float = Y["v"] / mass
         yp: float = (Y["p"] + mass * w_e) / mass
@@ -159,28 +165,62 @@ class LateralStateSpace:
         print(f"Np=\t{self.N['p']}")
         print(f"Nr=\t{self.N['r']}")
 
+    def print_matrices(self, dimensional: bool = False) -> None:
+        """Prints the dimensional and non-dimensional A matrices using rich tables."""
+        console = ICARUS_CONSOLE
+
+        def render_matrix(matrix: np.ndarray, title: str) -> None:
+            # make title green and centered
+            green_title = f"[green]{title}[/]"
+
+            # center title and prepare table
+            table = Table(
+                title=green_title,
+                title_justify="center",
+                show_lines=True,
+                style="red",
+            )
+            cols = ["v", "p", "r", "φ"]
+            rows = ["Y", "L", "N", "-"]
+            table.add_column("→\\↓", justify="center")
+            for col in cols:
+                table.add_column(col, justify="right")
+
+            for i, row_name in enumerate(rows):
+                row = [row_name] + [f"{val:.5f}" for val in matrix[i]]
+                table.add_row(*row)
+
+            # wrap in Align to center the table in the console
+            console.print(Align(table, align="center"))
+
+        if dimensional:
+            render_matrix(self.A_DS, "Lateral Dimensional A Matrix (A_DS)")
+        else:
+            render_matrix(self.A, "Lateral Non-Dimensional A Matrix (A)")
+
 
 class LongitudalStateSpace:
     def __init__(
         self,
         state: State,
+        airplane: Airplane,
         X: dict[str, float],
         Z: dict[str, float],
         M: dict[str, float],
-    ):
+    ) -> None:
         self.name = "Longitudal"
         self.X: dict[str, float] = X
         self.Z: dict[str, float] = Z
         self.M: dict[str, float] = M
 
-        m: float = state.mass
+        m: float = airplane.mass
         trim_velocity: float = state.trim["U"]
         theta: float = state.trim["AoA"] * np.pi / 180
         u_e: float = trim_velocity * np.cos(theta)
         w_e: float = trim_velocity * np.sin(theta)
 
         G: float = 9.81
-        Ix, Iy, Iz, Ixz, Ixy, Iyz = state.inertia
+        Ix, Iy, Iz, Ixz, Ixy, Iyz = airplane.inertia
 
         xu = X["u"] / m  # + (X["w_dot"] * Z["u"])/(m*(M-Z["w_dot"]))
         xw = X["w"] / m  # + (X["w_dot"] * Z["w"])/(m*(M-Z["w_dot"]))
@@ -221,6 +261,38 @@ class LongitudalStateSpace:
         self.n_modes: int = 2
         eigenvalue_analysis(self)
         # self.classify_modes()
+
+    def print_matrices(self, dimensional: bool = False) -> None:
+        """Prints the dimensional and non-dimensional A matrices using rich tables."""
+        console = ICARUS_CONSOLE
+
+        def render_matrix(matrix: np.ndarray, title: str) -> None:
+            # make title green and centered
+            green_title = f"[green]{title}[/]"
+
+            # center title and prepare table
+            table = Table(
+                title=green_title,
+                title_justify="center",
+                show_lines=True,
+                style="red",
+            )
+            cols = ["u", "w", "q", "θ"]
+            rows = ["X", "Z", "M", "-"]
+            table.add_column("→\\↓", justify="center")
+            for col in cols:
+                table.add_column(col, justify="right")
+
+            for i, row_name in enumerate(rows):
+                row = [row_name] + [f"{val:.5f}" for val in matrix[i]]
+                table.add_row(*row)
+
+            console.print(Align(table, align="center"))
+
+        if dimensional:
+            render_matrix(self.A_DS, "Dimensional A Matrix (A_DS)")
+        else:
+            render_matrix(self.A, "Non-Dimensional A Matrix (A)")
 
     def classify_modes(self) -> None:
         """Classify the modes based on the eigenvalues. On the longitudinal case, the modes are:
@@ -285,6 +357,6 @@ class StateSpace:
         self,
         longitudal_state_space: LongitudalStateSpace,
         lateral_state_space: LateralStateSpace,
-    ):
+    ) -> None:
         self.longitudal = longitudal_state_space
         self.lateral = lateral_state_space

@@ -93,16 +93,19 @@ def get_aseq_progress(
         iteration=latest_t,
         max_iterations=solver_parameters.iterations,
     )
+
+    exc = None
     if error:
         exc = GenuVPAnalysisError(
             f"Error in GenuVP analysis for {plane.name} at angle {angles} with state {state.name}. Check the output files in {case_directory}.",
         )
+
     event = ProgressEvent(
         task_id=task.id,
         name=f"Plane {plane.name} - Angle {angles} deg",
         current_step=latest_t if latest_t is not None else 0,
         total_steps=solver_parameters.iterations,
-        error=exc if error else None,
+        error=exc,
     )
 
     return event
@@ -146,16 +149,19 @@ def get_stability_progress(
         iteration=latest_t,
         max_iterations=solver_parameters.iterations,
     )
+
+    exc = None
     if error:
         exc = GenuVPAnalysisError(
             f"Error in GenuVP analysis for {plane.name} at {disturbances} with state {state.name}. Check the output files in {case_directory}.",
         )
+
     event = ProgressEvent(
         task_id=task.id,
         name=f"Plane {plane.name} - DST {disturbances}",
         current_step=latest_t if latest_t is not None else 0,
         total_steps=solver_parameters.iterations,
-        error=exc if error else None,
+        error=exc,
     )
 
     return event

@@ -3,10 +3,8 @@ from typing import Any
 import numpy as np
 
 from ICARUS.airfoils import Airfoil
-from ICARUS.core.interpolation.cubic_spline import (
-    cubic_spline_interpolate as interpolate,
-)
 from ICARUS.core.types import FloatArray
+from ICARUS.interpolation import cubic_spline_interpolate
 
 
 class NACA5(Airfoil):
@@ -132,8 +130,8 @@ def gen_NACA5_airfoil(
     M: list[float] = [0.0580, 0.1260, 0.2025, 0.2900, 0.3910]
     K: list[float] = [361.4, 51.64, 15.957, 6.643, 3.230]
 
-    m = interpolate(P, M, [p])[0]
-    k1 = interpolate(M, K, [m])[0]
+    m = cubic_spline_interpolate(P, M, [p])[0]
+    k1 = cubic_spline_interpolate(M, K, [m])[0]
 
     xc1: list[float] = [xx for xx in x if xx <= p]
     xc2: list[float] = [xx for xx in x if xx > p]

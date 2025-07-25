@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ICARUS.vehicle import WingSurface
 
 
-def sensitivities_serial(
+def sensitivities(
     plane: Airplane,
     state: State,
     var: str,
@@ -39,11 +39,11 @@ def sensitivities_serial(
     DB = Database.get_instance()
     bodies_dicts: list[GenuSurface] = []
     if solver_parameters.Split_Symmetric_Bodies:
-        surfaces: list[WingSurface] = plane.get_seperate_surfaces()
+        surfaces: list[tuple[int, WingSurface]] = plane.split_wing_segments()
     else:
-        surfaces = plane.surfaces
+        surfaces = plane.wing_segments
 
-    for i, surface in enumerate(surfaces):
+    for i, surface in surfaces:
         genu_surf = GenuSurface(surface, i)
         bodies_dicts.append(genu_surf)
 
@@ -52,10 +52,9 @@ def sensitivities_serial(
             DB,
             plane,
             state,
-            state.u_freestream,
+            state.airspeed,
             angle,
             state.environment,
-            surfaces,
             bodies_dicts,
             dst,
             "Sensitivity",

@@ -36,7 +36,7 @@ def setup_plot(
     dict[str, Any],
 ]:
     fig = plt.figure(figsize=size)
-    axs: ndarray = fig.subplots(2, 2)  # type: ignore
+    axs: ndarray = fig.subplots(2, 2)  # noqa
 
     if len(airplanes) == 1:
         fig.suptitle(f"{airplanes[0]} CG Investigation", fontsize=16)

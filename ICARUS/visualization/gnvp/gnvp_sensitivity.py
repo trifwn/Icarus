@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
-from ICARUS.visualization import colors_
-from ICARUS.visualization import markers
+from ICARUS.visualization.utils import get_distinct_colors
+from ICARUS.visualization.utils import get_distinct_markers
 
 if TYPE_CHECKING:
     import pandas as pd
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
-    from ICARUS.core.base_types import Struct
+    from ICARUS.core import Struct
     from ICARUS.vehicle import Airplane
 
 
@@ -26,7 +26,7 @@ def plot_sensitivity(
     size: tuple[int, int] = (16, 7),
 ) -> None:
     fig: Figure = plt.figure(figsize=size)
-    axs: list[Axes] = fig.subplots(2, 3).flatten()  # type: ignore
+    axs: list[Axes] = fig.subplots(2, 3).flatten()  # noqa
     fig.suptitle(f"{plane.name} Convergence", fontsize=16)
 
     axs[0].set_title("Fx vs epsilon")
@@ -116,6 +116,7 @@ def plot_sensitivity(
             linewidth=1,
         )
 
+    colors = get_distinct_colors(len(cases))
     for var in list(cases.keys()):
         if var in vars2s or vars2s == ["All"]:
             runHist = cases[var]
@@ -124,6 +125,7 @@ def plot_sensitivity(
         else:
             continue
 
+        markers = get_distinct_markers(len(solvers))
         for solver in solvers:
             try:
                 epsilon = runHist["Epsilon"].astype(float)
@@ -143,7 +145,7 @@ def plot_sensitivity(
                     mz = mz - mz_trim
 
                 j += 1
-                c = colors_[i]
+                c = colors[i]
                 m = markers[j]
                 # style = f"{c}{m}--"
 

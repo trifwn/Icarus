@@ -60,7 +60,7 @@ class NewmarkIntegrator(Integrator):
         num_steps = jnp.ceil((tf - t0) / self.dt).astype(int)
         trajectory = jnp.zeros((num_steps + 1, x0.shape[0]))
         trajectory = trajectory.at[0].set(x0)
-        times = jnp.linspace(t0, tf, num_steps + 1)  # type: ignore
+        times = jnp.linspace(t0, tf, num_steps + 1)  # noqa
 
         # Split function into two parts
         # return self._simulate(trajectory, times, num_steps)

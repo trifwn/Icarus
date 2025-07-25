@@ -10,9 +10,10 @@ from ICARUS.computation.analyses import BaseAnalysisInput
 from ICARUS.computation.analyses.airfoil_polar_analysis import BaseAirfoilPolarAnalysis
 from ICARUS.computation.analyses.analysis_input import iter_field
 from ICARUS.core.types import FloatArray
-from ICARUS.solvers.Xfoil.analyses.angles import xfoil_aseq
-from ICARUS.solvers.Xfoil.analyses.angles import xfoil_aseq_reset_bl
-from ICARUS.solvers.Xfoil.post_process.save_polars import save_polar_results
+
+from .analyses.angles import xfoil_aseq
+from .analyses.angles import xfoil_aseq_reset_bl
+from .post_process.save_polars import save_polar_results
 
 
 @dataclass

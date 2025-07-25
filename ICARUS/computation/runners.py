@@ -96,10 +96,10 @@ class SimulationRunner:
 
             with engine(
                 tasks=sorted_tasks,
-                max_workers=self.max_workers,
                 progress_reporter=reporter,
                 progress_monitor=monitor,
                 resource_manager=manager,
+                max_workers=self.max_workers,
             ) as execution_engine:
                 if execution_engine.progress_monitor:
                     await execution_engine._start_progress_monitoring()

@@ -1,6 +1,5 @@
 from ICARUS.computation.core import ExecutionMode
 
-from .adaptive_engine import AdaptiveEngine
 from .async_engine import AsyncEngine
 from .base_engine import AbstractEngine
 from .multiprocessing_engine import MultiprocessingEngine
@@ -18,7 +17,6 @@ def create_execution_engine(
         ExecutionMode.ASYNC: AsyncEngine,
         ExecutionMode.THREADING: ThreadingEngine,
         ExecutionMode.MULTIPROCESSING: MultiprocessingEngine,
-        ExecutionMode.ADAPTIVE: AdaptiveEngine,
     }
 
     engine_class = engine_map.get(mode)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -15,6 +16,7 @@ from pandas import DataFrame
 
 from ICARUS.vehicle import Wing
 from ICARUS.vehicle import WingSurface
+from ICARUS.visualization.utils import validate_surface_input
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -25,7 +27,7 @@ def plot_avl_strip_data_3D(
     plane: Airplane,
     state: State,
     case: str,
-    surface_names: str | WingSurface | list[str] | list[WingSurface],
+    surfaces: Sequence[WingSurface | Wing | str] | str | WingSurface | Wing,
     category: str = "Wind",
 ) -> DataFrame:
     """Function to plot the 3D strips of a given airplane.
@@ -43,24 +45,10 @@ def plot_avl_strip_data_3D(
     from ICARUS.solvers.AVL import get_strip_data
 
     strip_data = get_strip_data(plane, state, case)
-
-    if not isinstance(surface_names, list):
-        # If surface_names is not a list, convert it to a list
-        _surface_list = [surface_names]
-
-    surface_list: list[WingSurface] = []
-    for item in _surface_list:
-        if isinstance(item, str):
-            # If item is a string, get the surface by name
-            surface_list.append(plane.get_surface(item))
-        elif isinstance(item, WingSurface):
-            # If item is a WingSurface, append it directly
-            surface_list.append(item)
-        else:
-            raise ValueError("surface_name must be a string or a WingSurface object")
+    surface_objects = validate_surface_input(plane, surfaces)
 
     _surface_names: list[str] = []
-    for surface in surface_list:
+    for surface in surface_objects:
         if isinstance(surface, Wing):
             # Get the separate segments of the merged wing
             _surface_names.extend([s.name for s in surface.get_separate_segments()])
@@ -74,7 +62,7 @@ def plot_avl_strip_data_3D(
     strip_data = strip_data[strip_data.index.isin(_surface_names)]
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+    ax: Axes3D = fig.add_subplot(projection="3d")  # noqa
     ax.set_title(f"{plane.name} {category} Data")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
@@ -111,7 +99,7 @@ def plot_avl_strip_data_3D(
                 float(item) for item in strip_df[category].values
             ]
             color: tuple[Any, ...] | ndarray[Any, Any] = cmap(norm(strip_values))
-            strip.plot(fig, ax, color=color)
+            strip.plot(ax, color=color)
 
     _ = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.2)
     plt.show()

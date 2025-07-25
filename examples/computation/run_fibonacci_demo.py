@@ -31,9 +31,6 @@ def run_demo(config_name: str) -> None:
         "multiprocessing": ["--numbers"]
         + list(map(str, range(10, 21)))
         + ["--mode", "multiprocessing"],
-        "adaptive": ["--numbers"]
-        + list(map(str, range(10, 21)))
-        + ["--mode", "adaptive"],
     }
 
     if config_name not in configs:

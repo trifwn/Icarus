@@ -10,7 +10,7 @@ import jsonpickle
 import pandas as pd
 from pandas import DataFrame
 
-from ICARUS.core.base_types import Struct
+from ICARUS.core import Struct
 
 if TYPE_CHECKING:
     from ICARUS.flight_dynamics import State
@@ -230,12 +230,12 @@ class Database_3D:
             bool : whether the plane was found or not
 
         """
-        plane = None
+        plane: Airplane | None = None
         try:
             with open(file, encoding="UTF-8") as f:
                 json_obj: str = f.read()
                 try:
-                    plane: Airplane | None = jsonpickle.decode(json_obj)  # type: ignore
+                    plane = jsonpickle.decode(json_obj)  # noqa
                     if plane is not None:
                         self.planes[plane.name] = plane
                     else:

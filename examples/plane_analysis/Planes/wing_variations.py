@@ -3,7 +3,7 @@ import numpy as np
 from ICARUS.airfoils.naca4 import NACA4
 from ICARUS.core.types import FloatArray
 from ICARUS.vehicle import Airplane
-from ICARUS.vehicle import PointMass
+from ICARUS.vehicle import Mass
 from ICARUS.vehicle import SymmetryAxes
 from ICARUS.vehicle import WingSegment
 
@@ -52,18 +52,18 @@ def wing_var_chord_offset(
         mass=0.670,
     )
 
-    added_masses: list[PointMass] = [
-        PointMass(
+    added_masses: list[Mass] = [
+        Mass(
             mass=0.500,
             position=np.array([-0.40, 0.0, 0.0], dtype=float),
             name="motor",
         ),  # Motor
-        PointMass(
+        Mass(
             mass=1.000,
             position=np.array([0.090, 0.0, 0.0], dtype=float),
             name="battery",
         ),  # Battery
-        PointMass(
+        Mass(
             mass=0.900,
             position=np.array([0.130, 0.0, 0.0], dtype=float),
             name="payload",

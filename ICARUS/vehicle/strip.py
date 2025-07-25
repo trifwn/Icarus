@@ -1,17 +1,24 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Self
 
-import matplotlib.pyplot as plt
+import jax
 import numpy as np
-from matplotlib.figure import Figure
+from jax import numpy as jnp
+from jax.tree_util import GetAttrKey
+from jaxtyping import Float
+from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d import Axes3D
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.core.types import FloatArray
+from ICARUS.vehicle.base_classes.rigid_body import RigidBody
+from ICARUS.vehicle.utils import SymmetryAxes
 
 
-class Strip:
+@jax.tree_util.register_pytree_with_keys_class
+class Strip(RigidBody):
     """Class to define a strip of a wing or lifting surface.
     It assumes the strip is defined by the position of two trailing edge points
     and the airfoil. It then calcutes all intermediate points based on the chord
@@ -20,15 +27,14 @@ class Strip:
 
     def __init__(
         self,
-        start_leading_edge: FloatArray | list[float],
-        start_chord: float,
-        start_twist: float,
-        start_airfoil: Airfoil,
-        end_leading_edge: FloatArray | list[float],
-        end_chord: float,
-        end_twist: float,
-        end_airfoil: Airfoil | None = None,
-        eta: float = 0.0,
+        x_c4: float,
+        y_c4: float,
+        z_c4: float,
+        pitch: float,
+        roll: float,
+        yaw: float,
+        chord: float,
+        airfoil: Airfoil,
     ) -> None:
         """Initialize the Strip class.
 
@@ -41,349 +47,327 @@ class Strip:
             end_airfoil (Airfoil, optional): Ending airfoil. Defaults to None. If None, the starting airfoil is used.
 
         """
-        self.x0: float = start_leading_edge[0]
-        self.y0: float = start_leading_edge[1]
-        self.z0: float = start_leading_edge[2]
+        self.x_c4: Float = jnp.array(x_c4)
+        self.y_c4: Float = jnp.array(y_c4)
+        self.z_c4: Float = jnp.array(z_c4)
 
-        self.x1: float = end_leading_edge[0]
-        self.y1: float = end_leading_edge[1]
-        self.z1: float = end_leading_edge[2]
+        self.chord: Float = jnp.array(chord)
+        self.airfoil: Airfoil = airfoil
 
-        self.airfoil_start: Airfoil = start_airfoil
-        if end_airfoil is None:
-            self.airfoil_end: Airfoil = start_airfoil
-        else:
-            self.airfoil_end = end_airfoil
+        rotation = RigidBody._compute_rotation_matrix(
+            pitch=pitch * np.pi / 180,
+            roll=roll * np.pi / 180,
+            yaw=yaw * np.pi / 180,
+        )
+        base_direction = jnp.array(
+            [1.0, 0.0, 0.0],
+        )  # Assuming the base direction is along the x-axis
+        direction = jnp.dot(rotation, base_direction)
 
-        # Morph the airfoils to the new shape
-        if self.airfoil_start is not self.airfoil_end:
-            self.mean_airfoil = Airfoil.morph_new_from_two_foils(
-                self.airfoil_start,
-                self.airfoil_end,
-                eta,
-                self.airfoil_start.n_points,
+        super().__init__(
+            name="Strip",
+            origin=jnp.array([self.x_c4, self.y_c4, self.z_c4]),
+            orientation=jnp.array([pitch, roll, yaw]),
+        )
+
+        leading_edge = (
+            jnp.array([self.x_c4, self.y_c4, self.z_c4]) - 0.25 * self.chord * direction
+        )
+
+        self.leading_edge: tuple[Float, Float, Float] = (
+            leading_edge[0],
+            leading_edge[1],
+            leading_edge[2],
+        )
+
+        self.max_thickness: float = self.airfoil.max_thickness * self.chord
+
+    @property
+    def volume(self) -> float:
+        """Calculate the volume of the strip."""
+        return 0
+
+    def _on_origin_changed(self, movement: FloatArray) -> None:
+        pass
+
+    def _on_orientation_changed(
+        self,
+        old_orientation: FloatArray,
+        new_orientation: FloatArray,
+    ) -> None:
+        pass
+
+    @classmethod
+    def from_leading_edge(
+        cls,
+        leading_edge_x: float,
+        leading_edge_y: float,
+        leading_edge_z: float,
+        pitch: float,
+        roll: float,
+        yaw: float,
+        chord: float,
+        airfoil: Airfoil,
+    ) -> Strip:
+        """Create a Strip instance from the leading edge position, chord, and airfoil."""
+        rotation = RigidBody._compute_rotation_matrix(
+            pitch=pitch * np.pi / 180,
+            roll=roll * np.pi / 180,
+            yaw=yaw * np.pi / 180,
+        )
+        base_direction = jnp.array(
+            [1.0, 0.0, 0.0],
+        )  # Assuming the base direction is along the x-axis
+
+        direction = jnp.dot(rotation, base_direction)
+
+        quarter_chord = (
+            jnp.array([leading_edge_x, leading_edge_y, leading_edge_z])
+            + 0.25 * chord * direction
+        )
+
+        x_c4, y_c4, z_c4 = quarter_chord
+
+        strip = cls(
+            x_c4=x_c4,
+            y_c4=y_c4,
+            z_c4=z_c4,
+            pitch=pitch,
+            roll=roll,
+            yaw=yaw,
+            chord=chord,
+            airfoil=airfoil,
+        )
+        return strip
+
+    def translate(self, dx: float, dy: float, dz: float) -> Strip:
+        """Translate the strip by the given distances in x, y, and z directions."""
+        return Strip(
+            x_c4=self.x_c4 + dx,
+            y_c4=self.y_c4 + dy,
+            z_c4=self.z_c4 + dz,
+            pitch=self.pitch_degrees,
+            roll=self.roll_degrees,
+            yaw=self.yaw_degrees,
+            chord=self.chord,
+            airfoil=self.airfoil,
+        )
+
+    def rotate(self, d_pitch: float, d_roll: float, d_yaw: float) -> Strip:
+        """Rotate the strip by the given angles in pitch, roll, and yaw."""
+        return Strip(
+            x_c4=self.x_c4,
+            y_c4=self.y_c4,
+            z_c4=self.z_c4,
+            pitch=self.pitch_degrees + d_pitch,
+            roll=self.roll_degrees + d_roll,
+            yaw=self.yaw_degrees + d_yaw,
+            chord=self.chord,
+            airfoil=self.airfoil,
+        )
+
+    def rotate_around_point(
+        self,
+        point: tuple[float, float, float],
+        rotation: tuple[float, float, float],
+    ) -> Strip:
+        """Rotate the strip around a specified point by given rotation angles."""
+        dx = self.x_c4 - point[0]
+        dy = self.y_c4 - point[1]
+        # dz = self.z_c4 - point[2]
+
+        # Apply rotation around the specified point
+        new_x = point[0] + dx * np.cos(rotation[2]) - dy * np.sin(rotation[2])
+        new_y = point[1] + dx * np.sin(rotation[2]) + dy * np.cos(rotation[2])
+        new_z = self.z_c4
+
+        return Strip(
+            x_c4=new_x,
+            y_c4=new_y,
+            z_c4=new_z,
+            pitch=self.pitch_degrees + rotation[0],
+            roll=self.roll_degrees + rotation[1],
+            yaw=self.yaw_degrees + rotation[2],
+            chord=self.chord,
+            airfoil=self.airfoil,
+        )
+
+    def scale(self, factor: float) -> Strip:
+        """Scale the strip by a given factor."""
+        return Strip(
+            x_c4=self.x_c4,
+            y_c4=self.y_c4,
+            z_c4=self.z_c4,
+            pitch=self.pitch_degrees,
+            roll=self.roll_degrees,
+            yaw=self.yaw_degrees,
+            chord=self.chord * factor,
+            airfoil=self.airfoil,
+        )
+
+    def return_symmetric(self, axis: SymmetryAxes = SymmetryAxes.Y) -> Strip:
+        """Return a symmetric strip based on the specified symmetry axis."""
+        if axis == SymmetryAxes.Y:
+            return Strip(
+                x_c4=self.x_c4,
+                y_c4=-self.y_c4,
+                z_c4=self.z_c4,
+                pitch=self.pitch_degrees,
+                roll=self.roll_degrees,
+                yaw=self.yaw_degrees,
+                chord=self.chord,
+                airfoil=self.airfoil,
+            )
+        elif axis == SymmetryAxes.Z:
+            return Strip(
+                x_c4=self.x_c4,
+                y_c4=self.y_c4,
+                z_c4=-self.z_c4,
+                pitch=self.pitch_degrees,
+                roll=self.roll_degrees,
+                yaw=self.yaw_degrees,
+                chord=self.chord,
+                airfoil=self.airfoil,
+            )
+        elif axis == SymmetryAxes.X:
+            return Strip(
+                x_c4=-self.x_c4,
+                y_c4=self.y_c4,
+                z_c4=self.z_c4,
+                pitch=self.pitch_degrees,
+                roll=self.roll_degrees,
+                yaw=self.yaw_degrees,
+                chord=self.chord,
+                airfoil=self.airfoil,
             )
         else:
-            self.mean_airfoil = self.airfoil_start
-
-        self.chords: list[float] = [start_chord, end_chord]
-        self.mean_chord: float = (start_chord + end_chord) / 2
-        self.twists: list[float] = [start_twist, end_twist]
-        self.mean_twist = (start_twist + end_twist) / 2
-        self.max_thickness: float = self.mean_airfoil.max_thickness
-
-    def return_symmetric(
-        self,
-    ) -> Strip:
-        """Returns the symmetric initializer of the strip, assuming symmetry in the y axis.
-        It also adds a small gap if the strip located along the x axis.
-
-        Returns:
-            tuple[list[float], list[float], Airfoil, float, float]: Symmetric Strip initializer
-
-        """
-        start_point: list[float] = [self.x1, -self.y1, self.z1]
-        if self.y0 == 0:
-            end_point: list[float] = [self.x0, 0.01 * self.y1, self.z0]
-        else:
-            end_point = [self.x0, -self.y0, self.z0]
-
-        symm_strip: Strip = Strip(
-            start_leading_edge=start_point,
-            start_chord=self.chords[1],
-            start_airfoil=self.airfoil_start,
-            start_twist=self.twists[0],
-            end_leading_edge=end_point,
-            end_chord=self.chords[0],
-            end_twist=self.twists[1],
-            end_airfoil=self.airfoil_end,
-        )
-        return symm_strip
-
-    def set_airfoils(self, airfoil: Airfoil, airfoil2: Airfoil | None = None) -> None:
-        """Used to set or change the Airfoil.
-
-        Args:
-            airfoil (Airfoil): Airfoil for the starting section.
-            airfoil2 (Airfoil, optional): Airfoil for the ending section. Defaults to None. If None, the starting airfoil is used.
-
-        """
-        self.airfoil_start = airfoil
-        if airfoil2 is not None:
-            self.airfoil_end = airfoil2
-        else:
-            self.airfoil_end = airfoil
-
-    def get_root_strip(self) -> FloatArray:
-        """Returns the root strip of the wing.
-
-        Returns:
-            FloatArray: Array of points defining the root.
-
-        """
-        strip: list[FloatArray] = [
-            self.x0
-            + self.chords[0]
-            * np.hstack((self.airfoil_start._x_upper, self.airfoil_start._x_lower)),
-            self.y0 + np.repeat(0, self.airfoil_start.n_points),
-            self.z0
-            + self.chords[0]
-            * np.hstack((self.airfoil_start._y_upper, self.airfoil_start._y_lower)),
-        ]
-        return np.array(strip)
-
-    def get_tip_strip(self) -> FloatArray:
-        """Returns the tip strip of the wing.
-
-        Returns:
-            FloatArray: Array of points defining the tip.
-
-        """
-        strip: list[FloatArray] = [
-            self.x1
-            + self.chords[1]
-            * np.hstack((self.airfoil_end._x_upper, self.airfoil_end._x_lower)),
-            self.y1 + np.repeat(0, self.airfoil_start.n_points),
-            self.z1
-            + self.chords[1]
-            * np.hstack((self.airfoil_end._y_upper, self.airfoil_end._y_lower)),
-        ]
-        return np.array(strip)
-
-    def get_interpolated_section(
-        self,
-        idx: int,
-        n_points_span: int = 10,
-    ) -> tuple[FloatArray, FloatArray, FloatArray]:
-        """Interpolate between start and end strips and return the section at the given index.
-
-        Args:
-            idx: index of interpolation
-            n_points: number of points to interpolate in the span direction
-        Returns:
-            tuple[FloatArray, FloatArray, FloatArray]: suction side, camber line and pressure side coordinates of the section at the given index
-
-        """
-        x: FloatArray = np.linspace(
-            start=self.x0,
-            stop=self.x1,
-            num=n_points_span,
-        )
-        y: FloatArray = np.linspace(
-            self.y0,
-            self.y1,
-            n_points_span,
-        )
-        z: FloatArray = np.linspace(
-            self.z0,
-            self.z1,
-            n_points_span,
-        )
-        c: FloatArray = np.linspace(
-            self.chords[0],
-            self.chords[1],
-            n_points_span,
-        )
-
-        # Relative position of the point wrt to the start and end of the strip
-        heta: float = (idx + 1) / (n_points_span + 1)
-        self.n_points = len(self.airfoil_start._x_upper)
-        airfoil: Airfoil = Airfoil.morph_new_from_two_foils(
-            self.airfoil_start,
-            self.airfoil_end,
-            heta,
-            self.airfoil_start.n_points,
-        )
-
-        camber_line: FloatArray = np.vstack(
-            [
-                x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, len(airfoil._x_lower)),
-                z[idx] + c[idx] * airfoil.camber_line(airfoil._x_lower),
-            ],
-            dtype=float,
-        )
-
-        suction_side: FloatArray = np.vstack(
-            [
-                x[idx] + c[idx] * airfoil._x_upper,
-                y[idx] + np.repeat(0, len(airfoil._x_upper)),
-                z[idx] + c[idx] * airfoil.y_upper(airfoil._x_upper),
-            ],
-            dtype=float,
-        )
-
-        pressure_side: FloatArray = np.vstack(
-            [
-                x[idx] + c[idx] * airfoil._x_lower,
-                y[idx] + np.repeat(0, len(airfoil._x_lower)),
-                z[idx] + c[idx] * airfoil.y_lower(airfoil._x_lower),
-            ],
-            dtype=float,
-        )
-
-        return suction_side, camber_line, pressure_side
-
-    def __str__(self) -> str:
-        return f"Strip: with airfoil {self.airfoil_start.name}"
+            raise ValueError(f"Invalid symmetry axis: {axis}")
 
     def plot(
         self,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
-        color: tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
+        ax: Axes | None = None,
+        color: str | tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
     ) -> None:
-        pltshow = False
+        """Plot the strip."""
+        from ICARUS.visualization import parse_Axes
 
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
-            ax.set_title("Strip")
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
-            ax.axis("scaled")
-            ax.view_init(30, 150)
-            pltshow = True
+        fig, ax, created_plot = parse_Axes(ax)
 
-        if movement is None:
-            movement = np.zeros(3)
+        x, z = self.airfoil.to_selig() * self.chord
+        y = np.zeros_like(x)
 
-        to_plot = ["camber"]
+        # 3x3 rotation matrix for yaw, pitch, and roll
+        rotation_mat = RigidBody._compute_rotation_matrix(
+            pitch=self.pitch_rad,
+            roll=self.roll_rad,
+            yaw=self.yaw_rad,
+        )
 
-        xs: dict[str, list[float]] = {key: [] for key in to_plot}
-        ys: dict[str, list[float]] = {key: [] for key in to_plot}
-        zs: dict[str, list[float]] = {key: [] for key in to_plot}
+        # Rotate points based on orientation angles
+        coords = jnp.array([x, y, z])
+        rotated_coords = jnp.dot(rotation_mat, coords)
 
-        N_span: int = 10
-        for i in range(N_span):
-            suction, camber, pressure = self.get_interpolated_section(i, N_span)
+        x_rot, y_rot, z_rot = rotated_coords
 
-            x_camber, y_camber, z_camber = (camber.T + movement).T
-            x_suction, y_suction, z_suction = (suction.T + movement).T
-            x_pressure, y_pressure, z_pressure = (pressure.T + movement).T
+        # Translate to C4 position
+        x = x_rot + self.leading_edge[0]
+        y = y_rot + self.leading_edge[1]
+        z = z_rot + self.leading_edge[2]
+        # Plot C4 point
+        ax.plot(self.x_c4, self.z_c4, "kx", label="C4")
 
-            for key in to_plot:
-                if key == "camber":
-                    xs[key].append(x_camber)
-                    ys[key].append(y_camber)
-                    zs[key].append(z_camber)
-                elif key == "suction":
-                    xs[key].append(x_suction)
-                    ys[key].append(y_suction)
-                    zs[key].append(z_suction)
-                elif key == "pressure":
-                    xs[key].append(x_pressure)
-                    ys[key].append(y_pressure)
-                    zs[key].append(z_pressure)
+        le = self.leading_edge
+        c4 = np.array((self.x_c4, self.y_c4, self.z_c4))
+        te = le - (le - c4) * 4
 
-        for key in to_plot:
-            X: FloatArray = np.array(xs[key])
-            Y: FloatArray = np.array(ys[key])
-            Z: FloatArray = np.array(zs[key])
+        chord_x = np.array([le[0], te[0]])
+        # chord_y = np.array([le[1], te[1]])
+        chord_z = np.array([le[2], te[2]])
+        ax.plot(chord_x, chord_z, "k--", label="Chord")
 
-            if color is not None:
-                my_color: Any = np.tile(color, (Z.shape[0], Z.shape[1])).reshape(
-                    Z.shape[0],
-                    Z.shape[1],
-                    4,
-                )
-                ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=my_color)
-            else:
-                my_color = "red"
-                ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
+        ax.plot(x, z)
+        if created_plot:
+            ax.set_title("2D Strip Projection")
+            ax.set_xlabel("X")
+            ax.set_ylabel("Z")
+            ax.axis("equal")
+            fig.show()
 
-        if pltshow:
-            plt.show()
+    def plot_3D(self, ax: Axes3D | None = None) -> None:
+        """Plot the strip in 3D."""
+        from ICARUS.visualization import parse_Axes3D
 
-    def plot_points(
-        self,
-        prev_fig: Figure | None = None,
-        prev_ax: Axes3D | None = None,
-        movement: FloatArray | None = None,
-        color: tuple[Any, ...] | np.ndarray[Any, Any] | None = None,
-    ) -> None:
-        pltshow = False
+        fig, ax, created_plot = parse_Axes3D(ax)
 
-        if isinstance(prev_fig, Figure) and isinstance(prev_ax, Axes3D):
-            fig: Figure = prev_fig
-            ax: Axes3D = prev_ax
-        else:
-            fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
-            ax.set_title("Strip Points")
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
-            ax.axis("scaled")
-            ax.view_init(30, 150)
-            pltshow = True
+        x, z = self.airfoil.to_selig() * self.chord
+        y = np.zeros_like(x)
 
-        if movement is None:
-            movement = np.zeros(3)
+        # 3x3 rotation matrix for yaw, pitch, and roll
+        rotation_mat = RigidBody._compute_rotation_matrix(
+            pitch=self.pitch_rad,
+            roll=self.roll_rad,
+            yaw=self.yaw_rad,
+        )
 
-        x_coords: list[float] = []
-        y_coords: list[float] = []
-        z_coords: list[float] = []
+        # Rotate points based on orientation angles
+        coords = np.array([x, y, z])
+        rotated_coords = np.dot(rotation_mat, coords)
+        x_rot, y_rot, z_rot = rotated_coords
 
-        N: int = 10
-        for i in range(N):
-            suction, camber, pressure = self.get_interpolated_section(i, N)
+        # Translate to C4 position
+        x = x_rot + self.leading_edge[0]
+        y = y_rot + self.leading_edge[1]
+        z = z_rot + self.leading_edge[2]
+        ax.plot(x, y, z, color="b")
 
-            x_camber, y_camber, z_camber = camber
-            x_suction, y_suction, z_suction = suction
-            x_pressure, y_pressure, z_pressure = pressure
+        # Plot C4 point
+        ax.plot([self.x_c4], [self.y_c4], [self.z_c4], "kx", label="C4")
 
-            x_coords.extend(x_suction + movement[0])
-            y_coords.extend(y_suction + movement[1])
-            z_coords.extend(z_suction + movement[2])
+        # Plot chord line (3 times the segment from LE to C4)
+        le = self.leading_edge
+        c4 = np.array((self.x_c4, self.y_c4, self.z_c4))
+        te = le - (le - c4) * 4
 
-            x_coords.extend(x_camber + movement[0])
-            y_coords.extend(y_camber + movement[1])
-            z_coords.extend(z_camber + movement[2])
+        chord_x = np.array([le[0], te[0]])
+        chord_y = np.array([le[1], te[1]])
+        chord_z = np.array([le[2], te[2]])
+        ax.plot(chord_x, chord_y, chord_z, "k--", label="Chord")
 
-            x_coords.extend(x_pressure + movement[0])
-            y_coords.extend(y_pressure + movement[1])
-            z_coords.extend(z_pressure + movement[2])
+        if created_plot:
+            ax.set_xlabel("X")
+            ax.set_ylabel("Y")
+            ax.set_zlabel("Z")
+            ax.set_box_aspect([1, 1, 1])
+            fig.show()
 
-        X: FloatArray = np.array(x_coords)
-        Y: FloatArray = np.array(y_coords)
-        Z: FloatArray = np.array(z_coords)
+    def __repr__(self) -> str:
+        """String representation of the Strip object."""
+        return (
+            f"Strip(x_c4={self.x_c4}, y_c4={self.y_c4}, z_c4={self.z_c4}, "
+            f"pitch={self.pitch_degrees}, roll={self.roll_degrees}, yaw={self.yaw_degrees}, "
+            f"chord={self.chord}, airfoil={self.airfoil.name})"
+        )
 
-        if color is not None:
-            ax.scatter(X, Y, Z, c=color)
-        else:
-            ax.scatter(X, Y, Z)
+    def __str__(self) -> str:
+        """String representation of the Strip object."""
+        return (
+            f"Strip at C4({self.x_c4:.2f}, {self.y_c4:.2f}, {self.z_c4:.2f}) "
+            f"with pitch={self.pitch_degrees:.2f}, roll={self.roll_degrees:.2f}, yaw={self.yaw_degrees:.2f}, "
+            f"chord={self.chord:.2f} and airfoil={self.airfoil.name}"
+        )
 
-        if pltshow:
-            plt.show()
+    def tree_flatten_with_keys(self):
+        return (
+            (GetAttrKey("x_c4"), self.x_c4),
+            (GetAttrKey("y_c4"), self.y_c4),
+            (GetAttrKey("z_c4"), self.z_c4),
+            (GetAttrKey("pitch"), self.pitch_degrees),
+            (GetAttrKey("roll"), self.roll_degrees),
+            (GetAttrKey("yaw"), self.yaw_degrees),
+            (GetAttrKey("chord"), self.chord),
+            (GetAttrKey("airfoil"), self.airfoil),
+        ), None
 
-    def __eq__(self, other: object) -> bool:
-        """Compares two strips. They are considered equal if the leading edge points, the chord and the airfoil are the same.
-
-        Args:
-            __value (Strip): Strip to compare
-
-        Returns:
-            bool: True if the strips are equal, False otherwise.
-
-        """
-        if not isinstance(other, Strip):
-            return NotImplemented
-        if (
-            self.x0 == other.x0
-            and self.y0 == other.y0
-            and self.z0 == other.z0
-            and self.x1 == other.x1
-            and self.y1 == other.y1
-            and self.z1 == other.z1
-            and self.chords == other.chords
-            and self.airfoil_start == other.airfoil_start
-            and self.airfoil_end == other.airfoil_end
-        ):
-            return True
-        return False
+    @classmethod
+    def tree_unflatten(cls, aux_data, children) -> Self:
+        return cls(*children)

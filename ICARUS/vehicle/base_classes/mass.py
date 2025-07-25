@@ -1,10 +1,9 @@
 """
-Enhanced PointMass class with improved design, performance, and functionality.
+Enhanced Mass class with improved design, performance, and functionality.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from functools import cached_property
 from functools import lru_cache
 from typing import Any
@@ -16,13 +15,10 @@ import numpy as np
 from scipy.integrate import tplquad
 from scipy.spatial.transform import Rotation
 
-from ICARUS.core.types import ComplexArray
-from ICARUS.core.types import FloatArray
+from ICARUS.core.types import Matrix3x3
+from ICARUS.core.types import Vector3D
 
-# Type definitions
-Vector3D = FloatArray  # Shape (3,)
-Matrix3x3 = FloatArray  # Shape (3, 3)
-DistributionFunc = Callable[[float, float, float], float]
+from . import InertiaTensor
 
 
 class MassDistribution(Protocol):
@@ -33,168 +29,7 @@ class MassDistribution(Protocol):
         ...
 
 
-@dataclass(frozen=True)
-class InertiaTensor:
-    """Immutable inertia tensor representation with validation and utilities."""
-
-    I_xx: float
-    I_yy: float
-    I_zz: float
-    I_xy: float = 0.0
-    I_xz: float = 0.0
-    I_yz: float = 0.0
-
-    def __post_init__(self) -> None:
-        """Validate inertia tensor properties."""
-        # Check positive definiteness of diagonal elements
-        if self.I_xx < 0 or self.I_yy < 0 or self.I_zz < 0:
-            raise ValueError("Diagonal inertia elements must be non-negative")
-
-        # I1, I2, I3 = self.compute_principal_inertias()
-        # print(f"Principal inertias: I1={I1}, I2={I2}, I3={I3}")
-        # # Check triangle inequalities (necessary for physical validity)
-        # if not (I1 + I2 >= I3 and I1 + I3 >= I2 and I2 + I3 >= I1):
-        #     warnings.warn("Inertia tensor may not be physically realizable")
-
-    def compute_principal_inertias(self) -> tuple[float, float, float]:
-        """Compute principal moments of inertia."""
-        eigvals = np.linalg.eigvals(self.matrix)
-        I_1 = eigvals[0]
-        I_2 = eigvals[1]
-        I_3 = eigvals[2]
-        return I_1, I_2, I_3
-
-    @cached_property
-    def to_list(self) -> list[float]:
-        """Return inertia tensor as a list."""
-        return [self.I_xx, self.I_yy, self.I_zz, self.I_xy, self.I_xz, self.I_yz]
-
-    @cached_property
-    def matrix(self) -> Matrix3x3:
-        """3x3 inertia matrix representation."""
-        return np.array(
-            [
-                [self.I_xx, -self.I_xy, -self.I_xz],
-                [-self.I_xy, self.I_yy, -self.I_yz],
-                [-self.I_xz, -self.I_yz, self.I_zz],
-            ],
-            dtype=float,
-        )
-
-    @cached_property
-    def eigenvalues(self) -> FloatArray | ComplexArray:
-        """Principal moments of inertia."""
-        return np.linalg.eigvals(self.matrix)
-
-    @cached_property
-    def principal_axes(self) -> Matrix3x3:
-        """Principal axes as column vectors."""
-        _, eigvecs = np.linalg.eigh(self.matrix)
-        return eigvecs
-
-    @cached_property
-    def trace(self) -> float:
-        """Trace of inertia tensor."""
-        return self.I_xx + self.I_yy + self.I_zz
-
-    def transform(self, rotation: Matrix3x3 | Rotation) -> InertiaTensor:
-        """Transform inertia tensor by rotation."""
-        if isinstance(rotation, Rotation):
-            R = rotation.as_matrix()
-        else:
-            R = np.asarray(rotation)
-
-        I_new = R @ self.matrix @ R.T
-        return InertiaTensor(
-            I_xx=I_new[0, 0],
-            I_yy=I_new[1, 1],
-            I_zz=I_new[2, 2],
-            I_xy=I_new[0, 1],
-            I_xz=I_new[0, 2],
-            I_yz=I_new[1, 2],
-        )
-
-    def __add__(self, other: InertiaTensor) -> InertiaTensor:
-        """Add two inertia tensors."""
-        return InertiaTensor(
-            I_xx=self.I_xx + other.I_xx,
-            I_yy=self.I_yy + other.I_yy,
-            I_zz=self.I_zz + other.I_zz,
-            I_xy=self.I_xy + other.I_xy,
-            I_xz=self.I_xz + other.I_xz,
-            I_yz=self.I_yz + other.I_yz,
-        )
-
-    def __mul__(self, scalar: float) -> InertiaTensor:
-        """Scale inertia tensor by scalar."""
-        return InertiaTensor(
-            I_xx=self.I_xx * scalar,
-            I_yy=self.I_yy * scalar,
-            I_zz=self.I_zz * scalar,
-            I_xy=self.I_xy * scalar,
-            I_xz=self.I_xz * scalar,
-            I_yz=self.I_yz * scalar,
-        )
-
-    @classmethod
-    def from_matrix(cls, matrix: Matrix3x3) -> InertiaTensor:
-        """Create from 3x3 matrix."""
-        matrix = np.asarray(matrix)
-        if matrix.shape != (3, 3):
-            raise ValueError("Matrix must be 3x3")
-
-        return cls(
-            I_xx=matrix[0, 0],
-            I_yy=matrix[1, 1],
-            I_zz=matrix[2, 2],
-            I_xy=matrix[0, 1],
-            I_xz=matrix[0, 2],
-            I_yz=matrix[1, 2],
-        )
-
-    @classmethod
-    def sphere(cls, mass: float, radius: float) -> InertiaTensor:
-        """Inertia tensor for solid sphere."""
-        I_sphere: float = 0.4 * mass * radius**2
-        return cls(I_xx=I_sphere, I_yy=I_sphere, I_zz=I_sphere)
-
-    @classmethod
-    def cylinder(
-        cls,
-        mass: float,
-        radius: float,
-        height: float,
-        axis: str = "z",
-    ) -> InertiaTensor:
-        """Inertia tensor for solid cylinder."""
-        I_perp = mass * (3 * radius**2 + height**2) / 12
-        I_axis = 0.5 * mass * radius**2
-
-        if axis.lower() == "z":
-            return cls(I_xx=I_perp, I_yy=I_perp, I_zz=I_axis)
-        elif axis.lower() == "y":
-            return cls(I_xx=I_perp, I_yy=I_axis, I_zz=I_perp)
-        elif axis.lower() == "x":
-            return cls(I_xx=I_axis, I_yy=I_perp, I_zz=I_perp)
-        else:
-            raise ValueError("Axis must be 'x', 'y', or 'z'")
-
-    @classmethod
-    def box(
-        cls,
-        mass: float,
-        length: float,
-        width: float,
-        height: float,
-    ) -> InertiaTensor:
-        """Inertia tensor for solid rectangular box."""
-        I_xx = mass * (width**2 + height**2) / 12
-        I_yy = mass * (length**2 + height**2) / 12
-        I_zz = mass * (length**2 + width**2) / 12
-        return cls(I_xx=I_xx, I_yy=I_yy, I_zz=I_zz)
-
-
-class PointMass:
+class Mass:
     """
     Advanced point mass model with robust inertia handling and physics utilities.
 
@@ -323,7 +158,7 @@ class PointMass:
             self._inertia = value
         else:
             # Use constructor logic to handle various formats
-            temp = PointMass("temp", [0, 0, 0], 1.0, value)
+            temp = Mass("temp", [0, 0, 0], 1.0, value)
             self._inertia = temp._inertia
         self._clear_cache()
 
@@ -365,7 +200,7 @@ class PointMass:
         mass: float,
         radius: float,
         hollow: bool = False,
-    ) -> PointMass:
+    ) -> Mass:
         """Create spherical mass."""
         if hollow:
             inertia = InertiaTensor.sphere(mass, radius) * (2 / 3)  # Hollow sphere
@@ -382,7 +217,7 @@ class PointMass:
         radius: float,
         height: float,
         axis: str = "z",
-    ) -> PointMass:
+    ) -> Mass:
         """Create cylindrical mass."""
         inertia = InertiaTensor.cylinder(mass, radius, height, axis)
         return cls(name, position, mass, inertia)
@@ -396,7 +231,7 @@ class PointMass:
         length: float,
         width: float,
         height: float,
-    ) -> PointMass:
+    ) -> Mass:
         """Create rectangular box mass."""
         inertia = InertiaTensor.box(mass, length, width, height)
         return cls(name, position, mass, inertia)
@@ -415,7 +250,7 @@ class PointMass:
             (-10, 10),
         ),
         # **integration_kwargs: dict[Any, Any],
-    ) -> PointMass:
+    ) -> Mass:
         """
         Create point mass from mass distribution with improved integration.
 
@@ -459,13 +294,13 @@ class PointMass:
         return cls(name, position, mass, inertia)
 
     # Transformation methods
-    def translate(self, displacement: Vector3D) -> PointMass:
-        """Create new PointMass translated by displacement."""
+    def translate(self, displacement: Vector3D) -> Mass:
+        """Create new Mass translated by displacement."""
         new_pos = self._position + np.asarray(displacement)
-        return PointMass(self._name, new_pos, self._mass, self._inertia)
+        return Mass(self._name, new_pos, self._mass, self._inertia)
 
-    def rotate_about_origin(self, rotation: Matrix3x3 | Rotation) -> PointMass:
-        """Create new PointMass rotated about origin."""
+    def rotate_about_origin(self, rotation: Matrix3x3 | Rotation) -> Mass:
+        """Create new Mass rotated about origin."""
         if isinstance(rotation, Rotation):
             R = rotation.as_matrix()
         else:
@@ -473,18 +308,14 @@ class PointMass:
 
         new_pos = R @ self._position
         new_inertia = self._inertia.transform(R)
-        return PointMass(self._name, new_pos, self._mass, new_inertia)
+        return Mass(self._name, new_pos, self._mass, new_inertia)
 
-    def transform(
-        self,
-        rotation: Matrix3x3 | Rotation,
-        translation: Vector3D,
-    ) -> PointMass:
+    def transform(self, rotation: Matrix3x3 | Rotation, translation: Vector3D) -> Mass:
         """Apply rotation then translation."""
         return self.rotate_about_origin(rotation).translate(translation)
 
     # Combination methods
-    def __add__(self, other: PointMass) -> PointMass:
+    def __add__(self, other: Mass) -> Mass:
         """Combine two point masses into one at their center of mass."""
         total_mass = self._mass + other._mass
 
@@ -496,32 +327,27 @@ class PointMass:
         inertia2_com = other.translate(com - other._position).inertia_about_origin
         combined_inertia = inertia1_com + inertia2_com
 
-        return PointMass(
-            f"{self._name}+{other._name}",
-            com,
-            total_mass,
-            combined_inertia,
-        )
+        return Mass(f"{self._name}+{other._name}", com, total_mass, combined_inertia)
 
     # Utility methods
-    def distance_to(self, other: PointMass | Vector3D) -> float:
+    def distance_to(self, other: Mass | Vector3D) -> float:
         """Distance to another point mass or position."""
-        if isinstance(other, PointMass):
+        if isinstance(other, Mass):
             other_pos = other._position
         else:
             other_pos = np.asarray(other)
         return float(np.linalg.norm(self._position - other_pos))
 
-    def copy(self) -> PointMass:
+    def copy(self) -> Mass:
         """Create deep copy."""
-        return PointMass(self._name, self._position.copy(), self._mass, self._inertia)
+        return Mass(self._name, self._position.copy(), self._mass, self._inertia)
 
-    def __deepcopy__(self, memo: Any) -> PointMass:
+    def __deepcopy__(self, memo: Any) -> Mass:
         return self.copy()
 
     # Comparison and hashing
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, PointMass):
+        if not isinstance(other, Mass):
             return NotImplemented
         return (
             self._name == other._name
@@ -535,10 +361,7 @@ class PointMass:
 
     # String representation
     def __repr__(self) -> str:
-        return (
-            f"PointMass(name='{self._name}', position={self._position.tolist()}, "
-            f"mass={self._mass}, inertia={self._inertia})"
-        )
+        return f"Mass(name='{self._name}', position={self._position.tolist()}, mass={self._mass}, inertia={self._inertia})"
 
     def __str__(self) -> str:
         return f"{self._name}: {self._mass:.2f}kg at {self._position}"
@@ -561,7 +384,7 @@ class PointMass:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> PointMass:
+    def from_dict(cls, data: dict[str, Any]) -> Mass:
         """Create from dictionary."""
         inertia_data = data["inertia"]
         inertia = InertiaTensor(**inertia_data)
@@ -571,8 +394,8 @@ class PointMass:
 # Example usage and demonstrations
 if __name__ == "__main__":
     # Create various point masses
-    sphere = PointMass.sphere("ball", [1, 2, 3], 5.0, 0.1)
-    box = PointMass.box("cube", [0, 0, 0], 2.0, 1.0, 1.0, 1.0)
+    sphere = Mass.sphere("ball", [1, 2, 3], 5.0, 0.1)
+    box = Mass.box("cube", [0, 0, 0], 2.0, 1.0, 1.0, 1.0)
 
     # Combine masses
     combined = sphere + box
