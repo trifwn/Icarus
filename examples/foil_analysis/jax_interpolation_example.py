@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ICARUS.airfoils import NACA4
-from ICARUS.airfoils.jax_implementation.interpolation_engine import (
+from ICARUS.airfoils.core.interpolation import (
     JaxInterpolationEngine,
 )
 

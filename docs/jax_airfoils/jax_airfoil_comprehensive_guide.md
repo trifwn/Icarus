@@ -862,7 +862,7 @@ measur.2f}x")usage:sage/jax__urigficiency: {ory ef"Memoint(f)
 g_airfrifoils
     oiginal airny orreate ma C #
    ils
-foir   del jax_airfoils
+foir   del airfoil_geometrys
   alear JAX
     # Cy
    emor baseline_max_memory - = jx_usage

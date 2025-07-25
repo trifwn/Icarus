@@ -30,7 +30,7 @@ def create_sample_airfoil_files():
     print("=== Creating Sample Airfoil Files ===")
 
     # Create a temporary directory for our examples
-    temp_dir = Path(tempfile.mkdtemp(prefix="jax_airfoil_examples_"))
+    temp_dir = Path(tempfile.mkdtemp(prefix="airfoil_geometry_examples_"))
     print(f"Creating sample files in: {temp_dir}")
 
     # Sample 1: NACA 0012 in Selig format (TE to TE)
@@ -156,7 +156,7 @@ def demonstrate_file_saving():
     naca4415 = NACA4(M=0.04, P=0.4, XX=0.15, n_points=100)
 
     # Create temporary directory for output
-    temp_dir = Path(tempfile.mkdtemp(prefix="jax_airfoil_output_"))
+    temp_dir = Path(tempfile.mkdtemp(prefix="airfoil_geometry_output_"))
     print(f"Saving files to: {temp_dir}")
 
     # Method 1: Save in Selig format (TE to TE)
@@ -277,7 +277,7 @@ def batch_file_operations():
     ]
 
     # Create temporary directory
-    batch_dir = Path(tempfile.mkdtemp(prefix="jax_airfoil_batch_"))
+    batch_dir = Path(tempfile.mkdtemp(prefix="airfoil_geometry_batch_"))
     print(f"Batch processing directory: {batch_dir}")
 
     airfoils = []
@@ -374,7 +374,7 @@ def data_validation_examples():
             return None, False
 
     # Create test files with various issues
-    test_dir = Path(tempfile.mkdtemp(prefix="jax_airfoil_validation_"))
+    test_dir = Path(tempfile.mkdtemp(prefix="airfoil_geometry_validation_"))
 
     # Good file
     good_airfoil = NACA4(M=0.02, P=0.4, XX=0.12, n_points=50)

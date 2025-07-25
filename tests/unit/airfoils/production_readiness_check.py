@@ -355,7 +355,7 @@ class ProductionReadinessChecker:
                     sys.executable,
                     "-m",
                     "pytest",
-                    "tests/unit/airfoils/jax_implementation/core/",
+                    "tests/unit/airfoils/core/core/",
                     "-v",
                     "--tb=no",
                     "-q",

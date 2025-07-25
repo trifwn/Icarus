@@ -166,10 +166,10 @@ class TestSurfaceQueries:
         assert jnp.abs(thickness_dist[0]) < 1e-6
         assert jnp.abs(thickness_dist[-1]) < 1e-6
 
-        # Maximum should be close to specified thickness (0.12)
-        # Note: The thickness distribution is the half-thickness, so max should be around 0.012
+        # Maximum should be close to half the specified thickness (0.12)
+        # Note: The thickness distribution is the half-thickness, so max should be around 0.06
         max_thickness_dist = jnp.max(thickness_dist)
-        assert jnp.abs(max_thickness_dist - 0.012) < 0.001
+        assert jnp.abs(max_thickness_dist - 0.06) < 0.001
 
     def test_surface_normal_computation(self) -> None:
         """Test computation of surface normals."""
@@ -644,7 +644,7 @@ class TestComprehensiveInterpolationAccuracy:
 
         # Analytical thickness distribution
         a0, a1, a2, a3, a4 = 0.2969, -0.126, -0.3516, 0.2843, -0.1036
-        thickness_analytical = 0.12 * (
+        thickness_analytical = (0.12 / 0.2) * (
             a0 * jnp.sqrt(x_test)
             + a1 * x_test
             + a2 * x_test**2

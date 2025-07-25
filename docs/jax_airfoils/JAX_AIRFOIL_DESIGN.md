@@ -9,7 +9,7 @@ The JAX airfoil implementation represents a sophisticated, well-architected tran
 ### Core Components
 
 #### 1.1 `JaxAirfoil` (Main Class)
-- **Location**: `jax_airfoil.py` (2608 lines)
+- **Location**: `airfoil_geometry.py` (2608 lines)
 - **Purpose**: Primary JAX-compatible airfoil class with JAX pytree registration
 - **Key Features**:
   - Static buffer allocation with padding/masking for JIT compatibility
@@ -67,7 +67,7 @@ The JAX airfoil implementation represents a sophisticated, well-architected tran
   - Vectorized operations
 
 #### 1.7 `BatchAirfoilOps` (Batch Processing)
-- **Location**: `batch_processing.py` (604 lines)
+- **Location**: `batch_operations.py` (604 lines)
 - **Purpose**: Vectorized operations for multiple airfoils
 - **Features**:
   - Batch morphing operations

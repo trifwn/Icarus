@@ -432,7 +432,7 @@ def create_performance_visualization(results: Dict):
 
     plt.tight_layout()
     plt.savefig(
-        "examples/jax_airfoils/performance_demos/jit_performance_analysis.png",
+        "examples/airfoil_geometrys/performance_demos/jit_performance_analysis.png",
         dpi=300,
         bbox_inches="tight",
     )

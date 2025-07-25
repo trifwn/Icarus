@@ -30,7 +30,7 @@ from .operations import JaxAirfoilOps
 
 
 @jax.tree_util.register_pytree_node_class
-class JaxAirfoil:
+class AirfoilGeometry:
     """
     JAX-compatible airfoil class with JIT compilation and automatic differentiation support.
 
@@ -139,7 +139,7 @@ class JaxAirfoil:
         name: str = "JaxAirfoil",
         buffer_size: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Create a JaxAirfoil from separate upper and lower surface coordinates.
 
@@ -205,7 +205,7 @@ class JaxAirfoil:
         cls,
         aux_data: Dict[str, Any],
         children: Tuple[Array, ...],
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Unflatten a JaxAirfoil instance from flattened data.
 
@@ -376,7 +376,7 @@ class JaxAirfoil:
         n_points: int,
         distribution: str = "cosine",
         method: str = "interpolation",
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Create a new airfoil with resampled surface points.
 
@@ -465,11 +465,14 @@ class JaxAirfoil:
         Returns:
             Thickness values at query points
         """
-        # Convert to JAX array if needed
-        if isinstance(query_x, (float, int)):
+        # Convert to JAX array and ensure it's at least 1D for vmap compatibility
+        was_scalar = isinstance(query_x, (float, int))
+        if was_scalar:
             query_x = jnp.array([query_x])
         elif isinstance(query_x, np.ndarray):
             query_x = jnp.array(query_x)
+        else:
+            query_x = jnp.atleast_1d(jnp.asarray(query_x))
 
         # Get upper and lower surface coordinates
         upper_coords = self._coordinates[:, : self._upper_split_idx]
@@ -487,13 +490,18 @@ class JaxAirfoil:
             axis=1,
         )
 
-        return JaxAirfoilOps.compute_thickness(
+        result = JaxAirfoilOps.compute_thickness(
             upper_coords,
             lower_padded,
             self._upper_split_idx,
             self._n_valid_points - self._upper_split_idx,
             query_x,
         )
+
+        # Return scalar if input was scalar
+        if was_scalar:
+            return float(result[0])
+        return result
 
     def camber_line(self, query_x: Union[Array, np.ndarray, float]) -> Array:
         """
@@ -505,11 +513,14 @@ class JaxAirfoil:
         Returns:
             Camber line y-coordinates at query points
         """
-        # Convert to JAX array if needed
-        if isinstance(query_x, (float, int)):
+        # Convert to JAX array and ensure it's at least 1D for vmap compatibility
+        was_scalar = isinstance(query_x, (float, int))
+        if was_scalar:
             query_x = jnp.array([query_x])
         elif isinstance(query_x, np.ndarray):
             query_x = jnp.array(query_x)
+        else:
+            query_x = jnp.atleast_1d(jnp.asarray(query_x))
 
         # Get upper and lower surface coordinates
         upper_coords = self._coordinates[:, : self._upper_split_idx]
@@ -527,13 +538,18 @@ class JaxAirfoil:
             axis=1,
         )
 
-        return JaxAirfoilOps.compute_camber_line(
+        result = JaxAirfoilOps.compute_camber_line(
             upper_coords,
             lower_padded,
             self._upper_split_idx,
             self._n_valid_points - self._upper_split_idx,
             query_x,
         )
+
+        # Return scalar if input was scalar
+        if was_scalar:
+            return float(result[0])
+        return result
 
     def y_upper(self, query_x: Union[Array, np.ndarray, float]) -> Array:
         """
@@ -545,16 +561,24 @@ class JaxAirfoil:
         Returns:
             Upper surface y-coordinates at query points
         """
-        # Convert to JAX array if needed
-        if isinstance(query_x, (float, int)):
+        # Convert to JAX array and ensure it's at least 1D for vmap compatibility
+        was_scalar = isinstance(query_x, (float, int))
+        if was_scalar:
             query_x = jnp.array([query_x])
         elif isinstance(query_x, np.ndarray):
             query_x = jnp.array(query_x)
+        else:
+            query_x = jnp.atleast_1d(jnp.asarray(query_x))
 
         # Get upper surface coordinates
         upper_coords = self._coordinates[:, : self._upper_split_idx]
 
-        return JaxAirfoilOps.y_upper(upper_coords, self._upper_split_idx, query_x)
+        result = JaxAirfoilOps.y_upper(upper_coords, self._upper_split_idx, query_x)
+
+        # Return scalar if input was scalar
+        if was_scalar:
+            return float(result[0])
+        return result
 
     def y_lower(self, query_x: Union[Array, np.ndarray, float]) -> Array:
         """
@@ -566,11 +590,14 @@ class JaxAirfoil:
         Returns:
             Lower surface y-coordinates at query points
         """
-        # Convert to JAX array if needed
-        if isinstance(query_x, (float, int)):
+        # Convert to JAX array and ensure it's at least 1D for vmap compatibility
+        was_scalar = isinstance(query_x, (float, int))
+        if was_scalar:
             query_x = jnp.array([query_x])
         elif isinstance(query_x, np.ndarray):
             query_x = jnp.array(query_x)
+        else:
+            query_x = jnp.atleast_1d(jnp.asarray(query_x))
 
         # Get lower surface coordinates
         lower_coords = self._coordinates[
@@ -587,11 +614,16 @@ class JaxAirfoil:
             axis=1,
         )
 
-        return JaxAirfoilOps.y_lower(
+        result = JaxAirfoilOps.y_lower(
             lower_padded,
             self._n_valid_points - self._upper_split_idx,
             query_x,
         )
+
+        # Return scalar if input was scalar
+        if was_scalar:
+            return float(result[0])
+        return result
 
     @property
     def max_thickness(self) -> float:
@@ -624,7 +656,7 @@ class JaxAirfoil:
             self._n_valid_points - self._upper_split_idx,
         )
 
-        return float(max_thickness)
+        return max_thickness
 
     @property
     def max_thickness_location(self) -> float:
@@ -657,7 +689,7 @@ class JaxAirfoil:
             self._n_valid_points - self._upper_split_idx,
         )
 
-        return float(max_thickness_location)
+        return max_thickness_location
 
     @property
     def max_camber(self) -> float:
@@ -690,7 +722,7 @@ class JaxAirfoil:
             self._n_valid_points - self._upper_split_idx,
         )
 
-        return float(max_camber)
+        return max_camber
 
     @property
     def max_camber_location(self) -> float:
@@ -723,7 +755,7 @@ class JaxAirfoil:
             self._n_valid_points - self._upper_split_idx,
         )
 
-        return float(max_camber_location)
+        return max_camber_location
 
     @property
     def chord_length(self) -> float:
@@ -756,7 +788,7 @@ class JaxAirfoil:
             self._n_valid_points - self._upper_split_idx,
         )
 
-        return float(chord_length)
+        return chord_length
 
     @classmethod
     def naca4(
@@ -765,7 +797,7 @@ class JaxAirfoil:
         n_points: int = 200,
         buffer_size: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Create a NACA 4-digit airfoil.
 
@@ -822,7 +854,7 @@ class JaxAirfoil:
         n_points: int = 200,
         buffer_size: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Create a NACA 5-digit airfoil.
 
@@ -887,7 +919,7 @@ class JaxAirfoil:
         n_points: int = 200,
         buffer_size: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Create a NACA airfoil from a designation string.
 
@@ -930,7 +962,7 @@ class JaxAirfoil:
         flap_angle: float,
         flap_hinge_thickness_percentage: float = 0.5,
         chord_extension: float = 1.0,
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Apply flap transformation to the airfoil.
 
@@ -1032,7 +1064,7 @@ class JaxAirfoil:
 
         # Create new airfoil instance
         new_name = f"{self.name}_flapped_hinge_{flap_hinge_chord_percentage:.2f}_deflection_{jnp.rad2deg(flap_angle):.2f}"
-        return JaxAirfoil(
+        return AirfoilGeometry(
             new_selig_coords,
             name=new_name,
             buffer_size=self._max_buffer_size,
@@ -1115,7 +1147,7 @@ class JaxAirfoil:
 
     # Conversion utilities between old and new formats
     @classmethod
-    def from_legacy_airfoil(cls, legacy_airfoil) -> "JaxAirfoil":
+    def from_legacy_airfoil(cls, legacy_airfoil) -> "AirfoilGeometry":
         """
         Create a JaxAirfoil from a legacy Airfoil instance.
 
@@ -1155,7 +1187,7 @@ class JaxAirfoil:
 
     # File I/O methods
     @classmethod
-    def from_file(cls, filename: str) -> "JaxAirfoil":
+    def from_file(cls, filename: str) -> "AirfoilGeometry":
         """
         Initialize the JaxAirfoil class from a file (API compatibility).
 
@@ -1397,7 +1429,7 @@ class JaxAirfoil:
         self._max_buffer_size = repaneled._max_buffer_size
 
     @classmethod
-    def load_from_web(cls, name: str) -> "JaxAirfoil":
+    def load_from_web(cls, name: str) -> "AirfoilGeometry":
         """
         Fetch airfoil data from the UIUC airfoil database (API compatibility).
 
@@ -1685,11 +1717,11 @@ class JaxAirfoil:
     @classmethod
     def morph_new_from_two_foils(
         cls,
-        airfoil1: "JaxAirfoil",
-        airfoil2: "JaxAirfoil",
+        airfoil1: "AirfoilGeometry",
+        airfoil2: "AirfoilGeometry",
         eta: float,
         n_points: int,
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Returns a new airfoil morphed between two airfoils (API compatibility).
 
@@ -1765,7 +1797,7 @@ class JaxAirfoil:
         n_points: int,
         distribution: str = "cosine",
         method: str = "arc_length",
-    ) -> "JaxAirfoil":
+    ) -> "AirfoilGeometry":
         """
         Repanel the airfoil with a new point distribution.
 
@@ -1844,7 +1876,7 @@ class JaxAirfoil:
             pass
 
         # Create new JaxAirfoil instance from the repaneled coordinates
-        return JaxAirfoil.from_upper_lower(
+        return AirfoilGeometry.from_upper_lower(
             new_upper_coords,
             new_lower_coords,
             name=new_name,

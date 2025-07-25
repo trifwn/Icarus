@@ -15,18 +15,18 @@ import jax.numpy as jnp
 import numpy as np
 
 from .airfoil import Airfoil
-from .jax_implementation.jax_airfoil import JaxAirfoil
+from .core.airfoil_geometry import AirfoilGeometry
 
 
 class AirfoilMigrationUtils:
     """Utilities for migrating between Airfoil and JaxAirfoil instances."""
 
     @staticmethod
-    def airfoil_to_jax_airfoil(
+    def airfoil_to_airfoil_geometry(
         airfoil: Airfoil,
         buffer_size: Optional[int] = None,
         preserve_metadata: bool = True,
-    ) -> JaxAirfoil:
+    ) -> AirfoilGeometry:
         """
         Convert an existing Airfoil instance to a JaxAirfoil instance.
 
@@ -40,9 +40,9 @@ class AirfoilMigrationUtils:
 
         Example:
             >>> original_airfoil = Airfoil.naca("2412", n_points=100)
-            >>> jax_airfoil = AirfoilMigrationUtils.airfoil_to_jax_airfoil(original_airfoil)
+            >>> airfoil_geometry = AirfoilMigrationUtils.airfoil_to_airfoil_geometry(original_airfoil)
             >>> # Now you can use JAX features like JIT compilation and gradients
-            >>> jax_airfoil = jax.jit(lambda af: af.thickness(0.5))(jax_airfoil)
+            >>> airfoil_geometry = jax.jit(lambda af: af.thickness(0.5))(airfoil_geometry)
         """
         # Get coordinates from the original airfoil
         try:
@@ -66,7 +66,7 @@ class AirfoilMigrationUtils:
                     if preserve_metadata
                     else None
                 )
-                return JaxAirfoil(
+                return AirfoilGeometry(
                     coordinates=coords,
                     name=getattr(airfoil, "name", "Migrated_Airfoil"),
                     buffer_size=buffer_size,
@@ -90,7 +90,7 @@ class AirfoilMigrationUtils:
                         metadata[attr] = value
 
         # Create JaxAirfoil from upper and lower surfaces
-        return JaxAirfoil.from_upper_lower(
+        return AirfoilGeometry.from_upper_lower(
             upper_coords,
             lower_coords,
             name=metadata.get("name", "Migrated_Airfoil"),
@@ -99,12 +99,12 @@ class AirfoilMigrationUtils:
         )
 
     @staticmethod
-    def jax_airfoil_to_airfoil(jax_airfoil: JaxAirfoil) -> Airfoil:
+    def airfoil_geometry_to_airfoil(airfoil_geometry: AirfoilGeometry) -> Airfoil:
         """
         Convert a JaxAirfoil instance to an original Airfoil instance.
 
         Args:
-            jax_airfoil: JaxAirfoil instance to convert
+            airfoil_geometry: JaxAirfoil instance to convert
 
         Returns:
             Airfoil instance with equivalent geometry
@@ -114,12 +114,12 @@ class AirfoilMigrationUtils:
             and JIT compilation capabilities.
 
         Example:
-            >>> jax_airfoil = JaxAirfoil.naca("2412", n_points=100)
-            >>> original_airfoil = AirfoilMigrationUtils.jax_airfoil_to_airfoil(jax_airfoil)
+            >>> airfoil_geometry = JaxAirfoil.naca("2412", n_points=100)
+            >>> original_airfoil = AirfoilMigrationUtils.airfoil_geometry_to_airfoil(airfoil_geometry)
         """
         # Get upper and lower surface coordinates
-        x_upper, y_upper = jax_airfoil.upper_surface_points
-        x_lower, y_lower = jax_airfoil.lower_surface_points
+        x_upper, y_upper = airfoil_geometry.upper_surface_points
+        x_lower, y_lower = airfoil_geometry.lower_surface_points
 
         # Convert JAX arrays to NumPy arrays
         upper_coords = np.stack([np.array(x_upper), np.array(y_upper)])
@@ -129,7 +129,7 @@ class AirfoilMigrationUtils:
         return Airfoil(
             upper=upper_coords,
             lower=lower_coords,
-            name=jax_airfoil.name,
+            name=airfoil_geometry.name,
         )
 
     @staticmethod
@@ -137,7 +137,7 @@ class AirfoilMigrationUtils:
         airfoils: list[Airfoil],
         buffer_size: Optional[int] = None,
         preserve_metadata: bool = True,
-    ) -> list[JaxAirfoil]:
+    ) -> list[AirfoilGeometry]:
         """
         Convert a batch of Airfoil instances to JaxAirfoil instances.
 
@@ -151,18 +151,18 @@ class AirfoilMigrationUtils:
 
         Example:
             >>> airfoils = [Airfoil.naca(f"00{i:02d}", n_points=100) for i in range(8, 16, 2)]
-            >>> jax_airfoils = AirfoilMigrationUtils.batch_migrate_to_jax(airfoils)
+            >>> airfoil_geometrys = AirfoilMigrationUtils.batch_migrate_to_jax(airfoils)
         """
-        jax_airfoils = []
+        airfoil_geometrys = []
 
         for airfoil in airfoils:
             try:
-                jax_airfoil = AirfoilMigrationUtils.airfoil_to_jax_airfoil(
+                airfoil_geometry = AirfoilMigrationUtils.airfoil_to_airfoil_geometry(
                     airfoil,
                     buffer_size=buffer_size,
                     preserve_metadata=preserve_metadata,
                 )
-                jax_airfoils.append(jax_airfoil)
+                airfoil_geometrys.append(airfoil_geometry)
             except Exception as e:
                 warnings.warn(
                     f"Failed to convert airfoil {getattr(airfoil, 'name', 'Unknown')}: {e}",
@@ -170,12 +170,12 @@ class AirfoilMigrationUtils:
                 )
                 continue
 
-        return jax_airfoils
+        return airfoil_geometrys
 
     @staticmethod
     def validate_migration(
         original: Airfoil,
-        migrated: JaxAirfoil,
+        migrated: AirfoilGeometry,
         tolerance: float = 1e-10,
     ) -> Dict[str, bool]:
         """
@@ -191,7 +191,7 @@ class AirfoilMigrationUtils:
 
         Example:
             >>> original = Airfoil.naca("2412", n_points=100)
-            >>> migrated = AirfoilMigrationUtils.airfoil_to_jax_airfoil(original)
+            >>> migrated = AirfoilMigrationUtils.airfoil_to_airfoil_geometry(original)
             >>> results = AirfoilMigrationUtils.validate_migration(original, migrated)
             >>> print("Migration successful:", all(results.values()))
         """
@@ -254,22 +254,24 @@ class AirfoilMigrationUtils:
         return results
 
     @staticmethod
-    def create_compatibility_wrapper(jax_airfoil: JaxAirfoil) -> "CompatibilityWrapper":
+    def create_compatibility_wrapper(
+        airfoil_geometry: AirfoilGeometry,
+    ) -> "CompatibilityWrapper":
         """
         Create a compatibility wrapper that provides the original Airfoil API.
 
         Args:
-            jax_airfoil: JaxAirfoil instance to wrap
+            airfoil_geometry: JaxAirfoil instance to wrap
 
         Returns:
             CompatibilityWrapper instance that behaves like the original Airfoil
 
         Example:
-            >>> jax_airfoil = JaxAirfoil.naca("2412", n_points=100)
-            >>> wrapper = AirfoilMigrationUtils.create_compatibility_wrapper(jax_airfoil)
+            >>> airfoil_geometry = JaxAirfoil.naca("2412", n_points=100)
+            >>> wrapper = AirfoilMigrationUtils.create_compatibility_wrapper(airfoil_geometry)
             >>> # Use wrapper with existing code that expects original Airfoil API
         """
-        return CompatibilityWrapper(jax_airfoil)
+        return CompatibilityWrapper(airfoil_geometry)
 
 
 class CompatibilityWrapper:
@@ -280,65 +282,65 @@ class CompatibilityWrapper:
     while still providing access to JAX features when needed.
     """
 
-    def __init__(self, jax_airfoil: JaxAirfoil):
+    def __init__(self, airfoil_geometry: AirfoilGeometry):
         """Initialize the compatibility wrapper."""
-        self._jax_airfoil = jax_airfoil
+        self._airfoil_geometry = airfoil_geometry
 
     def __getattr__(self, name: str) -> Any:
         """Delegate attribute access to the underlying JaxAirfoil."""
-        return getattr(self._jax_airfoil, name)
+        return getattr(self._airfoil_geometry, name)
 
     @property
-    def jax_airfoil(self) -> JaxAirfoil:
+    def airfoil_geometry(self) -> AirfoilGeometry:
         """Access the underlying JaxAirfoil for JAX-specific operations."""
-        return self._jax_airfoil
+        return self._airfoil_geometry
 
     # Provide explicit implementations for commonly used methods to ensure compatibility
     @property
     def upper_surface_points(self):
         """Get upper surface points."""
-        return self._jax_airfoil.upper_surface_points
+        return self._airfoil_geometry.upper_surface_points
 
     @property
     def lower_surface_points(self):
         """Get lower surface points."""
-        return self._jax_airfoil.lower_surface_points
+        return self._airfoil_geometry.lower_surface_points
 
     def get_coordinates(self):
         """Get all coordinates."""
-        return self._jax_airfoil.get_coordinates()
+        return self._airfoil_geometry.get_coordinates()
 
     def thickness(self, x):
         """Compute thickness at given x-coordinates."""
-        return self._jax_airfoil.thickness(x)
+        return self._airfoil_geometry.thickness(x)
 
     def camber_line(self, x):
         """Compute camber line at given x-coordinates."""
-        return self._jax_airfoil.camber_line(x)
+        return self._airfoil_geometry.camber_line(x)
 
     def y_upper(self, x):
         """Query upper surface y-coordinates."""
-        return self._jax_airfoil.y_upper(x)
+        return self._airfoil_geometry.y_upper(x)
 
     def y_lower(self, x):
         """Query lower surface y-coordinates."""
-        return self._jax_airfoil.y_lower(x)
+        return self._airfoil_geometry.y_lower(x)
 
     def plot(self, *args, **kwargs):
         """Plot the airfoil."""
-        return self._jax_airfoil.plot(*args, **kwargs)
+        return self._airfoil_geometry.plot(*args, **kwargs)
 
     @property
     def name(self):
         """Get airfoil name."""
-        return self._jax_airfoil.name
+        return self._airfoil_geometry.name
 
     @property
     def max_thickness(self):
         """Get maximum thickness."""
-        return self._jax_airfoil.max_thickness
+        return self._airfoil_geometry.max_thickness
 
     @property
     def max_camber(self):
         """Get maximum camber."""
-        return self._jax_airfoil.max_camber
+        return self._airfoil_geometry.max_camber

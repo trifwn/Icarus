@@ -28,9 +28,9 @@ class AirfoilBufferManager:
     """
 
     # Buffer sizes follow powers of 2 for efficient memory usage
-    DEFAULT_BUFFER_SIZES = [32, 64, 128, 256, 512, 1024, 2048, 4096]
+    DEFAULT_BUFFER_SIZES = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
     MIN_BUFFER_SIZE = 32
-    MAX_BUFFER_SIZE = 4096
+    MAX_BUFFER_SIZE = 16384  # Increased to handle larger airfoils
 
     @staticmethod
     def determine_buffer_size(n_points: int) -> int:

@@ -299,7 +299,7 @@ class TestAdvancedGradientSafety:
 class TestProductionScenarios:
     """Test realistic production usage scenarios."""
 
-    def test_batch_processing_scenarios(self):
+    def test_batch_operations_scenarios(self):
         """Test realistic batch processing scenarios."""
         # Create multiple airfoils with different parameters
         param_sets = [

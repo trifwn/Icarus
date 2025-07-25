@@ -17,7 +17,7 @@ from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 
 if TYPE_CHECKING:
-    from .jax_airfoil import JaxAirfoil
+    from .airfoil_geometry import AirfoilGeometry
 
 
 class AirfoilPlotter:
@@ -33,7 +33,7 @@ class AirfoilPlotter:
 
     @staticmethod
     def plot_batch(
-        airfoils: List["JaxAirfoil"],
+        airfoils: List["AirfoilGeometry"],
         names: Optional[List[str]] = None,
         cmap: Optional[Colormap] = None,
         ax: Optional[Axes] = None,
@@ -150,7 +150,7 @@ class AirfoilPlotter:
 
     @staticmethod
     def plot_camber_comparison(
-        airfoils: List["JaxAirfoil"],
+        airfoils: List["AirfoilGeometry"],
         names: Optional[List[str]] = None,
         cmap: Optional[Colormap] = None,
         ax: Optional[Axes] = None,
@@ -218,7 +218,7 @@ class AirfoilPlotter:
 
     @staticmethod
     def plot_thickness_comparison(
-        airfoils: List["JaxAirfoil"],
+        airfoils: List["AirfoilGeometry"],
         names: Optional[List[str]] = None,
         cmap: Optional[Colormap] = None,
         ax: Optional[Axes] = None,
@@ -286,7 +286,7 @@ class AirfoilPlotter:
 
     @staticmethod
     def plot_airfoil_analysis(
-        airfoil: "JaxAirfoil",
+        airfoil: "AirfoilGeometry",
         show_camber: bool = True,
         show_thickness: bool = True,
         show_max_thickness: bool = True,
@@ -383,7 +383,7 @@ class AirfoilPlotter:
 
     @staticmethod
     def create_subplot_grid(
-        airfoils: List["JaxAirfoil"],
+        airfoils: List["AirfoilGeometry"],
         names: Optional[List[str]] = None,
         ncols: int = 3,
         figsize: Optional[Tuple[float, float]] = None,
@@ -444,8 +444,8 @@ class AirfoilPlotter:
 
     @staticmethod
     def plot_morphing_sequence(
-        airfoil1: "JaxAirfoil",
-        airfoil2: "JaxAirfoil",
+        airfoil1: "AirfoilGeometry",
+        airfoil2: "AirfoilGeometry",
         n_steps: int = 5,
         figsize: Optional[Tuple[float, float]] = None,
         alpha: float = 0.7,
@@ -475,9 +475,9 @@ class AirfoilPlotter:
         # Plot morphed airfoils
         for i, eta in enumerate(eta_values):
             # Create morphed airfoil
-            from .jax_airfoil import JaxAirfoil
+            from .airfoil_geometry import AirfoilGeometry
 
-            morphed = JaxAirfoil.morph_new_from_two_foils(
+            morphed = AirfoilGeometry.morph_new_from_two_foils(
                 airfoil1,
                 airfoil2,
                 float(eta),
@@ -518,7 +518,7 @@ class AirfoilPlotter:
 
     @staticmethod
     def debug_coordinate_plot(
-        airfoil: "JaxAirfoil",
+        airfoil: "AirfoilGeometry",
         show_indices: bool = True,
         show_buffer: bool = True,
         ax: Optional[Axes] = None,

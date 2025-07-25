@@ -6,10 +6,10 @@ The JAX airfoil implementation follows a clean, well-organized structure that al
 
 ### Core Modules
 - `__init__.py` - Module initialization and clean exports
-- `jax_airfoil.py` - Main JaxAirfoil class with core functionality
+- `airfoil_geometry.py` - Main JaxAirfoil class with core functionality
 - `operations.py` - Geometric operations (morphing, flapping, etc.)
 - `interpolation.py` - Surface interpolation and queries
-- `batch_processing.py` - Batch operations and vectorization
+- `batch_operations.py` - Batch operations and vectorization
 - `buffer_management.py` - Memory management with static allocation
 - `plotting.py` - Visualization utilities
 
@@ -21,10 +21,10 @@ The JAX airfoil implementation follows a clean, well-organized structure that al
 
 Each module has a clear, single responsibility:
 
-1. **jax_airfoil.py**: Core airfoil class with JIT-compatible operations
+1. **airfoil_geometry.py**: Core airfoil class with JIT-compatible operations
 2. **operations.py**: Geometric computations (thickness, camber, surface queries)
 3. **interpolation.py**: Surface interpolation with masking support
-4. **batch_processing.py**: Vectorized operations for multiple airfoils
+4. **batch_operations.py**: Vectorized operations for multiple airfoils
 5. **buffer_management.py**: Static memory allocation for JIT compatibility
 6. **coordinate_processor.py**: Input preprocessing and validation
 7. **error_handling.py**: Comprehensive error management

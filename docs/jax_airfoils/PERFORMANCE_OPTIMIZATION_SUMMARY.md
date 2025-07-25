@@ -20,7 +20,7 @@ This document summarizes the comprehensive performance optimization implementati
 
 ### Example Usage:
 ```python
-from ICARUS.airfoils.jax_implementation.performance_optimizer import profile_jit, get_compilation_report
+from ICARUS.airfoils.core.performance_optimizer import profile_jit, get_compilation_report
 
 @profile_jit("my_function")
 @jax.jit
@@ -47,7 +47,7 @@ report = get_compilation_report()
 
 ### Example Usage:
 ```python
-from ICARUS.airfoils.jax_implementation.optimized_ops import OptimizedJaxAirfoilOps
+from ICARUS.airfoils.core.optimized_ops import OptimizedJaxAirfoilOps
 
 # Precompile common operations
 OptimizedJaxAirfoilOps.precompile_common_operations(
@@ -75,7 +75,7 @@ stats = OptimizedJaxAirfoilOps.get_optimization_stats()
 
 ### Example Usage:
 ```python
-from ICARUS.airfoils.jax_implementation.optimized_buffer_manager import (
+from ICARUS.airfoils.core.optimized_buffer_manager import (
     get_optimal_buffer_size, get_buffer_usage_stats, cleanup_buffer_resources
 )
 
@@ -105,7 +105,7 @@ cleanup_buffer_resources()
 
 ### Example Usage:
 ```python
-from ICARUS.airfoils.jax_implementation.performance_optimizer import GradientOptimizer
+from ICARUS.airfoils.core.performance_optimizer import GradientOptimizer
 
 # Automatic gradient mode selection
 mode = GradientOptimizer.select_grad_mode(n_inputs=3, n_outputs=1)
@@ -134,7 +134,7 @@ checkpointed_fn = GradientOptimizer.optimize_gradient_checkpointing(my_function)
 
 ### Example Usage:
 ```python
-from ICARUS.airfoils.jax_implementation.performance_benchmark import (
+from ICARUS.airfoils.core.performance_benchmark import (
     AirfoilBenchmark, run_quick_benchmark, run_full_benchmark_with_report
 )
 
@@ -183,10 +183,10 @@ Based on comprehensive benchmarking:
 ## Files Created/Modified
 
 ### New Files:
-1. `ICARUS/airfoils/jax_implementation/performance_optimizer.py` - Core optimization framework
-2. `ICARUS/airfoils/jax_implementation/optimized_ops.py` - Optimized JAX operations
-3. `ICARUS/airfoils/jax_implementation/optimized_buffer_manager.py` - Enhanced buffer management
-4. `ICARUS/airfoils/jax_implementation/performance_benchmark.py` - Benchmarking suite
+1. `ICARUS/airfoils/core/performance_optimizer.py` - Core optimization framework
+2. `ICARUS/airfoils/core/optimized_ops.py` - Optimized JAX operations
+3. `ICARUS/airfoils/core/optimized_buffer_manager.py` - Enhanced buffer management
+4. `ICARUS/airfoils/core/performance_benchmark.py` - Benchmarking suite
 5. `tests/unit/airfoils/test_performance_optimization.py` - Comprehensive tests
 6. `examples/performance_optimization_demo.py` - Demonstration script
 
@@ -220,8 +220,8 @@ Based on comprehensive benchmarking:
 
 1. **Import optimized components**:
 ```python
-from ICARUS.airfoils.jax_implementation.optimized_ops import OptimizedJaxAirfoilOps
-from ICARUS.airfoils.jax_implementation.performance_optimizer import cleanup_memory
+from ICARUS.airfoils.core.optimized_ops import OptimizedJaxAirfoilOps
+from ICARUS.airfoils.core.performance_optimizer import cleanup_memory
 ```
 
 2. **Initialize optimizations** (automatic on import):
@@ -238,7 +238,7 @@ thickness = airfoil.thickness(query_x)  # Uses optimized computation
 
 4. **Monitor performance**:
 ```python
-from ICARUS.airfoils.jax_implementation.performance_optimizer import get_compilation_report
+from ICARUS.airfoils.core.performance_optimizer import get_compilation_report
 report = get_compilation_report()
 ```
 

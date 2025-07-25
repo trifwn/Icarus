@@ -73,7 +73,7 @@ This document summarizes the comprehensive integration testing and validation su
 #### TestLargeScaleWorkloads
 - **Purpose**: Test performance under large-scale workloads
 - **Tests**:
-  - `test_large_batch_processing()`: Tests processing of large batches of airfoils
+  - `test_large_batch_operations()`: Tests processing of large batches of airfoils
   - `test_high_resolution_airfoils()`: Tests performance with high-resolution airfoils
 
 ### 3. Regression Testing (`test_jax_regression_validation.py`)

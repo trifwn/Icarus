@@ -476,7 +476,7 @@ class ComprehensivePerformanceDemo:
             print(f"    Found {len(devices)} devices, testing parallel processing...")
 
             # Parallel batch processing
-            def parallel_batch_processing(batch_params, x):
+            def parallel_batch_operations(batch_params, x):
                 def single_upper_surface(params):
                     m, p, xx = params
                     naca = NACA4(M=m, P=p, XX=xx, n_points=100)
@@ -509,7 +509,7 @@ class ComprehensivePerformanceDemo:
             for _ in range(10):
                 gc.collect()
                 start_time = time.perf_counter()
-                result_parallel = parallel_batch_processing(batch_params, x_eval)
+                result_parallel = parallel_batch_operations(batch_params, x_eval)
                 end_time = time.perf_counter()
                 times_parallel.append(end_time - start_time)
 
@@ -941,7 +941,7 @@ class ComprehensivePerformanceDemo:
 
         plt.tight_layout()
         plt.savefig(
-            "examples/jax_airfoils/performance_demos/comprehensive_performance_analysis.png",
+            "examples/airfoil_geometrys/performance_demos/comprehensive_performance_analysis.png",
             dpi=300,
             bbox_inches="tight",
         )
@@ -967,7 +967,7 @@ class ComprehensivePerformanceDemo:
 
         # Save report as JSON
         with open(
-            "examples/jax_airfoils/performance_demos/comprehensive_performance_report.json",
+            "examples/airfoil_geometrys/performance_demos/comprehensive_performance_report.json",
             "w",
         ) as f:
             json.dump(report, f, indent=2, default=str)
@@ -1111,7 +1111,7 @@ class ComprehensivePerformanceDemo:
         """
 
         with open(
-            "examples/jax_airfoils/performance_demos/comprehensive_performance_report.html",
+            "examples/airfoil_geometrys/performance_demos/comprehensive_performance_report.html",
             "w",
         ) as f:
             f.write(html_content)

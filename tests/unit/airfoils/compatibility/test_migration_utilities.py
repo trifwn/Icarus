@@ -573,7 +573,7 @@ class TestWorkflowMigration:
         updated_obj = optimization_objective(updated_params)
         assert updated_obj != obj_value
 
-    def test_batch_processing_migration(self):
+    def test_batch_operations_migration(self):
         """Test migration of batch processing workflows."""
         # Create batch of NACA codes
         naca_codes = ["0012", "2412", "4415", "6409"]

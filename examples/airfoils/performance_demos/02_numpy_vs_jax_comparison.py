@@ -257,7 +257,7 @@ def demonstrate_basic_operation_comparison():
     return results
 
 
-def demonstrate_batch_processing_comparison():
+def demonstrate_batch_operations_comparison():
     """Compare batch processing performance between JAX and NumPy."""
     print("=" * 70)
     print("BATCH PROCESSING PERFORMANCE COMPARISON")
@@ -598,19 +598,19 @@ def create_comprehensive_visualization(results: Dict):
         ax1.grid(True, alpha=0.3)
 
     # Plot 2: Batch processing scaling
-    if "batch_processing" in results:
+    if "batch_operations" in results:
         ax2 = plt.subplot(3, 3, 2)
-        batch_sizes = list(results["batch_processing"].keys())
+        batch_sizes = list(results["batch_operations"].keys())
         numpy_batch_times = [
-            results["batch_processing"][bs]["numpy"]["mean_time"] * 1000
+            results["batch_operations"][bs]["numpy"]["mean_time"] * 1000
             for bs in batch_sizes
         ]
         jax_batch_times = [
-            results["batch_processing"][bs]["jax"]["mean_time"] * 1000
+            results["batch_operations"][bs]["jax"]["mean_time"] * 1000
             for bs in batch_sizes
         ]
         jax_jit_batch_times = [
-            results["batch_processing"][bs]["jax_jit"]["mean_time"] * 1000
+            results["batch_operations"][bs]["jax_jit"]["mean_time"] * 1000
             for bs in batch_sizes
         ]
 
@@ -715,14 +715,14 @@ def create_comprehensive_visualization(results: Dict):
             )
 
     # Plot 6: Batch processing speedup
-    if "batch_processing" in results:
+    if "batch_operations" in results:
         ax6 = plt.subplot(3, 3, 6)
         jax_batch_speedups = []
         jit_batch_speedups = []
         for bs in batch_sizes:
-            numpy_time = results["batch_processing"][bs]["numpy"]["mean_time"]
-            jax_time = results["batch_processing"][bs]["jax"]["mean_time"]
-            jit_time = results["batch_processing"][bs]["jax_jit"]["mean_time"]
+            numpy_time = results["batch_operations"][bs]["numpy"]["mean_time"]
+            jax_time = results["batch_operations"][bs]["jax"]["mean_time"]
+            jit_time = results["batch_operations"][bs]["jax_jit"]["mean_time"]
             jax_batch_speedups.append(numpy_time / jax_time)
             jit_batch_speedups.append(numpy_time / jit_time)
 
@@ -848,7 +848,7 @@ def create_comprehensive_visualization(results: Dict):
 
     plt.tight_layout()
     plt.savefig(
-        "examples/jax_airfoils/performance_demos/numpy_vs_jax_comprehensive.png",
+        "examples/airfoil_geometrys/performance_demos/numpy_vs_jax_comprehensive.png",
         dpi=300,
         bbox_inches="tight",
     )
@@ -875,7 +875,7 @@ def main() -> None:
     results["basic_ops"] = demonstrate_basic_operation_comparison()
 
     # Batch processing comparison
-    results["batch_processing"] = demonstrate_batch_processing_comparison()
+    results["batch_operations"] = demonstrate_batch_operations_comparison()
 
     # Gradient computation comparison
     results["gradients"] = demonstrate_gradient_computation_comparison()

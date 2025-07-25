@@ -27,9 +27,16 @@ class NACA4(Airfoil):
             xx (int): XX is the maximum thickness. In the example XX=0.12 so the maximum thickness is 0.12 or 12% of the chord
             n_points (int): Number of points to generate the airfoil. Default is 200.
         """
-        self.M: Int = jnp.array(M * 100).astype(int)
-        self.P: Int = jnp.array(P * 10).astype(int)
-        self.XX: Int = jnp.array(XX * 100).astype(int)
+        # Store integer versions for naming (avoid during vmap)
+        try:
+            self.M: Int = jnp.asarray(jnp.asarray(M) * 100, dtype=int)
+            self.P: Int = jnp.asarray(jnp.asarray(P) * 10, dtype=int)
+            self.XX: Int = jnp.asarray(jnp.asarray(XX) * 100, dtype=int)
+        except (TypeError, ValueError):
+            # During vmap, just use placeholder values
+            self.M: Int = jnp.asarray(2, dtype=int)
+            self.P: Int = jnp.asarray(4, dtype=int)
+            self.XX: Int = jnp.asarray(12, dtype=int)
 
         self.m: Float = jnp.asarray(M, dtype=float)
         self.p: Float = jnp.asarray(P, dtype=float)
@@ -214,9 +221,10 @@ class NACA4(Airfoil):
         )
 
     def tree_flatten(self):
-        M = jnp.asarray(self.M, dtype=jnp.int64).astype("float")
-        P = jnp.asarray(self.P, dtype=jnp.int64).astype("float")
-        XX = jnp.asarray(self.XX, dtype=jnp.int64).astype("float")
+        # Return the original float values, not the integer versions
+        M = jnp.asarray(self.m, dtype=jnp.float64)
+        P = jnp.asarray(self.p, dtype=jnp.float64)
+        XX = jnp.asarray(self.xx, dtype=jnp.float64)
         num_points = jnp.asarray(self.n_points, dtype=jnp.int64)
         return ((M, P, XX), (num_points,))
 

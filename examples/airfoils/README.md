@@ -30,7 +30,7 @@ This directory contains comprehensive examples demonstrating the JAX-based airfo
 | Example | Description | Key Features |
 |---------|-------------|--------------|
 | `01_morphing_operations.py` | Airfoil morphing and shape blending | Shape interpolation, morphing algorithms |
-| `02_batch_processing.py` | Vectorized operations on multiple airfoils | Batch operations, vectorization benefits |
+| `02_batch_operations.py` | Vectorized operations on multiple airfoils | Batch operations, vectorization benefits |
 | `03_gradient_computation.py` | Automatic differentiation capabilities | Gradient computation, sensitivity analysis |
 | `04_optimization_workflows.py` | Shape optimization using JAX transformations | Gradient-based optimization, design loops |
 
@@ -99,22 +99,22 @@ pip install memory_profiler line_profiler
 ### Individual Examples
 ```bash
 # Basic usage
-python examples/jax_airfoils/basic_usage/01_creating_airfoils.py
+python examples/airfoil_geometrys/basic_usage/01_creating_airfoils.py
 
 # Performance demo
-python examples/jax_airfoils/performance_demos/01_jit_compilation_demo.py
+python examples/airfoil_geometrys/performance_demos/01_jit_compilation_demo.py
 
 # Integration example
-python examples/jax_airfoils/integration_examples/01_aerodynamic_analysis.py
+python examples/airfoil_geometrys/integration_examples/01_aerodynamic_analysis.py
 ```
 
 ### Batch Execution
 ```bash
 # Run all basic examples
-for file in examples/jax_airfoils/basic_usage/*.py; do python "$file"; done
+for file in examples/airfoil_geometrys/basic_usage/*.py; do python "$file"; done
 
 # Run performance benchmarks
-python -m examples.jax_airfoils.performance_demos.01_jit_compilation_demo
+python -m examples.airfoil_geometrys.performance_demos.01_jit_compilation_demo
 ```
 
 ## 🎯 Key Features Demonstrated
@@ -152,7 +152,7 @@ airfoil = Airfoil.naca("2412")
 y_upper = airfoil.y_upper(x_points)
 
 # JAX version (new) - SAME API!
-from ICARUS.airfoils.jax_implementation.jax_airfoil import JaxAirfoil
+from ICARUS.airfoils.core.airfoil_geometry import JaxAirfoil
 airfoil = JaxAirfoil.naca("2412")
 y_upper = airfoil.y_upper(x_points)  # Returns JAX array instead of NumPy
 ```

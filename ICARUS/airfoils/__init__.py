@@ -24,7 +24,7 @@ Airfoil Modelling
     :toctree: generated/
 
     airfoil - Airfoil class definition
-    jax_airfoil - JAX-compatible Airfoil class with JIT compilation and automatic differentiation
+    airfoil_geometry - JAX-compatible Airfoil class with JIT compilation and automatic differentiation
 
 Airfoil Polars Analysis
 =======================
@@ -39,7 +39,7 @@ Airfoil Polars Analysis
 """
 
 from .airfoil import Airfoil
-from .jax_implementation.jax_airfoil import JaxAirfoil
+from .core.airfoil_geometry import AirfoilGeometry
 from .metrics import AirfoilData
 from .metrics import AirfoilOperatingConditions
 from .metrics import AirfoilOperatingPointMetrics
@@ -54,7 +54,7 @@ from .naca5 import NACA5
 __all__ = [
     # Airfoil Modelling
     "Airfoil",
-    "JaxAirfoil",
+    "AirfoilGeometry",
     "NACA4",
     "NACA5",
     # Aerodynamic Data Classes

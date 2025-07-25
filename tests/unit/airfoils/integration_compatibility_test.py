@@ -276,7 +276,7 @@ class TestVersionCompatibility:
 
         # Test gradient computation
         def thickness_at_point(x):
-            return naca2412.thickness(x)
+            return naca2412.thickness(jnp.array([x]))[0]  # Return scalar
 
         grad_fn = grad(thickness_at_point)
         gradient = grad_fn(0.5)

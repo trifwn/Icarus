@@ -406,7 +406,7 @@ def memory_efficient_batch_operations():
     return all_results
 
 
-def plot_batch_processing_results():
+def plot_batch_operations_results():
     """Create comprehensive visualization of batch processing results."""
     print("\n=== Creating Batch Processing Visualizations ===")
 
@@ -553,7 +553,7 @@ def main():
     memory_efficient_batch_operations()
 
     # Create comprehensive visualization
-    plot_batch_processing_results()
+    plot_batch_operations_results()
 
     print("\n" + "=" * 60)
     print("Key Batch Processing Capabilities:")

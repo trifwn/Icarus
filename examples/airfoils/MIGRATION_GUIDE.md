@@ -37,8 +37,8 @@ thickness = airfoil.thickness(x_points)
 
 ### After (JAX)
 ```python
-from ICARUS.airfoils.jax_implementation.jax_airfoil import JaxAirfoil
-from ICARUS.airfoils.jax_implementation.naca4 import NACA4
+from ICARUS.airfoils.core.airfoil_geometry import JaxAirfoil
+from ICARUS.airfoils.core.naca4 import NACA4
 import jax.numpy as jnp
 
 # Create airfoil - SAME API!
@@ -62,8 +62,8 @@ from ICARUS.airfoils.naca4 import NACA4
 import numpy as np
 
 # NEW: JAX imports
-from ICARUS.airfoils.jax_implementation.jax_airfoil import JaxAirfoil as Airfoil
-from ICARUS.airfoils.jax_implementation.naca4 import NACA4
+from ICARUS.airfoils.core.airfoil_geometry import JaxAirfoil as Airfoil
+from ICARUS.airfoils.core.naca4 import NACA4
 import jax.numpy as jnp
 ```
 
@@ -406,7 +406,7 @@ for i in range(100):
 
 After completing the migration:
 
-1. **Explore Examples**: Run the examples in `examples/jax_airfoils/` to see JAX features in action
+1. **Explore Examples**: Run the examples in `examples/airfoil_geometrys/` to see JAX features in action
 2. **Performance Tuning**: Profile your specific use cases and optimize bottlenecks
 3. **Integration**: Integrate JAX airfoils into your larger workflows
 4. **Advanced Features**: Explore GPU acceleration, advanced optimizers, and custom transformations

@@ -68,7 +68,7 @@ class ComprehensiveValidator:
                     sys.executable,
                     "-m",
                     "pytest",
-                    "tests/unit/airfoils/jax_implementation/",
+                    "tests/unit/airfoils/core/",
                     "-v",
                     "--tb=no",
                     "-q",

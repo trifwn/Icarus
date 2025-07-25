@@ -62,7 +62,6 @@ from typing import Self
 
 import jax
 import jax.numpy as jnp
-from jax import lax
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
@@ -71,7 +70,6 @@ from matplotlib.axes import Axes
 
 from ICARUS.core.types import FloatArray
 from ICARUS.interpolation import JaxInterpolator1D
-from .core.airfoil_geometry import AirfoilGeometry
 
 if TYPE_CHECKING:
     from .flapped_airfoil import FlappedAirfoil
@@ -100,7 +98,7 @@ class Airfoil:
         Args:
             upper (FloatArray): Upper surface coordinates
             lower (FloatArray): Lower surface coordinates
-            name (str): Name of the airfoil
+            naca (str): NACA 4 digit identifier (e.g. 0012)
         """
         if name is not None:
             name = name.replace(" ", "")
@@ -113,13 +111,6 @@ class Airfoil:
             upper,
         )  # order points according to LE/TE
         lower, upper = self.close_airfoil(lower, upper)  # close airfoil
-
-        # Create internal JAX-powered geometry backend
-        self._jax_geometry = AirfoilGeometry.from_upper_lower(
-            upper=upper, lower=lower, name=name or "Airfoil"
-        )
-
-        # Maintain original interface for backward compatibility
         # Unpack coordinates
         self._x_upper = upper[0, :]
         self._y_upper = upper[1, :]
@@ -165,19 +156,6 @@ class Airfoil:
         self._name = value.replace(" ", "")
 
     @property
-    def geometry(self) -> AirfoilGeometry:
-        """Access to fully JAX-compatible geometry for advanced operations.
-
-        This property provides direct access to the JAX-powered geometry backend
-        that supports JIT compilation, automatic differentiation, and vectorized
-        operations via jax.vmap.
-
-        Returns:
-            JaxAirfoil: JAX-compatible geometry object with full transformation support
-        """
-        return self._jax_geometry
-
-    @property
     def upper_surface(self) -> Float:
         """Returns the upper surface coordinates of the airfoil"""
         return jnp.array([self._x_upper, self._y_upper], dtype=float)
@@ -188,62 +166,17 @@ class Airfoil:
         return jnp.array([self._x_lower, self._y_lower], dtype=float)
 
     def y_upper(self, ksi: Float) -> Float:
-        """Upper surface y-coordinates (JAX-accelerated).
-
-        Args:
-            ksi: Normalized x coordinates in the range [0, 1]
-
-        Returns:
-            Upper surface y-coordinates at query points
-        """
-        # Convert to JAX array for consistent handling
-        ksi_array = jnp.asarray(ksi)
-        was_scalar = jnp.isscalar(ksi) or (hasattr(ksi, "shape") and ksi.shape == ())
-
-        # Convert normalized coordinates to actual x coordinates
-        x = self.min_x + ksi_array * (self.max_x - self.min_x)
-        # Delegate to JAX backend for computation
-        result = self._jax_geometry.y_upper(x)
-
-        # Handle scalar input/output for backward compatibility
-        if was_scalar:
-            # Extract scalar value from JAX array if needed
-            if hasattr(result, "shape") and result.shape == ():
-                return float(result)
-            elif hasattr(result, "__len__") and len(result) == 1:
-                return float(result[0])
-            else:
-                return float(result)
-        return result
+        # x-coordinate is between [0, 1]
+        # x must be set between [min(x_upper), max(x_upper)]
+        x = self.min_x + ksi * (self.max_x - self.min_x)
+        return self._y_upper_interp(x)
 
     def y_lower(self, ksi: Float) -> Float:
-        """Lower surface y-coordinates (JAX-accelerated).
+        # x-coordinate is between [0, 1]
+        # x must be set between [min(x_lower), max(x_lower)]
 
-        Args:
-            ksi: Normalized x coordinates in the range [0, 1]
-
-        Returns:
-            Lower surface y-coordinates at query points
-        """
-        # Convert to JAX array for consistent handling
-        ksi_array = jnp.asarray(ksi)
-        was_scalar = jnp.isscalar(ksi) or (hasattr(ksi, "shape") and ksi.shape == ())
-
-        # Convert normalized coordinates to actual x coordinates
-        x = self.min_x + ksi_array * (self.max_x - self.min_x)
-        # Delegate to JAX backend for computation
-        result = self._jax_geometry.y_lower(x)
-
-        # Handle scalar input/output for backward compatibility
-        if was_scalar:
-            # Extract scalar value from JAX array if needed
-            if hasattr(result, "shape") and result.shape == ():
-                return float(result)
-            elif hasattr(result, "__len__") and len(result) == 1:
-                return float(result[0])
-            else:
-                return float(result)
-        return result
+        x = self.min_x + ksi * (self.max_x - self.min_x)
+        return self._y_lower_interp(x)
 
     def repanel_spl(self, n_points: int = 200) -> None:
         pts = self.selig_original
@@ -365,8 +298,8 @@ class Airfoil:
             tuple[FloatArray, FloatArray]: Ordered lower and upper surface coordinates
 
         """
-        # upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
-        # lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
+        upper = upper[:, ~jnp.isnan(upper[0, :]) | ~jnp.isnan(upper[1, :])]
+        lower = lower[:, ~jnp.isnan(lower[0, :]) | ~jnp.isnan(lower[1, :])]
 
         x_lower: Float = lower[0, :]
         y_lower: Float = lower[1, :]
@@ -412,105 +345,134 @@ class Airfoil:
         upper: Float,
     ) -> tuple[Float, Float]:
         """
-        Close the airfoil by ensuring both surfaces have the same leading and trailing edge x-coordinates.
-
-        For JAX compatibility, this simplified version just returns the original surfaces.
-        The NACA generation should already produce properly closed airfoils.
-
-        Args:
-            lower: Lower surface coordinates (2 x N array)
-            upper: Upper surface coordinates (2 x N array)
-
-        Returns:
-            tuple: (lower, upper) - The input surfaces (potentially with minor adjustments)
+        Close airfoil by adding points at leading/trailing edges if needed.
+        Simpler approach using pre-allocated arrays and conditional filling.
         """
-        # For NACA airfoils generated with cosine spacing, the surfaces should already be properly closed
-        # This simplified version just ensures the leading and trailing edges match exactly
+        # Extract edge points
+        upper_le = upper[:, 0:1]
+        upper_te = upper[:, -1:]
+        lower_le = lower[:, 0:1]
+        lower_te = lower[:, -1:]
 
-        # Ensure leading edges match (set both to the average)
-        le_x = (upper[0, 0] + lower[0, 0]) / 2
-        le_y = (upper[1, 0] + lower[1, 0]) / 2
+        upper_le_x = upper[0, 0]
+        lower_le_x = lower[0, 0]
+        upper_te_x = upper[0, -1]
+        lower_te_x = lower[0, -1]
 
-        upper_closed = upper.at[0, 0].set(le_x).at[1, 0].set(le_y)
-        lower_closed = lower.at[0, 0].set(le_x).at[1, 0].set(le_y)
+        # Determine what needs to be added
+        add_lower_le_to_upper = lower_le_x < upper_le_x
+        add_upper_le_to_lower = upper_le_x < lower_le_x
+        add_lower_te_to_upper = upper_te_x < lower_te_x
+        add_upper_te_to_lower = lower_te_x < upper_te_x
 
-        # Ensure trailing edges match (set both to the average)
-        te_x = (upper[0, -1] + lower[0, -1]) / 2
-        te_y = (upper[1, -1] + lower[1, -1]) / 2
+        # Create arrays with maximum possible size
+        max_upper_cols = upper.shape[1] + 2  # original + potential LE + potential TE
+        max_lower_cols = lower.shape[1] + 2
 
-        upper_closed = upper_closed.at[0, -1].set(te_x).at[1, -1].set(te_y)
-        lower_closed = lower_closed.at[0, -1].set(te_x).at[1, -1].set(te_y)
+        # Initialize with NaN (or use zeros if you prefer)
+        upper_extended = jnp.full((2, max_upper_cols), jnp.nan)
+        lower_extended = jnp.full((2, max_lower_cols), jnp.nan)
 
-        return lower_closed, upper_closed
+        # Build upper surface
+        upper_start_idx = jnp.where(add_lower_le_to_upper, 1, 0)
+        upper_end_idx = upper_start_idx + upper.shape[1]
+
+        # Place original upper surface
+        upper_extended = upper_extended.at[:, upper_start_idx:upper_end_idx].set(upper)
+
+        # Conditionally add leading edge
+        upper_extended = jnp.where(
+            add_lower_le_to_upper,
+            upper_extended.at[:, 0:1].set(lower_le),
+            upper_extended,
+        )
+
+        # Conditionally add trailing edge
+        upper_extended = jnp.where(
+            add_lower_te_to_upper,
+            upper_extended.at[:, upper_end_idx : upper_end_idx + 1].set(lower_te),
+            upper_extended,
+        )
+
+        # Build lower surface
+        lower_start_idx = jnp.where(add_upper_le_to_lower, 1, 0)
+        lower_end_idx = lower_start_idx + lower.shape[1]
+
+        # Place original lower surface
+        lower_extended = lower_extended.at[:, lower_start_idx:lower_end_idx].set(lower)
+
+        # Conditionally add leading edge
+        lower_extended = jnp.where(
+            add_upper_le_to_lower,
+            lower_extended.at[:, 0:1].set(upper_le),
+            lower_extended,
+        )
+
+        # Conditionally add trailing edge
+        lower_extended = jnp.where(
+            add_upper_te_to_lower,
+            lower_extended.at[:, lower_end_idx : lower_end_idx + 1].set(upper_te),
+            lower_extended,
+        )
+
+        # Calculate actual sizes
+        upper_actual_size = (
+            upper.shape[1]
+            + jnp.where(add_lower_le_to_upper, 1, 0)
+            + jnp.where(add_lower_te_to_upper, 1, 0)
+        )
+        lower_actual_size = (
+            lower.shape[1]
+            + jnp.where(add_upper_le_to_lower, 1, 0)
+            + jnp.where(add_upper_te_to_lower, 1, 0)
+        )
+
+        # Trim to actual sizes
+        upper_final = upper_extended[:, :upper_actual_size]
+        lower_final = lower_extended[:, :lower_actual_size]
+
+        return lower_final, upper_final
 
     def thickness(self, ksi: Float) -> Float:
-        """Airfoil thickness (JAX-accelerated).
+        """Returns the thickness of the airfoil at the given x coordinates
 
         Args:
-            ksi: Normalized x coordinates in the range [0, 1]
+            Ksi (Float): Normalized x coordinates in the range [0, 1]
 
         Returns:
-            Thickness of the airfoil at the given ksi coordinates
+            Float: Thickness of the airfoil at the given ksi coordinates
+
         """
-        # Convert to JAX array for consistent handling
-        ksi_array = jnp.asarray(ksi)
-        was_scalar = jnp.isscalar(ksi) or (hasattr(ksi, "shape") and ksi.shape == ())
+        thickness: Float = self.y_upper(ksi) - self.y_lower(ksi)
+        # Remove Nan
+        ksi = ksi[~jnp.isnan(thickness)]
+        thickness = thickness[~jnp.isnan(thickness)]
 
-        # Convert normalized coordinates to actual x coordinates
-        x = self.min_x + ksi_array * (self.max_x - self.min_x)
-        # Delegate to JAX backend for computation
-        result = self._jax_geometry.thickness(x)
-
-        # Handle scalar input/output for backward compatibility
-        if was_scalar:
-            # Extract scalar value from JAX array if needed
-            if hasattr(result, "shape") and result.shape == ():
-                return float(result)
-            elif hasattr(result, "__len__") and len(result) == 1:
-                return float(result[0])
-            else:
-                return float(result)
-        return result
+        # Set 0 thickness for values after x_max
+        thickness = thickness.at[ksi > self.max_x].set(0.0)
+        return thickness
 
     @property
     def max_thickness(self) -> float:
-        """Returns the maximum thickness of the airfoil (JAX-accelerated).
+        """Returns the maximum thickness of the airfoil
 
         Returns:
-            Maximum thickness value
+            float: Maximum thickness
+
         """
-        result = self._jax_geometry.max_thickness
-        # Convert to Python float if not in a JAX transformation context
-        try:
-            if hasattr(result, "shape") and result.shape == ():
-                return float(result)
-            elif hasattr(result, "__len__") and len(result) == 1:
-                return float(result[0])
-            else:
-                return float(result)
-        except:
-            # If we're in a JAX transformation context, return the JAX array
-            return result
+        thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
+        return np.max(thickness).astype(float)
 
     @property
     def max_thickness_location(self) -> float:
-        """Returns the location of the maximum thickness of the airfoil (JAX-accelerated).
+        """Returns the location of the maximum thickness of the airfoil
 
         Returns:
-            X-coordinate location of maximum thickness
+            float: Location of the maximum thickness
+
         """
-        result = self._jax_geometry.max_thickness_location
-        # Convert to Python float if not in a JAX transformation context
-        try:
-            if hasattr(result, "shape") and result.shape == ():
-                return float(result)
-            elif hasattr(result, "__len__") and len(result) == 1:
-                return float(result[0])
-            else:
-                return float(result)
-        except:
-            # If we're in a JAX transformation context, return the JAX array
-            return result
+        thickness: FloatArray = self.thickness(np.linspace(0, 1, self.n_points))
+        return float(np.argmax(thickness) / self.n_points)
 
     @property
     def file_name(self) -> str:
@@ -990,45 +952,16 @@ class Airfoil:
         return flapped
 
     def camber_line(self, points: float | list[float] | FloatArray) -> FloatArray:
-        """Camber line (JAX-accelerated).
+        """Returns the camber line for a given set of x coordinates
 
         Args:
-            points: X coordinates (normalized [0, 1] or actual coordinates)
+            points (float | list[float] | FloatArray): X coordinates
 
         Returns:
-            Camber line y-coordinates at query points
+            FloatArray: Camber line
+
         """
-        # Convert to JAX array if needed
-        points_array = jnp.asarray(points)
-        was_scalar = jnp.isscalar(points) or (
-            hasattr(points, "shape") and points.shape == ()
-        )
-
-        # Check if points are normalized (between 0 and 1) or actual coordinates
-        # If all points are between 0 and 1, assume normalized coordinates
-        if jnp.all((points_array >= 0) & (points_array <= 1)):
-            # Convert normalized coordinates to actual x coordinates
-            x = self.min_x + points_array * (self.max_x - self.min_x)
-        else:
-            # Use points as actual x coordinates
-            x = points_array
-
-        # Delegate to JAX backend for computation
-        result = self._jax_geometry.camber_line(x)
-
-        # Handle scalar input/output for backward compatibility
-        if was_scalar:
-            # Extract scalar value from JAX array if needed
-            if hasattr(result, "shape") and result.shape == ():
-                return float(result)
-            elif hasattr(result, "__len__") and len(result) == 1:
-                return float(result[0])
-            else:
-                return float(result)
-        return result
-
-        # Return as numpy array for backward compatibility
-        return np.array(result, dtype=float)
+        return np.array((self.y_upper(points) + self.y_lower(points)) / 2, dtype=float)
 
     @classmethod
     def load_from_web(cls, name: str) -> Airfoil:

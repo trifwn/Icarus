@@ -332,18 +332,18 @@ def integration_with_existing_solvers():
     print("\n=== Integration with Existing Solvers ===")
 
     # Create JAX airfoil
-    jax_airfoil = NACA4(M=0.02, P=0.4, XX=0.12, n_points=160)
+    airfoil_geometry = NACA4(M=0.02, P=0.4, XX=0.12, n_points=160)
 
-    print(f"Created JAX airfoil: {jax_airfoil.name}")
-    print(f"Max thickness: {jax_airfoil.max_thickness:.4f}")
-    print(f"Number of points: {jax_airfoil.n_points}")
+    print(f"Created JAX airfoil: {airfoil_geometry.name}")
+    print(f"Max thickness: {airfoil_geometry.max_thickness:.4f}")
+    print(f"Number of points: {airfoil_geometry.n_points}")
 
     # Demonstrate coordinate extraction for solver integration
     print("\nCoordinate extraction for solver integration:")
 
     # Upper surface coordinates
-    upper_coords = jax_airfoil.upper_surface
-    lower_coords = jax_airfoil.lower_surface
+    upper_coords = airfoil_geometry.upper_surface
+    lower_coords = airfoil_geometry.lower_surface
 
     print(f"Upper surface shape: {upper_coords.shape}")
     print(f"Lower surface shape: {lower_coords.shape}")
@@ -359,7 +359,7 @@ def integration_with_existing_solvers():
 
     # Demonstrate repaneling capability
     print("\nRepaneling demonstration:")
-    original_points = jax_airfoil.n_points
+    original_points = airfoil_geometry.n_points
 
     # Create versions with different point distributions
     coarse_airfoil = NACA4(M=0.02, P=0.4, XX=0.12, n_points=50)
@@ -371,12 +371,12 @@ def integration_with_existing_solvers():
 
     # Show that geometric properties are preserved
     print("\nGeometric property preservation:")
-    print(f"Original max thickness: {jax_airfoil.max_thickness:.6f}")
+    print(f"Original max thickness: {airfoil_geometry.max_thickness:.6f}")
     print(f"Coarse max thickness:   {coarse_airfoil.max_thickness:.6f}")
     print(f"Fine max thickness:     {fine_airfoil.max_thickness:.6f}")
 
     return {
-        "jax_airfoil": jax_airfoil,
+        "airfoil_geometry": airfoil_geometry,
         "coordinate_formats": {
             "upper_surface": upper_coords,
             "lower_surface": lower_coords,

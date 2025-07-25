@@ -599,7 +599,7 @@ def create_memory_visualization(results: Dict):
 
     plt.tight_layout()
     plt.savefig(
-        "examples/jax_airfoils/performance_demos/memory_efficiency_analysis.png",
+        "examples/airfoil_geometrys/performance_demos/memory_efficiency_analysis.png",
         dpi=300,
         bbox_inches="tight",
     )
