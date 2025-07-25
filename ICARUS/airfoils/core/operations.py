@@ -753,6 +753,56 @@ class JaxAirfoilOps:
         return yc, dyc_dx
 
     @staticmethod
+    @jax.jit
+    def naca5_camber_line_reflex(
+        x: Float[Array, " n_points"],
+        design_cl: float,
+        max_camber_pos: float,
+    ) -> Tuple[Float[Array, " n_points"], Float[Array, " n_points"]]:
+        """
+        Compute NACA 5-digit reflex camber line and its derivative.
+
+        Args:
+            x: X coordinates (normalized to [0, 1])
+            design_cl: Design coefficient of lift (L * 3/20)
+            max_camber_pos: Position of maximum camber (P/20)
+
+        Returns:
+            Tuple of (camber_line_y, camber_line_derivative)
+        """
+        # Reflex camber line parameters (simplified for JAX compatibility)
+        # These values are typical for reflex airfoils
+        r = 0.2170  # Fixed r value for reflex series
+        k1 = 15.793  # Fixed k1 value for reflex series
+
+        # Calculate k21 parameter
+        k21 = (3 * (r - max_camber_pos) ** 2 - r**3) / (1 - r) ** 3
+
+        # Camber line calculation for reflex
+        yc = jnp.where(
+            x < r,
+            (design_cl / 0.3)
+            * (k1 / 6)
+            * ((x - r) ** 3 - k21 * (1 - r) ** 3 * x - r**3 * x + r**3),
+            (design_cl / 0.3)
+            * (k1 / 6)
+            * (k21 * (x - r) ** 3 - k21 * (1 - r) ** 3 * x - r**3 * x + r**3),
+        )
+
+        # Camber line derivative for reflex
+        dyc_dx = jnp.where(
+            x < r,
+            (design_cl / 0.3)
+            * (k1 / 6)
+            * (3 * (x - r) ** 2 - k21 * (1 - r) ** 3 - r**3),
+            (design_cl / 0.3)
+            * (k1 / 6)
+            * (3 * k21 * (x - r) ** 2 - k21 * (1 - r) ** 3 - r**3),
+        )
+
+        return yc, dyc_dx
+
+    @staticmethod
     @partial(jax.jit, static_argnums=(4,))
     def generate_naca5_coordinates(
         design_cl: float,
@@ -786,8 +836,11 @@ class JaxAirfoilOps:
             design_cl,
             max_camber_pos,
         )
-        yc_reflex = jnp.zeros_like(x)
-        dyc_dx_reflex = jnp.zeros_like(x)
+        yc_reflex, dyc_dx_reflex = JaxAirfoilOps.naca5_camber_line_reflex(
+            x,
+            design_cl,
+            max_camber_pos,
+        )
 
         # Use jnp.where instead of if statement for JAX compatibility
         yc = jnp.where(reflex, yc_reflex, yc_standard)

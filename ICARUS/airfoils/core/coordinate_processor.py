@@ -10,6 +10,7 @@ from typing import Optional
 from typing import Tuple
 
 import jax.numpy as jnp
+from jax import lax
 from jaxtyping import Array
 from jaxtyping import ArrayLike
 from jaxtyping import Bool
@@ -181,31 +182,24 @@ class CoordinateProcessor:
         upper_te_x = upper[0, -1]
         lower_te_x = lower[0, -1]
 
-        # Determine what needs to be added
-        add_lower_le_to_upper = lower_le_x < upper_le_x
-        add_upper_le_to_lower = upper_le_x < lower_le_x
-        add_lower_te_to_upper = upper_te_x < lower_te_x
-        add_upper_te_to_lower = lower_te_x < upper_te_x
+        # Simplified approach: always ensure leading and trailing edges match
+        # This avoids conditional operations during JIT compilation
 
-        # Build closed upper surface
-        upper_parts = []
-        if add_lower_le_to_upper:
-            upper_parts.append(lower_le)
-        upper_parts.append(upper)
-        if add_lower_te_to_upper:
-            upper_parts.append(lower_te)
+        # Set leading edges to match (use average)
+        le_x_avg = (upper_le_x + lower_le_x) / 2
+        le_y_avg = (upper[1, 0] + lower[1, 0]) / 2
 
-        closed_upper = jnp.concatenate(upper_parts, axis=1)
+        # Set trailing edges to match (use average)
+        te_x_avg = (upper_te_x + lower_te_x) / 2
+        te_y_avg = (upper[1, -1] + lower[1, -1]) / 2
 
-        # Build closed lower surface
-        lower_parts = []
-        if add_upper_le_to_lower:
-            lower_parts.append(upper_le)
-        lower_parts.append(lower)
-        if add_upper_te_to_lower:
-            lower_parts.append(upper_te)
+        # Update upper surface with consistent LE and TE
+        closed_upper = upper.at[0, 0].set(le_x_avg).at[1, 0].set(le_y_avg)
+        closed_upper = closed_upper.at[0, -1].set(te_x_avg).at[1, -1].set(te_y_avg)
 
-        closed_lower = jnp.concatenate(lower_parts, axis=1)
+        # Update lower surface with consistent LE and TE
+        closed_lower = lower.at[0, 0].set(le_x_avg).at[1, 0].set(le_y_avg)
+        closed_lower = closed_lower.at[0, -1].set(te_x_avg).at[1, -1].set(te_y_avg)
 
         return closed_lower, closed_upper
 

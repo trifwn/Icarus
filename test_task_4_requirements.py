@@ -34,10 +34,10 @@ def test_jax_geometry_backend_replacement():
     assert hasattr(airfoil, "_jax_geometry"), (
         "Airfoil should have _jax_geometry attribute"
     )
-    assert airfoil._jax_geometry is not None, "JAX geometry should not be None"
+    assert airfoil._geometry is not None, "JAX geometry should not be None"
 
     # Verify that geometry is JAX-compatible
-    geometry = airfoil._jax_geometry
+    geometry = airfoil._geometry
     assert hasattr(geometry, "tree_flatten"), "Geometry should be JAX pytree compatible"
     assert hasattr(geometry, "tree_unflatten"), (
         "Geometry should be JAX pytree compatible"

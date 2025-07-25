@@ -115,7 +115,7 @@ class Airfoil:
         lower, upper = self.close_airfoil(lower, upper)  # close airfoil
 
         # Create internal JAX-powered geometry backend
-        self._jax_geometry = AirfoilGeometry.from_upper_lower(
+        self._geometry = AirfoilGeometry.from_upper_lower(
             upper=upper, lower=lower, name=name or "Airfoil"
         )
 
@@ -175,7 +175,7 @@ class Airfoil:
         Returns:
             JaxAirfoil: JAX-compatible geometry object with full transformation support
         """
-        return self._jax_geometry
+        return self._geometry
 
     @property
     def upper_surface(self) -> Float:
@@ -203,7 +203,7 @@ class Airfoil:
         # Convert normalized coordinates to actual x coordinates
         x = self.min_x + ksi_array * (self.max_x - self.min_x)
         # Delegate to JAX backend for computation
-        result = self._jax_geometry.y_upper(x)
+        result = self._geometry.y_upper(x)
 
         # Handle scalar input/output for backward compatibility
         if was_scalar:
@@ -232,7 +232,7 @@ class Airfoil:
         # Convert normalized coordinates to actual x coordinates
         x = self.min_x + ksi_array * (self.max_x - self.min_x)
         # Delegate to JAX backend for computation
-        result = self._jax_geometry.y_lower(x)
+        result = self._geometry.y_lower(x)
 
         # Handle scalar input/output for backward compatibility
         if was_scalar:
@@ -459,7 +459,7 @@ class Airfoil:
         # Convert normalized coordinates to actual x coordinates
         x = self.min_x + ksi_array * (self.max_x - self.min_x)
         # Delegate to JAX backend for computation
-        result = self._jax_geometry.thickness(x)
+        result = self._geometry.thickness(x)
 
         # Handle scalar input/output for backward compatibility
         if was_scalar:
@@ -479,7 +479,7 @@ class Airfoil:
         Returns:
             Maximum thickness value
         """
-        result = self._jax_geometry.max_thickness
+        result = self._geometry.max_thickness
         # Convert to Python float if not in a JAX transformation context
         try:
             if hasattr(result, "shape") and result.shape == ():
@@ -499,7 +499,7 @@ class Airfoil:
         Returns:
             X-coordinate location of maximum thickness
         """
-        result = self._jax_geometry.max_thickness_location
+        result = self._geometry.max_thickness_location
         # Convert to Python float if not in a JAX transformation context
         try:
             if hasattr(result, "shape") and result.shape == ():
@@ -1014,7 +1014,7 @@ class Airfoil:
             x = points_array
 
         # Delegate to JAX backend for computation
-        result = self._jax_geometry.camber_line(x)
+        result = self._geometry.camber_line(x)
 
         # Handle scalar input/output for backward compatibility
         if was_scalar:
