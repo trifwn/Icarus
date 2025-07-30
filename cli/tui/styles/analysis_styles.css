@@ -1,0 +1,227 @@
+/* Analysis Configuration Screen Styles */
+
+.screen-title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin: 1;
+}
+
+.form-title {
+    text-style: bold;
+    color: $accent;
+    margin: 1 0;
+}
+
+.section-title {
+    text-style: bold;
+    color: $secondary;
+    margin: 1 0 0 0;
+    border-bottom: solid $secondary;
+}
+
+.subsection-title {
+    text-style: bold;
+    color: $text;
+    margin: 1 0 0 0;
+}
+
+.field-label {
+    width: 15;
+    text-align: right;
+    margin: 0 1 0 0;
+}
+
+.param-label {
+    text-style: bold;
+    color: $text;
+}
+
+.param-description {
+    color: $text-muted;
+    text-style: italic;
+    margin: 0 0 1 0;
+}
+
+.validation-message {
+    margin: 0 0 1 0;
+}
+
+.validation-message.error {
+    color: $error;
+    text-style: bold;
+}
+
+.analysis-type {
+    color: $accent;
+    text-style: bold;
+    margin: 0 0 1 0;
+}
+
+.recommendation {
+    margin: 1 0;
+    padding: 1;
+    border: solid $secondary;
+}
+
+.recommendation.success {
+    color: $success;
+    border: solid $success;
+}
+
+.recommendation.warning {
+    color: $warning;
+    border: solid $warning;
+}
+
+.info-item {
+    margin: 0 0 0 1;
+}
+
+.requirement-item {
+    margin: 0 0 0 1;
+}
+
+.capability-item {
+    margin: 0 0 0 1;
+    color: $accent;
+}
+
+.performance-item {
+    margin: 0 0 0 1;
+    color: $text;
+}
+
+.error-detail {
+    color: $error;
+    margin: 0 0 0 2;
+}
+
+.warning {
+    color: $warning;
+    margin: 0 0 0 2;
+}
+
+.suggestion {
+    color: $info;
+    margin: 0 0 0 2;
+}
+
+.success {
+    color: $success;
+}
+
+.action-buttons {
+    margin: 2 0 0 0;
+    align: center;
+}
+
+.screen-actions {
+    margin: 1 0 0 0;
+    align: center;
+}
+
+/* Progress Tracking Styles */
+
+.status-text {
+    color: $accent;
+    text-style: bold;
+}
+
+.step-detail {
+    margin: 0 0 0 1;
+    color: $text;
+}
+
+/* Plot and Data Styles */
+
+.plot-area {
+    height: 20;
+    border: solid $secondary;
+    margin: 1 0;
+}
+
+.ascii-plot {
+    color: $accent;
+    text-style: bold;
+}
+
+.stat-item {
+    margin: 0 0 0 1;
+    color: $text;
+}
+
+.stat-detail {
+    margin: 0 0 0 2;
+    color: $text-muted;
+}
+
+.result-category {
+    text-style: bold;
+    color: $secondary;
+    margin: 1 0 0 0;
+}
+
+.result-detail {
+    margin: 0 0 0 2;
+    color: $text;
+}
+
+.result-item {
+    margin: 0 0 0 1;
+    color: $text;
+}
+
+.summary-item {
+    margin: 0 0 0 1;
+    color: $text;
+}
+
+.info-message {
+    color: $text-muted;
+    text-style: italic;
+    text-align: center;
+    margin: 2;
+}
+
+.option-label {
+    width: 20;
+    text-align: right;
+    margin: 0 1 0 0;
+}
+
+.raw-data-container {
+    height: 30;
+    border: solid $secondary;
+}
+
+.raw-data {
+    color: $text-muted;
+    text-style: italic;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 80) {
+    .field-label {
+        width: 12;
+    }
+
+    .option-label {
+        width: 15;
+    }
+}
+
+@media (max-width: 60) {
+    .field-label {
+        width: 10;
+    }
+
+    .option-label {
+        width: 12;
+    }
+
+    .plot-area {
+        height: 15;
+    }
+}

@@ -1,0 +1,358 @@
+/* ICARUS TUI Styles - Dark Blue Theme (Textual CSS compatible) */
+
+/* App-wide styles */
+App {
+    background: #181c24;
+}
+
+/* Header styles */
+#title {
+    color: #4fc3f7;
+    text-style: bold;
+    width: 100%;
+    text-align: center;
+}
+
+#subtitle {
+    color: #b0bec5;
+    width: 100%;
+    text-align: center;
+    text-style: italic;
+}
+
+/* Main container */
+#main_container {
+    height: 100%;
+    width: 100%;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 30%;
+    height: 100%;
+    border-right: solid #1976d2;
+    background: #23293a;
+}
+
+/* Content area */
+.content {
+    width: 70%;
+    height: 100%;
+}
+
+/* Session info */
+#session_info {
+    height: 3;
+    padding: 1;
+    background: #1976d2;
+    color: #fff;
+    text-align: center;
+    text-style: bold;
+}
+
+/* Form styles */
+.form-title {
+    color: #4fc3f7;
+    text-style: bold;
+    text-align: center;
+    height: 1;
+    margin: 1 0;
+}
+
+#analysis_form {
+    height: 50%;
+    padding: 1;
+    border: solid #1976d2;
+    margin: 1;
+}
+
+#analysis_form Label {
+    color: #fff;
+    text-style: bold;
+    margin-top: 1;
+}
+
+#analysis_form Input {
+    border: solid #1976d2;
+    margin-bottom: 1;
+    background: #23293a;
+    color: #fff;
+}
+
+#analysis_form Select {
+    border: solid #1976d2;
+    margin-bottom: 1;
+    background: #23293a;
+    color: #fff;
+}
+
+/* Progress viewer */
+#progress_viewer {
+    height: 30%;
+    padding: 1;
+    border: solid #1976d2;
+    margin: 1;
+}
+
+.section-title {
+    color: #4fc3f7;
+    text-style: bold;
+    text-align: center;
+    height: 1;
+    margin: 1 0;
+}
+
+#main_progress {
+    height: 2;
+    margin: 1 0;
+}
+
+#progress_status {
+    color: #fff;
+    text-align: center;
+    height: 1;
+}
+
+/* Results viewer */
+#results_viewer {
+    height: 70%;
+    border: solid #1976d2;
+    margin: 1;
+}
+
+/* Button styles */
+Button {
+    margin: 1;
+    color: #fff;
+    background: #23293a;
+    border: solid #1976d2;
+}
+
+Button#validate_btn {
+    background: #fbc02d;
+    color: #181c24;
+}
+
+Button#run_analysis_btn {
+    background: #43a047;
+    color: #fff;
+}
+
+Button#export_json_btn {
+    background: #1976d2;
+    color: #fff;
+}
+
+Button#export_csv_btn {
+    background: #1976d2;
+    color: #fff;
+}
+
+Button#report_btn {
+    background: #ab47bc;
+    color: #fff;
+}
+
+Button#execute_workflow_btn {
+    background: #43a047;
+    color: #fff;
+}
+
+Button#create_template_btn {
+    background: #fbc02d;
+    color: #181c24;
+}
+
+Button#save_settings_btn {
+    background: #43a047;
+    color: #fff;
+}
+
+/* Settings form */
+#settings_form {
+    padding: 1;
+    border: solid #1976d2;
+    margin: 1;
+}
+
+#settings_form Label {
+    color: #fff;
+    text-style: bold;
+    margin-top: 1;
+}
+
+#settings_form Input {
+    border: solid #1976d2;
+    margin-bottom: 1;
+    background: #23293a;
+    color: #fff;
+}
+
+#settings_form Select {
+    border: solid #1976d2;
+    margin-bottom: 1;
+    background: #23293a;
+    color: #fff;
+}
+
+/* Notification log */
+#notification_log {
+    height: 80%;
+    border: solid #1976d2;
+    margin: 1;
+    background: #151922;
+    color: #fff;
+}
+
+/* Tree styles */
+Tree {
+    height: 100%;
+    border: solid #1976d2;
+    margin: 1;
+    color: #fff;
+    background: #23293a;
+}
+
+Tree > .tree--label {
+    color: #4fc3f7;
+    text-style: bold;
+}
+
+/* Data table styles */
+DataTable {
+    height: 100%;
+    border: solid #1976d2;
+    color: #fff;
+    background: #23293a;
+}
+
+DataTable > .datatable--header {
+    background: #1976d2;
+    color: #fff;
+    text-style: bold;
+}
+
+DataTable > .datatable--row {
+    border-bottom: solid #4fc3f7;
+}
+
+DataTable > .datatable--row:hover {
+    background: #263238;
+}
+
+/* Tab styles */
+TabbedContent > .tabbed-content--tab-bar {
+    background: #23293a;
+    border-bottom: solid #1976d2;
+}
+
+TabbedContent > .tabbed-content--tab-bar > .tab--button {
+    background: #181c24;
+    color: #fff;
+    border: solid #1976d2;
+    border-bottom: none;
+}
+
+TabbedContent > .tabbed-content--tab-bar > .tab--button.-active {
+    background: #1976d2;
+    color: #fff;
+}
+
+TabbedContent > .tabbed-content--content {
+    background: #181c24;
+    border: solid #1976d2;
+    border-top: none;
+}
+
+/* Footer */
+Footer {
+    background: #23293a;
+    color: #b0bec5;
+    text-align: center;
+    height: 1;
+}
+
+/* Dark theme adjustments */
+.dark {
+    background: #151922;
+}
+
+.dark .sidebar {
+    background: #151922;
+}
+
+.dark #session_info {
+    background: #0d47a1;
+}
+
+/* Animation styles */
+Button:focus {
+    background: #ab47bc;
+    color: #fff;
+}
+
+Input:focus {
+    border: solid #ab47bc;
+}
+
+Select:focus {
+    border: solid #ab47bc;
+}
+
+/* Status indicators */
+.status-success {
+    color: #43a047;
+}
+
+.status-warning {
+    color: #fbc02d;
+}
+
+.status-error {
+    color: #e53935;
+}
+
+.status-info {
+    color: #4fc3f7;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.7;
+}
+
+/* Tooltip styles */
+.tooltip {
+    background: #151922;
+    color: #fff;
+    border: solid #1976d2;
+    padding: 1;
+}
+
+/* Modal styles */
+.modal {
+    background: #181c24;
+    border: solid #1976d2;
+    padding: 2;
+}
+
+.modal-header {
+    color: #4fc3f7;
+    text-style: bold;
+    text-align: center;
+    border-bottom: solid #1976d2;
+    padding-bottom: 1;
+    margin-bottom: 1;
+}
+
+.modal-content {
+    color: #fff;
+    padding: 1;
+}
+
+.modal-footer {
+    border-top: solid #1976d2;
+    padding-top: 1;
+    margin-top: 1;
+    text-align: center;
+}

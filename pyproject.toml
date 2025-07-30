@@ -30,7 +30,12 @@ dependencies = [
     "pre-commit",
     "rich",
     "xmltodict",
-    "pyfiglet",
+    "rich",
+    "rich-cli",
+    "typer",
+    "textual",
+    "textual-dev",
+    "gitpython",
     "xfoil @git+https://github.com/trifwn/xfoil-python-prebuilt.git",
     'jax',
     'jaxlib',
@@ -49,7 +54,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-icarus-cli = "cli:cli_home"
+icarus = "cli.main:app"
+icarus-tui = "cli.tui_app:main"
 
 [tool.setuptools.package-data]
 ICARUS = ["bin/*"]

@@ -1,0 +1,309 @@
+/* Settings Screen Styles */
+
+#settings-container {
+    height: 100%;
+    padding: 1;
+}
+
+#settings-tabs {
+    height: 100%;
+}
+
+/* Section titles */
+.settings-section-title {
+    text-style: bold;
+    color: $primary;
+    margin: 1 0;
+    padding: 1 0;
+    border-bottom: solid $primary;
+}
+
+.settings-subsection-title {
+    text-style: bold;
+    color: $secondary;
+    margin: 1 0 0 0;
+    padding: 0 0 0 1;
+}
+
+/* Settings rows */
+.settings-row {
+    height: auto;
+    margin: 0 0 1 0;
+    align: left middle;
+}
+
+.settings-label {
+    width: 25%;
+    text-align: right;
+    margin: 0 1 0 0;
+    color: $text;
+}
+
+.settings-info {
+    color: $accent;
+    text-style: italic;
+    margin: 0 0 1 0;
+}
+
+/* Form controls */
+Input {
+    width: 50%;
+    margin: 0 1 0 0;
+}
+
+Select {
+    width: 30%;
+    margin: 0 1 0 0;
+}
+
+Switch {
+    margin: 0 1 0 0;
+}
+
+Slider {
+    width: 40%;
+    margin: 0 1 0 0;
+}
+
+Button {
+    margin: 0 1 0 0;
+    min-width: 15;
+}
+
+/* Theme preview */
+#theme-preview-content {
+    border: solid $accent;
+    padding: 1;
+    margin: 1 0;
+    background: $surface;
+    color: $text;
+}
+
+/* Data tables */
+DataTable {
+    height: 15;
+    margin: 1 0;
+    border: solid $secondary;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $background;
+}
+
+/* Scrollable containers */
+ScrollableContainer {
+    height: 100%;
+    padding: 0 1;
+}
+
+/* Tab styling */
+Tabs {
+    background: $surface;
+}
+
+TabPane {
+    padding: 1;
+    background: $background;
+}
+
+/* Collapsible sections */
+Collapsible {
+    margin: 1 0;
+    border: solid $muted;
+}
+
+Collapsible > .collapsible--title {
+    background: $surface;
+    color: $text;
+    text-style: bold;
+}
+
+Collapsible > .collapsible--contents {
+    padding: 1;
+    background: $background;
+}
+
+/* Responsive adjustments */
+@media (max-width: 80) {
+    .settings-label {
+        width: 100%;
+        text-align: left;
+        margin: 0 0 0 0;
+    }
+
+    .settings-row {
+        layout: vertical;
+        height: auto;
+    }
+
+    Input, Select {
+        width: 100%;
+        margin: 0 0 1 0;
+    }
+
+    Slider {
+        width: 100%;
+    }
+}
+
+@media (max-width: 60) {
+    #settings-container {
+        padding: 0;
+    }
+
+    ScrollableContainer {
+        padding: 0;
+    }
+
+    Button {
+        min-width: 10;
+        margin: 0 0 1 0;
+    }
+}
+
+/* Color scheme variations */
+.theme-dark {
+    --primary: #00bfff;
+    --secondary: #40e0d0;
+    --accent: #ffffff;
+    --success: #00ff00;
+    --warning: #ffff00;
+    --error: #ff0000;
+    --info: #00bfff;
+    --muted: #808080;
+    --background: #000000;
+    --surface: #1a1a1a;
+    --text: #ffffff;
+}
+
+.theme-light {
+    --primary: #0066cc;
+    --secondary: #008080;
+    --accent: #000000;
+    --success: #008000;
+    --warning: #ff8000;
+    --error: #cc0000;
+    --info: #0066cc;
+    --muted: #666666;
+    --background: #ffffff;
+    --surface: #f0f0f0;
+    --text: #000000;
+}
+
+.theme-aerospace {
+    --primary: #00bfff;
+    --secondary: #40e0d0;
+    --accent: #ffffff;
+    --success: #00ff7f;
+    --warning: #ffd700;
+    --error: #ff4500;
+    --info: #87ceeb;
+    --muted: #708090;
+    --background: #000000;
+    --surface: #191970;
+    --text: #f0f8ff;
+}
+
+.theme-scientific {
+    --primary: #00ff00;
+    --secondary: #00ffff;
+    --accent: #ffff00;
+    --success: #00ff00;
+    --warning: #ffff00;
+    --error: #ff0000;
+    --info: #0000ff;
+    --muted: #808080;
+    --background: #000000;
+    --surface: #003300;
+    --text: #ffffff;
+}
+
+/* Animation classes */
+.animate-fade-in {
+    opacity: 0;
+    animation: fade-in 0.3s ease-in-out forwards;
+}
+
+@keyframes fade-in {
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    transform: translateX(-100%);
+    animation: slide-in 0.3s ease-out forwards;
+}
+
+@keyframes slide-in {
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Hover effects */
+Button:hover {
+    background: $accent;
+    color: $background;
+    text-style: bold;
+}
+
+DataTable:hover {
+    border: solid $primary;
+}
+
+/* Focus styles */
+Input:focus, Select:focus {
+    border: solid $primary;
+    background: $surface;
+}
+
+Switch:focus {
+    background: $primary;
+}
+
+Slider:focus {
+    border: solid $primary;
+}
+
+/* Validation styles */
+.settings-error {
+    color: $error;
+    text-style: bold;
+    margin: 0 0 1 0;
+}
+
+.settings-warning {
+    color: $warning;
+    text-style: italic;
+    margin: 0 0 1 0;
+}
+
+.settings-success {
+    color: $success;
+    text-style: bold;
+    margin: 0 0 1 0;
+}
+
+/* Loading states */
+.settings-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.settings-loading::after {
+    content: "Loading...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: $primary;
+    text-style: bold;
+}

@@ -1,0 +1,94 @@
+/* ICARUS CLI Application Styles */
+
+/* Global styles */
+Screen {
+    background: $surface;
+    color: $text;
+}
+
+/* Header and footer */
+Header {
+    background: $primary-darken-2;
+    color: $text;
+    height: 1;
+}
+
+Footer {
+    background: $primary-darken-2;
+    color: $text;
+}
+
+/* Dashboard styles */
+.title {
+    text-style: bold;
+    color: $accent;
+    text-align: center;
+    margin: 1 0;
+}
+
+.subtitle {
+    color: $text-muted;
+    text-align: center;
+    margin: 0 0 1 0;
+}
+
+.section-title {
+    text-style: bold;
+    color: $primary;
+    margin: 1 0;
+}
+
+.placeholder {
+    color: $text-muted;
+    text-align: center;
+    margin: 1;
+}
+
+/* Form styles */
+.form-title {
+    text-style: bold;
+    color: $accent;
+    margin: 1;
+}
+
+Input {
+    margin: 0 0 1 0;
+}
+
+Select {
+    margin: 0 0 1 0;
+}
+
+Button {
+    margin: 0 1 0 0;
+}
+
+/* Analysis screens */
+ProgressBar {
+    width: 100%;
+    margin: 1 0;
+}
+
+DataTable {
+    height: 10;
+    margin: 1 0;
+}
+
+Log {
+    height: 10;
+    margin: 1 0;
+}
+
+/* Tabs */
+TabPane {
+    padding: 1;
+}
+
+/* Containers */
+Horizontal {
+    margin: 1 0;
+}
+
+Vertical {
+    margin: 0 1;
+}

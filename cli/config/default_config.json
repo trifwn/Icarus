@@ -1,0 +1,72 @@
+{
+  "application": {
+    "name": "ICARUS CLI",
+    "version": "2.0.0",
+    "debug": false,
+    "log_level": "INFO"
+  },
+  "ui": {
+    "theme": "default",
+    "show_session_info": true,
+    "show_progress_bar": true,
+    "auto_refresh": true,
+    "animation_speed": "normal",
+    "terminal_title": true,
+    "responsive_layout": true,
+    "screen_transition_speed": 200
+  },
+  "analysis": {
+    "default_solver_2d": "xfoil",
+    "default_solver_3d": "avl",
+    "auto_save_results": true,
+    "parallel_processing": true,
+    "max_workers": 4,
+    "timeout_seconds": 300,
+    "default_reynolds": 1000000,
+    "default_angles": "0:15:16"
+  },
+  "database": {
+    "path": "./Data",
+    "auto_backup": true,
+    "backup_interval_hours": 24,
+    "max_backups": 10,
+    "connection_timeout": 30
+  },
+  "workflow": {
+    "auto_save_workflows": true,
+    "default_template_dir": "~/.icarus/templates",
+    "max_concurrent_workflows": 2,
+    "step_timeout_seconds": 600,
+    "enable_workflow_validation": true
+  },
+  "collaboration": {
+    "enable_sharing": false,
+    "default_port": 8080,
+    "max_concurrent_users": 10,
+    "session_timeout_minutes": 60
+  },
+  "export": {
+    "default_format": "json",
+    "include_metadata": true,
+    "compress_large_files": true,
+    "max_file_size_mb": 100
+  },
+  "performance": {
+    "cache_enabled": true,
+    "cache_size_mb": 256,
+    "async_operations": true,
+    "background_processing": true
+  },
+  "security": {
+    "encrypt_sensitive_data": true,
+    "session_encryption": true,
+    "audit_logging": true,
+    "max_login_attempts": 3
+  },
+  "plugins": {
+    "auto_discover": true,
+    "plugin_dir": "~/.icarus/plugins",
+    "enable_sandboxing": true,
+    "max_plugin_memory_mb": 128
+  }
+}

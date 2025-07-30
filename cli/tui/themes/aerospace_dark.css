@@ -1,0 +1,438 @@
+/* Aerospace Dark Theme - ICARUS CLI */
+
+/* App-wide styles */
+App {
+    background: #181c24;
+    color: #ffffff;
+}
+
+/* Button styles */
+Button {
+    background: #23293a;
+    color: #ffffff;
+    border: solid #1976d2;
+    margin: 1;
+    padding: 1;
+}
+
+Button:focus {
+    border: solid #ab47bc;
+    background: #1976d2;
+    color: #ffffff;
+}
+
+Button.-primary, Button.btn-primary {
+    background: #1976d2;
+    color: #ffffff;
+}
+
+Button.-success, Button.btn-success {
+    background: #43a047;
+    color: #ffffff;
+}
+
+Button.-warning, Button.btn-warning {
+    background: #fbc02d;
+    color: #181c24;
+}
+
+Button.-error, Button.btn-error {
+    background: #e53935;
+    color: #ffffff;
+}
+
+Button.-info, Button.btn-info {
+    background: #4fc3f7;
+    color: #181c24;
+}
+
+Button.-secondary, Button.btn-secondary {
+    background: #23293a;
+    color: #ffffff;
+    border: solid #4fc3f7;
+}
+
+Button.btn-outline {
+    background: transparent;
+    color: #1976d2;
+    border: solid #1976d2;
+}
+
+Button.btn-with-icon {
+    padding-left: 2;
+}
+
+/* Input styles */
+Input {
+    background: #23293a;
+    color: #ffffff;
+    border: solid #1976d2;
+    margin: 1;
+    padding: 1;
+}
+
+Input:focus {
+    border: solid #ab47bc;
+}
+
+Input.validated-input {
+    border: solid #1976d2;
+}
+
+Input.validated-input:invalid {
+    border: solid #e53935;
+}
+
+/* Select styles */
+Select {
+    background: #23293a;
+    color: #ffffff;
+    border: solid #1976d2;
+}
+
+Select:focus {
+    border: solid #ab47bc;
+}
+
+/* Container styles */
+Container {
+    background: #181c24;
+    padding: 1;
+    margin: 1;
+}
+
+/* Label styles */
+Label {
+    color: #ffffff;
+}
+
+Label.-title, Label.form-title {
+    color: #4fc3f7;
+    text-style: bold;
+    text-align: center;
+    margin: 1 0;
+}
+
+Label.-subtitle {
+    color: #b0bec5;
+    text-style: italic;
+}
+
+Label.-caption {
+    color: #546e7a;
+    text-style: dim;
+}
+
+Label.input-label {
+    color: #ffffff;
+    text-style: bold;
+    margin-top: 1;
+}
+
+Label.error-message {
+    color: #e53935;
+    display: none;
+}
+
+Label.error-message.error-visible {
+    display: block;
+}
+
+Label.progress-label {
+    color: #4fc3f7;
+    text-style: bold;
+}
+
+Label.progress-status {
+    color: #b0bec5;
+    text-align: center;
+}
+
+Label.section-title {
+    color: #4fc3f7;
+    text-style: bold;
+    text-align: center;
+    height: 1;
+    margin: 1 0;
+}
+
+Label.panel-title {
+    color: #4fc3f7;
+    text-style: bold;
+    border-bottom: solid #1976d2;
+    padding-bottom: 1;
+    margin-bottom: 1;
+}
+
+/* Status styles */
+.status-success {
+    color: #43a047;
+}
+
+.status-warning {
+    color: #fbc02d;
+}
+
+.status-error {
+    color: #e53935;
+}
+
+.status-info {
+    color: #4fc3f7;
+}
+
+.status-loading {
+    color: #ab47bc;
+}
+
+.status-idle {
+    color: #b0bec5;
+}
+
+/* DataTable styles */
+DataTable {
+    background: #23293a;
+    color: #ffffff;
+    border: solid #1976d2;
+}
+
+DataTable > .datatable--header {
+    background: #1976d2;
+    color: #ffffff;
+    text-style: bold;
+}
+
+DataTable > .datatable--row {
+    border-bottom: solid #4fc3f7;
+}
+
+DataTable > .datatable--row:hover {
+    background: #263238;
+}
+
+/* Progress bar styles */
+ProgressBar {
+    height: 1;
+    border: solid #1976d2;
+}
+
+ProgressBar > .bar--bar {
+    background: #1976d2;
+}
+
+ProgressBar > .bar--complete {
+    background: #43a047;
+}
+
+/* Tree styles */
+Tree {
+    background: #23293a;
+    color: #ffffff;
+    border: solid #1976d2;
+}
+
+Tree > .tree--label {
+    color: #4fc3f7;
+    text-style: bold;
+}
+
+Tree.collapsible-sidebar {
+    width: 30%;
+}
+
+/* Log styles */
+Log {
+    background: #151922;
+    color: #ffffff;
+    border: solid #1976d2;
+}
+
+Log.notification-log {
+    height: 80%;
+    margin: 1;
+}
+
+/* Tab styles */
+TabbedContent > .tabbed-content--tab-bar {
+    background: #23293a;
+    border-bottom: solid #1976d2;
+}
+
+TabbedContent > .tabbed-content--tab-bar > .tab--button {
+    background: #181c24;
+    color: #ffffff;
+    border: solid #1976d2;
+    border-bottom: none;
+}
+
+TabbedContent > .tabbed-content--tab-bar > .tab--button.-active {
+    background: #1976d2;
+    color: #ffffff;
+}
+
+TabbedContent > .tabbed-content--content {
+    background: #181c24;
+    border: solid #1976d2;
+    border-top: none;
+}
+
+/* Header and Footer */
+Header {
+    background: #23293a;
+    color: #4fc3f7;
+    text-align: center;
+    height: 3;
+    border-bottom: solid #1976d2;
+}
+
+Footer {
+    background: #23293a;
+    color: #b0bec5;
+    text-align: center;
+    height: 1;
+    border-top: solid #1976d2;
+}
+
+/* Layout containers */
+.main-container {
+    height: 100%;
+    width: 100%;
+}
+
+.sidebar {
+    width: 30%;
+    height: 100%;
+    border-right: solid #1976d2;
+    background: #23293a;
+}
+
+.content {
+    width: 70%;
+    height: 100%;
+    background: #181c24;
+}
+
+/* Form styles */
+.form-fields {
+    padding: 1;
+    margin: 1;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 2;
+    padding: 1;
+}
+
+/* Animation and transition styles */
+.glow-low {
+    border: solid #1976d2;
+}
+
+.glow-medium {
+    border: solid #4fc3f7;
+}
+
+.glow-high {
+    border: solid #ab47bc;
+}
+
+/* Responsive visibility classes */
+.hide-on-minimal {
+    display: block;
+}
+
+.hide-on-compact {
+    display: block;
+}
+
+.show-on-expanded {
+    display: none;
+}
+
+.show-on-wide {
+    display: none;
+}
+
+/* Session info */
+#session_info {
+    height: 3;
+    padding: 1;
+    background: #1976d2;
+    color: #ffffff;
+    text-align: center;
+    text-style: bold;
+}
+
+/* Specific component styles */
+#title {
+    color: #4fc3f7;
+    text-style: bold;
+    width: 100%;
+    text-align: center;
+}
+
+#subtitle {
+    color: #b0bec5;
+    width: 100%;
+    text-align: center;
+    text-style: italic;
+}
+
+/* Modal styles */
+.modal {
+    background: #181c24;
+    border: solid #1976d2;
+    padding: 2;
+}
+
+.modal-header {
+    color: #4fc3f7;
+    text-style: bold;
+    text-align: center;
+    border-bottom: solid #1976d2;
+    padding-bottom: 1;
+    margin-bottom: 1;
+}
+
+.modal-content {
+    color: #ffffff;
+    padding: 1;
+}
+
+.modal-footer {
+    border-top: solid #1976d2;
+    padding-top: 1;
+    margin-top: 1;
+    text-align: center;
+}
+
+/* Tooltip styles */
+.tooltip {
+    background: #151922;
+    color: #ffffff;
+    border: solid #1976d2;
+    padding: 1;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.7;
+}
+
+/* Aerospace-specific styling */
+.aerospace-primary {
+    color: #1976d2;
+}
+
+.aerospace-secondary {
+    color: #4fc3f7;
+}
+
+.aerospace-accent {
+    color: #ff9800;
+}
+
+.aerospace-success {
+    color: #43a047;
+}
