@@ -198,7 +198,7 @@ class Wing(WingSurface):
             for airfoil in segment.airfoils:
                 if airfoil not in airfoils:
                     airfoils.append(airfoil)
-        self.airfoils: list[Airfoil] = airfoils
+        self.airfoils = airfoils
 
     def define_grid(self) -> None:
         """Creates a grid of points to represent the wing"""

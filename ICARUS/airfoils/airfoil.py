@@ -499,14 +499,13 @@ class Airfoil:
             if airfoil1_eta is not None and airfoil2_eta is not None:
                 new_eta = airfoil1_eta * (1 - eta) + (airfoil2_eta) * (eta)
 
-            if airfoil1_eta is None and airfoil2_eta is None:
-                new_eta = eta
-
-            if airfoil1_eta is not None and airfoil2_eta is None:
+            elif airfoil1_eta is not None and airfoil2_eta is None:
                 new_eta = airfoil1_eta * (1 - eta)
 
-            if airfoil1_eta is None and airfoil2_eta is not None:
+            elif airfoil1_eta is None and airfoil2_eta is not None:
                 new_eta = (airfoil2_eta) * (eta)
+            else:  # if airfoil1_eta is None and airfoil2_eta is None:
+                new_eta = eta
 
             # ROUND TO 2 DECIMALS
             new_eta = int(100 * new_eta)

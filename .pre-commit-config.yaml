@@ -60,6 +60,7 @@ repos:
           - "types-xmltodict"
           - "types-openpyxl"
           - "types-PyYAML"
+          - "pytest"
 
   - repo: local
     hooks:
