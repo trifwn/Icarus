@@ -6,6 +6,26 @@ Version v1.0
 ## Working Effort.
 Code and Tools to analyze the performance of low speed aircraft using different computational methods and codes. Inspired by a model aircraft designed by EUROAVIA Athens for the European Competion Air Cargo Challenge (ACC) that failed to fly because of of dynamic instability (hence the ICARUS name). This software is developed for it to be used as part of a more general optimization workflow that will use different fidelity levels to produce mission specific aircrafts.
 
+## 🚀 Quick Start
+
+### Web Application (NEW!)
+
+ICARUS now features a modern, elegant web interface for all your aircraft design needs:
+
+```bash
+# Simply run:
+icarus
+```
+
+This launches the Dash-based web application at `http://localhost:8050` with:
+- 🏠 **Home**: System overview and quick navigation
+- 💾 **Database**: Manage airfoils and aircraft
+- ✈️ **Airfoils**: Analyze airfoil performance and compute polars
+- 🛩️ **Airplanes**: Design and analyze complete aircraft
+- 📊 **Optimization**: Optimize aircraft designs
+
+See [web_app/README.md](web_app/README.md) for detailed documentation.
+
 ## Current Goals
 
 - Improve Examples
