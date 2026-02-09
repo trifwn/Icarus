@@ -47,7 +47,7 @@ class AirfoilPolarMap:
     @property
     def angles_of_attack(self) -> FloatArray:
         """Get the angles of attack for the airfoil polar map."""
-        return self.df["AoA"].values.astype("float64")
+        return self.df["AoA"].values.astype("float64")  # type: ignore[return-value]
 
     def get_polar(self, reynolds: float) -> AirfoilPolar:
         """Get the airfoil polar for a given Reynolds number."""

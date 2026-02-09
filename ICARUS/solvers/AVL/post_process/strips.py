@@ -1,6 +1,7 @@
 import os
 import re
 from collections import defaultdict
+from typing import Any
 
 import pandas as pd
 
@@ -38,8 +39,10 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
         with open(filename, encoding="UTF-8") as f:
             data: list[str] = f.readlines()
 
-        surfaces = {}  # Dictionary to store surface_name: DataFrame
-        surface_counts = defaultdict(int)  # To make duplicate surface names unique
+        surfaces: dict[str, Any] = {}  # Dictionary to store surface_name: DataFrame
+        surface_counts: defaultdict[str, int] = defaultdict(
+            int,
+        )  # To make duplicate surface names unique
         current_surface = None  # Current surface key (e.g., "wing" or "wing_2")
         table_columns = None  # Column names for the current table
         table_rows = []  # Data rows for the current table

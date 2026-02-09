@@ -22,7 +22,7 @@ from ICARUS.vehicle import WingSegment
 
 
 @pytest.fixture(scope="session")
-def database_instance() -> Generator[Database, None, None]:
+def database_instance() -> Generator[Database]:
     """
     Session-scoped fixture that provides a properly initialized Database instance.
 

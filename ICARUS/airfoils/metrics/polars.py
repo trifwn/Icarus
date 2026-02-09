@@ -263,7 +263,7 @@ class AirfoilPolar:
     def __getstate__(self) -> dict[str, Any]:
         state = {}
         state["reynolds"] = self.reynolds
-        state["df"] = self.df.copy()
+        state["df"] = self.df.copy()  # type: ignore[assignment]
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:

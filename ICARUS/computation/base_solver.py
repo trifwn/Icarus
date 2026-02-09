@@ -151,7 +151,7 @@ class Solver(Generic[SolverParametersType]):
             analysis.set_analysis_input(inputs)
 
         if solver_parameters:
-            self.set_solver_parameters(solver_parameters)
+            self.set_solver_parameters(solver_parameters)  # type: ignore[arg-type]
 
         runner = SimulationRunner(
             execution_mode=execution_mode,
@@ -244,7 +244,7 @@ class Solver(Generic[SolverParametersType]):
 
             # Get type name
             try:
-                type_name = f.type.__name__
+                type_name = f.type.__name__  # type: ignore[union-attr]
             except AttributeError:
                 # Handle complex types like tuple[float, float]
                 type_name = str(f.type).replace("typing.", "")

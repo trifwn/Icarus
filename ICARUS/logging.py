@@ -142,7 +142,7 @@ def setup_mp_logging(log_queue: QueueLike) -> QueueListener | None:
             force=True,
         )
         logging.getLogger("asyncio").setLevel(logging.WARNING)
-        builtins.print = queue_print
+        builtins.print = queue_print  # type: ignore[assignment]
     return listener
 
 

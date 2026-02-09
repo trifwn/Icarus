@@ -27,7 +27,7 @@ class AdaptiveEngine(AbstractEngine):
         }
 
     @property
-    def execution_mode(self) -> ExecutionMode:
+    def execution_mode(self) -> ExecutionMode:  # type: ignore[override]
         """Get the current execution mode"""
         if self.current_execution_mode is None:
             raise ValueError("Execution mode not set. Call execute_tasks first.")

@@ -48,7 +48,7 @@ class MultiprocessingEngine(AbstractEngine):
                 "MultiprocessingEngine requires a multiprocessing Queue for logging",
             )
 
-        self.listener = setup_mp_logging(log_queue)
+        self.listener = setup_mp_logging(log_queue)  # type: ignore[assignment]
         if self.listener is not None:
             self.listener.start()
 
@@ -110,7 +110,7 @@ class MultiprocessingEngine(AbstractEngine):
             results = executor.map(self._execute_task, self.tasks)
 
         # Convert exceptions to failed results
-        processed_results = []
+        processed_results = []  # type: ignore[var-annotated]
         for result in results:
             if isinstance(result, Exception):
                 processed_results.append(
@@ -135,7 +135,7 @@ class MultiprocessingEngine(AbstractEngine):
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())
 
-            self.monitor_thread = threading.Thread(target=monitor_runner, daemon=True)
+            self.monitor_thread = threading.Thread(target=monitor_runner, daemon=True)  # type: ignore[assignment]
             # self.monitor_thread.start()
 
     async def _stop_progress_monitoring(self) -> None:

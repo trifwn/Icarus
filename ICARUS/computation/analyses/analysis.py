@@ -144,7 +144,7 @@ class Analysis(Generic[AnalysisInput]):
             description = f.metadata.get("description", "")
             # Get type name
             if hasattr(f.type, "__name__"):
-                type_name = f.type.__name__  # type: ignore
+                type_name = f.type.__name__
             else:
                 type_name = str(f.type).replace("typing.", "")
 
@@ -190,7 +190,7 @@ class Analysis(Generic[AnalysisInput]):
             )
 
         # Update the analysis input with the provided inputs
-        self.inputs = [self.input_type.get_input(input_dict)]
+        self.inputs = [self.input_type.get_input(input_dict)]  # type: ignore[list-item]
 
     def set_analysis_multiple_inputs(
         self,
@@ -210,7 +210,7 @@ class Analysis(Generic[AnalysisInput]):
                 input_dict = input_data
             else:
                 raise TypeError("Inputs must be an AnalysisInput or a dictionary")
-            self.inputs.append(self.input_type.get_input(input_dict))
+            self.inputs.append(self.input_type.get_input(input_dict))  # type: ignore[arg-type]
 
     def create_tasks(
         self,
@@ -317,7 +317,7 @@ class Analysis(Generic[AnalysisInput]):
             isinstance(input_item, type(self.input_type)) for input_item in self.inputs
         ):
             raise ValueError(
-                f"All inputs must be of type {self.input_type.__name__}. "
+                f"All inputs must be of type {self.input_type.__name__}. "  # type: ignore[attr-defined]
                 f"Received types: {[type(input_item).__name__ for input_item in self.inputs]}",
             )
 

@@ -21,7 +21,7 @@ def test_gnvp3_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
     run_parallel: bool,
-):
+) -> None:
     """Test GNVP3 solver execution in parallel and serial modes."""
     print(f"Testing GNVP3 Running ({'Parallel' if run_parallel else 'Serial'})...")
 

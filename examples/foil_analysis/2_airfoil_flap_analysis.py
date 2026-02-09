@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -73,7 +74,7 @@ for flap_angle in np.arange(-12.5, -30, -2.5):
     xfoil = Xfoil()
 
     # Import Analysis
-    analysis: Analysis = xfoil.aseq
+    analysis: Analysis[Any] = xfoil.aseq
 
     # Get Options
     inputs = analysis.get_analysis_input(verbose=False)

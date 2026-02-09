@@ -39,7 +39,7 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
         return
 
     files: list[str] = next(os.walk(directory))[2]
-    reynolds_data = {}
+    reynolds_data = {}  # type: ignore[var-annotated]
     for file in files:
         airfoil_name: str = parse_airfoil_name(file)
         file_name = os.path.join(directory, file)

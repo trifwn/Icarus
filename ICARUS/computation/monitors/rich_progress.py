@@ -54,7 +54,7 @@ class RichProgressMonitor(ProgressMonitor):
         """Set the tasks to monitor"""
         self.tasks = tasks
         self.job_name = job_name
-        self.task_id_map = {}
+        self.task_id_map = {}  # type: ignore[var-annotated]
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
         """Request concurrent variables for this monitor"""
@@ -200,7 +200,7 @@ class RichProgressMonitor(ProgressMonitor):
                 current_step=task.total_steps,
                 total_steps=task.total_steps,
                 completed=True,
-                error=result.error,
+                error=result.error,  # type: ignore[arg-type]
             )
             self.handle_progress_event(progress)
 

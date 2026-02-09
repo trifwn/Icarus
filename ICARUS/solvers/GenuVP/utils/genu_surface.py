@@ -80,11 +80,11 @@ class GenuSurface:
         self.pitch: float = surf.orientation[0] * 0
         self.cone: float = surf.orientation[1] * 0
         self.wngang: float = surf.orientation[2] * 0
-        self.x_end: float = surf.origin[0] + surf._xoffset_dist[-1]
+        self.x_end: float = surf.origin[0] + surf._xoffset_dist[-1]  # type: ignore[has-type]
         self.y_end: float = surf.origin[1] + surf.span
-        self.z_end: float = surf.origin[2] + surf._zoffset_dist[-1]
+        self.z_end: float = surf.origin[2] + surf._zoffset_dist[-1]  # type: ignore[has-type]
         self.root_chord: float = surf.chords[0]
         self.tip_chord: float = surf.chords[-1]
-        self.offset: float = surf._xoffset_dist[-1]
+        self.offset: float = surf._xoffset_dist[-1]  # type: ignore[has-type]
         self.grid: FloatArray | list[FloatArray] = surf.get_grid()
         self.mean_aerodynamic_chord: float = surf.mean_aerodynamic_chord

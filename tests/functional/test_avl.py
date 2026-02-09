@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING
+from typing import Any
 
 import numpy as np
 import pytest
@@ -18,14 +19,14 @@ if TYPE_CHECKING:
 def test_avl_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-):
+) -> None:
     """Test AVL solver execution."""
     print("Testing AVL Running ...")
     # Get Solver
     from ICARUS.solvers.AVL import AVL
 
     avl = AVL()
-    analysis: Analysis = avl.get_analyses()[0]
+    analysis: Analysis[Any] = avl.get_analyses()[0]
 
     # Set Options
     options = analysis.get_analysis_input(verbose=True)

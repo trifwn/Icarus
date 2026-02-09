@@ -57,7 +57,7 @@ class ScipyInterpolator1D(interp1d):
         # self.args = state["args"]
         # self.kwargs = state["kwargs"]
         # Recreate the spline object during initialization
-        ScipyInterpolator1D.__init__(
+        ScipyInterpolator1D.__init__(  # type: ignore[call-arg]
             self,
             x=self.xi,
             y=self.yi,

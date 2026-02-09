@@ -305,7 +305,7 @@ class WingSurface:
 
         # Create the arrays that will be passed to the constructor
         for i in np.arange(0, N):
-            eta = span_discretization_function(i)
+            eta = span_discretization_function(i)  # type: ignore[arg-type]
             spanwise_positions[i] = eta * span
             chord_lengths[i] = real_chord_fun(eta)
             z_offsets[i] = (
@@ -1175,7 +1175,7 @@ class WingSurface:
             )
         else:
             x_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * x)
-            y_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * y)
+            y_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * y)  # type: ignore[assignment]
             z_cm = np.sum(self.volume_distribution.reshape(self.N - 1, self.M - 1) * z)
 
         return np.array((x_cm, y_cm, z_cm)) / self.volume
@@ -1287,7 +1287,7 @@ class WingSurface:
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
+            ax = fig.add_subplot(projection="3d")
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
