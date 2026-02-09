@@ -1,3 +1,5 @@
+from typing import Any
+
 from ICARUS.aero.vlm import lspt_polars
 from ICARUS.computation.analyses import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
@@ -29,7 +31,7 @@ solver_parameters: list[Parameter] = [
 ]
 
 
-class LSPT(Solver):
+class LSPT(Solver[Any]):
     analyses = [LSPT_PolarAnalysis()]
 
     def __init__(self) -> None:

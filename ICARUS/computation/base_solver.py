@@ -73,9 +73,9 @@ class Solver(Generic[SolverParametersType]):
             self.analyses_names.append(analysis.name)
 
         self.solver_parameters: SolverParametersType = solver_parameters
-        self.task_results: list[TaskResult] = []
+        self.task_results: list[TaskResult[Any]] = []
 
-    def get_analyses(self, verbose: bool = False) -> list[Analysis]:
+    def get_analyses(self, verbose: bool = False) -> list[Analysis[Any]]:
         if verbose:
             print(self)
         return list(self.analyses)
@@ -112,7 +112,7 @@ class Solver(Generic[SolverParametersType]):
 
     def execute(
         self,
-        analysis: Analysis,
+        analysis: Analysis[Any],
         inputs: BaseAnalysisInput
         | dict[str, Any]
         | list[BaseAnalysisInput | dict[str, Any]],

@@ -27,7 +27,7 @@ class MultiprocessingEngine(AbstractEngine):
 
     execution_mode: ExecutionMode = ExecutionMode.MULTIPROCESSING
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.listener = None
         self.monitor_thread = None
@@ -65,7 +65,12 @@ class MultiprocessingEngine(AbstractEngine):
         self.set_concurrent_vars(concurrent_vars)
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         self.logger.info("Shutting down engine")
 
         # Stop the queue listener
@@ -81,7 +86,7 @@ class MultiprocessingEngine(AbstractEngine):
         # Revert global logging configuration
         setup_logging()
 
-    async def execute_tasks(self) -> list[TaskResult]:
+    async def execute_tasks(self) -> list[TaskResult[Any]]:
         """Execute tasks using process pool"""
         self.logger.info(
             f"Starting multiprocessing execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
@@ -176,8 +181,8 @@ class MultiprocessingEngine(AbstractEngine):
 
     def _execute_task(
         self,
-        task: Task,
-    ) -> TaskResult:
+        task: Task[Any, Any],
+    ) -> TaskResult[Any]:
         """
         Execute a single task in a separate process.
         This function needs to be at module level for multiprocessing to work.

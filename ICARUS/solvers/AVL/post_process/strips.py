@@ -11,7 +11,7 @@ from ICARUS.vehicle import Airplane
 
 
 # Helper function to try converting a string to float.
-def to_number(token: str):
+def to_number(token: str) -> float | str:
     try:
         return float(token)
     except ValueError:
@@ -137,7 +137,7 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
     # ('wing', np.int64(1)) -> 'wing_1'
     master_df.index = master_df.index.get_level_values(0)
 
-    return master_df
+    return pd.DataFrame(master_df)
 
 
 AVL_strip_cols = [

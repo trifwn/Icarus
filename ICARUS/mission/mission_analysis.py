@@ -13,7 +13,7 @@ class MissionAnalysis:
         vehicle: Airplane,
     ) -> None:
         self.mission: Mission = mission
-        self.solver: Solver = solver
+        self.solver: Solver[Any] = solver
         self.vehicle: Airplane = vehicle
 
     def get_vehicle(self) -> Airplane:

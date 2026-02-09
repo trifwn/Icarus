@@ -62,7 +62,7 @@ class Reporter(ProgressReporter):
             except Exception as e:
                 self.logger.error(f"Error notifying observer: {e}")
 
-    def report_completion(self, result: TaskResult) -> None:
+    def report_completion(self, result: TaskResult[Any]) -> None:
         # Notify observers
         for observer in self._observers:
             try:

@@ -4,6 +4,7 @@ import os
 import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
 
 from ICARUS.airfoils import Airfoil
 from ICARUS.computation.core import ProgressEvent
@@ -56,7 +57,7 @@ class Foil2WakeAngleProgress:
 
 
 def get_aseq_progress(
-    task: Task,
+    task: Task[Any, Any],
     airfoil: Airfoil,
     reynolds: float,
     solver_parameters: Foil2WakeSolverParameters,

@@ -120,14 +120,14 @@ class Airfoil:
             self._y_upper,
             kind="linear",
             bounds_error=False,
-            fill_value="extrapolate",  # type: ignore[call-arg]
+            fill_value="extrapolate",
         )
         self._y_lower_interp = ScipyInterpolator1D(
             self._x_lower,
             self._y_lower,
             kind="linear",
             bounds_error=False,
-            fill_value="extrapolate",  # type: ignore[call-arg]
+            fill_value="extrapolate",
         )
 
         self.min_x = np.min(self._x_upper)

@@ -25,4 +25,4 @@ def create_execution_engine(
     if not engine_class:
         raise ValueError(f"Unknown execution mode: {mode}")
 
-    return engine_class()
+    return engine_class()  # type: ignore[no-any-return]

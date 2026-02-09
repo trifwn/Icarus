@@ -38,4 +38,4 @@ def deserialize_function(
             function = None
     else:
         function = None
-    return function
+    return function  # type: ignore[no-any-return]

@@ -23,7 +23,7 @@ class ConceptAirplane:
         MAX_LANDING_WEIGHT: float,
         TAKEOFF_DIST: float,
         LANDING_DIST: float,
-        NO_OF_ENGINES: float,
+        NO_OF_ENGINES: int,
         THRUST_PER_ENGINE: float,
         CRUISE_SPEED: float,
         CRUISE_MACH: float,
@@ -76,7 +76,7 @@ class ConceptAirplane:
         # ENGINE PARAMETERS
         self.SFC: float = SFC
         self.THRUST_PER_ENGINE: float = THRUST_PER_ENGINE
-        self.NO_OF_ENGINES: float = NO_OF_ENGINES
+        self.NO_OF_ENGINES: int = NO_OF_ENGINES
 
         # WEIGHT PARAMETERS
         self.WEIGHT_RATIO: float = WEIGHT_RATIO
@@ -268,23 +268,23 @@ class ConceptAirplane:
                 ASPECT_RATIO=self.ASPECT_RATIO,
                 AREA=self.AREA,
                 MTOW=self.MTOW,
-                FAR_TAKEOFF_DISTANCE=self.FAR_TAKEOFF_DIST,  # type: ignore
-                FAR_LANDING_DISTANCE=self.FAR_LANDING_DIST,  # type: ignore
-                NO_OF_ENGINES=self.NO_OF_ENGINES,  # type: ignore
-                THRUST=self.THRUST,  # type: ignore
+                FAR_TAKEOFF_DISTANCE=self.FAR_TAKEOFF_DIST,
+                FAR_LANDING_DISTANCE=self.FAR_LANDING_DIST,
+                NO_OF_ENGINES=self.NO_OF_ENGINES,
+                THRUST=self.THRUST,
                 CD_0=self.CD_0,
-                CD_LANDING=self.CD_LANDING,  # type: ignore
-                CD_CLIMB=self.CD_CLIMB,  # type: ignore
+                CD_LANDING=self.CD_LANDING,
+                CD_CLIMB=self.CD_CLIMB,
                 OSWALD_LANDING=self.OSWALD_LANDING,
                 OSWALD_CLIMB=self.OSWALD_CLIMB,
                 OSWALD_CRUISE=self.OSWALD_CRUISE,
-                CL_APP=self.CL_APP,  # type: ignore
-                CL_CRUISE=self.CL_CRUISE,  # type: ignore
-                CL_TAKEOFF=self.CL_TAKEOFF,  # type: ignore
-                CL_CLIMB=self.CL_CLIMB,  # type: ignore
+                CL_APP=self.CL_APP,
+                CL_CRUISE=self.CL_CRUISE,
+                CL_TAKEOFF=self.CL_TAKEOFF,
+                CL_CLIMB=self.CL_CLIMB,
                 CRUISE_ALTITUDE=self.CRUISE_ALTITUDE_MAX,
                 CRUISE_MACH=self.CRUISE_MACH,
-                L_OVER_D=self.L_OVER_D,  # type: ignore
+                L_OVER_D=self.L_OVER_D,
                 WEIGHT_RATIO=self.WEIGHT_RATIO,
                 RANGE=self.RANGE,
                 SFC=self.SFC,

@@ -29,7 +29,7 @@ from . import BaseAnalysisInput
 AnalysisInput = TypeVar("AnalysisInput", bound=BaseAnalysisInput)
 
 
-class AnalysisExecutor(TaskExecutorProtocol):
+class AnalysisExecutor(TaskExecutorProtocol[Any, Any]):
     """
     A simple task executor for running analysis functions.
     """
@@ -218,7 +218,7 @@ class Analysis(Generic[AnalysisInput]):
         solver_parameters: SolverParameters,
         priority: Priority = Priority.NORMAL,
         metadata: dict[str, Any] | None = None,
-    ) -> list[Task]:
+    ) -> list[Task[Any, Any]]:
         """Create a task definition for this analysis.
 
         Args:
@@ -295,7 +295,7 @@ class Analysis(Generic[AnalysisInput]):
         self: Analysis[AnalysisInput],
         runner: SimulationRunner,
         solver_parameters: SolverParameters,
-    ) -> tuple[list[Task], list[TaskResult]]:
+    ) -> tuple[list[Task[Any, Any]], list[TaskResult[Any]]]:
         """
         Runs a given analysis for a series of inputs using a simulation runner.
 

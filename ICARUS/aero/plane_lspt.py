@@ -307,7 +307,7 @@ class LSPT_Plane:
         num_of_wake_panels: int = 10,
         wake_x_inflation: float = 1.1,
         farfield_distance: float = 5,
-    ):
+    ) -> None:
         """For each surface that is shedding wake, we will add a panels after the near wake
         that are flat and parallel to the freestream direction.
 
@@ -528,7 +528,7 @@ class LSPT_Plane:
     ) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
-            ax_: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_ = ax
             fig = ax_.get_figure()
@@ -623,7 +623,7 @@ class LSPT_Plane:
     def plot_gammas(self, ax: Axes3D | None = None) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
-            ax_now: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_now: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_now = ax
             fig = ax_now.get_figure()
@@ -709,7 +709,7 @@ class LSPT_Plane:
     def plot_L_pan(self, ax: Axes3D | None = None) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
-            ax_now: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_now: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_now = ax
             fig = ax_now.get_figure()
@@ -736,7 +736,7 @@ class LSPT_Plane:
     def plot_D_pan(self, ax: Axes3D | None = None) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
-            ax_now: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+            ax_now: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_now = ax
             fig = ax_now.get_figure()

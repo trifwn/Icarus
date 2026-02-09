@@ -190,7 +190,7 @@ class RichProgressMonitor(ProgressMonitor):
         """Report progress to progress bars and observers"""
         self.handle_progress_event(progress)
 
-    def on_task_completion(self, result: TaskResult) -> None:
+    def on_task_completion(self, result: TaskResult[Any]) -> None:
         """Report task completion"""
         task = next((t for t in self.tasks if t.id == result.task_id), None)
         if task:

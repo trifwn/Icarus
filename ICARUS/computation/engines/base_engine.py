@@ -62,7 +62,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
     # Enter Arguments
     def __call__(
         self,
-        tasks: list[Task],
+        tasks: list[Task[Any, Any]],
         progress_reporter: ProgressReporter | None,
         progress_monitor: ProgressMonitor | None = None,
         resource_manager: ResourceManager | None = None,
@@ -110,7 +110,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
     def _setup_signal_handlers(self) -> None:
         """Set up signal handlers for graceful shutdown."""
 
-        def signal_handler(signum, frame):
+        def signal_handler(signum: int, frame: Any) -> None:
             self.logger.warning("\nShutdown signal received. Cleaning up...")
             self.terminate_event.set()
 

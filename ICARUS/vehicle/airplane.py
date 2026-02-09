@@ -739,7 +739,7 @@ class Airplane(Optimizable):
 
         """
         # If the object is a subclass of Airplane, then we can pickle it as an Airplane object
-        if self.__class__ == Airplane.__class__:
+        if type(self) is Airplane:
             encoded = jsonpickle.encode(self)
         else:
             # Encode the object as only an Airplane object

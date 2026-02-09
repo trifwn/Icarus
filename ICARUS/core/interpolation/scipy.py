@@ -3,7 +3,7 @@ from typing import Any
 from scipy.interpolate import interp1d
 
 
-class ScipyInterpolator1D(interp1d):
+class ScipyInterpolator1D(interp1d):  # type: ignore[misc]
     """
     Interpolator class that allows for extrapolation
 
