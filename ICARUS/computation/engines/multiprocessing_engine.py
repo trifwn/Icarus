@@ -29,8 +29,9 @@ class MultiprocessingEngine(AbstractEngine):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.listener = None
-        self.monitor_thread = None
+        self.listener: Any = None
+        self.monitor_thread: threading.Thread | None = None
+        self.mp_manager: mp.managers.SyncManager | None = None
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
         """Request concurrent variables required by this engine."""
@@ -48,7 +49,7 @@ class MultiprocessingEngine(AbstractEngine):
                 "MultiprocessingEngine requires a multiprocessing Queue for logging",
             )
 
-        self.listener = setup_mp_logging(log_queue)  # type: ignore[assignment]
+        self.listener = setup_mp_logging(log_queue)
         if self.listener is not None:
             self.listener.start()
 
@@ -140,7 +141,7 @@ class MultiprocessingEngine(AbstractEngine):
                     with self.progress_monitor:
                         asyncio.run(self.progress_monitor.monitor_loop())
 
-            self.monitor_thread = threading.Thread(target=monitor_runner, daemon=True)  # type: ignore[assignment]
+            self.monitor_thread = threading.Thread(target=monitor_runner, daemon=True)
             # self.monitor_thread.start()
 
     async def _stop_progress_monitoring(self) -> None:
@@ -223,7 +224,7 @@ class MultiprocessingEngine(AbstractEngine):
                         result = await task.executor.execute(task.input, context)
 
                     # Create successful result
-                    task_result = TaskResult(
+                    task_result: TaskResult[Any] = TaskResult(
                         task_id=task.id,
                         state=TaskState.COMPLETED,
                         output=result,

@@ -75,7 +75,7 @@ class SequentialExecutionEngine(AbstractEngine):
                 result = await task.executor.execute(task.input, context)
 
             # Create successful result
-            task_result = TaskResult(
+            task_result: TaskResult[Any] = TaskResult(
                 task_id=task.id,
                 state=TaskState.COMPLETED,
                 output=result,

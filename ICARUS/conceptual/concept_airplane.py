@@ -264,6 +264,16 @@ class ConceptAirplane:
     ]:
         kwargs = self.set_parameters(missing_vals)
         if not self.get_missing_parameters():
+            assert self.FAR_TAKEOFF_DIST is not None
+            assert self.FAR_LANDING_DIST is not None
+            assert self.THRUST is not None
+            assert self.CD_LANDING is not None
+            assert self.CD_CLIMB is not None
+            assert self.CL_APP is not None
+            assert self.CL_CRUISE is not None
+            assert self.CL_TAKEOFF is not None
+            assert self.CL_CLIMB is not None
+            assert self.L_OVER_D is not None
             res = get_all_far_criteria(
                 ASPECT_RATIO=self.ASPECT_RATIO,
                 AREA=self.AREA,

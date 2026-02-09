@@ -528,6 +528,7 @@ class LSPT_Plane:
     ) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
+            assert fig is not None
             ax_: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_ = ax
@@ -623,6 +624,7 @@ class LSPT_Plane:
     def plot_gammas(self, ax: Axes3D | None = None) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
+            assert fig is not None
             ax_now: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_now = ax
@@ -709,6 +711,7 @@ class LSPT_Plane:
     def plot_L_pan(self, ax: Axes3D | None = None) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
+            assert fig is not None
             ax_now: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_now = ax
@@ -736,6 +739,7 @@ class LSPT_Plane:
     def plot_D_pan(self, ax: Axes3D | None = None) -> None:
         if ax is None:
             fig: Figure | None = plt.figure()
+            assert fig is not None
             ax_now: Axes3D = fig.add_subplot(projection="3d")
         else:
             ax_now = ax
