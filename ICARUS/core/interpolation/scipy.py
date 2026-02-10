@@ -3,7 +3,7 @@ from typing import Any
 from scipy.interpolate import interp1d
 
 
-class ScipyInterpolator1D(interp1d):
+class ScipyInterpolator1D(interp1d):  # type: ignore[misc]
     """
     Interpolator class that allows for extrapolation
 
@@ -57,7 +57,7 @@ class ScipyInterpolator1D(interp1d):
         # self.args = state["args"]
         # self.kwargs = state["kwargs"]
         # Recreate the spline object during initialization
-        ScipyInterpolator1D.__init__(
+        ScipyInterpolator1D.__init__(  # type: ignore[call-arg]
             self,
             x=self.xi,
             y=self.yi,

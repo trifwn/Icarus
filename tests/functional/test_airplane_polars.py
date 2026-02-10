@@ -44,7 +44,7 @@ def test_airplane_polars(database_instance: Database) -> None:
 
 
 @pytest.mark.parametrize("plot", [False])
-def test_airplane_polars_with_plot(database_instance: Database, plot: bool):
+def test_airplane_polars_with_plot(database_instance: Database, plot: bool) -> None:
     """Test airplane polars with optional plotting."""
     planenames: list[str] = ["benchmark"]
 

@@ -1,9 +1,9 @@
+from dataclasses import dataclass
+
 from ICARUS.aero.vlm import lspt_polars
 from ICARUS.computation.analyses import BaseAirplaneAseq
 from ICARUS.computation.base_solver import Solver
-from ICARUS.computation.solver_parameters import IntOrNoneParameter
-from ICARUS.computation.solver_parameters import Parameter
-from ICARUS.computation.solver_parameters import StrParameter
+from ICARUS.computation.solver_parameters import SolverParameters
 
 
 class LSPT_PolarAnalysis(BaseAirplaneAseq):
@@ -15,21 +15,18 @@ class LSPT_PolarAnalysis(BaseAirplaneAseq):
         )
 
 
-solver_parameters: list[Parameter] = [
-    IntOrNoneParameter(
-        "Ground_Effect",
-        None,
-        "Distance From Ground (m). None for no ground effect",
-    ),
-    StrParameter(
-        "Wake_Geom_Type",
-        "TE-Geometrical",
-        "Type of wake geometry. The options are: -TE-Geometrical -Inflow-Uniform -Inflow-TE",
-    ),
-]
+@dataclass
+class LSPTParameters(SolverParameters):
+    """Parameters for the LSPT solver."""
+
+    Ground_Effect: int | None = None
+    """Distance From Ground (m). None for no ground effect."""
+
+    Wake_Geom_Type: str = "TE-Geometrical"
+    """Type of wake geometry. The options are: -TE-Geometrical -Inflow-Uniform -Inflow-TE"""
 
 
-class LSPT(Solver):
+class LSPT(Solver[LSPTParameters]):
     analyses = [LSPT_PolarAnalysis()]
 
     def __init__(self) -> None:
@@ -37,5 +34,5 @@ class LSPT(Solver):
             "LSPT",
             "3D VLM",
             1,
-            solver_parameters=solver_parameters,
+            solver_parameters=LSPTParameters(),
         )

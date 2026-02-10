@@ -28,6 +28,8 @@ class AbstractEngine(ConcurrentMixin, ABC):
         self,
     ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.terminate_event: EventLike | None = None
+        self.concurrent_variables: dict[str, ConcurrentVariable] | None = None
 
     @abstractmethod
     async def execute_tasks(self) -> list[TaskResult[Any]]:
@@ -62,7 +64,7 @@ class AbstractEngine(ConcurrentMixin, ABC):
     # Enter Arguments
     def __call__(
         self,
-        tasks: list[Task],
+        tasks: list[Task[Any, Any]],
         progress_reporter: ProgressReporter | None,
         progress_monitor: ProgressMonitor | None = None,
         resource_manager: ResourceManager | None = None,
@@ -110,9 +112,10 @@ class AbstractEngine(ConcurrentMixin, ABC):
     def _setup_signal_handlers(self) -> None:
         """Set up signal handlers for graceful shutdown."""
 
-        def signal_handler(signum, frame):
+        def signal_handler(signum: int, frame: Any) -> None:
             self.logger.warning("\nShutdown signal received. Cleaning up...")
-            self.terminate_event.set()
+            if self.terminate_event is not None:
+                self.terminate_event.set()
 
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)

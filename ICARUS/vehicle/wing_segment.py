@@ -274,7 +274,7 @@ class WingSegment(WingSurface):
             chord_disc_fun = partial(cspacer, N=self.M, cspace=2.0)
         elif self._chord_spacing == DiscretizationType.USER_DEFINED:
             try:
-                chord_disc_fun = self.chord_discretization_function
+                chord_disc_fun = self.chord_discretization_function  # type: ignore[has-type]
             except AttributeError:
                 raise AttributeError("Chord discretization function not defined")
         else:

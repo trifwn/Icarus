@@ -399,7 +399,7 @@ class Airplane(Optimizable):
         """
         for i, mass in enumerate(self.point_masses):
             if mass.name == name:
-                self.point_masses[i].inertia = new_inertia
+                self.point_masses[i].inertia = new_inertia  # type: ignore[assignment]
                 return
         # for i, surf in enumerate(self.surfaces):
         #     if surf.name == name:
@@ -663,7 +663,7 @@ class Airplane(Optimizable):
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
+            ax = fig.add_subplot(projection="3d")
             ax.set_title(self.name)
             ax.set_xlabel("x")
             ax.set_ylabel("y")
@@ -739,7 +739,7 @@ class Airplane(Optimizable):
 
         """
         # If the object is a subclass of Airplane, then we can pickle it as an Airplane object
-        if self.__class__ == Airplane.__class__:
+        if type(self) is Airplane:
             encoded = jsonpickle.encode(self)
         else:
             # Encode the object as only an Airplane object

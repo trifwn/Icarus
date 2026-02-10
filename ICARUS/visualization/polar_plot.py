@@ -57,7 +57,7 @@ def polar_plot(
         def wrapper(
             self: Any,  # 'self' is the instance of the class using this decorator
             *args: Any,
-            axs: Optional[list[Axes]] = None,
+            axs: Optional[Union[list[Axes], np.ndarray]] = None,
             title: Optional[str] = None,
             plots: Optional[list[list[str]]] = None,
             **kwargs: Any,

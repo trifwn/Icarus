@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import shutil
 import time
 from typing import TYPE_CHECKING
+from typing import Any
 
 import numpy as np
 import pytest
@@ -15,19 +17,22 @@ if TYPE_CHECKING:
 
 from ICARUS import PLATFORM
 
+# Check if 'module' command is available (required for GNVP7 on HPC)
+_has_module_cmd = shutil.which("module") is not None
+
 
 @pytest.mark.slow
 @pytest.mark.integration
 @pytest.mark.parametrize("run_parallel", [True, False])
 @pytest.mark.skipif(
-    PLATFORM == "Windows",
-    reason="GenuVP7 solver is not available in this environment",
+    PLATFORM == "Windows" or not _has_module_cmd,
+    reason="GenuVP7 solver requires HPC module system (module load mkl compiler openmpi/intel)",
 )
 def test_gnvp7_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
     run_parallel: bool,
-):
+) -> None:
     """Test GNVP7 solver execution in parallel and serial modes."""
     print(f"Testing GNVP7 Running ({'Parallel' if run_parallel else 'Serial'})...")
 
@@ -37,7 +42,7 @@ def test_gnvp7_run(
     gnvp7 = GenuVP7()
 
     # Set Analysis
-    analysis: Analysis = gnvp7.get_analyses()[0]
+    analysis: Analysis[Any] = gnvp7.get_analyses()[0]
 
     # Set Options
     inputs = analysis.get_analysis_input(verbose=True)

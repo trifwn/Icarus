@@ -62,7 +62,11 @@ strict = true
 python_version = "3.11"
 show_error_codes = true
 warn_unused_configs = true
-plugins = ["numpy.typing.mypy_plugin"]
+# plugins = ["numpy.typing.mypy_plugin"]  # deprecated in NumPy 2.3
+ignore_missing_imports = true
+explicit_package_bases = true
+allow_untyped_defs = false
+no_strict_optional = false
 
 [tool.ruff.lint]
 select = ["F", "E4", "E7", "E9"]

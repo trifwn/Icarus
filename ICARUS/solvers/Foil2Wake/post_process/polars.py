@@ -102,7 +102,7 @@ def make_polars(
             continue
 
         values = [x.strip() for x in data[-1].split(" ") if x != ""]
-        cl, cd, cm, aoa = (values[7], values[8], values[11], values[17])
+        cl, cd, cm, aoa = (values[7], values[8], values[11], values[17])  # type: ignore[assignment]
 
         load_file = os.path.join(folder_path, pressure_file)
         pressure_data = np.loadtxt(load_file).T

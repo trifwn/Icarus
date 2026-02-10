@@ -47,13 +47,13 @@ def main(GNVP_VERSION: int) -> None:
     STATIC_ANALYSIS: dict[str, float] = {name: True}
     DYNAMIC_ANALYSIS: dict[str, float] = {name: True}
 
-    if GNVP_VERSION == 7:
-        from ICARUS.solvers.GenuVP import GenuVP7
+    from ICARUS.solvers.GenuVP import GenuVP3
+    from ICARUS.solvers.GenuVP import GenuVP7
 
+    gnvp: GenuVP7 | GenuVP3
+    if GNVP_VERSION == 7:
         gnvp = GenuVP7()
     elif GNVP_VERSION == 3:
-        from ICARUS.solvers.GenuVP import GenuVP3
-
         gnvp = GenuVP3()
     else:
         raise ValueError("GNVP VERSION NOT FOUND")
@@ -108,7 +108,7 @@ def main(GNVP_VERSION: int) -> None:
             gnvp.execute(
                 analysis=polar_analysis,
                 inputs=inputs,
-                solver_parameters=solver_parameters,
+                solver_parameters=solver_parameters,  # type: ignore[arg-type]
                 execution_mode=ExecutionMode.MULTIPROCESSING,
             )
             print(
@@ -169,7 +169,7 @@ def main(GNVP_VERSION: int) -> None:
             _ = gnvp.execute(
                 analysis=stability_analysis,
                 inputs=stability_inputs,
-                solver_parameters=solver_parameters,
+                solver_parameters=solver_parameters,  # type: ignore[arg-type]
                 execution_mode=ExecutionMode.THREADING,
                 # progress_monitor= None
             )

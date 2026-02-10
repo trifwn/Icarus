@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING
+from typing import Any
 
 import numpy as np
 import pytest
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 def test_lspt_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance
     benchmark_state: State,  # Assuming benchmark_state is a fixture providing a State instance
-):
+) -> None:
     """Test LSPT solver execution."""
     print("Testing LSPT Running...")
 
@@ -29,7 +30,7 @@ def test_lspt_run(
     lspt: LSPT = LSPT()
 
     # Set Analysis
-    analysis: Analysis = lspt.get_analyses()[0]
+    analysis: Analysis[Any] = lspt.get_analyses()[0]
 
     # Set Options
     inputs = analysis.get_analysis_input(verbose=True)

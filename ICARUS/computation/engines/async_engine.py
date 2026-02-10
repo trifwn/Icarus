@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
+from typing import Any
 
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ExecutionMode
@@ -21,14 +22,14 @@ class AsyncEngine(AbstractEngine):
 
     async def execute_tasks(
         self,
-    ) -> list[TaskResult]:
+    ) -> list[TaskResult[Any]]:
         """Execute tasks concurrently using asyncio"""
         self.logger.info(
             f"Starting async execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
         )
         semaphore = asyncio.Semaphore(self.max_workers or 10)
 
-        async def execute_single_task(task: Task) -> TaskResult:
+        async def execute_single_task(task: Task[Any, Any]) -> TaskResult[Any]:
             async with semaphore:
                 return await self._execute_task_with_context(
                     task,
@@ -42,9 +43,9 @@ class AsyncEngine(AbstractEngine):
         )
 
         # Convert exceptions to failed results
-        processed_results = []
+        processed_results: list[TaskResult[Any]] = []
         for i, result in enumerate(results):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 task = self.tasks[i]
                 processed_results.append(
                     TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),
@@ -57,10 +58,10 @@ class AsyncEngine(AbstractEngine):
 
     async def _execute_task_with_context(
         self,
-        task: Task,
+        task: Task[Any, Any],
         progress_reporter: ProgressReporter | None,
         resource_manager: ResourceManager | None,
-    ) -> TaskResult:
+    ) -> TaskResult[Any]:
         """Execute a single task with full context management"""
         context = ExecutionContext(
             task_id=task.id,
@@ -93,7 +94,7 @@ class AsyncEngine(AbstractEngine):
                 result = await task.executor.execute(task.input, context)
 
             # Create successful result
-            task_result = TaskResult(
+            task_result: TaskResult[Any] = TaskResult(
                 task_id=task.id,
                 state=TaskState.COMPLETED,
                 output=result,

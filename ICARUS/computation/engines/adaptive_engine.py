@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import Task
 from ICARUS.computation.core import TaskResult
@@ -27,13 +29,13 @@ class AdaptiveEngine(AbstractEngine):
         }
 
     @property
-    def execution_mode(self) -> ExecutionMode:
+    def execution_mode(self) -> ExecutionMode:  # type: ignore[override]
         """Get the current execution mode"""
         if self.current_execution_mode is None:
             raise ValueError("Execution mode not set. Call execute_tasks first.")
         return self.current_execution_mode
 
-    async def execute_tasks(self) -> list[TaskResult]:
+    async def execute_tasks(self) -> list[TaskResult[Any]]:
         """Execute tasks using adaptive strategy selection"""
         execution_mode = self._select_execution_mode(self.tasks)
 
@@ -46,7 +48,7 @@ class AdaptiveEngine(AbstractEngine):
         engine = self.engines[execution_mode]
         return await engine.execute_tasks()
 
-    def _select_execution_mode(self, tasks: list[Task]) -> ExecutionMode:
+    def _select_execution_mode(self, tasks: list[Task[Any, Any]]) -> ExecutionMode:
         """Select the best execution mode based on task characteristics"""
         num_tasks = len(tasks)
 
@@ -77,7 +79,7 @@ class AdaptiveEngine(AbstractEngine):
             # Large number of mixed tasks - use async for better resource management
             return ExecutionMode.ASYNC
 
-    def _is_cpu_intensive(self, task: Task) -> bool:
+    def _is_cpu_intensive(self, task: Task[Any, Any]) -> bool:
         """Determine if a task is CPU-intensive based on its characteristics"""
         # This is a heuristic - in practice, you might want to analyze:
         # - Task type/category
@@ -90,7 +92,7 @@ class AdaptiveEngine(AbstractEngine):
         task_name = task.name.lower()
         return any(indicator in task_name for indicator in cpu_indicators)
 
-    def _is_io_intensive(self, task: Task) -> bool:
+    def _is_io_intensive(self, task: Task[Any, Any]) -> bool:
         """Determine if a task is I/O-intensive based on its characteristics"""
         # Simple heuristic based on task name/type
         io_indicators = [

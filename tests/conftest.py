@@ -5,6 +5,10 @@ This module provides common fixtures that can be used across all test files.
 
 from __future__ import annotations
 
+import matplotlib
+
+matplotlib.use("Agg")  # Use non-interactive backend for tests
+
 import os
 from typing import Generator
 
@@ -22,7 +26,7 @@ from ICARUS.vehicle import WingSegment
 
 
 @pytest.fixture(scope="session")
-def database_instance() -> Generator[Database, None, None]:
+def database_instance() -> Generator[Database]:
     """
     Session-scoped fixture that provides a properly initialized Database instance.
 
@@ -58,8 +62,7 @@ def database_instance() -> Generator[Database, None, None]:
 
 
 @pytest.fixture(scope="module")
-@pytest.mark.usefixtures("database_instance")
-def benchmark_airplane() -> Airplane:
+def benchmark_airplane(database_instance: Database) -> Airplane:
     """Fixture that provides a benchmark airplane configuration.
 
     Args:
@@ -97,8 +100,7 @@ def benchmark_airplane() -> Airplane:
 
 
 @pytest.fixture(scope="module")
-@pytest.mark.usefixtures("database_instance")
-def benchmark_state(benchmark_airplane: Airplane) -> State:
+def benchmark_state(benchmark_airplane: Airplane, database_instance: Database) -> State:
     """Fixture that provides a benchmark state for the airplane."""
 
     return State(

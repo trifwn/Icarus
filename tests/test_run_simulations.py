@@ -24,7 +24,14 @@ performance_simulation_file = (
 def run_basic_tests() -> bool:
     """Run basic functionality tests."""
     print("🧪 Running basic functionality tests...")
-    cmd = ["python", "-m", "pytest", basic_simultion_file, "-v", "--tb=short"]
+    cmd: list[str] = [
+        "python",
+        "-m",
+        "pytest",
+        str(basic_simultion_file),
+        "-v",
+        "--tb=short",
+    ]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode == 0:
@@ -40,11 +47,11 @@ def run_basic_tests() -> bool:
 def run_performance_tests() -> bool:
     """Run performance benchmark tests."""
     print("⚡ Running performance benchmarks...")
-    cmd = [
+    cmd: list[str] = [
         "python",
         "-m",
         "pytest",
-        performance_simulation_file,
+        str(performance_simulation_file),
         "-v",
         "--tb=short",
         "-m",
@@ -65,11 +72,11 @@ def run_performance_tests() -> bool:
 def run_stress_tests() -> bool:
     """Run stress tests."""
     print("🔥 Running stress tests...")
-    cmd = [
+    cmd: list[str] = [
         "python",
         "-m",
         "pytest",
-        performance_simulation_file,
+        str(performance_simulation_file),
         "-v",
         "--tb=short",
         "-m",

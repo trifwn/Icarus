@@ -384,7 +384,7 @@ def geo_file(
         f.write(contents)
 
 
-def grid_file(directory, bod: GenuSurface) -> None:
+def grid_file(directory: str, bod: GenuSurface) -> None:
     """Generates the grid file for a body.
 
     Args:

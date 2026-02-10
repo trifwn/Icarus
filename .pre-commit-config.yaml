@@ -34,7 +34,7 @@ repos:
         name: isort (python)
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -48,7 +48,7 @@ repos:
     rev: v1.14.0
     hooks:
       - id: mypy
-        args: [--strict, --install-types, --explicit-package-bases,--ignore-missing-imports]
+        args: [--strict, --install-types, --non-interactive, --explicit-package-bases,--ignore-missing-imports]
         additional_dependencies:
           - "numpy"
           - "pandas-stubs"
@@ -61,6 +61,8 @@ repos:
           - "types-openpyxl"
           - "types-PyYAML"
           - "pytest"
+          - "types-python-dateutil"
+          - "types-setuptools"
 
   - repo: local
     hooks:

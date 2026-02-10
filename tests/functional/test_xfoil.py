@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Any
 
 import numpy as np
 import pytest
@@ -28,7 +29,7 @@ def test_airfoils(database_instance: Database) -> list[Airfoil]:
 
 
 @pytest.fixture
-def xfoil_parameters():
+def xfoil_parameters() -> dict[str, Any]:
     """Fixture that provides common Xfoil parameters."""
     # PARAMETERS FOR ESTIMATION
     chord_max: float = 0.16

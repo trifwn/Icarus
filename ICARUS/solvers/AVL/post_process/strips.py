@@ -1,6 +1,7 @@
 import os
 import re
 from collections import defaultdict
+from typing import Any
 
 import pandas as pd
 
@@ -10,7 +11,7 @@ from ICARUS.vehicle import Airplane
 
 
 # Helper function to try converting a string to float.
-def to_number(token: str):
+def to_number(token: str) -> float | str:
     try:
         return float(token)
     except ValueError:
@@ -38,8 +39,10 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
         with open(filename, encoding="UTF-8") as f:
             data: list[str] = f.readlines()
 
-        surfaces = {}  # Dictionary to store surface_name: DataFrame
-        surface_counts = defaultdict(int)  # To make duplicate surface names unique
+        surfaces: dict[str, Any] = {}  # Dictionary to store surface_name: DataFrame
+        surface_counts: defaultdict[str, int] = defaultdict(
+            int,
+        )  # To make duplicate surface names unique
         current_surface = None  # Current surface key (e.g., "wing" or "wing_2")
         table_columns = None  # Column names for the current table
         table_rows = []  # Data rows for the current table
@@ -134,7 +137,7 @@ def get_strip_data(plane: Airplane, state: State, case: str) -> pd.DataFrame:
     # ('wing', np.int64(1)) -> 'wing_1'
     master_df.index = master_df.index.get_level_values(0)
 
-    return master_df
+    return pd.DataFrame(master_df)
 
 
 AVL_strip_cols = [

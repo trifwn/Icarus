@@ -4,6 +4,7 @@ import asyncio
 import logging
 from datetime import datetime
 from threading import Thread
+from typing import Any
 
 from ICARUS.computation.core import ExecutionContext
 from ICARUS.computation.core import ExecutionMode
@@ -21,7 +22,7 @@ class SequentialExecutionEngine(AbstractEngine):
 
     execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL
 
-    async def execute_tasks(self) -> list[TaskResult]:
+    async def execute_tasks(self) -> list[TaskResult[Any]]:
         """Execute tasks sequentially"""
         self.logger.info(f"Starting sequential execution of {len(self.tasks)} tasks")
         results = []
@@ -39,10 +40,10 @@ class SequentialExecutionEngine(AbstractEngine):
 
     async def _execute_task_with_context(
         self,
-        task: Task,
+        task: Task[Any, Any],
         progress_reporter: ProgressReporter | None,
         resource_manager: ResourceManager | None,
-    ) -> TaskResult:
+    ) -> TaskResult[Any]:
         """Execute a single task with full context management"""
         context = ExecutionContext(
             task_id=task.id,
@@ -74,7 +75,7 @@ class SequentialExecutionEngine(AbstractEngine):
                 result = await task.executor.execute(task.input, context)
 
             # Create successful result
-            task_result = TaskResult(
+            task_result: TaskResult[Any] = TaskResult(
                 task_id=task.id,
                 state=TaskState.COMPLETED,
                 output=result,

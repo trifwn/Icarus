@@ -73,9 +73,9 @@ class Solver(Generic[SolverParametersType]):
             self.analyses_names.append(analysis.name)
 
         self.solver_parameters: SolverParametersType = solver_parameters
-        self.task_results: list[TaskResult] = []
+        self.task_results: list[TaskResult[Any]] = []
 
-    def get_analyses(self, verbose: bool = False) -> list[Analysis]:
+    def get_analyses(self, verbose: bool = False) -> list[Analysis[Any]]:
         if verbose:
             print(self)
         return list(self.analyses)
@@ -112,7 +112,7 @@ class Solver(Generic[SolverParametersType]):
 
     def execute(
         self,
-        analysis: Analysis,
+        analysis: Analysis[Any],
         inputs: BaseAnalysisInput
         | dict[str, Any]
         | list[BaseAnalysisInput | dict[str, Any]],
@@ -151,7 +151,7 @@ class Solver(Generic[SolverParametersType]):
             analysis.set_analysis_input(inputs)
 
         if solver_parameters:
-            self.set_solver_parameters(solver_parameters)
+            self.set_solver_parameters(solver_parameters)  # type: ignore[arg-type]
 
         runner = SimulationRunner(
             execution_mode=execution_mode,
@@ -244,7 +244,7 @@ class Solver(Generic[SolverParametersType]):
 
             # Get type name
             try:
-                type_name = f.type.__name__
+                type_name = f.type.__name__  # type: ignore[union-attr]
             except AttributeError:
                 # Handle complex types like tuple[float, float]
                 type_name = str(f.type).replace("typing.", "")

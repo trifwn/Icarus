@@ -241,7 +241,7 @@ class Strip:
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
+            ax = fig.add_subplot(projection="3d")
             ax.set_title("Strip")
             ax.set_xlabel("x")
             ax.set_ylabel("y")
@@ -314,7 +314,7 @@ class Strip:
             ax: Axes3D = prev_ax
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(projection="3d")  # type: ignore
+            ax = fig.add_subplot(projection="3d")
             ax.set_title("Strip Points")
             ax.set_xlabel("x")
             ax.set_ylabel("y")

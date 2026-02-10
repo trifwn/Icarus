@@ -122,11 +122,11 @@ class Wing(WingSurface):
         _zoffset_dist: list[FloatArray] = []
 
         for segment in wing_segments:
-            seg_span_dist = segment._span_dist + segment.origin[1]
-            _chord_dist.extend(segment._chord_dist.tolist())
+            seg_span_dist = segment._span_dist + segment.origin[1]  # type: ignore[has-type]
+            _chord_dist.extend(segment._chord_dist.tolist())  # type: ignore[has-type]
             _span_dist.extend(seg_span_dist.tolist())
-            _xoffset_dist.extend(segment._xoffset_dist.tolist())
-            _zoffset_dist.extend(segment._zoffset_dist.tolist())
+            _xoffset_dist.extend(segment._xoffset_dist.tolist())  # type: ignore[has-type]
+            _zoffset_dist.extend(segment._zoffset_dist.tolist())  # type: ignore[has-type]
 
         self._chord_dist = np.array(_chord_dist, dtype=float)
         self._span_dist = np.array(_span_dist, dtype=float)
@@ -174,7 +174,7 @@ class Wing(WingSurface):
         self.controls = []
         for segment in self.wing_segments:
             self.control_vars.update(segment.control_vars)
-            self.controls.extend(segment.controls)
+            self.controls.extend(segment.controls)  # type: ignore[has-type]
         self.control_vector = {control_var: 0.0 for control_var in self.control_vars}
 
         ####### Calculate Wing Parameters #######
@@ -257,16 +257,16 @@ class Wing(WingSurface):
         for segment in self.wing_segments:
             inc = segment.num_panels
             panels[NM : NM + inc, :, :] = segment.panels
-            control_points[NM : NM + inc, :] = segment.control_points
-            control_nj[NM : NM + inc, :] = segment.control_nj
+            control_points[NM : NM + inc, :] = segment.control_points  # type: ignore[has-type]
+            control_nj[NM : NM + inc, :] = segment.control_nj  # type: ignore[has-type]
 
             panels_lower[NM : NM + inc, :, :] = segment.panels_lower
-            control_points_lower[NM : NM + inc, :] = segment.control_points_lower
-            control_nj_lower[NM : NM + inc, :] = segment.control_nj_lower
+            control_points_lower[NM : NM + inc, :] = segment.control_points_lower  # type: ignore[has-type]
+            control_nj_lower[NM : NM + inc, :] = segment.control_nj_lower  # type: ignore[has-type]
 
             panels_upper[NM : NM + inc, :, :] = segment.panels_upper
-            control_points_upper[NM : NM + inc, :] = segment.control_points_upper
-            control_nj_upper[NM : NM + inc, :] = segment.control_nj_upper
+            control_points_upper[NM : NM + inc, :] = segment.control_points_upper  # type: ignore[has-type]
+            control_nj_upper[NM : NM + inc, :] = segment.control_nj_upper  # type: ignore[has-type]
 
             NM += inc
 

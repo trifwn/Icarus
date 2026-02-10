@@ -27,10 +27,11 @@ class MultiprocessingEngine(AbstractEngine):
 
     execution_mode: ExecutionMode = ExecutionMode.MULTIPROCESSING
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.listener = None
-        self.monitor_thread = None
+        self.listener: Any = None
+        self.monitor_thread: threading.Thread | None = None
+        self.mp_manager: mp.managers.SyncManager | None = None
 
     def request_concurrent_vars(self) -> dict[str, ConcurrencyFeature]:
         """Request concurrent variables required by this engine."""
@@ -65,7 +66,12 @@ class MultiprocessingEngine(AbstractEngine):
         self.set_concurrent_vars(concurrent_vars)
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         self.logger.info("Shutting down engine")
 
         # Stop the queue listener
@@ -81,7 +87,7 @@ class MultiprocessingEngine(AbstractEngine):
         # Revert global logging configuration
         setup_logging()
 
-    async def execute_tasks(self) -> list[TaskResult]:
+    async def execute_tasks(self) -> list[TaskResult[Any]]:
         """Execute tasks using process pool"""
         self.logger.info(
             f"Starting multiprocessing execution of {len(self.tasks)} tasks with max_workers={self.max_workers}",
@@ -110,7 +116,7 @@ class MultiprocessingEngine(AbstractEngine):
             results = executor.map(self._execute_task, self.tasks)
 
         # Convert exceptions to failed results
-        processed_results = []
+        processed_results: list[TaskResult[Any]] = []
         for result in results:
             if isinstance(result, Exception):
                 processed_results.append(
@@ -176,8 +182,8 @@ class MultiprocessingEngine(AbstractEngine):
 
     def _execute_task(
         self,
-        task: Task,
-    ) -> TaskResult:
+        task: Task[Any, Any],
+    ) -> TaskResult[Any]:
         """
         Execute a single task in a separate process.
         This function needs to be at module level for multiprocessing to work.
@@ -218,7 +224,7 @@ class MultiprocessingEngine(AbstractEngine):
                         result = await task.executor.execute(task.input, context)
 
                     # Create successful result
-                    task_result = TaskResult(
+                    task_result: TaskResult[Any] = TaskResult(
                         task_id=task.id,
                         state=TaskState.COMPLETED,
                         output=result,

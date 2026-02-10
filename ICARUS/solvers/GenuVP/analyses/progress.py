@@ -4,6 +4,7 @@ import os
 import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
 
 from ICARUS.computation.core import ProgressEvent
 from ICARUS.computation.core import Task
@@ -60,7 +61,7 @@ class GenuVPCaseProgress:
 
 
 def get_aseq_progress(
-    task: Task,
+    task: Task[Any, Any],
     plane: Airplane,
     state: State,
     angles: float,
@@ -109,7 +110,7 @@ def get_aseq_progress(
 
 
 def get_stability_progress(
-    task: Task,
+    task: Task[Any, Any],
     plane: Airplane,
     state: State,
     disturbances: Disturbance,

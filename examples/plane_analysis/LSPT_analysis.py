@@ -72,7 +72,7 @@ def main() -> None:
         # ## AoA Run
         # 0: Angles Sequential
 
-        analysis: Analysis = lspt.get_analyses()[0]
+        analysis: Analysis[Any] = lspt.get_analyses()[0]
         inputs = analysis.get_analysis_input(verbose=False)
         solver_parameters = lspt.get_solver_parameters()
 

@@ -20,7 +20,7 @@ import numpy.typing as npt
 from ICARUS.core.format import short_format
 
 
-def iter_field(*, order: int, **kwargs):
+def iter_field(*, order: int, **kwargs: Any) -> Any:
     metadata = dict(kwargs.pop("metadata", {}))
     metadata["iter_order"] = order
     return field(metadata=metadata, **kwargs)

@@ -88,7 +88,7 @@ def plot_gnvp_wake(
     XP, QP, VP, GP, B1, C1 = get_wake_data(plane, state, case_str)
 
     fig: Figure = plt.figure(figsize=figsize)
-    ax: Axes3D = fig.add_subplot(projection="3d")  # type: ignore
+    ax: Axes3D = fig.add_subplot(projection="3d")
 
     ax.set_title(
         f"{plane.name} wake with GNVP{gnvp_version} for case {directory_to_angle(case_str)}",
@@ -104,7 +104,7 @@ def plot_gnvp_wake(
     p = ax.scatter(
         xs=XP[:, 0],
         ys=XP[:, 1],
-        zs=XP[:, 2],  # type: ignore
+        zs=XP[:, 2],
         c=np.linalg.norm(QP, axis=1),
         s=5,
     )  # WAKE
@@ -113,14 +113,14 @@ def plot_gnvp_wake(
     ax.scatter(
         xs=B1[:, 0],
         ys=B1[:, 1],
-        zs=B1[:, 2],  # type: ignore
+        zs=B1[:, 2],
         color="k",
         s=5,
     )  # NEARWAKE
     ax.scatter(
         xs=C1[:, 0],
         ys=C1[:, 1],
-        zs=C1[:, 2],  # type: ignore
+        zs=C1[:, 2],
         color="g",
         s=5,
     )  # GRID

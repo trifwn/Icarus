@@ -83,7 +83,7 @@ class NACA4(Airfoil):
         XX = int(digits[2:4]) / 100.0
         return cls(M, P, XX)
 
-    def _camber_line(self, xsi) -> tuple[Any, Any]:
+    def _camber_line(self, xsi: Any) -> tuple[Any, Any]:
         """
         Calculate the camber line and its derivative for a NACA 4 digit airfoil.
         Args:
@@ -108,7 +108,7 @@ class NACA4(Airfoil):
         )
         return yc, dyc
 
-    def thickness_distribution(self, xsi):
+    def thickness_distribution(self, xsi: Any) -> Any:
         xx = self.xx
         # Thickness distribution formula
         a0 = 0.2969

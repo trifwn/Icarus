@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Any
 
 from ICARUS.computation.core import ExecutionMode
 from ICARUS.computation.core import ResourceManager
@@ -33,8 +34,8 @@ class SimulationRunner:
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Task management
-        self._tasks: list[Task] = []
-        self._results: list[TaskResult] = []
+        self._tasks: list[Task[Any, Any]] = []
+        self._results: list[TaskResult[Any]] = []
         self._task_graph: dict[TaskId, list[TaskId]] = {}
 
         # Progress monitoring
@@ -46,7 +47,7 @@ class SimulationRunner:
         # State management
         self.simulation_name = simulation_name if simulation_name else "Simulation"
 
-    def add_task(self, task: Task) -> None:
+    def add_task(self, task: Task[Any, Any]) -> None:
         """
         Add a task to the execution queue.
 
@@ -58,13 +59,13 @@ class SimulationRunner:
         # Update task graph for dependency tracking
         self._task_graph[task.id] = task.config.dependencies
 
-    def add_tasks(self, tasks: list[Task]) -> SimulationRunner:
+    def add_tasks(self, tasks: list[Task[Any, Any]]) -> SimulationRunner:
         """Add multiple tasks"""
         for task in tasks:
             self.add_task(task)
         return self
 
-    async def run(self) -> list[TaskResult]:
+    async def run(self) -> list[TaskResult[Any]]:
         """Execute all tasks with dependency resolution and progress bars"""
         if not self._tasks:
             self.logger.warning("No tasks to execute")
@@ -118,7 +119,7 @@ class SimulationRunner:
         finally:
             self.logger.info("Execution finished.")
 
-    async def run_tasks(self, tasks: list[Task]) -> list[TaskResult]:
+    async def run_tasks(self, tasks: list[Task[Any, Any]]) -> list[TaskResult[Any]]:
         """
         Execute a list of tasks and return results.
 
@@ -131,7 +132,7 @@ class SimulationRunner:
         self.add_tasks(tasks)
         return await self.run()
 
-    def _resolve_dependencies(self) -> list[Task]:
+    def _resolve_dependencies(self) -> list[Task[Any, Any]]:
         """Resolve task dependencies using topological sort"""
         # Simple implementation - in production, use proper topological sort
         tasks_by_priority = sorted(
