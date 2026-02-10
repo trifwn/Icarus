@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import time
 from typing import TYPE_CHECKING
 from typing import Any
@@ -16,13 +17,16 @@ if TYPE_CHECKING:
 
 from ICARUS import PLATFORM
 
+# Check if 'module' command is available (required for GNVP7 on HPC)
+_has_module_cmd = shutil.which("module") is not None
+
 
 @pytest.mark.slow
 @pytest.mark.integration
 @pytest.mark.parametrize("run_parallel", [True, False])
 @pytest.mark.skipif(
-    PLATFORM == "Windows",
-    reason="GenuVP7 solver is not available in this environment",
+    PLATFORM == "Windows" or not _has_module_cmd,
+    reason="GenuVP7 solver requires HPC module system (module load mkl compiler openmpi/intel)",
 )
 def test_gnvp7_run(
     benchmark_airplane: Airplane,  # Assuming benchmark_plane is a fixture providing an Airplane instance

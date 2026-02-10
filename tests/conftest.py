@@ -5,6 +5,10 @@ This module provides common fixtures that can be used across all test files.
 
 from __future__ import annotations
 
+import matplotlib
+
+matplotlib.use("Agg")  # Use non-interactive backend for tests
+
 import os
 from typing import Generator
 

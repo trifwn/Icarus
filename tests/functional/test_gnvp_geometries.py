@@ -1,3 +1,4 @@
+import shutil
 import sys
 
 import numpy as np
@@ -14,6 +15,8 @@ from ICARUS.visualization.gnvp import plot_gnvp7_wake
 
 GNVP_VERSIONS = [3, 7]
 
+_has_module_cmd = shutil.which("module") is not None
+
 
 @pytest.mark.integration
 @pytest.mark.parametrize("gnvp_version", GNVP_VERSIONS)
@@ -29,8 +32,8 @@ def test_gnvp_geometry_all(
     if plot:
         pytest.importorskip("matplotlib")
 
-    if gnvp_version == 7 and sys.platform.startswith("win"):
-        pytest.skip("GenuVP7 solver is not available on Windows")
+    if gnvp_version == 7 and (sys.platform.startswith("win") or not _has_module_cmd):
+        pytest.skip("GenuVP7 solver requires HPC module system")
 
     _gnvp_geometry(benchmark_airplane, benchmark_state, gnvp_version, plot)
 

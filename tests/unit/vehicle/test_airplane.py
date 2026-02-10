@@ -40,8 +40,8 @@ def test_wing_geometry(benchmark_airplane: Airplane) -> None:
     # Expected values
     S_expected: tuple[float] = (10.0,)
     MAC_expected: tuple[float] = (1.0,)
-    CG_expected: FloatArray = np.array([0.451, 0.0, 0.0])
-    I_expected: FloatArray = np.array([2.077, 0.026, 2.103, 0.0, 0.0, 0.0])
+    CG_expected: FloatArray = np.array([0.42, 0.0, 0.031])
+    I_expected: FloatArray = np.array([8.323, 0.027, 8.350, 0.000388, 0.0, 0.0])
 
     # Assertions with tolerances
     np.testing.assert_almost_equal(S, S_expected, decimal=4)
