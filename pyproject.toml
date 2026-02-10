@@ -58,11 +58,11 @@ ICARUS = ["bin/*"]
 version = { attr = "ICARUS.__version__" }
 
 [tool.mypy]
-strict = false
+strict = true
 python_version = "3.11"
 show_error_codes = true
 warn_unused_configs = true
-plugins = ["numpy.typing.mypy_plugin"]
+# plugins = ["numpy.typing.mypy_plugin"]  # deprecated in NumPy 2.3
 ignore_missing_imports = true
 explicit_package_bases = true
 allow_untyped_defs = false

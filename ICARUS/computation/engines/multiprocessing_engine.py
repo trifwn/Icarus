@@ -116,7 +116,7 @@ class MultiprocessingEngine(AbstractEngine):
             results = executor.map(self._execute_task, self.tasks)
 
         # Convert exceptions to failed results
-        processed_results = []  # type: ignore[var-annotated]
+        processed_results: list[TaskResult[Any]] = []
         for result in results:
             if isinstance(result, Exception):
                 processed_results.append(

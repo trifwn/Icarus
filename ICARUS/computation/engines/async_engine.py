@@ -43,9 +43,9 @@ class AsyncEngine(AbstractEngine):
         )
 
         # Convert exceptions to failed results
-        processed_results = []  # type: ignore[var-annotated]
+        processed_results: list[TaskResult[Any]] = []
         for i, result in enumerate(results):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 task = self.tasks[i]
                 processed_results.append(
                     TaskResult(task_id=task.id, state=TaskState.FAILED, error=result),
@@ -54,7 +54,7 @@ class AsyncEngine(AbstractEngine):
                 processed_results.append(result)
 
         self.logger.info("Async execution completed")
-        return processed_results  # type: ignore[return-value]
+        return processed_results
 
     async def _execute_task_with_context(
         self,

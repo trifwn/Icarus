@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -39,7 +42,7 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
         return
 
     files: list[str] = next(os.walk(directory))[2]
-    reynolds_data = {}  # type: ignore[var-annotated]
+    reynolds_data: dict[str, dict[str, Any]] = {}
     for file in files:
         airfoil_name: str = parse_airfoil_name(file)
         file_name = os.path.join(directory, file)
@@ -98,12 +101,12 @@ def read_XFLR5_airfoil_polars(directory: str) -> None:
         if airfoil_name not in DB.foils_db.polars.keys():
             DB.foils_db.polars[airfoil_name] = AirfoilData(
                 airfoil_name=airfoil_name,
-                polar_maps={"XFLR": reynolds_data[airfoil_name]},
+                polar_maps={"XFLR": reynolds_data[airfoil_name]},  # type: ignore[dict-item]
             )
         else:
             DB.foils_db.polars[airfoil_name].add_polar_map(
                 "XFLR",
-                reynolds_data[airfoil_name],
+                reynolds_data[airfoil_name],  # type: ignore[arg-type]
             )
 
 

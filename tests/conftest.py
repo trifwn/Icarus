@@ -58,8 +58,7 @@ def database_instance() -> Generator[Database]:
 
 
 @pytest.fixture(scope="module")
-@pytest.mark.usefixtures("database_instance")
-def benchmark_airplane() -> Airplane:
+def benchmark_airplane(database_instance: Database) -> Airplane:
     """Fixture that provides a benchmark airplane configuration.
 
     Args:
@@ -97,8 +96,7 @@ def benchmark_airplane() -> Airplane:
 
 
 @pytest.fixture(scope="module")
-@pytest.mark.usefixtures("database_instance")
-def benchmark_state(benchmark_airplane: Airplane) -> State:
+def benchmark_state(benchmark_airplane: Airplane, database_instance: Database) -> State:
     """Fixture that provides a benchmark state for the airplane."""
 
     return State(
