@@ -376,6 +376,93 @@ def make_gradient_fn(
     return scalar_fn
 
 
+def diff_polar_sweep(
+    airplane: DiffAirplane,
+    angles: list[float] | Float[Array, "N"],
+    airspeed: float,
+    density: float,
+    polar_data: dict[int, DiffPolarData] | None = None,
+    compute_stability_derivatives: bool = True,
+) -> dict:
+    """Run a differentiable polar sweep over angles of attack.
+
+    For each angle, computes CL, CD, Cm (and optionally their derivatives
+    w.r.t. alpha). All computations go through the Equinox diff pipeline,
+    so design parameters remain differentiable.
+
+    Args:
+        airplane: DiffAirplane model
+        angles: Angles of attack in degrees
+        airspeed: Freestream velocity (m/s)
+        density: Air density (kg/m^3)
+        polar_data: Optional viscous polar data per segment index
+        compute_stability_derivatives: If True, also compute dCL/dalpha etc.
+
+    Returns:
+        Dict with keys:
+            "AoA": array of angles (degrees)
+            "CL", "CD", "Cm": coefficient arrays
+            "Lift", "Drag", "My": force/moment arrays (N, N·m)
+            If compute_stability_derivatives:
+                "CL_alpha", "CD_alpha", "Cm_alpha": per-alpha derivatives (/rad)
+    """
+    coeff_fn = make_diff_coefficients_fn(airplane, airspeed, density, polar_data)
+    q_inf = 0.5 * density * airspeed**2
+    S = airplane.S
+    MAC = airplane.MAC
+
+    if compute_stability_derivatives:
+        def alpha_derivs(alpha_deg: Array) -> tuple:
+            CL, CD, Cm = coeff_fn(airplane, alpha_deg)
+            return CL, CD, Cm
+
+        grad_CL = jax.grad(lambda a: coeff_fn(airplane, a)[0])
+        grad_CD = jax.grad(lambda a: coeff_fn(airplane, a)[1])
+        grad_Cm = jax.grad(lambda a: coeff_fn(airplane, a)[2])
+
+    aoa_list, CL_list, CD_list, Cm_list = [], [], [], []
+    L_list, D_list, My_list = [], [], []
+    dCL_list, dCD_list, dCm_list = [], [], []
+
+    for angle in angles:
+        alpha = jnp.asarray(float(angle), dtype=jnp.float64)
+        CL, CD, Cm = coeff_fn(airplane, alpha)
+
+        aoa_list.append(float(angle))
+        CL_list.append(float(CL))
+        CD_list.append(float(CD))
+        Cm_list.append(float(Cm))
+        L_list.append(float(CL * q_inf * S))
+        D_list.append(float(CD * q_inf * S))
+        My_list.append(float(Cm * q_inf * S * MAC))
+
+        if compute_stability_derivatives:
+            # Derivatives w.r.t. alpha in degrees → convert to /rad
+            dCL_da = float(grad_CL(alpha)) * 180.0 / jnp.pi
+            dCD_da = float(grad_CD(alpha)) * 180.0 / jnp.pi
+            dCm_da = float(grad_Cm(alpha)) * 180.0 / jnp.pi
+            dCL_list.append(dCL_da)
+            dCD_list.append(dCD_da)
+            dCm_list.append(dCm_da)
+
+    result = {
+        "AoA": aoa_list,
+        "CL": CL_list,
+        "CD": CD_list,
+        "Cm": Cm_list,
+        "Lift": L_list,
+        "Drag": D_list,
+        "My": My_list,
+    }
+
+    if compute_stability_derivatives:
+        result["CL_alpha"] = dCL_list
+        result["CD_alpha"] = dCD_list
+        result["Cm_alpha"] = dCm_list
+
+    return result
+
+
 def compute_trim_alpha(
     airplane: DiffAirplane,
     airspeed: float,

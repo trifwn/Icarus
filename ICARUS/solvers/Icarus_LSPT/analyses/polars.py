@@ -67,6 +67,113 @@ def lspt_polars(
     return df
 
 
+def lspt_polars_with_gradients(
+    plane: Airplane,
+    state: State,
+    angles: FloatArray | list[float],
+    solver_parameters: dict[str, Any],
+    compute_design_gradients: bool = False,
+    gradient_outputs: list[str] | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame | None]:
+    """Run LSPT polar sweep with JAX autodiff stability derivatives.
+
+    This uses the Equinox differentiable pipeline to compute exact
+    analytic derivatives alongside the polar sweep. The standard
+    VLM results are also computed for comparison/storage.
+
+    Args:
+        plane: Airplane Object
+        state: Flight state (provides airspeed, density)
+        angles: Angles of attack (degrees)
+        solver_parameters: Solver options
+        compute_design_gradients: If True, also compute dCL/d(design),
+            dCD/d(design), dCm/d(design) at each angle. Returns per-strip
+            chord and twist gradients.
+        gradient_outputs: Which coefficients to differentiate for design
+            gradients. Default: ["CD"]. Options: "CL", "CD", "Cm".
+
+    Returns:
+        Tuple of (forces_df, gradients_df).
+        forces_df: Standard polar results with added stability derivative columns.
+        gradients_df: Design gradient DataFrame (or None if not requested).
+    """
+    import jax
+    import jax.numpy as jnp
+    import equinox as eqx
+
+    from ICARUS.aero.diff import (
+        from_airplane,
+        diff_polar_sweep,
+        make_gradient_fn,
+    )
+
+    if not isinstance(angles, ndarray):
+        angles = np.array(angles)
+
+    # --- Standard polar sweep (existing solver, for storage/comparison) ---
+    lspt_plane = LSPT_Plane(plane=plane)
+    results: AerodynamicResults = run_vlm_polar_analysis(
+        plane=lspt_plane, state=state, angles=angles,
+    )
+    forces_df = results.to_polars_dataframe()
+
+    # --- Differentiable polar sweep ---
+    diff_plane = from_airplane(plane)
+    airspeed = float(state.velocity)
+    density = float(state.environment.density)
+
+    sweep = diff_polar_sweep(
+        airplane=diff_plane,
+        angles=angles.tolist(),
+        airspeed=airspeed,
+        density=density,
+        compute_stability_derivatives=True,
+    )
+
+    # Add stability derivatives to forces DataFrame
+    forces_df["CL_alpha"] = sweep["CL_alpha"]
+    forces_df["CD_alpha"] = sweep["CD_alpha"]
+    forces_df["Cm_alpha"] = sweep["Cm_alpha"]
+
+    save_results(plane, state, forces_df)
+
+    # --- Design gradients (optional, more expensive) ---
+    gradients_df = None
+    if compute_design_gradients:
+        if gradient_outputs is None:
+            gradient_outputs = ["CD"]
+
+        grad_rows = []
+        for angle in angles:
+            row = {"AoA": float(angle)}
+
+            for output in gradient_outputs:
+                grad_fn = make_gradient_fn(
+                    diff_plane, airspeed, density,
+                    alpha_deg=float(angle), output=output,
+                )
+                grads = eqx.filter_grad(grad_fn)(diff_plane)
+
+                # Extract per-segment chord and twist gradients
+                for wing in grads.wings:
+                    for seg in wing.segments:
+                        name = seg.name
+                        chord_grads = seg.chord_dist
+                        twist_grads = seg.twist_angles
+                        if chord_grads is not None:
+                            for j, g in enumerate(chord_grads):
+                                row[f"d{output}/d(chord_{name}_{j})"] = float(g)
+                        if twist_grads is not None:
+                            for j, g in enumerate(twist_grads):
+                                row[f"d{output}/d(twist_{name}_{j})"] = float(g)
+
+            grad_rows.append(row)
+
+        gradients_df = pd.DataFrame(grad_rows)
+
+    return forces_df, gradients_df
+
+
 def save_results(
     plane: Airplane,
     state: State,

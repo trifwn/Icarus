@@ -51,6 +51,7 @@ from .pipeline import diff_vlm_forces
 from .pipeline import diff_total_forces
 from .pipeline import make_diff_coefficients_fn
 from .pipeline import make_gradient_fn
+from .pipeline import diff_polar_sweep
 from .pipeline import compute_trim_alpha
 
 __all__ = [
@@ -74,5 +75,6 @@ __all__ = [
     "diff_total_forces",
     "make_diff_coefficients_fn",
     "make_gradient_fn",
+    "diff_polar_sweep",
     "compute_trim_alpha",
 ]

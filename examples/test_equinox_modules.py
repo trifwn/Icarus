@@ -444,6 +444,42 @@ def test_jit():
     check("JIT faster than no-JIT", t_cached < t_nojit or t_cached < 0.1)
 
 
+def test_polar_sweep():
+    """TEST 12: Differentiable polar sweep."""
+    print("\n" + "=" * 60)
+    print("TEST 12: Differentiable Polar Sweep")
+    print("=" * 60)
+
+    from ICARUS.aero.diff import from_airplane, diff_polar_sweep
+
+    airplane = make_rectangular_wing()
+    diff_plane = from_airplane(airplane)
+    angles = [-2.0, 0.0, 2.0, 5.0, 8.0]
+
+    sweep = diff_polar_sweep(
+        airplane=diff_plane,
+        angles=angles,
+        airspeed=20.0,
+        density=1.225,
+        compute_stability_derivatives=True,
+    )
+
+    check("Sweep has all angles", len(sweep["CL"]) == len(angles))
+    check("CL increases with alpha", sweep["CL"][-1] > sweep["CL"][0])
+    check("CD all positive", all(cd > 0 for cd in sweep["CD"]))
+    check("CL_alpha all positive", all(cla > 0 for cla in sweep["CL_alpha"]))
+
+    # CL_alpha should be roughly constant (linear range)
+    cla_spread = max(sweep["CL_alpha"]) - min(sweep["CL_alpha"])
+    cla_mean = sum(sweep["CL_alpha"]) / len(sweep["CL_alpha"])
+    check("CL_alpha nearly constant", cla_spread / cla_mean < 0.05,
+          f"spread={cla_spread:.4f}, mean={cla_mean:.4f}")
+
+    print(f"  Angles: {sweep['AoA']}")
+    print(f"  CL:     {[f'{c:.4f}' for c in sweep['CL']]}")
+    print(f"  CL_alpha: {[f'{c:.2f}' for c in sweep['CL_alpha']]}")
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────────────
@@ -462,6 +498,7 @@ if __name__ == "__main__":
     test_viscous_drag()
     test_naca4_parametric()
     test_jit()
+    test_polar_sweep()
 
     print("\n" + "=" * 60)
     print(f"Results: {PASS} passed, {FAIL} failed")
