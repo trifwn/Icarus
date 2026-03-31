@@ -42,7 +42,13 @@ from .airplane import DiffWing
 from .airplane import DiffAirplane
 from .airplane import from_airplane
 
+from .airfoil_camber import DiffNACA4Camber
+from .airfoil_camber import from_naca4
+from .viscous import DiffPolarData
+from .viscous import make_flat_plate_polar
+from .viscous import load_polar_data
 from .pipeline import diff_vlm_forces
+from .pipeline import diff_total_forces
 from .pipeline import make_diff_coefficients_fn
 from .pipeline import make_gradient_fn
 from .pipeline import compute_trim_alpha
@@ -51,7 +57,9 @@ __all__ = [
     "DiffMass",
     "from_mass",
     "DiffAirfoilCamber",
+    "DiffNACA4Camber",
     "from_airfoil",
+    "from_naca4",
     "DiffControlSurface",
     "from_control_surface",
     "DiffWingSegment",
@@ -59,7 +67,11 @@ __all__ = [
     "DiffWing",
     "DiffAirplane",
     "from_airplane",
+    "DiffPolarData",
+    "make_flat_plate_polar",
+    "load_polar_data",
     "diff_vlm_forces",
+    "diff_total_forces",
     "make_diff_coefficients_fn",
     "make_gradient_fn",
     "compute_trim_alpha",

@@ -69,17 +69,22 @@ class DiffAirplane(eqx.Module):
     Dynamic fields (differentiable):
         wings: List of DiffWing modules (contain all design params)
         point_masses: List of DiffMass modules
+        cg_override: Optional CG override (3,). If set, used instead of
+                     computing from masses. Matches ICARUS Airplane.CG behavior.
 
     Static fields:
         name: Aircraft identifier
         main_wing_name: Name of the primary wing
+        has_cg_override: Whether cg_override should be used
     """
 
     wings: list[DiffWing]
     point_masses: list[DiffMass]
+    cg_override: Float[Array, "3"]
 
     name: str = eqx.field(static=True)
     main_wing_name: str = eqx.field(static=True)
+    has_cg_override: bool = eqx.field(static=True)
 
     @property
     def main_wing(self) -> DiffWing:
@@ -117,18 +122,23 @@ class DiffAirplane(eqx.Module):
         return [seg for seg in self.all_segments if seg.is_lifting]
 
     def compute_cg(self) -> Float[Array, "3"]:
-        """Compute center of gravity from all masses.
+        """Compute center of gravity.
+
+        If cg_override is set (from the original Airplane), uses that.
+        Otherwise computes from wing masses and point masses.
 
         Returns:
             CG position as JAX array (3,)
         """
+        if self.has_cg_override:
+            return self.cg_override
+
         total_mass = jnp.array(0.0)
         weighted_pos = jnp.zeros(3)
 
         for wing in self.wings:
             for seg in wing.segments:
                 total_mass = total_mass + seg.structural_mass
-                # Approximate segment CG at midspan, quarter-chord
                 mid_span_idx = seg.N // 2
                 seg_pos = seg.origin + jnp.stack([
                     seg.x_offsets[mid_span_idx] + seg.chord_dist[mid_span_idx] * 0.25,
@@ -153,7 +163,8 @@ class DiffAirplane(eqx.Module):
 def from_airplane(airplane: Airplane) -> DiffAirplane:
     """Convert an ICARUS Airplane to a DiffAirplane.
 
-    Recursively converts all wings, segments, and masses.
+    Captures the CG from the original Airplane for moment reference
+    consistency. Recursively converts all wings, segments, and masses.
 
     Args:
         airplane: Source Airplane object
@@ -164,15 +175,20 @@ def from_airplane(airplane: Airplane) -> DiffAirplane:
     diff_wings = []
     for wing in airplane.wings:
         diff_segments = []
-        for _, segment in enumerate(wing.get_separate_segments()):
+        for segment in wing.get_separate_segments():
             diff_segments.append(from_wing_surface(segment))
         diff_wings.append(DiffWing(segments=diff_segments, name=wing.name))
 
     diff_masses = [from_mass(m) for m in airplane.point_masses]
 
+    # Capture CG from original airplane for consistent moment reference
+    cg = jnp.asarray(airplane.CG, dtype=jnp.float64)
+
     return DiffAirplane(
         wings=diff_wings,
         point_masses=diff_masses,
+        cg_override=cg,
         name=airplane.name,
         main_wing_name=airplane.main_wing_name,
+        has_cg_override=True,
     )

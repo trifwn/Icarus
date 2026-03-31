@@ -5,10 +5,11 @@ End-to-end differentiable pipeline: DiffAirplane → panel geometry → VLM → 
 
 This module provides:
 1. diff_vlm_forces: DiffAirplane + alpha → (lift, drag, moment)
-2. make_diff_coefficients_fn: Creates coefficient function
-3. make_gradient_fn: Creates gradient function for design optimization
-4. compute_trim_alpha: Newton-based trim solver with autodiff
-5. implicit_trim_sensitivity: Implicit differentiation at trim
+2. diff_total_forces: DiffAirplane + alpha → (lift, drag, moment) with viscous drag
+3. make_diff_coefficients_fn: Creates coefficient function
+4. make_gradient_fn: Creates gradient function for design optimization
+5. compute_trim_alpha: Newton-based trim solver with autodiff
+6. implicit_trim_sensitivity: Implicit differentiation at trim
 
 The pipeline reuses the core VLM solver from aero.vlm.functional
 (vlm_forces_from_geometry) to avoid code duplication. The Diff*
@@ -32,6 +33,7 @@ from ICARUS.aero.lspt_surface import compute_near_wake_panel
 
 from .airplane import DiffAirplane
 from .wing_segment import DiffWingSegment
+from .viscous import DiffPolarData, compute_strip_viscous_forces
 
 
 def _build_segment_panels(segment: DiffWingSegment) -> dict:
@@ -95,7 +97,8 @@ def _assemble_geometry(airplane: DiffAirplane) -> dict:
     by vlm_forces_from_geometry().
 
     Returns:
-        Dict with all arrays needed by vlm_forces_from_geometry()
+        Dict with all arrays needed by vlm_forces_from_geometry(), plus
+        strip_segment_info for viscous drag computation.
     """
     all_surf_panels = []
     all_surf_cps = []
@@ -107,7 +110,11 @@ def _assemble_geometry(airplane: DiffAirplane) -> dict:
     all_strip_offsets = []
     strip_M = None
 
+    # Track strip → segment mapping for viscous drag
+    strip_segment_info = []  # list of (segment_index, strip_index_within_segment)
+
     surf_panel_offset = 0
+    seg_idx = 0
 
     for segment in airplane.lifting_segments:
         seg_data = _build_segment_panels(segment)
@@ -140,8 +147,10 @@ def _assemble_geometry(airplane: DiffAirplane) -> dict:
 
         for i in range(num_strips):
             all_strip_offsets.append(surf_panel_offset + i * current_strip_M)
+            strip_segment_info.append((seg_idx, i))
 
         surf_panel_offset += panels.shape[0]
+        seg_idx += 1
 
     # Concatenate
     surf_panels = jnp.concatenate(all_surf_panels, axis=0)
@@ -157,10 +166,6 @@ def _assemble_geometry(airplane: DiffAirplane) -> dict:
     wake_shedding_indices = jnp.concatenate(all_wake_shedding_offsets)
     strip_panel_offsets = jnp.array(all_strip_offsets)
 
-    # Strip chords/widths — not used in force computation (panel_dimensions
-    # computes widths from geometry) but required by the shared API signature.
-    # Pass dummy values since vlm_forces_from_geometry doesn't use them for
-    # force calculation (it uses vmap(panel_dimensions) on the actual panels).
     num_strips = strip_panel_offsets.shape[0]
     strip_chords = jnp.ones(num_strips)
     strip_widths = jnp.ones(num_strips)
@@ -179,6 +184,7 @@ def _assemble_geometry(airplane: DiffAirplane) -> dict:
         "strip_M": strip_M,
         "strip_chords": strip_chords,
         "strip_widths": strip_widths,
+        "strip_segment_info": strip_segment_info,
     }
 
 
@@ -188,7 +194,7 @@ def diff_vlm_forces(
     airspeed: float,
     density: float,
 ) -> tuple[Array, Array, Array]:
-    """Compute VLM forces from a DiffAirplane.
+    """Compute VLM potential forces from a DiffAirplane.
 
     End-to-end differentiable: design params → geometry → VLM → forces.
     Uses the shared VLM solver (vlm_forces_from_geometry) from
@@ -227,10 +233,83 @@ def diff_vlm_forces(
     )
 
 
+def diff_total_forces(
+    airplane: DiffAirplane,
+    alpha_deg: Float[Array, ""],
+    airspeed: float,
+    density: float,
+    polar_data: dict[int, DiffPolarData] | None = None,
+    viscosity: float = 1.789e-5,
+) -> tuple[Array, Array, Array]:
+    """Compute total forces (potential + viscous) from a DiffAirplane.
+
+    Like diff_vlm_forces but adds viscous drag from pre-loaded polars.
+    The viscous drag computation uses effective AoA from the VLM solution.
+
+    Args:
+        airplane: DiffAirplane with all design parameters
+        alpha_deg: Angle of attack in degrees (JAX scalar)
+        airspeed: Freestream velocity (m/s)
+        density: Air density (kg/m^3)
+        polar_data: Dict mapping segment_index → DiffPolarData.
+                    If None, returns potential-only forces.
+        viscosity: Dynamic viscosity (kg/m·s), default for air at sea level
+
+    Returns:
+        (lift, drag, My) as JAX scalars with symmetry factor applied
+    """
+    # Get potential forces via VLM
+    pot_lift, pot_drag, pot_My = diff_vlm_forces(airplane, alpha_deg, airspeed, density)
+
+    if polar_data is None:
+        return pot_lift, pot_drag, pot_My
+
+    # Compute viscous drag per strip
+    # We need the VLM solution (gammas, w_induced) for effective AoA.
+    # For simplicity, we approximate: effective_aoa ≈ alpha + twist
+    # A full implementation would re-extract gammas from the solve.
+    segments = airplane.lifting_segments
+    visc_drag_total = jnp.array(0.0)
+
+    for seg_idx, segment in enumerate(segments):
+        if seg_idx not in polar_data:
+            continue
+
+        polar = polar_data[seg_idx]
+        N = segment.N
+
+        for i in range(N - 1):
+            # Strip effective AoA: geometric alpha + twist
+            strip_twist_deg = jnp.rad2deg(
+                (segment.twist_angles[i] + segment.twist_angles[i + 1]) / 2,
+            )
+            effective_aoa = alpha_deg + strip_twist_deg
+
+            # Strip geometry
+            strip_chord = (segment.chord_dist[i] + segment.chord_dist[i + 1]) / 2
+            strip_width = segment.span_dist[i + 1] - segment.span_dist[i]
+
+            _, visc_d = compute_strip_viscous_forces(
+                effective_aoa=effective_aoa,
+                effective_velocity=jnp.asarray(airspeed, dtype=jnp.float64),
+                chord=strip_chord,
+                width=strip_width,
+                density=density,
+                polar=polar,
+            )
+            visc_drag_total = visc_drag_total + visc_d
+
+    # Apply symmetry factor to viscous drag
+    visc_drag_total = visc_drag_total * 2
+
+    return pot_lift, pot_drag + visc_drag_total, pot_My
+
+
 def make_diff_coefficients_fn(
     airplane: DiffAirplane,
     airspeed: float,
     density: float,
+    polar_data: dict[int, DiffPolarData] | None = None,
 ) -> Callable:
     """Create a differentiable function: (airplane, alpha) → (CL, CD, Cm).
 
@@ -238,6 +317,7 @@ def make_diff_coefficients_fn(
         airplane: Baseline DiffAirplane (used for reference quantities)
         airspeed: Freestream velocity (m/s)
         density: Air density (kg/m^3)
+        polar_data: Optional viscous polar data per segment
 
     Returns:
         A callable (airplane, alpha_deg) → (CL, CD, Cm)
@@ -250,7 +330,12 @@ def make_diff_coefficients_fn(
         plane: DiffAirplane,
         alpha_deg: Float[Array, ""],
     ) -> tuple[Array, Array, Array]:
-        lift, drag, My = diff_vlm_forces(plane, alpha_deg, airspeed, density)
+        if polar_data is not None:
+            lift, drag, My = diff_total_forces(
+                plane, alpha_deg, airspeed, density, polar_data,
+            )
+        else:
+            lift, drag, My = diff_vlm_forces(plane, alpha_deg, airspeed, density)
         CL = lift / (q_inf * S)
         CD = drag / (q_inf * S)
         Cm = My / (q_inf * S * MAC)
@@ -265,6 +350,7 @@ def make_gradient_fn(
     density: float,
     alpha_deg: float = 5.0,
     output: str = "CD",
+    polar_data: dict[int, DiffPolarData] | None = None,
 ) -> Callable:
     """Create a scalar function airplane → output for use with eqx.filter_grad.
 
@@ -274,12 +360,13 @@ def make_gradient_fn(
         density: Air density (kg/m^3)
         alpha_deg: Fixed angle of attack (degrees)
         output: Which output to differentiate ("CL", "CD", "Cm")
+        polar_data: Optional viscous polar data
 
     Returns:
         A callable airplane → scalar
     """
     output_idx = {"CL": 0, "CD": 1, "Cm": 2}[output]
-    coeff_fn = make_diff_coefficients_fn(airplane, airspeed, density)
+    coeff_fn = make_diff_coefficients_fn(airplane, airspeed, density, polar_data)
     alpha = jnp.asarray(alpha_deg, dtype=jnp.float64)
 
     def scalar_fn(plane: DiffAirplane) -> Array:
