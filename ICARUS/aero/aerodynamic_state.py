@@ -224,7 +224,11 @@ class AerodynamicState:
         Returns:
             FloatArray: Velocity vector [u, v, w] in m/s
         """
-        u, v, w = self.velocity_components
+        alpha_rad = jnp.deg2rad(self.alpha)
+        beta_rad = jnp.deg2rad(self.beta)
+        u = self.airspeed * jnp.cos(alpha_rad) * jnp.cos(beta_rad)
+        v = self.airspeed * jnp.cos(alpha_rad) * jnp.sin(beta_rad)
+        w = self.airspeed * jnp.sin(alpha_rad) * jnp.cos(beta_rad)
         return jnp.array([u, v, w])
 
     @property

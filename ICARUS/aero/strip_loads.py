@@ -200,17 +200,11 @@ class StripLoads:
         )
         w_in = self.w_induced.copy()
 
-        if jnp.any(jnp.isnan(gammas)):
-            raise ValueError("NaN values found in gammas. Check gamma calculations.")
-
         # Calculate mean panel lengths and widths
         self.panel_L = density * airspeed * gammas * self.mean_panel_width
         self.panel_D = -density * w_in * gammas * self.mean_panel_width
 
         self.D_trefftz = -density / 2 * self.width * gammas[-1] * w_in[-1]
-
-        if jnp.any(jnp.isnan(self.panel_L)):
-            raise ValueError("NaN values found in panel_L. Check gamma calculations.")
 
     def calc_potential_moments(
         self,
@@ -304,24 +298,24 @@ class StripLoads:
     def get_total_lift(
         self,
         calculation: Literal["potential", "viscous"] = "potential",
-    ) -> float:
+    ) -> Array:
         """Get total lift for this strip."""
         if calculation == "potential":
-            return float(jnp.sum(self.panel_L))
+            return jnp.sum(self.panel_L)
         elif calculation == "viscous":
-            return float(self.L_2D)
+            return self.L_2D
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 
     def get_total_drag(
         self,
         calculation: Literal["potential", "viscous"] = "potential",
-    ) -> float:
+    ) -> Array:
         """Get total drag for this strip."""
         if calculation == "potential":
-            return float(jnp.sum(self.panel_D))
+            return jnp.sum(self.panel_D)
         elif calculation == "viscous":
-            return float(self.D_2D)
+            return self.D_2D
         else:
             raise ValueError("Invalid calculation type. Use 'potential' or 'viscous'.")
 

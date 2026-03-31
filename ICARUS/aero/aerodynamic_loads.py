@@ -82,81 +82,81 @@ class AerodynamicLoads:
     def calc_total_lift(
         self,
         calculation: Literal["potential", "viscous"] = "potential",
-    ) -> float:
+    ) -> Array:
         """Calculate total lift across all strips.
         Args:
             calculation: Type of lift calculation ('potential' or 'viscous')
         Returns:
-            Total lift force
+            Total lift force as JAX array scalar
         """
-        total_lift = 0.0
+        total_lift = jnp.array(0.0)
         for strip in self.strips:
-            total_lift += strip.get_total_lift(calculation=calculation)
+            total_lift = total_lift + strip.get_total_lift(calculation=calculation)
         return total_lift
 
     def calc_total_drag(
         self,
         calculation: Literal["potential", "viscous"] = "potential",
-    ) -> float:
+    ) -> Array:
         """Calculate total drag across all strips.
 
         Returns:
-            Total drag force
+            Total drag force as JAX array scalar
         """
-        total_drag = 0.0
+        total_drag = jnp.array(0.0)
         for strip in self.strips:
-            total_drag += strip.get_total_drag(calculation=calculation)
+            total_drag = total_drag + strip.get_total_drag(calculation=calculation)
         return total_drag
 
     def calc_total_moments(
         self,
         calculation: Literal["potential", "viscous"] = "potential",
-    ) -> tuple[float, float, float]:
+    ) -> tuple[Array, Array, Array]:
         """Calculate total moments across all strips.
 
         Returns:
-            Tuple of (Mx, My, Mz) total moments
+            Tuple of (Mx, My, Mz) total moments as JAX array scalars
         """
-        total_mx = 0.0
-        total_my = 0.0
-        total_mz = 0.0
+        total_mx = jnp.array(0.0)
+        total_my = jnp.array(0.0)
+        total_mz = jnp.array(0.0)
 
         for strip in self.strips:
             mx, my, mz = strip.get_total_moments(
                 reference_point=self.reference_point,
                 calculation=calculation,
             )
-            total_mx += float(mx)
-            total_my += float(my)
-            total_mz += float(mz)
+            total_mx = total_mx + mx
+            total_my = total_my + my
+            total_mz = total_mz + mz
 
         return total_mx, total_my, total_mz
 
-    def calc_trefftz_drag(self) -> float:
+    def calc_trefftz_drag(self) -> Array:
         """Calculate total Trefftz plane drag across all strips.
 
         Returns:
-            Total Trefftz drag
+            Total Trefftz drag as JAX array scalar
         """
-        total_trefftz_drag = 0.0
+        total_trefftz_drag = jnp.array(0.0)
         for strip in self.strips:
-            total_trefftz_drag += strip.D_trefftz
+            total_trefftz_drag = total_trefftz_drag + strip.D_trefftz
         return total_trefftz_drag
 
-    def calc_2d_loads(self) -> tuple[float, float, float]:
+    def calc_2d_loads(self) -> tuple[Array, Array, Array]:
         """Calculate total 2D loads across all strips.
 
         Returns:
-            Tuple of (L_2D, D_2D, My_2D) total 2D loads
+            Tuple of (L_2D, D_2D, My_2D) total 2D loads as JAX array scalars
         """
-        total_l_2d = 0.0
-        total_d_2d = 0.0
-        total_my_2d = 0.0
+        total_l_2d = jnp.array(0.0)
+        total_d_2d = jnp.array(0.0)
+        total_my_2d = jnp.array(0.0)
 
         for strip in self.strips:
-            total_l_2d += strip.L_2D
-            total_d_2d += strip.D_2D
-            total_my_2d += strip.My_2D
+            total_l_2d = total_l_2d + strip.L_2D
+            total_d_2d = total_d_2d + strip.D_2D
+            total_my_2d = total_my_2d + strip.My_2D
 
         return total_l_2d, total_d_2d, total_my_2d
 
@@ -185,70 +185,70 @@ class AerodynamicLoads:
     def calculate_potential_loads(
         self,
         aerodynamic_state: AerodynamicState,
-    ) -> tuple[float, float, float]:
+    ) -> tuple[Array, Array, Array]:
         """Calculate potential loads using VLM results.
 
         Args:
-            state: Flight state containing environment data
+            aerodynamic_state: AerodynamicState containing environment data
 
         Returns:
-            Tuple of (total_lift, total_drag, total_moment_y)
+            Tuple of (total_lift, total_drag, total_moment_y) as JAX array scalars
         """
         density = aerodynamic_state.density
         airspeed = aerodynamic_state.airspeed
 
         # Initialize loads
-        total_lift = 0.0
-        total_drag = 0.0
+        total_lift = jnp.array(0.0)
+        total_drag = jnp.array(0.0)
 
-        total_moment_x = 0.0
-        total_moment_y = 0.0
-        total_moment_z = 0.0
+        total_moment_x = jnp.array(0.0)
+        total_moment_y = jnp.array(0.0)
+        total_moment_z = jnp.array(0.0)
 
         # Calculate loads for each strip
         for strip in self.strips:
             strip.calc_potential_loads(density=density, airspeed=airspeed)
 
-            total_lift += strip.get_total_lift(calculation="potential")
-            total_drag += strip.get_total_drag(calculation="potential")
+            total_lift = total_lift + strip.get_total_lift(calculation="potential")
+            total_drag = total_drag + strip.get_total_drag(calculation="potential")
 
             mx, my, mz = strip.get_total_moments(
                 reference_point=self.reference_point,
                 calculation="potential",
             )
-            total_moment_x += float(mx)
-            total_moment_y += float(my)
-            total_moment_z += float(mz)
+            total_moment_x = total_moment_x + mx
+            total_moment_y = total_moment_y + my
+            total_moment_z = total_moment_z + mz
 
         # Apply symmetry factor for symmetric wings (factor of 2)
-        total_lift *= 2
-        total_drag *= 2
-        total_moment_y *= 2
+        total_lift = total_lift * 2
+        total_drag = total_drag * 2
+        total_moment_y = total_moment_y * 2
         return total_lift, total_drag, total_moment_y
 
     def calculate_viscous_loads(
         self,
         aerodynamic_state: AerodynamicState,
-    ) -> tuple[float, float, float]:
+    ) -> tuple[Array, Array, Array]:
         """Calculate viscous loads for all strips.
 
         Args:
-            state: AerodynamicState containing environment data
+            aerodynamic_state: AerodynamicState containing environment data
 
         Returns:
-            Tuple of (total_viscous_lift, total_viscous_drag, total_viscous_moment)
+            Tuple of (total_viscous_lift, total_viscous_drag, total_viscous_moment) as JAX array scalars
         """
         density = aerodynamic_state.density
         viscosity = aerodynamic_state.viscosity
         airspeed = aerodynamic_state.airspeed
 
         # Initialize loads
-        total_viscous_lift = 0.0
-        total_viscous_drag = 0.0
+        total_viscous_lift = jnp.array(0.0)
+        total_viscous_drag = jnp.array(0.0)
 
-        total_viscous_moment_x = 0.0
-        total_viscous_moment_y = 0.0
-        total_viscous_moment_z = 0.0
+        total_viscous_moment_x = jnp.array(0.0)
+        total_viscous_moment_y = jnp.array(0.0)
+        total_viscous_moment_z = jnp.array(0.0)
 
         for strip in self.strips:
             # Get the effective flow conditions
@@ -270,8 +270,8 @@ class AerodynamicLoads:
                 airspeed=strip.effective_velocity,
             )
 
-            total_viscous_lift += strip.get_total_lift(calculation="viscous")
-            total_viscous_drag += strip.get_total_drag(calculation="viscous")
+            total_viscous_lift = total_viscous_lift + strip.get_total_lift(calculation="viscous")
+            total_viscous_drag = total_viscous_drag + strip.get_total_drag(calculation="viscous")
 
             mx, my, mz = strip.get_total_moments(
                 reference_point=self.reference_point,
@@ -279,14 +279,14 @@ class AerodynamicLoads:
             )
 
             # Add viscous components (2D loads)
-            total_viscous_moment_x += float(mx)
-            total_viscous_moment_y += float(my)
-            total_viscous_moment_z += float(mz)
+            total_viscous_moment_x = total_viscous_moment_x + mx
+            total_viscous_moment_y = total_viscous_moment_y + my
+            total_viscous_moment_z = total_viscous_moment_z + mz
 
         # Apply symmetry factor for symmetric wings (factor of 2)
-        total_viscous_lift *= 2
-        total_viscous_drag *= 2
-        total_viscous_moment_y *= 2
+        total_viscous_lift = total_viscous_lift * 2
+        total_viscous_drag = total_viscous_drag * 2
+        total_viscous_moment_y = total_viscous_moment_y * 2
         return total_viscous_lift, total_viscous_drag, total_viscous_moment_y
 
     def to_dataframe(
