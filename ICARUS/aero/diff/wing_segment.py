@@ -77,10 +77,12 @@ class DiffWingSegment(eqx.Module):
     N: int = eqx.field(static=True)
     M: int = eqx.field(static=True)
 
-    # Airfoil and control surface modules (static — not differentiated)
-    root_camber: DiffAirfoilCamber = eqx.field(static=True)
-    tip_camber: DiffAirfoilCamber = eqx.field(static=True)
-    controls: list[DiffControlSurface] = eqx.field(static=True)
+    # Airfoil and control surface modules (dynamic pytree nodes — not
+    # typically differentiated, but keeping them dynamic avoids the
+    # "JAX array set as static" warning since they contain JAX arrays)
+    root_camber: DiffAirfoilCamber
+    tip_camber: DiffAirfoilCamber
+    controls: list[DiffControlSurface]
 
     # Flags
     is_lifting: bool = eqx.field(static=True)
